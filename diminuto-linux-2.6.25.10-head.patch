@@ -1,0 +1,13 @@
+diff -purN project_build_arm/diminuto/linux-2.6.25.10.orig/arch/arm/kernel/head.S project_build_arm/diminuto/linux-2.6.25.10/arch/arm/kernel/head.S
+--- project_build_arm/diminuto/linux-2.6.25.10.orig/arch/arm/kernel/head.S	2008-07-02 21:46:47.000000000 -0600
++++ project_build_arm/diminuto/linux-2.6.25.10/arch/arm/kernel/head.S	2008-07-29 13:25:27.000000000 -0600
+@@ -83,6 +83,9 @@ ENTRY(stext)
+ 	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
+ 	movs	r10, r5				@ invalid processor (r5=0)?
+ 	beq	__error_p			@ yes, error 'p'
++	mov	r1, #0x02			@ coverclock@diag.com:20080721
++	mov	r1, r1, lsl #8			@ coverclock@diag.com:20080721
++	orr	r1, r1, #0xc1			@ coverclock@diag.com:20080721
+ 	bl	__lookup_machine_type		@ r5=machinfo
+ 	movs	r8, r5				@ invalid machine (r5=0)?
+ 	beq	__error_a			@ yes, error 'a'
