@@ -1,0 +1,29 @@
+diff -purN project_build_arm/diminuto/linux-2.6.25.10.orig/arch/arm/kernel/vmlinux.lds.S project_build_arm/diminuto/linux-2.6.25.10/arch/arm/kernel/vmlinux.lds.S
+--- project_build_arm/diminuto/linux-2.6.25.10.orig/arch/arm/kernel/vmlinux.lds.S	2008-07-02 21:46:47.000000000 -0600
++++ project_build_arm/diminuto/linux-2.6.25.10/arch/arm/kernel/vmlinux.lds.S	2008-07-30 16:11:47.000000000 -0600
+@@ -57,12 +57,6 @@ SECTIONS
+ 		__security_initcall_start = .;
+ 			*(.security_initcall.init)
+ 		__security_initcall_end = .;
+-#ifdef CONFIG_BLK_DEV_INITRD
+-		. = ALIGN(32);
+-		__initramfs_start = .;
+-			usr/built-in.o(.init.ramfs)
+-		__initramfs_end = .;
+-#endif
+ 		. = ALIGN(4096);
+ 		__per_cpu_start = .;
+ 			*(.data.percpu)
+@@ -74,6 +68,12 @@ SECTIONS
+ 		. = ALIGN(4096);
+ 		__init_end = .;
+ #endif
++#ifdef CONFIG_BLK_DEV_INITRD
++		. = ALIGN(32);
++		__initramfs_start = .;
++			usr/built-in.o(.init.ramfs)
++		__initramfs_end = .;
++#endif
+ 	}
+ 
+ 	/DISCARD/ : {			/* Exit code and data		*/
