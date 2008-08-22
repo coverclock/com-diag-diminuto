@@ -14,21 +14,32 @@
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-uint32_t diminuto_delay(uint32_t milliseconds, int interruptable)
+uint32_t diminuto_delay(uint32_t microseconds, int interruptable)
 {
-	struct timespec delay;
-	struct timespec remaining;
+    struct timespec delay;
+    struct timespec remaining;
+    struct timespec result;
 
-	delay.tv_sec = milliseconds / 1000U;
-	delay.tv_nsec = (milliseconds % 1000U) * 1000000U;
+    delay.tv_sec = microseconds / 1000000U;
+    delay.tv_nsec = (microseconds % 1000000U) * 1000U;
 
-	remaining = delay;
+    remaining = delay;
 
-	while (nanosleep(&delay, &remaining) != 0) {
-		if (errno != EINTR) { break; }
-		if (interruptable) { break; }
-		delay = remaining;
-	}
+    result.tv_sec = 0;
+    result.tv_nsec = 0;
 
-	return (remaining.tv_sec * 1000U) + (remaining.tv_nsec / 1000000U);
+    while (nanosleep(&delay, &remaining) < 0) {
+        if (errno != EINTR) {
+            perror("diminuto_delay: nanosleep");
+            result = remaining;
+            break;
+        }
+        if (interruptable) {
+            result = remaining;
+            break;
+        }
+        delay = remaining;
+    }
+
+    return (result.tv_sec * 1000000UL) + (result.tv_nsec / 1000UL);
 }
