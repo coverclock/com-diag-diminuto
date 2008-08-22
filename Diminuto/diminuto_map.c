@@ -11,7 +11,6 @@
 #include "diminuto_map.h"
 #include <stdio.h>
 #include <unistd.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -35,13 +34,13 @@ void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * len
 
         fd = open("/dev/mem", O_RDWR | O_SYNC);
         if (fd < 0) {
-            perror("open");
+            perror("diminuto_map: open");
             break;
         }
 
         base = mmap(0, size, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, offset);
         if (base == (void *)-1) {
-            perror("mmap");
+            perror("diminuto_map: mmap");
             break;
         }
 
@@ -55,7 +54,7 @@ void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * len
     if (fd >= 0) {
         fd = close(fd);
         if (fd < 0) {
-            perror("close");
+            perror("diminuto_map: close");
         }
     }
 
@@ -68,7 +67,7 @@ int diminuto_unmap(void * start, size_t length)
 
     rc = munmap(start, length);
     if (rc < 0) {
-        perror("munmap");
+        perror("diminuto_unmap: munmap");
     }
 
     return rc;

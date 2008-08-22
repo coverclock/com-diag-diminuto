@@ -181,7 +181,7 @@ int main(int argc, char * argv[])
     
     address = diminuto_map(CFG_ENV_ADDR, CFG_ENV_SIZE, &start, &length);
     if (address == NULL) {
-        perror("diminuto_map");
+        perror("getubenv: diminuto_map");
         return 2;
     }
 

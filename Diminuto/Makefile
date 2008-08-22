@@ -34,17 +34,24 @@ KERNEL_DIR	=	$(PROJECT_DIR)//$(PLATFORM)-$(RELEASE)
 CONFIG_DIR	=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
 DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
+DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
+FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
+UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
 
-HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto
-TARGETOBJECTS	=	diminuto_coreable.o diminuto_delay.o diminuto_map.o
+HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
+TARGETOBJECTS	=	diminuto_coreable.o diminuto_delay.o diminuto_map.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
-TARGETLIBRARIES	=	lib$(PROJECT).a lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+TARGETARCHIVES	=	lib$(PROJECT).a
+TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES)
+ARTIFACTS	=	$(TARGETLIBRARIES)
 
-ARTIFACTS	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).a
+DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.3.0.0
+FICL_LIB	=	$(FICL_DIR)/libficl.so.4.0.31
 
 SCRIPT		=	dummy
 
@@ -60,13 +67,13 @@ CXXFLAGS	=	-g
 CFLAGS		=	-g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
-LDFLAGS		=	-L$(LOCALLIB_DIR) -Bdynamic -ldiminuto
+LDFLAGS		=	-L. -Bdynamic -ldiminuto
 
 ########## Main Entry Points
 
 all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS)
 
-host-install:	$(HOSTPROGRAMS) $(LOCALBIN_DIR)
+host-install:	$(HOSTPROGRAMS) $(LOCALBIN_DIR) $(LOCALLIB_DIR)/lib$(PROJECT).so
 	cp $(CPFLAGS) $(HOSTPROGRAMS) $(LOCALBIN_DIR)
 
 target-patch:	patches
@@ -74,10 +81,15 @@ target-patch:	patches
 	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(RELEASE)-vmlinuxlds.patch
 	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(PRODUCT)-devicetable.patch
 
-target-install:	$(TARGETLIBRARIES) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin $(FAKEROOT_DIR)/usr/local/lib
+target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin $(FAKEROOT_DIR)/usr/local/lib
 	cp $(CPFLAGS) S10provision $(FAKEROOT_DIR)/etc/init.d
 	cp $(CPFLAGS) getubenv $(FAKEROOT_DIR)/usr/local/bin
+	cp $(CPFLAGS) $(UTILS_DIR)/ldconfig $(FAKEROOT_DIR)/sbin
+	cp $(CPFLAGS) $(UTILS_DIR)/ldd $(FAKEROOT_DIR)/usr/bin
+	echo "/usr/local/lib" > $(FAKEROOT_DIR)/etc/ld.so.conf
 	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(FAKEROOT_DIR)/usr/local/lib
+	test -f $(DESPERADO_LIB) && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	test -f $(FICL_LIB) && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
 
 config-install:	$(CONFIG_DIR)
 	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(RELEASE).config
@@ -87,6 +99,9 @@ tftp-install:
 
 toolchain-dist:
 	( cd $(TOOLCHAIN_DIR); tar cvjf - . ) > $(PROJECT)-toolchain.tar.bz2
+
+build:
+	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )
 
 ########## Host Scripts
 
@@ -112,7 +127,10 @@ diminuto.sh:	Makefile
 	echo CONFIG=\"$(CONFIG_DIR)\" >> diminuto.sh
 	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> diminuto.sh
 	echo DATESTAMP=\"\`date +%Y%m%d\`\" >> diminuto.sh
+	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> diminuto.sh
 	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> diminuto.sh
+	echo DESPERADO=\"$(DESPERADO_DIR)\" >> diminuto.sh
+	echo FICL=\"$(FICL_DIR)\" >> diminuto.sh
 	echo IMAGE=\"$(IMAGE)\" >> diminuto.sh
 	echo KERNEL=\"$(KERNEL_DIR)\" >> diminuto.sh
 	echo PLATFORM=\"$(PLATFORM)\" >> diminuto.sh
@@ -125,20 +143,24 @@ diminuto.sh:	Makefile
 	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> diminuto.sh
 	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> diminuto.sh
 
+dlgdb:	dlgdb.sh diminuto
+	make script SCRIPT=dlgdb
+
+dlib:	dlib.sh
+	make script SCRIPT=dlib
+
 ########## Target Scripts
 
 S10provision:	S10provision.sh getubenv
 	make script SCRIPT=S10provision
 
-########## Target Libraries
+########## Install Libraries
 
-libraries:	$(LOCALLIB_DIR)/lib$(PROJECT).so $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR) $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
-
-$(LOCALLIB_DIR)/lib$(PROJECT).so:	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(LOCALLIB_DIR)/lib$(PROJECT).so:	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
 	rm -f $(LOCALLIB_DIR)/lib$(PROJECT).so
 	ln -s $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)/lib$(PROJECT).so
 
-$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
 	rm -f $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
 	ln -s $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
 
@@ -149,6 +171,20 @@ $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(LOCALLIB_DIR)/lib$(PROJECT
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 
+########## Target Libraries
+
+lib$(PROJECT).so:	lib$(PROJECT).so.$(MAJOR)
+	rm -f lib$(PROJECT).so
+	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so
+
+lib$(PROJECT).so.$(MAJOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR)
+	rm -f lib$(PROJECT).so.$(MAJOR)
+	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR)
+
+lib$(PROJECT).so.$(MAJOR).$(MINOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR)
+	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
+
 lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
 	$(CC) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTS)
 
@@ -158,7 +194,10 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 ########## Target Binaries
 
-getubenv:	getubenv.c libraries
+getubenv:	getubenv.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+unittest-time:	unittest-time.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ########## Helpers
@@ -174,7 +213,10 @@ acquire:	$(HOME)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
 clean:
-	rm -f $(HOSTPROGRAMS) $(TARGETOBJECTS) $(TARGETPROGRAMS) $(ARTIFACTS)
+	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
+
+binaries-clean:
+	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(RELEASE)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
 
 ########## Patches
 
