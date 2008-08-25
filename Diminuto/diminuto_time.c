@@ -9,6 +9,7 @@
  */
 
 #include "diminuto_time.h"
+#include "diminuto_log.h"
 #include <stdio.h>
 #include <sys/time.h>
 
@@ -17,7 +18,7 @@ uint64_t diminuto_time()
     struct timeval elapsed;
 
     if (gettimeofday(&elapsed, (struct timezone *)0) < 0) {
-        perror("diminuto_time: gettimeofday");
+        diminuto_perror("diminuto_time: gettimeofday");
         return 0ULL;
     }
 
