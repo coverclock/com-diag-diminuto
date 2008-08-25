@@ -30,6 +30,6 @@ extern void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_
  * @param length is the length returned by map.
  * @return 0 if successful, !0 otherwise.
  */
-extern int diminuto_unmap(void * base, size_t size);
+extern int diminuto_unmap(void * start, size_t length);
 
 #endif
