@@ -46,10 +46,11 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
 TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
+TARGETUNITTESTS	=	unittest-time unittest-daemonize
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
-TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES)
+TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
 ARTIFACTS	=	$(TARGETLIBRARIES)
 
 DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.3.0.0
@@ -205,6 +206,9 @@ getubenv:	getubenv.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-time:	unittest-time.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+unittest-daemonize:	unittest-daemonize.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ########## Helpers
