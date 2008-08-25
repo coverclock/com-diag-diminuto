@@ -38,6 +38,7 @@ DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
 DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
 FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
+DOC_DIR		=	doc
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
@@ -53,7 +54,7 @@ TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
 ARTIFACTS	=	$(TARGETLIBRARIES)
 
-DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.3.0.0
+DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.2.4.0
 FICL_LIB	=	$(FICL_DIR)/libficl.so.4.0.31
 
 SCRIPT		=	dummy
@@ -222,6 +223,7 @@ acquire:	$(HOME)/$(PROJECT)
 
 clean:
 	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
+	rm -rf $(DOC_DIR)
 
 binaries-clean:
 	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(RELEASE)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
@@ -238,6 +240,15 @@ $(PROJECT)-$(PRODUCT)-devicetable.patch:
 	make patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
 
 patches:	$(PROJECT)-$(RELEASE)-head.patch $(PROJECT)-$(RELEASE)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
+
+########## Documentation
+
+documentation:	$(DOC_DIR)/pdf
+	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > doxygen-local.cf
+	doxygen doxygen-local.cf
+	( cd $(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
+	cat $(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(DOC_DIR)/pdf/manpages.ps
+	ps2pdf $(DOC_DIR)/pdf/manpages.ps $(DOC_DIR)/pdf/manpages.pdf
 
 ########## Submakes
 
@@ -269,6 +280,9 @@ $(FAKEROOT_DIR)/usr/local/lib:
 
 $(HOME)/$(PROJECT):
 	mkdir -p $(HOME)/$(PROJECT)
+
+$(DOC_DIR)/pdf:
+	mkdir -p $(DOC_DIR)/pdf
 
 ########## Rules
 
