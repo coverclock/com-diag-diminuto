@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-pid_t diminuto_lock(const char * file)
+int diminuto_lock(const char * file)
 {
     int fd;
     pid_t pid;
@@ -78,9 +78,44 @@ int diminuto_unlock(const char * file)
 
     rc = unlink(file);
     if (rc < 0) {
-        diminuto_perror("diminuto_unlock: unlink");
         result = -35;
+        diminuto_perror("diminuto_unlock: unlink");
     }
 
     return result;
+}
+
+int diminuto_locked(const char * file)
+{
+    FILE * fp;
+    pid_t pid;
+    int rc;
+
+    do {
+
+        fp = fopen(file, "r");
+        if (fp == (FILE *)0) {
+            pid = -36;
+            diminuto_perror("diminuto_locked: fopen");
+            break;
+        }
+
+        rc = fscanf(fp, "%d", &pid);
+        if (rc != 1) {
+            pid = -37;
+            errno = EINVAL;
+            diminuto_perror("diminuto_locked: fscanf");
+            break;
+        }
+
+        rc = fclose(fp);
+        if (rc < 0) {
+            pid = -38;
+            diminuto_perror("diminuto_locked: fclose");
+            break;
+        }
+
+    } while (0);
+
+    return pid;
 }
