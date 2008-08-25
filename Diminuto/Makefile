@@ -42,7 +42,7 @@ TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
-HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
+HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
@@ -150,9 +150,6 @@ diminuto.sh:	Makefile
 	echo TMPDIR=\"$(TMP_DIR)\" >> diminuto.sh
 	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> diminuto.sh
 	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> diminuto.sh
-
-dlgdb:	dlgdb.sh diminuto
-	make script SCRIPT=dlgdb
 
 dlib:	dlib.sh
 	make script SCRIPT=dlib
