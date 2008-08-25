@@ -40,7 +40,7 @@ FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
-SVNURL		=	svn://192.168.1.220/Diminuto/trunk/$(PROJECT}
+SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
 TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_time.o
@@ -104,9 +104,9 @@ toolchain-dist:
 	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(PROJECT)-toolchain.tar.bz2
 
 dist:
-	rm -rf $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	svn export $(SVNURL) $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TMPDIR); tar cvjf - $(PROJECT-$(MAJOR)-$(MINOR)-$(BUILD) ) > $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2
+	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) > $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2 )
 
 build:
 	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )
