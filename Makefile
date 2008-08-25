@@ -41,7 +41,7 @@ TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
-TARGETOBJECTS	=	diminuto_coreable.o diminuto_delay.o diminuto_map.o diminuto_time.o
+TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_map.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
 TARGETARCHIVES	=	lib$(PROJECT).a
