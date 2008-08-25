@@ -50,6 +50,8 @@
     functions written in C to simplify the writing of device drivers and
     daemons for the Linux operating system.
 
+    This software is an original work of its authors.
+
     Contact
 
         Chip Overclock
@@ -65,6 +67,18 @@
 
     vi Makefile                 # establish your configuration
     make all                  	# make all
+
+    Diminuto has been built and tested on the following platforms:
+
+        Dell 530 P4
+        Linux 2.6.22
+        gcc 4.1.3
+	glibc 2.6.1
+
+	Atmel AT91RM9200-EK ARM9
+        Linux 2.6.25
+        gcc 4.2.4
+        uClibc 0.9.29
 
 *******************************************************************************/
 
