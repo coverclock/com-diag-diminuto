@@ -12,7 +12,8 @@ BDI_IPADDR	=	192.168.1.224
 TFTP_DIR	=	/var/lib/tftpboot
 TMP_DIR		=	/var/tmp
 ROOT_DIR	=	$(HOME)/$(PROJECT)
-TOOLCHAIN_DIR	=	/opt/$(PROJECT)/$(PRODUCT)
+OPT_DIR		=	/opt
+TOOLCHAIN_DIR	=	$(OPT_DIR)/$(PROJECT)/$(PRODUCT)
 TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
 LOCALBIN_DIR	=	${TOOLCHAIN_DIR}/usr/local/bin
 LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
@@ -39,9 +40,10 @@ FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 IMAGE		=	$(PROJECT)-linux-$(RELEASE)
+SVNURL		=	svn://192.168.1.220/Diminuto/trunk/$(PROJECT}
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlgdb dlib
-TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_map.o diminuto_time.o
+TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
 TARGETARCHIVES	=	lib$(PROJECT).a
@@ -98,7 +100,12 @@ tftp-install:
 	cp $(CPFLAGS) $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(RELEASE)-$(ARCH) $(TFTP_DIR)/$(IMAGE)
 
 toolchain-dist:
-	( cd $(TOOLCHAIN_DIR); tar cvjf - . ) > $(PROJECT)-toolchain.tar.bz2
+	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(PROJECT)-toolchain.tar.bz2
+
+dist:
+	rm -rf $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	svn export $(SVNURL) $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TMPDIR); tar cvjf - $(PROJECT-$(MAJOR)-$(MINOR)-$(BUILD) ) > $(TMPDIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2
 
 build:
 	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )

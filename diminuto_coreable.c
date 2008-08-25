@@ -9,6 +9,7 @@
  */
 
 #include "diminuto_coreable.h"
+#include "diminuto_log.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -23,13 +24,13 @@ int diminuto_coreable()
 
 	rc = getrlimit(RLIMIT_CORE, &limit);
 	if (rc < 0) {
-		perror("diminuto_coreable: getrlimit");
+		diminuto_perror("diminuto_coreable: getrlimit");
 		result = -1;
 	} else {
 		limit.rlim_cur = limit.rlim_max;
 		rc = setrlimit(RLIMIT_CORE, &limit);
 		if (rc < 0) {
-			perror("diminuto_coreable: setrlimit");
+			diminuto_perror("diminuto_coreable: setrlimit");
 			result = -2;
 		}
 	}

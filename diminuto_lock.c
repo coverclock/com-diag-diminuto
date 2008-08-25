@@ -11,6 +11,7 @@
  */
 
 #include "diminuto_lock.h"
+#include "diminuto_log.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -19,13 +20,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-static void lerror(const char * s)
-{
-    const char * e;
-    e = strerror(errno);
-    syslog(LOG_DAEMON | LOG_ERR, "%s: %s", s, e);
-}
 
 pid_t diminuto_lock(const char * file)
 {
@@ -40,35 +34,35 @@ pid_t diminuto_lock(const char * file)
         fd = open(file, O_WRONLY | O_CREAT | O_EXCL, 0444);
         if (fd < 0) {
             result = -30;
-            lerror("diminuto_lock: open");
+            diminuto_perror("diminuto_lock: open");
             break;
         }
 
         pid = getpid();
         if (pid < 0) {
             result = -31;
-            lerror("diminuto_lock: getpid");
+            diminuto_perror("diminuto_lock: getpid");
             break;
         }
 
         fp = fdopen(fd, "w");
         if (fp == (FILE *)0) {
             result = -32;
-            lerror("diminuto_lock: fdopen");
+            diminuto_perror("diminuto_lock: fdopen");
             break;
         }
 
         rc = fprintf(fp, "%d", pid);
         if (rc < 0) {
             result = -33;
-            lerror("diminuto_lock: fprintf");
+            diminuto_perror("diminuto_lock: fprintf");
             break;
         }
 
         rc = fclose(fp);
         if (rc < 0) {
             result = -34;
-            lerror("diminuto_lock: fclose");
+            diminuto_perror("diminuto_lock: fclose");
             break;
         }
 
@@ -84,7 +78,7 @@ int diminuto_unlock(const char * file)
 
     rc = unlink(file);
     if (rc < 0) {
-        lerror("diminuto_unlock: unlink");
+        diminuto_perror("diminuto_unlock: unlink");
         result = -35;
     }
 
