@@ -52,7 +52,7 @@ TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
-ARTIFACTS	=	$(TARGETLIBRARIES)
+ARTIFACTS	=	$(TARGETLIBRARIES) doxygen-local.cf
 
 DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.2.4.0
 FICL_LIB	=	$(FICL_DIR)/libficl.so.4.0.31
@@ -72,6 +72,8 @@ CFLAGS		=	-g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
 LDFLAGS		=	-L. -Bdynamic -ldiminuto
+
+BROWSER		=	firefox
 
 ########## Main Entry Points
 
@@ -231,13 +233,13 @@ binaries-clean:
 ########## Patches
 
 $(PROJECT)-$(RELEASE)-head.patch:
-	make patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/head.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/head.S > $(PROJECT)-$(RELEASE)-head.patch
+	$(MAKE) patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/head.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/head.S > $(PROJECT)-$(RELEASE)-head.patch
 
 $(PROJECT)-$(RELEASE)-vmlinuxlds.patch:
-	make patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(RELEASE)-vmlinuxlds.patch
+	$(MAKE) patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(RELEASE)-vmlinuxlds.patch
 
 $(PROJECT)-$(PRODUCT)-devicetable.patch:
-	make patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
+	$(MAKE) patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
 
 patches:	$(PROJECT)-$(RELEASE)-head.patch $(PROJECT)-$(RELEASE)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
 
@@ -249,6 +251,15 @@ documentation:	$(DOC_DIR)/pdf
 	( cd $(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
 	cat $(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(DOC_DIR)/pdf/manpages.ps
 	ps2pdf $(DOC_DIR)/pdf/manpages.ps $(DOC_DIR)/pdf/manpages.pdf
+
+browse:
+	$(BROWSER) file:doc/html/index.html
+
+refman:
+	$(BROWSER) file:doc/pdf/refman.pdf
+
+manpages:
+	$(BROWSER) file:doc/pdf/manpages.pdf
 
 ########## Submakes
 
