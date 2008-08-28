@@ -1,5 +1,5 @@
 # Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
-# Licensed under the GNU GPL V2
+# Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
@@ -7,8 +7,10 @@
 
 PRODUCT		=	buildroot
 PROJECT		=	diminuto
+
 TGT_IPADDR	=	192.168.1.223
 BDI_IPADDR	=	192.168.1.224
+BDI_PORT	=	2001
 TFTP_DIR	=	/var/lib/tftpboot
 TMP_DIR		=	/var/tmp
 ROOT_DIR	=	$(HOME)/$(PROJECT)
@@ -18,29 +20,39 @@ TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
 LOCALBIN_DIR	=	${TOOLCHAIN_DIR}/usr/local/bin
 LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
 
-MAJOR		=	0
-MINOR		=	0
-BUILD		=	0
-
 ARCH		=	arm
 VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 PLATFORM	=	linux
-RELEASE		=	2.6.25.10
-BDI_PORT	=	2001
+
+CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+
+MAJOR		=	0
+MINOR		=	1
+BUILD		=	0
+
+BUILDROOT_REV	=	22987
+KERNEL_REV	=	2.6.25.10
+BUSYBOX_REV	=	1.11.1
+DIMINUTO_REV	=	$(MAJOR).$(MINOR).$(BUILD)
+DESPERADO_REV	=	2.4.0
+FICL_REV	=	4.0.31
+
 BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
 PROJECT_DIR	=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
 FAKEROOT_DIR	=	$(PROJECT_DIR)/root
-KERNEL_DIR	=	$(PROJECT_DIR)//$(PLATFORM)-$(RELEASE)
+KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
+BUSYBOX_DIR	=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
 CONFIG_DIR	=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
 DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
 DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
-FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
+FICL_DIR	=	$(ROOT_DIR)/ficl-$(FICL_REV)
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
+
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
-IMAGE		=	$(PROJECT)-linux-$(RELEASE)
+IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
@@ -54,12 +66,16 @@ TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
 ARTIFACTS	=	$(TARGETLIBRARIES) doxygen-local.cf
 
-DESPERADO_LIB	=	$(DESPERADO_DIR)/libdesperado.so.2.4.0
-FICL_LIB	=	$(FICL_DIR)/libficl.so.4.0.31
+DIMINUTO_SO	=	lib$(PROJECT).so
+DESPERADO_SO	=	libdesperado.so
+FICL_SO		=	libficl.so
+
+DIMINUTO_LIB	=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD)
+DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).$(DESPERADO_REV)
+FICL_LIB	=	$(FICL_DIR)/$(FICL_SO).$(FICL_REV)
 
 SCRIPT		=	dummy
 
-CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 CC		=	$(CROSS_COMPILE)gcc
 CXX		=	$(CROSS_COMPILE)g++
 AR		=	$(CROSS_COMPILE)ar
@@ -83,8 +99,8 @@ host-install:	$(HOSTPROGRAMS) $(LOCALBIN_DIR) $(LOCALLIB_DIR)/lib$(PROJECT).so
 	cp $(CPFLAGS) $(HOSTPROGRAMS) $(LOCALBIN_DIR)
 
 target-patch:	patches
-	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(RELEASE)-head.patch
-	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(RELEASE)-vmlinuxlds.patch
+	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(KERNEL_REV)-head.patch
+	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(KERNNEL_REV)-vmlinuxlds.patch
 	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(PRODUCT)-devicetable.patch
 
 target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin $(FAKEROOT_DIR)/usr/local/lib
@@ -93,23 +109,29 @@ target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin 
 	cp $(CPFLAGS) $(UTILS_DIR)/ldconfig $(FAKEROOT_DIR)/sbin
 	cp $(CPFLAGS) $(UTILS_DIR)/ldd $(FAKEROOT_DIR)/usr/bin
 	echo "/usr/local/lib" > $(FAKEROOT_DIR)/etc/ld.so.conf
-	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(FAKEROOT_DIR)/usr/local/lib
-	test -f $(DESPERADO_LIB) && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
-	test -f $(FICL_LIB) && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	rm $(FAKEROOT_DIR)/usr/local/lib/$(DIMINUTO_SO)*
+	cp $(CPFLAGS) $(DIMINUTO_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	test -f $(DESPERADO_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DESPERADO_SO)* && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	test -f $(FICL_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(FICL_SO)* && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
 
 config-install:	$(CONFIG_DIR)
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(RELEASE).config
+	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(KERNEL_REV).config
+
+config-backup:
+	cp $(CPFLAGS) $(BUILDROOT_DIR)/.config diminuto-buildroot-$(BUILDROOT_REV).config
+	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).config
+	cp $(CPFLAGS) $(BUSYBOX_DIR)/.config diminuto-busybox-$(BUSYBOX_REV).config
 
 tftp-install:
-	cp $(CPFLAGS) $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(RELEASE)-$(ARCH) $(TFTP_DIR)/$(IMAGE)
+	cp $(CPFLAGS) $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(TFTP_DIR)/$(IMAGE)
 
-toolchain-dist:
-	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(PROJECT)-toolchain.tar.bz2
+dist:	distribution
 
-dist:
+ distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) > $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2 )
+	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(TMPDIR)/$(PROJECT)-toolchain.tar.bz2
 
 build:
 	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )
@@ -146,7 +168,7 @@ diminuto.sh:	Makefile
 	echo KERNEL=\"$(KERNEL_DIR)\" >> diminuto.sh
 	echo PLATFORM=\"$(PLATFORM)\" >> diminuto.sh
 	echo PROJECT=\"$(PROJECT)\" >> diminuto.sh
-	echo RELEASE=\"$(RELEASE)\" >> diminuto.sh
+	echo RELEASE=\"$(KERNEL_REV)\" >> diminuto.sh
 	echo TARGET=\"$(TARGET)\" >> diminuto.sh
 	echo TFTP=\"$(TFTP_DIR)\" >> diminuto.sh
 	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> diminuto.sh
@@ -228,20 +250,20 @@ clean:
 	rm -rf $(DOC_DIR)
 
 binaries-clean:
-	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(RELEASE)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
+	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
 
 ########## Patches
 
-$(PROJECT)-$(RELEASE)-head.patch:
-	$(MAKE) patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/head.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/head.S > $(PROJECT)-$(RELEASE)-head.patch
+$(PROJECT)-$(kERNEL_REV)-head.patch:
+	$(MAKE) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/head.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/head.S > $(PROJECT)-$(KERNEL_REV)-head.patch
 
-$(PROJECT)-$(RELEASE)-vmlinuxlds.patch:
-	$(MAKE) patch OLD=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}.orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_${ARCH}/${PROJECT}/${PLATFORM}-${RELEASE}/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(RELEASE)-vmlinuxlds.patch
+$(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch:
+	$(MAKE) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch
 
 $(PROJECT)-$(PRODUCT)-devicetable.patch:
 	$(MAKE) patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
 
-patches:	$(PROJECT)-$(RELEASE)-head.patch $(PROJECT)-$(RELEASE)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
+patches:	$(PROJECT)-$(kERNEL_REV)-head.patch $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
 
 ########## Documentation
 

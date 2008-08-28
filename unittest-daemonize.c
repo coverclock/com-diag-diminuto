@@ -68,11 +68,11 @@ int main(int argc, char ** argv)
 
         /*
          * This delay is necessary for the parent to get the SIGUSR1 signal
-         * from the daemon child; otherwise the child daemon exits before the
+         * from the daemon child; otherwise the daemon child exits before the
          * parent gets back into the run state and sends a SIGCHLD signal to
          * the parent instead. This wouldn't be necessary in a normal daemon
          * child which keeps running. It also gives the tester a chance to
-         * verify the presense of the lock file.
+         * verify the presense and contents of the lock file.
          */
 
         diminuto_delay(10 * 1000000, 0);
