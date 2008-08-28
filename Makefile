@@ -52,6 +52,7 @@ UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
 
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
+DATESTAMP	=	$(shell date +%Y%m%d)
 IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
@@ -114,9 +115,6 @@ target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin 
 	test -f $(DESPERADO_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DESPERADO_SO)* && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
 	test -f $(FICL_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(FICL_SO)* && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
 
-config-install:	$(CONFIG_DIR)
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(KERNEL_REV).config
-
 config-backup:
 	cp $(CPFLAGS) $(BUILDROOT_DIR)/.config diminuto-buildroot-$(BUILDROOT_REV).config
 	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).config
@@ -127,13 +125,21 @@ tftp-install:
 
 dist:	distribution
 
- distribution:
+distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) > $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2 )
 	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(TMPDIR)/$(PROJECT)-toolchain.tar.bz2
 
 build:
+	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).bak
+	cp /dev/null $(TMP_DIR)/config-initramfs-source.ex
+	echo "g/^CONFIG_INITRAMFS_SOURCE=/s/\.arm-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]\./.arm-$(DATESTAMP)./" >> $(TMP_DIR)/config-initramfs-source.ex
+	echo "wq" >> $(TMP_DIR)/config-initramfs-source.ex
+	cat $(TMP_DIR)/config-initramfs-source.ex
+	ex -S $(TMP_DIR)/config-initramfs-source.ex $(KERNEL_DIR)/.config
+	rm -f $(TMP_DIR)/config-initramfs-source.ex
+	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(KERNEL_REV).config
 	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )
 
 ########## Host Scripts
@@ -159,7 +165,7 @@ diminuto.sh:	Makefile
 	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> diminuto.sh
 	echo CONFIG=\"$(CONFIG_DIR)\" >> diminuto.sh
 	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> diminuto.sh
-	echo DATESTAMP=\"\`date +%Y%m%d\`\" >> diminuto.sh
+	echo DATESTAMP=\"$(DATESTAMP)\" >> diminuto.sh
 	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> diminuto.sh
 	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> diminuto.sh
 	echo DESPERADO=\"$(DESPERADO_DIR)\" >> diminuto.sh
