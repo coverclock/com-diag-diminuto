@@ -1,6 +1,6 @@
 #! /bin/sh
 # Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
-# Licensed under the GPL V2
+# Licensed under the  terms in README.h
 # Chip Overclock <coverclock@diag.com>
 
 export PATH=$PATH:/usr/local/bin

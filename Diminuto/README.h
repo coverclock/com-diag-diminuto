@@ -8,6 +8,8 @@
 
     ----------------------------------------------------------------------
 
+    LICENSE
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
@@ -52,7 +54,11 @@
 
     This software is an original work of its authors.
 
-    Contact
+    Information regarding Diminuto can be found here:
+
+        http://www.diag.com/navigation/downloads/Diminuto.html
+
+    Contact:
 
         Chip Overclock
         mailto:coverclock@diag.com
