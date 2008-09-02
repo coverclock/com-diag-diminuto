@@ -109,10 +109,10 @@ target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin 
 	cp $(CPFLAGS) $(UTILS_DIR)/ldconfig $(FAKEROOT_DIR)/sbin
 	cp $(CPFLAGS) $(UTILS_DIR)/ldd $(FAKEROOT_DIR)/usr/bin
 	echo "/usr/local/lib" > $(FAKEROOT_DIR)/etc/ld.so.conf
-	rm $(FAKEROOT_DIR)/usr/local/lib/$(DIMINUTO_SO)*
+	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DIMINUTO_SO)*
 	cp $(CPFLAGS) $(DIMINUTO_LIB) $(FAKEROOT_DIR)/usr/local/lib
-	test -f $(DESPERADO_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DESPERADO_SO)* && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
-	test -f $(FICL_LIB) && rm -f $(FAKEROOT_DIR)/usr/local/lib/$(FICL_SO)* && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DESPERADO_SO)* && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
+	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(FICL_SO)* && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
 
 config-backup:
 	cp $(CPFLAGS) $(BUILDROOT_DIR)/.config diminuto-buildroot-$(BUILDROOT_REV).config
