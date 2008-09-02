@@ -34,9 +34,6 @@ BUILD		=	0
 BUILDROOT_REV	=	22987
 KERNEL_REV	=	2.6.25.10
 BUSYBOX_REV	=	1.11.1
-DIMINUTO_REV	=	$(MAJOR).$(MINOR).$(BUILD)
-DESPERADO_REV	=	2.4.0
-FICL_REV	=	4.0.31
 
 BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
 PROJECT_DIR	=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
@@ -47,7 +44,7 @@ CONFIG_DIR	=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
 DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
 DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
-FICL_DIR	=	$(ROOT_DIR)/ficl-$(FICL_REV)
+FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
 
@@ -71,9 +68,9 @@ DIMINUTO_SO	=	lib$(PROJECT).so
 DESPERADO_SO	=	libdesperado.so
 FICL_SO		=	libficl.so
 
-DIMINUTO_LIB	=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD)
-DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).$(DESPERADO_REV)
-FICL_LIB	=	$(FICL_DIR)/$(FICL_SO).$(FICL_REV)
+DIMINUTO_LIB	=	$(DIMINUTO_SO).[0-9]*.[0-9]*.[0-9]*
+DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
+FICL_LIB	=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
 
 SCRIPT		=	dummy
 
@@ -95,6 +92,8 @@ BROWSER		=	firefox
 ########## Main Entry Points
 
 all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS)
+
+install:	host-install target-install
 
 host-install:	$(HOSTPROGRAMS) $(LOCALBIN_DIR) $(LOCALLIB_DIR)/lib$(PROJECT).so
 	cp $(CPFLAGS) $(HOSTPROGRAMS) $(LOCALBIN_DIR)
@@ -128,8 +127,8 @@ dist:	distribution
 distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) > $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2 )
-	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(TMPDIR)/$(PROJECT)-toolchain.tar.bz2
+	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2
+	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(TMP_DIR)/$(PROJECT)-toolchain.tar.bz2
 
 build:
 	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).bak
@@ -193,16 +192,16 @@ S10provision:	S10provision.sh getubenv
 ########## Install Libraries
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so:	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
-	rm -f $(LOCALLIB_DIR)/lib$(PROJECT).so
-	ln -s $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)/lib$(PROJECT).so
+	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so )
+	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	rm -f $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
-	ln -s $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
+	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR) )
+	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR) )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-	rm -f $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	ln -s $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
+	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR) )
+	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR) )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
