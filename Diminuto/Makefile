@@ -26,6 +26,7 @@ TARGET		=	at91rm9200ek
 PLATFORM	=	linux
 
 CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+CARCH		=	
 
 MAJOR		=	0
 MINOR		=	2
@@ -81,8 +82,8 @@ RANLIB		=	$(CROSS_COMPILE)ranlib
 
 ARFLAGS		=	rcv
 CPPFLAGS	=
-CXXFLAGS	=	-g
-CFLAGS		=	-g
+CXXFLAGS	=	$(CARCH) -g
+CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
 LDFLAGS		=	-L. -Bdynamic -ldiminuto
@@ -139,21 +140,21 @@ build:
 	ex -S $(TMP_DIR)/config-initramfs-source.ex $(KERNEL_DIR)/.config
 	rm -f $(TMP_DIR)/config-initramfs-source.ex
 	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(KERNEL_REV).config
-	( cd $(BUILDROOT_DIR); make 2>&1 | tee LOG )
+	( cd $(BUILDROOT_DIR); $(MAKE) 2>&1 | tee LOG )
 
 ########## Host Scripts
 
 dbdi:	dbdi.sh diminuto
-	make script SCRIPT=dbdi
+	$(MAKE) script SCRIPT=dbdi
 
 dcscope:	dcscope.sh
-	make script SCRIPT=dcscope
+	$(MAKE) script SCRIPT=dcscope
 
 dgdb:	dgdb.sh diminuto
-	make script SCRIPT=dgdb
+	$(MAKE) script SCRIPT=dgdb
 
 diminuto:	diminuto.sh
-	make script SCRIPT=diminuto
+	$(MAKE) script SCRIPT=diminuto
 
 diminuto.sh:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > diminuto.sh
@@ -182,12 +183,12 @@ diminuto.sh:	Makefile
 	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> diminuto.sh
 
 dlib:	dlib.sh
-	make script SCRIPT=dlib
+	$(MAKE) script SCRIPT=dlib
 
 ########## Target Scripts
 
 S10provision:	S10provision.sh getubenv
-	make script SCRIPT=S10provision
+	$(MAKE) script SCRIPT=S10provision
 
 ########## Install Libraries
 
@@ -221,7 +222,7 @@ lib$(PROJECT).so.$(MAJOR).$(MINOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
 
 lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
-	$(CC) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTS)
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTS)
 
 lib$(PROJECT).a:	$(TARGETOBJECTS)
 	$(AR) $(ARFLAGS) lib$(PROJECT).a $(TARGETOBJECTS)
