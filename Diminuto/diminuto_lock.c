@@ -66,7 +66,15 @@ int diminuto_lock(const char * file)
             break;
         }
 
+        fd = -1;
+
     } while (0);
+
+    if (fd < 0) {
+        /* Do nothing. */
+    } else if (close(fd) < 0) {
+        diminuto_perror("diminuto_lock: close");
+    }
 
     return result;
 }
@@ -87,22 +95,30 @@ int diminuto_unlock(const char * file)
 
 int diminuto_locked(const char * file)
 {
+    int fd;
     FILE * fp;
     pid_t pid;
     int rc;
 
     do {
 
-        fp = fopen(file, "r");
-        if (fp == (FILE *)0) {
+        fd = open(file, O_RDONLY, 0);
+        if (fd < 0) {
             pid = -36;
-            diminuto_perror("diminuto_locked: fopen");
+            diminuto_perror("diminuto_lock: open");
+            break;
+        }
+
+        fp = fdopen(fd, "r");
+        if (fp == (FILE *)0) {
+            pid = -37;
+            diminuto_perror("diminuto_locked: fdopen");
             break;
         }
 
         rc = fscanf(fp, "%d", &pid);
         if (rc != 1) {
-            pid = -37;
+            pid = -38;
             errno = EINVAL;
             diminuto_perror("diminuto_locked: fscanf");
             break;
@@ -110,12 +126,19 @@ int diminuto_locked(const char * file)
 
         rc = fclose(fp);
         if (rc < 0) {
-            pid = -38;
             diminuto_perror("diminuto_locked: fclose");
             break;
         }
 
+        fd = -1;
+
     } while (0);
+
+    if (fd < 0) {
+        /* Do nothing. */
+    } else if (close(fd) < 0) {
+        diminuto_perror("diminuto_locked: close");
+    }
 
     return pid;
 }
