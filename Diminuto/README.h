@@ -1,6 +1,6 @@
 /* vim: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_DIMINUTO_README_
-#define _H_DIMINUTO_README_
+#ifndef _H_COM_DIAG_DIMINUTO_README_
+#define _H_COM_DIAG_DIMINUTO_README_
 
 /*******************************************************************************
 
