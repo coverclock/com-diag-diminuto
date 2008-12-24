@@ -34,12 +34,12 @@ uint32_t diminuto_delay(uint32_t microseconds, int interruptable)
             diminuto_perror("diminuto_delay: nanosleep");
             result = remaining;
             break;
-        }
-        if (interruptable) {
+        } else if (interruptable) {
             result = remaining;
             break;
+        } else {
+            delay = remaining;
         }
-        delay = remaining;
     }
 
     return (result.tv_sec * 1000000UL) + (result.tv_nsec / 1000UL);
