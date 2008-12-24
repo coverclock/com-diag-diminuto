@@ -54,11 +54,14 @@ DATESTAMP	=	$(shell date +%Y%m%d)
 IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
+CFILES		=	$(wildcard *.c)
+HFILES		=	$(wildcard *.h)
+
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
-TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_hangup.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_number.o diminuto_time.o
+TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
-TARGETUNITTESTS	=	unittest-time unittest-daemonize
+TARGETUNITTESTS	=	unittest-time unittest-daemonize unittest-hangup
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
@@ -239,6 +242,9 @@ unittest-time:	unittest-time.c lib$(PROJECT).so
 unittest-daemonize:	unittest-daemonize.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-hangup:	unittest-hangup.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Helpers
 
 backup:	../$(PROJECT).bak.tar.bz2
@@ -330,3 +336,13 @@ $(DOC_DIR)/pdf:
 
 %.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+########## Dependencies
+
+depend:	dependencies.mk
+
+dependencies.mk:	Makefile $(CFILES) $(HFILES)
+	$(CC) $(CPPFLAGS) -M -MG $(CFILES) > dependencies.mk
+
+-include dependencies.mk
+
