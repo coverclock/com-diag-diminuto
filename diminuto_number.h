@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_DIMINUTO_NUMBER_
-#define _H_DIMINUTO_NUMBER_
+#ifndef _H_COM_DIAG_DIMINUTO_NUMBER_
+#define _H_COM_DIAG_DIMINUTO_NUMBER_
 
 /**
  * @file

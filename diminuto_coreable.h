@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_DIMINUTO_COREABLE_
-#define _H_DIMINUTO_COREABLE_
+#ifndef _H_COM_DIAG_DIMINUTO_COREABLE_
+#define _H_COM_DIAG_DIMINUTO_COREABLE_
 
 /**
  * @file
