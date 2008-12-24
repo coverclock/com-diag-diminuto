@@ -17,9 +17,9 @@
  * Parses a string in a strtoul-like manner, returning a pointer to the
  * first non-numeric character. Applications can use this pointer to
  * advance parsing, or to test for the nul end of string character to see
- * if the string is valid.
+ * if the string was all consumed.
  * @param s points to a nul-terminated C-style numeric string in base 8, 10, or 16.
- * @param p pointers to an unsigned 32-bit integer variable into which the binary result is placed.
+ * @param p points to an unsigned 32-bit integer variable into which the binary result is placed.
  * @return a pointer to the first non-numeric character encountered.
  * @see strtoul(3)
  */
