@@ -25,7 +25,7 @@ VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 PLATFORM	=	linux
 
-CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+#CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 CARCH		=	
 
 MAJOR		=	0
@@ -55,7 +55,7 @@ IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
-TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_time.o
+TARGETOBJECTS	=	diminuto_coreable.o diminuto_daemonize.o diminuto_delay.o diminuto_hangup.o diminuto_lock.o diminuto_log.o diminuto_map.o diminuto_number.o diminuto_time.o
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
 TARGETUNITTESTS	=	unittest-time unittest-daemonize

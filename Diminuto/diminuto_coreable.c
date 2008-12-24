@@ -19,17 +19,14 @@
 int diminuto_coreable()
 {
 	int result = 0;
-    int rc;
 	struct rlimit limit;
 
-	rc = getrlimit(RLIMIT_CORE, &limit);
-	if (rc < 0) {
+	if (getrlimit(RLIMIT_CORE, &limit) < 0) {
 		diminuto_perror("diminuto_coreable: getrlimit");
 		result = -1;
 	} else {
 		limit.rlim_cur = limit.rlim_max;
-		rc = setrlimit(RLIMIT_CORE, &limit);
-		if (rc < 0) {
+		if (setrlimit(RLIMIT_CORE, &limit) < 0) {
 			diminuto_perror("diminuto_coreable: setrlimit");
 			result = -2;
 		}

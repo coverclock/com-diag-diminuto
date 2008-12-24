@@ -16,7 +16,7 @@
  * function perror(); if it is, still emulate perror() but instead of writing
  * the prefixed error string, log it to the system log.
  * @param s points to a nul-terminated string prepended to the error string.
- * @see perror().
+ * @see perror(3).
  */
 extern void diminuto_perror(const char * s);
 
