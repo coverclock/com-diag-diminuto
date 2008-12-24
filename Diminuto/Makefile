@@ -61,7 +61,7 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv
-TARGETUNITTESTS	=	unittest-time unittest-daemonize unittest-hangup
+TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
@@ -243,6 +243,9 @@ unittest-daemonize:	unittest-daemonize.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-hangup:	unittest-hangup.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+unittest-number:	unittest-number.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ########## Helpers
