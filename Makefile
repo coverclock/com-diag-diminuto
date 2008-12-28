@@ -131,8 +131,8 @@ dist:	distribution
 distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TMP_DIR); tar cvjf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tar.bz2
-	( cd $(OPT_DIR); tar cvjf - $(PROJECT)/$(PRODUCT) ) > $(TMP_DIR)/$(PROJECT)-toolchain.tar.bz2
+	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
+	( cd $(OPT_DIR); tar cvzf - $(PROJECT)/$(PRODUCT) ) > $(TMP_DIR)/$(PROJECT)-toolchain.tgz
 
 build:
 	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).bak
@@ -250,11 +250,11 @@ unittest-number:	unittest-number.c lib$(PROJECT).so
 
 ########## Helpers
 
-backup:	../$(PROJECT).bak.tar.bz2
-	mv $(MVFLAGS) ../$(PROJECT).bak.tar.bz2 ../$(PROJECT).$(TIMESTAMP).tar.bz2
+backup:	../$(PROJECT).bak.tgz
+	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
 
-../$(PROJECT).bak.tar.bz2:
-	tar cvjf - . > ../diminuto.bak.tar.bz2
+../$(PROJECT).bak.tgz:
+	tar cvzf - . > ../diminuto.bak.tgz
 
 acquire:	$(HOME)/$(PROJECT)
 	cd $(HOME)/$(PROJECT)
