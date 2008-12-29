@@ -29,7 +29,7 @@ PLATFORM	=	linux
 CARCH		=	
 
 MAJOR		=	0
-MINOR		=	2
+MINOR		=	3
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
