@@ -10,7 +10,6 @@
 
 #include "diminuto_delay.h"
 #include "diminuto_log.h"
-#include <stdio.h>
 #include <errno.h>
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
