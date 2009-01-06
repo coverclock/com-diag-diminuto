@@ -17,12 +17,12 @@
  * Delay the calling process for the specified number of microseconds.
  * If interruptable, return if interrupted with errno set to EINTR,
  * otherwise continue delaying. Return with errno set to something other
- * then EINTR of an error occurs. The actual delay time will be approximate
+ * then EINTR of an error occurs. The actual delay duration will be approximate
  * depending on the granularity of the system clock and latency in the
  * implementation.
  * @param microseconds is the desired delay interval in microseconds.
  * @param interruptable is true if interruptable, false otherwise.
- * @return the number of microseconds remaining in the delay interval if
+ * @return the number of microseconds remaining in the delay duration if
  * the function returned prematurely.
  */
 extern uint32_t diminuto_delay(uint32_t microseconds, int interruptable);

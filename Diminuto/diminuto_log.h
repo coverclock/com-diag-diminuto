@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -19,5 +19,14 @@
  * @see perror(3).
  */
 extern void diminuto_perror(const char * s);
+
+/**
+ * If the parent PID of the calling process is not 1, format and print
+ * the argument list to stderr; if it is, format and log the argument
+ * list to syslog.
+ * @param level is the log level used for syslog.
+ * @param format points to a printf-style format string.
+ */
+extern void diminuto_log(int level, const char * format, ...);
 
 #endif
