@@ -25,8 +25,8 @@ VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 PLATFORM	=	linux
 
-#CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
-CARCH		=	
+CROSS_COMPILE	=	# $(ARCH)-$(PLATFORM)-
+CARCH		=	# -march=armv4t
 
 MAJOR		=	0
 MINOR		=	3
@@ -94,6 +94,8 @@ LDFLAGS		=	-L. -Bdynamic -ldiminuto
 BROWSER		=	firefox
 
 ########## Main Entry Points
+
+default:	$(TARGETLIBRARIES) $(TARGETUNITTESTS)
 
 all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS)
 
