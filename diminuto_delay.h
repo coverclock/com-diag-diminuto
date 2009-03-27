@@ -25,6 +25,6 @@
  * @return the number of microseconds remaining in the delay duration if
  * the function returned prematurely.
  */
-extern uint32_t diminuto_delay(uint32_t microseconds, int interruptable);
+extern uint64_t diminuto_delay(uint64_t microseconds, int interruptable);
 
 #endif

@@ -250,6 +250,9 @@ unittest-hangup:	unittest-hangup.c lib$(PROJECT).so
 unittest-number:	unittest-number.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-timer:	unittest-timer.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Helpers
 
 backup:	../$(PROJECT).bak.tgz
