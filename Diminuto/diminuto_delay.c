@@ -14,14 +14,14 @@
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-uint32_t diminuto_delay(uint32_t microseconds, int interruptable)
+uint64_t diminuto_delay(uint64_t microseconds, int interruptable)
 {
     struct timespec delay;
     struct timespec remaining;
     struct timespec result;
 
-    delay.tv_sec = microseconds / 1000000U;
-    delay.tv_nsec = (microseconds % 1000000U) * 1000U;
+    delay.tv_sec = microseconds / 1000000UL;
+    delay.tv_nsec = (microseconds % 1000000UL) * 1000UL;
 
     remaining = delay;
 
@@ -41,5 +41,5 @@ uint32_t diminuto_delay(uint32_t microseconds, int interruptable)
         }
     }
 
-    return (result.tv_sec * 1000000UL) + (result.tv_nsec / 1000UL);
+    return (result.tv_sec * 1000000ULL) + (result.tv_nsec / 1000UL);
 }

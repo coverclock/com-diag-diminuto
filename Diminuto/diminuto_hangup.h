@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -14,11 +14,11 @@
 #include <sys/types.h>
 
 /**
- * Send a daemon a SIGHUP signal.
- * @param run is the path and name of a lock file.
- * @return the PID found in the lock file or <0 if an error occurred.
+ * Send a process a SIGHUP signal.
+ * @param pid is the process identifier.
+ * @return pid or <0 if an error occurred.
  */
-extern pid_t diminuto_hangup(const char * run);
+extern pid_t diminuto_hangup(pid_t pid);
 
 /**
  * Return true if the caller received a SIGHUP, false otherwise.
