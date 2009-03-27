@@ -25,6 +25,6 @@
  * @return the number of microseconds remaining in prior timer if
  * a timer was already running.
  */
-extern uint32_t diminuto_timer(uint32_t microseconds);
+extern uint64_t diminuto_timer(uint64_t microseconds);
 
 #endif

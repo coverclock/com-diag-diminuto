@@ -253,6 +253,9 @@ unittest-number:	unittest-number.c lib$(PROJECT).so
 unittest-timer:	unittest-timer.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-periodic:	unittest-periodic.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Helpers
 
 backup:	../$(PROJECT).bak.tgz

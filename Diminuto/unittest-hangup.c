@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 
 	if (argc > 1) {
 
-		diminuto_hangup(file);
+		diminuto_hangup(diminuto_locked(file));
 
 	} else {
 
