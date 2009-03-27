@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-uint32_t diminuto_timer(uint32_t microseconds)
+uint64_t diminuto_timer(uint64_t microseconds)
 {
     struct itimerval timer;
     struct itimerval remaining;

@@ -13,13 +13,13 @@
 #include <errno.h>
 #include <sys/time.h>
 
-uint32_t diminuto_periodic(uint32_t microseconds)
+uint64_t diminuto_periodic(uint64_t microseconds)
 {
     struct itimerval timer;
     struct itimerval remaining;
 
-    timer.it_value.tv_sec = microseconds / 1000000;
-    timer.it_value.tv_usec = microseconds % 1000000;
+    timer.it_value.tv_sec = microseconds / 1000000UL;
+    timer.it_value.tv_usec = microseconds % 1000000UL;
 
     timer.it_interval = timer.it_value;
 
@@ -29,5 +29,6 @@ uint32_t diminuto_periodic(uint32_t microseconds)
         diminuto_perror("diminuto_periodic: setitimer");
     }
 
-    return (remaining.it_value.tv_sec * 1000000UL) + remaining.it_value.tv_usec;
+    return (remaining.it_value.tv_sec * 1000000ULL) +
+        remaining.it_value.tv_usec;
 }
