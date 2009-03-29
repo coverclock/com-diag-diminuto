@@ -10,7 +10,6 @@
 
 #include "diminuto_timer.h"
 #include "diminuto_log.h"
-#include <errno.h>
 #include <sys/time.h>
 
 uint64_t diminuto_timer(uint64_t microseconds)

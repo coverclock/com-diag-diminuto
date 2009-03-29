@@ -11,6 +11,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include <syslog.h>
+
 /**
  * If the parent PID of the calling process is not 1, emulate the stdio
  * function perror(); if it is, still emulate perror() but instead of writing
@@ -24,9 +26,9 @@ extern void diminuto_perror(const char * s);
  * If the parent PID of the calling process is not 1, format and print
  * the argument list to stderr; if it is, format and log the argument
  * list to syslog.
- * @param level is the log level used for syslog.
+ * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log(int level, const char * format, ...);
+extern void diminuto_log(unsigned int priority, const char * format, ...);
 
 #endif

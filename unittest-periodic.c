@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_unittest.h"
 #include "diminuto_coreable.h"
 #include "diminuto_delay.h"
 #include "diminuto_alarm.h"
@@ -32,13 +33,16 @@ int main(int argc, char ** argv)
     printf("%10s %10s %10s\n",
         "requested", "computed", "measured");
 
-    for (requested = 1; requested < 12000000; requested *= 2) {
+    for (requested = 1000; requested < 12000000; requested *= 2) {
 
         diminuto_periodic(requested);
         then = diminuto_time();
 
         for (ii = 0; ii < 5; ++ii) {
+            EXPECT(!diminuto_alarmed());
             remaining = diminuto_delay(requested * 2, !0);
+            EXPECT(diminuto_alarmed());
+            EXPECT(!diminuto_alarmed());
             now = diminuto_time();
             computed = (requested * 2) - remaining;
             measured = now - then;
