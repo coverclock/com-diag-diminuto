@@ -238,6 +238,9 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 getubenv:	getubenv.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-unittest:	unittest-unittest.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 unittest-time:	unittest-time.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
@@ -342,13 +345,21 @@ $(DOC_DIR)/pdf:
 
 ########## Rules
 
+%.txt:	%.cpp
+	$(CXX) -E $(CPPFLAGS) -c $< > $*.txt
+
 %.o:	%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
+
+%.txt:	%.c
+	$(CC) -E $(CPPFLAGS) -c $< > $*.txt
 
 %.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 ########## Dependencies
+
+.PHONY:	depend
 
 depend:	dependencies.mk
 
