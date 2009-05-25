@@ -16,7 +16,7 @@
 int main(int argc, char ** argv)
 {
 	const char * p;
-	uint32_t n;
+	uint64_t n;
 
     errno = 0;
 
@@ -89,6 +89,7 @@ int main(int argc, char ** argv)
     EXPECT((*diminuto_number("0XF", &n) == '\0') && (n == 15) && (errno == 0));
     EXPECT((*diminuto_number("0x7fffffff", &n) == '\0') && (n == 2147483647UL) && (errno == 0));
     EXPECT((*diminuto_number("0xffffffff", &n) == '\0') && (n == 4294967295UL) && (errno == 0));
+    EXPECT((*diminuto_number("0xffffffffffffffff", &n) == '\0') && (n == 0xffffffffffffffffULL) && (errno == 0));
 
 	--argc;
 	++argv;
