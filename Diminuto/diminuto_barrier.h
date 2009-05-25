@@ -11,9 +11,16 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-/**
- * Issue a memory barrier instruction with full memory fence semantics.
- */
-extern void diminuto_barrier(void);
+#if defined(__GNUC__)
+#   if defined(__GNUC_MINOR__)
+#       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
+#           define diminuto_barrier() __sync_synchronize()
+#       endif
+#   endif
+#endif
+
+#if !defined(diminuto_barrier)
+#   define diminuto_barrier() ((void)0)
+#endif
 
 #endif
