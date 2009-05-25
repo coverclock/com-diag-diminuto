@@ -27,23 +27,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-static void usage(FILE * stream, char * argv[])
-{
-    fprintf(stream, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|c|r|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", argv[0]);
-    fprintf(stream, "       -d            Enable debug mode\n");
-    fprintf(stream, "       -a ADDRESS    Map region starting at ADDRESS\n");
-    fprintf(stream, "       -l BYTES      Map region BYTES in length\n");
-    fprintf(stream, "       -1 ADDRESS    Use byte at ADDRESS\n");
-    fprintf(stream, "       -2 ADDRESS    Use halfword at ADDRESS\n");
-    fprintf(stream, "       -4 ADDRESS    Use word at ADDRESS\n");
-    fprintf(stream, "       -8 ADDRESS    Use doubleword at ADDRESS\n");
-    fprintf(stream, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
-    fprintf(stream, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
-    fprintf(stream, "       -r            Read ADDRESS\n");
-    fprintf(stream, "       -w NUMBER     Write NUMBER to ADDRESS\n");
-    fprintf(stream, "       -u USECONDS   Sleep for USECONDS microseconds\n");
-    fprintf(stream, "       -?            Print menu\n");
-}
+static int debug = 0;
 
 #define OPERATE(_POINTER_, _TYPE_, _VALUEP_, _FORMAT_) \
     do { \
@@ -131,9 +115,28 @@ static int operate(
    return 0; 
 }
 
+static void usage(FILE * stream, char * argv[])
+{
+    fprintf(stream, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|c|r|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", argv[0]);
+    fprintf(stream, "       -d            Enable debug mode\n");
+    fprintf(stream, "       -a ADDRESS    Map region starting at ADDRESS\n");
+    fprintf(stream, "       -l BYTES      Map region BYTES in length\n");
+    fprintf(stream, "       -1 ADDRESS    Use byte at ADDRESS\n");
+    fprintf(stream, "       -2 ADDRESS    Use halfword at ADDRESS\n");
+    fprintf(stream, "       -4 ADDRESS    Use word at ADDRESS\n");
+    fprintf(stream, "       -8 ADDRESS    Use doubleword at ADDRESS\n");
+    fprintf(stream, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
+    fprintf(stream, "       -t            Proceed if the last result was !0\n");
+    fprintf(stream, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
+    fprintf(stream, "       -r            Read ADDRESS\n");
+    fprintf(stream, "       -f            Proceed if the last result was 0\n");
+    fprintf(stream, "       -w NUMBER     Write NUMBER to ADDRESS\n");
+    fprintf(stream, "       -u USECONDS   Sleep for USECONDS microseconds\n");
+    fprintf(stream, "       -?            Print menu\n");
+}
+
 int main(int argc, char * argv[])
 {
-    int debug = 0;
     uint64_t value = 0;
     uintptr_t address = 0;
     size_t length = 0;
@@ -143,31 +146,12 @@ int main(int argc, char * argv[])
     size_t size = 0;
     int opt;
     extern char * optarg;
+    int done = !0;
     int error = 0;
 
-    while ((opt = getopt(argc, argv, "dal1248scrwu?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:rs:tuw:?")) >= 0) {
 
         switch (opt) {
-
-        case 'd':
-            debug = !0;
-            break;
-
-        case 'a':
-            if ((error = diminuto_number(optarg, &value) != '\0')) {
-                perror(optarg);
-            } else {
-                address = value;
-            }
-            break;
-
-        case 'l':
-            if ((error = diminuto_number(optarg, &value) != '\0')) {
-                perror(optarg);
-            } else {
-                length = value;
-            }
-            break;
 
         case '1':
             if ((error = diminuto_number(optarg, &value) != '\0')) {
@@ -205,32 +189,54 @@ int main(int argc, char * argv[])
             }
             break;
 
-        case 's':
+        case 'a':
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
             } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
+                address = value;
             }
             break;
 
         case 'c':
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
+            } else if ((error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0)) {
+                perror(optarg);
+            }
+            break;
+
+        case 'd':
+            debug = !0;
+            break;
+
+        case 'f':
+            done = value != 0;
+            break;
+
+        case 'l':
+            if ((error = diminuto_number(optarg, &value) != '\0')) {
+                perror(optarg);
             } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
+                length = value;
             }
             break;
 
         case 'r':
-            operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
+            if ((error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0)) {
+                perror(optarg);
+            }
             break;
 
-        case 'w':
+        case 's':
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
-            } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
+            } else if ((error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0)) {
+                perror(optarg);
             }
+            break;
+
+        case 't':
+            done = value == 0;
             break;
 
         case 'u':
@@ -241,8 +247,16 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'w':
+            if ((error = diminuto_number(optarg, &value) != '\0')) {
+                perror(optarg);
+            } else if ((error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0)) {
+                perror(optarg);
+            }
+            break;
+
         case '?':
-            usage(stdout, argv);
+            usage(stderr, argv);
             break;
 
         default:
@@ -252,14 +266,22 @@ int main(int argc, char * argv[])
         }
 
         if (error) {
-            usage(stderr, argv);
-            exit(1);
+            break;
+        }
+
+        if (done) {
+            break;
         }
 
     }
 
     if (unlength != 0) {
         diminuto_unmap(unaddress, unlength);
+    }
+
+    if (error) {
+        usage(stderr, argv);
+        return 1;
     }
 
     return 0;
