@@ -45,6 +45,34 @@ static void usage(FILE * stream, char * argv[])
     fprintf(stream, "       -?            Print menu\n");
 }
 
+#define OPERATE(_POINTER_, _TYPE_, _VALUEP_, _FORMAT_) \
+    do { \
+        _TYPE_ word; \
+        _TYPE_ value; \
+        value = *_VALUEP_; \
+        switch (opt) { \
+        case 'c': \
+            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
+            word &= ~value; \
+            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
+            break; \
+        case 'r': \
+            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
+            printf(_FORMAT_ "\n", word); \
+            break; \
+        case 's': \
+            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
+            word |= value; \
+            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
+            break; \
+        case 'w': \
+            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
+            word = value; \
+            break; \
+        } \
+        *_VALUEP_ = value; \
+    } while (0)
+
 static int operate(
     int opt,
     uintptr_t address,
@@ -53,7 +81,7 @@ static int operate(
     size_t size,
     void ** addressp,
     size_t * lengthp,
-    uint64_t value64
+    uint64_t * valuep
 ) {
     void * base;
     void * effective;
@@ -75,99 +103,19 @@ static int operate(
     switch (size) {
 
     case sizeof(uint8_t):
-        {
-            uint8_t * pointer;
-            uint8_t value;
-            pointer = (uint8_t *)effective;
-            value = value64;
-            switch (opt) {
-            case 'c':
-                *pointer &= ~value;
-                break;
-            case 'r':
-                value = *pointer;
-                printf("%u\n", value);
-                break;
-            case 's':
-                *pointer |= value;
-                break;
-            case 'w':
-                *pointer = value;
-                break;
-            }
-        }
+        OPERATE(effective, uint8_t, valuep, "%u");
         break;
 
     case sizeof(uint16_t):
-        {
-            uint16_t * pointer;
-            uint16_t value;
-            pointer = (uint16_t *)effective;
-            value = value64;
-            switch (opt) {
-            case 'c':
-                *pointer &= ~value;
-                break;
-            case 'r':
-                value = *pointer;
-                printf("%u\n", value);
-                break;
-            case 's':
-                *pointer |= value;
-                break;
-            case 'w':
-                *pointer = value;
-                break;
-            }
-        }
+        OPERATE(effective, uint16_t, valuep, "%u");
         break;
 
     case sizeof(uint32_t):
-        {
-            uint32_t * pointer;
-            uint32_t value;
-            pointer = (uint32_t *)effective;
-            value = value64;
-            switch (opt) {
-            case 'c':
-                *pointer &= ~value;
-                break;
-            case 'r':
-                value = *pointer;
-                printf("%lu\n", value);
-                break;
-            case 's':
-                *pointer |= value;
-                break;
-            case 'w':
-                *pointer = value;
-                break;
-            }
-        }
+        OPERATE(effective, uint32_t, valuep, "%lu");
         break;
 
     case sizeof(uint64_t):
-        {
-            uint64_t * pointer;
-            uint64_t value;
-            pointer = (uint64_t *)effective;
-            value = value64;
-            switch (opt) {
-            case 'c':
-                *pointer &= ~value;
-                break;
-            case 'r':
-                value = *pointer;
-                printf("%llu\n", value);
-                break;
-            case 's':
-                *pointer |= value;
-                break;
-            case 'w':
-                *pointer = value;
-                break;
-            }
-        }
+        OPERATE(effective, uint64_t, valuep, "%llu");
         break;
 
     }
@@ -261,7 +209,7 @@ int main(int argc, char * argv[])
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
             } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, value);
+                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
             }
             break;
 
@@ -269,19 +217,19 @@ int main(int argc, char * argv[])
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
             } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, value);
+                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
             }
             break;
 
         case 'r':
-            operate(opt, address, length, pointer, size, &unaddress, &unlength, value);
+            operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
             break;
 
         case 'w':
             if ((error = diminuto_number(optarg, &value) != '\0')) {
                 perror(optarg);
             } else {
-                operate(opt, address, length, pointer, size, &unaddress, &unlength, value);
+                operate(opt, address, length, pointer, size, &unaddress, &unlength, &value);
             }
             break;
 
