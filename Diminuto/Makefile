@@ -60,7 +60,7 @@ HFILES		=	$(wildcard *.h)
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv memtool
+TARGETBINARIES	=	getubenv ipcalc memtool
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -237,6 +237,9 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 getubenv:	getubenv.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+ipcalc:	ipcalc.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 memtool:	memtool.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
