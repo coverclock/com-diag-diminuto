@@ -9,6 +9,9 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * This header file can legitimately be included more than once in a
+ * single translation unit.
  */
 
 #include <syslog.h>
@@ -31,18 +34,12 @@ extern void diminuto_perror(const char * s);
  */
 extern void diminuto_log(unsigned int priority, const char * format, ...);
 
-#if 0
-#define	LOG_EMERG	0	/* system is unusable */
-#define	LOG_ALERT	1	/* action must be taken immediately */
-#define	LOG_CRIT	2	/* critical conditions */
-#define	LOG_ERR		3	/* error conditions */
-#define	LOG_WARNING	4	/* warning conditions */
-#define	LOG_NOTICE	5	/* normal but significant condition */
-#define	LOG_INFO	6	/* informational */
-#define	LOG_DEBUG	7	/* debug-level messages */
 #endif
 
-#endif
+/*
+ * This macro provides a logging capability that can be conditionally
+ * compiled in or out of a translation unit.
+ */
 
 #if defined(DIMINUTO_LOG)
 #undef DIMINUTO_LOG
