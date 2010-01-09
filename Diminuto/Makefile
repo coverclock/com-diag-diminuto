@@ -265,6 +265,9 @@ unittest-timer:	unittest-timer.c lib$(PROJECT).so
 unittest-periodic:	unittest-periodic.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-stacktrace:	unittest-stacktrace.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) -rdynamic $(LDFLAGS) -o $@ $<
+
 ########## Helpers
 
 backup:	../$(PROJECT).bak.tgz
