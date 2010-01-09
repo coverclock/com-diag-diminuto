@@ -79,12 +79,17 @@
         Dell 530 P4
         Linux 2.6.22
         gcc 4.1.3
-	glibc 2.6.1
+        glibc 2.6.1
 
-	Atmel AT91RM9200-EK ARM9
+        Atmel AT91RM9200-EK ARM9
         Linux 2.6.25
         gcc 4.2.4
         uClibc 0.9.29
+
+        Atmel AT91RM9200-EK ARM9
+        Linux 2.6.26
+        gcc 4.2.3
+        Sourcery G++ Lite 2008q1-126
 
 *******************************************************************************/
 

@@ -9,14 +9,23 @@
  *
  * USAGE
  *
+ * ipcalc [ ipaddress [ netmask [ hostmask ] ] ]<BR>
+ *
+ * EXAMPLES
+ *
  * ipcalc 192.168.1.222<BR>
  * ipcalc 192.168.1.222 255.255.255.0<BR>
  * ipcalc 192.168.1.222 255.255.255.0 255.255.255.255<BR>
  * ipcalc 192.168.1.222 255.255.255.0 0.0.0.0<BR>
  *
- * EXAMPLES
- *
  * ABSTRACT
+ *
+ * ipcalc is a clean room reimplementation of a simple little utility
+ * that can generate, depending on the number of parameters, a default
+ * network mask, a default broadcast address, or a default subnet
+ * number or host IP address. It is very useful in embedded systems to
+ * generate the parameters needed in init scripts to configure network
+ * devices.
  */
 
 #include <stdio.h>
