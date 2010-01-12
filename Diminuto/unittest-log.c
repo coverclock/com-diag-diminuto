@@ -9,27 +9,34 @@
  */
 
 #include "diminuto_unittest.h"
-
-#define DIMINUTO_DEBUG
 #include "diminuto_log.h"
 
-static void yes(void)
+static void maybe(void)
 {
-	DIMINUTO_LOG((LOG_DEBUG, "%s[%d]: yes.\n", __FILE__, __LINE__));
+	DIMINUTO_LOG(LOG_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
 }
 
-#undef DIMINUTO_DEBUG
+#define DIMINUTO_LOG_DISABLE
 #include "diminuto_log.h"
 
 static void no(void)
 {
-	DIMINUTO_LOG((LOG_ERR, "%s[%d]: no!\n", __FILE__, __LINE__));
+	DIMINUTO_LOG(LOG_ERR, "%s[%d]: no!\n", __FILE__, __LINE__);
+}
+
+#undef DIMINUTO_LOG_DISABLE
+#include "diminuto_log.h"
+
+static void yes(void)
+{
+	DIMINUTO_LOG(LOG_DEBUG, "%s[%d]: yes.\n", __FILE__, __LINE__);
 }
 
 int main(int argc, char ** argv)
 {
     yes();
     no();
-    diminuto_log(LOG_DEBUG, "%s[%d]: done.\n", __FILE__, __LINE__);
+    maybe();
+    diminuto_log(LOG_DEBUG, "done.\n");
     return 0;
 }

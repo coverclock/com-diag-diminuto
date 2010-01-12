@@ -27,11 +27,33 @@ static const char * levels[] = {
     "DBUG"
 };
 
+void diminuto_log3(int priority, const char * format, va_list ap)
+{
+    const char * level = "UNKN";
+
+    if (getppid() != 1) {
+        if (priority < (sizeof(levels) / sizeof(levels[0]))) {
+            level = levels[priority];
+        }
+        fprintf(stderr, "[%d] %s ", getpid(), level);
+        vfprintf(stderr, format, ap);
+    } else {
+        vsyslog(priority, format, ap);
+    }
+}
+
+void diminuto_log(int priority, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    diminuto_log3(priority, format, ap);
+    va_end(ap);
+}
+
 void diminuto_perror(const char * s)
 {
     pid_t ppid;
     int myerrno;
-    const char * e;
 
     myerrno = errno;
     ppid = getppid();
@@ -40,32 +62,6 @@ void diminuto_perror(const char * s)
     if (ppid != 1) {
         perror(s);
     } else {
-        e = strerror(errno);
-        syslog(LOG_DAEMON | LOG_ERR, "%s: %s", s, e);
+        diminuto_log(LOG_DAEMON | LOG_ERR, "%s: %s", s, strerror(errno));
     }
-}
-
-void diminuto_log(unsigned int priority, const char * format, ...)
-{
-    pid_t ppid;
-    pid_t pid;
-    const char * level = "UNKN";
-    va_list list;
-
-    va_start(list, format);
-
-    ppid = getppid();
-    pid = getpid();
-
-    if (ppid != 1) {
-        if (priority < (sizeof(levels)/sizeof(levels[0]))) {
-            level = levels[priority];
-        }
-        fprintf(stderr, "[%d] %s ", pid, level);
-        vfprintf(stderr, format, list);
-    } else {
-        vsyslog(level, format, list);
-    }
-
-    va_end(list);
 }
