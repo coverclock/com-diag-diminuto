@@ -274,7 +274,7 @@ unittest-log:	unittest-log.c lib$(PROJECT).so
 ########## Target Objects
 
 kernel-log.o:	kernel-log.c
-	$(CC) -c -D__KERNEL__ -I. -I/usr/src/linux-headers-2.6.22-14/include -o $@ $<
+	$(CC) -c -D__KERNEL__ -DCONFIG_PRINTK -I. -I/usr/src/linux-headers-2.6.22-14/include -o $@ $<
 
 ########## Helpers
 
