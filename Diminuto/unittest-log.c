@@ -67,7 +67,7 @@ static void none(void)
    DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
 }
 
-static diminuto_log_mask_t mask = DIMINUTO_LOG_MASK_NONE;
+static diminuto_log_mask_t subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
 
 #undef DIMINUTO_LOG_EMERGENCY_DISABLE
 #undef DIMINUTO_LOG_ALERT_DISABLE
@@ -78,7 +78,7 @@ static diminuto_log_mask_t mask = DIMINUTO_LOG_MASK_NONE;
 #undef DIMINUTO_LOG_INFORMATION_DISABLE
 #undef DIMINUTO_LOG_DEBUG_DISABLE
 #undef DIMINUTO_LOG_MASK
-#define DIMINUTO_LOG_MASK mask
+#define DIMINUTO_LOG_MASK subsystem[0]
 #include "diminuto_log.h"
 
 static void mine(void)
@@ -158,57 +158,57 @@ int main(int argc, char ** argv)
     none();
     mine();
     fprintf(stderr, "PRIVATE ALL\n");
-    mask = DIMINUTO_LOG_MASK_ALL;
+    subsystem[0] = DIMINUTO_LOG_MASK_ALL;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE NONE\n");
-    mask = DIMINUTO_LOG_MASK_NONE;
+    subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE EMERGENCY\n");
-    mask = DIMINUTO_LOG_MASK_EMERGENCY;
+    subsystem[0] = DIMINUTO_LOG_MASK_EMERGENCY;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE ALERT\n");
-    mask = DIMINUTO_LOG_MASK_ALERT;
+    subsystem[0] = DIMINUTO_LOG_MASK_ALERT;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE CRITICAL\n");
-    mask = DIMINUTO_LOG_MASK_CRITICAL;
+    subsystem[0] = DIMINUTO_LOG_MASK_CRITICAL;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE ERROR\n");
-    mask = DIMINUTO_LOG_MASK_ERROR;
+    subsystem[0] = DIMINUTO_LOG_MASK_ERROR;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE WARNING\n");
-    mask = DIMINUTO_LOG_MASK_WARNING;
+    subsystem[0] = DIMINUTO_LOG_MASK_WARNING;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE NOTICE\n");
-    mask = DIMINUTO_LOG_MASK_NOTICE;
+    subsystem[0] = DIMINUTO_LOG_MASK_NOTICE;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE INFORMATION\n");
-    mask = DIMINUTO_LOG_MASK_INFORMATION;
+    subsystem[0] = DIMINUTO_LOG_MASK_INFORMATION;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE DEBUG\n");
-    mask = DIMINUTO_LOG_MASK_DEBUG;
+    subsystem[0] = DIMINUTO_LOG_MASK_DEBUG;
     all();
     none();
     mine();
     fprintf(stderr, "PRIVATE NONE\n");
-    mask = DIMINUTO_LOG_MASK_NONE;
+    subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
