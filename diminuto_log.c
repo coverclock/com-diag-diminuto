@@ -16,6 +16,8 @@
 #include <stdarg.h>
 #include <sys/types.h>
 
+diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+
 static const char * levels[] = {
     "EMRG",
     "ALRT",
