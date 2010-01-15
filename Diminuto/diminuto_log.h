@@ -15,6 +15,8 @@
  * the kernel modules, and device drivers.
  */
 
+/******************************************************************************/
+
 #define DIMINUTO_LOG_MASK_EMERGENCY     (1<<0)
 #define DIMINUTO_LOG_MASK_ALERT         (1<<1)
 #define DIMINUTO_LOG_MASK_CRITICAL      (1<<2)
@@ -27,6 +29,8 @@
 #define DIMINUTO_LOG_MASK_ALL           (0xff)
 #define DIMINUTO_LOG_MASK_NONE          (0x00)
 #define DIMINUTO_LOG_MASK_DEFAULT       (0x0f)
+
+/******************************************************************************/
 
 #if defined(__KERNEL__)
 
@@ -54,12 +58,6 @@ typedef u8 diminuto_log_mask_t;
 
 static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
-#if defined(DIMINUTO_LOG_SUBSYSTEM)
-#undef DIMINUTO_LOG_SUBSYSTEM
-#endif
-
-#define DIMINUTO_LOG_SUBSYSTEM diminuto_log_mask
-
 #else
 
 /*
@@ -86,10 +84,6 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 typedef uint8_t diminuto_log_mask_t;
 
 extern diminuto_log_mask_t diminuto_log_mask;
-
-#if !defined(DIMINUTO_LOG_MASK)
-#define DIMINUTO_LOG_MASK diminuto_log_mask
-#endif
 
 #include <stdarg.h>
 
@@ -123,9 +117,35 @@ extern void diminuto_log(int priority, const char * format, ...);
 
 #endif
 
-#define DIMINUTO_LOG_ENABLED(_MASK_) (((DIMINUTO_LOG_MASK) & (_MASK_)) != 0)
+/******************************************************************************/
 
 #endif
+
+/******************************************************************************/
+
+#if defined(__KERNEL__)
+
+#if defined(DIMINUTO_LOG_MASK)
+#undef DIMINUTO_LOG_MASK
+#endif
+
+#define DIMINUTO_LOG_MASK diminuto_log_mask
+
+#else
+
+#if !defined(DIMINUTO_LOG_MASK)
+#define DIMINUTO_LOG_MASK diminuto_log_mask
+#endif
+
+#endif
+
+#if defined(DIMINUTO_LOG_ENABLED)
+#undef DIMINUTO_LOG_ENABLED
+#endif
+
+#define DIMINUTO_LOG_ENABLED(_MASK_) (((DIMINUTO_LOG_MASK) & (_MASK_)) != 0)
+
+/******************************************************************************/
 
 #if defined(DIMINUTO_LOG)
 #undef DIMINUTO_LOG
@@ -152,6 +172,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 
 #endif
 
+/******************************************************************************/
+
 #if defined(DIMINUTO_LOG_EMERGENCY)
 #undef DIMINUTO_LOG_EMERGENCY
 #endif
@@ -161,6 +183,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #else 
 #define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, _FORMAT_, ## __VA_ARGS__)
 #endif
+
+/******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ALERT)
 #undef DIMINUTO_LOG_ALERT
@@ -172,6 +196,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #define DIMINUTO_LOG_ALERT(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, _FORMAT_, ## __VA_ARGS__)
 #endif
 
+/******************************************************************************/
+
 #if defined(DIMINUTO_LOG_CRITICAL)
 #undef DIMINUTO_LOG_CRITICAL
 #endif
@@ -181,6 +207,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #else
 #define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, _FORMAT_, ## __VA_ARGS__)
 #endif
+
+/******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ERROR)
 #undef DIMINUTO_LOG_ERROR
@@ -192,6 +220,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #define DIMINUTO_LOG_ERROR(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, _FORMAT_, ## __VA_ARGS__)
 #endif
 
+/******************************************************************************/
+
 #if defined(DIMINUTO_LOG_WARNING)
 #undef DIMINUTO_LOG_WARNING
 #endif
@@ -201,6 +231,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #else
 #define DIMINUTO_LOG_WARNING(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, _FORMAT_, ## __VA_ARGS__)
 #endif
+
+/******************************************************************************/
 
 #if defined(DIMINUTO_LOG_NOTICE)
 #undef DIMINUTO_LOG_NOTICE
@@ -212,6 +244,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, _FORMAT_, ## __VA_ARGS__)
 #endif
 
+/******************************************************************************/
+
 #if defined(DIMINUTO_LOG_INFORMATION)
 #undef DIMINUTO_LOG_INFORMATION
 #endif
@@ -222,6 +256,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 #define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, _FORMAT_, ## __VA_ARGS__)
 #endif
 
+/******************************************************************************/
+
 #if defined(DIMINUTO_LOG_DEBUG)
 #undef DIMINUTO_LOG_DEBUG
 #endif
@@ -231,3 +267,5 @@ extern void diminuto_log(int priority, const char * format, ...);
 #else
 #define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, _FORMAT_, ## __VA_ARGS__)
 #endif
+
+/******************************************************************************/
