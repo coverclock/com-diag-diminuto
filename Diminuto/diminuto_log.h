@@ -11,35 +11,87 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * This header file can legitimately be included more than once in a
- * single translation unit.
+ * single translation unit. It can be used in applications, daemons,
+ * the kernel modules, and device drivers.
  */
+
+#define DIMINUTO_LOG_MASK_EMERGENGY     (1<<0)
+#define DIMINUTO_LOG_MASK_ALERT         (1<<1)
+#define DIMINUTO_LOG_MASK_CRITICAL      (1<<2)
+#define DIMINUTO_LOG_MASK_ERROR         (1<<3)
+#define DIMINUTO_LOG_MASK_WARNING       (1<<4)
+#define DIMINUTO_LOG_MASK_NOTICE        (1<<5)
+#define DIMINUTO_LOG_MASK_INFO          (1<<6)
+#define DIMINUTO_LOG_MASK_DEBUG         (1<<7)
+
+#define DIMINUTO_LOG_MASK_ALL           (0xff)
+#define DIMINUTO_LOG_MASK_NONE          (0x00)
+#define DIMINUTO_LOG_MASK_DEFAULT       (0x0f)
 
 #if defined(__KERNEL__)
 
+/*
+ * Logging can be done from the kernel or a device driver, in which case
+ * it uses the <code>printk()</code> function and the kernel priorities.
+ * Each translation unit has its own local subsystem log mask which is
+ * implicity defined and declared.
+ */
+
 #include <linux/kernel.h>
 
-#define DIMINUTO_LOG_EMERGENGY      KERN_EMERG
-#define DIMINUTO_LOG_ALERT          KERN_ALERT
-#define DIMINUTO_LOG_CRITICAL       KERN_CRIT
-#define DIMINUTO_LOG_ERROR          KERN_ERR
-#define DIMINUTO_LOG_WARNING        KERN_WARNING
-#define DIMINUTO_LOG_NOTICE         KERN_NOTICE
-#define DIMINUTO_LOG_INFO           KERN_INFO
-#define DIMINUTO_LOG_DEBUG          KERN_DEBUG
+#define DIMINUTO_LOG_PRIORITY_EMERGENGY      KERN_EMERG
+#define DIMINUTO_LOG_PRIORITY_ALERT          KERN_ALERT
+#define DIMINUTO_LOG_PRIORITY_CRITICAL       KERN_CRIT
+#define DIMINUTO_LOG_PRIORITY_ERROR          KERN_ERR
+#define DIMINUTO_LOG_PRIORITY_WARNING        KERN_WARNING
+#define DIMINUTO_LOG_PRIORITY_NOTICE         KERN_NOTICE
+#define DIMINUTO_LOG_PRIORITY_INFO           KERN_INFO
+#define DIMINUTO_LOG_PRIORITY_DEBUG          KERN_DEBUG
+
+#include <asm/types.h>
+
+typedef u8 diminuto_log_mask_t;
+
+static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+
+#if defined(DIMINUTO_LOG_SUBSYSTEM)
+#undef DIMINUTO_LOG_SUBSYSTEM
+#endif
+
+#define DIMINUTO_LOG_SUBSYSTEM diminuto_log_mask
 
 #else
 
-#include <syslog.h>
-#include <stdarg.h>
+/*
+ * Logging can be done from an application or a daemon, in the former
+ * case it prints to standard error, and in the latter it logs to the
+ * system log. Each translation unit either defines its own subsystem
+ * log mask (which may be local or external) or uses the global default
+ * subsystem log mask.
+ */
 
-#define DIMINUTO_LOG_EMERGENGY      LOG_EMERG
-#define DIMINUTO_LOG_ALERT          LOG_ALERT
-#define DIMINUTO_LOG_CRITICAL       LOG_CRIT
-#define DIMINUTO_LOG_ERROR          LOG_ERR
-#define DIMINUTO_LOG_WARNING        LOG_WARNING
-#define DIMINUTO_LOG_NOTICE         LOG_NOTICE
-#define DIMINUTO_LOG_INFO           LOG_INFO
-#define DIMINUTO_LOG_DEBUG          LOG_DEBUG
+#include <syslog.h>
+
+#define DIMINUTO_LOG_PRIORITY_EMERGENGY      LOG_EMERG
+#define DIMINUTO_LOG_PRIORITY_ALERT          LOG_ALERT
+#define DIMINUTO_LOG_PRIORITY_CRITICAL       LOG_CRIT
+#define DIMINUTO_LOG_PRIORITY_ERROR          LOG_ERR
+#define DIMINUTO_LOG_PRIORITY_WARNING        LOG_WARNING
+#define DIMINUTO_LOG_PRIORITY_NOTICE         LOG_NOTICE
+#define DIMINUTO_LOG_PRIORITY_INFO           LOG_INFO
+#define DIMINUTO_LOG_PRIORITY_DEBUG          LOG_DEBUG
+
+#include <stdint.h>
+
+typedef uint8_t diminuto_log_mask_t;
+
+extern diminuto_log_mask_t diminuto_log_mask;
+
+#if !defined(DIMINUTO_LOG_MASK)
+#define DIMINUTO_LOG_MASK diminuto_log_mask
+#endif
+
+#include <stdarg.h>
 
 /**
  * If the parent PID of the calling process is not 1, emulate the stdio
@@ -71,27 +123,84 @@ extern void diminuto_log(int priority, const char * format, ...);
 
 #endif
 
-#endif
+#define DIMINUTO_LOG_ENABLED(_MASK_) (((DIMINUTO_LOG_MASK) & (_MASK_)) != 0)
 
-/*
- * This macro provides a logging capability that can be conditionally
- * compiled in or out of a translation unit.
- */
+#endif
 
 #if defined(DIMINUTO_LOG)
 #undef DIMINUTO_LOG
 #endif
 
+#if defined(DIMINUTO_LOG_IF)
+#undef DIMINUTO_LOG_IF
+#endif
+
 #if defined(DIMINUTO_LOG_DISABLE)
 
 #define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) ((void)0)
+#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) ((void)0)
 
 #elif defined(__KERNEL__)
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) printk(_PRIORITY_ _FORMAT_, ...)
+#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) (void)printk(_PRIORITY_  _FORMAT_, ## __VA_ARGS__)
+#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
 
 #else
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log(_PRIORITY_, _FORMAT_, __VA_ARGS__)
+#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
+#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
+
+#endif
+
+#ifndef _H_COM_DIAG_DIMINUTO_LOG_EXT_
+#define _H_COM_DIAG_DIMINUTO_LOG_EXT_
+
+#if defined(DIMINUTO_LOG_EMERGENCY_DISABLE)
+#define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) ((void)0)
+#else 
+#define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_ALERT_DISABLE)
+#define DIMINUTO_LOG_ALERT(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_ALERT(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_CRITICAL_DISABLE)
+#define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_ERROR_DISABLE)
+#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_WARNING_DISABLE)
+#define DIMINUTO_LOG_WARNING(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_WARNING(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_NOTICE_DISABLE)
+#define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_INFORMATION_DISABLE)
+#define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, _FORMAT_, ## __VA_ARGS__)
+#endif
+
+#if defined(DIMINUTO_LOG_DEBUG_DISABLE)
+#define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) ((void)0)
+#else
+#define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, _FORMAT_, ## __VA_ARGS__)
+#endif
 
 #endif
