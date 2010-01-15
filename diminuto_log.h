@@ -13,6 +13,18 @@
  * This header file can legitimately be included more than once in a
  * single translation unit. It can be used in applications, daemons,
  * the kernel modules, and device drivers.
+ *
+ * Define the preprocessor symbol DIMINUTO_LOG_x_DISABLE to disable
+ * the generation of the appropriate log statements, where x is replaced
+ * with EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFORMATION,
+ * or DEBUG. By default all are enabled.
+ *
+ * Define the preprocessor symbol DIMINUTO_LOG_MASK to be the name of
+ * a variable of type diminuto_log_mask_t to use a subsystem-specific
+ * log mask other than the default of diminuto_log_mask. This could,
+ * for example, be the name of a specific element in an array of
+ * masks to allow an arbitrary number of subsystems, the logging for
+ * each of which can be managed independently.
  */
 
 /******************************************************************************/
