@@ -271,6 +271,11 @@ unittest-stacktrace:	unittest-stacktrace.c lib$(PROJECT).so
 unittest-log:	unittest-log.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+########## Target Objects
+
+kernel-log.o:	kernel-log.c
+	$(CC) -c -D__KERNEL__ -I. -I/usr/src/linux-headers-2.6.22-14/include -o $@ $<
+
 ########## Helpers
 
 backup:	../$(PROJECT).bak.tgz
