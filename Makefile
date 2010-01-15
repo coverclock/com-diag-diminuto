@@ -29,7 +29,7 @@ CROSS_COMPILE	=	# $(ARCH)-$(PLATFORM)-
 CARCH		=	# -march=armv4t
 
 MAJOR		=	0
-MINOR		=	7
+MINOR		=	8
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
