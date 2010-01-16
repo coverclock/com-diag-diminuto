@@ -1,4 +1,4 @@
-# Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
+# Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
@@ -29,7 +29,7 @@ CROSS_COMPILE	=	# $(ARCH)-$(PLATFORM)-
 CARCH		=	# -march=armv4t
 
 MAJOR		=	0
-MINOR		=	8
+MINOR		=	9
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
@@ -54,7 +54,8 @@ DATESTAMP	=	$(shell date +%Y%m%d)
 IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
-CFILES		=	$(wildcard *.c)
+KFILES		=	$(wildcard kernel*.c)
+CFILES		=	$(filter-out $(KFILES),$(wildcard *.c))
 HFILES		=	$(wildcard *.h)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
@@ -271,10 +272,12 @@ unittest-stacktrace:	unittest-stacktrace.c lib$(PROJECT).so
 unittest-log:	unittest-log.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-########## Target Objects
+########## Modules (just for unit testing)
 
-kernel-log.o:	kernel-log.c
-	$(CC) -c -D__KERNEL__ -DCONFIG_PRINTK -I. -I/usr/src/linux-headers-2.6.22-14/include -o $@ $<
+.PHONY:	modules
+
+modules:	kernel-log.c
+	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-server; pwd) M=$(shell cd modules; pwd) $@
 
 ########## Helpers
 

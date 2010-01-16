@@ -8,11 +8,12 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include <linux/module.h>
 #include "diminuto_log.h"
 
 #include "unittest-log.h"
 
-static void module(int argc, char ** argv)
+static void unittest()
 {
     printk("BEGIN\n");
     yes();
@@ -133,3 +134,20 @@ static void module(int argc, char ** argv)
     mine();
     printk("END\n");
 }
+
+int init_log_unittest()
+{
+    unittest();
+    return 0;
+}
+
+void cleanup_log_unittest()
+{
+}
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("coverclock@diag.com");
+MODULE_DESCRIPTION("diminuto log kernel unit test");
+
+module_init(init_log_unittest);
+module_exit(cleanup_log_unittest);
