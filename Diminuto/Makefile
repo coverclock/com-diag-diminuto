@@ -5,6 +5,21 @@
 
 ########## Variables
 
+COMPILEFOR	=	host
+#COMPILEFOR	=	target
+
+ifeq ($(COMPILEFOR),target)
+ARCH		=	arm
+PLATFORM	=	linux
+CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+CARCH		=	-march=armv4t
+else
+ARCH		=	i386
+PLATFORM	=	linux
+CROSS_COMPILE	=	
+CARCH		=	
+endif
+
 PRODUCT		=	buildroot
 PROJECT		=	diminuto
 
@@ -20,17 +35,12 @@ TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
 LOCALBIN_DIR	=	${TOOLCHAIN_DIR}/usr/local/bin
 LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
 
-ARCH		=	arm
 VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
-PLATFORM	=	linux
-
-CROSS_COMPILE	=	# $(ARCH)-$(PLATFORM)-
-CARCH		=	# -march=armv4t
 
 MAJOR		=	0
 MINOR		=	9
-BUILD		=	0
+BUILD		=	1
 
 BUILDROOT_REV	=	22987
 KERNEL_REV	=	2.6.25.10
@@ -276,8 +286,8 @@ unittest-log:	unittest-log.c lib$(PROJECT).so
 
 .PHONY:	modules
 
-modules:	modules modules/kernel-log.c
-	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) $@
+modules:	modules/kernel-log.c
+	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) $@
 
 ########## Helpers
 
