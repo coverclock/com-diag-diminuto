@@ -1,1 +1,0 @@
-cmd_/home/jsloan/src/Diminuto/modules/kernel-log.ko := ld -m elf_i386 -m elf_i386 -r -o /home/jsloan/src/Diminuto/modules/kernel-log.ko /home/jsloan/src/Diminuto/modules/kernel-log.o /home/jsloan/src/Diminuto/modules/kernel-log.mod.o
