@@ -287,7 +287,10 @@ unittest-log:	unittest-log.c lib$(PROJECT).so
 .PHONY:	modules
 
 modules:	modules/kernel-log.c
-	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) $@
+	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+
+modules-clean:
+	-make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
 
 ########## Helpers
 
@@ -301,7 +304,7 @@ acquire:	$(HOME)/$(PROJECT)
 	cd $(HOME)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
-clean:
+clean:	modules-clean
 	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
 	rm -rf $(DOC_DIR)
 
