@@ -44,7 +44,7 @@
 
 /******************************************************************************/
 
-#if defined(__KERNEL__)
+#if defined(__KERNEL__) || defined(MODULE)
 
 /*
  * Logging can be done from the kernel or a device driver, in which case
@@ -135,7 +135,7 @@ extern void diminuto_log(int priority, const char * format, ...);
 
 /******************************************************************************/
 
-#if defined(__KERNEL__)
+#if defined(__KERNEL__) || defined(MODULE)
 
 #if defined(DIMINUTO_LOG_MASK)
 #undef DIMINUTO_LOG_MASK
@@ -172,7 +172,7 @@ extern void diminuto_log(int priority, const char * format, ...);
 #define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) ((void)0)
 #define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) ((void)0)
 
-#elif defined(__KERNEL__)
+#elif defined(__KERNEL__) || defined(MODULE)
 
 #define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) (void)printk(_PRIORITY_  _FORMAT_, ## __VA_ARGS__)
 #define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
