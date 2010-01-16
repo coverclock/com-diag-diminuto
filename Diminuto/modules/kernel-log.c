@@ -13,6 +13,8 @@
 
 #include "unittest-log.h"
 
+static int diminuto_log_subsystem_mask = -1;
+
 static void unittest(void)
 {
     printk("BEGIN\n");
@@ -78,60 +80,67 @@ static void unittest(void)
     none();
     mine();
     printk("PRIVATE ALL\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_ALL;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALL;
     all();
     none();
     mine();
     printk("PRIVATE NONE\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_NONE;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
     printk("PRIVATE EMERGENCY\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_EMERGENCY;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_EMERGENCY;
     all();
     none();
     mine();
     printk("PRIVATE ALERT\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_ALERT;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALERT;
     all();
     none();
     mine();
     printk("PRIVATE CRITICAL\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_CRITICAL;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_CRITICAL;
     all();
     none();
     mine();
     printk("PRIVATE ERROR\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_ERROR;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ERROR;
     all();
     none();
     mine();
     printk("PRIVATE WARNING\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_WARNING;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_WARNING;
     all();
     none();
     mine();
     printk("PRIVATE NOTICE\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_NOTICE;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NOTICE;
     all();
     none();
     mine();
     printk("PRIVATE INFORMATION\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_INFORMATION;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_INFORMATION;
     all();
     none();
     mine();
     printk("PRIVATE DEBUG\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_DEBUG;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_DEBUG;
     all();
     none();
     mine();
     printk("PRIVATE NONE\n");
-    subsystem[0] = DIMINUTO_LOG_MASK_NONE;
+    diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
+    if (diminuto_log_subsystem_mask != -1) {
+        diminuto_log_subsystem[0] = diminuto_log_subsystem_mask;
+        printk("PRIVATE SET\n");
+        all();
+        none();
+        mine();
+    }
     printk("END\n");
 }
 
@@ -145,9 +154,11 @@ void cleanup_log_unittest(void)
 {
 }
 
-MODULE_LICENSE("GPL");
+EXPORT_SYMBOL(diminuto_log_subsystem);
+module_param(diminuto_log_subsystem_mask, int, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(diminuto_log_subsystem_mask, "Diminuto Log Mask");
+MODULE_LICENSE("LGPL");
 MODULE_AUTHOR("coverclock@diag.com");
 MODULE_DESCRIPTION("diminuto log kernel unit test");
-
 module_init(init_log_unittest);
 module_exit(cleanup_log_unittest);
