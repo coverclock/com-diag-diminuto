@@ -13,7 +13,7 @@
 
 #include "unittest-log.h"
 
-static void unittest()
+static void unittest(void)
 {
     printk("BEGIN\n");
     yes();
@@ -135,13 +135,13 @@ static void unittest()
     printk("END\n");
 }
 
-int init_log_unittest()
+int init_log_unittest(void)
 {
     unittest();
     return 0;
 }
 
-void cleanup_log_unittest()
+void cleanup_log_unittest(void)
 {
 }
 

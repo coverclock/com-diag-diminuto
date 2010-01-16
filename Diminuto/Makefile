@@ -276,8 +276,8 @@ unittest-log:	unittest-log.c lib$(PROJECT).so
 
 .PHONY:	modules
 
-modules:	kernel-log.c
-	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-server; pwd) M=$(shell cd modules; pwd) $@
+modules:	modules modules/kernel-log.c
+	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) $@
 
 ########## Helpers
 
