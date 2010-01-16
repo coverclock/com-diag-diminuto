@@ -63,7 +63,7 @@ static void none(void)
    DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
 }
 
-static diminuto_log_mask_t subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
+static diminuto_log_mask_t diminuto_log_subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
 
 #undef DIMINUTO_LOG_EMERGENCY_DISABLE
 #undef DIMINUTO_LOG_ALERT_DISABLE
@@ -74,7 +74,7 @@ static diminuto_log_mask_t subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
 #undef DIMINUTO_LOG_INFORMATION_DISABLE
 #undef DIMINUTO_LOG_DEBUG_DISABLE
 #undef DIMINUTO_LOG_MASK
-#define DIMINUTO_LOG_MASK subsystem[0]
+#define DIMINUTO_LOG_MASK diminuto_log_subsystem[0]
 #include "diminuto_log.h"
 
 static void mine(void)
