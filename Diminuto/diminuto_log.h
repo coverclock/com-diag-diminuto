@@ -12,7 +12,10 @@
  *
  * This header file can legitimately be included more than once in a
  * single translation unit. It can be used in applications, daemons,
- * the kernel modules, and device drivers.
+ * the kernel modules, and device drivers. In applications, it prints
+ * to standard error. In daemons (processes who have been inherited
+ * by process ID 1 as their parent), it logs to the system log. For
+ * kernel modules and device drivers, it uses the printk kernel function.
  *
  * Define the preprocessor symbol DIMINUTO_LOG_x_DISABLE to disable
  * the generation of the appropriate log statements, where x is replaced
@@ -25,6 +28,11 @@
  * for example, be the name of a specific element in an array of
  * masks to allow an arbitrary number of subsystems, the logging for
  * each of which can be managed independently.
+ *
+ * The long preprocessor macro and symbol names were designed to make
+ * conflicts with other code unlikely. Feel free to define your own
+ * shorter names from these, for example define DBG(_FORMAT_, ...) to
+ * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
  */
 
 /******************************************************************************/
