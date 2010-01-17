@@ -45,10 +45,10 @@ int main(int argc, char ** argv)
     ASSERT(pid2 > 0);
     ASSERT(pid1 == pid2);
 
-    diminuto_log(LOG_NOTICE, "unittest-daemonize: parent %d\n", pid2);
+    diminuto_log(DIMINUTO_LOG_PRIORITY_NOTICE, "unittest-daemonize: parent %d\n", pid2);
 
     rc = diminuto_lock(file);
-    ASSERT(rc >= 0);
+    ASSERT(rc < 0);
 
     rc = diminuto_unlock(file);
     ASSERT(rc == 0);
@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
     ASSERT(pid3 > 0);
 
     rc = diminuto_lock(file);
-    ASSERT(rc > 0);
+    ASSERT(rc == 0);
 
     pid4 = diminuto_locked(file);
     ASSERT(pid4 > 0);
@@ -86,7 +86,7 @@ int main(int argc, char ** argv)
     rc = diminuto_unlock(file);
     ASSERT(rc == 0);
 
-    diminuto_log(LOG_NOTICE, "unittest-daemonize: child %d\n", pid4);
+    diminuto_log(DIMINUTO_LOG_PRIORITY_NOTICE, "unittest-daemonize: child %d\n", pid4);
 
     return errors > 255 ? 255 : errors;
 }

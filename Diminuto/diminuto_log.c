@@ -40,7 +40,7 @@ void diminuto_log3(int priority, const char * format, va_list ap)
         fprintf(stderr, "[%d] %s ", getpid(), level);
         vfprintf(stderr, format, ap);
     } else {
-        vsyslog(priority, format, ap);
+        vsyslog(LOG_DAEMON | priority, format, ap);
     }
 }
 
@@ -64,6 +64,6 @@ void diminuto_perror(const char * s)
     if (ppid != 1) {
         perror(s);
     } else {
-        diminuto_log(LOG_DAEMON | LOG_ERR, "%s: %s", s, strerror(errno));
+        diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s", s, strerror(errno));
     }
 }
