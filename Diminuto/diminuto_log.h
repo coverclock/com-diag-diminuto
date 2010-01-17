@@ -135,20 +135,8 @@ extern void diminuto_log(int priority, const char * format, ...);
 
 /******************************************************************************/
 
-#if defined(__KERNEL__) || defined(MODULE)
-
-#if defined(DIMINUTO_LOG_MASK)
-#undef DIMINUTO_LOG_MASK
-#endif
-
-#define DIMINUTO_LOG_MASK diminuto_log_mask
-
-#else
-
 #if !defined(DIMINUTO_LOG_MASK)
 #define DIMINUTO_LOG_MASK diminuto_log_mask
-#endif
-
 #endif
 
 #if defined(DIMINUTO_LOG_ENABLED)
