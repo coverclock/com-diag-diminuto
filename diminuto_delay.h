@@ -29,7 +29,7 @@ extern uint64_t diminuto_delay(uint64_t microseconds, int interruptable);
 
 /**
  * Force a context switch without otherwise blocking.
- * @return 0 if successful, non-zero with errno set otherwise.
+ * @return 0 if successful, <0 with errno set otherwise.
  */
 extern int diminuto_yield(void);
 

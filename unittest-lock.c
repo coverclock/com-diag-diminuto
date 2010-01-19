@@ -1,0 +1,58 @@
+/* vi: set ts=4 expandtab shiftwidth=4: */
+/**
+ * @file
+ *
+ * Copyright 1020 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Licensed under the terms in README.h<BR>
+ * Chip Overclock (coverclock@diag.com)<BR>
+ * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ */
+
+#include "diminuto_unittest.h"
+#include "diminuto_coreable.h"
+#include "diminuto_lock.h"
+#include "diminuto_log.h"
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <syslog.h>
+
+static const char * file = "/tmp/unittest-lock.pid";
+
+int main(int argc, char ** argv)
+{
+    int rc;
+    pid_t pid1;
+    pid_t pid2;
+    pid_t pid3;
+    pid_t pid4;
+
+    pid1 = getpid();
+    ASSERT(pid1 >= 0);
+
+    pid2 = diminuto_locked(file);
+    ASSERT(pid2 < 0);
+
+    rc = diminuto_lock(file);
+    ASSERT(rc == 0);
+
+    pid3 = diminuto_locked(file);
+    ASSERT(pid3 > 0);
+    ASSERT(pid1 == pid3);
+
+    rc = diminuto_lock(file);
+    ASSERT(rc < 0);
+
+    rc = diminuto_unlock(file);
+    ASSERT(rc == 0);
+
+    pid4 = diminuto_locked(file);
+    ASSERT(pid4 < 0);
+
+    rc = diminuto_unlock(file);
+    ASSERT(rc < 0);
+
+    return errors > 255 ? 255 : errors;
+}
+

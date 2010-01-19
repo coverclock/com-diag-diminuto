@@ -49,7 +49,7 @@ int diminuto_yield(void) {
     int rc;
 
     rc = sched_yield();
-    if (rc != 0) {
+    if (rc < 0) {
         diminuto_perror("diminuto_yield: sched_yield");
     }
 
