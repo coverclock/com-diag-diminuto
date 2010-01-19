@@ -38,8 +38,8 @@ LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
 VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 
-MAJOR		=	0
-MINOR		=	10
+MAJOR		=	1
+MINOR		=	0
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
