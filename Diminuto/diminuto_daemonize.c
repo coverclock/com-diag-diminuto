@@ -12,6 +12,7 @@
 
 #include "diminuto_daemonize.h"
 #include "diminuto_lock.h"
+#include "diminuto_delay.h"
 #include "diminuto_log.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +42,10 @@ int diminuto_daemonize(const char * file)
     int fd;
 
     do {
+
+        /*
+         *  PARENT
+         */
 
         /* Make sure we are not already a daemon. */
 
@@ -73,7 +78,7 @@ int diminuto_daemonize(const char * file)
             break;
         }
 
-        /* Fork off the daemon child. */
+        /* Fork off the daemon child and wait for it to signal us. */
 
         if ((pid = fork()) > 0) {
             alarm(10);
@@ -85,12 +90,16 @@ int diminuto_daemonize(const char * file)
             break;
         }
 
+        /*
+         *  CHILD
+         */
+
         /* Create a lock file. */
 
         if (file == (char *)0) {
             /* Do nothing. */
         } else if ((rc = diminuto_lock(file)) < 0) {
-            result = rc;
+            result = -7;
             diminuto_perror("diminuto_daemonize: diminuto_lock");
             break;
         }
@@ -98,7 +107,7 @@ int diminuto_daemonize(const char * file)
         /* Find our parent. */
 
         if ((ppid = getppid()) < 0) {
-            result = -7;
+            result = -8;
             diminuto_perror("diminuto_daemonize: getppid");
             break;
         }
@@ -110,7 +119,7 @@ int diminuto_daemonize(const char * file)
         /* Orphan us from our controlling terminal and process group. */
 
         if (setsid() < 0) {
-            result = -8;
+            result = -9;
             diminuto_perror("diminuto_daemonize: setsid");
             break;
         }
@@ -118,7 +127,7 @@ int diminuto_daemonize(const char * file)
         /* Change to a directory that will always be there. */
 
         if (chdir("/") < 0) {
-            result = -9;
+            result = -10;
             diminuto_perror("diminuto_daemonize: chdir");
             break;
         }
@@ -133,37 +142,37 @@ int diminuto_daemonize(const char * file)
         /* Dissociate ourselves from any signal handlers. */
 
         if (signal(SIGCHLD, SIG_DFL) == SIG_ERR) {
-            result = -10;
+            result = -11;
             diminuto_perror("diminuto_daemonize: signal(SIGCHLD)");
             break;
         }
 
         if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-            result = -11;
+            result = -12;
             diminuto_perror("diminuto_daemonize: signal(SIGTSTP)");
             break;
         }
 
         if (signal(SIGTTOU, SIG_IGN) == SIG_ERR) {
-            result = -12;
+            result = -13;
             diminuto_perror("diminuto_daemonize: signal(SIGTTOU)");
             break;
         }
 
         if (signal(SIGTTIN, SIG_IGN) == SIG_ERR) {
-            result = -13;
+            result = -14;
             diminuto_perror("diminuto_daemonize: signal(SIGTTIN)");
             break;
         }
 
         if (signal(SIGHUP, SIG_IGN) == SIG_ERR) {
-            result = -14;
+            result = -15;
             diminuto_perror("diminuto_daemonize: signal(SIGHUP)");
             break;
         }
 
         if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
-            result = -15;
+            result = -16;
             diminuto_perror("diminuto_daemonize: signal(SIGTERM)");
             break;
         }
@@ -171,7 +180,7 @@ int diminuto_daemonize(const char * file)
         /* Redirect the big three to /dev/null. */
 
         if (freopen("/dev/null", "r", stdin) == (FILE *)0) {
-            result = -16;
+            result = -17;
             diminuto_perror("diminuto_daemonize: freopen(stdin)");
             break;
         }
@@ -179,7 +188,7 @@ int diminuto_daemonize(const char * file)
         fflush(stdout);
 
         if (freopen("/dev/null", "w", stdout) == (FILE *)0) {
-            result = -17;
+            result = -18;
             diminuto_perror("diminuto_daemonize: freopen(stdout)");
             break;
         }
@@ -187,7 +196,7 @@ int diminuto_daemonize(const char * file)
         fflush(stderr);
 
         if (freopen("/dev/null", "w", stderr) == (FILE *)0) {
-            result = -18;
+            result = -19;
             diminuto_perror("diminuto_daemonize: freopen(stderr)");
             break;
         }
@@ -195,8 +204,16 @@ int diminuto_daemonize(const char * file)
         /* Notify the parent that we were successful. */
 
         if (kill(ppid, SIGUSR1) < 0) {
-            result = -19;
+            result = -20;
             diminuto_perror("diminuto_daemonize: kill");
+            break;
+        }
+
+        /* Force a context switch so our parent to sees our notification. */
+
+        if ((rc = diminuto_yield()) != 0) {
+            result = -21;
+            diminuto_perror("diminuto_daemonize: diminuto_yield");
             break;
         }
 

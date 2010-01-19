@@ -18,6 +18,12 @@
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
+char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
+
+int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
+
+int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
+
 static const char * levels[] = {
     "EMRG",
     "ALRT",
@@ -29,18 +35,21 @@ static const char * levels[] = {
     "DBUG"
 };
 
+static int initialized = 0;
+
 void diminuto_log3(int priority, const char * format, va_list ap)
 {
-    const char * level = "UNKN";
-
     if (getppid() != 1) {
-        if (priority < (sizeof(levels) / sizeof(levels[0]))) {
-            level = levels[priority];
-        }
+        const char * level = "UNKN";
+        level = levels[priority & 0x7];
         fprintf(stderr, "[%d] %s ", getpid(), level);
         vfprintf(stderr, format, ap);
     } else {
-        vsyslog(LOG_DAEMON | priority, format, ap);
+        if (!initialized) {
+            openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
+            initialized = !0;
+        }
+        vsyslog(priority, format, ap);
     }
 }
 
@@ -52,18 +61,15 @@ void diminuto_log(int priority, const char * format, ...)
     va_end(ap);
 }
 
+void diminuto_emit(const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    diminuto_log3(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
+    va_end(ap);
+}
+
 void diminuto_perror(const char * s)
 {
-    pid_t ppid;
-    int myerrno;
-
-    myerrno = errno;
-    ppid = getppid();
-    errno = myerrno;
-
-    if (ppid != 1) {
-        perror(s);
-    } else {
-        diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s", s, strerror(errno));
-    }
+    diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s", s, strerror(errno));
 }

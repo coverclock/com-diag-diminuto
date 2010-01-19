@@ -37,6 +37,19 @@
 
 /******************************************************************************/
 
+/*
+ * The log mask has one bit for every message priority that can be enabled or
+ * disabled. We define here a bit for every priority that is supported by
+ * the native Linux syslog (for daemons) and printk (for kernel and device
+ * drivers) interfaces. You might be tempted to define additional mask bits,
+ * but the native interfaces won't understand other priorities. We define
+ * the mask to be an int, even though only the lowest order eight bits are
+ * used, because that makes it easier to use as a parameter for loadable
+ * kernel or device driver modules.
+ */
+
+typedef int diminuto_log_mask_t;
+
 #define DIMINUTO_LOG_MASK_EMERGENCY     (1<<0)
 #define DIMINUTO_LOG_MASK_ALERT         (1<<1)
 #define DIMINUTO_LOG_MASK_CRITICAL      (1<<2)
@@ -46,9 +59,11 @@
 #define DIMINUTO_LOG_MASK_INFORMATION   (1<<6)
 #define DIMINUTO_LOG_MASK_DEBUG         (1<<7)
 
-#define DIMINUTO_LOG_MASK_ALL           (0xff)
-#define DIMINUTO_LOG_MASK_NONE          (0x00)
-#define DIMINUTO_LOG_MASK_DEFAULT       (0x0f)
+#define DIMINUTO_LOG_MASK_ALL           (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE | DIMINUTO_LOG_MASK_INFORMATION | DIMINUTO_LOG_MASK_DEBUG)
+
+#define DIMINUTO_LOG_MASK_NONE          (0)
+
+#define DIMINUTO_LOG_MASK_DEFAULT       (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR)
 
 /******************************************************************************/
 
@@ -71,10 +86,6 @@
 #define DIMINUTO_LOG_PRIORITY_NOTICE         KERN_NOTICE
 #define DIMINUTO_LOG_PRIORITY_INFORMATION    KERN_INFO
 #define DIMINUTO_LOG_PRIORITY_DEBUG          KERN_DEBUG
-
-#include <asm/types.h>
-
-typedef u8 diminuto_log_mask_t;
 
 static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
@@ -99,10 +110,13 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_PRIORITY_INFORMATION    LOG_INFO
 #define DIMINUTO_LOG_PRIORITY_DEBUG          LOG_DEBUG
 
-#include <stdint.h>
+#define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
+#define DIMINUTO_LOG_OPTION_DEFAULT          LOG_CONS
+#define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
 
-typedef uint8_t diminuto_log_mask_t;
-
+extern char * diminuto_log_ident;
+extern int diminuto_log_option;
+extern int diminuto_log_facility;
 extern diminuto_log_mask_t diminuto_log_mask;
 
 #include <stdarg.h>
@@ -135,9 +149,19 @@ extern void diminuto_log3(int priority, const char * format, va_list ap);
  */
 extern void diminuto_log(int priority, const char * format, ...);
 
+/**
+ * If the parent PID of the calling process is not 1, format and print
+ * the argument list to stderr; if it is, format and log the argument
+ * list to syslog. The message is logged at the default priority.
+ * @param format points to a printf-style format string.
+ */
+extern void diminuto_emit(const char * format, ...);
+
 #endif
 
 /******************************************************************************/
+
+#define DIMINUTO_LOG_PRIORITY_DEFAULT        DIMINUTO_LOG_PRIORITY_NOTICE
 
 #endif
 

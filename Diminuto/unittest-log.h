@@ -8,6 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_log.h"
+
 static void maybe(void)
 {
 	DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
