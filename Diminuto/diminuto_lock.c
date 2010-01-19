@@ -29,7 +29,7 @@ int diminuto_lock(const char * file)
 
     do {
 
-        if ((fd = open(file, O_WRONLY | O_CREAT | O_EXCL, 0444)) < 0) {
+        if ((fd = open(file, O_WRONLY | O_CREAT | O_EXCL, 0644)) < 0) {
             result = -30;
             diminuto_perror("diminuto_lock: open");
             break;

@@ -37,6 +37,15 @@ static const char * levels[] = {
 
 static int initialized = 0;
 
+void diminuto_syslog3(int priority, const char * format, va_list ap)
+{
+    if (!initialized) {
+        openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
+        initialized = !0;
+    }
+    vsyslog(priority, format, ap);
+}
+
 void diminuto_log3(int priority, const char * format, va_list ap)
 {
     if (getppid() != 1) {
@@ -45,12 +54,16 @@ void diminuto_log3(int priority, const char * format, va_list ap)
         fprintf(stderr, "[%d] %s ", getpid(), level);
         vfprintf(stderr, format, ap);
     } else {
-        if (!initialized) {
-            openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
-            initialized = !0;
-        }
-        vsyslog(priority, format, ap);
+        diminuto_syslog3(priority, format, ap);
     }
+}
+
+void diminuto_syslog(int priority, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    diminuto_syslog3(priority, format, ap);
+    va_end(ap);
 }
 
 void diminuto_log(int priority, const char * format, ...)
@@ -69,7 +82,12 @@ void diminuto_emit(const char * format, ...)
     va_end(ap);
 }
 
+void diminuto_serror(const char * s)
+{
+    diminuto_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+}
+
 void diminuto_perror(const char * s)
 {
-    diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s", s, strerror(errno));
+    diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
 }
