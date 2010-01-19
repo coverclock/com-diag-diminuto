@@ -10,6 +10,7 @@
 
 #include "diminuto_delay.h"
 #include "diminuto_log.h"
+#include <sched.h>
 #include <errno.h>
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
@@ -42,4 +43,15 @@ uint64_t diminuto_delay(uint64_t microseconds, int interruptable)
     }
 
     return (result.tv_sec * 1000000ULL) + (result.tv_nsec / 1000UL);
+}
+
+int diminuto_yield(void) {
+    int rc;
+
+    rc = sched_yield();
+    if (rc != 0) {
+        diminuto_perror("diminuto_yield: sched_yield");
+    }
+
+    return rc;
 }

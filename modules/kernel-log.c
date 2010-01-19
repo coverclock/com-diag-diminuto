@@ -13,7 +13,7 @@
 
 #include "unittest-log.h"
 
-static int diminuto_log_subsystem_mask = -1;
+static diminuto_log_mask_t diminuto_log_subsystem_mask = -1;
 
 static void unittest(void)
 {

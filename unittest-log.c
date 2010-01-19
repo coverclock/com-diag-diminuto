@@ -9,130 +9,140 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_log.h"
-#include <stdio.h>
+#include "diminuto_daemonize.h"
+#include "diminuto_delay.h"
 
 #include "unittest-log.h"
 
 int main(int argc, char ** argv)
 {
-    fprintf(stderr, "BEGIN\n");
+    if (argc > 1) {
+        int rc;
+        diminuto_emit("DAEMONIZING\n");
+        if ((rc = diminuto_daemonize((const char *)0)) == 0) {
+            diminuto_emit("DAEMONIZED\n");
+        } else {
+            diminuto_perror("diminuto_daemonize");
+            exit(1);
+        }
+    }
+    diminuto_emit("BEGIN\n");
     yes();
     no();
     maybe();
-    fprintf(stderr, "PUBLIC DEFAULT\n");
+    diminuto_emit("PUBLIC DEFAULT\n");
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC ALL\n");
+    diminuto_emit("PUBLIC ALL\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_ALL;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC EMERGENCY\n");
+    diminuto_emit("PUBLIC EMERGENCY\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_EMERGENCY;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC ALERT\n");
+    diminuto_emit("PUBLIC ALERT\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_ALERT;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC CRITICAL\n");
+    diminuto_emit("PUBLIC CRITICAL\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_CRITICAL;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC ERROR\n");
+    diminuto_emit("PUBLIC ERROR\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_ERROR;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC WARNING\n");
+    diminuto_emit("PUBLIC WARNING\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_WARNING;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC NOTICE\n");
+    diminuto_emit("PUBLIC NOTICE\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_NOTICE;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC INFORMATION\n");
+    diminuto_emit("PUBLIC INFORMATION\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_INFORMATION;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC DEBUG\n");
+    diminuto_emit("PUBLIC DEBUG\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_DEBUG;
     all();
     none();
     mine();
-    fprintf(stderr, "PUBLIC NONE\n");
+    diminuto_emit("PUBLIC NONE\n");
     diminuto_log_mask = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE DEFAULT\n");
+    diminuto_emit("PRIVATE DEFAULT\n");
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE ALL\n");
+    diminuto_emit("PRIVATE ALL\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALL;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE NONE\n");
+    diminuto_emit("PRIVATE NONE\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE EMERGENCY\n");
+    diminuto_emit("PRIVATE EMERGENCY\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_EMERGENCY;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE ALERT\n");
+    diminuto_emit("PRIVATE ALERT\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALERT;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE CRITICAL\n");
+    diminuto_emit("PRIVATE CRITICAL\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_CRITICAL;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE ERROR\n");
+    diminuto_emit("PRIVATE ERROR\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ERROR;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE WARNING\n");
+    diminuto_emit("PRIVATE WARNING\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_WARNING;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE NOTICE\n");
+    diminuto_emit("PRIVATE NOTICE\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NOTICE;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE INFORMATION\n");
+    diminuto_emit("PRIVATE INFORMATION\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_INFORMATION;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE DEBUG\n");
+    diminuto_emit("PRIVATE DEBUG\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_DEBUG;
     all();
     none();
     mine();
-    fprintf(stderr, "PRIVATE NONE\n");
+    diminuto_emit("PRIVATE NONE\n");
     diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
     all();
     none();
     mine();
-    fprintf(stderr, "END\n");
+    diminuto_emit("END\n");
     return 0;
 }
