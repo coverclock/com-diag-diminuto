@@ -24,9 +24,36 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+static int received = 0;
+
+static int diminuto_received(void)
+{
+    int signum;
+    sigset_t set;
+    sigset_t was;
+
+    sigemptyset(&set);
+    sigaddset(&set, SIGALRM);
+    sigaddset(&set, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &set, &was);
+
+    signum = received;
+    received = 0;
+
+    sigprocmask(SIG_SETMASK, &was, (sigset_t *)0);
+
+    return signum;
+}
+
 static void diminuto_handler(int signum)
 {
-    if (signum == SIGUSR1) { exit(0); }
+    if ((signum == SIGALRM) || (signal == SIGCHLD)) {
+        received = signum;
+    } else if (signum == SIGUSR1) {
+        exit(0);
+    } else {
+        /* Do nothing: not one of our signals. */
+    }
 }
 
 int diminuto_daemonize(const char * file)
@@ -73,16 +100,30 @@ int diminuto_daemonize(const char * file)
 
         /* Fork off the daemon child. */
 
+        received = 0;
+
         if ((pid = fork()) < 0) {
             diminuto_serror("diminuto_daemonize: fork");
             break;
         }
 
+        /*
+         * N.B. We may get a SIGUSR1 (success) or a SIGALRM (failure)
+         *      from the child at any time, including before we even
+         *      examine the return code from the fork(). We try not
+         *      to wait for ten seconds below if the child has already
+         *      signaled us, but there is no way to be sure.
+         */
+
         /* Wait for the daemon child to signal us. */
 
         if (pid > 0) {
-            alarm(10);
-            pause();
+            if (diminuto_received() == 0) {
+                alarm(10);
+                if (diminuto_received() == 0) {
+                    pause();
+                }
+            }
             errno = ETIMEDOUT;
             diminuto_serror("diminuto_daemonize: alarm");
             break;
