@@ -31,6 +31,7 @@ int main(int argc, char ** argv)
     pid_t pid4;
     pid_t pid5;
     pid_t pid6;
+    pid_t pid7;
     pid_t ppid;
 
     diminuto_emit("unittest-daemonize: begin %d\n", getpid());
@@ -41,6 +42,18 @@ int main(int argc, char ** argv)
     ASSERT(pid1 >= 0);
 
     diminuto_emit("unittest-daemonize: parent %d\n", pid1);
+
+    rc = diminuto_lock(file);
+    ASSERT(rc == 0);
+
+    rc = diminuto_daemonize(file);
+    ASSERT(rc < 0);
+
+    rc = diminuto_unlock(file);
+    ASSERT(rc == 0);
+
+    pid7 = getpid();
+    ASSERT(pid7 == pid1);
 
     rc = diminuto_daemonize(file);
     ASSERT(rc == 0);
