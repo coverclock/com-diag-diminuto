@@ -25,8 +25,12 @@ int main(int argc, char ** argv)
 
     diminuto_coreable();
 
-    printf("%10s %10s %10s %10s\n",
-        "requested", "remaining", "claimed", "measured");
+    printf("%10s %10s %10s %10s %10s\n",
+        "requested",
+        "remaining",
+        "claimed",
+        "measured",
+        "difference");
 
     for (requested = 0; requested < 60000000; requested = requested ? requested * 2 : 1) {
         then = diminuto_time();
@@ -34,8 +38,12 @@ int main(int argc, char ** argv)
         now = diminuto_time();
         claimed = requested - remaining;
         measured = now - then;
-        printf("%10llu %10llu %10lld %10lld\n",
-            requested, remaining, claimed, measured);
+        printf("%10llu %10llu %10lld %10lld %10lld\n",
+            requested,
+            remaining,
+            claimed,
+            measured,
+            measured - requested);
     }
 
     return 0;
