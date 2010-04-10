@@ -9,14 +9,15 @@
  *
  * USAGE
  *
- * ipcalc [ ipaddress [ netmask [ hostmask ] ] ]<BR>
+ * ipcalc [ ipaddress [ netmask [ hostpart ] ] ]<BR>
  *
  * EXAMPLES
  *
- * ipcalc 192.168.1.222<BR>
- * ipcalc 192.168.1.222 255.255.255.0<BR>
- * ipcalc 192.168.1.222 255.255.255.0 255.255.255.255<BR>
- * ipcalc 192.168.1.222 255.255.255.0 0.0.0.0<BR>
+ * ipcalc 192.168.1.222 # generates the default netmask<BR>
+ * ipcalc 192.168.1.222 255.255.255.0 # generates a broadcast address<BR>
+ * ipcalc 192.168.1.222 255.255.255.0 0.0.0.0 # generates a subnet number<BR>
+ * ipcalc 192.168.1.222 255.255.255.0 0.0.0.254 # generates another host address on the same subnet<BR>
+ * ipcalc 192.168.1.222 255.255.255.0 255.255.255.255 # also generates a broadcast address<BR>
  *
  * ABSTRACT
  *
@@ -36,9 +37,10 @@
 
 void usage(const char * pgm, FILE * fp)
 {
-    fprintf(fp, "Usage: %s 192.168.1.222\n", pgm);
+    fprintf(fp, "Usage: %s [ ipaddress [ netmask [ hostpart ] ] ]\n", pgm);
+    fprintf(fp, "       %s 192.168.1.222\n", pgm);
     fprintf(fp, "       %s 192.168.1.222 255.255.255.0\n", pgm);
-    fprintf(fp, "       %s 192.168.1.222 255.255.255.0 255.255.255.255\n", pgm);
+    fprintf(fp, "       %s 192.168.1.222 255.255.255.0 0.0.0.254\n", pgm);
 }
 
 int main(int argc, char ** argv)
