@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <syslog.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -21,52 +20,57 @@
 
 int diminuto_lock(const char * file)
 {
-    int fd;
+    int fd = -1;
+    FILE * fp = (FILE *)0;
     pid_t pid;
-    FILE * fp;
     int rc;
     int result = 0;
 
     do {
 
         if ((fd = open(file, O_WRONLY | O_CREAT | O_EXCL, 0644)) < 0) {
-            result = -30;
+            result = -1;
             diminuto_perror("diminuto_lock: open");
             break;
         }
 
         if ((pid = getpid()) < 0) {
-            result = -31;
+            result = -2;
             diminuto_perror("diminuto_lock: getpid");
             break;
         }
 
         if ((fp = fdopen(fd, "w")) == (FILE *)0) {
-            result = -32;
+            result = -3;
             diminuto_perror("diminuto_lock: fdopen");
             break;
         }
 
         if (fprintf(fp, "%d", pid) < 0) {
-            result = -33;
+            result = -4;
             diminuto_perror("diminuto_lock: fprintf");
             break;
         }
 
-        if (fclose(fp) < 0) {
-            result = -34;
-            diminuto_perror("diminuto_lock: fclose");
-            break;
-        }
-
-        fd = -1;
-
     } while (0);
+
+    if (fp == (FILE *)0) {
+        /* Do nothing. */
+    } else if (fclose(fp) == EOF) {
+        result = -5;
+        diminuto_perror("diminuto_lock: fclose");
+    } else {
+        fp = (FILE *)0;
+        fd = -1;
+    }
 
     if (fd < 0) {
         /* Do nothing. */
     } else if (close(fd) < 0) {
+        result = -6;
         diminuto_perror("diminuto_lock: close");
+    } else {
+        fd = -1;
     }
 
     return result;
@@ -78,7 +82,7 @@ int diminuto_unlock(const char * file)
     int result = 0;
 
     if (unlink(file) < 0) {
-        result = -35;
+        result = -1;
         diminuto_perror("diminuto_unlock: unlink");
     }
 
@@ -87,45 +91,51 @@ int diminuto_unlock(const char * file)
 
 pid_t diminuto_locked(const char * file)
 {
-    int fd;
-    FILE * fp;
+    int fd = -1;
+    FILE * fp = (FILE *)0;
     pid_t pid;
     int rc;
 
     do {
 
         if ((fd = open(file, O_RDONLY, 0)) < 0) {
-            pid = -36;
+            pid = -1;
             diminuto_perror("diminuto_lock: open");
             break;
         }
 
         if ((fp = fdopen(fd, "r")) == (FILE *)0) {
-            pid = -37;
+            pid = -2;
             diminuto_perror("diminuto_locked: fdopen");
             break;
         }
 
         if (fscanf(fp, "%d", &pid) != 1) {
-            pid = -38;
+            pid = -3;
             errno = EINVAL;
             diminuto_perror("diminuto_locked: fscanf");
             break;
         }
 
-        if (fclose(fp) < 0) {
-            diminuto_perror("diminuto_locked: fclose");
-            break;
-        }
-
-        fd = -1;
-
     } while (0);
+
+    if (fp == (FILE *)0) {
+        /* Do nothing. */
+    } else if (fclose(fp) == EOF) {
+        pid = -4;
+        diminuto_perror("diminuto_locked: fclose");
+    } else {
+        fp = (FILE *)0;
+        fd = -1;
+    }
 
     if (fd < 0) {
         /* Do nothing. */
     } else if (close(fd) < 0) {
+        pid = -5;
         diminuto_perror("diminuto_locked: close");
+    } else {
+        fd = -1;
     }
 
     return pid;

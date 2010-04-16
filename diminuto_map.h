@@ -32,4 +32,16 @@ extern void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_
  */
 extern int diminuto_unmap(void * start, size_t length);
 
+/**
+ * Set the minimum physical address which may be mapped. Setting this
+ * value to non-zero prevents the null page from being mapped. Setting it to
+ * zero allows the null page to be mapped so that null pointers will actually
+ * point to a valid portion of memory. Wackiness may ensue. This function
+ * can only be called by a process with root privileges. It has no effect on
+ * kernels prior to 2.6.26, and only then if CONFIG_SECURITY is enabled.
+ * @param minimum is the minimum physical address which may be mapped.
+ * @return 0 if successful or if the operation is not supported, !0 otherwise.
+ */
+extern int diminuto_map_minimum(uintptr_t minimum);
+
 #endif

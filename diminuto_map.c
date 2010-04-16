@@ -13,8 +13,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * lengthp)
 {
@@ -67,4 +70,62 @@ int diminuto_unmap(void * start, size_t length)
     }
 
     return rc;
+}
+
+int diminuto_map_minimum(uintptr_t minimum)
+{
+    int fd = -1;
+    FILE * fp = (FILE *)0;
+    int result = 0;
+    unsigned long value;
+
+    do {
+
+        if ((getuid() != 0) && (geteuid() != 0)) {
+            result = -1;
+            errno = EPERM;
+            diminuto_perror("diminuto_map_minimum: open");
+            break;
+        }
+
+        if ((fd = open("/proc/sys/vm/mmap_min_addr", O_WRONLY)) < 0) {
+            break;
+        }
+
+        if ((fp = fdopen(fd, "w")) == (FILE *)0) {
+            result = -2;
+            diminuto_perror("diminuto_map_minimum: fdopen");
+            break;
+        }
+
+        value = minimum;
+
+        if (fprintf(fp, "%lu", value) < 0) {
+            result = -3;
+            diminuto_perror("diminuto_map_minimum: fprintf");
+            break;
+        }
+
+    } while (0);
+
+    if (fp == (FILE *)0) {
+        /* Do nothing. */
+    } else if (fclose(fp) == EOF) {
+        result = -4;
+        diminuto_perror("diminuto_map_minimum: fclose");
+    } else {
+        fp = (FILE *)0;
+        fd = -1;
+    }
+
+    if (fd < 0) {
+        /* Do nothing. */
+    } else if (close(fd) < 0) {
+        result = -5;
+        diminuto_perror("diminuto_map_minimum: close");
+    } else {
+        fd = -1;
+    }
+
+    return result;
 }
