@@ -285,6 +285,9 @@ unittest-log:	unittest-log.c lib$(PROJECT).so
 unittest-lock:	unittest-lock.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-map:	unittest-map.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules (just for unit testing)
 
 .PHONY:	modules

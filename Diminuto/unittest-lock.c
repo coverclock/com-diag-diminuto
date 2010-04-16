@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 1020 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,7 +16,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <syslog.h>
 
 static const char * file = "/tmp/unittest-lock.pid";
 
