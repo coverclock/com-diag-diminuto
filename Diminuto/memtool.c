@@ -9,11 +9,16 @@
  *
  * USAGE
  *
- * memtool<BR>
+ * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|c|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
  *
  * EXAMPLES
  *
+ * memtool -a 0xffff8000 -l 4096 -4 0xffff8004 -s 0x1 -u 1000 -c 0x1
+ *
  * ABSTRACT
+ *
+ * Allows manipulation of bytes, shorts, longs, and long longs at arbitary
+ * real memory addresses. Probably needs to be run as root.
  */
 
 #include "diminuto_map.h"

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 /**
- * Parses a string in a strtoul-like manner, returning a pointer to the
+ * Parses a string in a strtoll-like manner, returning a pointer to the
  * first non-numeric character. Applications can use this pointer to
  * advance parsing, or to test for the nul end of string character to see
  * if the string was all consumed. If the first non-numeric character is
@@ -25,8 +25,26 @@
  * @param p points to an unsigned 64-bit integer variable into which the
  * binary result is placed.
  * @return a pointer to the first non-numeric character encountered.
- * @see strtoul(3)
+ * @see strtoll(3)
  */
-extern const char * diminuto_number(const char * s, uint64_t * p);
+extern const char * diminuto_unsigned(const char * s, uint64_t * p);
+
+/**
+ * Parses a string in a strtoull-like manner, returning a pointer to the
+ * first non-numeric character. Applications can use this pointer to
+ * advance parsing, or to test for the nul end of string character to see
+ * if the string was all consumed. If the first non-numeric character is
+ * not a nul, errno is set so that the application may choose to print an
+ * error message.
+ * @param s points to a nul-terminated C-style numeric string in base 8, 10,
+ * or 16.
+ * @param p points to an signed 64-bit integer variable into which the
+ * binary result is placed.
+ * @return a pointer to the first non-numeric character encountered.
+ * @see strtoll(3)
+ */
+extern const char * diminuto_signed(const char * s, int64_t * p);
+
+#define diminuto_number diminuto_unsigned
 
 #endif

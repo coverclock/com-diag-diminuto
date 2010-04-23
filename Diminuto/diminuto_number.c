@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-const char * diminuto_number(const char * s, uint64_t * p)
+const char * diminuto_unsigned(const char * s, uint64_t * p)
 {
 	uint64_t n;
 	char * e;
@@ -20,6 +20,19 @@ const char * diminuto_number(const char * s, uint64_t * p)
 	n = strtoull(s, &e, 0);
 
 	if (p != (uint64_t *)0) { *p = n; }
+	if (*e != '\0') { errno = EINVAL; }
+
+	return e;
+}
+
+const char * diminuto_signed(const char * s, int64_t * p)
+{
+	int64_t n;
+	char * e;
+
+	n = strtoll(s, &e, 0);
+
+	if (p != (int64_t *)0) { *p = n; }
 	if (*e != '\0') { errno = EINVAL; }
 
 	return e;
