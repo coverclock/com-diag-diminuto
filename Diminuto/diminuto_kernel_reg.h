@@ -18,8 +18,8 @@
 
 #if defined(__KERNEL__) || defined(MODULE)
 #include <linux/types.h>
-#if 1
-typedef unsigned long uintptr_t; /* WTF? */
+#if 0
+typedef unsigned long uintptr_t; /* Some kernels define this, some don't */
 #endif
 #include <linux/io.h>
 #else
