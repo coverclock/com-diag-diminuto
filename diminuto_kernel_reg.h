@@ -30,12 +30,14 @@ typedef union {
     uint8_t eight;
     uint16_t sixteen;
     uint32_t thirtytwo;
+    uint64_t sixtyfour;
 } diminuto_kernel_datum;
 
 typedef enum {
-    EIGHT = sizeof(uint8_t),
-    SIXTEEN = sizeof(uint16_t),
-    THIRTYTWO = sizeof(uint32_t)
+    EIGHT = sizeof(uint8_t) * 8,
+    SIXTEEN = sizeof(uint16_t) * 8,
+    THIRTYTWO = sizeof(uint32_t) * 8,
+    SIXTYFOUR = sizeof(uint64_t) * 8
 } diminuto_kernel_width;
 
 #if defined(__KERNEL__) || defined(MODULE)
@@ -72,6 +74,13 @@ diminuto_kernel_get(
             rc = -EINVAL;
         } else {
             datump->thirtytwo = *(const volatile uint32_t __iomem *)address;
+        }
+        break;
+    case SIXTYFOUR:
+        if ((uintptr_t)address & 0x7) {
+            rc = -EINVAL;
+        } else {
+            datump->sixtyfour = *(const volatile uint64_t __iomem *)address;
         }
         break;
     default:
@@ -114,6 +123,13 @@ diminuto_kernel_put(
             rc = -EINVAL;
         } else {
             *(volatile uint32_t __iomem *)address = datump->thirtytwo;
+        }
+        break;
+    case SIXTYFOUR:
+        if ((uintptr_t)address & 0x7) {
+            rc = -EINVAL;
+        } else {
+            *(volatile uint64_t __iomem *)address = datump->sixtyfour;
         }
         break;
     default:
