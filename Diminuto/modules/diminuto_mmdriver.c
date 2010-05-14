@@ -107,6 +107,8 @@ mmdriver_ioctl_set(
             tmp.sixteen = opp->datum.sixteen | tmp.sixteen;
         } else if (opp->width == THIRTYTWO) {
             tmp.thirtytwo = opp->datum.thirtytwo | tmp.thirtytwo;
+        } else if (opp->width == SIXTYFOUR) {
+            tmp.sixtyfour = opp->datum.sixtyfour | tmp.sixtyfour;
         } else {
             rc = -EINVAL;
             break;
@@ -143,6 +145,8 @@ mmdriver_ioctl_clear(
             tmp.sixteen = opp->datum.sixteen & ~tmp.sixteen;
         } else if (opp->width == THIRTYTWO) {
             tmp.thirtytwo = opp->datum.thirtytwo & ~tmp.thirtytwo;
+        } else if (opp->width == SIXTYFOUR) {
+            tmp.sixtyfour = opp->datum.sixtyfour & ~tmp.sixtyfour;
         } else {
             rc = -EINVAL;
             break;
