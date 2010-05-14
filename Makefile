@@ -49,7 +49,6 @@ BUSYBOX_REV	=	1.11.1
 BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
 PROJECT_DIR	=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
 FAKEROOT_DIR	=	$(PROJECT_DIR)/root
-KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
 BUSYBOX_DIR	=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
 CONFIG_DIR	=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
@@ -59,17 +58,24 @@ FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
 
+ifeq ($(COMPILEFOR),target)
+KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
+else
+KERNEL_DIR	=	/usr/src/linux-headers-2.6.22-14-generic
+endif
+
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP	=	$(shell date +%Y%m%d)
 IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
-KFILES		=	$(wildcard kernel*.c)
-CFILES		=	$(filter-out $(KFILES),$(wildcard *.c))
+CFILES		=	$(wildcard *.c)
 HFILES		=	$(wildcard *.h)
+KFILES		=	$(wildcard modules/*.c)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
+TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv ipcalc memtool dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c))
@@ -108,7 +114,7 @@ BROWSER		=	firefox
 
 default:	$(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETUNITTESTS)
 
-all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS)
+all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETMODULES)
 
 install:	host-install target-install
 
@@ -297,15 +303,17 @@ unittest-lock:	unittest-lock.c lib$(PROJECT).so
 unittest-map:	unittest-map.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-########## Modules (just for unit testing)
+########## Modules
 
-.PHONY:	modules
+.PHONY:	modules modules-clean
 
-modules:	modules/kernel-log.c
-	make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+modules:	modules/diminuto_utmodule.c modules/diminuto_mmdriver.c
+	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 modules-clean:
-	-make -C $(shell cd /usr/src/linux-headers-2.6.22-14-generic; pwd) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+
+modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko:	modules
 
 ########## Helpers
 
@@ -411,8 +419,8 @@ $(DOC_DIR)/pdf:
 
 depend:	dependencies.mk
 
-dependencies.mk:	Makefile $(CFILES) $(HFILES)
-	$(CC) $(CPPFLAGS) -M -MG $(CFILES) > dependencies.mk
+dependencies.mk:	Makefile $(HFILES) $(CFILES) $(KFILES)
+	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(KFILES) > dependencies.mk
 
 -include dependencies.mk
 

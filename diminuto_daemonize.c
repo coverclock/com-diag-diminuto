@@ -46,7 +46,7 @@ static int diminuto_received(void)
 
 static void diminuto_handler(int signum)
 {
-    if ((signum == SIGALRM) || (signal == SIGCHLD)) {
+    if ((signum == SIGALRM) || (signum == SIGCHLD)) {
         received = signum;
     } else if (signum == SIGUSR1) {
         exit(0);

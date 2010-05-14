@@ -3,5 +3,5 @@
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
-obj-m := kernel-log.o
+obj-m := diminuto_utmodule.o diminuto_mmdriver.o
 EXTRA_CFLAGS := -I$(shell cd /home/jsloan/src/Diminuto; pwd)

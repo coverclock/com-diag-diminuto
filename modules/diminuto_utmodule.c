@@ -10,10 +10,9 @@
 
 #include <linux/module.h>
 #include "diminuto_log.h"
-
 #include "unittest-log.h"
 
-static diminuto_log_mask_t diminuto_log_subsystem_mask = -1;
+static diminuto_log_mask_t diminuto_utmodule_mask = -1;
 
 static void unittest(void)
 {
@@ -134,8 +133,8 @@ static void unittest(void)
     all();
     none();
     mine();
-    if (diminuto_log_subsystem_mask != -1) {
-        diminuto_log_subsystem[0] = diminuto_log_subsystem_mask;
+    if (diminuto_utmodule_mask != -1) {
+        diminuto_log_subsystem[0] = diminuto_utmodule_mask;
         printk("PRIVATE SET\n");
         all();
         none();
@@ -155,10 +154,10 @@ void cleanup_log_unittest(void)
 }
 
 EXPORT_SYMBOL(diminuto_log_subsystem);
-module_param(diminuto_log_subsystem_mask, int, S_IRUSR | S_IWUSR);
-MODULE_PARM_DESC(diminuto_log_subsystem_mask, "Diminuto Log Mask");
+module_param(diminuto_utmodule_mask, int, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(diminuto_utmodule_mask, "diminuto utmodule log mask");
 MODULE_LICENSE("LGPL");
 MODULE_AUTHOR("coverclock@diag.com");
-MODULE_DESCRIPTION("diminuto log kernel unit test");
+MODULE_DESCRIPTION("diminuto utmodule");
 module_init(init_log_unittest);
 module_exit(cleanup_log_unittest);
