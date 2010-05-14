@@ -5,19 +5,29 @@
 
 ########## Variables
 
-COMPILEFOR	=	host
-#COMPILEFOR	=	target
+#COMPILEFOR	=	host
+#COMPILEFOR	=	diminuto
+COMPILEFOR	=	arroyo
 
-ifeq ($(COMPILEFOR),target)
+ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
 PLATFORM	=	linux
-CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 CARCH		=	-march=armv4t
-else
+CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+endif
+
+ifeq ($(COMPILEFOR),arroyo)
+ARCH		=	arm
+PLATFORM	=	linux
+CARCH		=	-march=armv4t
+CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+endif
+
+ifeq ($(COMPILEFOR),host)
 ARCH		=	i386
 PLATFORM	=	linux
-CROSS_COMPILE	=	
-CARCH		=	
+CARCH		=
+CROSS_COMPILE	=
 endif
 
 PRODUCT		=	buildroot
@@ -58,9 +68,15 @@ FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
 
-ifeq ($(COMPILEFOR),target)
+ifeq ($(COMPILEFOR),diminuto)
 KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
-else
+endif
+
+ifeq ($(COMPILEFOR),arroyo)
+KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
+endif
+
+ifeq ($(COMPILEFOR),host)
 KERNEL_DIR	=	/usr/src/linux-headers-2.6.22-14-generic
 endif
 
