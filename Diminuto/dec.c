@@ -43,7 +43,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-
 int main(int argc, char * argv[])
 {
     const char * name;

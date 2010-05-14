@@ -184,7 +184,11 @@ extern void diminuto_emit(const char * format, ...);
 
 /******************************************************************************/
 
-#define DIMINUTO_LOG_PRIORITY_DEFAULT        DIMINUTO_LOG_PRIORITY_NOTICE
+#define DIMINUTO_LOG_PRIORITY_DEFAULT       DIMINUTO_LOG_PRIORITY_NOTICE
+
+#define DIMINUTO_LOG_STRINGIFY(_STRING_)    #_STRING_
+#define DIMINUTO_LOG_TOKENIZE(_TOKEN_)      DIMINUTO_LOG_STRINGIFY(_TOKEN_)
+#define DIMINUTO_LOG_HERE                   __FILE__ "@" DIMINUTO_LOG_TOKENIZE(__LINE__) ": "
 
 #endif
 
