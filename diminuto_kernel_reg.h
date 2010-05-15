@@ -34,10 +34,10 @@ typedef union {
 } diminuto_kernel_datum;
 
 typedef enum {
-    EIGHT = sizeof(uint8_t) * 8,
-    SIXTEEN = sizeof(uint16_t) * 8,
-    THIRTYTWO = sizeof(uint32_t) * 8,
-    SIXTYFOUR = sizeof(uint64_t) * 8
+    EIGHT = sizeof(uint8_t),
+    SIXTEEN = sizeof(uint16_t),
+    THIRTYTWO = sizeof(uint32_t),
+    SIXTYFOUR = sizeof(uint64_t)
 } diminuto_kernel_width;
 
 #if defined(__KERNEL__) || defined(MODULE)

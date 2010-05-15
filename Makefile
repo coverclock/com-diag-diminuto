@@ -9,11 +9,16 @@
 #COMPILEFOR	=	diminuto
 COMPILEFOR	=	arroyo
 
+PROJECT		=	diminuto
+PRODUCT		=	buildroot
+
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
 PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
+KERNEL_REV	=	2.6.25.10
+KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PRODUCT)/$(PLATFORM)-$(KERNEL_REV)
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
@@ -21,6 +26,8 @@ ARCH		=	arm
 PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV	=	2.6.26.3
+KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
 endif
 
 ifeq ($(COMPILEFOR),host)
@@ -28,10 +35,9 @@ ARCH		=	i386
 PLATFORM	=	linux
 CARCH		=
 CROSS_COMPILE	=
+KERNEL_REV	=	2.6.22-14
+KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic
 endif
-
-PRODUCT		=	buildroot
-PROJECT		=	diminuto
 
 TGT_IPADDR	=	192.168.1.223
 BDI_IPADDR	=	192.168.1.224
@@ -53,7 +59,6 @@ MINOR		=	1
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
-KERNEL_REV	=	2.6.25.10
 BUSYBOX_REV	=	1.11.1
 
 BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
@@ -68,18 +73,6 @@ FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
 UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
 DOC_DIR		=	doc
 
-ifeq ($(COMPILEFOR),diminuto)
-KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
-endif
-
-ifeq ($(COMPILEFOR),arroyo)
-KERNEL_DIR	=	$(PROJECT_DIR)/$(PLATFORM)-$(KERNEL_REV)
-endif
-
-ifeq ($(COMPILEFOR),host)
-KERNEL_DIR	=	/usr/src/linux-headers-2.6.22-14-generic
-endif
-
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP	=	$(shell date +%Y%m%d)
 IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
@@ -93,7 +86,7 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv ipcalc memtool dec hex oct
+TARGETBINARIES	=	getubenv ipcalc memtool mmdrivertool dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -275,6 +268,9 @@ ipcalc:	ipcalc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 memtool:	memtool.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+mmdrivertool:	mmdrivertool.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 dec:	dec.c lib$(PROJECT).so

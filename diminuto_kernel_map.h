@@ -48,10 +48,6 @@ diminuto_kernel_map(
 
     do {
 
-        *regionpp = 0;
-        *basepp = 0;
-        *pagepp = 0;
-
 #if 1
         /* Align physical memory on a page boundary. */
         offset = start % PAGE_SIZE;
@@ -66,19 +62,23 @@ diminuto_kernel_map(
         if (regionpp) {
             *regionpp = request_mem_region(start, length, name ? name : "mmdriver");
             if (!*regionpp) {
+                rc = -EPERM;
+                break;
+            }
+        }
+
+        if (pagepp) {
+            *pagepp = ioremap_nocache(address, size);
+            if (!*pagepp) {
+                release_mem_region(start, length);
                 rc = -ENOMEM;
                 break;
             }
         }
 
-        *pagepp = ioremap_nocache(address, size);
-        if (!*pagepp) {
-            release_mem_region(start, length);
-            rc = -ENOMEM;
-            break;
+        if (basepp) {
+            *basepp = (char *)*pagepp + offset;
         }
-
-        *basepp = (char *)*pagepp + offset;
 
     } while (0);
 

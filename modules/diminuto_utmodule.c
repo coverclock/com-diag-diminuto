@@ -156,7 +156,7 @@ void cleanup_log_unittest(void)
 EXPORT_SYMBOL(diminuto_log_subsystem);
 module_param(diminuto_utmodule_mask, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(diminuto_utmodule_mask, "diminuto utmodule log mask");
-MODULE_LICENSE("LGPL");
+MODULE_LICENSE("GPL");
 MODULE_AUTHOR("coverclock@diag.com");
 MODULE_DESCRIPTION("diminuto utmodule");
 module_init(init_log_unittest);

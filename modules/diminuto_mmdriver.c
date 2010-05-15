@@ -35,6 +35,7 @@
 
 static int beginning = -1;
 static int ending = -1;
+static int exclusive = 0;
 static unsigned long begin = DIMINUTO_MMDRIVER_BEGIN;
 static unsigned long end = DIMINUTO_MMDRIVER_END;
 static unsigned long start = 0;
@@ -50,19 +51,19 @@ static DECLARE_MUTEX(semaphore);
 
 static int
 mmdriver_ioctl_read(
-    const void * address,
+    const void * pointer,
     diminuto_mmdriver_op * opp
 ) {
     int rc;
 
-    rc = diminuto_kernel_get(address, opp->width, &(opp->datum));
+    rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum));
 
     return rc;
 }
 
 static int
 mmdriver_ioctl_write(
-    void * address,
+    void * pointer,
     diminuto_mmdriver_op * opp
 ) {
     int rc;
@@ -72,11 +73,11 @@ mmdriver_ioctl_write(
 
         tmp = opp->datum;
 
-        if ((rc = diminuto_kernel_get(address, opp->width, &(opp->datum)))) {
+        if ((rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum)))) {
             break;
         }
 
-        if ((rc = diminuto_kernel_put(address, opp->width, &tmp))) {
+        if ((rc = diminuto_kernel_put(pointer, opp->width, &tmp))) {
             break;
         }
 
@@ -87,7 +88,7 @@ mmdriver_ioctl_write(
 
 static int
 mmdriver_ioctl_set(
-    void * address,
+    void * pointer,
     diminuto_mmdriver_op * opp
 ) {
     int rc;
@@ -97,7 +98,7 @@ mmdriver_ioctl_set(
 
         tmp = opp->datum;
 
-        if ((rc = diminuto_kernel_get(address, opp->width, &(opp->datum)))) {
+        if ((rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum)))) {
             break;
         }
 
@@ -114,7 +115,7 @@ mmdriver_ioctl_set(
             break;
         }
 
-        if ((rc = diminuto_kernel_put(address, opp->width, &tmp))) {
+        if ((rc = diminuto_kernel_put(pointer, opp->width, &tmp))) {
             break;
         }
 
@@ -125,7 +126,7 @@ mmdriver_ioctl_set(
 
 static int
 mmdriver_ioctl_clear(
-    void * address,
+    void * pointer,
     diminuto_mmdriver_op * opp
 ) {
     int rc;
@@ -135,7 +136,7 @@ mmdriver_ioctl_clear(
 
         tmp = opp->datum;
 
-        if ((rc = diminuto_kernel_get(address, opp->width, &(opp->datum)))) {
+        if ((rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum)))) {
             break;
         }
 
@@ -152,7 +153,7 @@ mmdriver_ioctl_clear(
             break;
         }
 
-        if ((rc = diminuto_kernel_put(address, opp->width, &tmp))) {
+        if ((rc = diminuto_kernel_put(pointer, opp->width, &tmp))) {
             break;
         }
 
@@ -190,7 +191,7 @@ mmdriver_ioctl(
 ) {
     int rc;
     diminuto_mmdriver_op op;
-    void * address;
+    void * pointer;
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
 
@@ -212,19 +213,26 @@ mmdriver_ioctl(
                 break;
             }
 
-            address = (char *)basep + (op.address - start);
+            if (!((begin <= op.address) && (op.address <= end))) {
+                ++errors;
+                rc = -EINVAL;
+                break;
+            }
+
+            pointer = (char *)basep + (op.address - start);
 
             if (cmd == DIMINUTO_MMDRIVER_READ) {
-                rc = mmdriver_ioctl_read(address, &op);
+                rc = mmdriver_ioctl_read(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_WRITE) {
-                rc = mmdriver_ioctl_write(address, &op);
+                rc = mmdriver_ioctl_write(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_SET) {
-                rc = mmdriver_ioctl_set(address, &op);
+                rc = mmdriver_ioctl_set(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_CLEAR) {
-                rc = mmdriver_ioctl_clear(address, &op);
+                rc = mmdriver_ioctl_clear(pointer, &op);
             } else {
                 ++errors;
                 rc = -EINVAL;
+                break;
             }
 
             if ((_IOC_DIR(cmd) & _IOC_READ) && copy_to_user((diminuto_mmdriver_op *)arg, &op, sizeof(op))) {
@@ -316,35 +324,35 @@ __init mmdriver_init(
     void
 ) {
     int rc = 0;
+    struct resource ** regionpp;
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_init\n");
 
     do {
 
-        if (beginning != -1) {
+        if ((beginning != -1) && (ending != -1)) {
             begin = beginning;
-        }
-        if (ending != -1) {
             end = ending;
         }
 
         start = begin;
         length = end - begin;
 
-        if ((rc = diminuto_kernel_map(start, length, DIMINUTO_MMDRIVER_NAME, &regionp, &basep, &pagep))) {
-            rc = -ENODEV;
+        regionpp = exclusive ? &regionp : 0;
+
+        if ((rc = diminuto_kernel_map(start, length, DIMINUTO_MMDRIVER_NAME, regionpp, &basep, &pagep))) {
             break;
          }
 
         if (register_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME, &fops)) {
-            diminuto_kernel_unmap(&pagep, &regionp);
-            rc = -EIO;
+            diminuto_kernel_unmap(&pagep, regionpp);
+            rc = -ENODEV;
             break;
         }
 
         if (!create_proc_read_entry(DIMINUTO_MMDRIVER_PROC, 0, NULL, mmdriver_proc_read, NULL)) {
             unregister_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME);
-            diminuto_kernel_unmap(&pagep, &regionp);
+            diminuto_kernel_unmap(&pagep, regionpp);
             rc = -EIO;
             break;
         }
@@ -358,13 +366,17 @@ static void __exit
 mmdriver_exit(
     void
 ) {
+    struct resource ** regionpp;
+
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_exit\n");
 
     remove_proc_entry(DIMINUTO_MMDRIVER_PROC, NULL);
 
     unregister_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME);
 
-    diminuto_kernel_unmap(&pagep, &regionp);
+    regionpp = exclusive ? &regionp : 0;
+
+    diminuto_kernel_unmap(&pagep, regionpp);
 }
 
 module_init(mmdriver_init);
@@ -376,6 +388,9 @@ MODULE_PARM_DESC(beginning, "diminuto mmdriver beginning address");
 module_param(ending, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(ending, "diminuto mmdriver ending address");
 
+module_param(exclusive, int, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(exclusive, "diminuto mmdriver exclusive flag");
+
 MODULE_AUTHOR("coverclock@diag.com");
-MODULE_LICENSE("LGPL");
+MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("diminuto generic memory mapped driver");
