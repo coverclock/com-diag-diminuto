@@ -129,10 +129,10 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|c|r|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
     fprintf(stderr, "       -d            Enable debug mode\n");
-    fprintf(stderr, "       -a ADDRESS    Map region starting at ADDRESS\n");
-    fprintf(stderr, "       -l BYTES      Map region BYTES in length\n");
+    fprintf(stderr, "       -a ADDRESS    Optionally map region at ADDRESS\n");
+    fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
     fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
     fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
     fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
