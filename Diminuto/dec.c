@@ -40,6 +40,7 @@
 #include "diminuto_number.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <errno.h>
 
@@ -49,6 +50,7 @@ int main(int argc, char * argv[])
     const char * end;
     char buffer[64];
     const char * string;
+    const char * next;
     int64_t value;
 
     name = strrchr(argv[0], '/');
@@ -72,7 +74,8 @@ int main(int argc, char * argv[])
         return 2;
     }
 
-    if (*diminuto_signed(string, &value) != '\0') {
+    next = diminuto_signed(string, &value);
+    if ((*next != '\0') && (!isspace(*next))) {
         perror(string);
         return 3;
     }
