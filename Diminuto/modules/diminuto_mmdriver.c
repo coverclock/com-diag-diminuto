@@ -9,7 +9,12 @@
  *
  * This translation unit is the implementation of the Diminuto Generic Memory
  * Mapped Driver. It is compiled using the standard Linux 2.6 module build
- * process.
+ * process. By default it controls Programmed I/O device B (PIOB) which on
+ * the AT91RM9200-EK board controls LEDs. But it can be trivially configured
+ * to provide its read, write, set, and clear interface to any device with
+ * memory mapped registers such as FPGAs, but also other PIO pins on the
+ * AT91RM9200 processor core. Additional I/O control requests, or even
+ * additional read and write entry points, can be easily added.
  */
 
 #include <linux/types.h>
@@ -25,13 +30,31 @@
 #include "diminuto_kernel_map.h"
 #include "diminuto_log.h"
 
-#if !defined(DIMINUTO_MMDRIVER_BEGIN)
-#define DIMINUTO_MMDRIVER_BEGIN (0xfffff400UL) /* Address of PIOA */
+/*******************************************************************************
+ * CONFIGURABLE MANIFEST CONSTANTS
+ ******************************************************************************/
+
+#if !defined(DIMINUTO_MMDRIVER_NAME)
+#define DIMINUTO_MMDRIVER_NAME ("mmdriver")
 #endif
 
-#if !defined(DIMINUTO_MMDRIVER_END)
-#define DIMINUTO_MMDRIVER_END (0xfffffc00UL) /* Address past PIOD */
+#if !defined(DIMINUTO_MMDRIVER_BEGIN) && !defined(DIMINUTO_MMDRIVER_END)
+#include <asm/arch/at91rm9200.h>
+#define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
+#define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #endif
+
+#if !defined(DIMINUTO_MMDRIVER_PROC)
+#define DIMINUTO_MMDRIVER_PROC ("driver/mmdriver")
+#endif
+
+#if !defined(DIMINUTO_MMDRIVER_MAJOR)
+#define DIMINUTO_MMDRIVER_MAJOR     (240)
+#endif
+
+/*******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************/
 
 static int beginning = -1;
 static int ending = -1;
@@ -43,14 +66,19 @@ static unsigned long length = 0;
 static struct resource * regionp = 0;
 static void * basep = 0;
 static void __iomem * pagep = 0;
-static int opened = 0;
+static int opens = 0;
+static int closes = 0;
 static int ioctls = 0;
+static int procs = 0;
 static int errors = 0;
-
 static DECLARE_MUTEX(semaphore);
 
+/*******************************************************************************
+ * HELPER FUNCTIONS
+ ******************************************************************************/
+
 static int
-mmdriver_ioctl_read(
+mmdriver_operation_read(
     const void * pointer,
     diminuto_mmdriver_op * opp
 ) {
@@ -62,7 +90,7 @@ mmdriver_ioctl_read(
 }
 
 static int
-mmdriver_ioctl_write(
+mmdriver_operation_write(
     void * pointer,
     diminuto_mmdriver_op * opp
 ) {
@@ -87,7 +115,7 @@ mmdriver_ioctl_write(
 }
 
 static int
-mmdriver_ioctl_set(
+mmdriver_operation_set(
     void * pointer,
     diminuto_mmdriver_op * opp
 ) {
@@ -125,7 +153,7 @@ mmdriver_ioctl_set(
 }
 
 static int
-mmdriver_ioctl_clear(
+mmdriver_operation_clear(
     void * pointer,
     diminuto_mmdriver_op * opp
 ) {
@@ -162,13 +190,17 @@ mmdriver_ioctl_clear(
     return rc;
 }
 
+/*******************************************************************************
+ * DRIVER ENTRY POINTS
+ ******************************************************************************/
+
 static int
 mmdriver_open(
     struct inode * inode,
     struct file * fp
 ) {
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_open\n");
-    ++opened;
+    ++opens;
     return 0;
 }
 
@@ -178,7 +210,7 @@ mmdriver_release(
     struct file * file
 ) {
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_release\n");
-    --opened;
+    ++closes;
     return 0;
 }
 
@@ -191,7 +223,7 @@ mmdriver_ioctl(
 ) {
     int rc;
     diminuto_mmdriver_op op;
-    void * pointer;
+    char * pointer;
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
 
@@ -213,22 +245,22 @@ mmdriver_ioctl(
                 break;
             }
 
-            if (!((begin <= op.address) && (op.address <= end))) {
+            if (op.relative > length) {
                 ++errors;
                 rc = -EINVAL;
                 break;
             }
 
-            pointer = (char *)basep + (op.address - start);
+            pointer = (char *)basep + op.relative;
 
             if (cmd == DIMINUTO_MMDRIVER_READ) {
-                rc = mmdriver_ioctl_read(pointer, &op);
+                rc = mmdriver_operation_read(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_WRITE) {
-                rc = mmdriver_ioctl_write(pointer, &op);
+                rc = mmdriver_operation_write(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_SET) {
-                rc = mmdriver_ioctl_set(pointer, &op);
+                rc = mmdriver_operation_set(pointer, &op);
             } else if (cmd == DIMINUTO_MMDRIVER_CLEAR) {
-                rc = mmdriver_ioctl_clear(pointer, &op);
+                rc = mmdriver_operation_clear(pointer, &op);
             } else {
                 ++errors;
                 rc = -EINVAL;
@@ -251,6 +283,17 @@ mmdriver_ioctl(
     return rc;
 }
 
+static struct file_operations fops = {
+    .owner      = THIS_MODULE,
+    .ioctl      = mmdriver_ioctl,
+    .open       = mmdriver_open,
+    .release    = mmdriver_release
+};
+
+/*******************************************************************************
+ * PROC FILE SYSTEM FUNCTIONS
+ ******************************************************************************/
+
 static int
 mmdriver_proc_read(
     char * bufferp,
@@ -264,6 +307,8 @@ mmdriver_proc_read(
     int total = 0;
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_proc_read\n");
+
+    ++procs;
 
     written = snprintf(bufferp + total, count, "start=0x%08lx\n", start);
     total += written;
@@ -281,27 +326,37 @@ mmdriver_proc_read(
     total += written;
     count -= written;
 
-    written = snprintf(bufferp + total, count, "region.start=0x%08x\n", regionp->start);
+    if (regionp) {
+        written = snprintf(bufferp + total, count, "region.start=0x%08x\n", regionp->start);
+        total += written;
+        count -= written;
+
+        written = snprintf(bufferp + total, count, "region.end=0x%08x\n", regionp->end);
+        total += written;
+        count -= written;
+
+        written = snprintf(bufferp + total, count, "region.name=\"%s\"\n", regionp->name);
+        total += written;
+        count -= written;
+
+        written = snprintf(bufferp + total, count, "region.flags=0x%08lx\n", regionp->flags);
+        total += written;
+        count -= written;
+    }
+
+    written = snprintf(bufferp + total, count, "opens=%d\n", opens);
     total += written;
     count -= written;
 
-    written = snprintf(bufferp + total, count, "region.end=0x%08x\n", regionp->end);
-    total += written;
-    count -= written;
-
-    written = snprintf(bufferp + total, count, "region.name=\"%s\"\n", regionp->name);
-    total += written;
-    count -= written;
-
-    written = snprintf(bufferp + total, count, "region.flags=0x%08lx\n", regionp->flags);
-    total += written;
-    count -= written;
-
-    written = snprintf(bufferp + total, count, "opened=%d\n", opened);
+    written = snprintf(bufferp + total, count, "closes=%d\n", closes);
     total += written;
     count -= written;
 
     written = snprintf(bufferp + total, count, "ioctls=%d\n", ioctls);
+    total += written;
+    count -= written;
+
+    written = snprintf(bufferp + total, count, "procs=%d\n", procs);
     total += written;
     count -= written;
 
@@ -312,12 +367,9 @@ mmdriver_proc_read(
     return total;
 }
 
-static struct file_operations fops = {
-    .owner      = THIS_MODULE,
-    .ioctl      = mmdriver_ioctl,
-    .open       = mmdriver_open,
-    .release    = mmdriver_release
-};
+/*******************************************************************************
+ * LOADABLE MODULE INSERT AND REMOVE
+ ******************************************************************************/
 
 static int
 __init mmdriver_init(
@@ -381,6 +433,10 @@ mmdriver_exit(
 
 module_init(mmdriver_init);
 module_exit(mmdriver_exit);
+
+/*******************************************************************************
+ * PARAMETERS
+ ******************************************************************************/
 
 module_param(beginning, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(beginning, "diminuto mmdriver beginning address");
