@@ -37,20 +37,17 @@
  *  MANIFEST CONSTANTS
  ******************************************************************************/
 
-#define DIMINUTO_MMDRIVER_NAME		("mmdriver")
-#define DIMINUTO_MMDRIVER_NODE		("/dev/mmdriver")
-#define DIMINUTO_MMDRIVER_PROC		("driver/mmdriver")
-#define DIMINUTO_MMDRIVER_MAJOR		(240)
-#define DIMINUTO_MMDRIVER_MAGIC      (0xe0)
+#define DIMINUTO_MMDRIVER_NODE      ("/dev/mmdriver")
+#define DIMINUTO_MMDRIVER_MAGIC     (0xe0)
 
 /*******************************************************************************
  *  DATA STRUCTURES
  ******************************************************************************/
 
 typedef struct {
-    uintptr_t address;
-    diminuto_kernel_width width;
-    diminuto_kernel_datum datum;
+    uintptr_t relative;             /* Relative to beginning of driver space */
+    diminuto_kernel_width width;    /* From diminuto_kernel_reg.h */
+    diminuto_kernel_datum datum;    /* From diminuto_kernel_reg.h */
 } diminuto_mmdriver_op;
 
 /*******************************************************************************

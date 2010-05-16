@@ -87,7 +87,7 @@ TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv ipcalc memtool mmdrivertool dec hex oct
-TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c))
+TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
@@ -108,6 +108,7 @@ CC		=	$(CROSS_COMPILE)gcc
 CXX		=	$(CROSS_COMPILE)g++
 AR		=	$(CROSS_COMPILE)ar
 RANLIB		=	$(CROSS_COMPILE)ranlib
+STRIP		=	$(CROSS_COMPILE)strip
 
 ARFLAGS		=	rcv
 CPPFLAGS	=
@@ -315,6 +316,10 @@ unittest-lock:	unittest-lock.c lib$(PROJECT).so
 unittest-map:	unittest-map.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-mmdriver:	unittest-mmdriver.sh
+	cp $< $@
+	chmod 755 $@
+
 ########## Modules
 
 .PHONY:	modules modules-clean
@@ -424,6 +429,9 @@ $(DOC_DIR)/pdf:
 
 %.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+%.stripped:	%
+	$(STRIP) -o $@ $<
 
 ########## Dependencies
 
