@@ -323,6 +323,9 @@ unittest-mmdriver:	unittest-mmdriver.sh
 	cp $< $@
 	chmod 755 $@
 
+unittest-phex:	unittest-phex.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules
 
 .PHONY:	modules modules-clean
