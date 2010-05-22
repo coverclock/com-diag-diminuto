@@ -5,9 +5,9 @@
 
 ########## Variables
 
-#COMPILEFOR	=	host
+COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-COMPILEFOR	=	arroyo
+#COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -86,7 +86,7 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv ipcalc memtool mmdrivertool dec hex oct
+TARGETBINARIES	=	getubenv ipcalc memtool mmdrivertool phex dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -282,6 +282,9 @@ hex:	dec
 
 oct:	dec
 	ln -f dec oct
+
+phex:	phex.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-unittest:	unittest-unittest.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<

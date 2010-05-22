@@ -31,12 +31,8 @@
 #include "diminuto_log.h"
 
 /*******************************************************************************
- * CONFIGURABLE MANIFEST CONSTANTS
+ * COMPILE TIME CONFIGURABLE PARAMETERS
  ******************************************************************************/
-
-#if !defined(DIMINUTO_MMDRIVER_NAME)
-#define DIMINUTO_MMDRIVER_NAME ("mmdriver")
-#endif
 
 #if !defined(DIMINUTO_MMDRIVER_BEGIN) && !defined(DIMINUTO_MMDRIVER_END)
 #include <asm/arch/at91rm9200.h>
@@ -44,21 +40,32 @@
 #define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #endif
 
-#if !defined(DIMINUTO_MMDRIVER_PROC)
-#define DIMINUTO_MMDRIVER_PROC ("driver/mmdriver")
+#if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
+#define DIMINUTO_MMDRIVER_EXCLUSIVE     (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
 #define DIMINUTO_MMDRIVER_MAJOR     (240)
 #endif
 
+#if !defined(DIMINUTO_MMDRIVER_NAME)
+#define DIMINUTO_MMDRIVER_NAME ("mmdriver")
+#endif
+
 /*******************************************************************************
- * GLOBAL VARIABLES
+ * INSTALL TIME CONFIGURABLE PARAMETERS
  ******************************************************************************/
 
 static int beginning = -1;
 static int ending = -1;
-static int exclusive = 0;
+static int exclusive = DIMINUTO_MMDRIVER_EXCLUSIVE;
+static int major = DIMINUTO_MMDRIVER_MAJOR;
+static char name[64] = DIMINUTO_MMDRIVER_NAME;
+
+/*******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************/
+
 static unsigned long begin = DIMINUTO_MMDRIVER_BEGIN;
 static unsigned long end = DIMINUTO_MMDRIVER_END;
 static unsigned long start = 0;
@@ -66,6 +73,7 @@ static unsigned long length = 0;
 static struct resource * regionp = 0;
 static void * basep = 0;
 static void __iomem * pagep = 0;
+static char proc[sizeof("driver/") + sizeof(name) - 1] = "driver/";
 static int opens = 0;
 static int closes = 0;
 static int ioctls = 0;
@@ -310,6 +318,18 @@ mmdriver_proc_read(
 
     ++procs;
 
+    written = snprintf(bufferp + total, count, "name=\"%s\"\n", name);
+    total += written;
+    count -= written;
+
+    written = snprintf(bufferp + total, count, "major=%d\n", major);
+    total += written;
+    count -= written;
+
+    written = snprintf(bufferp + total, count, "exclusive=%d\n", exclusive);
+    total += written;
+    count -= written;
+
     written = snprintf(bufferp + total, count, "start=0x%08lx\n", start);
     total += written;
     count -= written;
@@ -343,6 +363,10 @@ mmdriver_proc_read(
         total += written;
         count -= written;
     }
+
+    written = snprintf(bufferp + total, count, "proc=\"%s\"\n", proc);
+    total += written;
+    count -= written;
 
     written = snprintf(bufferp + total, count, "opens=%d\n", opens);
     total += written;
@@ -392,18 +416,20 @@ __init mmdriver_init(
 
         regionpp = exclusive ? &regionp : 0;
 
-        if ((rc = diminuto_kernel_map(start, length, DIMINUTO_MMDRIVER_NAME, regionpp, &basep, &pagep))) {
+        if ((rc = diminuto_kernel_map(start, length, name, regionpp, &basep, &pagep))) {
             break;
          }
 
-        if (register_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME, &fops)) {
+        if (register_chrdev(major, name, &fops)) {
             diminuto_kernel_unmap(&pagep, regionpp);
             rc = -ENODEV;
             break;
         }
 
-        if (!create_proc_read_entry(DIMINUTO_MMDRIVER_PROC, 0, NULL, mmdriver_proc_read, NULL)) {
-            unregister_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME);
+        strncat(proc, name, sizeof(name));
+
+        if (!create_proc_read_entry(proc, 0, NULL, mmdriver_proc_read, NULL)) {
+            unregister_chrdev(major, name);
             diminuto_kernel_unmap(&pagep, regionpp);
             rc = -EIO;
             break;
@@ -422,9 +448,9 @@ mmdriver_exit(
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_exit\n");
 
-    remove_proc_entry(DIMINUTO_MMDRIVER_PROC, NULL);
+    remove_proc_entry(proc, NULL);
 
-    unregister_chrdev(DIMINUTO_MMDRIVER_MAJOR, DIMINUTO_MMDRIVER_NAME);
+    unregister_chrdev(major, name);
 
     regionpp = exclusive ? &regionp : 0;
 
@@ -446,6 +472,15 @@ MODULE_PARM_DESC(ending, "diminuto mmdriver ending address");
 
 module_param(exclusive, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(exclusive, "diminuto mmdriver exclusive flag");
+
+module_param(major, int, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(major, "diminuto mmdriver major number");
+
+module_param_string(name, name, sizeof(name), S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(name, "diminuto mmdriver module name");
+
+module_param_string(proc, proc, sizeof(proc), S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(proc, "diminuto mmdriver proc file system path");
 
 MODULE_AUTHOR("coverclock@diag.com");
 MODULE_LICENSE("GPL");
