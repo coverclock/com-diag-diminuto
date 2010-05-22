@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,6 +16,7 @@
  * phex < binaryfile
  * cat binaryfile | phex
  * phex -l 0 -n < /dev/serial
+ * phex -q < binaryfile > almostc
  *
  * ABSTRACT
  *
@@ -23,8 +24,10 @@
  * non-printable characters as if they were written for a C program.
  * Automatically inserts newlines every BYTES printed characters, default
  * eighty, unless BYTES is zero. Encodes newlines like other non-printable
- * characters unless -n is specified. Places standard input in "raw mode" if
- * it is a serial port. Pronounced "fex" but intended to mean "print hex".
+ * characters unless -n is specified. When printed in hexadecimal, two
+ * hexadecimal digits are always printed, eliminating any ambiguity. Places
+ * standard input in "raw mode" if it is a serial port. Pronounced "fex"
+ * but intended to mean "print hex".
  */
 
 #include "diminuto_number.h"
@@ -96,26 +99,38 @@ static void limit(FILE * fp, const size_t length, ssize_t increment)
     }
 }
 
-static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int dq)
+static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int esc, int hex)
 {
     /*                                 BEL  BS   TAB  LF   VT   FF   CR  */
     static unsigned char special[] = { 'a', 'b', 't', 'n', 'v', 'f', 'r' };
 
-    if (ch == '\0') {
+    if ((ch == '\0') && hex) {
+        limit(fp, length, 4);
+        fprintf(fp, "\\x%2.2x", ch);
+    } else if (ch == '\0') {
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc('0', fp);
     } else if ((ch == '\n') && nl) {
         limit(fp, length, -1);
+    } else if ((('\a' <= ch) && (ch <= '\r')) && hex) {
+        limit(fp, length, 4);
+        fprintf(fp, "\\x%2.2x", ch);
     } else if (('\a' <= ch) && (ch <= '\r')) {
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc(special[ch - '\a'], fp);
-    } else if ((ch == '"') && dq) {
+    } else if ((ch == '\\') && hex) {
+        limit(fp, length, 4);
+        fprintf(fp, "\\x%2.2x", ch);
+    } else if (ch == '\\') {
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc(ch, fp);
-    } else if (ch == '\\') {
+    } else if (((ch == '"') || (ch == '\'') || (ch == '?')) && esc && hex) {
+        limit(fp, length, 4);
+        fprintf(fp, "\\x%2.2x", ch);
+    } else if (((ch == '"') || (ch == '\'') || (ch == '?')) && esc) {
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc(ch, fp);
@@ -130,19 +145,21 @@ static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int dq)
 
 static void usage(FILE * fp)
 {
-    fprintf(fp, "usage: %s [ -l BYTES ] [ -n ]\n", program);
+    fprintf(fp, "usage: %s [ -e ] [ -l BYTES ] [ -n ] [ -t ]\n", program);
+    fprintf(fp, "       -e          Also escape the characters '\"', '\\'', and '?'\n");
     fprintf(fp, "       -l BYTES    Limit line length to BYTES instead of %d\n", LENGTH);
     fprintf(fp, "       -n          Do not escape newlines\n");
-    fprintf(fp, "       -q          Escape double quotation marks\n");
     fprintf(fp, "       -t          Tee input to stdout, output to stderr\n");
+    fprintf(fp, "       -x          Print normally escaped characters in hex\n");
     fprintf(fp, "       -?          Print menu\n");
 }
 
 int main(int argc, char * argv[])
 {
+    int esc = 0;
     size_t length = LENGTH;
     int nl = 0;
-    int dq = 0;
+    int hex = 0;
     FILE * out = stdout;
     int opt;
     extern char * optarg;
@@ -152,9 +169,13 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "l:nqt?")) >= 0) {
+    while ((opt = getopt(argc, argv, "el:ntx?")) >= 0) {
 
         switch (opt) {
+
+        case 'e':
+            esc = !0;
+            break;
 
         case 'l':
             if (*diminuto_unsigned(optarg, &value) != '\0') {
@@ -173,12 +194,12 @@ int main(int argc, char * argv[])
             nl = !0;
             break;
 
-        case 'q':
-            dq = !0;
-            break;
-
         case 't':
             out = stderr;
+            break;
+
+        case 'x':
+            hex = !0;
             break;
 
         case '?':
@@ -200,7 +221,7 @@ int main(int argc, char * argv[])
     }
 
     while ((ch = fgetc(stdin)) != EOF) {
-        phex(out, ch, length, nl, dq);
+        phex(out, ch, length, nl, esc, hex);
         if (out == stderr) { fputc(ch, stdout); }
     }
 

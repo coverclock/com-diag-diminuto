@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright 2009 Digital Aggregates Corporation, Colorado, USA<BR>
+# Licensed under the terms in README.h<BR>
+# Chip Overclock (coverclock@diag.com)<BR>
+# http://www.diag.com/navigation/downloads/Diminuto.html<BR>
 
 PER=0x0			# Program Enable Register
 OER=0x10		# Output Enable Register
