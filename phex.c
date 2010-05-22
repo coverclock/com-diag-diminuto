@@ -96,7 +96,7 @@ static void limit(FILE * fp, const size_t length, ssize_t increment)
     }
 }
 
-static void phex(FILE * fp, unsigned char ch, size_t length, int newlines)
+static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int dq)
 {
     /*                                 BEL  BS   TAB  LF   VT   FF   CR  */
     static unsigned char special[] = { 'a', 'b', 't', 'n', 'v', 'f', 'r' };
@@ -105,16 +105,20 @@ static void phex(FILE * fp, unsigned char ch, size_t length, int newlines)
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc('0', fp);
-    } else if ((ch == '\n') && newlines) {
+    } else if ((ch == '\n') && nl) {
         limit(fp, length, -1);
     } else if (('\a' <= ch) && (ch <= '\r')) {
         limit(fp, length, 2);
         fputc('\\', fp);
         fputc(special[ch - '\a'], fp);
+    } else if ((ch == '"') && dq) {
+        limit(fp, length, 2);
+        fputc('\\', fp);
+        fputc(ch, fp);
     } else if (ch == '\\') {
         limit(fp, length, 2);
         fputc('\\', fp);
-        fputc('\\', fp);
+        fputc(ch, fp);
     } else if ((' ' <= ch) && (ch <= '~')) {
         limit(fp, length, 1);
         fputc(ch, fp);
@@ -127,8 +131,9 @@ static void phex(FILE * fp, unsigned char ch, size_t length, int newlines)
 static void usage(FILE * fp)
 {
     fprintf(fp, "usage: %s [ -l BYTES ] [ -n ]\n", program);
-    fprintf(fp, "       -l BYTES    Use BYTES for length instead of %d\n", LENGTH);
+    fprintf(fp, "       -l BYTES    Limit line length to BYTES instead of %d\n", LENGTH);
     fprintf(fp, "       -n          Do not escape newlines\n");
+    fprintf(fp, "       -q          Escape double quotation marks\n");
     fprintf(fp, "       -t          Tee input to stdout, output to stderr\n");
     fprintf(fp, "       -?          Print menu\n");
 }
@@ -136,7 +141,8 @@ static void usage(FILE * fp)
 int main(int argc, char * argv[])
 {
     size_t length = LENGTH;
-    int newlines = 0;
+    int nl = 0;
+    int dq = 0;
     FILE * out = stdout;
     int opt;
     extern char * optarg;
@@ -146,7 +152,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "l:nt?")) >= 0) {
+    while ((opt = getopt(argc, argv, "l:nqt?")) >= 0) {
 
         switch (opt) {
 
@@ -164,7 +170,11 @@ int main(int argc, char * argv[])
             break;
 
         case 'n':
-            newlines = !0;
+            nl = !0;
+            break;
+
+        case 'q':
+            dq = !0;
             break;
 
         case 't':
@@ -190,7 +200,7 @@ int main(int argc, char * argv[])
     }
 
     while ((ch = fgetc(stdin)) != EOF) {
-        phex(out, ch, length, newlines);
+        phex(out, ch, length, nl, dq);
         if (out == stderr) { fputc(ch, stdout); }
     }
 
