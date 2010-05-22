@@ -9,13 +9,13 @@
  *
  * USAGE
  *
- * phex [ -l BYTES ] [ -n ]
+ * phex [ -l BYTES ] [ -n ] [ -t ]
  *
  * EXAMPLES
  *
  * phex < binaryfile
- * phex -l 0 -n < /dev/serial
  * cat binaryfile | phex
+ * phex -l 0 -n < /dev/serial
  *
  * ABSTRACT
  *
@@ -129,6 +129,7 @@ static void usage(FILE * fp)
     fprintf(fp, "usage: %s [ -l BYTES ] [ -n ]\n", program);
     fprintf(fp, "       -l BYTES    Use BYTES for length instead of %d\n", LENGTH);
     fprintf(fp, "       -n          Do not escape newlines\n");
+    fprintf(fp, "       -t          Tee input to stdout, output to stderr\n");
     fprintf(fp, "       -?          Print menu\n");
 }
 
@@ -136,6 +137,7 @@ int main(int argc, char * argv[])
 {
     size_t length = LENGTH;
     int newlines = 0;
+    FILE * out = stdout;
     int opt;
     extern char * optarg;
     uint64_t value;
@@ -144,7 +146,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "l:n?")) >= 0) {
+    while ((opt = getopt(argc, argv, "l:nt?")) >= 0) {
 
         switch (opt) {
 
@@ -163,6 +165,10 @@ int main(int argc, char * argv[])
 
         case 'n':
             newlines = !0;
+            break;
+
+        case 't':
+            out = stderr;
             break;
 
         case '?':
@@ -184,10 +190,11 @@ int main(int argc, char * argv[])
     }
 
     while ((ch = fgetc(stdin)) != EOF) {
-        phex(stdout, ch, length, newlines);
+        phex(out, ch, length, newlines);
+        if (out == stderr) { fputc(ch, stdout); }
     }
 
-    limit(stdout, length, 0);
+    limit(out, length, 0);
 
     return 0;
 }
