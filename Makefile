@@ -5,9 +5,9 @@
 
 ########## Variables
 
-COMPILEFOR	=	host
+#COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-#COMPILEFOR	=	arroyo
+COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -55,7 +55,7 @@ VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 
 MAJOR		=	1
-MINOR		=	1
+MINOR		=	2
 BUILD		=	0
 
 BUILDROOT_REV	=	22987
@@ -86,7 +86,7 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
 TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv ipcalc memtool mmdrivertool phex dump dec hex oct
+TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -287,6 +287,9 @@ phex:	phex.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 dump:	dump.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+coreable:	coreable.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-unittest:	unittest-unittest.c lib$(PROJECT).so
