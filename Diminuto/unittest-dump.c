@@ -27,5 +27,7 @@ int main(void)
 
     diminuto_dump_generic(stdout, data, sizeof(data), 1, '_', 1, 0, 4);
 
+    diminuto_dump(stdout, data, sizeof(data));
+
     return 0;
 }
