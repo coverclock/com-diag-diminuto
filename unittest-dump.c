@@ -17,10 +17,15 @@ int main(void)
     uint8_t data[256];
     int ch;
     const char * address;
+    size_t offset;
 
     for (ch = 0; ch < 256; ++ch) { data[ch] = ch; }
 
-    diminuto_dump_generic(stdout, data, sizeof(data), 0, '.', 0, 0, 0);
+    for (offset = 0; offset < 16; ++offset) {
+        diminuto_dump_generic(stdout, data + offset, sizeof(data) - (offset * 2), 0, '.', 0, 0, 0);
+    }
+
+    diminuto_dump_generic(stdout, data, sizeof(data), 1, '_', 1, 0, 4);
 
     return 0;
 }
