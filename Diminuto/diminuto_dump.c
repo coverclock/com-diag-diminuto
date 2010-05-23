@@ -105,7 +105,3 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
         here = hh;
     }
 }
-
-void diminuto_dump(FILE * fp, const void * data, size_t length) {
-    diminuto_dump_generic(fp, data, length, 0, '.', 0, 0, 0);
-}
