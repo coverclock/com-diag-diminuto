@@ -16,8 +16,11 @@
 #include <sys/types.h>
 
 /**
- * Dumps a block of memory in hexadecimal in a format reminiscent (to me
- * anyway) of the old IBM mainframe dumps.
+ * Dumps a block of memory in hexadecimal along with printable characters.
+ * The hexadecimal and character portions of the dump are both done in network
+ * byte order (big-endian), with addresses increasing from left to right. This
+ * makes multi-byte fields on little-endian systems look a little weird as
+ * bytes are swapped.
  * @param fp points to the file stream to which to dump.
  * @param data points to the data to dump.
  * @param length is the size of data to dump in bytes.

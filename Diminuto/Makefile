@@ -329,6 +329,9 @@ unittest-phex:	unittest-phex.c lib$(PROJECT).so
 unittest-dump:	unittest-dump.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-endianess:	unittest-endianess.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules
 
 .PHONY:	modules modules-clean
