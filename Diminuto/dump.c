@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "t")) >= 0) {
+    while ((opt = getopt(argc, argv, "t?")) >= 0) {
 
         switch (opt) {
 
