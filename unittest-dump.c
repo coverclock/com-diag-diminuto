@@ -9,10 +9,18 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
+#include "diminuto_dump.h"
 
 int main(void)
 {
+    uint8_t data[256];
     int ch;
-    for (ch = 0; ch < 256; ++ch) { fputc(ch, stdout); }
+    const char * address;
+
+    for (ch = 0; ch < 256; ++ch) { data[ch] = ch; }
+
+    diminuto_dump_generic(stdout, data, sizeof(data), 0, '.', 0, 0, 0);
+
     return 0;
 }

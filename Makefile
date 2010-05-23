@@ -326,6 +326,9 @@ unittest-mmdriver:	unittest-mmdriver.sh
 unittest-phex:	unittest-phex.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-dump:	unittest-dump.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules
 
 .PHONY:	modules modules-clean

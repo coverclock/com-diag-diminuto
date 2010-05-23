@@ -1,4 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
+#ifndef _H_COM_DIAG_DIMINUTO_DUMP_
+#define _H_COM_DIAG_DIMINUTO_DUMP_
+
 /**
  * @file
  *
@@ -9,10 +12,9 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
+#include <sys/types.h>
 
-int main(void)
-{
-    int ch;
-    for (ch = 0; ch < 256; ++ch) { fputc(ch, stdout); }
-    return 0;
-}
+void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int upper, char dot, int virtualize, uintptr_t first, size_t indent);
+
+#endif
