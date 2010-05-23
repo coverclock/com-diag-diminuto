@@ -31,7 +31,7 @@
  * @param address is used as the replacement address to be printed.
  * @param indent causes each line to be indented by this many spaces.
  */
-void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int upper, char dot, int virtualize, uintptr_t first, size_t indent);
+void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int upper, char dot, int virtualize, uintptr_t address, size_t indent);
 
 /**
  * Dumps a block of memory in hexadecimal in a format reminiscent (to me
