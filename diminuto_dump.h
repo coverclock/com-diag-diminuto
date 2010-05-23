@@ -33,13 +33,7 @@
  */
 void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int upper, char dot, int virtualize, uintptr_t address, size_t indent);
 
-/**
- * Dumps a block of memory in hexadecimal in a format reminiscent (to me
- * anyway) of the old IBM mainframe dumps.
- * @param fp points to the file stream to which to dump.
- * @param data points to the data to dump.
- * @param length is the size of data to dump in bytes.
- */
-void diminuto_dump(FILE * fp, const void * data, size_t length);
+#define diminuto_dump(_FP_, _DATA_, _LENGTH_) \
+    diminuto_dump_generic(_FP_, _DATA_, _LENGTH_, 0, '.', 0, 0, 0)
 
 #endif
