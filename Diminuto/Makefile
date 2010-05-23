@@ -332,6 +332,9 @@ unittest-dump:	unittest-dump.c lib$(PROJECT).so
 unittest-endianess:	unittest-endianess.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-barrier:	unittest-barrier.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules
 
 .PHONY:	modules modules-clean

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -21,6 +21,7 @@
 
 #if !defined(diminuto_barrier)
 #   define diminuto_barrier() ((void)0)
+#   warning diminuto_barrier() is a no-op!
 #endif
 
 #endif
