@@ -16,7 +16,8 @@
  * phex < binaryfile
  * cat binaryfile | phex
  * phex -l 0 -n < /dev/serial
- * phex -q < binaryfile > almostc
+ * phex -e < binaryfile > almostc
+ * cat binaryfile | phex -t | someothercommand
  *
  * ABSTRACT
  *
