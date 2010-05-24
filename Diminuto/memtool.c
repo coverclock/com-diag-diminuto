@@ -164,12 +164,12 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:rs:tuw:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:rs:tu:w:?")) >= 0) {
 
         switch (opt) {
 
         case '1':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 size = sizeof(uint8_t);
@@ -179,7 +179,7 @@ int main(int argc, char * argv[])
             break;
 
         case '2':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 size = sizeof(uint16_t);
@@ -189,7 +189,7 @@ int main(int argc, char * argv[])
             break;
 
         case '4':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 size = sizeof(uint32_t);
@@ -199,7 +199,7 @@ int main(int argc, char * argv[])
             break;
 
         case '8':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 size = sizeof(uint64_t);
@@ -209,7 +209,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'a':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 address = value;
@@ -218,24 +218,26 @@ int main(int argc, char * argv[])
             break;
 
         case 'c':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0;
+                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
         case 'd':
             debug = !0;
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             break;
 
         case 'f':
             done = value != 0;
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             break;
 
         case 'l':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 length = value;
@@ -245,24 +247,25 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0;
+            error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             break;
 
         case 's':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0;
+                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
         case 't':
             done = value == 0;
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             break;
 
         case 'u':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
@@ -271,11 +274,11 @@ int main(int argc, char * argv[])
             break;
 
         case 'w':
-            if ((error = *diminuto_number(optarg, &value) != '\0')) {
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0;
+                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
