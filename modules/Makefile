@@ -4,4 +4,4 @@
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
 obj-m := diminuto_utmodule.o diminuto_mmdriver.o
-EXTRA_CFLAGS := -I$(shell cd /home/jsloan/src/Diminuto; pwd)
+EXTRA_CFLAGS := -I$(shell cd /home/jsloan/src/Diminuto; pwd) -DDEBUG

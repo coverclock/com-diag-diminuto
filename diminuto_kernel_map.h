@@ -17,8 +17,10 @@
 
 #if defined(__KERNEL__) || defined(MODULE)
 
+#include <linux/kernel.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
+#include <asm/page.h>
 
 /**
  *  Map a region of physical address space to kernel virtual address space.
@@ -59,37 +61,46 @@ diminuto_kernel_map(
         address = start - offset;
         size = length + offset;
 
-        if (regionpp) {
-            *regionpp = request_mem_region(start, length, name ? name : "mmdriver");
-            if (!*regionpp) {
-                rc = -EPERM;
-                break;
-            }
+        if ((!name) || (!regionpp)) {
+            /* Do nothing. */
+        } else if (!(*regionpp = request_mem_region(start, length, name))) {
+            pr_err("diminuto_kernel_map: request_mem_region failed!\n");
+            rc = -EPERM;
+            break;
+        } else {
+            /* Do nothing. */
         }
 
-        if (pagepp) {
-            *pagepp = ioremap_nocache(address, size);
-            if (!*pagepp) {
-                release_mem_region(start, length);
-                rc = -ENOMEM;
-                break;
-            }
-        }
-
-        if (basepp) {
+        if (!pagepp) {
+            /* Do nothing. */
+        } else if (!(*pagepp = ioremap_nocache(address, size))) {
+            pr_err("diminuto_kernel_map: ioremap_nocache failed!\n");
+            rc = -ENOMEM;
+            break;
+        } else if (basepp) {
             *basepp = (char *)*pagepp + offset;
+        } else {
+            /* Do nothing. */
         }
 
     } while (0);
+
+    
+    if (rc == 0) {
+        /* Do nothing. */
+    } else if (regionpp && *regionpp) {
+        release_mem_region((*regionpp)->start, (*regionpp)->end - (*regionpp)->start);
+    } else {
+        /* Do nothing. */
+    }
 
     return rc;
 }
 
 /**
  * Unmap a region of kernel virtual address space that was previously mapped.
- * @param pagepp points to the virtual page address returned by map.
- * @param regionp points to the reserved resource structure returned by map.
- * NULL.
+ * @param pagepp points to the virtual page address returned by map or NULL.
+ * @param regionpp points to the address of the reserved resource structure returned by map or NULL.
  */
 static void
 diminuto_kernel_unmap(

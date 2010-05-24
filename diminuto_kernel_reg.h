@@ -42,6 +42,8 @@ typedef enum {
 
 #if defined(__KERNEL__) || defined(MODULE)
 
+#include "diminuto_barrier.h"
+
 /**
  * Gets a datum of a specified width from a virtual address.
  * Alignment must match the width of the datum.
@@ -57,6 +59,8 @@ diminuto_kernel_get(
     diminuto_kernel_datum * datump
 ) {
     int rc = 0;
+
+    diminuto_barrier();
 
     switch (width) {
     case EIGHT:
@@ -136,6 +140,8 @@ diminuto_kernel_put(
         rc = -EINVAL;
         break;
     }
+
+    diminuto_barrier();
 
     return rc;
 }

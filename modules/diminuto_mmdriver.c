@@ -28,7 +28,6 @@
 #include <asm/uaccess.h>
 #include "diminuto_mmdriver.h"
 #include "diminuto_kernel_map.h"
-#include "diminuto_log.h"
 
 /*******************************************************************************
  * COMPILE TIME CONFIGURABLE PARAMETERS
@@ -41,11 +40,11 @@
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
-#define DIMINUTO_MMDRIVER_EXCLUSIVE     (0)
+#define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
-#define DIMINUTO_MMDRIVER_MAJOR     (240)
+#define DIMINUTO_MMDRIVER_MAJOR (240)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
@@ -56,18 +55,16 @@
  * INSTALL TIME CONFIGURABLE PARAMETERS
  ******************************************************************************/
 
-static int beginning = -1;
-static int ending = -1;
+static unsigned long begin = DIMINUTO_MMDRIVER_BEGIN;
+static unsigned long end = DIMINUTO_MMDRIVER_END;
 static int exclusive = DIMINUTO_MMDRIVER_EXCLUSIVE;
-static int major = DIMINUTO_MMDRIVER_MAJOR;
+static unsigned int major = DIMINUTO_MMDRIVER_MAJOR;
 static char name[64] = DIMINUTO_MMDRIVER_NAME;
 
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-static unsigned long begin = DIMINUTO_MMDRIVER_BEGIN;
-static unsigned long end = DIMINUTO_MMDRIVER_END;
 static unsigned long start = 0;
 static unsigned long length = 0;
 static struct resource * regionp = 0;
@@ -207,7 +204,7 @@ mmdriver_open(
     struct inode * inode,
     struct file * fp
 ) {
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_open\n");
+    pr_debug("mmdriver_open\n");
     ++opens;
     return 0;
 }
@@ -217,7 +214,7 @@ mmdriver_release(
     struct inode * inode,
     struct file * file
 ) {
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_release\n");
+    pr_debug("mmdriver_release\n");
     ++closes;
     return 0;
 }
@@ -233,7 +230,7 @@ mmdriver_ioctl(
     diminuto_mmdriver_op op;
     char * pointer;
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
+    pr_debug("mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
 
     do {
 
@@ -314,7 +311,7 @@ mmdriver_proc_read(
     int written;
     int total = 0;
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_proc_read\n");
+    pr_debug("mmdriver_proc_read\n");
 
     ++procs;
 
@@ -322,7 +319,7 @@ mmdriver_proc_read(
     total += written;
     count -= written;
 
-    written = snprintf(bufferp + total, count, "major=%d\n", major);
+    written = snprintf(bufferp + total, count, "major=%u\n", major);
     total += written;
     count -= written;
 
@@ -402,14 +399,15 @@ __init mmdriver_init(
     int rc = 0;
     struct resource ** regionpp;
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_init\n");
-
     do {
 
-        if ((beginning != -1) && (ending != -1)) {
-            begin = beginning;
-            end = ending;
-        }
+        pr_debug("mmdriver_init\n");
+
+        pr_debug("begin=0x%lx\n", begin);
+        pr_debug("end=0x%lx\n", end);
+        pr_debug("exclusive=%d\n", exclusive);
+        pr_debug("major=%u\n", major);
+        pr_debug("name=\"%s\"\n", name);
 
         start = begin;
         length = end - begin;
@@ -417,10 +415,12 @@ __init mmdriver_init(
         regionpp = exclusive ? &regionp : 0;
 
         if ((rc = diminuto_kernel_map(start, length, name, regionpp, &basep, &pagep))) {
+            pr_err("mmdriver_init: diminuto_kernel_map failed!\n");
             break;
          }
 
         if (register_chrdev(major, name, &fops)) {
+            pr_err("mmdriver_init: register_chrdev failed!\n");
             diminuto_kernel_unmap(&pagep, regionpp);
             rc = -ENODEV;
             break;
@@ -429,6 +429,7 @@ __init mmdriver_init(
         strncat(proc, name, sizeof(name));
 
         if (!create_proc_read_entry(proc, 0, NULL, mmdriver_proc_read, NULL)) {
+            pr_err("mmdriver_init: create_proc_read_entry failed!\n");
             unregister_chrdev(major, name);
             diminuto_kernel_unmap(&pagep, regionpp);
             rc = -EIO;
@@ -446,7 +447,7 @@ mmdriver_exit(
 ) {
     struct resource ** regionpp;
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "mmdriver_exit\n");
+    pr_debug("mmdriver_exit\n");
 
     remove_proc_entry(proc, NULL);
 
@@ -464,23 +465,20 @@ module_exit(mmdriver_exit);
  * PARAMETERS
  ******************************************************************************/
 
-module_param(beginning, int, S_IRUSR | S_IWUSR);
-MODULE_PARM_DESC(beginning, "diminuto mmdriver beginning address");
+module_param(begin, ulong, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(begin, "diminuto mmdriver beginning address");
 
-module_param(ending, int, S_IRUSR | S_IWUSR);
-MODULE_PARM_DESC(ending, "diminuto mmdriver ending address");
+module_param(end, ulong, S_IRUSR | S_IWUSR);
+MODULE_PARM_DESC(end, "diminuto mmdriver ending address");
 
 module_param(exclusive, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(exclusive, "diminuto mmdriver exclusive flag");
 
-module_param(major, int, S_IRUSR | S_IWUSR);
+module_param(major, uint, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(major, "diminuto mmdriver major number");
 
 module_param_string(name, name, sizeof(name), S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(name, "diminuto mmdriver module name");
-
-module_param_string(proc, proc, sizeof(proc), S_IRUSR | S_IWUSR);
-MODULE_PARM_DESC(proc, "diminuto mmdriver proc file system path");
 
 MODULE_AUTHOR("coverclock@diag.com");
 MODULE_LICENSE("GPL");
