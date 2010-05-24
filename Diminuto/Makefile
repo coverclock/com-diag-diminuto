@@ -341,6 +341,9 @@ unittest-endianess:	unittest-endianess.c lib$(PROJECT).so
 unittest-barrier:	unittest-barrier.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-serial:	unittest-serial.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Modules
 
 .PHONY:	modules modules-clean
