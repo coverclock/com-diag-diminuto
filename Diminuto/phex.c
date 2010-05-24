@@ -31,6 +31,7 @@
  * but intended to mean "print hex".
  */
 
+#include "diminuto_serial.h"
 #include "diminuto_number.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -43,40 +44,6 @@ static const int LENGTH = 80;
 
 static const char * program = "phex";
 static int debug = 0;
-
-static void raw(int fd)
-{
-    struct termios tios = { 0 };
-
-    do {
-
-        if (tcgetattr(fd, &tios) < 0) {
-            perror("tcgetattr");
-            break;
-        }
-
-        /*
-         * Taken right from termios(3) "Raw mode".
-         */
-        tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON );
-        tios.c_oflag &= ~OPOST;
-        tios.c_cflag &= ~(CSIZE | PARENB);
-        tios.c_cflag |= (CS8 | CREAD | CLOCAL);
-        tios.c_cc[VTIME] = 0;
-        tios.c_cc[VMIN] = 1;
-
-        if (tcflush(fd, TCIFLUSH) < 0) {
-            perror("tcflush");
-            /* Proceed anyway. */
-        }
-
-        if (tcsetattr(fd, TCSANOW, &tios) < 0) {
-            perror("tcsetattr");
-            break;
-        }
-
-    } while (0);
-}
 
 static void limit(FILE * fp, const size_t length, ssize_t increment)
 {
@@ -218,7 +185,7 @@ int main(int argc, char * argv[])
     }
 
     if (isatty(fileno(stdin))) {
-        raw(fileno(stdin));
+        diminuto_serial_raw(fileno(stdin));
     }
 
     while ((ch = fgetc(stdin)) != EOF) {
