@@ -344,6 +344,10 @@ unittest-barrier:	unittest-barrier.c lib$(PROJECT).so
 unittest-serial:	unittest-serial.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-memtool:	unittest-memtool.sh
+	cp $< $@
+	chmod 755 $@
+
 ########## Modules
 
 .PHONY:	modules modules-clean
