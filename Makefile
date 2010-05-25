@@ -1,4 +1,4 @@
-# Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
+# Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
@@ -11,6 +11,10 @@ COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
+
+MAJOR		=	1
+MINOR		=	3
+BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
@@ -39,6 +43,8 @@ KERNEL_REV	=	2.6.22-14
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic
 endif
 
+HERE		:=	$(shell pwd)
+
 TGT_IPADDR	=	192.168.1.223
 BDI_IPADDR	=	192.168.1.224
 BDI_PORT	=	2001
@@ -53,10 +59,6 @@ LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
 
 VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
-
-MAJOR		=	1
-MINOR		=	2
-BUILD		=	0
 
 BUILDROOT_REV	=	22987
 BUSYBOX_REV	=	1.11.1
@@ -84,7 +86,7 @@ KFILES		=	$(wildcard modules/*.c)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
-TARGETMODULES	=	$(addsuffix .ko,$(basename $(wildcard modules/diminuto_*.c)))
+TARGETMODULES	=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
@@ -352,13 +354,19 @@ unittest-memtool:	unittest-memtool.sh
 
 .PHONY:	modules modules-clean
 
-modules:	modules/diminuto_utmodule.c modules/diminuto_mmdriver.c
+modules/Makefile:	Makefile
+	echo "# Generated code! Do not edit!" > $@
+	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o" >> $@
+	echo "EXTRA_CFLAGS := -I$(HERE)" >> $@
+	#echo "EXTRA_CFLAGS := -I$(HERE) -DDEBUG" >> $@
+
+${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+
+modules:	${TARGETMODULES}
 
 modules-clean:
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
-
-modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko:	modules
 
 ########## Helpers
 

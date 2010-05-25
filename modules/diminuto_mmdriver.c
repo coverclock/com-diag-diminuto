@@ -250,13 +250,13 @@ mmdriver_ioctl(
                 break;
             }
 
-            if (op.relative > length) {
+            if (op.offset > length) {
                 ++errors;
                 rc = -EINVAL;
                 break;
             }
 
-            pointer = (char *)basep + op.relative;
+            pointer = (char *)basep + op.offset;
 
             if (cmd == DIMINUTO_MMDRIVER_READ) {
                 rc = mmdriver_operation_read(pointer, &op);
