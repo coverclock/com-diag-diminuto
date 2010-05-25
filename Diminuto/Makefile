@@ -367,6 +367,7 @@ modules:	${TARGETMODULES}
 
 modules-clean:
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	rm -f modules/Makefile
 
 ########## Helpers
 

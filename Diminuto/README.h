@@ -75,8 +75,7 @@
 
     vi Makefile                 # establish your configuration
     make depend                 # make dependencies
-    make all                  	# make library and executables
-    make modules                # make loadable modules
+    make all                  	# make library, executables, and modules
 
     Diminuto has at one time or another been built and tested on the
     following platforms:
