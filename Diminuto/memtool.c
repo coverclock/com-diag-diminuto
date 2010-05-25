@@ -130,18 +130,18 @@ static int operate(
 static void usage(void)
 {
     fprintf(stderr, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
-    fprintf(stderr, "       -d            Enable debug mode\n");
-    fprintf(stderr, "       -a ADDRESS    Optionally map region at ADDRESS\n");
-    fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
     fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
     fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
     fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
     fprintf(stderr, "       -8 ADDRESS    Use doubleword at ADDRESS\n");
+    fprintf(stderr, "       -a ADDRESS    Optionally map region at ADDRESS\n");
+    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
+    fprintf(stderr, "       -d            Enable debug mode\n");
+    fprintf(stderr, "       -f            Proceed if the last result was 0\n");
+    fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
+    fprintf(stderr, "       -r            Read ADDRESS\n");
     fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
     fprintf(stderr, "       -t            Proceed if the last result was !0\n");
-    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
-    fprintf(stderr, "       -r            Read ADDRESS\n");
-    fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
     fprintf(stderr, "       -w NUMBER     Write NUMBER to ADDRESS\n");
     fprintf(stderr, "       -?            Print menu\n");
