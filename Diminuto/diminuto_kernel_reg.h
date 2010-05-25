@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_KERNEL_REGISTER
-#define _H_COM_DIAG_DIMINUTO_KERNEL_REGISTER
+#ifndef _H_COM_DIAG_DIMINUTO_KERNEL_REG
+#define _H_COM_DIAG_DIMINUTO_KERNEL_REG
 
 /**
  * @file
