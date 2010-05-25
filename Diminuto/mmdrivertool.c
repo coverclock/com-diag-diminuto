@@ -90,19 +90,19 @@ static int control(int fd, int request, diminuto_mmdriver_op * opp)
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -U DEVICE ] [ -[1|2|4|8] RELATIVE ] [ -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -U DEVICE ] [ -[1|2|4|8] OFFSET ] [ -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
     fprintf(stderr, "       -d            Enable debug mode\n");
-    fprintf(stderr, "       -1 RELATIVE   Use byte at RELATIVE\n");
-    fprintf(stderr, "       -2 RELATIVE   Use halfword at RELATIVE\n");
-    fprintf(stderr, "       -4 RELATIVE   Use word at RELATIVE\n");
-    fprintf(stderr, "       -8 RELATIVE   Use doubleword at RELATIVE\n");
-    fprintf(stderr, "       -s NUMBER     Set NUMBER mask at RELATIVE\n");
+    fprintf(stderr, "       -1 OFFSET   Use byte at OFFSET\n");
+    fprintf(stderr, "       -2 OFFSET   Use halfword at OFFSET\n");
+    fprintf(stderr, "       -4 OFFSET   Use word at OFFSET\n");
+    fprintf(stderr, "       -8 OFFSET   Use doubleword at OFFSET\n");
+    fprintf(stderr, "       -s NUMBER     Set NUMBER mask at OFFSET\n");
     fprintf(stderr, "       -t            Proceed if the last result was !0\n");
-    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at RELATIVE\n");
-    fprintf(stderr, "       -r            Read RELATIVE\n");
+    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at OFFSET\n");
+    fprintf(stderr, "       -r            Read OFFSET\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
-    fprintf(stderr, "       -w NUMBER     Write NUMBER to RELATIVE\n");
+    fprintf(stderr, "       -w NUMBER     Write NUMBER to OFFSET\n");
     fprintf(stderr, "       -U DEVICE     Use DEVICE instead of %s\n", DIMINUTO_MMDRIVER_NODE);
     fprintf(stderr, "       -?            Print menu\n");
 }
@@ -122,7 +122,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    op.relative = 0;
+    op.offset = 0;
     op.width = THIRTYTWO;
     op.datum.thirtytwo = 0;
 
@@ -133,7 +133,7 @@ int main(int argc, char * argv[])
         case '1':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-                op.relative = value;
+                op.offset = value;
                 op.width = EIGHT;
             }
             break;
@@ -141,7 +141,7 @@ int main(int argc, char * argv[])
         case '2':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-                op.relative = value;
+                op.offset = value;
                 op.width = SIXTEEN;
             }
             break;
@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
         case '4':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-                op.relative = value;
+                op.offset = value;
                 op.width = THIRTYTWO;
             }
             break;
@@ -157,7 +157,7 @@ int main(int argc, char * argv[])
         case '8':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-                op.relative = value;
+                op.offset = value;
                 op.width = SIXTYFOUR;
             }
             break;

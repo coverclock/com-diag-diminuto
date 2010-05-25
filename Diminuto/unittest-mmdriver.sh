@@ -15,12 +15,15 @@ RED=0x4			# PIOB2: ours
 
 USEC=1000000		# 1 second
 
+TRIES=30		# 30 tries (about a minute)
+
 mmdrivertool \
 	-4 ${PER} -s ${RED} \
 	-4 ${OER} -s ${RED}
 
-while true; do
+while [ ${TRIES} -gt 0 ]; do
 	mmdrivertool \
 		-4 ${CODR} -s ${RED} -u ${USEC} \
 		-4 ${SODR} -s ${RED} -u ${USEC}
+	TRIES=`expr ${TRIES} - 1`
 done

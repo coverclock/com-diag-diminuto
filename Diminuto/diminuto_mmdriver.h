@@ -45,7 +45,7 @@
  ******************************************************************************/
 
 typedef struct {
-    uintptr_t relative;             /* Relative to beginning of driver space */
+    uintptr_t offset;               /* Offset from beginning of driver space */
     diminuto_kernel_width width;    /* From diminuto_kernel_reg.h */
     diminuto_kernel_datum datum;    /* From diminuto_kernel_reg.h */
 } diminuto_mmdriver_op;

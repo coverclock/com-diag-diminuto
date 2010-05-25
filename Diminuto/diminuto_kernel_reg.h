@@ -141,7 +141,7 @@ diminuto_kernel_put(
         break;
     }
 
-    diminuto_barrier();
+    if (rc == 0) { diminuto_barrier(); }
 
     return rc;
 }
