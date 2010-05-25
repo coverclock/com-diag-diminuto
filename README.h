@@ -4,7 +4,7 @@
 
 /*******************************************************************************
 
-    Copyright 2008 by the Digital Aggregates Corp., Arvada CO 80001-0587 USA.
+    Copyright 2008-2010 by the Digital Aggregates Corporation, Colorado, USA.
 
     ----------------------------------------------------------------------
 
@@ -49,21 +49,23 @@
 
     This file is part of the Digital Aggregates Corporation Diminuto
     library. Diminuto is an open source library of systems programming
-    functions written in C to simplify the writing of device drivers and
-    daemons for the Linux operating system.
+    functions and tools written in C to simplify the writing of device
+    drivers, daemons, and systems applications for the Linux operating system.
 
-    This software is an original work of its authors.
+    This software is an original work of its author(s).
 
     Information regarding Diminuto can be found here:
 
         http://www.diag.com/navigation/downloads/Diminuto.html
+        http://www.diag.com/navigation/downloads/Arroyo.html
 
     Contact:
 
         Chip Overclock
         mailto:coverclock@diag.com
         Digital Aggregates Corporation
-        Arvada CO 80001-0587 USA
+        3440 Youngfield Street, Suite 209
+        Wheat Ridge CO 80033 USA
 
     ----------------------------------------------------------------------
 
@@ -72,9 +74,12 @@
     Here is the sequence of commands to build Diminuto:
 
     vi Makefile                 # establish your configuration
-    make all                  	# make all
+    make depend                 # make dependencies
+    make all                  	# make library and executables
+    make modules                # make loadable modules
 
-    Diminuto has been built and tested on the following platforms:
+    Diminuto has at one time or another been built and tested on the
+    following platforms:
 
         Dell 530 P4
         Linux 2.6.22
