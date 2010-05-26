@@ -19,33 +19,29 @@
  *
  * Runs the specfied executable binary and enables a full core dump to be
  * generated in the event that it fails.
- *
- * NOTES
- *
- * Ported (barely) from Desperado.
  */
 
-#include <stdio.h>
-#include <errno.h>
+#include "diminuto_coreable.h"
 #include <unistd.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/types.h>
+#include <errno.h>
 
 int main(int argc, char **argv) {
-    int rc = 1;
-    if (argc >= 2) {
-        struct rlimit limit;
-        if (-1 == getrlimit(RLIMIT_CORE, &limit)) {
-            perror(argv[0]);
-        } else {
-            limit.rlim_cur = limit.rlim_max;
-            if (-1 == setrlimit(RLIMIT_CORE, &limit)) {
-                perror(argv[0]);
-            }
+
+    do {
+
+        if (argc < 2) {
+            errno = EINVAL;
+            break;
         }
-        rc = execvp(argv[1], &(argv[1]));
-    } 
-    return rc;
+
+        if (diminuto_coreable() < 0) {
+            break;
+        }
+
+        execvp(argv[1], &(argv[1]));
+        perror("execvp");
+
+    } while (0);
+
+    return 1;
 }

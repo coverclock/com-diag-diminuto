@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -18,19 +18,26 @@
 
 int diminuto_coreable()
 {
-	int result = 0;
+	int rc = -1;
 	struct rlimit limit;
 
-	if (getrlimit(RLIMIT_CORE, &limit) < 0) {
-		diminuto_perror("diminuto_coreable: getrlimit");
-		result = -1;
-	} else {
+    do {
+
+    	if (getrlimit(RLIMIT_CORE, &limit) < 0) {
+		    diminuto_perror("diminuto_coreable: getrlimit");
+            break;
+        }
+
 		limit.rlim_cur = limit.rlim_max;
+
 		if (setrlimit(RLIMIT_CORE, &limit) < 0) {
 			diminuto_perror("diminuto_coreable: setrlimit");
-			result = -2;
+            break;
 		}
-	}
 
-	return result;
+        rc = 0;
+
+    } while (0);
+
+	return rc;
 }

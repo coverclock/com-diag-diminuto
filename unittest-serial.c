@@ -8,10 +8,19 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_unittest.h"
 #include "diminuto_serial.h"
 #include <stdio.h>
 
 int main(void)
 {
-    return diminuto_serial_raw(fileno(stdin)) ? 1 : 0;
+    int rc;
+
+    rc = diminuto_serial_raw(fileno(stdin));
+    ASSERT(rc == 0);
+
+    rc = diminuto_serial_unbuffered(stdout);
+    ASSERT(rc == 0);
+
+    return (errors == 0) ? 0 : 1;
 }
