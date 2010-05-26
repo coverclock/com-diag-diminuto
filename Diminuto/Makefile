@@ -14,7 +14,7 @@ PRODUCT		=	buildroot
 
 MAJOR		=	2
 MINOR		=	0
-BUILD		=	0
+BUILD		=	1
 
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
@@ -356,6 +356,9 @@ unittest-memtool:	unittest-memtool.sh
 
 unittest-memtool2:	unittest-memtool2.sh
 	$(MAKE) script SCRIPT=unittest-memtool2
+
+unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ########## Modules
 
