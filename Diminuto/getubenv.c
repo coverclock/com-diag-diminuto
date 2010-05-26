@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
 
     }
 
-    rc = diminuto_unmap(start, length);
+    rc = diminuto_unmap(&start, &length);
     if (rc != 0) {
         return 5;
     }

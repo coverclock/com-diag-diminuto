@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,29 +26,33 @@ void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * len
     void * base = (void *)0;
     size_t size = 0;
     int pagesize;
-    size_t modulo;
-    off_t offset;
+    size_t offset;
+    off_t address;
 
     do {
 
+        *startp = (void *)0;
+        *lengthp = 0;
+
         pagesize = getpagesize();
-        modulo = start % pagesize;
-        offset = start - modulo;
-        size = length + modulo;
+        offset = start % pagesize;
+        address = start - offset;
+        size = length + offset;
 
         if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
             diminuto_perror("diminuto_map: open");
             break;
         }
 
-        if ((base = mmap(0, size, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, offset)) == (void *)-1) {
+        if ((base = mmap(0, size, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, address)) == (void *)-1) {
             diminuto_perror("diminuto_map: mmap");
             break;
         }
 
-        result = (unsigned char *)base + modulo;
         *startp = base;
         *lengthp = size;
+
+        result = (unsigned char *)base + offset;
 
     } while (0);
 
@@ -56,17 +60,23 @@ void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * len
         /* Do nothing. */
     } else if ((fd = close(fd)) < 0) {
         diminuto_perror("diminuto_map: close");
+        /* Proceed anyway. */
     }
 
     return result;
 }
 
-int diminuto_unmap(void * start, size_t length)
+int diminuto_unmap(void ** startp, size_t * lengthp)
 {
     int rc;
 
-    if ((rc = munmap(start, length)) < 0) {
+    if (*lengthp == 0) {
+        /* Do nothing. */
+    } else if ((rc = munmap(*startp, *lengthp)) < 0) {
         diminuto_perror("diminuto_unmap: munmap");
+    } else {
+        *startp = (void *)0;
+        *lengthp = 0;
     }
 
     return rc;

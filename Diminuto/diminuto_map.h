@@ -27,11 +27,12 @@ extern void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_
 
 /**
  * Unmap a region of user virtual address space that was previously mapped.
- * @param start is the virtual start address returned by map.
- * @param length is the virtual length returned by map.
+ * @param startp points to where the start address from the map was
+ * returned.
+ * @param lengthp points to where the length from the map was returned.
  * @return 0 if successful, !0 otherwise.
  */
-extern int diminuto_unmap(void * start, size_t length);
+extern int diminuto_unmap(void ** startp, size_t * lengthp);
 
 /**
  * Set the minimum physical address which may be mapped. Setting this

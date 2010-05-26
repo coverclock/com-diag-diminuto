@@ -109,6 +109,8 @@ static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int esc, in
         limit(fp, length, 4);
         fprintf(fp, "\\x%2.2x", ch);
     }
+
+    (void)fflush(fp);
 }
 
 static void usage(FILE * fp)
@@ -186,6 +188,10 @@ int main(int argc, char * argv[])
 
     if (isatty(fileno(stdin))) {
         diminuto_serial_raw(fileno(stdin));
+    }
+
+    if (isatty(fileno(out))) {
+        diminuto_serial_unbuffered(out);
     }
 
     while ((ch = fgetc(stdin)) != EOF) {

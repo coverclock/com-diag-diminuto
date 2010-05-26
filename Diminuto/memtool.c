@@ -63,7 +63,8 @@ static int debug = 0;
         *_VALUEP_ = value; \
     } while (0)
 
-static int operate(
+static void * operate(
+    void ** basep,
     int opt,
     uintptr_t address,
     size_t length,
@@ -73,26 +74,27 @@ static int operate(
     size_t * lengthp,
     uint64_t * valuep
 ) {
-    void * base;
     void * effective;
 
-    if (length == 0) {
-        base = diminuto_map(pointer, size, addressp, lengthp);
-        effective = base;
+    if (*basep != (void *)0) {
+        /* Do nothing. */
+    } else if (length == 0) {
+        *basep = diminuto_map(pointer, size, addressp, lengthp);
     } else {
-        base = diminuto_map(address, length, addressp, lengthp);
-        effective = base + (pointer - address);
+        *basep = diminuto_map(address, length, addressp, lengthp);
     }
 
     if (debug) {
         fprintf(stderr, "%s: a=%p l=%u p=%lu s=%u b=%p e=%p v=%llx opt=%c\n",
-            program, address, length, pointer, size, base, effective,
+            program, address, length, pointer, size, *basep, effective,
             *valuep, opt);
     }
 
-    if (effective == (void *)0) {
+    if (*basep == (void *)0) {
         return -1;
     }
+
+    effective = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
 
     diminuto_barrier();
 
@@ -119,9 +121,8 @@ static int operate(
     diminuto_barrier();
 
     if (length == 0) {
-        diminuto_unmap(*addressp, *lengthp);
-        *addressp = (void *)0;
-        *lengthp = 0;
+        diminuto_unmap(addressp, lengthp);
+        *basep = (void *)0;
     }
 
    return 0; 
@@ -152,6 +153,7 @@ int main(int argc, char * argv[])
     uint64_t value = 0;
     uintptr_t address = 0;
     size_t length = 0;
+    void * base = 0;
     void * unaddress = 0;
     size_t unlength = 0;
     uintptr_t pointer = 0;
@@ -214,6 +216,8 @@ int main(int argc, char * argv[])
             } else {
                 address = value;
                 if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, address); }
+                diminuto_unmap(&unaddress, &unlength);
+                base = (void *)0;
             }
             break;
 
@@ -222,7 +226,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
@@ -247,7 +251,7 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+            error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             break;
 
         case 's':
@@ -255,7 +259,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
@@ -278,7 +282,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
-                error = (operate(opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
@@ -302,9 +306,8 @@ int main(int argc, char * argv[])
 
     }
 
-    if (unlength != 0) {
-        diminuto_unmap(unaddress, unlength);
-    }
+    diminuto_unmap(&unaddress, &unlength);
+    base = (void *)0;
 
     if (error) {
         usage();

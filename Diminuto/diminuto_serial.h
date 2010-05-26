@@ -11,13 +11,27 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include <stdio.h>
+
 /**
  * If the specified file descriptor identifies a device that is a
- * serial port, places the port into "raw" mode as defined in termios(3).
+ * terminal (whatever the operating system thinks that means), places the
+ * port into "raw" mode as defined in termios(3) such that input characters
+ * are not interpreted by the Linux terminal
+ * protocol driver.
  * @param fd is the file descriptor.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_serial_raw(int fd);
 
-#endif
+/**
+ * If the specified file stream identifies a device that is a terminal
+ * (whatever the operating system thinks that means), eliminates any
+ * buffering of output to the port such that output characters are
+ * emitted immediately.
+ * @param fp points to the file stream.
+ * @return 0 for success or <0 if an error occurred.
+ */
+extern int diminuto_serial_unbuffered(FILE * fp);
 
+#endif
