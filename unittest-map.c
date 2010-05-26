@@ -21,22 +21,26 @@ int main(int argc, char ** argv)
     int rc;
     int pagesize;
     void * pointer;
-    void * start;
-    size_t length;
+    void * start = (void *)0;
+    size_t length = 0;
 
     rc = diminuto_map_minimum(0);
     EXPECT(rc == 0);
 
     pagesize = getpagesize();
-    ASSERT(pagesize >= 0);
+    ASSERT(pagesize > 0);
 
     pointer = diminuto_map(0, pagesize, &start, &length);
     ASSERT(pointer != (void *)0);
+    ASSERT(start != (void *)0);
+    ASSERT(length != 0);
 
-    diminuto_emit("unittest-map: *(void *)0=0x%08x\n", *(int *)pointer);
+    diminuto_emit("unittest-map: *(void *)0=0x%08x start=0x%08x length=%lu\n", *(int *)pointer, start, length);
 
-    rc = diminuto_unmap(start, length);
+    rc = diminuto_unmap(&start, &length);
     ASSERT(rc == 0);
+    ASSERT(start == (void *)0);
+    ASSERT(length == 0);
 
     return errors > 255 ? 255 : errors;
 }

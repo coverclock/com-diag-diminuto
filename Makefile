@@ -12,8 +12,8 @@ COMPILEFOR	=	arroyo
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	1
-MINOR		=	3
+MAJOR		=	2
+MINOR		=	0
 BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)
@@ -94,6 +94,7 @@ TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
+TARGETPACKAGE	=	$(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETMODULES)
 ARTIFACTS	=	$(TARGETLIBRARIES) doxygen-local.cf
 
 DIMINUTO_SO	=	lib$(PROJECT).so
@@ -124,9 +125,11 @@ BROWSER		=	firefox
 
 ########## Main Entry Points
 
-default:	$(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETUNITTESTS)
+.PHONY:	default all install host-install target-path target-install config-backup tftp-install package dist distribution build
 
-all:	$(HOSTPROGRAMS) $(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETMODULES)
+default:	$(TARGETPACKAGE)
+
+all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
 
 install:	host-install target-install
 
@@ -156,6 +159,9 @@ config-backup:
 
 tftp-install:
 	cp $(CPFLAGS) $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(TFTP_DIR)/$(IMAGE)
+
+package:	$(TARGETPACKAGE)
+	tar cvzf - $(TARGETPACKAGE) > $(COMPILEFOR)-$(MAJOR).$(MINOR).$(BUILD).tgz
 
 dist:	distribution
 
@@ -328,8 +334,7 @@ unittest-map:	unittest-map.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-mmdriver:	unittest-mmdriver.sh
-	cp $< $@
-	chmod 755 $@
+	$(MAKE) script SCRIPT=unittest-mmdriver
 
 unittest-phex:	unittest-phex.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -347,8 +352,10 @@ unittest-serial:	unittest-serial.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-memtool:	unittest-memtool.sh
-	cp $< $@
-	chmod 755 $@
+	$(MAKE) script SCRIPT=unittest-memtool
+
+unittest-memtool2:	unittest-memtool2.sh
+	$(MAKE) script SCRIPT=unittest-memtool2
 
 ########## Modules
 
@@ -422,8 +429,8 @@ manpages:
 ########## Submakes
 
 script:	$(SCRIPT).sh
-	cp $(SCRIPT).sh $(SCRIPT)
-	chmod 755 $(SCRIPT)
+	cp $< $@
+	chmod 755 $@
 
 patch:
 	cd $(BUILDROOT_DIR)
