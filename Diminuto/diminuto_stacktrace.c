@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <execinfo.h>
 
-int diminuto_stacktrace3(void ** buffer, size_t size, int fd)
+int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd)
 {
     int rc;
     backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
@@ -22,5 +22,5 @@ int diminuto_stacktrace3(void ** buffer, size_t size, int fd)
 void diminuto_stacktrace()
 {
     void * buffer[DIMINUTO_STACKTRACE_SIZE];
-    (void)diminuto_stacktrace3(buffer, sizeof(buffer) / sizeof(buffer[0]), STDERR_FILENO);
+    (void)diminuto_stacktrace_generic(buffer, sizeof(buffer) / sizeof(buffer[0]), STDERR_FILENO);
 }

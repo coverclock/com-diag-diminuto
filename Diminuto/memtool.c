@@ -63,7 +63,7 @@ static int debug = 0;
         *_VALUEP_ = value; \
     } while (0)
 
-static void * operate(
+static int operate(
     void ** basep,
     int opt,
     uintptr_t address,
