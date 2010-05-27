@@ -13,8 +13,8 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	2
-MINOR		=	0
-BUILD		=	1
+MINOR		=	1
+BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
@@ -193,37 +193,37 @@ dcscope:	dcscope.sh
 dgdb:	dgdb.sh diminuto
 	$(MAKE) script SCRIPT=dgdb
 
+dlib:	dlib.sh
+	$(MAKE) script SCRIPT=dlib
+
 diminuto:	diminuto.sh
 	$(MAKE) script SCRIPT=diminuto
 
 diminuto.sh:	Makefile
-	echo "# GENERATED FILE! DO NOT EDIT!" > diminuto.sh
-	echo ARCH=\"$(ARCH)\" >> diminuto.sh
-	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> diminuto.sh
-	echo BDIPORT=\"$(BDI_PORT)\" >> diminuto.sh
-	echo BINARIES=\"$(BINARIES_DIR)\" >> diminuto.sh
-	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> diminuto.sh
-	echo CONFIG=\"$(CONFIG_DIR)\" >> diminuto.sh
-	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> diminuto.sh
-	echo DATESTAMP=\"$(DATESTAMP)\" >> diminuto.sh
-	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> diminuto.sh
-	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> diminuto.sh
-	echo DESPERADO=\"$(DESPERADO_DIR)\" >> diminuto.sh
-	echo FICL=\"$(FICL_DIR)\" >> diminuto.sh
-	echo IMAGE=\"$(IMAGE)\" >> diminuto.sh
-	echo KERNEL=\"$(KERNEL_DIR)\" >> diminuto.sh
-	echo PLATFORM=\"$(PLATFORM)\" >> diminuto.sh
-	echo PROJECT=\"$(PROJECT)\" >> diminuto.sh
-	echo RELEASE=\"$(KERNEL_REV)\" >> diminuto.sh
-	echo TARGET=\"$(TARGET)\" >> diminuto.sh
-	echo TFTP=\"$(TFTP_DIR)\" >> diminuto.sh
-	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> diminuto.sh
-	echo TMPDIR=\"$(TMP_DIR)\" >> diminuto.sh
-	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> diminuto.sh
-	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> diminuto.sh
-
-dlib:	dlib.sh
-	$(MAKE) script SCRIPT=dlib
+	echo "# GENERATED FILE! DO NOT EDIT!" > $@
+	echo ARCH=\"$(ARCH)\" >> $@
+	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> $@
+	echo BDIPORT=\"$(BDI_PORT)\" >> $@
+	echo BINARIES=\"$(BINARIES_DIR)\" >> $@
+	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> $@
+	echo CONFIG=\"$(CONFIG_DIR)\" >> $@
+	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> $@
+	echo DATESTAMP=\"$(DATESTAMP)\" >> $@
+	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> $@
+	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> $@
+	echo DESPERADO=\"$(DESPERADO_DIR)\" >> $@
+	echo FICL=\"$(FICL_DIR)\" >> $@
+	echo IMAGE=\"$(IMAGE)\" >> $@
+	echo KERNEL=\"$(KERNEL_DIR)\" >> $@
+	echo PLATFORM=\"$(PLATFORM)\" >> $@
+	echo PROJECT=\"$(PROJECT)\" >> $@
+	echo RELEASE=\"$(KERNEL_REV)\" >> $@
+	echo TARGET=\"$(TARGET)\" >> $@
+	echo TFTP=\"$(TFTP_DIR)\" >> $@
+	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> $@
+	echo TMPDIR=\"$(TMP_DIR)\" >> $@
+	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> $@
+	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> $@
 
 ########## Target Scripts
 
@@ -322,7 +322,7 @@ unittest-periodic:	unittest-periodic.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-stacktrace:	unittest-stacktrace.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) -rdynamic $(LDFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -O0 -rdynamic $(LDFLAGS) -o $@ $<
 
 unittest-log:	unittest-log.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -360,12 +360,15 @@ unittest-memtool2:	unittest-memtool2.sh
 unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-########## Modules
+unittest-countof:	unittest-countof.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-.PHONY:	modules modules-clean
+########## Drivers
+
+.PHONY:	drivers drivers-clean
 
 modules/Makefile:	Makefile
-	echo "# Generated code! Do not edit!" > $@
+	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o" >> $@
 	echo "EXTRA_CFLAGS := -I$(HERE)" >> $@
 	#echo "EXTRA_CFLAGS := -I$(HERE) -DDEBUG" >> $@
@@ -373,9 +376,10 @@ modules/Makefile:	Makefile
 ${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
-modules:	${TARGETMODULES}
+drivers:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c
+	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
-modules-clean:
+drivers-clean:
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
 	rm -f modules/Makefile
 
@@ -391,7 +395,7 @@ acquire:	$(HOME)/$(PROJECT)
 	cd $(HOME)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
-clean:	modules-clean
+clean:	drivers-clean
 	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
 	rm -rf $(DOC_DIR)
 
@@ -431,9 +435,9 @@ manpages:
 
 ########## Submakes
 
-script:	$(SCRIPT).sh
-	cp $< $@
-	chmod 755 $@
+.PHONY:	script patch
+
+script:	$(SCRIPT)
 
 patch:
 	cd $(BUILDROOT_DIR)
@@ -463,6 +467,12 @@ $(HOME)/$(PROJECT):
 $(DOC_DIR)/pdf:
 	mkdir -p $(DOC_DIR)/pdf
 
+########## Patterns
+
+$(SCRIPT):	$(SCRIPT).sh
+	cp $< $@
+	chmod 755 $@
+
 ########## Rules
 
 %.txt:	%.cpp
@@ -486,7 +496,7 @@ $(DOC_DIR)/pdf:
 
 depend:	dependencies.mk
 
-dependencies.mk:	Makefile $(HFILES) $(CFILES) $(KFILES)
+dependencies.mk:	$(HFILES) $(CFILES) $(KFILES)
 	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(KFILES) > dependencies.mk
 
 -include dependencies.mk

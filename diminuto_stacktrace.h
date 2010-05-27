@@ -18,13 +18,16 @@
 /**
  * Generate a stack back trace in an array of void* pointers provided
  * by the caller. Display the trace on the indicated file descriptor.
+ * N.B. Read carefully backtrace(3). Due to compiler optimizations and
+ * the ABIs used on some architectures, the backtrace isn't always as
+ * useful as it might seem.
  * @param buffer is an array of void* pointers.
  * @param size is the number of elements in the array.
  * @param fd is the file descriptor.
  * @return the number of pointers in the backtrace; if it equals size,
  * the trace may have been truncated.
  */
-extern int diminuto_stacktrace3(void ** buffer, size_t size, int fd);
+extern int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd);
 
 /**
  * Generate a stack back trace and display it to standard error.
@@ -32,5 +35,7 @@ extern int diminuto_stacktrace3(void ** buffer, size_t size, int fd);
  * elements. If the trace is deeper than this size, it will be truncated.
  */
 extern void diminuto_stacktrace(void);
+
+#define diminuto_stacktrace3 diminuto_stacktrace_generic
 
 #endif
