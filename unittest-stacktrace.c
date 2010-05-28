@@ -24,7 +24,9 @@ int f(int depth, int limit)
     int ndx;
 
     if (depth > 0) {
-        return f(depth - 1, limit) + 1;
+        count = f(depth - 1, limit);
+        count = count + 1;
+        return count;
     }
 
     fd = open("/dev/null", O_WRONLY);

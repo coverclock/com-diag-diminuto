@@ -5,9 +5,9 @@
 
 ########## Variables
 
-#COMPILEFOR	=	host
+COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-COMPILEFOR	=	arroyo
+#COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -82,7 +82,7 @@ SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
 CFILES		=	$(wildcard *.c)
 HFILES		=	$(wildcard *.h)
-KFILES		=	$(wildcard modules/*.c)
+MFILES		=	$(wildcard modules/*.c)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
@@ -94,7 +94,8 @@ TARGETARCHIVES	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
-TARGETPACKAGE	=	$(TARGETLIBRARIES) $(TARGETPROGRAMS) $(TARGETMODULES)
+TARGETDEFAULT	=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
+TARGETPACKAGE	=	$(TARGETDEFAULT) $(TARGETMODULES)
 ARTIFACTS	=	$(TARGETLIBRARIES) doxygen-local.cf
 
 DIMINUTO_SO	=	lib$(PROJECT).so
@@ -127,7 +128,7 @@ BROWSER		=	firefox
 
 .PHONY:	default all install host-install target-path target-install config-backup tftp-install package dist distribution build
 
-default:	$(TARGETPACKAGE)
+default:	$(TARGETDEFAULT)
 
 all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
 
@@ -363,6 +364,9 @@ unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
 unittest-countof:	unittest-countof.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-fletcher8:	unittest-fletcher8.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Drivers
 
 .PHONY:	drivers drivers-clean
@@ -395,7 +399,7 @@ acquire:	$(HOME)/$(PROJECT)
 	cd $(HOME)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
-clean:	drivers-clean
+clean:
 	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
 	rm -rf $(DOC_DIR)
 
@@ -437,7 +441,9 @@ manpages:
 
 .PHONY:	script patch
 
-script:	$(SCRIPT)
+script:	$(SCRIPT).sh
+	cp $(SCRIPT).sh $(SCRIPT)
+	chmod 755 $(SCRIPT)
 
 patch:
 	cd $(BUILDROOT_DIR)
@@ -467,12 +473,6 @@ $(HOME)/$(PROJECT):
 $(DOC_DIR)/pdf:
 	mkdir -p $(DOC_DIR)/pdf
 
-########## Patterns
-
-$(SCRIPT):	$(SCRIPT).sh
-	cp $< $@
-	chmod 755 $@
-
 ########## Rules
 
 %.txt:	%.cpp
@@ -496,8 +496,8 @@ $(SCRIPT):	$(SCRIPT).sh
 
 depend:	dependencies.mk
 
-dependencies.mk:	$(HFILES) $(CFILES) $(KFILES)
-	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(KFILES) > dependencies.mk
+dependencies.mk:	$(HFILES) $(CFILES) $(MFILES)
+	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
 
 -include dependencies.mk
 
