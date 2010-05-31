@@ -77,7 +77,7 @@
     make depend                 # make dependencies
     make all                  	# make library, executables, and modules
 
-    Diminuto has at one time or another been built and tested on the
+    The current version of Diminuto has been built and tested on the
     following platforms:
 
         Dell 530 P4
@@ -86,14 +86,17 @@
         glibc 2.6.1
 
         Atmel AT91RM9200-EK ARM9
-        Linux 2.6.25
-        gcc 4.2.4
-        uClibc 0.9.29
-
-        Atmel AT91RM9200-EK ARM9
         Linux 2.6.26
         gcc 4.2.3
         Sourcery G++ Lite 2008q1-126
+
+    Prior versions of Diminuto have been built and tested on the following
+    platforms:
+
+        Atmel AT91RM9200-EK ARM9
+        Linux 2.6.25
+        gcc 4.2.4
+        uClibc 0.9.29
 
 *******************************************************************************/
 
