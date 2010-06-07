@@ -27,7 +27,13 @@ int main(void)
 
     diminuto_dump_generic(stdout, data, sizeof(data), 1, '_', 1, 0, 4);
 
+    diminuto_dump_custom(stdout, data, sizeof(data), 1, '?', 0, 0, 2, 1, 16, "> ", " ", "<", '.', '_', ">\n");
+
     diminuto_dump(stdout, data, sizeof(data));
+
+    diminuto_dump_virtual(stdout, data, sizeof(data), 0);
+
+    diminuto_dump_bytes(stdout, data, sizeof(data));
 
     return 0;
 }

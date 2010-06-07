@@ -10,7 +10,24 @@
 
 #include "diminuto_dump.h"
 
-void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int upper, char dot, int virtualize, uintptr_t address, size_t indent)
+void diminuto_dump_custom(
+    FILE * fp,
+    const void * data,
+    size_t length,
+    int upper,
+    char dot,
+    int virtualize,
+    uintptr_t address,
+    size_t indent,
+    size_t bpw,
+    size_t wpl,
+    const char * addrsep,
+    const char * wordsep,
+    const char * charsep,
+    const char byteskip,
+    const char charskip,
+    const char * lineend
+)
 {
     const char * eight;
     const char * two;
@@ -25,6 +42,7 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
     const unsigned char * pointer;
     const unsigned char * pp;
     size_t ii;
+    uintptr_t mask;
 
     if (upper) {
         eight = "%8.8X";
@@ -43,8 +61,9 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
     first = address;
     last = address + length;
 
-    begin = address & ~(uintptr_t)0xf;
-    end = (last + 0xf) & ~(uintptr_t)0xf;
+    mask = (bpw * wpl) - 1;
+    begin = address & ~mask;
+    end = (last + mask) & ~mask;
 
     here = begin;
 
@@ -55,20 +74,21 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
         }
 
         fprintf(fp, eight, here);
-        fputs(": ", fp);
+        fputs(addrsep, fp);
 
         pp = pointer;
         hh = here;
 
-        line = here + 0x10;
+        line = here + (bpw * wpl);
 
         while (hh < line) {
 
-            word = hh + 0x4;
+            word = hh + bpw;
 
             while (hh < word) {
                 if (!((first <= hh) && (hh < last))) {
-                    fputs("  ", fp);
+                    fputc(byteskip, fp);
+                    fputc(byteskip, fp);
                 } else {
                     fprintf(fp, two, *pp);
                     ++pp;
@@ -76,19 +96,19 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
                 ++hh;
             }
 
-            fputc(' ', fp);
+            fputs(wordsep, fp);
 
         }
 
         pp = pointer;
         hh = here;
 
-        fputc('|', fp);
+        fputs(charsep, fp);
 
         while (hh < line) {
 
             if (!((first <= hh) && (hh < last))) {
-                fputc(' ', fp);
+                fputc(charskip, fp);
             } else if ((' ' <= *pp) && (*pp <= '~')) {
                 fputc(*pp, fp);
                 ++pp;
@@ -99,7 +119,7 @@ void diminuto_dump_generic(FILE * fp, const void * data, size_t length, int uppe
             ++hh;
         }
 
-        fputs("|\n", fp);
+        fputs(lineend, fp);
 
         pointer = pp;
         here = hh;
