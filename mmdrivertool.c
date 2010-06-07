@@ -47,32 +47,6 @@ static const char * number(const char * string, uint64_t * valuep)
     return result;
 }
 
-static int acquire(int fd, const char * device)
-{
-    if (fd >= 0) {
-        /* Do nothing: open. */
-    } else if ((fd = open(device, O_RDWR)) < 0) {
-        perror(device);
-    } else {
-        /* Do nothing: success. */
-    }
-
-    return fd;
-}
-
-static int release(int fd)
-{
-    if (fd < 0) {
-        /* Do nothing: not open. */
-    } else if (close(fd) < 0) {
-        perror("close");
-    } else {
-        fd = -1;
-    }
-
-    return fd;
-}
-
 static int control(int fd, int request, diminuto_mmdriver_op * opp)
 {
     int rc = -1;
@@ -164,7 +138,7 @@ int main(int argc, char * argv[])
 
         case 'U':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
-            fd = release(fd);
+            fd = diminuto_relinquish(fd, device);
             device = optarg;
             break;
 
@@ -177,7 +151,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = acquire(fd, device)) < 0))) {
+                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_CLEAR, &op) < 0;
                 }
             }
@@ -200,7 +174,7 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            if (!(error = ((fd = acquire(fd, device)) < 0))) {
+            if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
                 if (!(error = control(fd, DIMINUTO_MMDRIVER_READ, &op) < 0)) {
                     switch (op.width) {
                     case EIGHT: printf("%u\n", op.datum.eight); break;
@@ -221,7 +195,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = acquire(fd, device)) < 0))) {
+                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_SET, &op) < 0;
                 }
             }
@@ -253,7 +227,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = acquire(fd, device)) < 0))) {
+                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_WRITE, &op) < 0;
                 }
             }
@@ -279,7 +253,7 @@ int main(int argc, char * argv[])
 
     }
 
-    fd = release(fd);
+    fd = diminuto_relinquish(fd, device);
 
     if (error) {
         usage();
