@@ -42,19 +42,17 @@ diminuto_list * diminuto_list_insert(diminuto_list * rootp, diminuto_list * node
     return nodep;
 }
 
-diminuto_list * diminuto_list_apply(diminuto_list * rootp, diminuto_list_functor * funcp, void * voidp)
+diminuto_list * diminuto_list_apply(diminuto_list_functor * funcp, diminuto_list * nodep, void * contextp)
 {
     int rc;
-    diminuto_list * herep = rootp;
     while (1) {
-        rc = (*funcp)(rootp, herep, voidp);
+        rc = (*funcp)(nodep, contextp);
         if (rc < 0) {
-            herep = diminuto_list_prev(herep);
+            nodep = diminuto_list_prev(nodep);
         } else if (rc > 0) {
-            herep = diminuto_list_next(herep);
+            nodep = diminuto_list_next(nodep);
         } else {
-            break;
+            return nodep;
         }
     }
-    return herep;
 }

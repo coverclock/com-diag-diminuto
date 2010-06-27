@@ -85,12 +85,6 @@ struct diminuto_list {
     void * data;            /* Points to the payload of the node. */
 };
 
-typedef int (*diminuto_list_functor)(
-    diminuto_list * rootp,
-    diminuto_list * herep,
-    void * contextp
-);
-
 #define diminuto_list_next(_NODEP_) \
     ((_NODEP_)->next)
 
@@ -112,13 +106,29 @@ typedef int (*diminuto_list_functor)(
 #define diminuto_list_ismember(_ROOTP_, _NODEP_) \
     ((_ROOTP_) == (_NODEP_)->root)
 
-extern diminuto_list * diminuto_list_init(diminuto_list * nodep);
+extern diminuto_list * diminuto_list_init(
+    diminuto_list * nodep
+);
 
-extern diminuto_list * diminuto_list_remove(diminuto_list * nodep);
+extern diminuto_list * diminuto_list_remove(
+    diminuto_list * nodep
+);
 
-extern diminuto_list * diminuto_list_insert(diminuto_list * rootp, diminuto_list * nodep);
+extern diminuto_list * diminuto_list_insert(
+    diminuto_list * rootp,
+    diminuto_list * nodep
+);
 
-extern diminuto_list * diminuto_list_apply(diminuto_list * rootp, diminuto_list_functor * funcp, void * contextp);
+typedef int (*diminuto_list_functor)(
+    diminuto_list * nodep,
+    void * contextp
+);
+
+extern diminuto_list * diminuto_list_apply(
+    diminuto_list_functor * funcp,
+    diminuto_list * nodep,
+    void * contextp
+);
 
 #define diminuto_list_head(_ROOTP_) \
     (diminuto_list_isempty(_ROOTP_) ? (diminuto_list *)0 : \

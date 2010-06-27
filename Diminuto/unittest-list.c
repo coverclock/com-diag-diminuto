@@ -21,14 +21,22 @@ static diminuto_list node[3];
 
 static void audit(const char * file, int line, diminuto_list * rootp, ...)
 {
+    diminuto_list * stack[countof(node) + 2];
+    int ii;
     diminuto_list * expected;
     diminuto_list * actual;
     va_list ap;
 
     printf("audit:%s@%d\n", file, line);
+
+    /* Forward */
+
     actual = rootp;
+    ii = 0;
     va_start(ap, rootp);
     while ((expected = va_arg(ap, diminuto_list *)) != END) {
+        ASSERT(ii < countof(stack));
+        stack[ii++] = expected;
         ASSERT(expected == actual);
         ASSERT(diminuto_list_isroot(rootp));
         ASSERT(diminuto_list_ismember(rootp, actual));
@@ -40,6 +48,24 @@ static void audit(const char * file, int line, diminuto_list * rootp, ...)
         actual = diminuto_list_next(actual);
     }
     va_end(ap);
+
+    /* Reverse */
+
+    actual = rootp;
+    while (ii > 0) {
+        expected = stack[--ii];
+        ASSERT(expected == actual);
+        ASSERT(diminuto_list_isroot(rootp));
+        ASSERT(diminuto_list_ismember(rootp, actual));
+        if (rootp != actual) {
+            ASSERT(!diminuto_list_isempty(rootp));
+            ASSERT(!diminuto_list_isroot(actual));
+            ASSERT(!diminuto_list_ismember(actual, rootp));
+        }
+        actual = diminuto_list_prev(actual);
+    }
+
+
 }
 
 static void initialize(void)
@@ -250,6 +276,13 @@ int main(void)
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_tail(&head) == END);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
+    }
+
+    {
+        /* Data and Functors */
+
+        initialize();
+    
     }
 
     return 0;
