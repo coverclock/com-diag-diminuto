@@ -19,19 +19,24 @@
 static diminuto_list head;
 static diminuto_list node[3];
 
-static void audit(const char * file, int line, diminuto_list * list, ...)
+static void audit(const char * file, int line, diminuto_list * rootp, ...)
 {
     diminuto_list * expected;
     diminuto_list * actual;
     va_list ap;
 
     printf("audit:%s@%d\n", file, line);
-    printf("list=%p\n", list);
-    actual = list;
-    va_start(ap, list);
+    actual = rootp;
+    va_start(ap, rootp);
     while ((expected = va_arg(ap, diminuto_list *)) != END) {
-        printf("expected=%p actual=%p\n", expected, actual);
         ASSERT(expected == actual);
+        ASSERT(diminuto_list_isroot(rootp));
+        ASSERT(diminuto_list_ismember(rootp, actual));
+        if (rootp != actual) {
+            ASSERT(!diminuto_list_isempty(rootp));
+            ASSERT(!diminuto_list_isroot(actual));
+            ASSERT(!diminuto_list_ismember(actual, rootp));
+        }
         actual = diminuto_list_next(actual);
     }
     va_end(ap);
@@ -42,8 +47,15 @@ static void initialize(void)
     int ii;
 
     diminuto_list_init(&head);
+    ASSERT(diminuto_list_isempty(&head));
+    ASSERT(diminuto_list_isroot(&head));
+    ASSERT(diminuto_list_ismember(&head, &head));
     for (ii = 0; ii < countof(node); ++ii) {
         diminuto_list_init(&node[ii]);
+        ASSERT(diminuto_list_isempty(&node[ii]));
+        ASSERT(diminuto_list_isroot(&node[ii]));
+        ASSERT(!diminuto_list_ismember(&head, &node[ii]));
+        ASSERT(!diminuto_list_ismember(&node[ii], &head));
     }
 }
 
