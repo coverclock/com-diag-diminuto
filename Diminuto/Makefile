@@ -5,9 +5,9 @@
 
 ########## Variables
 
-#COMPILEFOR	=	host
+COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-COMPILEFOR	=	arroyo
+#COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -365,6 +365,9 @@ unittest-countof:	unittest-countof.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-fletcher8:	unittest-fletcher8.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
+unittest-list:	unittest-list.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ########## Drivers

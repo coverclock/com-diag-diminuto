@@ -29,25 +29,25 @@ diminuto_list * diminuto_list_remove(diminuto_list * nodep)
     return nodep;
 }
 
-diminuto_list * diminuto_list_insert(diminuto_list * listp, diminuto_list * nodep)
+diminuto_list * diminuto_list_insert(diminuto_list * rootp, diminuto_list * nodep)
 {
     if (!diminuto_list_isempty(nodep)) {
         diminuto_list_remove(nodep);
     }
-    diminuto_list_next(nodep) = diminuto_list_next(listp);
-    diminuto_list_prev(nodep) = listp;
-    diminuto_list_root(nodep) = diminuto_list_root(listp);
-    diminuto_list_prev(diminuto_list_next(listp)) = nodep;
-    diminuto_list_next(listp) = nodep;
+    diminuto_list_next(nodep) = diminuto_list_next(rootp);
+    diminuto_list_prev(nodep) = rootp;
+    diminuto_list_root(nodep) = diminuto_list_root(rootp);
+    diminuto_list_prev(diminuto_list_next(rootp)) = nodep;
+    diminuto_list_next(rootp) = nodep;
     return nodep;
 }
 
-diminuto_list * diminuto_list_apply(diminuto_list * listp, diminuto_list_functor * funcp, void * voidp)
+diminuto_list * diminuto_list_apply(diminuto_list * rootp, diminuto_list_functor * funcp, void * voidp)
 {
     int rc;
-    diminuto_list * herep = listp;
+    diminuto_list * herep = rootp;
     while (1) {
-        rc = (*funcp)(listp, herep, voidp);
+        rc = (*funcp)(rootp, herep, voidp);
         if (rc < 0) {
             herep = diminuto_list_prev(herep);
         } else if (rc > 0) {
