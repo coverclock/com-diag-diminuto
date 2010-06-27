@@ -18,6 +18,53 @@
 
 static diminuto_list head;
 static diminuto_list node[3];
+static char * name[countof(node)] = { "node[0]", "node[1]", "node[2]" };
+
+static int dump(diminuto_list * nodep, void * contextp)
+{
+    if (!diminuto_list_isroot(nodep)) {
+        printf("%d node@%p \"%s\" <%p,%p,%p,%p>\n",
+            (*(int *)contextp)++,
+            nodep,
+            (const char *)diminuto_list_data(nodep),
+            diminuto_list_next(nodep),
+            diminuto_list_prev(nodep),
+            diminuto_list_root(nodep),
+            diminuto_list_data(nodep));
+        return 1;
+    } else if (*(int *)contextp == 0) {
+        printf("%d root@%p \"%s\" <%p,%p,%p,%p>\n",
+            (*(int *)contextp)++,
+            nodep,
+            (const char *)diminuto_list_data(nodep),
+            diminuto_list_next(nodep),
+            diminuto_list_prev(nodep),
+            diminuto_list_root(nodep),
+            diminuto_list_data(nodep));
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static void initialize(void)
+{
+    int ii;
+
+    diminuto_list_init(&head);
+    ASSERT(diminuto_list_isempty(&head));
+    ASSERT(diminuto_list_isroot(&head));
+    ASSERT(diminuto_list_ismember(&head, &head));
+    diminuto_list_data(&head) = "head";
+    for (ii = 0; ii < countof(node); ++ii) {
+        diminuto_list_init(&node[ii]);
+        ASSERT(diminuto_list_isempty(&node[ii]));
+        ASSERT(diminuto_list_isroot(&node[ii]));
+        ASSERT(!diminuto_list_ismember(&head, &node[ii]));
+        ASSERT(!diminuto_list_ismember(&node[ii], &head));
+        diminuto_list_data(&node[ii]) = name[ii];
+    }
+}
 
 static void audit(const char * file, int line, diminuto_list * rootp, ...)
 {
@@ -68,23 +115,6 @@ static void audit(const char * file, int line, diminuto_list * rootp, ...)
 
 }
 
-static void initialize(void)
-{
-    int ii;
-
-    diminuto_list_init(&head);
-    ASSERT(diminuto_list_isempty(&head));
-    ASSERT(diminuto_list_isroot(&head));
-    ASSERT(diminuto_list_ismember(&head, &head));
-    for (ii = 0; ii < countof(node); ++ii) {
-        diminuto_list_init(&node[ii]);
-        ASSERT(diminuto_list_isempty(&node[ii]));
-        ASSERT(diminuto_list_isroot(&node[ii]));
-        ASSERT(!diminuto_list_ismember(&head, &node[ii]));
-        ASSERT(!diminuto_list_ismember(&node[ii], &head));
-    }
-}
-
 int main(void)
 {
     {
@@ -92,39 +122,51 @@ int main(void)
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[0]);
         audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[1]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[2]);
         audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[1]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[2]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[2]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[0]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[0]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &head, END);
+        ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[1]);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[1]);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_remove(&head);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
     }
     {
         /* Stack Operations */
@@ -281,8 +323,17 @@ int main(void)
     {
         /* Data and Functors */
 
+        int count = 0;
+
         initialize();
-    
+
+        diminuto_list_insert(
+            diminuto_list_insert(
+                diminuto_list_insert(&head, &node[0]),
+            &node[1]),
+        &node[2]);
+        diminuto_list_apply(&dump, &head, &count);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
     }
 
     return 0;

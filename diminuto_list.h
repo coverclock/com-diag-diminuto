@@ -119,7 +119,7 @@ extern diminuto_list * diminuto_list_insert(
     diminuto_list * nodep
 );
 
-typedef int (*diminuto_list_functor)(
+typedef int (diminuto_list_functor)(
     diminuto_list * nodep,
     void * contextp
 );
