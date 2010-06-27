@@ -28,7 +28,7 @@ static int errors = 0;
     do { \
         if (!(_COND_)) { \
             diminuto_log(LOG_WARNING, \
-                "%s[%d]: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+                "%s@%d: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
             ++errors; \
         } \
     } while (0)
@@ -37,7 +37,7 @@ static int errors = 0;
     do { \
         if (!(_COND_)) { \
             diminuto_log(LOG_ERR, \
-                "%s[%d]: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+                "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
             ++errors; \
             EXIT(); \
         } \
