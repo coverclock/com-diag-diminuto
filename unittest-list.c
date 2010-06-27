@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "diminuto_list.h"
 #include "diminuto_countof.h"
 #include "diminuto_unittest.h"
@@ -47,6 +48,11 @@ static int dump(diminuto_list * nodep, void * contextp)
     }
 }
 
+static int find(diminuto_list * nodep, void * contextp)
+{
+    return diminuto_list_isroot(nodep) ? 0 : strcmp((const char *)contextp, (const char *)diminuto_list_data(nodep));
+}
+
 static void initialize(void)
 {
     int ii;
@@ -74,7 +80,9 @@ static void audit(const char * file, int line, diminuto_list * rootp, ...)
     diminuto_list * actual;
     va_list ap;
 
+#if 0
     printf("audit:%s@%d\n", file, line);
+#endif
 
     /* Forward */
 
@@ -332,8 +340,20 @@ int main(void)
                 diminuto_list_insert(&head, &node[0]),
             &node[1]),
         &node[2]);
-        diminuto_list_apply(&dump, &head, &count);
+
         audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+
+        ASSERT(diminuto_list_apply(&dump, &head, &count) == &head);
+
+        ASSERT(diminuto_list_apply(&find, diminuto_list_next(&head), "node[1]") == &node[1]);
+
+        ASSERT(diminuto_list_apply(&find, diminuto_list_prev(&head), "node[1]") == &node[1]);
+
+        ASSERT(diminuto_list_apply(&find, diminuto_list_next(&head), "node[3]") == &head);
+
+        while (!diminuto_list_isempty(&head)) {
+            diminuto_list_remove(diminuto_list_next(&head));
+        }
     }
 
     return 0;
