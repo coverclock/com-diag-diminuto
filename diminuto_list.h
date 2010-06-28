@@ -207,6 +207,7 @@ extern diminuto_list * diminuto_list_apply(
  * @def diminuto_list_head(_ROOTP_)
  * Return a pointer to the first node on the list that is the root
  * of the node pointed to by @a _ROOTP_, or NULL if the list is empty.
+ * The list is not modified.
  */
 #define diminuto_list_head(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
@@ -217,6 +218,7 @@ extern diminuto_list * diminuto_list_apply(
  * @def diminuto_list_tail(_ROOTP_)
  * Return a pointer to the last node on the list that is the root
  * of the node pointed to by @a _ROOTP_, or NULL if the list is empty.
+ * The list is not modified.
  */
 #define diminuto_list_tail(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
