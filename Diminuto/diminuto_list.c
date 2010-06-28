@@ -15,7 +15,6 @@ diminuto_list * diminuto_list_init(diminuto_list * nodep)
     nodep->next = nodep;
     nodep->prev = nodep;
     nodep->root = nodep;
-    nodep->data = (void *)0;
     return nodep;
 }
 
