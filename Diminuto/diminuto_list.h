@@ -66,10 +66,20 @@
  * one list node instance variable, allowing it to be on more than one
  * list at a time.
  *
+ * Caveats:
+ *
+ * Many (most) of these operations are implemented as macros which may
+ * evaluation their argument(s) more than once.
+ *
  * Inserting a list node onto a list when it is already on a list causes
  * the list node to be first removed from the list is is already on.
  *
  * Removing a list node from a list when it is not on a list has no effect.
+ *
+ * A node that is the root of its list cannot be removed from its list.
+ * This is because removing such a node would orphan all of the root pointers
+ * in all of the other nodes on the same list. Attemping to do so has no
+ * effect.
  *
  * Doubly-linked lists can be used to implement stacks (Last-In, First-Out
  * or LIFO) or queues (First-In, First-Out or FIFO), in which case NULL
@@ -91,35 +101,38 @@ struct diminuto_list {
 
 /**
  * @def diminuto_list_next(_NODEP_)
- * Return a reference to the next node pointer on the node pointed
- * to by @a _NODEP_.
+ * Return the next node pointer on the node pointed to by @a _NODEP_.
  */
 #define diminuto_list_next(_NODEP_) \
     ((_NODEP_)->next)
 
 /**
  * @def diminuto_list_prev(_NODEP_)
- * Return a reference to the previous node pointer on the node pointed
- * to by @a _NODEP_.
+ * Return a the previous node pointer on the node pointed to by @a _NODEP_.
  */
 #define diminuto_list_prev(_NODEP_) \
     ((_NODEP_)->prev)
 
 /**
  * @def diminuto_list_root(_NODEP_)
- * Return a reference to the root node pointer on the node pointed
- * to by @a _NODEP_.
+ * Return the root node pointer on the node pointed to by @a _NODEP_.
  */
 #define diminuto_list_root(_NODEP_) \
     ((_NODEP_)->root)
 
 /**
  * @def diminuto_list_data(_NODEP_)
- * Return a reference to the data pointer on the node pointer
- * to by @a _NODEP_.
+ * Return the data pointer on the node pointed to by @a _NODEP_.
  */
 #define diminuto_list_data(_NODEP_) \
     ((_NODEP_)->data)
+
+/**
+ * @def diminuto_list_dataset(_NODEP_, _VOIDP_)
+ * Set the data pointer on the node pointed to by @a _NODEP_ to @a _VOIDP_.
+ */
+#define diminuto_list_dataset(_NODEP_, _VOIDP_) \
+    ((_NODEP_)->data = (_VOIDP_))
 
 /**
  * @def diminuto_list_isempty(_NODEP_)
@@ -179,8 +192,18 @@ extern diminuto_list * diminuto_list_insert(
     diminuto_list * nodep
 );
 
+/**
+ * Make the specified node the root of all the other nodes that are
+ * on the list that the specified node is on.
+ * @param nodep points to the node to become the root of the list.
+ * @return a pointer to the new root node.
+ */
+extern diminuto_list * diminuto_list_reroot(
+    diminuto_list * nodep
+);
+
 typedef int (diminuto_list_functor)(
-    diminuto_list * nodep,
+    void * datap,
     void * contextp
 );
 
@@ -202,6 +225,14 @@ extern diminuto_list * diminuto_list_apply(
     diminuto_list * nodep,
     void * contextp
 );
+
+/**
+ * @def diminuto_list_dataif(_NODEP_)
+ * Return the data pointer on the node pointer to by @a _NODEP_ if
+ * @a _NODEP_ is non-NULL, otherwise return NULL.
+ */
+#define diminuto_list_dataif(_NODEP_) \
+    (((_NODEP_) != (diminuto_list *)0) ? ((_NODEP_)->data) : (void *)0)
 
 /**
  * @def diminuto_list_head(_ROOTP_)
