@@ -5,15 +5,15 @@
 
 ########## Variables
 
-COMPILEFOR	=	host
+#COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-#COMPILEFOR	=	arroyo
+COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	2
-MINOR		=	3
+MINOR		=	4
 BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)
