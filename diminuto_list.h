@@ -54,8 +54,8 @@
  *
  * Each list node also has a data pointer. The data pointer is a
  * void pointer. It is the only pointer in a list node that may be NULL.
- * The data pointer can be accessed and set by the application.
- * No other list node operation references the data pointer.
+ * The data pointer can be accessed and set by the application or optionally
+ * when a list node is initialized.
  *
  * A list node can exist independently of the data object to which
  * its data pointer points (as the STL container classes do). But a
@@ -69,7 +69,7 @@
  * Caveats:
  *
  * Many (most) of these operations are implemented as macros which may
- * evaluation their argument(s) more than once.
+ * evaluate their argument(s) more than once.
  *
  * Inserting a list node onto a list when it is already on a list causes
  * the list node to be first removed from the list is is already on.
@@ -128,11 +128,12 @@ struct diminuto_list {
     ((_NODEP_)->data)
 
 /**
- * @def diminuto_list_dataset(_NODEP_, _VOIDP_)
- * Set the data pointer on the node pointed to by @a _NODEP_ to @a _VOIDP_.
+ * @def diminuto_list_dataset(_NODEP_, _DATAP_)
+ * Set the data pointer on the node pointed to by @a _NODEP_ to @a _DATAP_.
+ * Returns the data pointer.
  */
-#define diminuto_list_dataset(_NODEP_, _VOIDP_) \
-    ((_NODEP_)->data = (_VOIDP_))
+#define diminuto_list_dataset(_NODEP_, _DATAP_) \
+    ((_NODEP_)->data = (void *)(_DATAP_))
 
 /**
  * @def diminuto_list_isempty(_NODEP_)
@@ -140,7 +141,7 @@ struct diminuto_list {
  * nodes linked to it.
  */
 #define diminuto_list_isempty(_NODEP_) \
-    ((_NODEP_) == (_NODEP_)->next)
+    ((_NODEP_) == diminuto_list_next(_NODEP_))
 
 /**
  * @def diminuto_list_isroot(_NODEP_)
@@ -148,15 +149,41 @@ struct diminuto_list {
  * of the list it is on.
  */
 #define diminuto_list_isroot(_NODEP_) \
-    ((_NODEP_) == (_NODEP_)->root)
+    ((_NODEP_) == diminuto_list_root(_NODEP_))
 
 /**
- * @def diminuto_list_ismember(_NODEP_)
+ * @def diminuto_list_ismember(_ROOTP_, _NODEP_)
  * Returns true if the node pointed to by @a _NODEP_ is on a list
  * for which the node pointed to by @a _ROOTP_ is the root node.
  */
 #define diminuto_list_ismember(_ROOTP_, _NODEP_) \
-    ((_ROOTP_) == (_NODEP_)->root)
+    ((_ROOTP_) == diminuto_list_root(_NODEP_))
+
+/**
+ * Initialize the specified node. The node is left initialized as an
+ * empty list with itself as its root. The data pointer is not initialized.
+ * @param nodep points to the node to be initialized.
+ * @return a pointer to the initialized node.
+ */
+extern diminuto_list * diminuto_list_init(
+    diminuto_list * nodep
+);
+
+/**
+ * @def diminuto_list_datainit(_NODEP_, _DATAP_)
+ * Initialize the node pointed to by @a _NODEP_ and set its data pointer
+ * to the address @a _DATAP_. Returns the data address.
+ */
+#define diminuto_list_datainit(_NODEP_, _DATAP_) \
+    (diminuto_list_dataset(diminuto_list_init(_NODEP_), _DATAP_))
+
+/**
+ * @def diminuto_list_nullinit(_NODEP_)
+ * Initialize the node pointed to by @a _NODEP_ and set its data pointer
+ * to NULL. Returns NULL.
+ */
+#define diminuto_list_nullinit(_NODEP_) \
+    (diminuto_list_dataset(diminuto_list_init(_NODEP_), (void *)0))
 
 /**
  * Initialize the specified node. The node is left initialized as an
@@ -212,9 +239,9 @@ typedef int (diminuto_list_functor)(
  * returns a positive number, the functor is then applied to the next
  * node. If the functor returns a negative number, the functor is then
  * applied to the previous node. If the functor returns zero, a pointer
- * to the current node is returned. A pointer to the current node and
- * a pointer to a caller supplied context pointer is passed to the
- * functor each time it is called.
+ * to the current node is returned. A pointer to the data of the current
+ * node and * a pointer to a caller supplied context pointer is passed
+ * to the functor each time it is called.
  * @param funcp points to the functor.
  * @param nodep points to the initial node.
  * @param contextp points to the caller provided context or null.

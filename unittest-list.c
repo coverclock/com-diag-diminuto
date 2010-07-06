@@ -32,20 +32,18 @@ static void initialize(void)
 {
     int ii;
 
-    diminuto_list_init(&head);
+    diminuto_list_nullinit(&head);
     ASSERT(diminuto_list_isempty(&head));
     ASSERT(diminuto_list_isroot(&head));
     ASSERT(diminuto_list_ismember(&head, &head));
-    diminuto_list_dataset(&head, (void *)0);
     ASSERT(diminuto_list_data(&head) == (void *)0);
     ASSERT(diminuto_list_dataif(&head) == (void *)0);
     for (ii = 0; ii < countof(node); ++ii) {
-        diminuto_list_init(&node[ii]);
+        diminuto_list_datainit(&node[ii], name[ii]);
         ASSERT(diminuto_list_isempty(&node[ii]));
         ASSERT(diminuto_list_isroot(&node[ii]));
         ASSERT(!diminuto_list_ismember(&head, &node[ii]));
         ASSERT(!diminuto_list_ismember(&node[ii], &head));
-        diminuto_list_dataset(&node[ii], name[ii]);
         ASSERT(diminuto_list_data(&node[ii]) == name[ii]);
         ASSERT(diminuto_list_dataif(&node[ii]) == name[ii]);
     }
@@ -108,6 +106,8 @@ int main(void)
     {
         /* Core Operations */
 
+        const char * datum = "datum";
+
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
@@ -155,6 +155,27 @@ int main(void)
         diminuto_list_remove(&head);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
+
+        diminuto_list_init(&head);
+        diminuto_list_dataset(&head, datum);
+        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
+        ASSERT((const char *)diminuto_list_data(&head) == datum);
+
+        diminuto_list_init(&head);
+        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
+        ASSERT((const char *)diminuto_list_data(&head) == datum);
+
+        diminuto_list_nullinit(&head);
+        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
+        ASSERT(diminuto_list_data(&head) == (void *)0);
+
+        diminuto_list_datainit(&head, datum);
+        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_isempty(&head));
+        ASSERT((const char *)diminuto_list_data(&head) == datum);
     }
     {
         /* Stack Operations */
@@ -362,9 +383,7 @@ int main(void)
 
         while (!diminuto_list_isempty(&head)) {
             diminuto_list_insert(&temp,
-                diminuto_list_remove(
-                    diminuto_list_prev(&head)
-                )
+                diminuto_list_prev(&head)
             );
         }
 
