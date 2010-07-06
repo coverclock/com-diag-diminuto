@@ -5,9 +5,9 @@
 
 ########## Variables
 
-COMPILEFOR	=	host
+#COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-#COMPILEFOR	=	arroyo
+COMPILEFOR	=	arroyo
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
