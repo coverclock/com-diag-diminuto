@@ -13,7 +13,7 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	2
-MINOR		=	5
+MINOR		=	6
 BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)

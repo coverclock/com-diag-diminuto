@@ -172,28 +172,18 @@ extern diminuto_list * diminuto_list_init(
 /**
  * @def diminuto_list_datainit(_NODEP_, _DATAP_)
  * Initialize the node pointed to by @a _NODEP_ and set its data pointer
- * to the address @a _DATAP_. Returns the data address.
+ * to the address @a _DATAP_. Returns the pointer to the node.
  */
 #define diminuto_list_datainit(_NODEP_, _DATAP_) \
-    (diminuto_list_dataset(diminuto_list_init(_NODEP_), _DATAP_))
+    (diminuto_list_dataset(diminuto_list_init(_NODEP_), _DATAP_), _NODEP_)
 
 /**
  * @def diminuto_list_nullinit(_NODEP_)
  * Initialize the node pointed to by @a _NODEP_ and set its data pointer
- * to NULL. Returns NULL.
+ * to NULL. Returns the pointer to the node.
  */
 #define diminuto_list_nullinit(_NODEP_) \
-    (diminuto_list_dataset(diminuto_list_init(_NODEP_), (void *)0))
-
-/**
- * Initialize the specified node. The node is left initialized as an
- * empty list with itself as its root. The data pointer is not initialized.
- * @param nodep points to the node to be initialized.
- * @return a pointer to the initialized node.
- */
-extern diminuto_list * diminuto_list_init(
-    diminuto_list * nodep
-);
+    (diminuto_list_dataset(diminuto_list_init(_NODEP_), (void *)0), _NODEP_)
 
 /**
  * Remove the specified node from the list it is on. The node is

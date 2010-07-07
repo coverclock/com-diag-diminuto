@@ -156,23 +156,23 @@ int main(void)
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
 
-        diminuto_list_init(&head);
+        ASSERT(diminuto_list_init(&head) == &head);
         diminuto_list_dataset(&head, datum);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
 
-        diminuto_list_init(&head);
+        ASSERT(diminuto_list_init(&head) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
 
-        diminuto_list_nullinit(&head);
+        ASSERT(diminuto_list_nullinit(&head) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT(diminuto_list_data(&head) == (void *)0);
 
-        diminuto_list_datainit(&head, datum);
+        ASSERT(diminuto_list_datainit(&head, datum) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, END);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
