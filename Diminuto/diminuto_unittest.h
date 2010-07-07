@@ -10,35 +10,54 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * If you are using C++ you would be better off using one of the
- * established C++ unit test frameworks. I particularly like CxxTest
- * and Google Test. But developers I know and trust have made good
- * use of CppUnit. (If you are using Java, go directly to JUnit.)
+ * This is a dirt simple unit testing framework for C programs.
+ * If you are using C++ (or even if you are using C but are
+ * comfortable with C++) you would be better off using one of the
+ * established C++ unit test frameworks. I particularly like Google
+ * Test (a.k.a. gtest). But developers I know and trust have made good
+ * use of CxxUnit, CppUnit, and CxxUnitLite. (If you are using Java,
+ * go directly to JUnit.)
  */
 
 #include "diminuto_log.h"
 #include <stdlib.h>
 
-static int errors = 0;
+static int diminuto_errors = 0;
 
+/**
+ * @def EXIT()
+ * Exit the calling process with a zero exit code if there are no errors,
+ * or a non-zero exit code if there are.
+ */
 #define EXIT() \
-    exit(errors > 255 ? 255 : errors)
+    exit(diminuto_errors > 255 ? 255 : diminuto_errors)
 
+/**
+ * @def EXPECT(_COND_)
+ * Log a warning message if the specified condition @a _COND_ is not true
+ * and increment the error counter.
+ */
 #define EXPECT(_COND_) \
     do { \
         if (!(_COND_)) { \
             diminuto_log(LOG_WARNING, \
                 "%s@%d: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
-            ++errors; \
+            ++diminuto_errors; \
         } \
     } while (0)
 
+
+/**
+ * @def ASSERT(_COND_)
+ * Log a warning message if the specified condition @a _COND_ is not true,
+ * increment the error counter, and exit immediately.
+ */
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
             diminuto_log(LOG_ERR, \
                 "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
-            ++errors; \
+            ++diminuto_errors; \
             EXIT(); \
         } \
     } while (0)
