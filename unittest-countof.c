@@ -22,5 +22,5 @@ int main(void)
     ASSERT(countof(array1) == 16);
     ASSERT(countof(array2) == 8);
     ASSERT(countof(array3) == 4);
-    return (errors == 0) ? 0 : 1;
+    EXIT();
 }

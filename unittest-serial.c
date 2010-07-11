@@ -22,5 +22,5 @@ int main(void)
     rc = diminuto_serial_unbuffered(stdout);
     ASSERT(rc == 0);
 
-    return (errors == 0) ? 0 : 1;
+    EXIT();
 }

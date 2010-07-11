@@ -52,6 +52,6 @@ int main(int argc, char ** argv)
     rc = diminuto_unlock(file);
     ASSERT(rc < 0);
 
-    return errors > 255 ? 255 : errors;
+    EXIT();
 }
 

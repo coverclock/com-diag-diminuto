@@ -17,7 +17,6 @@ int main(int argc, char ** argv)
     EXPECT(0);
     ASSERT(1);
     ASSERT(0);
-
-    return errors > 255 ? 255 : errors;
+    EXIT();
 }
 
