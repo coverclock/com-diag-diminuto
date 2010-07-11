@@ -84,5 +84,5 @@ int main(int argc, char ** argv)
 
     diminuto_emit("unittest-daemonize: end %d\n", getpid());
 
-    return errors > 255 ? 255 : errors;
+    EXIT();
 }

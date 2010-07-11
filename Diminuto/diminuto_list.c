@@ -62,7 +62,7 @@ diminuto_list * diminuto_list_apply(
 ) {
     int rc;
     while (1) {
-        rc = (*funcp)(diminuto_list_data(nodep), contextp);
+        rc = (*funcp)(nodep, contextp);
         if (rc < 0) {
             nodep = diminuto_list_prev(nodep);
         } else if (rc > 0) {

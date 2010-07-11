@@ -42,5 +42,5 @@ int main(int argc, char ** argv)
     ASSERT(start == (void *)0);
     ASSERT(length == 0);
 
-    return errors > 255 ? 255 : errors;
+    EXIT();
 }

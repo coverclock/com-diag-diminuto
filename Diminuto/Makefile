@@ -8,6 +8,7 @@
 #COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
 COMPILEFOR	=	arroyo
+#COMPILEFOR	=	cascada
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -31,6 +32,15 @@ PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.26.3
+KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
+endif
+
+ifeq ($(COMPILEFOR),cascada)
+ARCH		=	arm
+PLATFORM	=	linux
+CARCH		=	-march=armv7 -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV	=	2.6.37
 KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
 endif
 

@@ -21,10 +21,10 @@ static diminuto_list head;
 static diminuto_list node[3];
 static char * name[countof(node)] = { "node0", "node1", "node2" };
 
-static int find(void * datap, void * contextp)
+static int find(diminuto_list * nodep, void * contextp)
 {
-    return (datap != (void *)0)
-        ? strcmp((const char *)contextp, (const char *)datap)
+    return (!diminuto_list_isroot(nodep))
+        ? strcmp((const char *)contextp, (const char *)diminuto_list_data(nodep))
         : 0;
 }
 

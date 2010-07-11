@@ -47,5 +47,5 @@ int main(int argc, char ** argv)
             requested, computed, measured);
     }
 
-    return errors > 255 ? 255 : errors;
+    EXIT();
 }
