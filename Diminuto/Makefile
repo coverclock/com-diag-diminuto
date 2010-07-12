@@ -5,9 +5,9 @@
 
 ########## Variables
 
-#COMPILEFOR	=	host
+COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
-COMPILEFOR	=	arroyo
+#COMPILEFOR	=	arroyo
 #COMPILEFOR	=	cascada
 
 PROJECT		=	diminuto
@@ -418,6 +418,10 @@ clean:
 
 binaries-clean:
 	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
+
+libraries-clean:
+	rm -f lib$(PROJECT).a
+	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 
 ########## Patches
 
