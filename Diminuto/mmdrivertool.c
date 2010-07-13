@@ -227,7 +227,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
+                if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_WRITE, &op) < 0;
                 }
             }

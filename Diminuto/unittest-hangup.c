@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 {
 	int rc;
 
-	diminuto_core();
+	diminuto_core_enable();
 
 	if (argc > 1) {
 

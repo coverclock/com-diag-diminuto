@@ -24,7 +24,7 @@ int main(int argc, char ** argv)
     void * start = (void *)0;
     size_t length = 0;
 
-    rc = diminuto_map_map_minimum(0);
+    rc = diminuto_map_minimum(0);
     EXPECT(rc == 0);
 
     pagesize = getpagesize();

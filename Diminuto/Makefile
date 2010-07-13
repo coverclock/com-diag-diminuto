@@ -13,8 +13,8 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	2
-MINOR		=	7
+MAJOR		=	3
+MINOR		=	0
 BUILD		=	0
 
 ifeq ($(COMPILEFOR),diminuto)

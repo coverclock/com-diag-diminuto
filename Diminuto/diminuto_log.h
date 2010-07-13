@@ -195,7 +195,7 @@ extern void diminuto_log_emit(const char * format, ...);
 /******************************************************************************/
 
 #if !defined(DIMINUTO_LOG_MASK)
-#define DIMINUTO_LOG_MASK diminuto_log_log_mask
+#define DIMINUTO_LOG_MASK diminuto_log_mask
 #endif
 
 #if defined(DIMINUTO_LOG_ENABLED)
@@ -226,8 +226,8 @@ extern void diminuto_log_emit(const char * format, ...);
 
 #else
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
-#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
+#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
+#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
 
 #endif
 
