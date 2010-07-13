@@ -79,7 +79,7 @@ static int operate(
     if (*basep != (void *)0) {
         /* Do nothing. */
     } else if (length == 0) {
-        *basep = diminuto_map(pointer, size, addressp, lengthp);
+        *basep = diminuto_map_map(pointer, size, addressp, lengthp);
     } else {
         *basep = diminuto_map(address, length, addressp, lengthp);
     }
@@ -121,7 +121,7 @@ static int operate(
     diminuto_barrier();
 
     if (length == 0) {
-        diminuto_unmap(addressp, lengthp);
+        diminuto_map_unmap(addressp, lengthp);
         *basep = (void *)0;
     }
 
@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
             } else {
                 address = value;
                 if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, address); }
-                diminuto_unmap(&unaddress, &unlength);
+                diminuto_map_unmap(&unaddress, &unlength);
                 base = (void *)0;
             }
             break;
@@ -306,7 +306,7 @@ int main(int argc, char * argv[])
 
     }
 
-    diminuto_unmap(&unaddress, &unlength);
+    diminuto_map_unmap(&unaddress, &unlength);
     base = (void *)0;
 
     if (error) {

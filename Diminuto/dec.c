@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
         return 2;
     }
 
-    next = diminuto_signed(string, &value);
+    next = diminuto_number_signed(string, &value);
     if ((*next != '\0') && (!isspace(*next))) {
         perror(string);
         return 3;

@@ -127,14 +127,14 @@ extern diminuto_log_mask_t diminuto_log_mask;
  * @param format points to a printf-style format string.
  * @param ap is a variable length argument list.
  */
-extern void diminuto_syslog3(int priority, const char * format, va_list ap);
+extern void diminuto_log_vsyslog(int priority, const char * format, va_list ap);
 
 /**
  * Format and log the argument list to syslog.
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_syslog(int priority, const char * format, ...);
+extern void diminuto_log_syslog(int priority, const char * format, ...);
 
 /**
  * Emulate perror() but instead of writing the prefixed error string to
@@ -161,7 +161,7 @@ extern void diminuto_perror(const char * s);
  * @param format points to a printf-style format string.
  * @param ap is a variable length argument list.
  */
-extern void diminuto_log3(int priority, const char * format, va_list ap);
+extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
 
 /**
  * If the parent PID of the calling process is not 1, format and print
@@ -170,7 +170,7 @@ extern void diminuto_log3(int priority, const char * format, va_list ap);
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log(int priority, const char * format, ...);
+extern void diminuto_log_log(int priority, const char * format, ...);
 
 /**
  * If the parent PID of the calling process is not 1, format and print
@@ -178,7 +178,7 @@ extern void diminuto_log(int priority, const char * format, ...);
  * list to syslog. The message is logged at the default priority.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_emit(const char * format, ...);
+extern void diminuto_log_emit(const char * format, ...);
 
 #endif
 
@@ -195,7 +195,7 @@ extern void diminuto_emit(const char * format, ...);
 /******************************************************************************/
 
 #if !defined(DIMINUTO_LOG_MASK)
-#define DIMINUTO_LOG_MASK diminuto_log_mask
+#define DIMINUTO_LOG_MASK diminuto_log_log_mask
 #endif
 
 #if defined(DIMINUTO_LOG_ENABLED)

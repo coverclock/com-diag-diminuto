@@ -8,8 +8,6 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_coreable.h"
-
 int main(int argc, char ** argv)
 {
 	int *pointer = (int *)0;

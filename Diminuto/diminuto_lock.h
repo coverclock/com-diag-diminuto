@@ -22,7 +22,7 @@
  * @param file is the path and name of the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
-extern int diminuto_lock(const char * file);
+extern int diminuto_lock_lock(const char * file);
 
 /**
  * Remove a lock file with the specified path and name (e.g.
@@ -30,7 +30,7 @@ extern int diminuto_lock(const char * file);
  * @param file is the path and name of the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
-extern int diminuto_unlock(const char * file);
+extern int diminuto_lock_unlock(const char * file);
 
 /**
  * Read the PID from a lock file with the specified path and name
@@ -38,6 +38,6 @@ extern int diminuto_unlock(const char * file);
  * @param file is the path and name of the lock file.
  * @return a PID if successful, <0 with errno set otherwise.
  */
-extern pid_t diminuto_locked(const char * file);
+extern pid_t diminuto_lock_check(const char * file);
 
 #endif

@@ -25,13 +25,13 @@
  *  INCLUDES
  ******************************************************************************/
 
+#include "diminuto_kernel_reg.h"
 #include <asm/ioctl.h>
 #if defined(__KERNEL__) || defined(MODULE)
 #include <linux/types.h>
 #else
 #include <stdint.h>
 #endif
-#include "diminuto_kernel_reg.h"
 
 /*******************************************************************************
  *  MANIFEST CONSTANTS

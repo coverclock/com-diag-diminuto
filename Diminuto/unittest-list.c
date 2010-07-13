@@ -8,12 +8,12 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
 #include "diminuto_list.h"
 #include "diminuto_countof.h"
 #include "diminuto_unittest.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 #define END ((diminuto_list *)0)
 

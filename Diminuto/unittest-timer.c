@@ -9,7 +9,7 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include "diminuto_delay.h"
 #include "diminuto_alarm.h"
 #include "diminuto_time.h"
@@ -26,21 +26,21 @@ int main(int argc, char ** argv)
     uint64_t remaining;
     int64_t computed;
 
-    diminuto_coreable();
-    diminuto_alarmable();
+    diminuto_core_enable();
+    diminuto_alarm_install();
 
     printf("%10s %10s %10s\n",
         "requested", "computed", "measured");
 
     for (requested = 1; requested < 60000000; requested *= 2) {
-        EXPECT(!diminuto_alarmed());
+        EXPECT(!diminuto_alarm_check());
         diminuto_timer(requested);
         then = diminuto_time();
         remaining = diminuto_delay(requested * 2, !0);
         now = diminuto_time();
         diminuto_timer(0);
-        EXPECT(diminuto_alarmed());
-        EXPECT(!diminuto_alarmed());
+        EXPECT(diminuto_alarm_check());
+        EXPECT(!diminuto_alarm_check());
         computed = (requested * 2) - remaining;
         measured = now - then;
         printf("%10llu %10llu %10lld\n",

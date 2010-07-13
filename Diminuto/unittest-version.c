@@ -8,9 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdio.h>
 #include "diminuto_version.h"
 #include "diminuto_unittest.h"
+#include <stdio.h>
 
 int main(void)
 {

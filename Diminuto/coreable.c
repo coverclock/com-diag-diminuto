@@ -21,7 +21,7 @@
  * generated in the event that it fails.
  */
 
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include <unistd.h>
 #include <errno.h>
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
             break;
         }
 
-        if (diminuto_coreable() < 0) {
+        if (diminuto_core_enable() < 0) {
             break;
         }
 

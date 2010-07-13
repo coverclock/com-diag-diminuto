@@ -9,24 +9,23 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_daemonize.h"
+#include "diminuto_daemon.h"
 #include "diminuto_delay.h"
-
 #include "unittest-log.h"
 
 int main(int argc, char ** argv)
 {
     if (argc > 1) {
         int rc;
-        diminuto_emit("DAEMONIZING\n");
-        if ((rc = diminuto_daemonize((const char *)0)) == 0) {
-            diminuto_emit("DAEMONIZED\n");
+        diminuto_log_emit("DAEMONIZING\n");
+        if ((rc = diminuto_daemon_enable((const char *)0)) == 0) {
+            diminuto_log_emit("DAEMONIZED\n");
         } else {
             diminuto_perror("diminuto_daemonize");
             exit(1);
         }
     }
-    diminuto_emit("BEGIN\n");
+    diminuto_log_emit("BEGIN\n");
     yes();
     no();
     maybe();
@@ -35,7 +34,7 @@ int main(int argc, char ** argv)
     none();
     mine();
     diminuto_emit("PUBLIC ALL\n");
-    diminuto_log_mask = DIMINUTO_LOG_MASK_ALL;
+    diminuto_log_log_mask = DIMINUTO_LOG_MASK_ALL;
     all();
     none();
     mine();

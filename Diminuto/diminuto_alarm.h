@@ -18,18 +18,18 @@
  * @param pid is the process identifier.
  * @return pid or <0 if an error occurred.
  */
-extern pid_t diminuto_alarm(pid_t pid);
+extern pid_t diminuto_alarm_signal(pid_t pid);
 
 /**
  * Return true if the caller received a SIGALRM, false otherwise.
  * @return true if the caller received a SIGALRM, false otherwise.
  */
-extern int diminuto_alarmed(void);
+extern int diminuto_alarm_check(void);
 
 /**
  * Install a SIGALRM signal handler in the caller.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_alarmable(void);
+extern int diminuto_alarm_install(void);
 
 #endif

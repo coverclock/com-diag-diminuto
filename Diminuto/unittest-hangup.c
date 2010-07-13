@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_coreable.h"
-#include "diminuto_daemonize.h"
+#include "diminuto_core.h"
+#include "diminuto_daemon.h"
 #include "diminuto_hangup.h"
 #include "diminuto_delay.h"
 #include "diminuto_lock.h"
@@ -25,25 +25,25 @@ int main(int argc, char ** argv)
 {
 	int rc;
 
-	diminuto_coreable();
+	diminuto_core_enable();
 
 	if (argc > 1) {
 
-		diminuto_hangup(diminuto_locked(file));
+		diminuto_hangup_signal(diminuto_lock_check(file));
 
 	} else {
 
-		rc = diminuto_daemonize(file);
+		rc = diminuto_daemon_enable(file);
 		if (rc < 0) { return 2; }
 
-		rc = diminuto_hangupable();
+		rc = diminuto_hangup_install();
 		if (rc < 0) { return 3; }
 
-		while (!diminuto_hungup()) {
+		while (!diminuto_hangup_check()) {
 			diminuto_delay(1000000, 1);
 		}
 
-        rc = diminuto_unlock(file);
+        rc = diminuto_lock_unlock(file);
 		if (rc < 0) { return 4; }
 
 	}

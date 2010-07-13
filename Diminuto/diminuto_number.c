@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-const char * diminuto_unsigned(const char * s, uint64_t * p)
+const char * diminuto_number_unsigned(const char * s, uint64_t * p)
 {
 	uint64_t n;
 	char * e;
@@ -25,7 +25,7 @@ const char * diminuto_unsigned(const char * s, uint64_t * p)
 	return e;
 }
 
-const char * diminuto_signed(const char * s, int64_t * p)
+const char * diminuto_number_signed(const char * s, int64_t * p)
 {
 	int64_t n;
 	char * e;

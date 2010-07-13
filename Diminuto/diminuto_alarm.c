@@ -22,7 +22,7 @@ static void diminuto_handler(int signum)
 	}
 }
 
-pid_t diminuto_alarm(pid_t pid)
+pid_t diminuto_alarm_signal(pid_t pid)
 {
     if (pid < 0) {
         errno = EINVAL;
@@ -35,7 +35,7 @@ pid_t diminuto_alarm(pid_t pid)
     return pid;
 }
 
-int diminuto_alarmed(void)
+int diminuto_alarm_check(void)
 {
     int mysignaled;
     sigset_t set;
@@ -53,7 +53,7 @@ int diminuto_alarmed(void)
     return mysignaled;
 }
 
-int diminuto_alarmable(void)
+int diminuto_alarm_install(void)
 {
     if (signal(SIGALRM, diminuto_handler) == SIG_ERR) {
         diminuto_perror("diminuto_alarmable: signal");

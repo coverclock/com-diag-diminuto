@@ -19,7 +19,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * lengthp)
+void * diminuto_map_map(uintptr_t start, size_t length, void ** startp, size_t * lengthp)
 {
     void * result = (void *)0;
     int fd = -1;
@@ -66,7 +66,7 @@ void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * len
     return result;
 }
 
-int diminuto_unmap(void ** startp, size_t * lengthp)
+int diminuto_map_unmap(void ** startp, size_t * lengthp)
 {
     int rc;
 

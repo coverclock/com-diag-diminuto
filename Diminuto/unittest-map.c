@@ -9,7 +9,7 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include "diminuto_map.h"
 #include "diminuto_log.h"
 #include <stdio.h>
@@ -24,20 +24,20 @@ int main(int argc, char ** argv)
     void * start = (void *)0;
     size_t length = 0;
 
-    rc = diminuto_map_minimum(0);
+    rc = diminuto_map_map_minimum(0);
     EXPECT(rc == 0);
 
     pagesize = getpagesize();
     ASSERT(pagesize > 0);
 
-    pointer = diminuto_map(0, pagesize, &start, &length);
+    pointer = diminuto_map_map(0, pagesize, &start, &length);
     ASSERT(pointer != (void *)0);
     ASSERT(start != (void *)0);
     ASSERT(length != 0);
 
-    diminuto_emit("unittest-map: *(void *)0=0x%08x start=0x%08x length=%lu\n", *(int *)pointer, start, length);
+    diminuto_log_emit("unittest-map: *(void *)0=0x%08x start=0x%08x length=%lu\n", *(int *)pointer, start, length);
 
-    rc = diminuto_unmap(&start, &length);
+    rc = diminuto_map_unmap(&start, &length);
     ASSERT(rc == 0);
     ASSERT(start == (void *)0);
     ASSERT(length == 0);

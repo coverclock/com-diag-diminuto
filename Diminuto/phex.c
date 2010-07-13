@@ -148,7 +148,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'l':
-            if (*diminuto_unsigned(optarg, &value) != '\0') {
+            if (*diminuto_number_unsigned(optarg, &value) != '\0') {
                 perror(optarg);
                 return 1;
             } else if (value > ~0UL) {

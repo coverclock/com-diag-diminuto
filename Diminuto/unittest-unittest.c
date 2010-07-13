@@ -9,7 +9,7 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 
 int main(int argc, char ** argv)
 {
