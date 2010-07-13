@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 {
 	int rc;
 
-	diminuto_core_enable();
+	diminuto_core();
 
 	if (argc > 1) {
 
@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
 
 	} else {
 
-		rc = diminuto_daemon_enable(file);
+		rc = diminuto_daemon(file);
 		if (rc < 0) { return 2; }
 
 		rc = diminuto_hangup_install();

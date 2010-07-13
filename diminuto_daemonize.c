@@ -55,7 +55,7 @@ static void diminuto_handler(int signum)
     }
 }
 
-int diminuto_daemon_enable(const char * file)
+int diminuto_daemon(const char * file)
 {
     pid_t ppid = -1;
     pid_t pid = -1;
@@ -72,7 +72,7 @@ int diminuto_daemon_enable(const char * file)
         /* Make sure we are not already a daemon. */
 
         if ((ppid = getppid())  < 0) {
-            diminuto_serror("diminuto_daemonize: getppid");
+            diminuto_serror("diminuto_daemon: getppid");
             break;
         }
 
@@ -83,17 +83,17 @@ int diminuto_daemon_enable(const char * file)
         /* Establish a way for the daemon child to notify us. */
 
         if (signal(SIGUSR1, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGUSR1)");
+            diminuto_serror("diminuto_daemon: signal(SIGUSR1)");
             break;
         }
 
         if (signal(SIGCHLD, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGCHLD)");
+            diminuto_serror("diminuto_daemon: signal(SIGCHLD)");
             break;
         }
 
         if (signal(SIGALRM, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGALRM)");
+            diminuto_serror("diminuto_daemon: signal(SIGALRM)");
             break;
         }
 
@@ -102,7 +102,7 @@ int diminuto_daemon_enable(const char * file)
         received = 0;
 
         if ((pid = fork()) < 0) {
-            diminuto_serror("diminuto_daemonize: fork");
+            diminuto_serror("diminuto_daemon: fork");
             break;
         }
 
@@ -124,7 +124,7 @@ int diminuto_daemon_enable(const char * file)
                 }
             }
             errno = ETIMEDOUT;
-            diminuto_serror("diminuto_daemonize: alarm");
+            diminuto_serror("diminuto_daemon: alarm");
             break;
         }
 
@@ -145,7 +145,7 @@ int diminuto_daemon_enable(const char * file)
         /* Find our parent. */
 
         if ((ppid = getppid()) < 0) {
-            diminuto_serror("diminuto_daemonize: getppid");
+            diminuto_serror("diminuto_daemon: getppid");
             break;
         }
 
@@ -154,7 +154,7 @@ int diminuto_daemon_enable(const char * file)
         if (file == (char *)0) {
             /* Do nothing: no lock file. */
         } else if (diminuto_lock_lock(file) < 0) {
-            diminuto_serror("diminuto_daemonize: diminuto_lock");
+            diminuto_serror("diminuto_daemon: diminuto_lock");
             break;
         }
 
@@ -165,14 +165,14 @@ int diminuto_daemon_enable(const char * file)
         /* Orphan us from our controlling terminal and process group. */
 
         if (setsid() < 0) {
-            diminuto_serror("diminuto_daemonize: setsid");
+            diminuto_serror("diminuto_daemon: setsid");
             break;
         }
 
         /* Change to a directory that will always be there. */
 
         if (chdir("/") < 0) {
-            diminuto_serror("diminuto_daemonize: chdir");
+            diminuto_serror("diminuto_daemon: chdir");
             break;
         }
 
@@ -186,53 +186,53 @@ int diminuto_daemon_enable(const char * file)
         /* Dissociate ourselves from any signal handlers. */
 
         if (signal(SIGCHLD, SIG_DFL) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGCHLD)");
+            diminuto_serror("diminuto_daemon: signal(SIGCHLD)");
             break;
         }
 
         if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGTSTP)");
+            diminuto_serror("diminuto_daemon: signal(SIGTSTP)");
             break;
         }
 
         if (signal(SIGTTOU, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGTTOU)");
+            diminuto_serror("diminuto_daemon: signal(SIGTTOU)");
             break;
         }
 
         if (signal(SIGTTIN, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGTTIN)");
+            diminuto_serror("diminuto_daemon: signal(SIGTTIN)");
             break;
         }
 
         if (signal(SIGHUP, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGHUP)");
+            diminuto_serror("diminuto_daemon: signal(SIGHUP)");
             break;
         }
 
         if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
-            diminuto_serror("diminuto_daemonize: signal(SIGTERM)");
+            diminuto_serror("diminuto_daemon: signal(SIGTERM)");
             break;
         }
 
         /* Redirect the big three to /dev/null. */
 
         if (freopen("/dev/null", "r", stdin) == (FILE *)0) {
-            diminuto_serror("diminuto_daemonize: freopen(stdin)");
+            diminuto_serror("diminuto_daemon: freopen(stdin)");
             break;
         }
 
         fflush(stdout);
 
         if (freopen("/dev/null", "w", stdout) == (FILE *)0) {
-            diminuto_serror("diminuto_daemonize: freopen(stdout)");
+            diminuto_serror("diminuto_daemon: freopen(stdout)");
             break;
         }
 
         fflush(stderr);
 
         if (freopen("/dev/null", "w", stderr) == (FILE *)0) {
-            diminuto_serror("diminuto_daemonize: freopen(stderr)");
+            diminuto_serror("diminuto_daemon: freopen(stderr)");
             break;
         }
 
@@ -246,9 +246,9 @@ int diminuto_daemon_enable(const char * file)
         /* Do nothing: no parent. */
     } else if (kill(ppid, signum) < 0) {
         signum = SIGALRM;
-        diminuto_serror("diminuto_daemonize: kill");
+        diminuto_serror("diminuto_daemon: kill");
     } else if (diminuto_yield() < 0) {
-        diminuto_serror("diminuto_daemonize: diminuto_yield");
+        diminuto_serror("diminuto_daemon: diminuto_yield");
     }
 
     if (signum != SIGUSR1) {

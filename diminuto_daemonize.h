@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_DAEMONIZE_
-#define _H_COM_DIAG_DIMINUTO_DAEMONIZE_
+#ifndef _H_COM_DIAG_DIMINUTO_DAEMON_
+#define _H_COM_DIAG_DIMINUTO_DAEMON_
 
 /**
  * @file
@@ -27,6 +27,6 @@
  * @return 0 to the child upon success, -1 to the parent otherwise.
  * @see diminuto_lock_lock().
  */
-extern int diminuto_daemon_enable(const char * file);
+extern int diminuto_daemon(const char * file);
 
 #endif
