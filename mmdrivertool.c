@@ -138,7 +138,7 @@ int main(int argc, char * argv[])
 
         case 'U':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
-            fd = diminuto_relinquish(fd, device);
+            fd = diminuto_fd_relinquish(fd, device);
             device = optarg;
             break;
 
@@ -151,7 +151,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
+                if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_CLEAR, &op) < 0;
                 }
             }
@@ -174,7 +174,7 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
+            if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                 if (!(error = control(fd, DIMINUTO_MMDRIVER_READ, &op) < 0)) {
                     switch (op.width) {
                     case EIGHT: printf("%u\n", op.datum.eight); break;
@@ -195,7 +195,7 @@ int main(int argc, char * argv[])
                 case THIRTYTWO: op.datum.thirtytwo = value; break;
                 case SIXTYFOUR: op.datum.sixtyfour = value;  break;
                 }
-                if (!(error = ((fd = diminuto_acquire(fd, device, O_RDWR, 0)) < 0))) {
+                if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_SET, &op) < 0;
                 }
             }
@@ -253,7 +253,7 @@ int main(int argc, char * argv[])
 
     }
 
-    fd = diminuto_relinquish(fd, device);
+    fd = diminuto_fd_relinquish(fd, device);
 
     if (error) {
         usage();

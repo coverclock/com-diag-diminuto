@@ -22,7 +22,7 @@ static void diminuto_handler(int signum)
 	}
 }
 
-pid_t diminuto_hangup(pid_t pid)
+pid_t diminuto_hangup_signal(pid_t pid)
 {
     if (pid < 0) {
         errno = EINVAL;
@@ -35,7 +35,7 @@ pid_t diminuto_hangup(pid_t pid)
     return pid;
 }
 
-int diminuto_hungup(void)
+int diminuto_hangup_check(void)
 {
     int result;
     sigset_t set;
@@ -53,7 +53,7 @@ int diminuto_hungup(void)
     return result;
 }
 
-int diminuto_hangupable(void)
+int diminuto_hangup_install(void)
 {
     if (signal(SIGHUP, diminuto_handler) == SIG_ERR) {
         diminuto_perror("diminuto_hangupable: signal");

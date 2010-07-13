@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int diminuto_acquire(int fd, const char * device, int flags, mode_t mode)
+int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
 {
     if (fd >= 0) {
         /* Do nothing: already open. */
@@ -28,7 +28,7 @@ int diminuto_acquire(int fd, const char * device, int flags, mode_t mode)
     return fd;
 }
 
-int diminuto_relinquish(int fd, const char * device)
+int diminuto_fd_relinquish(int fd, const char * device)
 {
     if (fd < 0) {
         /* Do nothing: not open. */

@@ -9,7 +9,7 @@
  */
 
 #include "diminuto_unittest.h"
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include "diminuto_lock.h"
 #include "diminuto_log.h"
 #include <stdio.h>
@@ -30,26 +30,26 @@ int main(int argc, char ** argv)
     pid1 = getpid();
     ASSERT(pid1 >= 0);
 
-    pid2 = diminuto_locked(file);
+    pid2 = diminuto_lock_check(file);
     ASSERT(pid2 < 0);
 
-    rc = diminuto_lock(file);
+    rc = diminuto_lock_lock(file);
     ASSERT(rc == 0);
 
-    pid3 = diminuto_locked(file);
+    pid3 = diminuto_lock_check(file);
     ASSERT(pid3 > 0);
     ASSERT(pid1 == pid3);
 
     rc = diminuto_lock(file);
     ASSERT(rc < 0);
 
-    rc = diminuto_unlock(file);
+    rc = diminuto_lock_unlock(file);
     ASSERT(rc == 0);
 
-    pid4 = diminuto_locked(file);
+    pid4 = diminuto_lock_check(file);
     ASSERT(pid4 < 0);
 
-    rc = diminuto_unlock(file);
+    rc = diminuto_lock_unlock(file);
     ASSERT(rc < 0);
 
     EXIT();

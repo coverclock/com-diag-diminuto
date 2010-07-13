@@ -27,7 +27,7 @@
  * @return a pointer to the first non-numeric character encountered.
  * @see strtoll(3)
  */
-extern const char * diminuto_unsigned(const char * s, uint64_t * p);
+extern const char * diminuto_number_unsigned(const char * s, uint64_t * p);
 
 /**
  * Parses a string in a strtoull-like manner, returning a pointer to the
@@ -43,8 +43,8 @@ extern const char * diminuto_unsigned(const char * s, uint64_t * p);
  * @return a pointer to the first non-numeric character encountered.
  * @see strtoll(3)
  */
-extern const char * diminuto_signed(const char * s, int64_t * p);
+extern const char * diminuto_number_signed(const char * s, int64_t * p);
 
-#define diminuto_number diminuto_unsigned
+#define diminuto_number diminuto_number_unsigned
 
 #endif

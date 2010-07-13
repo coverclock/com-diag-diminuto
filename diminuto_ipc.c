@@ -9,6 +9,7 @@
  * Ported from the Desperado::Service class.
  */
 
+#include "diminuto_ipc.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -18,7 +19,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "diminuto_ipc.h"
 
 int diminuto_ipc_provider_backlog(uint16_t port, int backlog)
 {

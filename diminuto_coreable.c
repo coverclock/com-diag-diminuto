@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include "diminuto_log.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -16,7 +16,7 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 
-int diminuto_coreable()
+int diminuto_core_enable()
 {
 	int rc = -1;
 	struct rlimit limit;
@@ -24,14 +24,14 @@ int diminuto_coreable()
     do {
 
     	if (getrlimit(RLIMIT_CORE, &limit) < 0) {
-		    diminuto_perror("diminuto_coreable: getrlimit");
+		    diminuto_perror("diminuto_core_enable: getrlimit");
             break;
         }
 
 		limit.rlim_cur = limit.rlim_max;
 
 		if (setrlimit(RLIMIT_CORE, &limit) < 0) {
-			diminuto_perror("diminuto_coreable: setrlimit");
+			diminuto_perror("diminuto_core_enable: setrlimit");
             break;
 		}
 

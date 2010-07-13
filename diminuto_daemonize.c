@@ -10,7 +10,7 @@
  * @see http://www-theorie.physik.unizh.ch/~dpotter/howto/daemonize
  */
 
-#include "diminuto_daemonize.h"
+#include "diminuto_daemon.h"
 #include "diminuto_lock.h"
 #include "diminuto_delay.h"
 #include "diminuto_log.h"
@@ -55,7 +55,7 @@ static void diminuto_handler(int signum)
     }
 }
 
-int diminuto_daemonize(const char * file)
+int diminuto_daemon_enable(const char * file)
 {
     pid_t ppid = -1;
     pid_t pid = -1;
@@ -153,7 +153,7 @@ int diminuto_daemonize(const char * file)
 
         if (file == (char *)0) {
             /* Do nothing: no lock file. */
-        } else if (diminuto_lock(file) < 0) {
+        } else if (diminuto_lock_lock(file) < 0) {
             diminuto_serror("diminuto_daemonize: diminuto_lock");
             break;
         }

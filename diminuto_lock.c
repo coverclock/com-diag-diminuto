@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-int diminuto_lock(const char * file)
+int diminuto_lock_lock(const char * file)
 {
     int fd = -1;
     FILE * fp = (FILE *)0;
@@ -76,7 +76,7 @@ int diminuto_lock(const char * file)
     return result;
 }
 
-int diminuto_unlock(const char * file)
+int diminuto_lock_unlock(const char * file)
 {
     int rc;
     int result = 0;
@@ -89,7 +89,7 @@ int diminuto_unlock(const char * file)
     return result;
 }
 
-pid_t diminuto_locked(const char * file)
+pid_t diminuto_lock_check(const char * file)
 {
     int fd = -1;
     FILE * fp = (FILE *)0;

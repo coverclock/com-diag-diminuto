@@ -23,10 +23,10 @@
  * child, are however unconditionally logged to the system log. This function
  * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
  * @param file if non-null is the path and name of a lock file used to
- * call diminuto_lock().
+ * call diminuto_lock_lock().
  * @return 0 to the child upon success, -1 to the parent otherwise.
- * @see diminuto_lock().
+ * @see diminuto_lock_lock().
  */
-extern int diminuto_daemonize(const char * file);
+extern int diminuto_daemon_enable(const char * file);
 
 #endif

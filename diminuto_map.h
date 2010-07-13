@@ -23,7 +23,7 @@
  * @param lengthp points to where the length for the unmap is returned.
  * @return a user virtual address if successful, NULL otherwise.
  */
-extern void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_t * lengthp);
+extern void * diminuto_map_map(uintptr_t start, size_t length, void ** startp, size_t * lengthp);
 
 /**
  * Unmap a region of user virtual address space that was previously mapped.
@@ -32,7 +32,7 @@ extern void * diminuto_map(uintptr_t start, size_t length, void ** startp, size_
  * @param lengthp points to where the length from the map was returned.
  * @return 0 if successful, !0 otherwise.
  */
-extern int diminuto_unmap(void ** startp, size_t * lengthp);
+extern int diminuto_map_unmap(void ** startp, size_t * lengthp);
 
 /**
  * Set the minimum physical address which may be mapped. Setting this

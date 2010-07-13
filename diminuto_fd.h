@@ -23,7 +23,7 @@
  * @param modes specifies the permissions of a created file.
  * @return an open file descriptor or <0 if an error occurred.
  */
-extern int diminuto_acquire(int fd, const char * device, int flags, mode_t modes);
+extern int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t modes);
 
 /**
  * Close a file descriptor if it is open. Return -1 which can be assigned
@@ -32,6 +32,6 @@ extern int diminuto_acquire(int fd, const char * device, int flags, mode_t modes
  * @param device points to the name of the device or NULL.
  * @return <0 or the open file descriptor if an error occurred.
  */
-extern int diminuto_relinquish(int fd, const char * device);
+extern int diminuto_fd_relinquish(int fd, const char * device);
 
 #endif

@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_COREABLE_
-#define _H_COM_DIAG_DIMINUTO_COREABLE_
+#ifndef _H_COM_DIAG_DIMINUTO_CORE_
+#define _H_COM_DIAG_DIMINUTO_CORE_
 
 /**
  * @file
@@ -15,6 +15,6 @@
  * Set the core dump resource limit to its maximum.
  * @return zero if successful, non-zero otherwise.
  */
-extern int diminuto_coreable(void);
+extern int diminuto_core_enable(void);
 
 #endif

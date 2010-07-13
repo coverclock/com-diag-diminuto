@@ -179,7 +179,7 @@ int main(int argc, char * argv[])
         result = 4;
     }
     
-    address = diminuto_map(CFG_ENV_ADDR, CFG_ENV_SIZE, &start, &length);
+    address = diminuto_map_map(CFG_ENV_ADDR, CFG_ENV_SIZE, &start, &length);
     if (address == NULL) {
         return 2;
     }
@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
 
     }
 
-    rc = diminuto_unmap(&start, &length);
+    rc = diminuto_map_unmap(&start, &length);
     if (rc != 0) {
         return 5;
     }

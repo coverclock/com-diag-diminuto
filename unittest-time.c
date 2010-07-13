@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_coreable.h"
+#include "diminuto_core.h"
 #include "diminuto_delay.h"
 #include "diminuto_time.h"
 #include <stdio.h>
@@ -23,7 +23,7 @@ int main(int argc, char ** argv)
     uint64_t remaining;
     int64_t claimed;
 
-    diminuto_coreable();
+    diminuto_core_enable();
 
     printf("%10s %10s %10s %10s %10s\n",
         "requested",
