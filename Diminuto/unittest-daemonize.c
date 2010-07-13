@@ -45,7 +45,7 @@ int main(int argc, char ** argv)
     rc = diminuto_lock_lock(file);
     ASSERT(rc == 0);
 
-    rc = diminuto_daemon_enable(file);
+    rc = diminuto_daemon(file);
     ASSERT(rc < 0);
 
     rc = diminuto_lock_unlock(file);
@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
     pid7 = getpid();
     ASSERT(pid7 == pid1);
 
-    rc = diminuto_daemon_enable(file);
+    rc = diminuto_daemon(file);
     ASSERT(rc == 0);
 
     pid2 = getpid();
