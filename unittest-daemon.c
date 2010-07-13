@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-static const char * file = "/tmp/unittest-daemonize.pid";
+static const char * file = "/tmp/unittest-daemon.pid";
 
 int main(int argc, char ** argv)
 {
@@ -33,14 +33,14 @@ int main(int argc, char ** argv)
     pid_t pid7;
     pid_t ppid;
 
-    diminuto_log_emit("unittest-daemonize: begin %d\n", getpid());
+    diminuto_log_emit("unittest-daemon: begin %d\n", getpid());
 
     diminuto_core_enable();
 
     pid1 = getpid();
     ASSERT(pid1 >= 0);
 
-    diminuto_emit("unittest-daemonize: parent %d\n", pid1);
+    diminuto_log_emit("unittest-daemon: parent %d\n", pid1);
 
     rc = diminuto_lock_lock(file);
     ASSERT(rc == 0);
@@ -61,13 +61,13 @@ int main(int argc, char ** argv)
     ASSERT(pid2 > 0);
     ASSERT(pid1 != pid2);
 
-    diminuto_log_emit("unittest-daemonize: child %d\n", pid2);
+    diminuto_log_emit("unittest-daemon: child %d\n", pid2);
 
     ppid = getppid();
     ASSERT(ppid > 0);
     ASSERT(ppid == 1);
 
-    diminuto_log_emit("unittest-daemonize: adopted %d\n", ppid);
+    diminuto_log_emit("unittest-daemon: adopted %d\n", ppid);
 
     rc = diminuto_lock_lock(file);
     ASSERT(rc < 0);
@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
     rc = diminuto_lock_unlock(file);
     ASSERT(rc < 0);
 
-    diminuto_emit("unittest-daemonize: end %d\n", getpid());
+    diminuto_log_emit("unittest-daemon: end %d\n", getpid());
 
     EXIT();
 }

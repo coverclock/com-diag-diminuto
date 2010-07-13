@@ -55,7 +55,7 @@ static int diminuto_errors = 0;
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log(LOG_ERR, \
+            diminuto_log_log(LOG_ERR, \
                 "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
             ++diminuto_errors; \
             EXIT(); \

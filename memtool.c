@@ -81,7 +81,7 @@ static int operate(
     } else if (length == 0) {
         *basep = diminuto_map_map(pointer, size, addressp, lengthp);
     } else {
-        *basep = diminuto_map(address, length, addressp, lengthp);
+        *basep = diminuto_map_map(address, length, addressp, lengthp);
     }
 
     if (debug) {

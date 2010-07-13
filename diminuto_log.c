@@ -78,7 +78,7 @@ void diminuto_log_emit(const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    diminuto_log_log3(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
+    diminuto_log_vlog(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
     va_end(ap);
 }
 
@@ -89,5 +89,5 @@ void diminuto_serror(const char * s)
 
 void diminuto_perror(const char * s)
 {
-    diminuto_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
 }

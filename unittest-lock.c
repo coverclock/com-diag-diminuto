@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
     ASSERT(pid3 > 0);
     ASSERT(pid1 == pid3);
 
-    rc = diminuto_lock(file);
+    rc = diminuto_lock_lock(file);
     ASSERT(rc < 0);
 
     rc = diminuto_lock_unlock(file);
