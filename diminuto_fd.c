@@ -40,3 +40,63 @@ int diminuto_fd_relinquish(int fd, const char * device)
 
     return fd;
 }
+
+ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
+{
+    ssize_t total = 0;
+    char * bp;
+    ssize_t current;
+    size_t slack;
+
+    bp = (char *)buffer;
+    slack = max;
+
+    while (slack > 0) {
+
+        if ((current = read(fd, bp, slack)) < 0) {
+            if (total == 0) { total = current; }
+            break;
+        }
+
+        bp += current;
+        slack -= current;
+        total += current;
+
+        if (total >= (ssize_t)min) {
+            break;
+        }
+
+    }
+
+    return total;
+}
+
+ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
+{
+    ssize_t total = 0;
+    const char * bp;
+    ssize_t current;
+    size_t slack;
+
+    bp = (char *)buffer;
+    slack = max;
+
+    while (slack > 0) {
+
+        if ((current = write(fd, bp, slack)) < 0) {
+            if (total == 0) { total = current; }
+            break;
+        }
+
+        bp += current;
+        slack -= current;
+        total += current;
+
+        if (total >= (ssize_t)min) {
+            break;
+        }
+
+    }
+
+    return total;
+}

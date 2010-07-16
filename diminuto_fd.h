@@ -34,4 +34,8 @@ extern int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mo
  */
 extern int diminuto_fd_relinquish(int fd, const char * device);
 
+extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
+
+extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max);
+
 #endif
