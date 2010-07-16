@@ -54,6 +54,7 @@ ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
     while (slack > 0) {
 
         if ((current = read(fd, bp, slack)) < 0) {
+            diminuto_perror("diminuto_fd_read: read");
             if (total == 0) { total = current; }
             break;
         }
@@ -84,6 +85,7 @@ ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
     while (slack > 0) {
 
         if ((current = write(fd, bp, slack)) < 0) {
+            diminuto_perror("diminuto_fd_write: write");
             if (total == 0) { total = current; }
             break;
         }

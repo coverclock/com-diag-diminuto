@@ -10,6 +10,7 @@
  */
 
 #include "diminuto_ipc.h"
+#include "diminuto_fd.h"
 #include "diminuto_number.h"
 #include "diminuto_log.h"
 #include <unistd.h>
@@ -173,7 +174,7 @@ uint16_t diminuto_ipc_port(const char * service, const char * protocol)
     return port;
 }
 
-int diminuto_ipc_provider_backlog(uint16_t port, int backlog)
+int diminuto_ipc_stream_provider_backlog(uint16_t port, int backlog)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -206,12 +207,12 @@ int diminuto_ipc_provider_backlog(uint16_t port, int backlog)
     return fd;
 }
 
-int diminuto_ipc_provider(uint16_t port)
+int diminuto_ipc_stream_provider(uint16_t port)
 {
-    return diminuto_ipc_provider_backlog(port, SOMAXCONN);
+    return diminuto_ipc_stream_provider_backlog(port, SOMAXCONN);
 }
 
-int diminuto_ipc_accept_address(int fd, uint32_t * addressp)
+int diminuto_ipc_stream_accept_address(int fd, uint32_t * addressp)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -225,22 +226,22 @@ int diminuto_ipc_accept_address(int fd, uint32_t * addressp)
         errno = EINVAL;
         diminuto_perror("diminuto_ipc_accept_address: length");
         newfd = -2;
-    } else if (addressp != (uint32_t *)0) {
-        *addressp = ntohl(sa.sin_addr.s_addr);
     } else {
-        /* Do nothing. */
+        if (addressp != (uint32_t *)0) {
+            *addressp = ntohl(sa.sin_addr.s_addr);
+        }
     }
    
     return newfd;
 }
 
-int diminuto_ipc_accept(int fd)
+int diminuto_ipc_stream_accept(int fd)
 {
     uint32_t address;
-    return diminuto_ipc_accept_address(fd, &address);
+    return diminuto_ipc_stream_accept_address(fd, &address);
 }
 
-int diminuto_ipc_consumer(uint32_t address, uint16_t port)
+int diminuto_ipc_stream_consumer(uint32_t address, uint16_t port)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -264,7 +265,7 @@ int diminuto_ipc_consumer(uint32_t address, uint16_t port)
     return fd;
 }
 
-int diminuto_ipc_peer(uint16_t port)
+int diminuto_ipc_datagram_peer(uint16_t port)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -289,4 +290,81 @@ int diminuto_ipc_peer(uint16_t port)
     }
 
     return fd;
+}
+
+ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max)
+{
+    return diminuto_fd_read(fd, buffer, min, max);
+}
+
+ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max)
+{
+    return diminuto_fd_write(fd, buffer, min, max);
+}
+
+ssize_t diminuto_ipc_datagram_receive_generic(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags)
+{
+    ssize_t total;
+    const char * bp;
+    struct sockaddr_in sa;
+    socklen_t length;
+
+    bp = (char *) buffer;
+    length = sizeof(sa);
+    memset(&sa, 0, length);
+
+    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) < 0) {
+        if (errno == EINTR) {
+            total = 0;
+        } else {
+            diminuto_perror("diminuto_ipc_datagram_receive_generic: recvfrom");
+        }
+    } else if (total != size) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc_datagram_receive_generic: short");
+    } else {
+        if (addressp != (uint32_t *)0) {
+            *addressp = ntohl(sa.sin_addr.s_addr);
+        }
+        if (portp != (uint16_t *)0) {
+            *portp = ntohs(sa.sin_port);
+        }
+    }
+
+    return total;
+}
+
+ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags)
+{
+    ssize_t total;
+    const char * bp;
+    struct sockaddr_in sa;
+
+    bp = (char *) buffer;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sin_addr.s_addr = htonl(address);
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+
+    if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sa, sizeof(sa))) < 0) {
+        diminuto_perror("diminuto_ipc_datagram_send_generic: sendto");
+    } else if (total != size) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc_datagram_send_generic: size");
+    } else {
+        /* Do nothing. */
+    }
+
+    return total;
+}
+
+ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp)
+{
+    return diminuto_ipc_datagram_receive_generic(fd, buffer, size, addressp, portp, MSG_WAITALL);
+}
+
+ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port)
+{
+    return diminuto_ipc_datagram_send_generic(fd, buffer, size, address, port, 0);
 }
