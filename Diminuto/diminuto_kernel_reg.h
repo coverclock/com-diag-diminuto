@@ -25,6 +25,7 @@ typedef unsigned long uintptr_t; /* Some kernels define this, some don't */
 #else
 #include <stdint.h>
 #endif
+#include <asm/errno.h>
 
 typedef union {
     uint8_t eight;

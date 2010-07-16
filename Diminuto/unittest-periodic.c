@@ -13,7 +13,7 @@
 #include "diminuto_delay.h"
 #include "diminuto_alarm.h"
 #include "diminuto_time.h"
-#include "diminuto_periodic.h"
+#include "diminuto_timer.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -35,7 +35,7 @@ int main(int argc, char ** argv)
 
     for (requested = 1000; requested < 12000000; requested *= 2) {
 
-        diminuto_periodic(requested);
+        diminuto_timer_periodic(requested);
         then = diminuto_time();
 
         for (ii = 0; ii < 5; ++ii) {
@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
             then = now;
         }
 
-        diminuto_periodic(0);
+        diminuto_timer_periodic(0);
     }
 
     return 0;

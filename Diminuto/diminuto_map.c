@@ -40,12 +40,12 @@ void * diminuto_map_map(uintptr_t start, size_t length, void ** startp, size_t *
         size = length + offset;
 
         if ((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) {
-            diminuto_perror("diminuto_map: open");
+            diminuto_perror("diminuto_map_map: open");
             break;
         }
 
         if ((base = mmap(0, size, (PROT_READ | PROT_WRITE), MAP_SHARED, fd, address)) == (void *)-1) {
-            diminuto_perror("diminuto_map: mmap");
+            diminuto_perror("diminuto_map_map: mmap");
             break;
         }
 
@@ -59,7 +59,7 @@ void * diminuto_map_map(uintptr_t start, size_t length, void ** startp, size_t *
     if (fd < 0) {
         /* Do nothing. */
     } else if ((fd = close(fd)) < 0) {
-        diminuto_perror("diminuto_map: close");
+        diminuto_perror("diminuto_map_map: close");
         /* Proceed anyway. */
     }
 
@@ -73,7 +73,7 @@ int diminuto_map_unmap(void ** startp, size_t * lengthp)
     if (*lengthp == 0) {
         /* Do nothing. */
     } else if ((rc = munmap(*startp, *lengthp)) < 0) {
-        diminuto_perror("diminuto_unmap: munmap");
+        diminuto_perror("diminuto_map_unmap: munmap");
     } else {
         *startp = (void *)0;
         *lengthp = 0;

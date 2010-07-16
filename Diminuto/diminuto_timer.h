@@ -25,6 +25,20 @@
  * @return the number of microseconds remaining in prior timer if
  * a timer was already running.
  */
-extern uint64_t diminuto_timer(uint64_t microseconds);
+extern uint64_t diminuto_timer_oneshot(uint64_t microseconds);
+
+/**
+ * Start an periodic timer for the specified number of microseconds. When
+ * the timer expires, the calling process will receive a SIGALRM. If a
+ * timer is already running, the amount of time left in the prior timer
+ * will be returned. The actual timer period will be approximate depending
+ * on the granularity of the system clock and latency in the implementation.
+ * The timer fires repeatedly with a periodicity of the specified microseconds
+ * until it is cancelled. Calling with zero microseconds cancels the timer.
+ * @param microseconds is the desired period interval in microseconds.
+ * @return the number of microseconds remaining in the prior timer if
+ * a timer was already running.
+ */
+extern uint64_t diminuto_timer_periodic(uint64_t microseconds);
 
 #endif

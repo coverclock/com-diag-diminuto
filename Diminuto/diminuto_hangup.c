@@ -26,9 +26,9 @@ pid_t diminuto_hangup_signal(pid_t pid)
 {
     if (pid < 0) {
         errno = EINVAL;
-        diminuto_perror("diminuto_hangup: pid");
+        diminuto_perror("diminuto_hangup_signal: pid");
     } else if (kill(pid, SIGHUP) < 0) {
-        diminuto_perror("diminuto_hangup: kill");
+        diminuto_perror("diminuto_hangup_kill: kill");
         pid = -1;
     }
 
@@ -56,7 +56,7 @@ int diminuto_hangup_check(void)
 int diminuto_hangup_install(void)
 {
     if (signal(SIGHUP, diminuto_handler) == SIG_ERR) {
-        diminuto_perror("diminuto_hangupable: signal");
+        diminuto_perror("diminuto_hangup_install: signal");
         return -1;
     }
 

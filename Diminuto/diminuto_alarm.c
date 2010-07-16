@@ -26,9 +26,9 @@ pid_t diminuto_alarm_signal(pid_t pid)
 {
     if (pid < 0) {
         errno = EINVAL;
-        diminuto_perror("diminuto_alarm: pid");
+        diminuto_perror("diminuto_alarm_signal: pid");
     } else if (kill(pid, SIGALRM) < 0) {
-        diminuto_perror("diminuto_alarm: kill");
+        diminuto_perror("diminuto_alarm_signal: kill");
         pid = -1;
     }
 
@@ -56,7 +56,7 @@ int diminuto_alarm_check(void)
 int diminuto_alarm_install(void)
 {
     if (signal(SIGALRM, diminuto_handler) == SIG_ERR) {
-        diminuto_perror("diminuto_alarmable: signal");
+        diminuto_perror("diminuto_alarm_install: signal");
         return -1;
     }
 

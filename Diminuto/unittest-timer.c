@@ -34,11 +34,11 @@ int main(int argc, char ** argv)
 
     for (requested = 1; requested < 60000000; requested *= 2) {
         EXPECT(!diminuto_alarm_check());
-        diminuto_timer(requested);
+        diminuto_timer_oneshot(requested);
         then = diminuto_time();
         remaining = diminuto_delay(requested * 2, !0);
         now = diminuto_time();
-        diminuto_timer(0);
+        diminuto_timer_oneshot(0);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
         computed = (requested * 2) - remaining;

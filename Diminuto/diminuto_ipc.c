@@ -10,132 +10,24 @@
  */
 
 #include "diminuto_ipc.h"
+#include "diminuto_number.h"
+#include "diminuto_log.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-int diminuto_ipc_provider_backlog(uint16_t port, int backlog)
+int diminuto_ipc_close(int fd)
 {
-    struct sockaddr_in sa;
-    int rc;
-
-    if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sin_addr.s_addr = INADDR_ANY;
-    sa.sin_family = AF_INET;
-    sa.sin_port = htons(port);
-
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd >= 0) {
-        rc = diminuto_ipc_set_reuseaddress(fd, !0);
-        if (rc != fd) {
-            fd = -2;
-        } else {
-            socklen_t length = sizeof(sa);
-            rc = bind(fd, (struct sockaddr *)&sa, length);
-            if (rc < 0) {
-                diminuto_ipc_close(fd);
-                fd = -3;
-            } else {
-                rc = listen(fd, backlog);
-                if (rc < 0) {
-                    diminuto_ipc_close(fd);
-                    fd = -4;
-                }
-            }
-        }
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_provider(uint16_t port)
-{
-    return diminuto_ipc_provider_backlog(port, SOMAXCONN);
-}
-
-int diminuto_ipc_accept_address(int fd, uint32_t * addressp)
-{
-    struct sockaddr_in sa;
-    int newfd;
-
-    socklen_t length = sizeof(sa);
-    newfd = accept(fd, (struct sockaddr *)&sa, &length);
-    if (newfd < 0) {
-        /* Do nothing: failed */
-    } else if (length != sizeof(sa)) {
-        /* Do nothing: size botched up somehow. */
-    } else if (addressp == (uint32_t *)0) {
-        /* Do nothing: no pointer. */
-    } else {
-        *addressp = ntohl(sa.sin_addr.s_addr);
-    }
-   
-    return newfd;
-}
-
-int diminuto_ipc_accept(int fd)
-{
-    uint32_t address;
-
-    return diminuto_ipc_accept_address(fd, address);
-}
-
-int diminuto_ipc_consumer(uint32_t address, uint16_t port)
-{
-    struct sockaddr_in sa;
-    int fd;
-    int rc;
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sin_addr.s_addr = htonl(address);
-    sa.sin_family = AF_INET;
-    sa.sin_port = htons(port);
-
-    fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd >= 0) {
-        socklen_t length = sizeof(sa);
-        rc = connect(fd, (struct sockaddr *)&sa, length);
-        if (rc < 0) {
-            diminuto_ipc_close(fd);
-            fd = -2;
-        }
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_peer(uint16_t port)
-{
-    struct sockaddr_in sa;
-    int fd;
-    int rc;
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sin_addr.s_addr = INADDR_ANY;
-    sa.sin_family = AF_INET;
-    sa.sin_port = htons(port);
-
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd >= 0) {
-        rc = diminuto_ipc_set_reuseaddress(fd, !0);
-        if (rc != fd) {
-            fd = -2;
-        } else {
-            socklen_t length = sizeof(sa);
-            rc = bind(fd, (struct sockaddr *)&sa, length);
-            if (rc < 0) {
-                diminuto_ipc_close(fd);
-                fd = -3;
-            }
-        }
+    if (close(fd) < 0) {
+        diminuto_perror("diminuto_ipc_close: close");
+        fd = -1;
     }
 
     return fd;
@@ -143,57 +35,47 @@ int diminuto_ipc_peer(uint16_t port)
 
 int diminuto_ipc_shutdown(int fd)
 {
-    return shutdown(fd, SHUT_RDWR);
-}
-
-int diminuto_ipc_close(int fd)
-{
-    int rc;
-
-    rc = close(fd);
-    if (rc >= 0) {
-        rc = fd;
+    if (shutdown(fd, SHUT_RDWR) < 0) {
+        diminuto_perror("diminuto_ipc_shutdown: shutdown");
+        fd = -1;
     }
 
-    return rc;
+    return fd;
 }
 
 int diminuto_ipc_set_status(int fd, int enable, long mask)
 {
     long flags;
 
-    flags = fcntl(fd, F_GETFL, 0);
-    if (flags != -1) {
-        flags = enable ? (flags | mask) : (flags & (~mask));
-        flags = fcntl(fd, F_SETFL, flags);
-        if (flags != -1) {
-            flags = fd;
-        }
+    if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
+        diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
+        fd = -1;
+    } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
+        diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
+        fd = -2;
+    } else {
+        /* Do nothing. */
     }
 
-    return (int)flags;
+    return fd;
 }
 
 int diminuto_ipc_set_option(int fd, int enable, int option)
 {
-    int rc;
-    int on;
+    int onoff;
 
-    rc = fd;
-    if (rc >= 0) {
-        on = enable ? 1 : 0;
-        rc = setsockopt(fd, SOL_SOCKET, option, &on, sizeof(on));
-        if (rc >= 0) {
-            rc = fd;
-        }
+    onoff = enable ? 1 : 0;
+    if (setsockopt(fd, SOL_SOCKET, option, &onoff, sizeof(onoff)) < 0) {
+        diminuto_perror("diminuto_ipc_set_option: setsockopt");
+        fd = -1;
     }
 
-    return rc;
+    return fd;
 }
 
 int diminuto_ipc_set_nonblocking(int fd, int enable)
 {
-    return diminuto_ipc_set_status(fd, enable, FNDELAY);
+    return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
 }
 
 int diminuto_ipc_set_reuseaddress(int fd, int enable)
@@ -216,47 +98,44 @@ int diminuto_ipc_set_linger(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_LINGER);
 }
 
-uint32_t diminuto_ipc_address(const char * hostname, size_t index)
+uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
 {
     uint32_t ipaddress = 0;
     struct  hostent * hostp;
     struct in_addr inaddr;
     size_t limit;
     size_t size;
-    int rc;
 
-    // Note that this is not reentrant. The reentrant version of
-    // this call is not POSIX compliant. POSIX deprecates this
-    // call but my current Linux build server (2.4) does not
-    // implement the new POSIX calls.
- 
-    hostp = gethostbyname(hostname);
-    if (hostp != 0) {
-        if (hostp->h_addrtype == AF_INET) {
-            for (limit = 0; hostp->h_addr_list[limit] != 0; ++limit) {
-                continue;
-            }
-            if (index < limit) {
-                memset(&inaddr, 0, sizeof(inaddr));
-                if (hostp->h_length < (int)sizeof(inaddr)) {
-                    size = hostp->h_length;
-                } else {
-                    size = sizeof(inaddr);
-                }
-                memcpy(&inaddr, hostp->h_addr_list[index], size);
-                ipaddress = ntohl(inaddr.s_addr);
-            }
-        }
+    if (inet_aton(hostname, &inaddr)) {
+        ipaddress = ntohl(inaddr.s_addr);
+    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
+        /* Do nothing: no host entry. */
+    } else if (hostp->h_addrtype != AF_INET) {
+        /* Do nothing: not in the IP address family. */
     } else {
-        // gethostbyname should have done this for us, but we make
-        // a list ditch effort anyway.
-        rc = inet_aton(hostname, &inaddr);
-        if (rc != 0) {
+        for (limit = 0; hostp->h_addr_list[limit] != 0; ++limit) {
+            continue;
+        }
+        if (index < limit) {
+            memset(&inaddr, 0, sizeof(inaddr));
+            if (hostp->h_length < (int)sizeof(inaddr)) {
+                size = hostp->h_length;
+            } else {
+                size = sizeof(inaddr);
+            }
+            memcpy(&inaddr, hostp->h_addr_list[index], size);
             ipaddress = ntohl(inaddr.s_addr);
+        } else {
+            /* Do nothing: no address at provided index. */
         }
     }
 
     return ipaddress;
+}
+
+uint32_t diminuto_ipc_address(const char * hostname)
+{
+    return diminuto_ipc_address_index(hostname, 0);
 }
 
 const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t length)
@@ -276,22 +155,138 @@ uint16_t diminuto_ipc_port(const char * service, const char * protocol)
     uint16_t port = 0;
     struct servent * portp;
     size_t length;
-    unsigned long temp;
+    uint64_t temp;
     const char * end;
 
-    portp = getservbyname(service, protocol);
-    if (portp != 0) {
+    if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
         port = ntohs(portp->s_port);
+    } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
+        diminuto_perror("diminuto_ipc_port: diminuto_number_unsigned");
+    } else if (temp > (uint16_t)~0) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc_port: magnitude");
+        port = 0;
     } else {
-        temp = strtoul(service, &end, 0);
-        if (*end != '\0') {
-            /* Do nothing: not a valid numeric character. */
-        } else if (temp > ~(uint16_t)0) {
-            /* Do nothing: too large */
-        } else {
-            port = temp;
-        }
+        port = temp;
     }
 
     return port;
+}
+
+int diminuto_ipc_provider_backlog(uint16_t port, int backlog)
+{
+    struct sockaddr_in sa;
+    socklen_t length;
+    int fd;
+
+    if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
+
+    length = sizeof(sa);
+    memset(&sa, 0, length);
+    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc_provider_backlog: socket");
+    } else if (diminuto_ipc_set_reuseaddress(fd, !0) != fd) {
+        diminuto_perror("diminuto_ipc_provider_backlog: diminuto_ipc_set_reuseadddress");
+        diminuto_ipc_close(fd);
+        fd = -2;
+    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc_provider_backlog: bind");
+        diminuto_ipc_close(fd);
+        fd = -3;
+    } else if (listen(fd, backlog) < 0) {
+        diminuto_perror("diminuto_ipc_provider_backlog: listen");
+        diminuto_ipc_close(fd);
+        fd = -4;
+    }
+
+    return fd;
+}
+
+int diminuto_ipc_provider(uint16_t port)
+{
+    return diminuto_ipc_provider_backlog(port, SOMAXCONN);
+}
+
+int diminuto_ipc_accept_address(int fd, uint32_t * addressp)
+{
+    struct sockaddr_in sa;
+    socklen_t length;
+    int newfd;
+
+    length = sizeof(sa);
+    if ((newfd = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipc_accept_address: accept");
+        newfd = -1;
+    } else if (length != sizeof(sa)) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc_accept_address: length");
+        newfd = -2;
+    } else if (addressp != (uint32_t *)0) {
+        *addressp = ntohl(sa.sin_addr.s_addr);
+    } else {
+        /* Do nothing. */
+    }
+   
+    return newfd;
+}
+
+int diminuto_ipc_accept(int fd)
+{
+    uint32_t address;
+    return diminuto_ipc_accept_address(fd, &address);
+}
+
+int diminuto_ipc_consumer(uint32_t address, uint16_t port)
+{
+    struct sockaddr_in sa;
+    socklen_t length;
+    int fd;
+    int rc;
+
+    length = sizeof(sa);
+    memset(&sa, 0, length);
+    sa.sin_addr.s_addr = htonl(address);
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc_consumer: socket");
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
+        diminuto_perror("diminuto_ipc_consumer: connect");
+        diminuto_ipc_close(fd);
+        fd = -2;
+    }
+
+    return fd;
+}
+
+int diminuto_ipc_peer(uint16_t port)
+{
+    struct sockaddr_in sa;
+    socklen_t length;
+    int fd;
+
+    length = sizeof(sa);
+    memset(&sa, 0, length);
+    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(port);
+
+    if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc_peer: socket");
+    } else if (diminuto_ipc_set_reuseaddress(fd, !0) != fd) {
+        diminuto_perror("diminuto_ipc_peer: diminuto_ipc_set_reuseaddress");
+        diminuto_ipc_close(fd);
+        fd = -2;
+    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc_peer: bind");
+        diminuto_ipc_close(fd);
+        fd = -3;
+    }
+
+    return fd;
 }

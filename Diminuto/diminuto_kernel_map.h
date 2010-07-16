@@ -21,6 +21,7 @@
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <asm/page.h>
+#include <asm/errno.h>
 
 /**
  *  Map a region of physical address space to kernel virtual address space.
