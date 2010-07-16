@@ -344,8 +344,8 @@ unittest-lock:	unittest-lock.c lib$(PROJECT).so
 unittest-map:	unittest-map.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-unittest-mmdriver:	unittest-mmdriver.sh
-	$(MAKE) script SCRIPT=unittest-mmdriver
+unittest-mmdriver-at91rm9200ek:	unittest-mmdriver-at91rm9200ek.sh
+	$(MAKE) script SCRIPT=unittest-mmdriver-at91rm9200ek
 
 unittest-phex:	unittest-phex.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -362,11 +362,11 @@ unittest-barrier:	unittest-barrier.c lib$(PROJECT).so
 unittest-serial:	unittest-serial.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
-unittest-memtool:	unittest-memtool.sh
-	$(MAKE) script SCRIPT=unittest-memtool
+unittest-memtool-at91rm9200ek:	unittest-memtool-at91rm9200ek.sh
+	$(MAKE) script SCRIPT=unittest-memtool-at91rm9200ek
 
-unittest-memtool2:	unittest-memtool2.sh
-	$(MAKE) script SCRIPT=unittest-memtool2
+unittest-memtool2-at91rm9200ek:	unittest-memtool2-at91rm9200ek.sh
+	$(MAKE) script SCRIPT=unittest-memtool2-at91rm9200ek
 
 unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<

@@ -9,14 +9,23 @@
  *
  * This translation unit is the implementation of the Diminuto Generic Memory
  * Mapped Driver. It is compiled using the standard Linux 2.6 module build
- * process. By default it controls Programmed I/O device B (PIOB) which on
- * the AT91RM9200-EK board controls LEDs. But it can be trivially configured
- * to provide its read, write, set, and clear interface to any device with
- * memory mapped registers such as FPGAs, but also other PIO pins on the
- * AT91RM9200 processor core. Additional I/O control requests, or even
+ * process.
+ *
+ * On the AT91RM9200-EK board (Diminuto and Arroyo), it controls Programmed
+ * I/O device B (PIOB) which on that board controls LEDs.
+ *
+ * On the Beagleboard (Cascada)
+ *
+ * But it can be trivially compiled to provide its read, write, set, and
+ * clear interface to any device with memory mapped registers such as FPGAs,
+ * but also other PIO pins. Additional I/O control requests, or even
  * additional read and write entry points, can be easily added.
  */
 
+
+#include "diminuto_mmdriver.h"
+#include "diminuto_kernel_map.h"
+#include <linux/autoconf.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -26,17 +35,20 @@
 #include <linux/proc_fs.h>
 #include <asm/semaphore.h>
 #include <asm/uaccess.h>
-#include "diminuto_mmdriver.h"
-#include "diminuto_kernel_map.h"
 
 /*******************************************************************************
  * COMPILE TIME CONFIGURABLE PARAMETERS
  ******************************************************************************/
 
 #if !defined(DIMINUTO_MMDRIVER_BEGIN) && !defined(DIMINUTO_MMDRIVER_END)
+#if defined(CONFIG_MACH_AT91RM9200EK)
 #include <asm/arch/at91rm9200.h>
 #define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
 #define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
+#endif
+#if defined(CONFIG_MACH_OMAP3_BEAGLE)
+#include <arch/arm/plat_omap/include/mach/gpio.h>
+#endif
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)

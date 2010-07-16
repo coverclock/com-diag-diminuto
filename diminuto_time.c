@@ -16,11 +16,15 @@
 uint64_t diminuto_time()
 {
     struct timeval elapsed;
+    uint64_t microseconds = 0ULL;
 
     if (gettimeofday(&elapsed, (struct timezone *)0) < 0) {
         diminuto_perror("diminuto_time: gettimeofday");
-        return 0ULL;
+    } else {
+        microseconds = elapsed.tv_sec;
+        microseconds *= 1000000ULL;
+        microseconds += elapsed.tv_usec;
     }
 
-    return (elapsed.tv_sec * 1000000ULL) + elapsed.tv_usec;
+    return microseconds;
 }

@@ -14,9 +14,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-uint32_t diminuto_ipc_toaddress(const char * hostname, size_t index);
+uint32_t diminuto_ipc_address_index(const char * hostname, size_t index);
 
-uint16_t diminuto_ipc_toport(const char * service, const char * protocol);
+uint32_t diminuto_ipc_address(const char * hostname);
+
+uint16_t diminuto_ipc_port(const char * service, const char * protocol);
 
 const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t length);
 
