@@ -34,8 +34,32 @@ extern int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mo
  */
 extern int diminuto_fd_relinquish(int fd, const char * device);
 
+/**
+ * Read bytes from a file descriptor into a buffer until at least a minimum
+ * number of bytes are read and no more than a maximum number of bytes are
+ * read. Less than the minimum can still be read if an error occurs. A
+ * minimum of zero should always be used for file descriptors for which
+ * zero indicates end of file (this is not the case for non-blocking sockets).
+ * @param fd is an open file descriptor.
+ * @param buffer points to the buffer into which data is read.
+ * @param min is the minimum number of bytes to be read.
+ * @param max is the maximum number of bytes to be read.
+ * @return the number of bytes read or <0 if an error with no bytes read.
+ */
 extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
 
+/**
+ * Write bytes to a file descriptor from a buffer until at least a minimum
+ * number of bytes are written and no more than a maximum number of bytes are
+ * written. Less than the minimum can still be written if an error occurs. A
+ * minimum of zero should always be used for file descriptors for which
+ * zero indicates end of file (this is not the case for non-blocking sockets).
+ * @param fd is an open file descriptor.
+ * @param buffer points to the buffer from which data is written.
+ * @param min is the minimum number of bytes to be written.
+ * @param max is the maximum number of bytes to be written.
+ * @return the number of bytes read or <0 if an error with no bytes written.
+ */
 extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max);
 
 #endif
