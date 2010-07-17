@@ -94,9 +94,24 @@ int diminuto_ipc_set_debug(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
 }
 
-int diminuto_ipc_set_linger(int fd, int enable)
+int diminuto_ipc_set_linger(int fd, uint64_t microseconds)
 {
-    return diminuto_ipc_set_option(fd, enable, SO_LINGER);
+    struct linger opt;
+
+    if (microseconds > 0) {
+        opt.l_onoff = !0;
+        opt.l_linger = (microseconds + 999999ULL) / 1000000ULL;
+    } else {
+        opt.l_onoff = 0;
+        opt.l_linger = 0;
+    }
+
+    if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
+        diminuto_perror("diminuto_ipc_set_linger: setsockopt");
+        fd = -1;
+    }
+
+    return fd;
 }
 
 uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
@@ -144,9 +159,12 @@ const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t le
     struct in_addr inaddr;
     char * dot;
 
-    inaddr.s_addr = htonl(address);
-    dot = inet_ntoa(inaddr);
-    strncpy(buffer, dot, length);
+    if (length > 0) {
+        inaddr.s_addr = htonl(address);
+        dot = inet_ntoa(inaddr);
+        strncpy(buffer, dot, length);
+        buffer[length - 1] = '\0';
+    }
 
     return buffer;
 }
@@ -162,7 +180,7 @@ uint16_t diminuto_ipc_port(const char * service, const char * protocol)
     if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
         port = ntohs(portp->s_port);
     } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
-        diminuto_perror("diminuto_ipc_port: diminuto_number_unsigned");
+        /* Do nothing: might be an unknown service. */
     } else if (temp > (uint16_t)~0) {
         errno = EINVAL;
         diminuto_perror("diminuto_ipc_port: magnitude");

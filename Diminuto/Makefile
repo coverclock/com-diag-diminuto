@@ -380,6 +380,9 @@ unittest-fletcher8:	unittest-fletcher8.c lib$(PROJECT).so
 unittest-list:	unittest-list.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-ipc:	unittest-ipc.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Drivers
 
 .PHONY:	drivers drivers-clean

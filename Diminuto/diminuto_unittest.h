@@ -22,7 +22,7 @@
 #include "diminuto_log.h"
 #include <stdlib.h>
 
-static int diminuto_errors = 0;
+static int diminuto_unittest_errors = 0;
 
 /**
  * @def EXIT()
@@ -30,7 +30,7 @@ static int diminuto_errors = 0;
  * or a non-zero exit code if there are.
  */
 #define EXIT() \
-    exit(diminuto_errors > 255 ? 255 : diminuto_errors)
+    exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors)
 
 /**
  * @def EXPECT(_COND_)
@@ -40,9 +40,8 @@ static int diminuto_errors = 0;
 #define EXPECT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(LOG_WARNING, \
-                "%s@%d: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
-            ++diminuto_errors; \
+            diminuto_log_log(LOG_WARNING, "%s@%d: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            ++diminuto_unittest_errors; \
         } \
     } while (0)
 
@@ -55,9 +54,8 @@ static int diminuto_errors = 0;
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(LOG_ERR, \
-                "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
-            ++diminuto_errors; \
+            diminuto_log_log(LOG_ERR, "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            ++diminuto_unittest_errors; \
             EXIT(); \
         } \
     } while (0)
