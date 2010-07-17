@@ -133,7 +133,7 @@ extern int diminuto_ipc_set_status(int fd, int enable, long mask);
  * Enable or disable a socket option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable an option, 0 to disable an option.
- * @param option is option.
+ * @param option is option name.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_option(int fd, int enable, int option);
@@ -163,7 +163,7 @@ extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
 extern int diminuto_ipc_set_keepalive(int fd, int enable);
 
 /**
- * Enable or disable the debug option.
+ * Enable or disable the debug option (only available to root on most systems).
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable debug, 0 to disable debug.
  * @return 0 for success or <0 if an error occurred.
@@ -173,10 +173,13 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
 /**
  * Enable or disable the linger option.
  * @param fd is an open socket of any type.
- * @param enable is !0 to enable linger, 0 to disable linger.
+ * @param microseconds is the number of microseconds to linger (although
+ * lingering has granularity of seconds), or 0 for no lingering.
  * @return 0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_linger(int fd, int enable);
+extern int diminuto_ipc_set_linger(int fd, uint64_t microseconds);
+
+/* (Many other options are possible, but these are the ones I have used.) */
 
 /**
  * Read bytes from a stream socket into a buffer until at least a minimum
