@@ -38,9 +38,9 @@ endif
 ifeq ($(COMPILEFOR),cascada)
 ARCH		=	arm
 PLATFORM	=	linux
-CARCH		=	-march=armv7 -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
-KERNEL_REV	=	2.6.37
+KERNEL_REV	=	2.6.32.7
 KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
 endif
 

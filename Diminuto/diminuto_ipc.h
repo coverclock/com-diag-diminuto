@@ -191,7 +191,7 @@ extern int diminuto_ipc_set_linger(int fd, uint64_t microseconds);
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
- * @return the number of bytes read or <0 if an error with no bytes read.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max);
 
@@ -205,7 +205,7 @@ extern ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
- * @return the number of bytes read or <0 if an error with no bytes written.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max);
 
@@ -217,20 +217,19 @@ extern ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min
  * @param addressp points to where the sender's address is stored or NULL.
  * @param portp points to where the sender's port is stored or NULL.
  * @param flags is the recvfrom(2) flags to be used.
- * @return the number of bytes received or <0 if an error occurred.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_receive_generic(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags);
+extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags);
 
 /**
- * Receive a datagram from a datagram socket using the MSG_WAITALL flag that
- * causes the call to block until the entire datagram is received.
+ * Receive a datagram from a datagram socket using no flags.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
  * @param addressp points to where the sender's address is stored or NULL.
  * @param portp points to where the sender's port is stored or NULL.
  * @param flags is the recvfrom(2) flags to be used.
- * @return the number of bytes received or <0 if an error occurred.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp);
 
@@ -242,9 +241,9 @@ extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size,
  * @param address is the receiver's address.
  * @param port is the receiver's port.
  * @param flags is the sendto(2) flags to be used.
- * @return the number of bytes received or <0 if an error occurred.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags);
+extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags);
 
 /**
  * Send a datagram to a datagram socket using no flags.
@@ -253,7 +252,7 @@ extern ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, s
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
  * @param port is the receiver's port.
- * @return the number of bytes received or <0 if an error occurred.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port);
 

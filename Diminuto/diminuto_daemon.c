@@ -156,6 +156,8 @@ int diminuto_daemon(const char * file)
         } else if (diminuto_lock_lock(file) < 0) {
             diminuto_serror("diminuto_daemon: diminuto_lock");
             break;
+        } else {
+            /* Do nothing. */
         }
 
         /* Reset our file mask. */
