@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 
 int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
 {
@@ -52,21 +53,24 @@ ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
     slack = max;
 
     while (slack > 0) {
-
-        if ((current = read(fd, bp, slack)) < 0) {
-            diminuto_perror("diminuto_fd_read: read");
-            if (total == 0) { total = current; }
+        if ((current = read(fd, bp, slack)) == 0) {
             break;
-        }
-
-        bp += current;
-        slack -= current;
-        total += current;
-
-        if (total >= (ssize_t)min) {
+        } else if (current < 0) {
+            if ((errno != EINTR) && (errno != EAGAIN)) {
+                diminuto_perror("diminuto_fd_read: read");
+            }
+            if (total == 0) {
+                total = current;
+            }
             break;
+        } else {
+            bp += current;
+            slack -= current;
+            total += current;
+            if (total >= (ssize_t)min) {
+                break;
+            }
         }
-
     }
 
     return total;
@@ -83,21 +87,24 @@ ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
     slack = max;
 
     while (slack > 0) {
-
-        if ((current = write(fd, bp, slack)) < 0) {
-            diminuto_perror("diminuto_fd_write: write");
-            if (total == 0) { total = current; }
+        if ((current = write(fd, bp, slack)) == 0) {
             break;
-        }
-
-        bp += current;
-        slack -= current;
-        total += current;
-
-        if (total >= (ssize_t)min) {
+        } else if (current < 0) {
+            if ((errno != EINTR) && (errno != EAGAIN)) {
+                diminuto_perror("diminuto_fd_write: write");
+            }
+            if (total == 0) {
+                total = current;
+            }
             break;
+        } else {
+            bp += current;
+            slack -= current;
+            total += current;
+            if (total >= (ssize_t)min) {
+                break;
+            }
         }
-
     }
 
     return total;

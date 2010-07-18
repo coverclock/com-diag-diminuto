@@ -55,7 +55,7 @@ int diminuto_ipc_set_status(int fd, int enable, long mask)
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
         fd = -2;
     } else {
-        /* Do nothing. */
+        /* Do nothing: success. */
     }
 
     return fd;
@@ -116,14 +116,14 @@ int diminuto_ipc_set_linger(int fd, uint64_t microseconds)
 
 uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
 {
-    uint32_t ipaddress = 0;
+    uint32_t address = 0;
     struct  hostent * hostp;
     struct in_addr inaddr;
     size_t limit;
     size_t size;
 
     if (inet_aton(hostname, &inaddr)) {
-        ipaddress = ntohl(inaddr.s_addr);
+        address = ntohl(inaddr.s_addr);
     } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
         /* Do nothing: no host entry. */
     } else if (hostp->h_addrtype != AF_INET) {
@@ -140,13 +140,13 @@ uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
                 size = sizeof(inaddr);
             }
             memcpy(&inaddr, hostp->h_addr_list[index], size);
-            ipaddress = ntohl(inaddr.s_addr);
+            address = ntohl(inaddr.s_addr);
         } else {
             /* Do nothing: no address at provided index. */
         }
     }
 
-    return ipaddress;
+    return address;
 }
 
 uint32_t diminuto_ipc_address(const char * hostname)
@@ -320,7 +320,7 @@ ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_
     return diminuto_fd_write(fd, buffer, min, max);
 }
 
-ssize_t diminuto_ipc_datagram_receive_generic(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags)
+ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags)
 {
     ssize_t total;
     const char * bp;
@@ -331,28 +331,25 @@ ssize_t diminuto_ipc_datagram_receive_generic(int fd, void * buffer, size_t size
     length = sizeof(sa);
     memset(&sa, 0, length);
 
-    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) < 0) {
-        if (errno == EINTR) {
-            total = 0;
-        } else {
-            diminuto_perror("diminuto_ipc_datagram_receive_generic: recvfrom");
-        }
-    } else if (total != size) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_ipc_datagram_receive_generic: short");
-    } else {
+    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
+        /* Do nothing: not sure what this means. */
+    } else if (total > 0) {
         if (addressp != (uint32_t *)0) {
             *addressp = ntohl(sa.sin_addr.s_addr);
         }
         if (portp != (uint16_t *)0) {
             *portp = ntohs(sa.sin_port);
         }
+    } else if ((errno != EINTR) && (errno != EAGAIN)) { 
+        diminuto_perror("diminuto_ipc_datagram_receive_flags: recvfrom");
+    } else {
+        /* Do nothing: timeout or poll. */
     }
 
     return total;
 }
 
-ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags)
+ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags)
 {
     ssize_t total;
     const char * bp;
@@ -365,13 +362,14 @@ ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, size_t s
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
 
-    if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sa, sizeof(sa))) < 0) {
-        diminuto_perror("diminuto_ipc_datagram_send_generic: sendto");
-    } else if (total != size) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_ipc_datagram_send_generic: size");
+    if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sa, sizeof(sa))) == 0) {
+        /* Do nothing: not sure what this means. */
+    } else if (total > 0) {
+        /* Do nothing: nominal case. */
+    } else if ((errno != EINTR) && (errno != EAGAIN)) {
+        diminuto_perror("diminuto_ipc_datagram_send_flags: sendto");
     } else {
-        /* Do nothing. */
+        /* Do nothing: timeout or poll. */
     }
 
     return total;
@@ -379,10 +377,10 @@ ssize_t diminuto_ipc_datagram_send_generic(int fd, const void * buffer, size_t s
 
 ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp)
 {
-    return diminuto_ipc_datagram_receive_generic(fd, buffer, size, addressp, portp, MSG_WAITALL);
+    return diminuto_ipc_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
 }
 
 ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port)
 {
-    return diminuto_ipc_datagram_send_generic(fd, buffer, size, address, port, 0);
+    return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
 }

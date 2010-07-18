@@ -14,6 +14,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+static const uint16_t PORT1 = 65535;
+static const uint16_t PORT2 = 65534;
+
 int main(void)
 {
     {
@@ -89,7 +92,7 @@ int main(void)
     {
         int fd;
 
-        EXPECT((fd = diminuto_ipc_datagram_peer(65535)) >= 0);
+        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
     }
 
@@ -130,10 +133,38 @@ int main(void)
             EXPECT(diminuto_ipc_set_debug(fd, 0) >= 0);
         }
 
-        EXPECT(diminuto_ipc_set_linger(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, 1000000UL) >= 0);
         EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
 
         EXPECT(diminuto_ipc_close(fd) >= 0);
+    }
+
+    {
+        int fd1;
+        int fd2;
+        const char * MSG1 = "Chip Overclock";
+        const char * MSG2 = "Digital Aggregates Corporation";
+        char buffer[64];
+        uint32_t address = 0;
+        uint16_t port = 0;
+
+        EXPECT((fd1 = diminuto_ipc_datagram_peer(PORT1)) >= 0);
+        EXPECT((fd2 = diminuto_ipc_datagram_peer(PORT2)) >= 0);
+
+        /* This only works because the kernel buffers socket data. */
+
+        EXPECT((diminuto_ipc_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc_address("localhost"), PORT2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
+        EXPECT(address == diminuto_ipc_address("localhost"));
+        EXPECT(port == PORT1);
+
+        EXPECT((diminuto_ipc_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc_address("localhost"), PORT1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
+        EXPECT(address == diminuto_ipc_address("localhost"));
+        EXPECT(port == PORT2);
+
+        EXPECT(diminuto_ipc_close(fd1) >= 0);
+        EXPECT(diminuto_ipc_close(fd2) >= 0);
     }
 
 #if 0
