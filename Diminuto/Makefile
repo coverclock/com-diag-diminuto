@@ -282,7 +282,7 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 ########## Target Binaries
 
 getubenv:	getubenv.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -I$(KERNEL_DIR)/include $(LDFLAGS) -o $@ $<
 
 ipcalc:	ipcalc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<

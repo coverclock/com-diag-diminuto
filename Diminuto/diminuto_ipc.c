@@ -340,7 +340,7 @@ ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, 
         if (portp != (uint16_t *)0) {
             *portp = ntohs(sa.sin_port);
         }
-    } else if ((errno != EINTR) && (errno != EAGAIN)) { 
+    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { 
         diminuto_perror("diminuto_ipc_datagram_receive_flags: recvfrom");
     } else {
         /* Do nothing: timeout or poll. */
@@ -366,7 +366,7 @@ ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t siz
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
         /* Do nothing: nominal case. */
-    } else if ((errno != EINTR) && (errno != EAGAIN)) {
+    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
         diminuto_perror("diminuto_ipc_datagram_send_flags: sendto");
     } else {
         /* Do nothing: timeout or poll. */

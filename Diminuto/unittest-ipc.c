@@ -9,10 +9,14 @@
  */
 
 #include "diminuto_ipc.h"
+#include "diminuto_time.h"
+#include "diminuto_timer.h"
+#include "diminuto_delay.h"
 #include "diminuto_unittest.h"
+#include <sys/types.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <errno.h>
 
 static const uint16_t PORT1 = 65535;
 static const uint16_t PORT2 = 65534;
@@ -88,7 +92,6 @@ int main(void)
 
     }
 
-
     {
         int fd;
 
@@ -112,7 +115,6 @@ int main(void)
         EXPECT((fd = diminuto_ipc_stream_provider(0xfff0)) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
     }
-
 
     {
         int fd;
@@ -165,6 +167,49 @@ int main(void)
 
         EXPECT(diminuto_ipc_close(fd1) >= 0);
         EXPECT(diminuto_ipc_close(fd2) >= 0);
+    }
+
+    {
+        int fd;
+        char buffer[1];
+        uint32_t address = 0x12345678;
+        uint16_t port = 0x9abc;
+
+        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
+        EXPECT((diminuto_ipc_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT(errno == EAGAIN);
+        EXPECT(address == 0x12345678);
+        EXPECT(port == 0x9abc);
+        EXPECT(diminuto_ipc_close(fd) >= 0);
+    }
+
+    {
+        int fd;
+        char buffer[1];
+        uint32_t address = 0x12345678;
+        uint16_t port = 0x9abc;
+        uint64_t before;
+        uint64_t after;
+
+        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
+        EXPECT(diminuto_alarm_install() >= 0);
+        diminuto_timer_oneshot(2000000ULL);
+        before = diminuto_time();
+#if 1
+        CHECKPOINT();
+        EXPECT((diminuto_ipc_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        CHECKPOINT();
+#else
+        diminuto_delay(5000000ULL, !0);
+#endif
+        after = diminuto_time();
+        EXPECT(diminuto_alarm_check());
+        EXPECT((after - before) >= 2000000ULL);
+        EXPECT(errno == EINTR);
+        EXPECT(address == 0x12345678);
+        EXPECT(port == 0x9abc);
+        EXPECT(diminuto_ipc_close(fd) >= 0);
     }
 
 #if 0

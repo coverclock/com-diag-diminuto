@@ -24,6 +24,9 @@
 
 static int diminuto_unittest_errors = 0;
 
+#define CHECKPOINT() \
+    diminuto_log_log(LOG_NOTICE, "%s@%d: CHECKPOINT\n", __FILE__, __LINE__)
+
 /**
  * @def EXIT()
  * Exit the calling process with a zero exit code if there are no errors,
