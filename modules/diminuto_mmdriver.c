@@ -41,26 +41,30 @@
  ******************************************************************************/
 
 #if !defined(DIMINUTO_MMDRIVER_BEGIN) && !defined(DIMINUTO_MMDRIVER_END)
-#if defined(CONFIG_MACH_AT91RM9200EK)
-#include <asm/arch/at91rm9200.h>
-#define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
-#define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
-#endif
-#if defined(CONFIG_MACH_OMAP3_BEAGLE)
-#include <arch/arm/plat_omap/include/mach/gpio.h>
-#endif
+#   if defined(CONFIG_MACH_AT91RM9200EK)
+#      include <asm/arch/at91rm9200.h>
+#      define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
+#       define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
+#   elif defined(CONFIG_MACH_OMAP3_BEAGLE)
+#       include <arch/arm/plat_omap/include/mach/gpio.h>
+#       define OMAP3_BASE_SYS (0x90000000)
+#       define OMAP3_GPIO5 (0x49056000)
+#       define OMAP3_GPIO6 (0x49057000)
+#       define DIMINUTO_MMDRIVER_BEGIN (OMAP3_BASE_SYS + OMAP3_GPIO5)
+#       define DIMINUTO_MMDRIVER_END (OMAP3_BASE_SYS + OMAP3_GPIO6)
+#   endif
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
-#define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
+#   define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
-#define DIMINUTO_MMDRIVER_MAJOR (240)
+#   define DIMINUTO_MMDRIVER_MAJOR (240)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
-#define DIMINUTO_MMDRIVER_NAME ("mmdriver")
+#   define DIMINUTO_MMDRIVER_NAME ("mmdriver")
 #endif
 
 /*******************************************************************************

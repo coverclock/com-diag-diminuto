@@ -44,25 +44,42 @@
  */
 
 #include "diminuto_map.h"
+#include <linux/autoconf.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
-#if !defined(CFG_FLASH_BASE)
-#define CFG_FLASH_BASE  (0x10000000UL)
-#endif
-
-#if !defined(CFG_ENV_OFFSET)
-#define CFG_ENV_OFFSET  (0x0000e000UL)
+#if defined(CONFIG_MACH_AT91RM9200EK)
+#   if !defined(CFG_FLASH_BASE)
+#       define CFG_FLASH_BASE  (0x10000000UL)
+#   endif
+#   if !defined(CFG_ENV_OFFSET)
+#       define CFG_ENV_OFFSET  (0x0000e000UL)
+#   endif
+#elif defined(CONFIG_MACH_OMAP3_BEAGLE)
+#   if !defined(CFG_FLASH_BASE)
+#       define CFG_FLASH_BASE  (0x10000000UL)
+#   endif
+#   if !defined(CFG_ENV_OFFSET)
+#       define CFG_ENV_OFFSET  (0x0000e000UL)
+#   endif
+#else
+#   warning Where are you going with this?
+#   if !defined(CFG_FLASH_BASE)
+#       define CFG_FLASH_BASE  (0)
+#   endif
+#   if !defined(CFG_ENV_OFFSET)
+#       define CFG_ENV_OFFSET  (0)
+#   endif
 #endif
 
 #if !defined(CFG_ENV_ADDR)
-#define CFG_ENV_ADDR    (CFG_FLASH_BASE + CFG_ENV_OFFSET)
+#   define CFG_ENV_ADDR (CFG_FLASH_BASE + CFG_ENV_OFFSET)
 #endif
 
 #if !defined(CFG_ENV_SIZE)
-#define CFG_ENV_SIZE    (0x2000UL)
+#   define CFG_ENV_SIZE (0x2000UL)
 #endif
 
 typedef uint32_t crc32_t;
