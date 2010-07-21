@@ -28,8 +28,9 @@ extern int diminuto_alarm_check(void);
 
 /**
  * Install a SIGALRM signal handler in the caller.
+ * @param restart is true if interrupt system calls should be restarted.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_alarm_install(void);
+extern int diminuto_alarm_install(int restart);
 
 #endif

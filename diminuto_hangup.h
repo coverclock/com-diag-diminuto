@@ -28,8 +28,9 @@ extern int diminuto_hangup_check(void);
 
 /**
  * Install a SIGHUP signal handler in the caller.
+ * @param restart is true if interrupt system calls should be restarted.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_hangup_install(void);
+extern int diminuto_hangup_install(int restart);
 
 #endif

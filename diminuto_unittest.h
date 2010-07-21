@@ -24,8 +24,8 @@
 
 static int diminuto_unittest_errors = 0;
 
-#define CHECKPOINT() \
-    diminuto_log_log(LOG_NOTICE, "%s@%d: CHECKPOINT\n", __FILE__, __LINE__)
+#define CHECKPOINT(_STRING_) \
+    diminuto_log_log(LOG_NOTICE, "%s@%d: CHECKPOINT \"%s\"\n", __FILE__, __LINE__, _STRING_)
 
 /**
  * @def EXIT()

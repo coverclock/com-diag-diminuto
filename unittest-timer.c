@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
     int64_t computed;
 
     diminuto_core_enable();
-    diminuto_alarm_install();
+    diminuto_alarm_install(0);
 
     printf("%10s %10s %10s\n",
         "requested", "computed", "measured");
