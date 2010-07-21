@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -15,7 +15,7 @@
 
 static int signaled = 0;
 
-static void diminuto_handler(int signum)
+static void diminuto_hangup_handler(int signum)
 {
 	if (signum == SIGHUP) {
 		signaled = !0;
@@ -53,10 +53,16 @@ int diminuto_hangup_check(void)
     return result;
 }
 
-int diminuto_hangup_install(void)
+int diminuto_hangup_install(int restart)
 {
-    if (signal(SIGHUP, diminuto_handler) == SIG_ERR) {
-        diminuto_perror("diminuto_hangup_install: signal");
+    struct sigaction hangup;
+
+    memset(&hangup, 0, sizeof(hangup));
+    hangup.sa_handler = diminuto_hangup_handler;
+    hangup.sa_flags = restart ? SA_RESTART : 0;
+
+    if (sigaction(SIGHUP, &hangup, (struct sigaction *)0) < 0) {
+        diminuto_perror("diminuto_hangup_install: sigaction");
         return -1;
     }
 

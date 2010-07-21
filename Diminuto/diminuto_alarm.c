@@ -15,7 +15,7 @@
 
 static int signaled = 0;
 
-static void diminuto_handler(int signum)
+static void diminuto_alarm_handler(int signum)
 {
 	if (signum == SIGALRM) {
 		signaled = !0;
@@ -30,6 +30,8 @@ pid_t diminuto_alarm_signal(pid_t pid)
     } else if (kill(pid, SIGALRM) < 0) {
         diminuto_perror("diminuto_alarm_signal: kill");
         pid = -1;
+    } else {
+        /* Do nothing. */
     }
 
     return pid;
@@ -53,10 +55,16 @@ int diminuto_alarm_check(void)
     return mysignaled;
 }
 
-int diminuto_alarm_install(void)
+int diminuto_alarm_install(int restart)
 {
-    if (signal(SIGALRM, diminuto_handler) == SIG_ERR) {
-        diminuto_perror("diminuto_alarm_install: signal");
+    struct sigaction alarm;
+
+    memset(&alarm, 0, sizeof(alarm));
+    alarm.sa_handler = diminuto_alarm_handler;
+    alarm.sa_flags = restart ? SA_RESTART : 0;
+
+    if (sigaction(SIGALRM, &alarm, (struct sigaction *)0) < 0) {
+        diminuto_perror("diminuto_alarm_install: sigaction");
         return -1;
     }
 

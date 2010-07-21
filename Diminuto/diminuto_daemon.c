@@ -25,7 +25,7 @@
 
 static int received = 0;
 
-static int diminuto_received(void)
+static int diminuto_daemon_received(void)
 {
     int signum;
     sigset_t set;
@@ -44,7 +44,7 @@ static int diminuto_received(void)
     return signum;
 }
 
-static void diminuto_handler(int signum)
+static void diminuto_daemon_handler(int signum)
 {
     if ((signum == SIGALRM) || (signum == SIGCHLD)) {
         received = signum;
@@ -53,6 +53,51 @@ static void diminuto_handler(int signum)
     } else {
         /* Do nothing: not one of our signals. */
     }
+}
+
+static int diminuto_daemon_install(int signum)
+{
+    struct sigaction action;
+
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = diminuto_daemon_handler;
+
+    if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
+        diminuto_perror("diminuto_daemon_install: sigaction");
+        return -1;
+    }
+
+    return 0;
+}
+
+static int diminuto_daemon_ignore(int signum)
+{
+    struct sigaction action;
+
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIG_IGN;
+
+    if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
+        diminuto_serror("diminuto_daemon_ignore: sigaction");
+        return -1;
+    }
+
+    return 0;
+}
+
+static int diminuto_daemon_default(int signum)
+{
+    struct sigaction action;
+
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = SIG_DFL;
+
+    if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
+        diminuto_serror("diminuto_daemon_default: sigaction");
+        return -1;
+    }
+
+    return 0;
 }
 
 int diminuto_daemon(const char * file)
@@ -72,7 +117,7 @@ int diminuto_daemon(const char * file)
         /* Make sure we are not already a daemon. */
 
         if ((ppid = getppid())  < 0) {
-            diminuto_serror("diminuto_daemon: getppid");
+            diminuto_perror("diminuto_daemon: getppid");
             break;
         }
 
@@ -82,18 +127,15 @@ int diminuto_daemon(const char * file)
 
         /* Establish a way for the daemon child to notify us. */
 
-        if (signal(SIGUSR1, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGUSR1)");
+        if (diminuto_daemon_install(SIGUSR1) < 0) {
             break;
         }
 
-        if (signal(SIGCHLD, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGCHLD)");
+        if (diminuto_daemon_install(SIGCHLD) < 0) {
             break;
         }
 
-        if (signal(SIGALRM, diminuto_handler) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGALRM)");
+        if (diminuto_daemon_install(SIGALRM) < 0) {
             break;
         }
 
@@ -102,7 +144,7 @@ int diminuto_daemon(const char * file)
         received = 0;
 
         if ((pid = fork()) < 0) {
-            diminuto_serror("diminuto_daemon: fork");
+            diminuto_perror("diminuto_daemon: fork");
             break;
         }
 
@@ -117,14 +159,14 @@ int diminuto_daemon(const char * file)
         /* Wait for the daemon child to signal us. */
 
         if (pid > 0) {
-            if (diminuto_received() == 0) {
+            if (diminuto_daemon_received() == 0) {
                 alarm(10);
-                if (diminuto_received() == 0) {
+                if (diminuto_daemon_received() == 0) {
                     pause();
                 }
             }
             errno = ETIMEDOUT;
-            diminuto_serror("diminuto_daemon: alarm");
+            diminuto_perror("diminuto_daemon: alarm");
             break;
         }
 
@@ -145,7 +187,7 @@ int diminuto_daemon(const char * file)
         /* Find our parent. */
 
         if ((ppid = getppid()) < 0) {
-            diminuto_serror("diminuto_daemon: getppid");
+            diminuto_perror("diminuto_daemon: getppid");
             break;
         }
 
@@ -154,7 +196,7 @@ int diminuto_daemon(const char * file)
         if (file == (char *)0) {
             /* Do nothing: no lock file. */
         } else if (diminuto_lock_lock(file) < 0) {
-            diminuto_serror("diminuto_daemon: diminuto_lock");
+            diminuto_perror("diminuto_daemon: diminuto_lock");
             break;
         } else {
             /* Do nothing. */
@@ -164,19 +206,23 @@ int diminuto_daemon(const char * file)
 
         umask(0);
 
-        /* Orphan us from our controlling terminal and process group. */
-
-        if (setsid() < 0) {
-            diminuto_serror("diminuto_daemon: setsid");
-            break;
-        }
-
         /* Change to a directory that will always be there. */
 
         if (chdir("/") < 0) {
             diminuto_serror("diminuto_daemon: chdir");
             break;
         }
+
+        /* Orphan us from our controlling terminal and process group. */
+
+        if (setsid() < 0) {
+            diminuto_perror("diminuto_daemon: setsid");
+            break;
+        }
+
+        /*
+         * From this point on, assume no terminal output.
+         */
 
         /* Close all file descriptors except the big three. */
 
@@ -187,33 +233,27 @@ int diminuto_daemon(const char * file)
 
         /* Dissociate ourselves from any signal handlers. */
 
-        if (signal(SIGCHLD, SIG_DFL) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGCHLD)");
+        if (diminuto_daemon_default(SIGCHLD) < 0) {
             break;
         }
 
-        if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGTSTP)");
+        if (diminuto_daemon_ignore(SIGTSTP) < 0) {
             break;
         }
 
-        if (signal(SIGTTOU, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGTTOU)");
+        if (diminuto_daemon_ignore(SIGTTOU) < 0) {
             break;
         }
 
-        if (signal(SIGTTIN, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGTTIN)");
+        if (diminuto_daemon_ignore(SIGTTIN) < 0) {
             break;
         }
 
-        if (signal(SIGHUP, SIG_IGN) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGHUP)");
+        if (diminuto_daemon_ignore(SIGHUP) < 0) {
             break;
         }
 
-        if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
-            diminuto_serror("diminuto_daemon: signal(SIGTERM)");
+        if (diminuto_daemon_default(SIGTERM) < 0) {
             break;
         }
 
