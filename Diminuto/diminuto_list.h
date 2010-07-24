@@ -309,4 +309,16 @@ extern diminuto_list * diminuto_list_apply(
         ? (diminuto_list *)0 \
         : diminuto_list_remove(diminuto_list_next(diminuto_list_root(_ROOTP_))))
 
+/**
+ * @def diminuto_list_replace(_OLDP_, _NEWP_)
+ * Replace the node @a _OLDP_ with the node @a _NEWP_. If @a _OLDP_ is the
+ * root of its list, @a _NEWP_ is now the root of its list.
+ */
+#define diminuto_list_replace(_OLDP_, _NEWP_) \
+    (diminuto_list_insert(_OLDP_, _NEWP_), \
+        (diminuto_list_isroot(_OLDP_) \
+            ? diminuto_list_reroot(_NEWP_) \
+            : _NEWP_), \
+        diminuto_list_remove(_OLDP_))
+
 #endif
