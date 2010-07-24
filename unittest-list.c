@@ -21,6 +21,9 @@ static diminuto_list head;
 static diminuto_list node[3];
 static char * name[countof(node)] = { "node0", "node1", "node2" };
 
+/*
+ * Example FIND functor.
+ */
 static int find(void * datap, void * contextp)
 {
     return (datap != (void *)0)
@@ -28,6 +31,9 @@ static int find(void * datap, void * contextp)
         : 0;
 }
 
+/*
+ * Example COUNT functor.
+ */
 static int count(void * datap, void * contextp)
 {
     if (datap == (void *)0) {
