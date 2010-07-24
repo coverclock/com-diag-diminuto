@@ -21,11 +21,21 @@ static diminuto_list head;
 static diminuto_list node[3];
 static char * name[countof(node)] = { "node0", "node1", "node2" };
 
-static int find(diminuto_list * nodep, void * contextp)
+static int find(void * datap, void * contextp)
 {
-    return (!diminuto_list_isroot(nodep))
-        ? strcmp((const char *)contextp, (const char *)diminuto_list_data(nodep))
+    return (datap != (void *)0)
+        ? strcmp((const char *)contextp, (const char *)datap)
         : 0;
+}
+
+static int count(void * datap, void * contextp)
+{
+    if (datap == (void *)0) {
+        return 0;
+    } else {
+        ++(*((int *)contextp));
+        return 1;
+    }
 }
 
 static void initialize(void)
@@ -330,9 +340,7 @@ int main(void)
     }
 
     {
-        /* Data and Functors */
-
-        int count = 0;
+        /* Data and Functors 1 */
 
         initialize();
 
@@ -360,6 +368,31 @@ int main(void)
         while (!diminuto_list_isempty(&head)) {
             diminuto_list_remove(diminuto_list_next(&head));
         }
+    }
+
+    {
+        /* Data and Functors 2 */
+
+        int total;
+
+        initialize();
+
+        total = 0;
+        ASSERT(diminuto_list_apply(&count, diminuto_list_next(&head), &total) == &head);
+        ASSERT(total == 0);
+
+        diminuto_list_insert(
+            diminuto_list_insert(
+                diminuto_list_insert(&head, &node[0]),
+            &node[1]),
+        &node[2]);
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+
+        total = 0;
+        ASSERT(diminuto_list_apply(&count, diminuto_list_next(&head), &total) == &head);
+        ASSERT(total == 3);
+
     }
 
     {

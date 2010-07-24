@@ -220,7 +220,7 @@ extern diminuto_list * diminuto_list_reroot(
 );
 
 typedef int (diminuto_list_functor)(
-    diminuto_list * nodep,
+    void * datap,
     void * contextp
 );
 
@@ -229,9 +229,11 @@ typedef int (diminuto_list_functor)(
  * returns a positive number, the functor is then applied to the next
  * node. If the functor returns a negative number, the functor is then
  * applied to the previous node. If the functor returns zero, a pointer
- * to the current node is returned. A pointer to the the current
+ * to the current node is returned. A pointer to the the data of the current
  * node and a pointer to a caller supplied context pointer is passed
- * to the functor each time it is called.
+ * to the functor each time it is called. If the functor needs to treat
+ * the root node specially, it must recognize it solely from its data
+ * pointer.
  * @param funcp points to the functor.
  * @param nodep points to the initial node.
  * @param contextp points to the caller provided context or null.
