@@ -383,6 +383,9 @@ unittest-list:	unittest-list.c lib$(PROJECT).so
 unittest-ipc:	unittest-ipc.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
+unittest-string:	unittest-string.c lib$(PROJECT).so
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+
 ########## Drivers
 
 .PHONY:	drivers drivers-clean
