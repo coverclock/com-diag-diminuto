@@ -395,5 +395,51 @@ int main(void)
 
     }
 
+    {
+        /* Replace 1 */
+
+        diminuto_list temp;
+
+        diminuto_list_init(&temp);
+
+        initialize();
+
+        diminuto_list_insert(
+            diminuto_list_insert(
+                diminuto_list_insert(&head, &node[0]),
+            &node[1]),
+        &node[2]);
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+
+        diminuto_list_replace(&node[1], &temp);
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &temp, &node[2], &head, END);
+    }
+
+    {
+        /* Replace 2 */
+
+        diminuto_list temp;
+
+        diminuto_list_init(&temp);
+
+        initialize();
+
+        diminuto_list_insert(
+            diminuto_list_insert(
+                diminuto_list_insert(&head, &node[0]),
+            &node[1]),
+        &node[2]);
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+
+        /* Another example of moving all nodes from one root to another. */
+
+        diminuto_list_replace(&head, &temp);
+
+        audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, END);
+    }
+
     return 0;
 }
