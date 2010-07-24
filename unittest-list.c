@@ -10,6 +10,7 @@
 
 #include "diminuto_list.h"
 #include "diminuto_countof.h"
+#include "diminuto_comparator.h"
 #include "diminuto_unittest.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -26,9 +27,7 @@ static char * name[countof(node)] = { "node0", "node1", "node2" };
  */
 static int find(void * datap, void * contextp)
 {
-    return (datap != (void *)0)
-        ? strcmp((const char *)contextp, (const char *)datap)
-        : 0;
+    return datap ? diminuto_compare_strings(contextp, datap) : 0;
 }
 
 /*
@@ -36,12 +35,7 @@ static int find(void * datap, void * contextp)
  */
 static int count(void * datap, void * contextp)
 {
-    if (datap == (void *)0) {
-        return 0;
-    } else {
-        ++(*((int *)contextp));
-        return 1;
-    }
+    return datap ? (++(*((int *)contextp)), 1) : 0;
 }
 
 static void initialize(void)
