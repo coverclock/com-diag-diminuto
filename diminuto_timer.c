@@ -12,7 +12,7 @@
 #include "diminuto_log.h"
 #include <sys/time.h>
 
-static uint64_t diminuto_timer(int which, uint64_t microseconds, int periodic)
+static diminuto_usec_t diminuto_timer(int which, diminuto_usec_t microseconds, int periodic)
 {
     struct itimerval timer;
     struct itimerval remaining;
@@ -40,12 +40,12 @@ static uint64_t diminuto_timer(int which, uint64_t microseconds, int periodic)
     return microseconds;
 }
 
-uint64_t diminuto_timer_oneshot(uint64_t microseconds)
+diminuto_usec_t diminuto_timer_oneshot(diminuto_usec_t microseconds)
 {
     return diminuto_timer(ITIMER_REAL, microseconds, 0);
 }
 
-uint64_t diminuto_timer_periodic(uint64_t microseconds)
+diminuto_usec_t diminuto_timer_periodic(diminuto_usec_t microseconds)
 {
     return diminuto_timer(ITIMER_REAL, microseconds, !0);
 }

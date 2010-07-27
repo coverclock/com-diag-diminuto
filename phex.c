@@ -133,7 +133,7 @@ int main(int argc, char * argv[])
     FILE * out = stdout;
     int opt;
     extern char * optarg;
-    uint64_t value;
+    diminuto_unsigned_t value;
     int ch;
 
     program = strrchr(argv[0], '/');

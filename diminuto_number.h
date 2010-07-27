@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
+#include "diminuto_types.h"
 
 /**
  * Parses a string in a strtoll-like manner, returning a pointer to the
@@ -27,7 +27,7 @@
  * @return a pointer to the first non-numeric character encountered.
  * @see strtoll(3)
  */
-extern const char * diminuto_number_unsigned(const char * s, uint64_t * p);
+extern const char * diminuto_number_unsigned(const char * s, diminuto_unsigned_t * p);
 
 /**
  * Parses a string in a strtoull-like manner, returning a pointer to the
@@ -43,7 +43,7 @@ extern const char * diminuto_number_unsigned(const char * s, uint64_t * p);
  * @return a pointer to the first non-numeric character encountered.
  * @see strtoll(3)
  */
-extern const char * diminuto_number_signed(const char * s, int64_t * p);
+extern const char * diminuto_number_signed(const char * s, diminuto_signed_t * p);
 
 #define diminuto_number diminuto_number_unsigned
 

@@ -50,7 +50,7 @@ int f(int depth, int limit)
 
 int main(int argc, char ** argv)
 {
-    uint64_t value;
+    diminuto_unsigned_t value;
 
     ASSERT(argc == 2);
     ASSERT(*diminuto_number(argv[1], &value) == '\0');

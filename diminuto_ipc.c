@@ -94,7 +94,7 @@ int diminuto_ipc_set_debug(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
 }
 
-int diminuto_ipc_set_linger(int fd, uint64_t microseconds)
+int diminuto_ipc_set_linger(int fd, diminuto_usec_t microseconds)
 {
     struct linger opt;
 
@@ -114,9 +114,9 @@ int diminuto_ipc_set_linger(int fd, uint64_t microseconds)
     return fd;
 }
 
-uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
+diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t index)
 {
-    uint32_t address = 0;
+    diminuto_ipv4_t address = 0;
     struct  hostent * hostp;
     struct in_addr inaddr;
     size_t limit;
@@ -149,12 +149,12 @@ uint32_t diminuto_ipc_address_index(const char * hostname, size_t index)
     return address;
 }
 
-uint32_t diminuto_ipc_address(const char * hostname)
+diminuto_ipv4_t diminuto_ipc_address(const char * hostname)
 {
     return diminuto_ipc_address_index(hostname, 0);
 }
 
-const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t length)
+const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)
 {
     struct in_addr inaddr;
     char * dot;
@@ -169,19 +169,19 @@ const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t le
     return buffer;
 }
 
-uint16_t diminuto_ipc_port(const char * service, const char * protocol)
+diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
 {
-    uint16_t port = 0;
+    diminuto_port_t port = 0;
     struct servent * portp;
     size_t length;
-    uint64_t temp;
+    diminuto_unsigned_t temp;
     const char * end;
 
     if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
         port = ntohs(portp->s_port);
     } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
         /* Do nothing: might be an unknown service. */
-    } else if (temp > (uint16_t)~0) {
+    } else if (temp > (diminuto_port_t)~0) {
         errno = EINVAL;
         diminuto_perror("diminuto_ipc_port: magnitude");
         port = 0;
@@ -192,7 +192,7 @@ uint16_t diminuto_ipc_port(const char * service, const char * protocol)
     return port;
 }
 
-int diminuto_ipc_stream_provider_backlog(uint16_t port, int backlog)
+int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlog)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -225,12 +225,12 @@ int diminuto_ipc_stream_provider_backlog(uint16_t port, int backlog)
     return fd;
 }
 
-int diminuto_ipc_stream_provider(uint16_t port)
+int diminuto_ipc_stream_provider(diminuto_port_t port)
 {
     return diminuto_ipc_stream_provider_backlog(port, SOMAXCONN);
 }
 
-int diminuto_ipc_stream_accept_address(int fd, uint32_t * addressp)
+int diminuto_ipc_stream_accept_address(int fd, diminuto_ipv4_t * addressp)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -245,7 +245,7 @@ int diminuto_ipc_stream_accept_address(int fd, uint32_t * addressp)
         diminuto_perror("diminuto_ipc_accept_address: length");
         newfd = -2;
     } else {
-        if (addressp != (uint32_t *)0) {
+        if (addressp != (diminuto_ipv4_t *)0) {
             *addressp = ntohl(sa.sin_addr.s_addr);
         }
     }
@@ -255,11 +255,11 @@ int diminuto_ipc_stream_accept_address(int fd, uint32_t * addressp)
 
 int diminuto_ipc_stream_accept(int fd)
 {
-    uint32_t address;
+    diminuto_ipv4_t address;
     return diminuto_ipc_stream_accept_address(fd, &address);
 }
 
-int diminuto_ipc_stream_consumer(uint32_t address, uint16_t port)
+int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -283,7 +283,7 @@ int diminuto_ipc_stream_consumer(uint32_t address, uint16_t port)
     return fd;
 }
 
-int diminuto_ipc_datagram_peer(uint16_t port)
+int diminuto_ipc_datagram_peer(diminuto_port_t port)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -320,7 +320,7 @@ ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_
     return diminuto_fd_write(fd, buffer, min, max);
 }
 
-ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags)
+ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)
 {
     ssize_t total;
     const char * bp;
@@ -334,10 +334,10 @@ ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, 
     if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
-        if (addressp != (uint32_t *)0) {
+        if (addressp != (diminuto_ipv4_t *)0) {
             *addressp = ntohl(sa.sin_addr.s_addr);
         }
-        if (portp != (uint16_t *)0) {
+        if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(sa.sin_port);
         }
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { 
@@ -349,7 +349,7 @@ ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, 
     return total;
 }
 
-ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags)
+ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags)
 {
     ssize_t total;
     const char * bp;
@@ -375,12 +375,12 @@ ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t siz
     return total;
 }
 
-ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp)
+ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     return diminuto_ipc_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
 }
 
-ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port)
+ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port)
 {
     return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
 }

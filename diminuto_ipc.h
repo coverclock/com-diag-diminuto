@@ -14,8 +14,7 @@
  * IPV4 sockets. It was ported from the Desperado library.
  */
 
-#include <stdint.h>
-#include <sys/types.h>
+#include "diminuto_types.h"
 
 /**
  * Convert a hostname or an IPV4 address string in dot notation into an IPV4
@@ -25,7 +24,7 @@
  * @param index indicates which IP address to return.
  * @return the IPV4 address or 0 if no such hostname or the string is invalid.
  */
-extern uint32_t diminuto_ipc_address_index(const char * hostname, size_t index);
+extern diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t index);
 
 /**
  * Convert a hostname or an IPV4 address string in dot notation into an IPV4
@@ -35,7 +34,7 @@ extern uint32_t diminuto_ipc_address_index(const char * hostname, size_t index);
  * @param index indicates which IP address to return.
  * @return the IPV4 address or 0 if no such hostname or the string is invalid.
  */
-extern uint32_t diminuto_ipc_address(const char * hostname);
+extern diminuto_ipv4_t diminuto_ipc_address(const char * hostname);
 
 /**
  * Convert a service name or a port number string into a port in host byte
@@ -44,7 +43,7 @@ extern uint32_t diminuto_ipc_address(const char * hostname);
  * @param protocol points to the protocol name (e.g. "udp" or "tcp").
  * @return the port number or 0 if no such service exists for the protocol.
  */
-extern uint16_t diminuto_ipc_port(const char * service, const char * protocol);
+extern diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol);
 
 /**
  * Convert an IPV4 address in host byte order into a printable IP address
@@ -53,7 +52,7 @@ extern uint16_t diminuto_ipc_port(const char * service, const char * protocol);
  * @param buffer points to the buffer into to whcih the string is stored.
  * @param length is the length of the buffer in bytes.
  */
-extern const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, size_t length);
+extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
 
 /**
  * Create a provider-side stream socket with a specified connection backlog.
@@ -61,7 +60,7 @@ extern const char * diminuto_ipc_dotnotation(uint32_t address, char * buffer, si
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc_stream_provider_backlog(uint16_t port, int backlog);
+extern int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlog);
 
 
 /**
@@ -70,7 +69,7 @@ extern int diminuto_ipc_stream_provider_backlog(uint16_t port, int backlog);
  * in host byte order.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc_stream_provider(uint16_t port);
+extern int diminuto_ipc_stream_provider(diminuto_port_t port);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -80,7 +79,7 @@ extern int diminuto_ipc_stream_provider(uint16_t port);
  * host byte order.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-extern int diminuto_ipc_stream_accept_address(int fd, uint32_t * addressp);
+extern int diminuto_ipc_stream_accept_address(int fd, diminuto_ipv4_t * addressp);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -96,14 +95,14 @@ extern int diminuto_ipc_stream_accept(int fd);
  * @param port is the provider's port in host byte order.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc_stream_consumer(uint32_t address, uint16_t port);
+extern int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port);
 
 /**
  * Request a peer datagram socket.
  * @param port is the port number in host byte order.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc_datagram_peer(uint16_t port);
+extern int diminuto_ipc_datagram_peer(diminuto_port_t port);
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.
@@ -177,7 +176,7 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
  * lingering has granularity of seconds), or 0 for no lingering.
  * @return 0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_linger(int fd, uint64_t microseconds);
+extern int diminuto_ipc_set_linger(int fd, diminuto_usec_t microseconds);
 
 /* (Many other options are possible, but these are the ones I have used.) */
 
@@ -219,7 +218,7 @@ extern ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp, int flags);
+extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags);
 
 /**
  * Receive a datagram from a datagram socket using no flags.
@@ -231,7 +230,7 @@ extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, uint32_t * addressp, uint16_t * portp);
+extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
  * Send a datagram to a datagram socket using the specified flags.
@@ -243,7 +242,7 @@ extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size,
  * @param flags is the sendto(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port, int flags);
+extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags);
 
 /**
  * Send a datagram to a datagram socket using no flags.
@@ -254,6 +253,6 @@ extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, siz
  * @param port is the receiver's port.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, uint32_t address, uint16_t port);
+extern ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port);
 
 #endif

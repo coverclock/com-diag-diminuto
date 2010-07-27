@@ -72,7 +72,7 @@ static int operate(
     size_t size,
     void ** addressp,
     size_t * lengthp,
-    uint64_t * valuep
+    diminuto_unsigned_t * valuep
 ) {
     void * effective;
 
@@ -150,7 +150,7 @@ static void usage(void)
 
 int main(int argc, char * argv[])
 {
-    uint64_t value = 0;
+    diminuto_unsigned_t value = 0;
     uintptr_t address = 0;
     size_t length = 0;
     void * base = 0;

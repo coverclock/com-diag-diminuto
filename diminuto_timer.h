@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
+#include "diminuto_types.h"
 
 /**
  * Start a timer for the specified number of microseconds. When the timer
@@ -25,7 +25,7 @@
  * @return the number of microseconds remaining in prior timer if
  * a timer was already running.
  */
-extern uint64_t diminuto_timer_oneshot(uint64_t microseconds);
+extern diminuto_usec_t diminuto_timer_oneshot(diminuto_usec_t microseconds);
 
 /**
  * Start an periodic timer for the specified number of microseconds. When
@@ -39,6 +39,6 @@ extern uint64_t diminuto_timer_oneshot(uint64_t microseconds);
  * @return the number of microseconds remaining in the prior timer if
  * a timer was already running.
  */
-extern uint64_t diminuto_timer_periodic(uint64_t microseconds);
+extern diminuto_usec_t diminuto_timer_periodic(diminuto_usec_t microseconds);
 
 #endif

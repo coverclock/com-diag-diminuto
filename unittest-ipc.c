@@ -19,13 +19,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-static const uint16_t PORT1 = 65535;
-static const uint16_t PORT2 = 65534;
+static const diminuto_port_t PORT1 = 65535;
+static const diminuto_port_t PORT2 = 65534;
 
 int main(void)
 {
     {
-        uint32_t address;
+        diminuto_ipv4_t address;
         char buffer[64];
 
         address = diminuto_ipc_address("127.0.0.1");
@@ -44,7 +44,7 @@ int main(void)
     }
 
     {
-        uint16_t port;
+        diminuto_port_t port;
 
         port = diminuto_ipc_port("80", NULL);
         EXPECT(port == 80);
@@ -148,8 +148,8 @@ int main(void)
         const char * MSG1 = "Chip Overclock";
         const char * MSG2 = "Digital Aggregates Corporation";
         char buffer[64];
-        uint32_t address = 0;
-        uint16_t port = 0;
+        diminuto_ipv4_t address = 0;
+        diminuto_port_t port = 0;
 
         EXPECT((fd1 = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT((fd2 = diminuto_ipc_datagram_peer(PORT2)) >= 0);
@@ -173,8 +173,8 @@ int main(void)
     {
         int fd;
         char buffer[1];
-        uint32_t address = 0x12345678;
-        uint16_t port = 0x9abc;
+        diminuto_ipv4_t address = 0x12345678;
+        diminuto_port_t port = 0x9abc;
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
@@ -188,8 +188,8 @@ int main(void)
     {
         int fd;
         char buffer[1];
-        uint32_t address = 0x12345678;
-        uint16_t port = 0x9abc;
+        diminuto_ipv4_t address = 0x12345678;
+        diminuto_port_t port = 0x9abc;
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT((diminuto_ipc_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
@@ -202,10 +202,10 @@ int main(void)
     {
         int fd;
         char buffer[1];
-        uint32_t address = 0x12345678;
-        uint16_t port = 0x9abc;
-        uint64_t before;
-        uint64_t after;
+        diminuto_ipv4_t address = 0x12345678;
+        diminuto_port_t port = 0x9abc;
+        diminuto_usec_t before;
+        diminuto_usec_t after;
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);
@@ -228,7 +228,7 @@ int main(void)
 #if 0
     {
         uint64_t address;
-        uint16_t port;
+        diminuto_port_t port;
         int rendezvous;
         int consumer;
         int producer;
