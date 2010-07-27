@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
+#include "diminuto_types.h"
 
 /**
  * Delay the calling process for the specified number of microseconds.
@@ -25,7 +25,7 @@
  * @return the number of microseconds remaining in the delay duration if
  * the function returned prematurely.
  */
-extern uint64_t diminuto_delay(uint64_t microseconds, int interruptable);
+extern diminuto_usec_t diminuto_delay(diminuto_usec_t microseconds, int interruptable);
 
 /**
  * Force a context switch without otherwise blocking.

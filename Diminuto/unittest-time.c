@@ -16,11 +16,11 @@
 
 int main(int argc, char ** argv)
 {
-    uint64_t then;
-    uint64_t now;
+    diminuto_usec_t then;
+    diminuto_usec_t now;
     int64_t measured;
-    uint64_t requested;
-    uint64_t remaining;
+    diminuto_usec_t requested;
+    diminuto_usec_t remaining;
     int64_t claimed;
 
     diminuto_core_enable();

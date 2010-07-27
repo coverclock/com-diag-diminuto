@@ -16,7 +16,7 @@
 int main(int argc, char ** argv)
 {
 	const char * p;
-	uint64_t n;
+	diminuto_unsigned_t n;
 
     errno = 0;
 

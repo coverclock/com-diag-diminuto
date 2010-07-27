@@ -11,13 +11,13 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
+#include "diminuto_types.h"
 
 /**
  * Return the system clock time in microseconds since the Epoch.
  * @return the number of microseconds elapsed since the Epoch or 0 with
  * errno set if an error occurred.
  */
-extern uint64_t diminuto_time(void);
+extern diminuto_usec_t diminuto_time(void);
 
 #endif

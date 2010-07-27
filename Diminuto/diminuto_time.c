@@ -13,10 +13,10 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-uint64_t diminuto_time()
+diminuto_usec_t diminuto_time()
 {
     struct timeval elapsed;
-    uint64_t microseconds = 0ULL;
+    diminuto_usec_t microseconds = 0ULL;
 
     if (gettimeofday(&elapsed, (struct timezone *)0) < 0) {
         diminuto_perror("diminuto_time: gettimeofday");

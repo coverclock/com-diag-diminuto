@@ -15,7 +15,7 @@
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-uint64_t diminuto_delay(uint64_t microseconds, int interruptable)
+diminuto_usec_t diminuto_delay(diminuto_usec_t microseconds, int interruptable)
 {
     struct timespec delay;
     struct timespec remaining;
