@@ -28,13 +28,9 @@ extern diminuto_heap_free_func * diminuto_heap_free_funcp;
     (diminuto_heap_free_funcp = (_FREE_))
 
 #define diminuto_heap_alloc(_SIZE_) \
-    (diminuto_heap_alloc_funcp != (diminuto_heap_alloc_func *)0) \
-        ? (*diminuto_heap_alloc_funcp)(_SIZE_) \
-        : malloc(_SIZE_)
+    ((*(diminuto_heap_alloc_funcp ? diminuto_heap_alloc_funcp : &malloc))(_SIZE_))
 
 #define diminuto_heap_free(_POINTER_) \
-    (diminuto_heap_free_funcp != (diminuto_heap_free_func *)0) \
-        ? (*diminuto_heap_free_funcp)(_POINTER_) \
-        : free(_POINTER_)
+    ((*(diminuto_heap_free_funcp ? diminuto_heap_free_funcp : &free))(_POINTER_))
 
 #endif
