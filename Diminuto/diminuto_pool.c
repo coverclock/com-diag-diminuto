@@ -24,7 +24,7 @@ diminuto_pool * diminuto_pool_fini(diminuto_pool * poolp)
 {
     poolp = diminuto_list_root(poolp);
     while (!diminuto_list_isempty(poolp)) {
-        diminuto_heap_free(diminuto_list_next(poolp));
+        diminuto_heap_free(diminuto_list_remove(diminuto_list_next(poolp)));
     }
 
     return poolp;
@@ -32,13 +32,20 @@ diminuto_pool * diminuto_pool_fini(diminuto_pool * poolp)
 
 void * diminuto_pool_alloc(diminuto_pool * poolp)
 {
+    void * voidp;
     diminuto_list * nodep;
 
     poolp = diminuto_list_root(poolp);
-    nodep = (diminuto_list_isempty(poolp))
-                ? diminuto_heap_alloc((size_t)diminuto_list_data(poolp))
-                : diminuto_list_remove(diminuto_list_next(poolp));
-    diminuto_list_dataset(nodep, poolp);
+    if (!diminuto_list_isempty(poolp)) {
+        nodep = diminuto_list_remove(diminuto_list_next(poolp));
+    } else {
+        voidp = diminuto_heap_alloc((size_t)diminuto_list_data(poolp));
+        if (voidp == (void *)0) {
+            perror("malloc");
+            return voidp;
+        }
+        nodep = diminuto_list_datainit((diminuto_list *)voidp, poolp);
+    }
 
     return (void *)(((char *)nodep) + sizeof(diminuto_list));
 }
