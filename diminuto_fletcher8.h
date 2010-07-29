@@ -11,8 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
-#include <sys/types.h>
+#include "diminuto_types.h"
 
 /**
  * Compute a running Fletcher 8-bit checksum as described in RFC1146. Two

@@ -11,8 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
-#include <sys/types.h>
+#include "diminuto_types.h"
 
 /**
  * Map a region of physical address space to user virtual address space.

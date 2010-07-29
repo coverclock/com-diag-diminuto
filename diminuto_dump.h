@@ -11,9 +11,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_types.h"
 #include <stdio.h>
-#include <stdint.h>
-#include <sys/types.h>
 
 /**
  * Dumps a block of memory in hexadecimal along with printable characters.
