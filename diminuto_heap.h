@@ -21,6 +21,12 @@ typedef void (diminuto_heap_free_func)(void * pointer);
 extern diminuto_heap_alloc_func * diminuto_heap_alloc_funcp;
 extern diminuto_heap_free_func * diminuto_heap_free_funcp;
 
+#define diminuto_heap_alloc_set(_ALLOC_) \
+    (diminuto_heap_alloc_funcp = (_ALLOC_))
+
+#define diminuto_heap_free_set(_FREE_) \
+    (diminuto_heap_free_funcp = (_FREE_))
+
 #define diminuto_heap_alloc(_SIZE_) \
     (diminuto_heap_alloc_funcp != (diminuto_heap_alloc_func *)0) \
         ? (*diminuto_heap_alloc_funcp)(_SIZE_) \
