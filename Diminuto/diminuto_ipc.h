@@ -55,6 +55,28 @@ extern diminuto_port_t diminuto_ipc_port(const char * service, const char * prot
 extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
 
 /**
+ * Return the address and port of the near end of the socket if it can be
+ * determined. If it cannot be determine, the address and port variables
+ * will remain unchanged.
+ * @param fd is a socket.
+ * @param addressp points to where the address will be stored.
+ * @param portp points to where the port will be stored.
+ * @return 0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+
+/**
+ * Return the address and port of the far end of the socket if it can be
+ * determined. If it cannot be determine, the address and port variables
+ * will remain unchanged.
+ * @param fd is a socket.
+ * @param addressp points to where the address will be stored.
+ * @param portp points to where the port will be stored.
+ * @return 0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+
+/**
  * Create a provider-side stream socket with a specified connection backlog.
  * @param port is the port number at which connection requests will rendezvous.
  * @param backlog is the limit to how many incoming connections may be queued.

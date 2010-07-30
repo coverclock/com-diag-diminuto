@@ -384,3 +384,53 @@ ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, dim
 {
     return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
 }
+
+static void extract(struct sockaddr_in * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+}
+
+int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    int rc;
+    struct sockaddr_in sa;
+    socklen_t length;
+
+    length = sizeof(sa);
+    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("getsockname");
+    } else if (sa.sin_family != AF_INET) {
+        /* Do nothing. */
+    } else {
+        if (addressp != (diminuto_ipv4_t *)0) {
+            *addressp = ntohl(sa.sin_addr.s_addr);
+        }
+        if (portp != (diminuto_port_t *)0) {
+            *portp = ntohs(sa.sin_port);
+        }
+    }
+
+    return rc;
+}
+
+int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    int rc;
+    struct sockaddr_in sa;
+    socklen_t length;
+
+    length = sizeof(sa);
+    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("getpeername");
+    } else if (sa.sin_family != AF_INET) {
+        /* Do nothing. */
+    } else {
+        if (addressp != (diminuto_ipv4_t *)0) {
+            *addressp = ntohl(sa.sin_addr.s_addr);
+        }
+        if (portp != (diminuto_port_t *)0) {
+            *portp = ntohs(sa.sin_port);
+        }
+    }
+
+    return rc;
+}

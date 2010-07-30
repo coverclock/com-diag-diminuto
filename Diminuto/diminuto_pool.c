@@ -41,7 +41,7 @@ void * diminuto_pool_alloc(diminuto_pool * poolp)
     } else {
         voidp = diminuto_heap_alloc((size_t)diminuto_list_data(poolp));
         if (voidp == (void *)0) {
-            perror("malloc");
+            diminuto_perror("malloc");
             return voidp;
         }
         nodep = diminuto_list_datainit((diminuto_list *)voidp, poolp);
