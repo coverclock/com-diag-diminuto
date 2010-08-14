@@ -474,5 +474,27 @@ int main(void)
         audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, END);
     }
 
+    {
+        int ii;
+        diminuto_list * np;
+
+        /* Iteration */
+
+        initialize();
+
+        for (ii = 0; ii < countof(node); ++ii) {
+            diminuto_list_insert(diminuto_list_prev(&head), &node[ii]);
+        }
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+
+        ii = 0;
+        for (np = diminuto_list_next(&head); !diminuto_list_isroot(np); np = diminuto_list_next(np)) {
+            ASSERT(np == &node[ii++]);
+        }
+
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+    }
+
     return 0;
 }

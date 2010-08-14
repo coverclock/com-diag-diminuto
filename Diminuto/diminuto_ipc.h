@@ -56,22 +56,26 @@ extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buf
 
 /**
  * Return the address and port of the near end of the socket if it can be
- * determined. If it cannot be determine, the address and port variables
+ * determined. If it cannot be determined, the address and port variables
  * will remain unchanged.
  * @param fd is a socket.
- * @param addressp points to where the address will be stored.
- * @param portp points to where the port will be stored.
+ * @param addressp if non-NULL points to where the address will be stored
+ * in host byte order.
+ * @param portp if non-NULL points to where the port will be stored
+ * in host byte order.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
  * Return the address and port of the far end of the socket if it can be
- * determined. If it cannot be determine, the address and port variables
+ * determined. If it cannot be determined, the address and port variables
  * will remain unchanged.
  * @param fd is a socket.
- * @param addressp points to where the address will be stored.
- * @param portp points to where the port will be stored.
+ * @param addressp if non-NULL points to where the address will be stored
+ * in host byte order.
+ * @param portp if non-NULL points to where the port will be stored
+ * in host byte order.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
@@ -95,21 +99,15 @@ extern int diminuto_ipc_stream_provider(diminuto_port_t port);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket.
+ * stream socket. Optionally return the address and port of the requestor.
  * @param fd is the provider-side stream socket.
- * @param addressp is where the consumers's IPV4 address will be stored in
- * host byte order.
+ * @param addressp if non-NULL points to where the address will be stored
+ * in host byte order.
+ * @param portp if non-NULL points to where the port will be stored
+ * in host byte order.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-extern int diminuto_ipc_stream_accept_address(int fd, diminuto_ipv4_t * addressp);
-
-/**
- * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket.
- * @param fd is the provider-side stream socket.
- * @return a data stream socket to the consumer or <0 if an error occurred.
- */
-extern int diminuto_ipc_stream_accept(int fd);
+extern int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
  * Request a consumer-side stream socket to a provider.
@@ -232,11 +230,14 @@ extern ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min
 
 /**
  * Receive a datagram from a datagram socket using the specified flags.
+ * Optionally return the address and port of the sender.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp points to where the sender's address is stored or NULL.
- * @param portp points to where the sender's port is stored or NULL.
+ * @param addressp if non-NULL points to where the address will be stored
+ * in host byte order.
+ * @param portp if non-NULL points to where the port will be stored
+ * in host byte order.
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
@@ -244,11 +245,14 @@ extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t
 
 /**
  * Receive a datagram from a datagram socket using no flags.
+ * Optionally return the address and port of the sender.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp points to where the sender's address is stored or NULL.
- * @param portp points to where the sender's port is stored or NULL.
+ * @param addressp if non-NULL points to where the address will be stored
+ * in host byte order.
+ * @param portp if non-NULL points to where the port will be stored
+ * in host byte order.
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
