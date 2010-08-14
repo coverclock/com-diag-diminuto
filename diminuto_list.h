@@ -170,6 +170,22 @@ extern diminuto_list * diminuto_list_init(
 );
 
 /**
+ * @def DIMINUTO_LIST_INIT
+ * Generate a storage initializer for the node @a _NODEP_.
+ */
+#define DIMINUTO_LIST_INIT(_NODEP_) \
+    { _NODEP_, _NODEP_, _NODEP_, (void *)0 }
+
+
+/**
+ * @def DIMINUTO_LIST_DATAINIT
+ * Generate a storage initializer for the node @a _NODEP and data pointer
+ * @a _DATAP_.
+ */
+#define DIMINUTO_LIST_DATAINIT(_NODEP_, _DATAP_) \
+    { _NODEP_, _NODEP_, _NODEP_, _DATAP_ }
+
+/**
  * @def diminuto_list_datainit(_NODEP_, _DATAP_)
  * Initialize the node pointed to by @a _NODEP_ and set its data pointer
  * to the address @a _DATAP_. Returns the pointer to the node.

@@ -24,6 +24,25 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+static int identify(struct sockaddr_in * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp) {
+    int result = 0;
+
+    if (sap->sin_family == AF_INET) {
+        if (addressp != (diminuto_ipv4_t *)0) {
+            *addressp = ntohl(sap->sin_addr.s_addr);
+        }
+        if (portp != (diminuto_port_t *)0) {
+            *portp = ntohs(sap->sin_port);
+        }
+    } else {
+        result = -1;
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc: sin_family");
+    }
+
+    return result;
+}
+
 int diminuto_ipc_close(int fd)
 {
     if (close(fd) < 0) {
@@ -230,7 +249,7 @@ int diminuto_ipc_stream_provider(diminuto_port_t port)
     return diminuto_ipc_stream_provider_backlog(port, SOMAXCONN);
 }
 
-int diminuto_ipc_stream_accept_address(int fd, diminuto_ipv4_t * addressp)
+int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     struct sockaddr_in sa;
     socklen_t length;
@@ -238,25 +257,17 @@ int diminuto_ipc_stream_accept_address(int fd, diminuto_ipv4_t * addressp)
 
     length = sizeof(sa);
     if ((newfd = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipc_accept_address: accept");
+        diminuto_perror("diminuto_ipc_accept: accept");
         newfd = -1;
     } else if (length != sizeof(sa)) {
         errno = EINVAL;
-        diminuto_perror("diminuto_ipc_accept_address: length");
+        diminuto_perror("diminuto_ipc_accept: length");
         newfd = -2;
     } else {
-        if (addressp != (diminuto_ipv4_t *)0) {
-            *addressp = ntohl(sa.sin_addr.s_addr);
-        }
+        identify(&sa, addressp, portp);
     }
    
     return newfd;
-}
-
-int diminuto_ipc_stream_accept(int fd)
-{
-    diminuto_ipv4_t address;
-    return diminuto_ipc_stream_accept_address(fd, &address);
 }
 
 int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
@@ -334,13 +345,8 @@ ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, 
     if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
-        if (addressp != (diminuto_ipv4_t *)0) {
-            *addressp = ntohl(sa.sin_addr.s_addr);
-        }
-        if (portp != (diminuto_port_t *)0) {
-            *portp = ntohs(sa.sin_port);
-        }
-    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { 
+        identify(&sa, addressp, portp);
+    } else if ((errno != EINTR) && (errno != EAGAIN)) { 
         diminuto_perror("diminuto_ipc_datagram_receive_flags: recvfrom");
     } else {
         /* Do nothing: timeout or poll. */
@@ -397,16 +403,9 @@ int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * p
 
     length = sizeof(sa);
     if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("getsockname");
-    } else if (sa.sin_family != AF_INET) {
-        /* Do nothing. */
+        diminuto_perror("diminuto_ipc_nearend: getsockname");
     } else {
-        if (addressp != (diminuto_ipv4_t *)0) {
-            *addressp = ntohl(sa.sin_addr.s_addr);
-        }
-        if (portp != (diminuto_port_t *)0) {
-            *portp = ntohs(sa.sin_port);
-        }
+        identify(&sa, addressp, portp);
     }
 
     return rc;
@@ -420,16 +419,9 @@ int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * po
 
     length = sizeof(sa);
     if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("getpeername");
-    } else if (sa.sin_family != AF_INET) {
-        /* Do nothing. */
+        diminuto_perror("diminuto_ipc_farend: getpeername");
     } else {
-        if (addressp != (diminuto_ipv4_t *)0) {
-            *addressp = ntohl(sa.sin_addr.s_addr);
-        }
-        if (portp != (diminuto_port_t *)0) {
-            *portp = ntohs(sa.sin_port);
-        }
+        identify(&sa, addressp, portp);
     }
 
     return rc;
