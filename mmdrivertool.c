@@ -179,7 +179,7 @@ int main(int argc, char * argv[])
                     switch (op.width) {
                     case EIGHT: printf("%u\n", op.datum.eight); break;
                     case SIXTEEN: printf("%u\n", op.datum.sixteen);  break;
-                    case THIRTYTWO: printf("%lu\n", op.datum.thirtytwo); break;
+                    case THIRTYTWO: printf("%u\n", op.datum.thirtytwo); break;
                     case SIXTYFOUR: printf("%llu\n", op.datum.sixtyfour);  break;
                     }
                 }

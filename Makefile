@@ -49,8 +49,8 @@ ARCH		=	i386
 PLATFORM	=	linux
 CARCH		=
 CROSS_COMPILE	=
-KERNEL_REV	=	2.6.22-14
-KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic
+KERNEL_REV	=	2.6.32-25
+KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 endif
 
 HERE		:=	$(shell pwd)

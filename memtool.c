@@ -85,9 +85,9 @@ static int operate(
     }
 
     if (debug) {
-        fprintf(stderr, "%s: a=%p l=%u p=%lu s=%u b=%p e=%p v=%llx opt=%c\n",
-            program, address, length, pointer, size, *basep, effective,
-            *valuep, opt);
+        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p e=%p v=%llx opt=%c\n",
+            program, (void *)address, length, (void *)pointer, size, *basep,
+            effective, *valuep, opt);
     }
 
     if (*basep == (void *)0) {
@@ -109,7 +109,7 @@ static int operate(
         break;
 
     case sizeof(uint32_t):
-        OPERATE(effective, uint32_t, valuep, "%lu");
+        OPERATE(effective, uint32_t, valuep, "%u");
         break;
 
     case sizeof(uint64_t):
@@ -176,7 +176,7 @@ int main(int argc, char * argv[])
             } else {
                 size = sizeof(uint8_t);
                 pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, pointer); }
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
             }
             break;
 
@@ -186,7 +186,7 @@ int main(int argc, char * argv[])
             } else {
                 size = sizeof(uint16_t);
                 pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, pointer); }
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
             }
             break;
 
@@ -196,7 +196,7 @@ int main(int argc, char * argv[])
             } else {
                 size = sizeof(uint32_t);
                 pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, pointer); }
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
             }
             break;
 
@@ -206,7 +206,7 @@ int main(int argc, char * argv[])
             } else {
                 size = sizeof(uint64_t);
                 pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, pointer); }
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
             }
             break;
 
@@ -215,7 +215,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 address = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, address); }
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)address); }
                 diminuto_map_unmap(&unaddress, &unlength);
                 base = (void *)0;
             }
@@ -245,7 +245,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 length = value;
-                if (debug) { fprintf(stderr, "%s -%c %z\n", program, opt, length); }
+                if (debug) { fprintf(stderr, "%s -%c %zu\n", program, opt, length); }
             }
             break;
 

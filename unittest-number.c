@@ -95,7 +95,7 @@ int main(int argc, char ** argv)
 	++argv;
 	while ((argc--) > 0) {
 		p = diminuto_number(*(argv++), &n);
-		printf("0%lo 0x%lx %lu %ld 0x%x\n", n, n, n, n, *p);
+		printf("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
 	}
 
 	return 0;

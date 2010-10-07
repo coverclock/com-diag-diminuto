@@ -36,7 +36,7 @@ int f(int depth, int limit)
 
     close(fd);
 
-    printf("unittest-stacktrace: countof(buffer)=%lu limit=%d count=%d\n", countof(buffer), limit, count);
+    printf("unittest-stacktrace: countof(buffer)=%u limit=%d count=%d\n", countof(buffer), limit, count);
 
     ASSERT(count > 0);
     for (ndx = 0; ndx < count; ++ndx) {

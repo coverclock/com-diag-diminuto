@@ -207,7 +207,7 @@ int main(int argc, char * argv[])
     computed = crc32(0, data, size);
 
     if (stored != computed) {
-        fprintf(stderr, "%s: crc mismatch! (0x%lx!=0x%lx)\n",
+        fprintf(stderr, "%s: crc mismatch! (0x%x!=0x%x)\n",
             argv[0], stored, computed);
         return 3;
     }
