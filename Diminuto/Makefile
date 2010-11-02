@@ -17,13 +17,15 @@ MAJOR		=	3
 MINOR		=	0
 BUILD		=	0
 
+HOME_DIR	=	$(HOME)/projects
+
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
 PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 KERNEL_REV	=	2.6.25.10
-KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PRODUCT)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/$(COMPILEFOR)/$(PRODUCT)/$(PLATFORM)-$(KERNEL_REV)
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
@@ -32,7 +34,7 @@ PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.26.3
-KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
 endif
 
 ifeq ($(COMPILEFOR),cascada)
@@ -41,7 +43,7 @@ PLATFORM	=	linux
 CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.32.7
-KERNEL_DIR	=	$(HOME)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/$(PLATFORM)-$(KERNEL_REV)
 endif
 
 ifeq ($(COMPILEFOR),host)
@@ -60,7 +62,7 @@ BDI_IPADDR	=	192.168.1.224
 BDI_PORT	=	2001
 TFTP_DIR	=	/var/lib/tftpboot
 TMP_DIR		=	/var/tmp
-ROOT_DIR	=	$(HOME)/$(PROJECT)
+ROOT_DIR	=	$(HOME_DIR)/$(PROJECT)
 OPT_DIR		=	/opt
 TOOLCHAIN_DIR	=	$(OPT_DIR)/$(PROJECT)/$(PRODUCT)
 TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
@@ -138,7 +140,7 @@ BROWSER		=	firefox
 
 .PHONY:	default all install host-install target-path target-install config-backup tftp-install package dist distribution build
 
-default:	$(TARGETDEFAULT)
+default:	$(TARGETPACKAGE)
 
 all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
 
@@ -196,19 +198,19 @@ build:
 ########## Host Scripts
 
 dbdi:	dbdi.sh diminuto
-	$(MAKE) script SCRIPT=dbdi
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dbdi
 
 dcscope:	dcscope.sh
-	$(MAKE) script SCRIPT=dcscope
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dcscope
 
 dgdb:	dgdb.sh diminuto
-	$(MAKE) script SCRIPT=dgdb
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dgdb
 
 dlib:	dlib.sh
-	$(MAKE) script SCRIPT=dlib
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dlib
 
 diminuto:	diminuto.sh
-	$(MAKE) script SCRIPT=diminuto
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=diminuto
 
 diminuto.sh:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
@@ -239,7 +241,7 @@ diminuto.sh:	Makefile
 ########## Target Scripts
 
 S10provision:	S10provision.sh getubenv
-	$(MAKE) script SCRIPT=S10provision
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=S10provision
 
 ########## Install Libraries
 
@@ -345,7 +347,7 @@ unittest-map:	unittest-map.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-mmdriver-at91rm9200ek:	unittest-mmdriver-at91rm9200ek.sh
-	$(MAKE) script SCRIPT=unittest-mmdriver-at91rm9200ek
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-mmdriver-at91rm9200ek
 
 unittest-phex:	unittest-phex.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -363,10 +365,10 @@ unittest-serial:	unittest-serial.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 unittest-memtool-at91rm9200ek:	unittest-memtool-at91rm9200ek.sh
-	$(MAKE) script SCRIPT=unittest-memtool-at91rm9200ek
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool-at91rm9200ek
 
 unittest-memtool2-at91rm9200ek:	unittest-memtool2-at91rm9200ek.sh
-	$(MAKE) script SCRIPT=unittest-memtool2-at91rm9200ek
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool2-at91rm9200ek
 
 unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
@@ -420,8 +422,8 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > ../diminuto.bak.tgz
 
-acquire:	$(HOME)/$(PROJECT)
-	cd $(HOME)/$(PROJECT)
+acquire:	$(HOME_DIR)/$(PROJECT)
+	cd $(HOME_DIR)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
 clean:
@@ -438,13 +440,13 @@ libraries-clean:
 ########## Patches
 
 $(PROJECT)-$(kERNEL_REV)-head.patch:
-	$(MAKE) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/head.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/head.S > $(PROJECT)-$(KERNEL_REV)-head.patch
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/head.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/head.S > $(PROJECT)-$(KERNEL_REV)-head.patch
 
 $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch:
-	$(MAKE) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch
 
 $(PROJECT)-$(PRODUCT)-devicetable.patch:
-	$(MAKE) patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
 
 patches:	$(PROJECT)-$(kERNEL_REV)-head.patch $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
 
@@ -496,8 +498,8 @@ $(FAKEROOT_DIR)/usr/local/bin:
 $(FAKEROOT_DIR)/usr/local/lib:
 	mkdir -p $(FAKEROOT_DIR)/usr/local/lib
 
-$(HOME)/$(PROJECT):
-	mkdir -p $(HOME)/$(PROJECT)
+$(HOME_DIR)/$(PROJECT):
+	mkdir -p $(HOME_DIR)/$(PROJECT)
 
 $(DOC_DIR)/pdf:
 	mkdir -p $(DOC_DIR)/pdf
