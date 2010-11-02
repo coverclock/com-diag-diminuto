@@ -28,9 +28,8 @@
  *
  * This code is quite specific to U-Boot 1.1.1 with EK patches for the
  * Atmel AT91RM9200-EK board. However, it may be usable on similar boards
- * in which the persistent flash environment is directly addressable
- * (as for example NOR flash) and which, like this board, does not
- * implement a redundant flash environment.
+ * in which the persistent NOR flash environment, and which, like this board,
+ * do not implement a redundant flash environment.
  *
  * ATTRIBUTIONS
  *
@@ -57,15 +56,8 @@
 #   if !defined(CFG_ENV_OFFSET)
 #       define CFG_ENV_OFFSET  (0x0000e000UL)
 #   endif
-#elif defined(CONFIG_MACH_OMAP3_BEAGLE)
-#   if !defined(CFG_FLASH_BASE)
-#       define CFG_FLASH_BASE  (0x10000000UL)
-#   endif
-#   if !defined(CFG_ENV_OFFSET)
-#       define CFG_ENV_OFFSET  (0x0000e000UL)
-#   endif
 #else
-#   warning Where are you going with this?
+#   warning getubenv is not supported on this platform!
 #   if !defined(CFG_FLASH_BASE)
 #       define CFG_FLASH_BASE  (0)
 #   endif
