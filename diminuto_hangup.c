@@ -10,6 +10,7 @@
 
 #include "diminuto_hangup.h"
 #include "diminuto_log.h"
+#include <string.h>
 #include <signal.h>
 #include <errno.h>
 

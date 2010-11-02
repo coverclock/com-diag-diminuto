@@ -9,17 +9,10 @@
  *
  * This translation unit is the implementation of the Diminuto Generic Memory
  * Mapped Driver. It is compiled using the standard Linux 2.6 module build
- * process.
- *
- * On the AT91RM9200-EK board (Diminuto and Arroyo), it controls Programmed
- * I/O device B (PIOB) which on that board controls LEDs.
- *
- * On the Beagleboard (Cascada)
- *
- * But it can be trivially compiled to provide its read, write, set, and
- * clear interface to any device with memory mapped registers such as FPGAs,
- * but also other PIO pins. Additional I/O control requests, or even
- * additional read and write entry points, can be easily added.
+ * process. It can be compiled to manipulate a specific real memory address
+ * block, or the memory address block can be specified at module load time.
+ * Examples of devices it can control include FPGAs or PIO pins. Additional
+ * I/O control requests can be easily added.
  */
 
 
@@ -33,26 +26,32 @@
 #include <linux/io.h>
 #include <linux/ioport.h>
 #include <linux/proc_fs.h>
-#include <asm/semaphore.h>
+#include <linux/semaphore.h>
 #include <asm/uaccess.h>
 
 /*******************************************************************************
  * COMPILE TIME CONFIGURABLE PARAMETERS
  ******************************************************************************/
 
-#if !defined(DIMINUTO_MMDRIVER_BEGIN) && !defined(DIMINUTO_MMDRIVER_END)
-#   if defined(CONFIG_MACH_AT91RM9200EK)
-#      include <asm/arch/at91rm9200.h>
-#      define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
-#       define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
-#   elif defined(CONFIG_MACH_OMAP3_BEAGLE)
-#       include <arch/arm/plat_omap/include/mach/gpio.h>
-#       define OMAP3_BASE_SYS (0x90000000)
-#       define OMAP3_GPIO5 (0x49056000)
-#       define OMAP3_GPIO6 (0x49057000)
-#       define DIMINUTO_MMDRIVER_BEGIN (OMAP3_BASE_SYS + OMAP3_GPIO5)
-#       define DIMINUTO_MMDRIVER_END (OMAP3_BASE_SYS + OMAP3_GPIO6)
-#   endif
+#if defined(DIMINUTO_MMDRIVER_BEGIN) && defined(DIMINUTO_MMDRIVER_END)
+/*
+ * DIMINUTO_MMDRIVER_BEGIN and DIMINUTO_MMDRIVER_END have been defined on
+ * the command line.
+ */
+#elif defined(CONFIG_MACH_AT91RM9200EK)
+#	include <asm/arch/at91rm9200.h>
+#	define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
+#	define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
+#elif defined(CONFIG_MACH_OMAP3_BEAGLE)
+#	include <arch/arm/plat_omap/include/mach/gpio.h>
+#	define OMAP3_BASE_SYS (0x90000000)
+#	define OMAP3_GPIO5 (0x49056000)
+#	define OMAP3_GPIO6 (0x49057000)
+#	define DIMINUTO_MMDRIVER_BEGIN (OMAP3_BASE_SYS + OMAP3_GPIO5)
+#	define DIMINUTO_MMDRIVER_END (OMAP3_BASE_SYS + OMAP3_GPIO6)
+#else
+#	define DIMINUTO_MMDRIVER_BEGIN (0)
+#	define DIMINUTO_MMDRIVER_END (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
