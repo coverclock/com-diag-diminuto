@@ -3,6 +3,14 @@
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
+# When I first started Diminuto, it began as both an exercise in using the open
+# source buildroot tool and as an associated Linux systems programming library
+# written in C. But with later projects like Arroyo and Cascada, the library
+# became much more useful than the artifacts that came out of buildroot. I've
+# left in the buildroot rules, but have not tested them in ages and would not
+# expect them to work. The library I use all the time. So the default behavior
+# of this makefile is to just build the library.
+
 ########## Variables
 
 COMPILEFOR	=	host
@@ -25,7 +33,8 @@ PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 KERNEL_REV	=	2.6.25.10
-KERNEL_DIR	=	$(HOME_DIR)/$(COMPILEFOR)/$(PRODUCT)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
@@ -34,7 +43,8 @@ PLATFORM	=	linux
 CARCH		=	-march=armv4t
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.26.3
-KERNEL_DIR	=	$(HOME_DIR)/$(COMPILEFOR)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include
 endif
 
 ifeq ($(COMPILEFOR),cascada)
@@ -43,7 +53,8 @@ PLATFORM	=	linux
 CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.32.7
-KERNEL_DIR	=	$(HOME_DIR)/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include
 endif
 
 ifeq ($(COMPILEFOR),host)
@@ -53,6 +64,7 @@ CARCH		=
 CROSS_COMPILE	=
 KERNEL_REV	=	2.6.32-25
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+INCLUDE_DIR	=	$(KERNEL_DIR)/include
 endif
 
 HERE		:=	$(shell pwd)
@@ -127,7 +139,7 @@ RANLIB		=	$(CROSS_COMPILE)ranlib
 STRIP		=	$(CROSS_COMPILE)strip
 
 ARFLAGS		=	rcv
-CPPFLAGS	=
+CPPFLAGS	=	-isystem $(INCLUDE_DIR)
 CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
@@ -284,7 +296,7 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 ########## Target Binaries
 
 getubenv:	getubenv.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) -I$(KERNEL_DIR)/include $(LDFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 ipcalc:	ipcalc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
@@ -525,7 +537,8 @@ $(DOC_DIR)/pdf:
 
 .PHONY:	depend
 
-depend:	dependencies.mk
+depend:
+	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
 
 dependencies.mk:	$(HFILES) $(CFILES) $(MFILES)
 	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
