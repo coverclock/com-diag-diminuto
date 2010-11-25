@@ -15,10 +15,13 @@
 #include "diminuto_unittest.h"
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
 #include <errno.h>
 
+static const diminuto_ipv4_t LOCALHOST = 0x7f000001UL;
+static const diminuto_port_t PORT = 0xfff0;
 static const diminuto_port_t PORT1 = 65535;
 static const diminuto_port_t PORT2 = 65534;
 
@@ -26,21 +29,33 @@ int main(void)
 {
     {
         diminuto_ipv4_t address;
-        char buffer[64];
+        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
 
         address = diminuto_ipc_address("127.0.0.1");
-        EXPECT(address == 0x7f000001UL);
+        EXPECT(address == LOCALHOST);
+
+        EXPECT(diminuto_ipc_dotnotation(address, buffer, sizeof(buffer)) == buffer);
+        EXPECT(strcmp(buffer, "127.0.0.1") == 0);
+    }
+
+    {
+        diminuto_ipv4_t address;
 
         address = diminuto_ipc_address("localhost");
-        EXPECT(address == 0x7f000001UL);
+        EXPECT(address == LOCALHOST);
 
         address = diminuto_ipc_address("www.diag.com");
         EXPECT(address != 0UL);
 
-        printf("\"www.diag.com\"=0x%08x=%s\n", address, diminuto_ipc_dotnotation(address, buffer, sizeof(buffer)));
-
         address = diminuto_ipc_address("invalid.domain");
+#if 0
+        /*
+         * Damned internet service providers map invalid domains to a "help"
+         * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
+         * a.k.a. "search5.comcast.com". That's not helpful!
+         */
         EXPECT(address == 0UL);
+#endif
     }
 
     {
@@ -113,14 +128,14 @@ int main(void)
     {
         int fd;
     
-        EXPECT((fd = diminuto_ipc_stream_provider(0xfff0)) >= 0);
+        EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
     }
 
     {
         int fd;
 
-        EXPECT((fd = diminuto_ipc_stream_provider(0xfff0)) >= 0);
+        EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
 
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
@@ -145,8 +160,8 @@ int main(void)
     {
         int fd1;
         int fd2;
-        const char * MSG1 = "Chip Overclock";
-        const char * MSG2 = "Digital Aggregates Corporation";
+        const char MSG1[] = "Chip Overclock";
+        const char MSG2[] = "Digital Aggregates Corporation";
         char buffer[64];
         diminuto_ipv4_t address = 0;
         diminuto_port_t port = 0;
@@ -160,11 +175,13 @@ int main(void)
         EXPECT((diminuto_ipc_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
         EXPECT(address == diminuto_ipc_address("localhost"));
         EXPECT(port == PORT1);
+        EXPECT(strcmp(buffer, MSG1) == 0);
 
         EXPECT((diminuto_ipc_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc_address("localhost"), PORT1)) == sizeof(MSG2));
         EXPECT((diminuto_ipc_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
         EXPECT(address == diminuto_ipc_address("localhost"));
         EXPECT(port == PORT2);
+        EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipc_close(fd1) >= 0);
         EXPECT(diminuto_ipc_close(fd2) >= 0);
@@ -225,25 +242,202 @@ int main(void)
         EXPECT(diminuto_ipc_close(fd) >= 0);
     }
 
-#if 0
     {
-        uint64_t address;
+        diminuto_ipv4_t address;
         diminuto_port_t port;
         int rendezvous;
-        int consumer;
-        int producer;
-        int index;
-        char sent;
-        char received;
+        pid_t pid;
 
-        EXPECT((rendezvous = diminuto_ipc_provider(0xfff0)) >= 0);
-        EXPECT((consumer = diminuto_ipc_consumer(diminuto_ipc_address("localhost"), 0xfff0)) >= 0);
+        EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+
+            address = 0;
+            port = -1;
+            EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPECT(port != PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_nearend(producer, &address, &port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port == PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_farend(producer, &address, &port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPECT(port != PORT);
+
+            diminuto_delay(1000, !0);
+
+    		EXPECT(diminuto_ipc_close(producer) >= 0);
+    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+
+        } else {
+
+            int consumer;
+
+    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+
+            diminuto_delay(1000, !0);
+
+            EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+
+            diminuto_delay(10000, !0);
+
+    		EXPECT(diminuto_ipc_close(consumer) >= 0);
+
+            exit(0);
+
+        }
+    }
+
+    {
+        diminuto_ipv4_t address;
+        diminuto_port_t port;
+        int rendezvous;
+        pid_t pid;
+
+        EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid == 0) {
+
+            int producer;
+
+            EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+
+            diminuto_delay(1000, !0);
+
+    		EXPECT(diminuto_ipc_close(producer) >= 0);
+    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+
+            exit(0);
+
+        } else {
+
+            int consumer;
+
+            diminuto_delay(1000, !0);
+
+            EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_farend(consumer, &address, &port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port == PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_nearend(consumer, &address, &port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPECT(port != PORT);
+        }
+    }
+
+#if 0
+    {
+        diminuto_ipv4_t address;
+        diminuto_port_t port;
+        int rendezvous;
+
+        EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid) {
+
+            int producer;
+            char buffer[256];
+            ssize_t bytes;
+
+            address = 0;
+            port = -1;
+            EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPECT(port != PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_nearend(producer, address, port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port == PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_farend(producer, address, port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPECT(port != PORT);
+
+        } else {
+
+            int consumer;
+            char buffer[256];
+            ssize_t bytes;
+
+            EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_farend(consumer, address, port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port == PORT);
+
+            address = 0;
+            port = -1;
+            EXPECT(diminuto_ipc_nearend(consumer, address, port) >= 0);
+            EXPECT(address == LOCALHOST);
+            EXPECT(port != -1);
+            EXPEXT(port != PORT);
+        }
+
+
+            while (!0) {
+
+				EXPECT((bytes = diminuto_ipc_stream_read(producer, &received, 1, sizeof(buffer))) >= 0);
+
+				if (rc != 1) {
+					errorf("%s[%d]: (%u!=%u) (%d)!\n",
+						__FILE__, __LINE__, rc, 1, errno);
+					++errors;
+				}
+				if (received != sent) {
+					errorf("%s[%d]: (0x%x!=0x%x)!\n",
+						__FILE__, __LINE__, received, sent);
+					++errors;
+				}
+
+				rc = diminuto_ipc_stream_write(consumer,  &sent, 1, 1);
+				if (rc != 1) {
+					errorf("%s[%d]: (%u!=%u) (%d)!\n",
+						__FILE__, __LINE__, rc, 1, errno);
+					++errors;
+				}
+			}
+
+
+        }
 
         address = 0;
-        EXPECT(*producer = diminuto_ipc_accept(rendezvous, address)) >= 0);
-        printf("consumer=0x%08x=%s\n",
-            address, diminuto_ipc_dotnotation(address, buffer, sizeof(buffer)));
-        EXPECT(ADDRESS == 0x7f000001UL);
+        port = -1;
+        EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, address, port)) >= 0);
+        EXPECT(address == LOCALHOST);
+        EXPECT(port == PORT);
+        EXPECT(diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)) == dotnotation);
+        EXPECT(strcmp(dotnotation, "127.0.0.1") == 0);
 
         /* This only works because the kernel buffers socket data. */
 
@@ -252,262 +446,48 @@ int main(void)
             char sent = index;
             char received = ~sent;
 
-        rc = ::write(producer, &sent, 1);
-        if (rc != 1) {
-            errorf("%s[%d]: (%u!=%u) (%d)!\n",
-                __FILE__, __LINE__, rc, 1, errno);
-            ++errors;
-        }
+			EXPECT(diminuto_ipc_stream_write(producer, &sent, 1, 1) == 1);
 
-        rc = ::read(consumer, &received, 1);
-        if (rc != 1) {
-            errorf("%s[%d]: (%u!=%u) (%d)!\n",
-                __FILE__, __LINE__, rc, 1, errno);
-            ++errors;
-        }
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
+			EXPECT(diminuto_ipc_stream_read(consumer, &received, 1, 1) == 1);
+			if (rc != 1) {
+				errorf("%s[%d]: (%u!=%u) (%d)!\n",
+					__FILE__, __LINE__, rc, 1, errno);
+				++errors;
+			}
+			if (received != sent) {
+				errorf("%s[%d]: (0x%x!=0x%x)!\n",
+					__FILE__, __LINE__, received, sent);
+				++errors;
+			}
 
-        sent = index;
-        received = ~sent;
+			sent = index;
+			received = ~sent;
 
-        rc = ::write(consumer,  &sent, 1);
-        if (rc != 1) {
-            errorf("%s[%d]: (%u!=%u) (%d)!\n",
-                __FILE__, __LINE__, rc, 1, errno);
-            ++errors;
-        }
+			rc = diminuto_ipc_stream_write(consumer,  &sent, 1, 1);
+			if (rc != 1) {
+				errorf("%s[%d]: (%u!=%u) (%d)!\n",
+					__FILE__, __LINE__, rc, 1, errno);
+				++errors;
+			}
 
-        rc = ::read(producer, &received, 1);
-        if (rc != 1) {
-            errorf("%s[%d]: (%u!=%u) (%d)!\n",
-                __FILE__, __LINE__, rc, 1, errno);
-            ++errors;
-        }
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
+			rc = diminuto_ipc_stream_read(producer, &received, 1, 1);
+			if (rc != 1) {
+				errorf("%s[%d]: (%u!=%u) (%d)!\n",
+					__FILE__, __LINE__, rc, 1, errno);
+				++errors;
+			}
+			if (received != sent) {
+				errorf("%s[%d]: (0x%x!=0x%x)!\n",
+					__FILE__, __LINE__, received, sent);
+				++errors;
+			}
+		}
+
+		EXPECT(diminuto_ipc_close(producer) >= 0);
+		EXPECT(diminuto_ipc_close(consumer) >= 0);
+
+		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
     }
-
-    rc = diminuto_ipc_close(producer);
-    if (rc != producer) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-    rc = diminuto_ipc_close(consumer);
-    if (rc != consumer) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-    rc = diminuto_ipc_close(rendezvous);
-    if (rc != rendezvous) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-
-    printf("%s[%d]: StreamSockets\n", __FILE__, __LINE__);
-
-    rendezvous = diminuto_ipc_provider(0xfff0);
-    if (rendezvous < 0) {
-        errorf("%s[%d]: (%d<%d) (%d)!\n",
-            __FILE__, __LINE__, rendezvous, 0, errno);
-        ++errors;
-    }
-
-    consumer = diminuto_ipc_consumer(diminuto_ipc_address("localhost"), 0xfff0);
-    if (consumer < 0) {
-        errorf("%s[%d]: (%d<%d) (%d)!\n",
-            __FILE__, __LINE__, consumer, 0, errno);
-        ++errors;
-    }
-
-    producer = diminuto_ipc_accept(rendezvous);
-    if (producer < 0) {
-        errorf("%s[%d]: (%u<%u) (%d)!\n",
-            __FILE__, __LINE__, producer, 0, errno);
-        ++errors;
-    }
-
-    StreamSocket nearend(consumer);
-    nearend.show();
-    Input& nearendin = nearend.input();
-    nearendin.show();
-    Output& nearendout = nearend.output();
-    nearendout.show();
-
-    StreamSocket farend(producer);
-    farend.show();
-    Input& farendin = farend.input();
-    farendin.show();
-    Output& farendout = farend.output();
-    farendout.show();
-
-    // This only works because the kernel buffers socket data.
-
-    for (int index = 0; index < 256; ++index) {
-
-        char sent = index;
-        char received = ~sent;
-
-        rc = farendout(sent);
-        if (rc == EOF) {
-            errorf("%s[%d]: (%u==%u) (%d)!\n",
-                __FILE__, __LINE__, rc, EOF, errno);
-            ++errors;
-        }
-
-        received = nearendin();
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
-
-        sent = index;
-        received = ~sent;
-
-        rc = nearendout(sent);
-        if (rc == EOF) {
-            errorf("%s[%d]: (%u==%u) (%d)!\n",
-                __FILE__, __LINE__, rc, EOF, errno);
-            ++errors;
-        }
-
-        received = farendin();
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
-    }
-
-    rc = diminuto_ipc_close(producer);
-    if (rc != producer) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-    rc = diminuto_ipc_close(consumer);
-    if (rc != consumer) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-    rc = diminuto_ipc_close(rendezvous);
-    if (rc != rendezvous) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-
-    printf("%s[%d]: Files\n", __FILE__, __LINE__);
-
-    rendezvous = diminuto_ipc_provider(0xfff0);
-    if (rendezvous < 0 ) {
-        errorf("%s[%d]: (%d<%d) (%d)!\n",
-            __FILE__, __LINE__, rendezvous, 0, errno);
-        ++errors;
-    }
-
-    consumer = diminuto_ipc_consumer(diminuto_ipc_address("localhost"), 0xfff0);
-    if (consumer < 0) {
-        errorf("%s[%d]: (%d<%d) (%d)!\n",
-            __FILE__, __LINE__, consumer, 0, errno);
-        ++errors;
-    }
-
-    FILE* nearendfile = ::fdopen(consumer, "r+");
-    if (nearendfile == 0) {
-        errorf("%s[%d]: (0x%x==0x%x) (%d)!\n",
-            __FILE__, __LINE__, nearendfile, 0, errno);
-        ++errors;
-    }
-
-    producer = diminuto_ipc_accept(rendezvous);
-    if (producer < 0) {
-        errorf("%s[%d]: (%d<%d) (%d)!\n",
-            __FILE__, __LINE__, producer, 0, errno);
-        ++errors;
-    }
-
-    FILE* farendfile = ::fdopen(producer, "r+");
-    if (farendfile == 0) {
-        errorf("%s[%d]: (0x%x==0x%x) (%d)!\n",
-            __FILE__, __LINE__, farendfile, 0, errno);
-        ++errors;
-    }
-
-    FileInput nearendfileinput(nearendfile);
-    nearendfileinput.show();
-    FileOutput nearendfileoutput(nearendfile);
-    nearendfileoutput.show();
-
-    FileInput farendfileinput(farendfile);
-    farendfileinput.show();
-    FileOutput farendfileoutput(farendfile);
-    farendfileoutput.show();
-
-    // This only works because the kernel buffers socket data.
-
-    for (int index = 0; index < 256; ++index) {
-
-        char sent = index;
-        char received = ~sent;
-
-        rc = farendfileoutput(sent);
-        if (rc == EOF) {
-            errorf("%s[%d]: (%u==%u) (%d)!\n",
-                __FILE__, __LINE__, rc, EOF, errno);
-            ++errors;
-        }
-        farendfileoutput();
-
-        received = nearendfileinput();
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
-
-        sent = index;
-        received = ~sent;
-
-        rc = nearendfileoutput(sent);
-        if (rc == EOF) {
-            errorf("%s[%d]: (%u==%u) (%d)!\n",
-                __FILE__, __LINE__, rc, EOF, errno);
-            ++errors;
-        }
-        nearendfileoutput();
-
-        received = farendfileinput();
-        if (received != sent) {
-            errorf("%s[%d]: (0x%x!=0x%x)!\n",
-                __FILE__, __LINE__, received, sent);
-            ++errors;
-        }
-    }
-
-    std::fclose(nearendfile);
-    std::fclose(farendfile);
-
-    rc = diminuto_ipc_close(rendezvous);
-    if (rc != rendezvous) {
-        errorf("%s[%d]: (%u!=%u) (%d)!\n",
-            __FILE__, __LINE__, rc, fd, errno);
-        ++errors;
-    }
-
-    printf("%s[%d]: end errors=%d\n",
-        __FILE__, __LINE__, errors);
 #endif
 
     EXIT();

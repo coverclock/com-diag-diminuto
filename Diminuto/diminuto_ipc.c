@@ -391,10 +391,6 @@ ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, dim
     return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
 }
 
-static void extract(struct sockaddr_in * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
-{
-}
-
 int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     int rc;

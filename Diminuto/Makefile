@@ -540,8 +540,5 @@ $(DOC_DIR)/pdf:
 depend:
 	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
 
-dependencies.mk:	$(HFILES) $(CFILES) $(MFILES)
-	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
-
 -include dependencies.mk
 
