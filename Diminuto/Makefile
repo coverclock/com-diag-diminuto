@@ -22,7 +22,7 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	3
-MINOR		=	0
+MINOR		=	1
 BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects
