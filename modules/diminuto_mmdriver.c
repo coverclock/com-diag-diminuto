@@ -359,11 +359,11 @@ mmdriver_proc_read(
     count -= written;
 
     if (regionp) {
-        written = snprintf(bufferp + total, count, "region.start=0x%08x\n", regionp->start);
+        written = snprintf(bufferp + total, count, "region.start=0x%016llx\n", (unsigned long long)regionp->start);
         total += written;
         count -= written;
 
-        written = snprintf(bufferp + total, count, "region.end=0x%08x\n", regionp->end);
+        written = snprintf(bufferp + total, count, "region.end=0x%016llx\n", (unsigned long long)regionp->end);
         total += written;
         count -= written;
 
