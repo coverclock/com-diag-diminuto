@@ -25,6 +25,7 @@
 #include "diminuto_number.h"
 #include "diminuto_delay.h"
 #include "diminuto_barrier.h"
+#include "diminuto_core.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -84,6 +85,8 @@ static int operate(
         *basep = diminuto_map_map(address, length, addressp, lengthp);
     }
 
+    effective = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
+
     if (debug) {
         fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p e=%p v=%llx opt=%c\n",
             program, (void *)address, length, (void *)pointer, size, *basep,
@@ -93,8 +96,6 @@ static int operate(
     if (*basep == (void *)0) {
         return -1;
     }
-
-    effective = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
 
     diminuto_barrier();
 
@@ -130,7 +131,7 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
     fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
     fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
     fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
@@ -140,6 +141,7 @@ static void usage(void)
     fprintf(stderr, "       -d            Enable debug mode\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
+    fprintf(stderr, "       -o            Enable core dumps\n");
     fprintf(stderr, "       -r            Read ADDRESS\n");
     fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
     fprintf(stderr, "       -t            Proceed if the last result was !0\n");
@@ -166,7 +168,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:rs:tu:w:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:ors:tu:w:?")) >= 0) {
 
         switch (opt) {
 
@@ -247,6 +249,11 @@ int main(int argc, char * argv[])
                 length = value;
                 if (debug) { fprintf(stderr, "%s -%c %zu\n", program, opt, length); }
             }
+            break;
+
+        case 'o':
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            diminuto_core_enable();
             break;
 
         case 'r':

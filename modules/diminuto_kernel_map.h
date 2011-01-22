@@ -17,11 +17,10 @@
 
 #if defined(__KERNEL__) || defined(MODULE)
 
+#include "diminuto_kernel_types.h"
 #include <linux/kernel.h>
 #include <linux/io.h>
 #include <linux/ioport.h>
-#include <asm/page.h>
-#include <asm/errno.h>
 
 /**
  *  Map a region of physical address space to kernel virtual address space.
@@ -36,84 +35,27 @@
  *  @param align if true causes physical memory mapping to be paged aligned.
  *  @return 0 for success, errno otherwise.
  */
-static int
+extern int
 diminuto_kernel_map(
-    unsigned long start,
-    unsigned long length,
+    uintptr_t start,
+    size_t length,
     const char * name,
     struct resource ** regionpp,
     void ** basepp,
     void __iomem ** pagepp,
     int align
-) {
-    int rc = 0;
-    unsigned long offset;
-    unsigned long address;
-    unsigned long size;
-
-    do {
-
-        /* Align physical memory on a page boundary. */
-        offset = align ? start % PAGE_SIZE : 0;
-        address = start - offset;
-        size = length + offset;
-
-        if ((!name) || (!regionpp)) {
-            /* Do nothing. */
-        } else if (!(*regionpp = request_mem_region(start, length, name))) {
-            pr_err("diminuto_kernel_map: request_mem_region failed!\n");
-            rc = -EPERM;
-            break;
-        } else {
-            /* Do nothing. */
-        }
-
-        if (!pagepp) {
-            /* Do nothing. */
-        } else if (!(*pagepp = ioremap_nocache(address, size))) {
-            pr_err("diminuto_kernel_map: ioremap_nocache failed!\n");
-            rc = -ENOMEM;
-            break;
-        } else if (basepp) {
-            *basepp = (char *)*pagepp + offset;
-        } else {
-            /* Do nothing. */
-        }
-
-    } while (0);
-
-    
-    if (rc == 0) {
-        /* Do nothing. */
-    } else if (regionpp && *regionpp) {
-        release_mem_region((*regionpp)->start, (*regionpp)->end - (*regionpp)->start);
-    } else {
-        /* Do nothing. */
-    }
-
-    return rc;
-}
+);
 
 /**
  * Unmap a region of kernel virtual address space that was previously mapped.
  * @param pagepp points to the virtual page address returned by map or NULL.
  * @param regionpp points to the address of the reserved resource structure returned by map or NULL.
  */
-static void
+extern void
 diminuto_kernel_unmap(
     void __iomem ** pagepp,
     struct resource ** regionpp
-) {
-    if (pagepp && *pagepp) {
-        iounmap(*pagepp);
-        *pagepp = 0;
-    }
-
-    if (regionpp && *regionpp) {
-        release_mem_region((*regionpp)->start, (*regionpp)->end - (*regionpp)->start);
-        *regionpp = 0;
-    }
-}
+);
 
 #endif
 
