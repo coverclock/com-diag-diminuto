@@ -1,4 +1,4 @@
-# Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA
+# Copyright 2008-2011 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
@@ -13,16 +13,18 @@
 
 ########## Variables
 
-COMPILEFOR	=	host
+#COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
 #COMPILEFOR	=	arroyo
 #COMPILEFOR	=	cascada
+#COMPILEFOR	=	contraption
+COMPILEFOR	=	contraption
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	3
-MINOR		=	1
+MAJOR		=	4
+MINOR		=	0
 BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects
@@ -30,37 +32,57 @@ HOME_DIR	=	$(HOME)/projects
 ifeq ($(COMPILEFOR),diminuto)
 ARCH		=	arm
 PLATFORM	=	linux
+CPPARCH		=
 CARCH		=	-march=armv4t
+LDARCH		=	-Bdynamic
 CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
 KERNEL_REV	=	2.6.25.10
 KERNEL_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+INCLUDE_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
 ARCH		=	arm
 PLATFORM	=	linux
+CPPARCH		=
 CARCH		=	-march=armv4t
+LDARCH		=	-Bdynamic
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.26.3
 KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include
+INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),cascada)
 ARCH		=	arm
 PLATFORM	=	linux
+CPPARCH		=
 CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+LDARCH		=	-Bdynamic
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.32.7
 KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include
+INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(COMPILEFOR),contraption)
+ARCH		=	arm
+PLATFORM	=	linux
+CPPARCH		=
+CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+LDARCH		=	-static
+CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV	=	2.6.32
+KERNEL_DIR	=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+INCLUDE_DIR	=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),host)
 ARCH		=	i386
 PLATFORM	=	linux
+CPPARCH		=
 CARCH		=
+LDARCH		=	
 CROSS_COMPILE	=
 KERNEL_REV	=	2.6.32-25
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
@@ -110,13 +132,13 @@ MFILES		=	$(wildcard modules/*.c)
 
 HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
-TARGETMODULES	=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko
+TARGETMODULES	=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS	=	S10provision
 TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
-TARGETARCHIVES	=	lib$(PROJECT).a
+TARGETARCHIVE	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-TARGETLIBRARIES	=	$(TARGETARCHIVES) $(TARGETSHARED)
+TARGETLIBRARIES	=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
 TARGETDEFAULT	=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
 TARGETPACKAGE	=	$(TARGETDEFAULT) $(TARGETMODULES)
@@ -139,12 +161,12 @@ RANLIB		=	$(CROSS_COMPILE)ranlib
 STRIP		=	$(CROSS_COMPILE)strip
 
 ARFLAGS		=	rcv
-CPPFLAGS	=	-isystem $(INCLUDE_DIR)
+CPPFLAGS	=	$(CPPARCH) -isystem $(INCLUDE_DIR)
 CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
-LDFLAGS		=	-L. -Bdynamic -ldiminuto
+LDFLAGS		=	$(LDARCH) -L. -ldiminuto
 
 BROWSER		=	firefox
 
@@ -295,20 +317,20 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 ########## Target Binaries
 
-getubenv:	getubenv.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+getubenv:	getubenv.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) -I $(KERNEL_DIR)/include $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ipcalc:	ipcalc.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-memtool:	memtool.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+memtool:	memtool.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-mmdrivertool:	mmdrivertool.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+mmdrivertool:	mmdrivertool.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-dec:	dec.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+dec:	dec.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 hex:	dec
 	ln -f dec hex
@@ -316,65 +338,65 @@ hex:	dec
 oct:	dec
 	ln -f dec oct
 
-phex:	phex.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+phex:	phex.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-dump:	dump.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+dump:	dump.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-coreable:	coreable.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+coreable:	coreable.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-unittest:	unittest-unittest.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-unittest:	unittest-unittest.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-time:	unittest-time.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-time:	unittest-time.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-daemonize:	unittest-daemonize.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-daemon:	unittest-daemon.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-hangup:	unittest-hangup.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-hangup:	unittest-hangup.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-number:	unittest-number.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-number:	unittest-number.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-timer:	unittest-timer.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-timer:	unittest-timer.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-periodic:	unittest-periodic.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-periodic:	unittest-periodic.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-stacktrace:	unittest-stacktrace.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) -O0 -rdynamic $(LDFLAGS) -o $@ $<
+unittest-stacktrace:	unittest-stacktrace.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -O0 -rdynamic -o $@ $< $(LDFLAGS)
 
-unittest-log:	unittest-log.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-log:	unittest-log.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-lock:	unittest-lock.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-lock:	unittest-lock.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-map:	unittest-map.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-map:	unittest-map.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-mmdriver-at91rm9200ek:	unittest-mmdriver-at91rm9200ek.sh
 	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-mmdriver-at91rm9200ek
 
-unittest-phex:	unittest-phex.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-phex:	unittest-phex.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-dump:	unittest-dump.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-dump:	unittest-dump.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-endianess:	unittest-endianess.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-endianess:	unittest-endianess.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-barrier:	unittest-barrier.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-barrier:	unittest-barrier.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-serial:	unittest-serial.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-serial:	unittest-serial.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-memtool-at91rm9200ek:	unittest-memtool-at91rm9200ek.sh
 	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool-at91rm9200ek
@@ -382,29 +404,29 @@ unittest-memtool-at91rm9200ek:	unittest-memtool-at91rm9200ek.sh
 unittest-memtool2-at91rm9200ek:	unittest-memtool2-at91rm9200ek.sh
 	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool2-at91rm9200ek
 
-unittest-coreable:	unittest-coreable.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-coreable:	unittest-coreable.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-countof:	unittest-countof.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-countof:	unittest-countof.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-fletcher8:	unittest-fletcher8.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-fletcher8:	unittest-fletcher8.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-list:	unittest-list.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-list:	unittest-list.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-ipc:	unittest-ipc.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-ipc:	unittest-ipc.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-string:	unittest-string.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-string:	unittest-string.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-heap:	unittest-heap.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-heap:	unittest-heap.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-pool:	unittest-pool.c lib$(PROJECT).so
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+unittest-pool:	unittest-pool.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers
 
@@ -412,14 +434,14 @@ unittest-pool:	unittest-pool.c lib$(PROJECT).so
 
 modules/Makefile:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
-	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o" >> $@
-	echo "EXTRA_CFLAGS := -I$(HERE)" >> $@
-	#echo "EXTRA_CFLAGS := -I$(HERE) -DDEBUG" >> $@
+	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o diminuto_kernel_datum.o diminuto_kernel_map.o" >> $@
+	echo "EXTRA_CFLAGS := -I$(HERE)/modules -I$(HERE)" >> $@
+	#echo "EXTRA_CFLAGS := -I$(HERE)/modules -I$(HERE) -DDEBUG" >> $@
 
-${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c
+${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
-drivers:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c
+drivers:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers-clean:
@@ -446,8 +468,7 @@ binaries-clean:
 	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
 
 libraries-clean:
-	rm -f lib$(PROJECT).a
-	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	rm -f $(TARGETLIBRARIES)
 
 ########## Patches
 

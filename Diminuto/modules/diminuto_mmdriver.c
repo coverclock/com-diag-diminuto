@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -18,6 +18,7 @@
 
 #include "diminuto_mmdriver.h"
 #include "diminuto_kernel_map.h"
+#include "diminuto_kernel_types.h"
 #include <linux/autoconf.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -27,6 +28,7 @@
 #include <linux/ioport.h>
 #include <linux/proc_fs.h>
 #include <linux/semaphore.h>
+#include <linux/miscdevice.h>
 #include <asm/uaccess.h>
 
 /*******************************************************************************
@@ -34,16 +36,23 @@
  ******************************************************************************/
 
 #if defined(DIMINUTO_MMDRIVER_BEGIN) && defined(DIMINUTO_MMDRIVER_END)
-/*
- * DIMINUTO_MMDRIVER_BEGIN and DIMINUTO_MMDRIVER_END have been defined on
- * the command line.
- */
+	/*
+	 * DIMINUTO_MMDRIVER_BEGIN and DIMINUTO_MMDRIVER_END have been defined on
+	 * the command line.
+	 */
 #elif defined(CONFIG_MACH_AT91RM9200EK)
+	/* AT91RM9200-EK: Diminuto, Arroyo */
 #	include <asm/arch/at91rm9200.h>
 #	define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
 #	define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #elif defined(CONFIG_MACH_OMAP3_BEAGLE)
-#	include <arch/arm/plat_omap/include/mach/gpio.h>
+#	if defined(CONFIG_ANDROID)
+		/* Beagle Board: Contraption */
+#		include <plat/gpio.h>
+#	else
+		/* Beagle Board: Cascada */
+#		include <mach/gpio.h>
+#	endif
 #	define OMAP3_BASE_SYS (0x90000000)
 #	define OMAP3_GPIO5 (0x49056000)
 #	define OMAP3_GPIO6 (0x49057000)
@@ -59,7 +68,7 @@
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
-#   define DIMINUTO_MMDRIVER_MAJOR (240)
+#   define DIMINUTO_MMDRIVER_MAJOR (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
@@ -80,8 +89,8 @@ static char name[64] = DIMINUTO_MMDRIVER_NAME;
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-static unsigned long start = 0;
-static unsigned long length = 0;
+static uintptr_t start = 0;
+static size_t length = 0;
 static struct resource * regionp = 0;
 static void * basep = 0;
 static void __iomem * pagep = 0;
@@ -303,13 +312,6 @@ mmdriver_ioctl(
     return rc;
 }
 
-static struct file_operations fops = {
-    .owner      = THIS_MODULE,
-    .ioctl      = mmdriver_ioctl,
-    .open       = mmdriver_open,
-    .release    = mmdriver_release
-};
-
 /*******************************************************************************
  * PROC FILE SYSTEM FUNCTIONS
  ******************************************************************************/
@@ -342,11 +344,11 @@ mmdriver_proc_read(
     total += written;
     count -= written;
 
-    written = snprintf(bufferp + total, count, "start=0x%08lx\n", start);
+    written = snprintf(bufferp + total, count, "start=0x%08lx\n", (unsigned long)start);
     total += written;
     count -= written;
 
-    written = snprintf(bufferp + total, count, "length=%lu\n", length);
+    written = snprintf(bufferp + total, count, "length=%lu\n", (unsigned long)length);
     total += written;
     count -= written;
 
@@ -407,6 +409,18 @@ mmdriver_proc_read(
  * LOADABLE MODULE INSERT AND REMOVE
  ******************************************************************************/
 
+static struct file_operations fops = {
+    .owner      = THIS_MODULE,
+    .ioctl      = mmdriver_ioctl,
+    .open       = mmdriver_open,
+    .release    = mmdriver_release
+};
+
+static struct miscdevice mdev = {
+	.minor		= MISC_DYNAMIC_MINOR,
+	.fops		= &fops
+};
+
 static int
 __init mmdriver_init(
     void
@@ -429,17 +443,17 @@ __init mmdriver_init(
 
         regionpp = exclusive ? &regionp : 0;
 
-        if ((rc = diminuto_kernel_map(start, length, name, regionpp, &basep, &pagep))) {
+        if ((rc = diminuto_kernel_map(start, length, name, regionpp, &basep, &pagep, !0))) {
             pr_err("mmdriver_init: diminuto_kernel_map failed!\n");
             break;
-         }
-
-        if (register_chrdev(major, name, &fops)) {
-            pr_err("mmdriver_init: register_chrdev failed!\n");
-            diminuto_kernel_unmap(&pagep, regionpp);
-            rc = -ENODEV;
-            break;
         }
+
+        mdev.name = name;
+        if ((rc = major ? register_chrdev(major, name, &fops) : misc_register(&mdev))) {
+			pr_err("mmdriver_init: register_chrdev/misc_register failed!\n");
+			diminuto_kernel_unmap(&pagep, regionpp);
+			break;
+		}
 
         strncat(proc, name, sizeof(name));
 
@@ -466,7 +480,7 @@ mmdriver_exit(
 
     remove_proc_entry(proc, NULL);
 
-    unregister_chrdev(major, name);
+	major ? unregister_chrdev(major, name) : misc_deregister(&mdev);
 
     regionpp = exclusive ? &regionp : 0;
 
@@ -479,6 +493,13 @@ module_exit(mmdriver_exit);
 /*******************************************************************************
  * PARAMETERS
  ******************************************************************************/
+
+/*
+ * On Android, but not all Linux-based systems, you have to consolidate all
+ * of the module parameters into one command line parameter, e.g.
+ *
+ *	insmod diminuto_mmdriver.ko "begin=0x80000000 end=0x80001000"
+ */
 
 module_param(begin, ulong, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(begin, "diminuto mmdriver beginning address");

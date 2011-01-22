@@ -1,6 +1,4 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_KERNEL_MAP
-#define _H_COM_DIAG_DIMINUTO_KERNEL_MAP
 
 /**
  * @file
@@ -15,31 +13,15 @@
  * space such as kernel modules and device drivers.
  */
 
-#if defined(__KERNEL__) || defined(MODULE)
-
-#include <linux/kernel.h>
-#include <linux/io.h>
-#include <linux/ioport.h>
+#include "diminuto_kernel_map.h"
+#include <linux/module.h>
 #include <asm/page.h>
 #include <asm/errno.h>
 
-/**
- *  Map a region of physical address space to kernel virtual address space.
- *  Optionally reserve the physical address space from being mapped by other
- *  drivers.
- *  @param start is the physical address of the region.
- *  @param length is the size of the region in octets.
- *  @param name points to a reserved resource name or NULL.
- *  @param regionpp points to a reserved resource structure pointer or NULL.
- *  @param basepp points to where the base address will be returned.
- *  @param pagepp points to where the page address will be returned.
- *  @param align if true causes physical memory mapping to be paged aligned.
- *  @return 0 for success, errno otherwise.
- */
-static int
+int
 diminuto_kernel_map(
-    unsigned long start,
-    unsigned long length,
+	uintptr_t start,
+    size_t length,
     const char * name,
     struct resource ** regionpp,
     void ** basepp,
@@ -47,9 +29,9 @@ diminuto_kernel_map(
     int align
 ) {
     int rc = 0;
-    unsigned long offset;
-    unsigned long address;
-    unsigned long size;
+    size_t offset;
+    uintptr_t address;
+    size_t size;
 
     do {
 
@@ -93,13 +75,9 @@ diminuto_kernel_map(
 
     return rc;
 }
+EXPORT_SYMBOL(diminuto_kernel_map);
 
-/**
- * Unmap a region of kernel virtual address space that was previously mapped.
- * @param pagepp points to the virtual page address returned by map or NULL.
- * @param regionpp points to the address of the reserved resource structure returned by map or NULL.
- */
-static void
+void
 diminuto_kernel_unmap(
     void __iomem ** pagepp,
     struct resource ** regionpp
@@ -114,7 +92,8 @@ diminuto_kernel_unmap(
         *regionpp = 0;
     }
 }
+EXPORT_SYMBOL(diminuto_kernel_unmap);
 
-#endif
-
-#endif
+MODULE_AUTHOR("coverclock@diag.com");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("diminuto memory map module");
