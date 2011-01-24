@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2011 Digital Aggregates Corporation, Colorado USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -28,7 +28,7 @@
  *
  * This code is quite specific to U-Boot 1.1.1 with EK patches for the
  * Atmel AT91RM9200-EK board. However, it may be usable on similar boards
- * in which the persistent NOR flash environment, and which, like this board,
+ * which have a persistent NOR flash environment, and which, like this board,
  * do not implement a redundant flash environment.
  *
  * ATTRIBUTIONS
@@ -43,27 +43,17 @@
  */
 
 #include "diminuto_map.h"
-#include <linux/autoconf.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
 
-#if defined(CONFIG_MACH_AT91RM9200EK)
-#   if !defined(CFG_FLASH_BASE)
-#       define CFG_FLASH_BASE  (0x10000000UL)
-#   endif
-#   if !defined(CFG_ENV_OFFSET)
-#       define CFG_ENV_OFFSET  (0x0000e000UL)
-#   endif
-#else
-#   warning getubenv is not supported on this platform!
-#   if !defined(CFG_FLASH_BASE)
-#       define CFG_FLASH_BASE  (0)
-#   endif
-#   if !defined(CFG_ENV_OFFSET)
-#       define CFG_ENV_OFFSET  (0)
-#   endif
+#if !defined(CFG_FLASH_BASE)
+#   define CFG_FLASH_BASE  (0x10000000UL)
+#endif
+
+#if !defined(CFG_ENV_OFFSET)
+#	define CFG_ENV_OFFSET  (0x0000e000UL)
 #endif
 
 #if !defined(CFG_ENV_ADDR)

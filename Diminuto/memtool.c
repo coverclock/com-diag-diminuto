@@ -2,14 +2,14 @@
 /**
  * @file
  *
- * Copyright 2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2009-2011 Digital Aggregates Corporation, Colorado USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * USAGE
  *
- * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|c|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
+ * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
  *
  * EXAMPLES
  *
@@ -32,36 +32,32 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <ctype.h>
 
 static const char * program = "memtool";
 static int debug = 0;
 
-#define OPERATE(_POINTER_, _TYPE_, _VALUEP_, _FORMAT_) \
+#define OPERATE(_OPT_, _DATAP_, _VALUEP_, _TYPE_, _FORMAT_) \
     do { \
-        _TYPE_ word; \
-        _TYPE_ value; \
-        value = *_VALUEP_; \
-        switch (opt) { \
-        case 'c': \
-            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
-            word &= ~value; \
-            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
-            break; \
-        case 'r': \
-            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
-            printf(_FORMAT_ "\n", word); \
-            break; \
-        case 's': \
-            memcpy(&word, _POINTER_, sizeof(_TYPE_)); \
-            word |= value; \
-            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
-            break; \
-        case 'w': \
-            memcpy(_POINTER_, &word, sizeof(_TYPE_)); \
-            word = value; \
-            break; \
+        volatile _TYPE_ * _datap; \
+        _TYPE_ _value; \
+        _TYPE_ _mask; \
+        _datap = (_TYPE_ *)_DATAP_; \
+        _value = *_VALUEP_; \
+        _mask = ((_TYPE_)1) << (*_VALUEP_); \
+        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: m=(%s)0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_mask); } \
+        diminuto_barrier(); \
+        switch (_OPT_) { \
+        case 'C': *_datap &= ~_mask;						break; \
+        case 'S': *_datap |= _mask;							break; \
+        case 'c': *_datap &= ~_value;						break; \
+        case 'r': printf(_FORMAT_ "\n", _value = *_datap);	break; \
+        case 's': *_datap |= _value;						break; \
+        case 'w': *_datap = _value;							break; \
         } \
-        *_VALUEP_ = value; \
+        diminuto_barrier(); \
+        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: m=(%s)0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
+        *_VALUEP_ = _value; \
     } while (0)
 
 static int operate(
@@ -75,7 +71,7 @@ static int operate(
     size_t * lengthp,
     diminuto_unsigned_t * valuep
 ) {
-    void * effective;
+    void * datap;
 
     if (*basep != (void *)0) {
         /* Do nothing. */
@@ -85,41 +81,25 @@ static int operate(
         *basep = diminuto_map_map(address, length, addressp, lengthp);
     }
 
-    effective = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
+    datap = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
 
     if (debug) {
-        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p e=%p v=%llx opt=%c\n",
+        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p d=%p v=%p o=%c\n",
             program, (void *)address, length, (void *)pointer, size, *basep,
-            effective, *valuep, opt);
+            datap, valuep, opt);
     }
 
     if (*basep == (void *)0) {
         return -1;
     }
 
-    diminuto_barrier();
-
     switch (size) {
-
-    case sizeof(uint8_t):
-        OPERATE(effective, uint8_t, valuep, "%u");
-        break;
-
-    case sizeof(uint16_t):
-        OPERATE(effective, uint16_t, valuep, "%u");
-        break;
-
-    case sizeof(uint32_t):
-        OPERATE(effective, uint32_t, valuep, "%u");
-        break;
-
-    case sizeof(uint64_t):
-        OPERATE(effective, uint64_t, valuep, "%llu");
-        break;
-
+    case sizeof(uint8_t):	OPERATE(opt, datap, valuep, uint8_t,  "%u");	break;
+    case sizeof(uint16_t):	OPERATE(opt, datap, valuep, uint16_t, "%u");	break;
+    case sizeof(uint32_t):	OPERATE(opt, datap, valuep, uint32_t, "%u");	break;
+    case sizeof(uint64_t):	OPERATE(opt, datap, valuep, uint64_t, "%llu");	break;
     }
 
-    diminuto_barrier();
 
     if (length == 0) {
         diminuto_map_unmap(addressp, lengthp);
@@ -131,11 +111,13 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|c|w] NUMBER ] [ -u USECONDS ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
     fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
     fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
     fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
     fprintf(stderr, "       -8 ADDRESS    Use doubleword at ADDRESS\n");
+    fprintf(stderr, "       -C NUMBER     Clear 1<<NUMBER mask at ADDRESS\n");
+    fprintf(stderr, "       -S NUMBER     Set 1<<NUMBER mask at ADDRESS\n");
     fprintf(stderr, "       -a ADDRESS    Optionally map region at ADDRESS\n");
     fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
     fprintf(stderr, "       -d            Enable debug mode\n");
@@ -168,7 +150,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:a:c:dfl:ors:tu:w:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:C:S:a:c:dfl:ors:tu:w:?")) >= 0) {
 
         switch (opt) {
 
@@ -223,11 +205,12 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'C':
         case 'c':
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
                 error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
@@ -261,17 +244,18 @@ int main(int argc, char * argv[])
             error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             break;
 
+        case 'S':
         case 's':
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
                 error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;
 
         case 't':
-            done = value == 0;
+            done = (value == 0);
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             break;
 
@@ -288,7 +272,7 @@ int main(int argc, char * argv[])
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
                 error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
             }
             break;

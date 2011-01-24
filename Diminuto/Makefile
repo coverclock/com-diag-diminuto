@@ -317,19 +317,19 @@ lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 ########## Target Binaries
 
-getubenv:	getubenv.c $(TARGETLIBRARIES)
+getubenv_unstripped:	getubenv.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) -I $(KERNEL_DIR)/include $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-ipcalc:	ipcalc.c
+ipcalc_unstripped:	ipcalc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-memtool:	memtool.c $(TARGETLIBRARIES)
+memtool_unstripped:	memtool.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-mmdrivertool:	mmdrivertool.c $(TARGETLIBRARIES)
+mmdrivertool_unstripped:	mmdrivertool.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-dec:	dec.c $(TARGETLIBRARIES)
+dec_unstripped:	dec.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 hex:	dec
@@ -338,13 +338,13 @@ hex:	dec
 oct:	dec
 	ln -f dec oct
 
-phex:	phex.c $(TARGETLIBRARIES)
+phex_unstripped:	phex.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-dump:	dump.c $(TARGETLIBRARIES)
+dump_unstripped:	dump.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-coreable:	coreable.c $(TARGETLIBRARIES)
+coreable_unstripped:	coreable.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-unittest:	unittest-unittest.c $(TARGETLIBRARIES)
@@ -551,7 +551,7 @@ $(DOC_DIR)/pdf:
 %.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-%.stripped:	%
+%:	%_unstripped
 	$(STRIP) -o $@ $<
 
 ########## Dependencies

@@ -13,8 +13,24 @@
  * block, or the memory address block can be specified at module load time.
  * Examples of devices it can control include FPGAs or PIO pins. Additional
  * I/O control requests can be easily added.
+ *
+ * To enable pr_debug() statements, define the symbol DEBUG:
+ *
+ *		gcc ... -DDEBUG ...
+ *
+ * To enable debug output:
+ *
+ *		echo 8 > /proc/sys/kernel/printk
+ *
+ * On Android, it appears that you have to consolidate all of the module
+ * parameters into one command line argument, e.g.
+ *
+ *		insmod diminuto_mmdriver.ko "begin=0x80000000 end=0x80001000"
+ *
+ * instead of
+ *
+ *		insmod diminuto_mmdriver.ko begin=0x80000000 end=0x80001000
  */
-
 
 #include "diminuto_mmdriver.h"
 #include "diminuto_kernel_map.h"
@@ -36,42 +52,34 @@
  ******************************************************************************/
 
 #if defined(DIMINUTO_MMDRIVER_BEGIN) && defined(DIMINUTO_MMDRIVER_END)
-	/*
-	 * DIMINUTO_MMDRIVER_BEGIN and DIMINUTO_MMDRIVER_END have been defined on
-	 * the command line.
-	 */
+	/* Defined at compile time probably via the command line. */
 #elif defined(CONFIG_MACH_AT91RM9200EK)
-	/* AT91RM9200-EK: Diminuto, Arroyo */
+	/* AT91RM9200-EK: Diminuto, Arroyo default to LED control via PIOB. */
 #	include <asm/arch/at91rm9200.h>
 #	define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
 #	define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #elif defined(CONFIG_MACH_OMAP3_BEAGLE)
-#	if defined(CONFIG_ANDROID)
-		/* Beagle Board: Contraption */
-#		include <plat/gpio.h>
-#	else
-		/* Beagle Board: Cascada */
-#		include <mach/gpio.h>
-#	endif
-#	define OMAP3_BASE_SYS (0x90000000)
-#	define OMAP3_GPIO5 (0x49056000)
-#	define OMAP3_GPIO6 (0x49057000)
-#	define DIMINUTO_MMDRIVER_BEGIN (OMAP3_BASE_SYS + OMAP3_GPIO5)
-#	define DIMINUTO_MMDRIVER_END (OMAP3_BASE_SYS + OMAP3_GPIO6)
+	/* Beagle Board: Cascada, Contraption default to USER BUTTON via GPIO1. */
+#	define DIMINUTO_MMDRIVER_BEGIN (0x48310000)
+#	define DIMINUTO_MMDRIVER_END (DIMINUTO_MMDRIVER_BEGIN + 0x1000)
 #else
+	/* Presumed to be defined via an insmod parameter at install time. */
 #	define DIMINUTO_MMDRIVER_BEGIN (0)
 #	define DIMINUTO_MMDRIVER_END (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
+	/* Not exclusive user of the memory range. */
 #   define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
+	/* Registered as a minor device of the miscellaneous device driver. */
 #   define DIMINUTO_MMDRIVER_MAJOR (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
+	/* Change this name if you install more than one instance. */
 #   define DIMINUTO_MMDRIVER_NAME ("mmdriver")
 #endif
 
@@ -159,15 +167,11 @@ mmdriver_operation_set(
             break;
         }
 
-        if (opp->width == EIGHT) {
-            tmp.eight = opp->datum.eight | tmp.eight;
-        } else if (opp->width == SIXTEEN) {
-            tmp.sixteen = opp->datum.sixteen | tmp.sixteen;
-        } else if (opp->width == THIRTYTWO) {
-            tmp.thirtytwo = opp->datum.thirtytwo | tmp.thirtytwo;
-        } else if (opp->width == SIXTYFOUR) {
-            tmp.sixtyfour = opp->datum.sixtyfour | tmp.sixtyfour;
-        } else {
+        if      (opp->width == EIGHT)     { tmp.eight     = opp->datum.eight     | tmp.eight;     }
+        else if (opp->width == SIXTEEN)   { tmp.sixteen   = opp->datum.sixteen   | tmp.sixteen;   }
+        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = opp->datum.thirtytwo | tmp.thirtytwo; }
+        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = opp->datum.sixtyfour | tmp.sixtyfour; }
+        else {
             rc = -EINVAL;
             break;
         }
@@ -197,15 +201,11 @@ mmdriver_operation_clear(
             break;
         }
 
-        if (opp->width == EIGHT) {
-            tmp.eight = opp->datum.eight & ~tmp.eight;
-        } else if (opp->width == SIXTEEN) {
-            tmp.sixteen = opp->datum.sixteen & ~tmp.sixteen;
-        } else if (opp->width == THIRTYTWO) {
-            tmp.thirtytwo = opp->datum.thirtytwo & ~tmp.thirtytwo;
-        } else if (opp->width == SIXTYFOUR) {
-            tmp.sixtyfour = opp->datum.sixtyfour & ~tmp.sixtyfour;
-        } else {
+        if      (opp->width == EIGHT)     { tmp.eight     = opp->datum.eight     & ~tmp.eight;     }
+        else if (opp->width == SIXTEEN)   { tmp.sixteen   = opp->datum.sixteen   & ~tmp.sixteen;   }
+        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = opp->datum.thirtytwo & ~tmp.thirtytwo; }
+        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = opp->datum.sixtyfour & ~tmp.sixtyfour; }
+        else {
             rc = -EINVAL;
             break;
         }
@@ -282,15 +282,17 @@ mmdriver_ioctl(
 
             pointer = (char *)basep + op.offset;
 
-            if (cmd == DIMINUTO_MMDRIVER_READ) {
-                rc = mmdriver_operation_read(pointer, &op);
-            } else if (cmd == DIMINUTO_MMDRIVER_WRITE) {
-                rc = mmdriver_operation_write(pointer, &op);
-            } else if (cmd == DIMINUTO_MMDRIVER_SET) {
-                rc = mmdriver_operation_set(pointer, &op);
-            } else if (cmd == DIMINUTO_MMDRIVER_CLEAR) {
-                rc = mmdriver_operation_clear(pointer, &op);
-            } else {
+            /*
+             * On some kernel versions, the ioctl _IO* macros don't create
+             * constants that can be used in a case statement. Your mileage may
+             * vary.
+             */
+
+            if      (cmd == DIMINUTO_MMDRIVER_READ)  { rc = mmdriver_operation_read(pointer, &op); }
+            else if (cmd == DIMINUTO_MMDRIVER_WRITE) { rc = mmdriver_operation_write(pointer, &op);  }
+            else if (cmd == DIMINUTO_MMDRIVER_SET)   { rc = mmdriver_operation_set(pointer, &op);    }
+            else if (cmd == DIMINUTO_MMDRIVER_CLEAR) { rc = mmdriver_operation_clear(pointer, &op);  }
+            else {
                 ++errors;
                 rc = -EINVAL;
                 break;
@@ -493,13 +495,6 @@ module_exit(mmdriver_exit);
 /*******************************************************************************
  * PARAMETERS
  ******************************************************************************/
-
-/*
- * On Android, but not all Linux-based systems, you have to consolidate all
- * of the module parameters into one command line parameter, e.g.
- *
- *	insmod diminuto_mmdriver.ko "begin=0x80000000 end=0x80001000"
- */
 
 module_param(begin, ulong, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(begin, "diminuto mmdriver beginning address");
