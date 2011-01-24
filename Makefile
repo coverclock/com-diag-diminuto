@@ -5,11 +5,11 @@
 
 # When I first started Diminuto, it began as both an exercise in using the open
 # source buildroot tool and as an associated Linux systems programming library
-# written in C. But with later projects like Arroyo and Cascada, the library
-# became much more useful than the artifacts that came out of buildroot. I've
-# left in the buildroot rules, but have not tested them in ages and would not
-# expect them to work. The library I use all the time. So the default behavior
-# of this makefile is to just build the library.
+# written in C. But with later projects like Arroyo, Cascada and Contraption,
+# the library became much more useful than the artifacts that came out of
+# buildroot. I've left in the buildroot rules, but have not tested them in ages
+# and would not expect them to work. The library I use all the time. So the
+# default behavior of this makefile is to just build the library.
 
 ########## Variables
 
@@ -17,7 +17,6 @@
 #COMPILEFOR	=	diminuto
 #COMPILEFOR	=	arroyo
 #COMPILEFOR	=	cascada
-#COMPILEFOR	=	contraption
 COMPILEFOR	=	contraption
 
 PROJECT		=	diminuto
