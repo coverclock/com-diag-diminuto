@@ -5,13 +5,43 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2011 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "diminuto_types.h"
+
+#if defined(__KERNEL__) || defined(MODULE)
+
+#include <linux/kernel.h>
+#include <linux/io.h>
+#include <linux/ioport.h>
+
+/**
+ *  Map a region of physical address space to kernel virtual address space.
+ *  Optionally reserve the physical address space from being mapped by other
+ *  drivers.
+ *  @param start is the physical address of the region.
+ *  @param length is the size of the region in octets.
+ *  @param name points to a reserved resource name or NULL.
+ *  @param regionpp points to a reserved resource structure pointer or NULL.
+ *  @param basepp points to where the base address will be returned.
+ *  @param pagepp points to where the page address will be returned.
+ *  @param align if true causes physical memory mapping to be paged aligned.
+ *  @return 0 for success, errno otherwise.
+ */
+extern int diminuto_kernel_map(uintptr_t start, size_t length, const char * name, struct resource ** regionpp, void ** basepp, void __iomem ** pagepp, int align);
+
+/**
+ * Unmap a region of kernel virtual address space that was previously mapped.
+ * @param pagepp points to the virtual page address returned by map or NULL.
+ * @param regionpp points to the address of the reserved resource structure returned by map or NULL.
+ */
+extern void diminuto_kernel_unmap(void __iomem ** pagepp, struct resource ** regionpp);
+
+#else
 
 /**
  * Map a region of physical address space to user virtual address space.
@@ -44,5 +74,7 @@ extern int diminuto_map_unmap(void ** startp, size_t * lengthp);
  * @return 0 if successful or if the operation is not supported, !0 otherwise.
  */
 extern int diminuto_map_minimum(uintptr_t minimum);
+
+#endif
 
 #endif

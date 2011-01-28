@@ -14,7 +14,7 @@
  * modules and device drivers.
  */
 
-#include "diminuto_kernel_datum.h"
+#include "diminuto_datum.h"
 #include "diminuto_barrier.h"
 #include <linux/module.h>
 #include <linux/io.h>
@@ -41,8 +41,8 @@
 int
 diminuto_kernel_get(
     const void * address,
-    diminuto_kernel_width width,
-    diminuto_kernel_datum * datump
+    diminuto_datum_width width,
+    diminuto_datum_value * datump
 ) {
     int rc = 0;
 
@@ -63,8 +63,8 @@ EXPORT_SYMBOL(diminuto_kernel_get);
 int
 diminuto_kernel_put(
     void * address,
-    diminuto_kernel_width width,
-    const diminuto_kernel_datum * datump
+    diminuto_datum_width width,
+    const diminuto_datum_value * datump
 ) {
     int rc = 0;
 

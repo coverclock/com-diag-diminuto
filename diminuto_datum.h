@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_KERNEL_DATUM
-#define _H_COM_DIAG_DIMINUTO_KERNEL_DATUM
+#ifndef _H_COM_DIAG_DIMINUTO_DATUM_
+#define _H_COM_DIAG_DIMINUTO_DATUM_
 
 /**
  * @file
@@ -16,21 +16,21 @@
  * modules and device drivers.
  */
 
-#include "diminuto_kernel_types.h"
+#include "diminuto_types.h"
 
 typedef union {
     uint8_t eight;
     uint16_t sixteen;
     uint32_t thirtytwo;
     uint64_t sixtyfour;
-} diminuto_kernel_datum;
+} diminuto_datum_value;
 
 typedef enum {
     EIGHT = sizeof(uint8_t),
     SIXTEEN = sizeof(uint16_t),
     THIRTYTWO = sizeof(uint32_t),
     SIXTYFOUR = sizeof(uint64_t)
-} diminuto_kernel_width;
+} diminuto_datum_width;
 
 #if defined(__KERNEL__) || defined(MODULE)
 
@@ -42,12 +42,7 @@ typedef enum {
  * @param datump points to where the datum will be returned.
  * @return 0 for success, !0 otherwise.
  */
-extern int
-diminuto_kernel_get(
-    const void * address,
-    diminuto_kernel_width width,
-    diminuto_kernel_datum * datump
-);
+extern int diminuto_kernel_get(const void * address, diminuto_datum_width width, diminuto_datum_value * datump);
 
 /**
  * Puts a datum of a specified width to a virtual address.
@@ -57,12 +52,7 @@ diminuto_kernel_get(
  * @param datump points to where the datum will be loaded.
  * @return 0 for success, !0 otherwise.
  */
-extern int
-diminuto_kernel_put(
-    void * address,
-    diminuto_kernel_width width,
-    const diminuto_kernel_datum * datump
-);
+extern int diminuto_kernel_put(void * address, diminuto_datum_width width, const diminuto_datum_value * datump);
 
 #endif
 
