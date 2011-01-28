@@ -133,7 +133,7 @@ HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES	=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct
+TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct usectime usecsleep
 TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVE	=	lib$(PROJECT).a
 TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -329,6 +329,12 @@ mmdrivertool_unstripped:	mmdrivertool.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 dec_unstripped:	dec.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+usectime_unstripped:	usectime.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+usecsleep_unstripped:	usecsleep.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 hex:	dec
