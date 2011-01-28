@@ -19,7 +19,9 @@
  * otherwise continue delaying. Return with errno set to something other
  * then EINTR of an error occurs. The actual delay duration will be approximate
  * depending on the granularity of the system clock and latency in the
- * implementation.
+ * implementation. If a delay of zero microseconds is specified, the behavior
+ * of the function is undefined and will depend on what the underlying platform
+ * does.
  * @param microseconds is the desired delay interval in microseconds.
  * @param interruptable is true if interruptable, false otherwise.
  * @return the number of microseconds remaining in the delay duration if
