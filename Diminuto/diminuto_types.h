@@ -5,14 +5,21 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
-#include <sys/types.h>
+#if defined(__KERNEL__) || defined(MODULE)
+#	include <linux/types.h>
+#	if 0
+		typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */
+#	endif
+#else
+#	include <stdint.h>
+#	include <sys/types.h>
+#endif
 
 typedef uint64_t diminuto_usec_t;
 

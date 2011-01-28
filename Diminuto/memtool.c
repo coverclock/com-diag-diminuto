@@ -9,7 +9,7 @@
  *
  * USAGE
  *
- * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
+ * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -m NUMBER ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
  *
  * EXAMPLES
  *
@@ -37,26 +37,27 @@
 static const char * program = "memtool";
 static int debug = 0;
 
-#define OPERATE(_OPT_, _DATAP_, _VALUEP_, _TYPE_, _FORMAT_) \
+#define OPERATE(_OPT_, _DATAP_, _MASK_, _VALUEP_, _TYPE_, _FORMAT_) \
     do { \
         volatile _TYPE_ * _datap; \
-        _TYPE_ _value; \
         _TYPE_ _mask; \
+        _TYPE_ _value; \
+        _TYPE_ _datum = 1; \
         _datap = (_TYPE_ *)_DATAP_; \
+        _mask = _MASK_; \
         _value = *_VALUEP_; \
-        _mask = ((_TYPE_)1) << (*_VALUEP_); \
-        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: m=(%s)0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_mask); } \
+        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: t=%s v=0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
         diminuto_barrier(); \
         switch (_OPT_) { \
-        case 'C': *_datap &= ~_mask;						break; \
-        case 'S': *_datap |= _mask;							break; \
-        case 'c': *_datap &= ~_value;						break; \
-        case 'r': printf(_FORMAT_ "\n", _value = *_datap);	break; \
-        case 's': *_datap |= _value;						break; \
-        case 'w': *_datap = _value;							break; \
+        case 'C': _datum <<= (*_VALUEP_); *_datap &= ~_datum;							break; \
+        case 'S': _datum <<= (*_VALUEP_); *_datap = ((*_datap) & (~_mask)) | _datum;	break; \
+        case 'c': *_datap &= ~_value;													break; \
+        case 'r': printf(_FORMAT_ "\n", _value = *_datap);								break; \
+        case 's': *_datap = ((*_datap) & (~_mask)) | _value;							break; \
+        case 'w': *_datap = _value;														break; \
         } \
         diminuto_barrier(); \
-        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: m=(%s)0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
+        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
         *_VALUEP_ = _value; \
     } while (0)
 
@@ -69,6 +70,7 @@ static int operate(
     size_t size,
     void ** addressp,
     size_t * lengthp,
+    diminuto_unsigned_t mask,
     diminuto_unsigned_t * valuep
 ) {
     void * datap;
@@ -84,9 +86,9 @@ static int operate(
     datap = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
 
     if (debug) {
-        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p d=%p v=%p o=%c\n",
+        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p d=%p m=0x%llx v=%p o=%c\n",
             program, (void *)address, length, (void *)pointer, size, *basep,
-            datap, valuep, opt);
+            datap, mask, valuep, opt);
     }
 
     if (*basep == (void *)0) {
@@ -94,10 +96,10 @@ static int operate(
     }
 
     switch (size) {
-    case sizeof(uint8_t):	OPERATE(opt, datap, valuep, uint8_t,  "%u");	break;
-    case sizeof(uint16_t):	OPERATE(opt, datap, valuep, uint16_t, "%u");	break;
-    case sizeof(uint32_t):	OPERATE(opt, datap, valuep, uint32_t, "%u");	break;
-    case sizeof(uint64_t):	OPERATE(opt, datap, valuep, uint64_t, "%llu");	break;
+    case sizeof(uint8_t):	OPERATE(opt, datap, mask, valuep, uint8_t,  "%u");		break;
+    case sizeof(uint16_t):	OPERATE(opt, datap, mask, valuep, uint16_t, "%u");		break;
+    case sizeof(uint32_t):	OPERATE(opt, datap, mask, valuep, uint32_t, "%u");		break;
+    case sizeof(uint64_t):	OPERATE(opt, datap, mask, valuep, uint64_t, "%llu");	break;
     }
 
 
@@ -111,7 +113,7 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
     fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
     fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
     fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
@@ -123,6 +125,7 @@ static void usage(void)
     fprintf(stderr, "       -d            Enable debug mode\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
+    fprintf(stderr, "       -m NUMBER     Mask at ADDRESS with ~NUMBER prior to any set\n");
     fprintf(stderr, "       -o            Enable core dumps\n");
     fprintf(stderr, "       -r            Read ADDRESS\n");
     fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
@@ -135,6 +138,7 @@ static void usage(void)
 int main(int argc, char * argv[])
 {
     diminuto_unsigned_t value = 0;
+    diminuto_unsigned_t mask = 0;
     uintptr_t address = 0;
     size_t length = 0;
     void * base = 0;
@@ -150,7 +154,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:C:S:a:c:dfl:ors:tu:w:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:C:I:S:a:c:dfi:l:ors:tu:w:?")) >= 0) {
 
         switch (opt) {
 
@@ -211,7 +215,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;
 
@@ -234,6 +238,15 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'm':
+            if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
+                perror(optarg);
+            } else {
+                mask = value;
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, mask); }
+            }
+            break;
+
         case 'o':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             diminuto_core_enable();
@@ -241,7 +254,7 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+            error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
             break;
 
         case 'S':
@@ -250,7 +263,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, mask, &value) != 0);
             }
             break;
 
@@ -273,7 +286,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, &value) != 0);
+                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;
 

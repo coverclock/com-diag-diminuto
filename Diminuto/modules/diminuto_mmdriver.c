@@ -33,8 +33,7 @@
  */
 
 #include "diminuto_mmdriver.h"
-#include "diminuto_kernel_map.h"
-#include "diminuto_kernel_types.h"
+#include "diminuto_map.h"
 #include <linux/autoconf.h>
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -132,7 +131,7 @@ mmdriver_operation_write(
     diminuto_mmdriver_op * opp
 ) {
     int rc;
-    diminuto_kernel_datum tmp;
+    diminuto_datum_value tmp;
 
     do {
 
@@ -157,7 +156,7 @@ mmdriver_operation_set(
     diminuto_mmdriver_op * opp
 ) {
     int rc;
-    diminuto_kernel_datum tmp;
+    diminuto_datum_value tmp;
 
     do {
 
@@ -191,7 +190,7 @@ mmdriver_operation_clear(
     diminuto_mmdriver_op * opp
 ) {
     int rc;
-    diminuto_kernel_datum tmp;
+    diminuto_datum_value tmp;
 
     do {
 

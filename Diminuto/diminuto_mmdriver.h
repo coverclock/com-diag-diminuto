@@ -25,13 +25,8 @@
  *  INCLUDES
  ******************************************************************************/
 
-#include "diminuto_kernel_reg.h"
+#include "diminuto_datum.h"
 #include <asm/ioctl.h>
-#if defined(__KERNEL__) || defined(MODULE)
-#include <linux/types.h>
-#else
-#include <stdint.h>
-#endif
 
 /*******************************************************************************
  *  MANIFEST CONSTANTS
@@ -46,8 +41,8 @@
 
 typedef struct {
     uintptr_t offset;               /* Offset from beginning of driver space */
-    diminuto_kernel_width width;    /* From diminuto_kernel_reg.h */
-    diminuto_kernel_datum datum;    /* From diminuto_kernel_reg.h */
+    diminuto_datum_width width;		/* Datum width */
+    diminuto_datum_value datum;		/* Datum value */
 } diminuto_mmdriver_op;
 
 /*******************************************************************************
