@@ -18,14 +18,7 @@
  * ABSTRACT
  *
  * Allows manipulation of bytes, shorts, longs, and long longs at arbitary
- * real memory addresses. Probably needs to be run as root.
- *
- * N.B. Although memtool supports long longs (eight byte) operations, not all
- * underlying memory subsystems and memory mapped devices seem to be happy with
- * that. While one, two, and four byte operations seem to work fine, I have
- * seen wackiness ensue with eight byte operations. This may be an artifact of
- * the compiler and/or the processor and how either implements (or emulates)
- * sixty-four bit operations. Study continues.
+ * real memory addresses. Should probably only be run as root.
  */
 
 #include "diminuto_map.h"
@@ -44,7 +37,7 @@
 static const char * program = "memtool";
 static int debug = 0;
 
-#define OPERATE(_OPT_, _DATAP_, _MASK_, _VALUEP_, _TYPE_, _FORMAT_) \
+#define OPERATE(_OPT_, _DATAP_, _MASK_, _VALUEP_, _TYPE_) \
     do { \
         volatile _TYPE_ * _datap; \
         _TYPE_ _mask; \
@@ -53,18 +46,19 @@ static int debug = 0;
         _datap = (_TYPE_ *)_DATAP_; \
         _mask = _MASK_; \
         _value = *_VALUEP_; \
-        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: t=%s v=0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
+        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: before t=%s v=0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
         diminuto_barrier(); \
         switch (_OPT_) { \
         case 'C': _datum <<= (*_VALUEP_); *_datap &= ~_datum;							break; \
         case 'S': _datum <<= (*_VALUEP_); *_datap = ((*_datap) & (~_mask)) | _datum;	break; \
         case 'c': *_datap &= ~_value;													break; \
-        case 'r': printf(_FORMAT_ "\n", _value = *_datap);								break; \
+        case 'r': _value = *_datap; 													break; \
         case 's': *_datap = ((*_datap) & (~_mask)) | _value;							break; \
         case 'w': *_datap = _value;														break; \
         } \
         diminuto_barrier(); \
-        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
+        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: after t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
+        if ((_OPT_) == 'r') { printf("%llu\n", (diminuto_unsigned_t)_value); } \
         *_VALUEP_ = _value; \
     } while (0)
 
@@ -103,10 +97,10 @@ static int operate(
     }
 
     switch (size) {
-    case sizeof(uint8_t):	OPERATE(opt, datap, mask, valuep, uint8_t,  "%u");		break;
-    case sizeof(uint16_t):	OPERATE(opt, datap, mask, valuep, uint16_t, "%u");		break;
-    case sizeof(uint32_t):	OPERATE(opt, datap, mask, valuep, uint32_t, "%u");		break;
-    case sizeof(uint64_t):	OPERATE(opt, datap, mask, valuep, uint64_t, "%llu");	break;
+    case sizeof(uint8_t):	OPERATE(opt, datap, mask, valuep, uint8_t);		break;
+    case sizeof(uint16_t):	OPERATE(opt, datap, mask, valuep, uint16_t);	break;
+    case sizeof(uint32_t):	OPERATE(opt, datap, mask, valuep, uint32_t);	break;
+    case sizeof(uint64_t):	OPERATE(opt, datap, mask, valuep, uint64_t);	break;
     }
 
 

@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
     char buffer[64];
     const char * string;
     const char * next;
-    int64_t value;
+    uint64_t value;
 
     name = strrchr(argv[0], '/');
     name = (name == (char *)0) ? argv[0] : name + 1;
@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
         return 2;
     }
 
-    next = diminuto_number_signed(string, &value);
+    next = diminuto_number(string, &value);
     if ((*next != '\0') && (!isspace(*next))) {
         perror(string);
         return 3;
@@ -85,7 +85,7 @@ int main(int argc, char * argv[])
     } else if (strcmp(name, "oct") == 0) {
         printf("0%llo\n", value);
     } else {
-        printf("%lld\n", value);
+        printf("%llu\n", value);
     }
 
     return 0;
