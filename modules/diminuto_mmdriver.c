@@ -166,10 +166,10 @@ mmdriver_operation_set(
             break;
         }
 
-        if      (opp->width == EIGHT)     { tmp.eight     = opp->datum.eight     | tmp.eight;     }
-        else if (opp->width == SIXTEEN)   { tmp.sixteen   = opp->datum.sixteen   | tmp.sixteen;   }
-        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = opp->datum.thirtytwo | tmp.thirtytwo; }
-        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = opp->datum.sixtyfour | tmp.sixtyfour; }
+        if      (opp->width == EIGHT)     { tmp.eight     = (opp->datum.eight     & (~opp->mask.eight))     | tmp.eight;     }
+        else if (opp->width == SIXTEEN)   { tmp.sixteen   = (opp->datum.sixteen   & (~opp->mask.sixteen))   | tmp.sixteen;   }
+        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = (opp->datum.thirtytwo & (~opp->mask.thirtytwo)) | tmp.thirtytwo; }
+        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = (opp->datum.sixtyfour & (~opp->mask.sixtyfour)) | tmp.sixtyfour; }
         else {
             rc = -EINVAL;
             break;
