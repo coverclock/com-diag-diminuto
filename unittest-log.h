@@ -66,6 +66,9 @@ static void none(void)
 }
 
 static diminuto_log_mask_t diminuto_log_subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
+#if defined(__KERNEL__) || defined(MODULE)
+EXPORT_SYMBOL(diminuto_log_subsystem);
+#endif
 
 #undef DIMINUTO_LOG_EMERGENCY_DISABLE
 #undef DIMINUTO_LOG_ALERT_DISABLE
