@@ -43,6 +43,7 @@ typedef struct {
     uintptr_t offset;               /* Offset from beginning of driver space */
     diminuto_datum_width width;		/* Datum width */
     diminuto_datum_value datum;		/* Datum value */
+    diminuto_datum_value mask;		/* Mask value */
 } diminuto_mmdriver_op;
 
 /*******************************************************************************

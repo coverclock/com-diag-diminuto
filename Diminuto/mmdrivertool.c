@@ -64,7 +64,7 @@ static int control(int fd, int request, diminuto_mmdriver_op * opp)
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -U DEVICE ] [ -[1|2|4|8] OFFSET ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -U DEVICE ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
     fprintf(stderr, "       -1 OFFSET   Use byte at OFFSET\n");
     fprintf(stderr, "       -2 OFFSET   Use halfword at OFFSET\n");
     fprintf(stderr, "       -4 OFFSET   Use word at OFFSET\n");
@@ -75,6 +75,7 @@ static void usage(void)
     fprintf(stderr, "       -c NUMBER   Clear NUMBER mask at OFFSET\n");
     fprintf(stderr, "       -d          Enable debug mode\n");
     fprintf(stderr, "       -f          Proceed if the last result was 0\n");
+    fprintf(stderr, "       -m NUMBER   Mask at OFFSET with ~NUMBER prior to any set\n");
     fprintf(stderr, "       -r          Read OFFSET\n");
     fprintf(stderr, "       -s NUMBER   Set NUMBER mask at OFFSET\n");
     fprintf(stderr, "       -t          Proceed if the last result was !0\n");
@@ -86,7 +87,8 @@ static void usage(void)
 int main(int argc, char * argv[])
 {
     const char * device = DIMINUTO_MMDRIVER_NODE;
-    uint64_t value = 0;
+    diminuto_unsigned_t value = 0;
+    diminuto_unsigned_t mask = 0;
     static const uint64_t bit = 1;
     int done = 0;
     int error = 0;
@@ -103,7 +105,7 @@ int main(int argc, char * argv[])
     op.width = THIRTYTWO;
     op.datum.thirtytwo = 0;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:C:S:U:c:dfrs:tu:w:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:C:S:U:c:dfm:rs:tu:w:?")) >= 0) {
 
         switch (opt) {
 
@@ -149,11 +151,12 @@ int main(int argc, char * argv[])
         case 'c':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
+            	if (opt == 'C') { value = bit << value; }
                 switch (op.width) {
-                case EIGHT:		op.datum.eight		= (opt == 'C') ? value : bit << value; break;
-                case SIXTEEN:	op.datum.sixteen	= (opt == 'C') ? value : bit << value; break;
-                case THIRTYTWO:	op.datum.thirtytwo	= (opt == 'C') ? value : bit << value; break;
-                case SIXTYFOUR:	op.datum.sixtyfour	= (opt == 'C') ? value : bit << value; break;
+                case EIGHT:		op.datum.eight		= value; break;
+                case SIXTEEN:	op.datum.sixteen	= value; break;
+                case THIRTYTWO:	op.datum.thirtytwo	= value; break;
+                case SIXTYFOUR:	op.datum.sixtyfour	= value; break;
                 }
                 if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_CLEAR, &op) < 0;
@@ -176,6 +179,13 @@ int main(int argc, char * argv[])
             }
             break;
 
+		case 'm':
+			if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+			if (!(error = (*number(optarg, &value) != '\0'))) {
+				mask = value;
+			}
+			break;
+
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
@@ -194,11 +204,12 @@ int main(int argc, char * argv[])
         case 's':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
+            	if (opt == 'S') { value = bit << value; }
                 switch (op.width) {
-                case EIGHT:		op.datum.eight		= (opt == 'S') ? value : bit << value; break;
-                case SIXTEEN:	op.datum.sixteen	= (opt == 'S') ? value : bit << value; break;
-                case THIRTYTWO:	op.datum.thirtytwo	= (opt == 'S') ? value : bit << value; break;
-                case SIXTYFOUR:	op.datum.sixtyfour	= (opt == 'S') ? value : bit << value; break;
+                case EIGHT:		op.datum.eight		= value; op.mask.eight		= mask; break;
+                case SIXTEEN:	op.datum.sixteen	= value; op.mask.sixteen	= mask; break;
+                case THIRTYTWO:	op.datum.thirtytwo	= value; op.mask.thirtytwo	= mask; break;
+                case SIXTYFOUR:	op.datum.sixtyfour	= value; op.mask.sixtyfour	= mask; break;
                 }
                 if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_SET, &op) < 0;
