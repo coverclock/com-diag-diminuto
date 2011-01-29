@@ -9,6 +9,7 @@
  */
 
 #include <linux/module.h>
+#include "diminuto_types.h"
 #include "diminuto_log.h"
 #include "unittest-log.h"
 
@@ -148,16 +149,15 @@ int init_log_unittest(void)
     unittest();
     return 0;
 }
+module_init(init_log_unittest);
 
 void cleanup_log_unittest(void)
 {
 }
+module_exit(cleanup_log_unittest);
 
-EXPORT_SYMBOL(diminuto_log_subsystem);
 module_param(diminuto_utmodule_mask, int, S_IRUSR | S_IWUSR);
 MODULE_PARM_DESC(diminuto_utmodule_mask, "diminuto utmodule log mask");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("coverclock@diag.com");
 MODULE_DESCRIPTION("diminuto utmodule");
-module_init(init_log_unittest);
-module_exit(cleanup_log_unittest);

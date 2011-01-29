@@ -19,6 +19,13 @@
  *
  * Allows manipulation of bytes, shorts, longs, and long longs at arbitary
  * real memory addresses. Probably needs to be run as root.
+ *
+ * N.B. Although memtool supports long longs (eight byte) operations, not all
+ * underlying memory subsystems and memory mapped devices seem to be happy with
+ * that. While one, two, and four byte operations seem to work fine, I have
+ * seen wackiness ensue with eight byte operations. This may be an artifact of
+ * the compiler and/or the processor and how either implements (or emulates)
+ * sixty-four bit operations. Study continues.
  */
 
 #include "diminuto_map.h"
@@ -154,7 +161,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1:2:4:8:C:I:S:a:c:dfi:l:ors:tu:w:?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1:2:4:8:C:I:S:a:c:dfi:l:m:ors:tu:w:?")) >= 0) {
 
         switch (opt) {
 
