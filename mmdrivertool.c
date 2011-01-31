@@ -75,7 +75,7 @@ static void usage(void)
     fprintf(stderr, "       -c NUMBER   Clear NUMBER mask at OFFSET\n");
     fprintf(stderr, "       -d          Enable debug mode\n");
     fprintf(stderr, "       -f          Proceed if the last result was 0\n");
-    fprintf(stderr, "       -m NUMBER   Mask at OFFSET with ~NUMBER prior to any set\n");
+    fprintf(stderr, "       -m NUMBER   Mask at OFFSET with ~NUMBER prior to subsequent sets\n");
     fprintf(stderr, "       -r          Read OFFSET\n");
     fprintf(stderr, "       -s NUMBER   Set NUMBER mask at OFFSET\n");
     fprintf(stderr, "       -t          Proceed if the last result was !0\n");
@@ -102,8 +102,8 @@ int main(int argc, char * argv[])
     program = (program == (char *)0) ? argv[0] : program + 1;
 
     op.offset = 0;
-    op.width = THIRTYTWO;
-    op.datum.thirtytwo = 0;
+    op.width = WIDTH32;
+    op.datum.value32 = 0;
 
     while ((opt = getopt(argc, argv, "1:2:4:8:C:S:U:c:dfm:rs:tu:w:?")) >= 0) {
 
@@ -113,7 +113,7 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
                 op.offset = value;
-                op.width = EIGHT;
+                op.width = WIDTH8;
             }
             break;
 
@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
                 op.offset = value;
-                op.width = SIXTEEN;
+                op.width = WIDTH16;
             }
             break;
 
@@ -129,7 +129,7 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
                 op.offset = value;
-                op.width = THIRTYTWO;
+                op.width = WIDTH32;
             }
             break;
 
@@ -137,7 +137,7 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
                 op.offset = value;
-                op.width = SIXTYFOUR;
+                op.width = WIDTH64;
             }
             break;
 
@@ -153,10 +153,10 @@ int main(int argc, char * argv[])
             if (!(error = (*number(optarg, &value) != '\0'))) {
             	if (opt == 'C') { value = bit << value; }
                 switch (op.width) {
-                case EIGHT:		op.datum.eight		= value; break;
-                case SIXTEEN:	op.datum.sixteen	= value; break;
-                case THIRTYTWO:	op.datum.thirtytwo	= value; break;
-                case SIXTYFOUR:	op.datum.sixtyfour	= value; break;
+                case WIDTH8:	op.datum.value8		= value; break;
+                case WIDTH16:	op.datum.value16	= value; break;
+                case WIDTH32:	op.datum.value32	= value; break;
+                case WIDTH64:	op.datum.value64	= value; break;
                 }
                 if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_CLEAR, &op) < 0;
@@ -172,10 +172,10 @@ int main(int argc, char * argv[])
         case 'f':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             switch (op.width) {
-            case EIGHT:		done = op.datum.eight		!= 0;	break;
-            case SIXTEEN:	done = op.datum.sixteen		!= 0;	break;
-            case THIRTYTWO:	done = op.datum.thirtytwo	!= 0;	break;
-            case SIXTYFOUR:	done = op.datum.sixtyfour	!= 0;	break;
+            case WIDTH8:	done = op.datum.value8	!= 0;	break;
+            case WIDTH16:	done = op.datum.value16	!= 0;	break;
+            case WIDTH32:	done = op.datum.value32	!= 0;	break;
+            case WIDTH64:	done = op.datum.value64	!= 0;	break;
             }
             break;
 
@@ -191,10 +191,10 @@ int main(int argc, char * argv[])
             if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                 if (!(error = control(fd, DIMINUTO_MMDRIVER_READ, &op) < 0)) {
                     switch (op.width) {
-                    case EIGHT:		printf("%u\n",		op.datum.eight);		break;
-                    case SIXTEEN:	printf("%u\n",		op.datum.sixteen);		break;
-                    case THIRTYTWO:	printf("%u\n",		op.datum.thirtytwo);	break;
-                    case SIXTYFOUR:	printf("%llu\n",	op.datum.sixtyfour);	break;
+                    case WIDTH8:	printf("%u\n",		op.datum.value8);	break;
+                    case WIDTH16:	printf("%u\n",		op.datum.value16);	break;
+                    case WIDTH32:	printf("%u\n",		op.datum.value32);	break;
+                    case WIDTH64:	printf("%llu\n",	op.datum.value64);	break;
                     }
                 }
             }
@@ -206,10 +206,10 @@ int main(int argc, char * argv[])
             if (!(error = (*number(optarg, &value) != '\0'))) {
             	if (opt == 'S') { value = bit << value; }
                 switch (op.width) {
-                case EIGHT:		op.datum.eight		= value; op.mask.eight		= mask; break;
-                case SIXTEEN:	op.datum.sixteen	= value; op.mask.sixteen	= mask; break;
-                case THIRTYTWO:	op.datum.thirtytwo	= value; op.mask.thirtytwo	= mask; break;
-                case SIXTYFOUR:	op.datum.sixtyfour	= value; op.mask.sixtyfour	= mask; break;
+                case WIDTH8:	op.datum.value8		= value; op.mask.value8		= mask; break;
+                case WIDTH16:	op.datum.value16	= value; op.mask.value16	= mask; break;
+                case WIDTH32:	op.datum.value32	= value; op.mask.value32	= mask; break;
+                case WIDTH64:	op.datum.value64	= value; op.mask.value64	= mask; break;
                 }
                 if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_SET, &op) < 0;
@@ -220,10 +220,10 @@ int main(int argc, char * argv[])
         case 't':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             switch (op.width) {
-            case EIGHT:		done = op.datum.eight		== 0; break;
-            case SIXTEEN:	done = op.datum.sixteen		== 0; break;
-            case THIRTYTWO:	done = op.datum.thirtytwo	== 0; break;
-            case SIXTYFOUR:	done = op.datum.sixtyfour	== 0; break;
+            case WIDTH8:	done = op.datum.value8	== 0; break;
+            case WIDTH16:	done = op.datum.value16	== 0; break;
+            case WIDTH32:	done = op.datum.value32	== 0; break;
+            case WIDTH64:	done = op.datum.value64	== 0; break;
             }
             break;
 
@@ -238,10 +238,10 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
                 switch (op.width) {
-                case EIGHT:		op.datum.eight		= value; break;
-                case SIXTEEN:	op.datum.sixteen	= value; break;
-                case THIRTYTWO:	op.datum.thirtytwo	= value; break;
-                case SIXTYFOUR:	op.datum.sixtyfour	= value; break;
+                case WIDTH8:	op.datum.value8		= value; break;
+                case WIDTH16:	op.datum.value16	= value; break;
+                case WIDTH32:	op.datum.value32	= value; break;
+                case WIDTH64:	op.datum.value64	= value; break;
                 }
                 if (!(error = ((fd = diminuto_fd_acquire(fd, device, O_RDWR, 0)) < 0))) {
                     error = control(fd, DIMINUTO_MMDRIVER_WRITE, &op) < 0;

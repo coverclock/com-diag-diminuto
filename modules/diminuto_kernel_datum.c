@@ -20,21 +20,21 @@
 #include <linux/io.h>
 #include <asm/errno.h>
 
-#define DIMINUTO_KERNEL_GET(_ALIGN_, _DEST_, _TYPE_) \
+#define DIMINUTO_KERNEL_GET(_WIDTH_) \
 	do { \
-        if ((uintptr_t)address & (_ALIGN_)) { \
+        if ((uintptr_t)address & DIMINUTO_DATUM_ALIGNMENT(_WIDTH_)) { \
             rc = -EINVAL; \
         } else { \
-            datump->_DEST_ = *(const volatile _TYPE_ __iomem *)address; \
+            datump->DIMINUTO_DATUM_VALUE(_WIDTH_) = *(const volatile DIMINUTO_DATUM_TYPE(_WIDTH_) __iomem *)address; \
         } \
 	} while (0)
 
-#define DIMINUTO_KERNEL_PUT(_ALIGN_, _SRC_, _TYPE_) \
+#define DIMINUTO_KERNEL_PUT(_WIDTH_) \
 	do { \
-        if ((uintptr_t)address & (_ALIGN_)) { \
+        if ((uintptr_t)address & DIMINUTO_DATUM_ALIGNMENT(_WIDTH_)) { \
             rc = -EINVAL; \
         } else { \
-            *(volatile _TYPE_ __iomem *)address = datump->_SRC_; \
+            *(volatile DIMINUTO_DATUM_TYPE(_WIDTH_) __iomem *)address = datump->DIMINUTO_DATUM_VALUE(_WIDTH_); \
         } \
     } while (0)
 
@@ -49,11 +49,11 @@ diminuto_kernel_get(
     diminuto_barrier();
 
     switch (width) {
-    case EIGHT:		DIMINUTO_KERNEL_GET(0x0, eight, uint8_t);		break;
-    case SIXTEEN:	DIMINUTO_KERNEL_GET(0x1, sixteen, uint16_t);	break;
-    case THIRTYTWO:	DIMINUTO_KERNEL_GET(0x3, thirtytwo, uint32_t);	break;
-    case SIXTYFOUR:	DIMINUTO_KERNEL_GET(0x7, sixtyfour, uint64_t);	break;
-    default:		rc = -EINVAL;									break;
+    case WIDTH8:	DIMINUTO_KERNEL_GET(8);		break;
+    case WIDTH16:	DIMINUTO_KERNEL_GET(16);	break;
+    case WIDTH32:	DIMINUTO_KERNEL_GET(32);	break;
+    case WIDTH64:	DIMINUTO_KERNEL_GET(64);	break;
+    default:		rc = -EINVAL;				break;
     }
 
     return rc;
@@ -69,11 +69,11 @@ diminuto_kernel_put(
     int rc = 0;
 
     switch (width) {
-    case EIGHT:		DIMINUTO_KERNEL_PUT(0x0, eight, uint8_t);		break;
-    case SIXTEEN:	DIMINUTO_KERNEL_PUT(0x1, sixteen, uint16_t);	break;
-    case THIRTYTWO:	DIMINUTO_KERNEL_PUT(0x3, thirtytwo, uint32_t);	break;
-    case SIXTYFOUR:	DIMINUTO_KERNEL_PUT(0x7, sixtyfour, uint64_t);	break;
-    default:		rc = -EINVAL;									break;
+    case WIDTH8:	DIMINUTO_KERNEL_PUT(8);		break;
+    case WIDTH16:	DIMINUTO_KERNEL_PUT(16);	break;
+    case WIDTH32:	DIMINUTO_KERNEL_PUT(32);	break;
+    case WIDTH64:	DIMINUTO_KERNEL_PUT(64);	break;
+    default:		rc = -EINVAL;				break;
     }
 
     if (rc == 0) { diminuto_barrier(); }

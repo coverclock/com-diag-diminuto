@@ -37,29 +37,29 @@
 static const char * program = "memtool";
 static int debug = 0;
 
-#define OPERATE(_OPT_, _DATAP_, _MASK_, _VALUEP_, _TYPE_) \
+#define OPERATE(_TYPE_) \
     do { \
         volatile _TYPE_ * _datap; \
         _TYPE_ _mask; \
         _TYPE_ _value; \
         _TYPE_ _datum = 1; \
-        _datap = (_TYPE_ *)_DATAP_; \
-        _mask = _MASK_; \
-        _value = *_VALUEP_; \
-        if (debug && ((_OPT_) != 'r')) { fprintf(stderr, "%s: before t=%s v=0x%llx\n", program, # _TYPE_, islower(_OPT_) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
+        _datap = (_TYPE_ *)datap; \
+        _mask = mask; \
+        _value = *valuep; \
+        if (debug && (opt != 'r')) { fprintf(stderr, "%s: before t=%s v=0x%llx\n", program, # _TYPE_, islower(opt) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
         diminuto_barrier(); \
-        switch (_OPT_) { \
-        case 'C': _datum <<= (*_VALUEP_); *_datap &= ~_datum;							break; \
-        case 'S': _datum <<= (*_VALUEP_); *_datap = ((*_datap) & (~_mask)) | _datum;	break; \
-        case 'c': *_datap &= ~_value;													break; \
-        case 'r': _value = *_datap; 													break; \
-        case 's': *_datap = ((*_datap) & (~_mask)) | _value;							break; \
-        case 'w': *_datap = _value;														break; \
+        switch (opt) { \
+        case 'C': _datum <<= (*valuep); *_datap &= ~_datum;							break; \
+        case 'S': _datum <<= (*valuep); *_datap = ((*_datap) & (~_mask)) | _datum;	break; \
+        case 'c': *_datap &= ~_value;												break; \
+        case 'r': _value = *_datap; 												break; \
+        case 's': *_datap = ((*_datap) & (~_mask)) | _value;						break; \
+        case 'w': *_datap = _value;													break; \
         } \
         diminuto_barrier(); \
-        if (debug && ((_OPT_) == 'r')) { fprintf(stderr, "%s: after t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
-        if ((_OPT_) == 'r') { printf("%llu\n", (diminuto_unsigned_t)_value); } \
-        *_VALUEP_ = _value; \
+        if (debug && (opt == 'r')) { fprintf(stderr, "%s: after t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
+        if (opt == 'r') { printf("%llu\n", (diminuto_unsigned_t)_value); } \
+        *valuep = _value; \
     } while (0)
 
 static int operate(
@@ -97,10 +97,10 @@ static int operate(
     }
 
     switch (size) {
-    case sizeof(uint8_t):	OPERATE(opt, datap, mask, valuep, uint8_t);		break;
-    case sizeof(uint16_t):	OPERATE(opt, datap, mask, valuep, uint16_t);	break;
-    case sizeof(uint32_t):	OPERATE(opt, datap, mask, valuep, uint32_t);	break;
-    case sizeof(uint64_t):	OPERATE(opt, datap, mask, valuep, uint64_t);	break;
+    case sizeof(uint8_t):	OPERATE(uint8_t);	break;
+    case sizeof(uint16_t):	OPERATE(uint16_t);	break;
+    case sizeof(uint32_t):	OPERATE(uint32_t);	break;
+    case sizeof(uint64_t):	OPERATE(uint64_t);	break;
     }
 
 
@@ -126,7 +126,7 @@ static void usage(void)
     fprintf(stderr, "       -d            Enable debug mode\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
-    fprintf(stderr, "       -m NUMBER     Mask at ADDRESS with ~NUMBER prior to any set\n");
+    fprintf(stderr, "       -m NUMBER     Mask at ADDRESS with ~NUMBER prior to subsequent sets\n");
     fprintf(stderr, "       -o            Enable core dumps\n");
     fprintf(stderr, "       -r            Read ADDRESS\n");
     fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
