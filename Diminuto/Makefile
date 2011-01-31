@@ -23,7 +23,7 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	4
-MINOR		=	1
+MINOR		=	2
 BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects
@@ -106,19 +106,19 @@ VENDOR		=	Atmel
 TARGET		=	at91rm9200ek
 
 BUILDROOT_REV	=	22987
-BUSYBOX_REV	=	1.11.1
+BUSYBOX_REV		=	1.11.1
 
 BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
-PROJECT_DIR	=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
+PROJECT_DIR		=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
 FAKEROOT_DIR	=	$(PROJECT_DIR)/root
-BUSYBOX_DIR	=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
-CONFIG_DIR	=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
+BUSYBOX_DIR		=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
+CONFIG_DIR		=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
 DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
 DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
-FICL_DIR	=	$(ROOT_DIR)/ficl-4.0.31
-UTILS_DIR	=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
-DOC_DIR		=	doc
+FICL_DIR		=	$(ROOT_DIR)/ficl-4.0.31
+UTILS_DIR		=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
+DOC_DIR			=	doc
 
 TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP	=	$(shell date +%Y%m%d)
@@ -129,33 +129,35 @@ CFILES		=	$(wildcard *.c)
 HFILES		=	$(wildcard *.h)
 MFILES		=	$(wildcard modules/*.c)
 
-HOSTPROGRAMS	=	dbdi dcscope dgdb diminuto dlib
-TARGETOBJECTS	=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
-TARGETMODULES	=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
-TARGETSCRIPTS	=	S10provision
-TARGETBINARIES	=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec hex oct usectime usecsleep
-TARGETUNITTESTS	=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
-TARGETARCHIVE	=	lib$(PROJECT).a
-TARGETSHARED	=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-TARGETLIBRARIES	=	$(TARGETARCHIVE) $(TARGETSHARED)
-TARGETPROGRAMS	=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETUNITTESTS)
-TARGETDEFAULT	=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
-TARGETPACKAGE	=	$(TARGETDEFAULT) $(TARGETMODULES)
-ARTIFACTS	=	$(TARGETLIBRARIES) doxygen-local.cf
+HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
+TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
+TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
+TARGETSCRIPTS		=	S10provision
+TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep
+TARGETALIASES		=	hex oct
+TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
+TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
+TARGETARCHIVE		=	lib$(PROJECT).a
+TARGETSHARED		=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
+TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
+TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
+TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETMODULES)
+ARTIFACTS			=	$(TARGETLIBRARIES) doxygen-local.cf
 
-DIMINUTO_SO	=	lib$(PROJECT).so
+DIMINUTO_SO		=	lib$(PROJECT).so
 DESPERADO_SO	=	libdesperado.so
-FICL_SO		=	libficl.so
+FICL_SO			=	libficl.so
 
 DIMINUTO_LIB	=	$(DIMINUTO_SO).[0-9]*.[0-9]*.[0-9]*
 DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
-FICL_LIB	=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
+FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
 
 SCRIPT		=	dummy
 
-CC		=	$(CROSS_COMPILE)gcc
-CXX		=	$(CROSS_COMPILE)g++
-AR		=	$(CROSS_COMPILE)ar
+CC			=	$(CROSS_COMPILE)gcc
+CXX			=	$(CROSS_COMPILE)g++
+AR			=	$(CROSS_COMPILE)ar
 RANLIB		=	$(CROSS_COMPILE)ranlib
 STRIP		=	$(CROSS_COMPILE)strip
 
@@ -431,6 +433,9 @@ unittest-heap:	unittest-heap.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-pool:	unittest-pool.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers

@@ -59,8 +59,8 @@
 #	define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #elif defined(CONFIG_MACH_OMAP3_BEAGLE)
 	/* Beagle Board: Cascada, Contraption default to USER BUTTON via GPIO1. */
-#	define DIMINUTO_MMDRIVER_BEGIN (0x48310000)
-#	define DIMINUTO_MMDRIVER_END (DIMINUTO_MMDRIVER_BEGIN + 0x1000)
+#	define DIMINUTO_MMDRIVER_BEGIN (0x48310038)
+#	define DIMINUTO_MMDRIVER_END (DIMINUTO_MMDRIVER_BEGIN + sizeof(uint32_t))
 #else
 	/* Presumed to be defined via an insmod parameter at install time. */
 #	define DIMINUTO_MMDRIVER_BEGIN (0)
@@ -118,11 +118,7 @@ mmdriver_operation_read(
     const void * pointer,
     diminuto_mmdriver_op * opp
 ) {
-    int rc;
-
-    rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum));
-
-    return rc;
+    return diminuto_kernel_get(pointer, opp->width, &(opp->datum));
 }
 
 static int
@@ -130,25 +126,11 @@ mmdriver_operation_write(
     void * pointer,
     diminuto_mmdriver_op * opp
 ) {
-    int rc;
-    diminuto_datum_value tmp;
-
-    do {
-
-        tmp = opp->datum;
-
-        if ((rc = diminuto_kernel_get(pointer, opp->width, &(opp->datum)))) {
-            break;
-        }
-
-        if ((rc = diminuto_kernel_put(pointer, opp->width, &tmp))) {
-            break;
-        }
-
-    } while (0);
-
-    return rc;
+	return diminuto_kernel_put(pointer, opp->width, &(opp->datum));
 }
+
+
+#define MMDRIVER_OPERATION_SET(_WIDTH_)  do { tmp.DIMINUTO_DATUM_VALUE(_WIDTH_) = (opp->datum.DIMINUTO_DATUM_VALUE(_WIDTH_) & (~opp->mask.DIMINUTO_DATUM_VALUE(_WIDTH_))) | tmp.DIMINUTO_DATUM_VALUE(_WIDTH_); } while (0)
 
 static int
 mmdriver_operation_set(
@@ -166,10 +148,10 @@ mmdriver_operation_set(
             break;
         }
 
-        if      (opp->width == EIGHT)     { tmp.eight     = (opp->datum.eight     & (~opp->mask.eight))     | tmp.eight;     }
-        else if (opp->width == SIXTEEN)   { tmp.sixteen   = (opp->datum.sixteen   & (~opp->mask.sixteen))   | tmp.sixteen;   }
-        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = (opp->datum.thirtytwo & (~opp->mask.thirtytwo)) | tmp.thirtytwo; }
-        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = (opp->datum.sixtyfour & (~opp->mask.sixtyfour)) | tmp.sixtyfour; }
+        if      (opp->width == WIDTH8)  MMDRIVER_OPERATION_SET(8);
+        else if (opp->width == WIDTH16) MMDRIVER_OPERATION_SET(16);
+        else if (opp->width == WIDTH32) MMDRIVER_OPERATION_SET(32);
+        else if (opp->width == WIDTH64) MMDRIVER_OPERATION_SET(64);
         else {
             rc = -EINVAL;
             break;
@@ -183,6 +165,8 @@ mmdriver_operation_set(
 
     return rc;
 }
+
+#define MMDRIVER_OPERATION_CLEAR(_WIDTH_)  do { tmp.DIMINUTO_DATUM_VALUE(_WIDTH_) = opp->datum.DIMINUTO_DATUM_VALUE(_WIDTH_) & ~tmp.DIMINUTO_DATUM_VALUE(_WIDTH_); } while (0)
 
 static int
 mmdriver_operation_clear(
@@ -200,10 +184,10 @@ mmdriver_operation_clear(
             break;
         }
 
-        if      (opp->width == EIGHT)     { tmp.eight     = opp->datum.eight     & ~tmp.eight;     }
-        else if (opp->width == SIXTEEN)   { tmp.sixteen   = opp->datum.sixteen   & ~tmp.sixteen;   }
-        else if (opp->width == THIRTYTWO) { tmp.thirtytwo = opp->datum.thirtytwo & ~tmp.thirtytwo; }
-        else if (opp->width == SIXTYFOUR) { tmp.sixtyfour = opp->datum.sixtyfour & ~tmp.sixtyfour; }
+        if      (opp->width == WIDTH8)  MMDRIVER_OPERATION_CLEAR(8);
+        else if (opp->width == WIDTH16) MMDRIVER_OPERATION_CLEAR(16);
+        else if (opp->width == WIDTH32) MMDRIVER_OPERATION_CLEAR(32);
+        else if (opp->width == WIDTH64) MMDRIVER_OPERATION_CLEAR(64);
         else {
             rc = -EINVAL;
             break;
@@ -251,7 +235,7 @@ mmdriver_ioctl(
 ) {
     int rc;
     diminuto_mmdriver_op op;
-    char * pointer;
+    void * pointer;
 
     pr_debug("mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
 
@@ -288,9 +272,9 @@ mmdriver_ioctl(
              */
 
             if      (cmd == DIMINUTO_MMDRIVER_READ)  { rc = mmdriver_operation_read(pointer, &op); }
-            else if (cmd == DIMINUTO_MMDRIVER_WRITE) { rc = mmdriver_operation_write(pointer, &op);  }
-            else if (cmd == DIMINUTO_MMDRIVER_SET)   { rc = mmdriver_operation_set(pointer, &op);    }
-            else if (cmd == DIMINUTO_MMDRIVER_CLEAR) { rc = mmdriver_operation_clear(pointer, &op);  }
+            else if (cmd == DIMINUTO_MMDRIVER_WRITE) { rc = mmdriver_operation_write(pointer, &op); }
+            else if (cmd == DIMINUTO_MMDRIVER_SET)   { rc = mmdriver_operation_set(pointer, &op); }
+            else if (cmd == DIMINUTO_MMDRIVER_CLEAR) { rc = mmdriver_operation_clear(pointer, &op); }
             else {
                 ++errors;
                 rc = -EINVAL;
