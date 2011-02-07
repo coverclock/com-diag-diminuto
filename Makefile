@@ -2,14 +2,14 @@
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
-
 # When I first started Diminuto, it began as both an exercise in using the open
 # source buildroot tool and as an associated Linux systems programming library
-# written in C. But with later projects like Arroyo, Cascada and Contraption,
-# the library became much more useful than the artifacts that came out of
-# buildroot. I've left in the buildroot rules, but have not tested them in ages
-# and would not expect them to work. The library I use all the time. So the
-# default behavior of this makefile is to just build the library.
+# and toolkit written in C. But with later projects like Arroyo, Cascada and
+# Contraption, the library and toolkit built on top of it became much more
+# useful than the artifacts that came out of buildroot. I've left in the
+# buildroot rules, but have not tested them in ages and would not expect them
+# to work. The library and toolkit I use all the time. So the default behavior
+# of this makefile is to just build the library and toolkit.
 
 ########## Variables
 
@@ -24,7 +24,7 @@ PRODUCT		=	buildroot
 
 MAJOR		=	4
 MINOR		=	2
-BUILD		=	0
+BUILD		=	1
 
 HOME_DIR	=	$(HOME)/projects
 
@@ -69,7 +69,8 @@ ARCH		=	arm
 PLATFORM	=	linux
 CPPARCH		=
 CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
-LDARCH		=	-static
+#LDARCH		=	-static
+LDARCH		=	-Bdynamic
 CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
 KERNEL_REV	=	2.6.32
 KERNEL_DIR	=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
@@ -129,6 +130,14 @@ CFILES		=	$(wildcard *.c)
 HFILES		=	$(wildcard *.h)
 MFILES		=	$(wildcard modules/*.c)
 
+DIMINUTO_SO		=	lib$(PROJECT).so
+DESPERADO_SO	=	libdesperado.so
+FICL_SO			=	libficl.so
+
+DIMINUTO_LIB	=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD)
+DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
+FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
+
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
 TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
@@ -138,20 +147,12 @@ TARGETALIASES		=	hex oct
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVE		=	lib$(PROJECT).a
-TARGETSHARED		=	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHARED		=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTO_SO).$(MAJOR).$(MINOR) $(DIMINUTO_SO).$(MAJOR) $(DIMINUTO_SO)
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETMODULES)
 ARTIFACTS			=	$(TARGETLIBRARIES) doxygen-local.cf
-
-DIMINUTO_SO		=	lib$(PROJECT).so
-DESPERADO_SO	=	libdesperado.so
-FICL_SO			=	libficl.so
-
-DIMINUTO_LIB	=	$(DIMINUTO_SO).[0-9]*.[0-9]*.[0-9]*
-DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
-FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
 
 SCRIPT		=	dummy
 
@@ -282,15 +283,15 @@ S10provision:	S10provision.sh getubenv
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so:	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
 	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so )
-	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so )
+	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
 	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR) )
-	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR) )
+	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR) )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR) )
-	( cd $(LOCALLIB_DIR); ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR) )
+	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR) )
 
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
@@ -299,15 +300,15 @@ $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(
 
 lib$(PROJECT).so:	lib$(PROJECT).so.$(MAJOR)
 	rm -f lib$(PROJECT).so
-	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so
+	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so
 
 lib$(PROJECT).so.$(MAJOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR)
 	rm -f lib$(PROJECT).so.$(MAJOR)
-	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR)
+	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR)
 
 lib$(PROJECT).so.$(MAJOR).$(MINOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	ln -s lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
+	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
 
 lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
 	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTS)
