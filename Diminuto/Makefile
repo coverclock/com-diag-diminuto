@@ -22,9 +22,9 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	4
-MINOR		=	2
-BUILD		=	1
+MAJOR		=	5
+MINOR		=	0
+BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects
 
