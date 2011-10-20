@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_unittest.h"
-#include "diminuto_fletcher8.h"
+#include "diminuto/diminuto_unittest.h"
+#include "diminuto/diminuto_fletcher8.h"
 
 int main(void)
 {

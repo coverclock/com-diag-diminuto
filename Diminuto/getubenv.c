@@ -42,7 +42,7 @@
  * Copyright 2000 Wolfgang Denk<BR>
  */
 
-#include "diminuto_map.h"
+#include "diminuto/diminuto_map.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

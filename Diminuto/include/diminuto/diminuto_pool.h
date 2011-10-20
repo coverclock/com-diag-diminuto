@@ -11,8 +11,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_types.h"
-#include "diminuto_list.h"
+#include "diminuto/diminuto_types.h"
+#include "diminuto/diminuto_list.h"
 
 typedef diminuto_list diminuto_pool;
 

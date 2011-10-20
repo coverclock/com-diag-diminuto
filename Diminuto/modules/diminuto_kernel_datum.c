@@ -14,8 +14,8 @@
  * modules and device drivers.
  */
 
-#include "diminuto_datum.h"
-#include "diminuto_barrier.h"
+#include "diminuto/diminuto_datum.h"
+#include "diminuto/diminuto_barrier.h"
 #include <linux/module.h>
 #include <linux/io.h>
 #include <asm/errno.h>

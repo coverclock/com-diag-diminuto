@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_heap.h"
-#include "diminuto_unittest.h"
+#include "diminuto/diminuto_heap.h"
+#include "diminuto/diminuto_unittest.h"
 
 static uint64_t data = 0;
 

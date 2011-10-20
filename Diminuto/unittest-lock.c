@@ -8,10 +8,10 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_unittest.h"
-#include "diminuto_core.h"
-#include "diminuto_lock.h"
-#include "diminuto_log.h"
+#include "diminuto/diminuto_unittest.h"
+#include "diminuto/diminuto_core.h"
+#include "diminuto/diminuto_lock.h"
+#include "diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>

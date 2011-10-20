@@ -8,9 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_core.h"
-#include "diminuto_delay.h"
-#include "diminuto_time.h"
+#include "diminuto/diminuto_core.h"
+#include "diminuto/diminuto_delay.h"
+#include "diminuto/diminuto_time.h"
 #include <stdio.h>
 #include <errno.h>
 

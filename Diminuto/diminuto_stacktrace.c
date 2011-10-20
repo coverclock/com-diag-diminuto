@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_stacktrace.h"
+#include "diminuto/diminuto_stacktrace.h"
 #include <unistd.h>
 #include <execinfo.h>
 

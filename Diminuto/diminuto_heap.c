@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_heap.h"
+#include "diminuto/diminuto_heap.h"
 
 diminuto_heap_alloc_func * diminuto_heap_alloc_funcp = 0;
 diminuto_heap_free_func * diminuto_heap_free_funcp = 0;

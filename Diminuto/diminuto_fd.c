@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_fd.h"
-#include "diminuto_log.h"
+#include "diminuto/diminuto_fd.h"
+#include "diminuto/diminuto_log.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

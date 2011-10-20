@@ -13,11 +13,11 @@
 
 ########## Variables
 
-#COMPILEFOR	=	host
+COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
 #COMPILEFOR	=	arroyo
 #COMPILEFOR	=	cascada
-COMPILEFOR	=	contraption
+#COMPILEFOR	=	contraption
 
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
@@ -29,6 +29,7 @@ BUILD		=	1
 HOME_DIR	=	$(HOME)/projects
 
 ifeq ($(COMPILEFOR),diminuto)
+# Build for the AT91RM9200-EK board with the BuildRoot kernel.
 ARCH		=	arm
 PLATFORM	=	linux
 CPPARCH		=
@@ -41,6 +42,7 @@ INCLUDE_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/project_build_arm/$(PROJECT)/$(P
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
+# Build for the AT91RM9200-EK board with the Arroyo kernel.
 ARCH		=	arm
 PLATFORM	=	linux
 CPPARCH		=
@@ -53,6 +55,7 @@ INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),cascada)
+# Build for the BeagleBoard C4 with the Angstrom kernel.
 ARCH		=	arm
 PLATFORM	=	linux
 CPPARCH		=
@@ -65,6 +68,7 @@ INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),contraption)
+# Build for the BeagleBoard C4 with the FroYo Android 2.2 kernel.
 ARCH		=	arm
 PLATFORM	=	linux
 CPPARCH		=
@@ -78,15 +82,17 @@ INCLUDE_DIR	=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),host)
+# Build for my build server with the Ubuntu kernel.
 ARCH		=	i386
 PLATFORM	=	linux
 CPPARCH		=
 CARCH		=
 LDARCH		=	
 CROSS_COMPILE	=
-KERNEL_REV	=	2.6.32-25
+KERNEL_REV	=	2.6.32-31
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-INCLUDE_DIR	=	$(KERNEL_DIR)/include
+#INCLUDE_DIR	=	$(KERNEL_DIR)/include
+INCLUDE_DIR	=	/usr/include
 endif
 
 HERE		:=	$(shell pwd)
@@ -163,7 +169,7 @@ RANLIB		=	$(CROSS_COMPILE)ranlib
 STRIP		=	$(CROSS_COMPILE)strip
 
 ARFLAGS		=	rcv
-CPPFLAGS	=	$(CPPARCH) -isystem $(INCLUDE_DIR)
+CPPFLAGS	=	$(CPPARCH) -iquoteinclude -isystem $(INCLUDE_DIR)
 CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
@@ -446,8 +452,8 @@ unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
 modules/Makefile:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o diminuto_kernel_datum.o diminuto_kernel_map.o" >> $@
-	echo "EXTRA_CFLAGS := -I$(HERE)/modules -I$(HERE)" >> $@
-	#echo "EXTRA_CFLAGS := -I$(HERE)/modules -I$(HERE) -DDEBUG" >> $@
+	echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include" >> $@
+	#echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include -DDEBUG" >> $@
 
 ${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules

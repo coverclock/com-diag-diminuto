@@ -8,11 +8,11 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_ipc.h"
-#include "diminuto_time.h"
-#include "diminuto_timer.h"
-#include "diminuto_delay.h"
-#include "diminuto_unittest.h"
+#include "diminuto/diminuto_ipc.h"
+#include "diminuto/diminuto_time.h"
+#include "diminuto/diminuto_timer.h"
+#include "diminuto/diminuto_delay.h"
+#include "diminuto/diminuto_unittest.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>

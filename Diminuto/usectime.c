@@ -21,7 +21,7 @@
  */
 
 #include <stdio.h>
-#include "diminuto_time.h"
+#include "diminuto/diminuto_time.h"
 
 int main(int argc, char ** argv)
 {

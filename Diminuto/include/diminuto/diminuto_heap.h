@@ -18,7 +18,7 @@
  * bread.)
  */
 
-#include "diminuto_types.h"
+#include "diminuto/diminuto_types.h"
 #include <stdlib.h>
 
 typedef void * (diminuto_heap_alloc_func)(size_t size);
