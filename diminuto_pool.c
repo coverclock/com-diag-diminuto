@@ -8,9 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_pool.h"
-#include "diminuto_heap.h"
-#include "diminuto_log.h"
+#include "diminuto/diminuto_pool.h"
+#include "diminuto/diminuto_heap.h"
+#include "diminuto/diminuto_log.h"
 
 #define diminuto_pool_root(_POINTER_)
 

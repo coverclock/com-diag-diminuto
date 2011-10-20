@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_endianess.h"
+#include "diminuto/diminuto_endianess.h"
 #include <stdio.h>
 
 int main(void)

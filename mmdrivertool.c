@@ -21,9 +21,9 @@
  * real memory address space through the generic memory map driver.
  */
 
-#include "diminuto_number.h"
-#include "diminuto_delay.h"
-#include "diminuto_mmdriver.h"
+#include "diminuto/diminuto_number.h"
+#include "diminuto/diminuto_delay.h"
+#include "diminuto/diminuto_mmdriver.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

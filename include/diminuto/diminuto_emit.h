@@ -14,7 +14,7 @@
  * single translation unit.
  */
 
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 #include <stdint.h>
 
 typedef uint64_t diminuto_log_mask_t;

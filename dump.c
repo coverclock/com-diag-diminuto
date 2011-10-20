@@ -22,7 +22,7 @@
  * Dumps stdin to stdout or to stderr while copying stdin to stdout.
  */
 
-#include "diminuto_dump.h"
+#include "diminuto/diminuto_dump.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>

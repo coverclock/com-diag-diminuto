@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_barrier.h"
+#include "diminuto/diminuto_barrier.h"
 
 /*
  * This is mostly just to insure it compiles.

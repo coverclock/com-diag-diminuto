@@ -13,7 +13,7 @@
  * space such as kernel modules and device drivers.
  */
 
-#include "diminuto_map.h"
+#include "diminuto/diminuto_map.h"
 #include <linux/module.h>
 #include <asm/page.h>
 #include <asm/errno.h>

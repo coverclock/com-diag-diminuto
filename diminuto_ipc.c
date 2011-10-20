@@ -9,10 +9,10 @@
  * Ported from the Desperado::Service class.
  */
 
-#include "diminuto_ipc.h"
-#include "diminuto_fd.h"
-#include "diminuto_number.h"
-#include "diminuto_log.h"
+#include "diminuto/diminuto_ipc.h"
+#include "diminuto/diminuto_fd.h"
+#include "diminuto/diminuto_number.h"
+#include "diminuto/diminuto_log.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>

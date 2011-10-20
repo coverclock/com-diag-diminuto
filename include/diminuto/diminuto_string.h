@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_types.h"
+#include "diminuto/diminuto_types.h"
 
 /**
  * Copys no more than (n - 1) characters up to and including the

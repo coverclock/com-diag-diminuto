@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_types.h"
+#include "diminuto/diminuto_types.h"
 
 /**
  * Parses a string in a strtoll-like manner, returning a pointer to the

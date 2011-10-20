@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_types.h"
+#include "diminuto/diminuto_types.h"
 
 #define DIMINUTO_STACKTRACE_SIZE    64
 

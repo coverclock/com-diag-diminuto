@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_number.h"
+#include "diminuto/diminuto_number.h"
 #include <stdlib.h>
 #include <errno.h>
 

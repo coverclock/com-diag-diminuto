@@ -10,10 +10,10 @@
  * @see http://www-theorie.physik.unizh.ch/~dpotter/howto/daemonize
  */
 
-#include "diminuto_daemon.h"
-#include "diminuto_lock.h"
-#include "diminuto_delay.h"
-#include "diminuto_log.h"
+#include "diminuto/diminuto_daemon.h"
+#include "diminuto/diminuto_lock.h"
+#include "diminuto/diminuto_delay.h"
+#include "diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

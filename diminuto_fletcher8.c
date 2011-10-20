@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Concha.html<BR>
  */
 
-#include "diminuto_fletcher8.h"
+#include "diminuto/diminuto_fletcher8.h"
 
 void * diminuto_fletcher8(const void * buffer, size_t length, uint8_t * ap, uint8_t * bp)
 {

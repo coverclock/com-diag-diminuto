@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 
 static void maybe(void)
 {
@@ -16,7 +16,7 @@ static void maybe(void)
 }
 
 #define DIMINUTO_LOG_DISABLE
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 
 static void no(void)
 {
@@ -24,7 +24,7 @@ static void no(void)
 }
 
 #undef DIMINUTO_LOG_DISABLE
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 
 static void yes(void)
 {
@@ -51,7 +51,7 @@ static void all(void)
 #define DIMINUTO_LOG_NOTICE_DISABLE
 #define DIMINUTO_LOG_INFORMATION_DISABLE
 #define DIMINUTO_LOG_DEBUG_DISABLE
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 
 static void none(void)
 {
@@ -80,7 +80,7 @@ EXPORT_SYMBOL(diminuto_log_subsystem);
 #undef DIMINUTO_LOG_DEBUG_DISABLE
 #undef DIMINUTO_LOG_MASK
 #define DIMINUTO_LOG_MASK diminuto_log_subsystem[0]
-#include "diminuto_log.h"
+#include "diminuto/diminuto_log.h"
 
 static void mine(void)
 {

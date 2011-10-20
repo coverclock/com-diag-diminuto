@@ -8,12 +8,12 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_unittest.h"
-#include "diminuto_core.h"
-#include "diminuto_delay.h"
-#include "diminuto_alarm.h"
-#include "diminuto_time.h"
-#include "diminuto_timer.h"
+#include "diminuto/diminuto_unittest.h"
+#include "diminuto/diminuto_core.h"
+#include "diminuto/diminuto_delay.h"
+#include "diminuto/diminuto_alarm.h"
+#include "diminuto/diminuto_time.h"
+#include "diminuto/diminuto_timer.h"
 #include <stdio.h>
 #include <errno.h>
 
