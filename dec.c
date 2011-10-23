@@ -37,7 +37,7 @@
  * Allows input and output in bases in other than decimal in scripts.
  */
 
-#include "diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_number.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

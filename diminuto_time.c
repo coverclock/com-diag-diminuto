@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_time.h"
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <sys/time.h>
 

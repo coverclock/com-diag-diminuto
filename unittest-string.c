@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_string.h"
-#include "diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_string.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include <string.h>
 #include <stdio.h>
 

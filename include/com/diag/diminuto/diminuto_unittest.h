@@ -19,7 +19,7 @@
  * go directly to JUnit.)
  */
 
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdlib.h>
 
 static int diminuto_unittest_errors = 0;

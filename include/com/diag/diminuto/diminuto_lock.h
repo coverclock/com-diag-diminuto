@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * Create a lock file with the specified path and name (e.g.

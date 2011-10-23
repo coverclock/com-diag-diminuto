@@ -8,10 +8,10 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_pool.h"
-#include "diminuto/diminuto_heap.h"
-#include "diminuto/diminuto_countof.h"
-#include "diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_pool.h"
+#include "com/diag/diminuto/diminuto_heap.h"
+#include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdlib.h>
 
 static int count = 0;

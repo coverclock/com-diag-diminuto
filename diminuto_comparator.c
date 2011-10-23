@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_comparator.h"
+#include "com/diag/diminuto/diminuto_comparator.h"
 #include <string.h>
 #include <stdint.h>
 

@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_delay.h"
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <sched.h>
 #include <errno.h>
 /* #define _POSIX_C_SOURCE 199309 */

@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * Start a timer for the specified number of microseconds. When the timer

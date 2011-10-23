@@ -20,7 +20,7 @@
  * user-state program.
  */
 
-#include "diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_types.h"
 
 typedef union {
     uint8_t  value8;

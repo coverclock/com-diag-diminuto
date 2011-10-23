@@ -8,10 +8,10 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_unittest.h"
-#include "diminuto/diminuto_stacktrace.h"
-#include "diminuto/diminuto_number.h"
-#include "diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_stacktrace.h"
+#include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <stdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>

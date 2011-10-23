@@ -8,12 +8,12 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_unittest.h"
-#include "diminuto/diminuto_core.h"
-#include "diminuto/diminuto_delay.h"
-#include "diminuto/diminuto_alarm.h"
-#include "diminuto/diminuto_time.h"
-#include "diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_alarm.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_timer.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -43,7 +43,7 @@ int main(int argc, char ** argv)
         EXPECT(!diminuto_alarm_check());
         computed = (requested * 2) - remaining;
         measured = now - then;
-        printf("%10llu %10llu %10lld\n",
+        printf("%10llu %10lld %10lld\n",
             requested, computed, measured);
     }
 
