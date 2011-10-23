@@ -9,8 +9,8 @@
  */
 
 #include <linux/module.h>
-#include "diminuto/diminuto_types.h"
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "unittest-log.h"
 
 static diminuto_log_mask_t diminuto_utmodule_mask = -1;

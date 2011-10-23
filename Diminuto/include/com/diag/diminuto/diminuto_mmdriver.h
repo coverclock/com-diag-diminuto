@@ -25,7 +25,7 @@
  *  INCLUDES
  ******************************************************************************/
 
-#include "diminuto/diminuto_datum.h"
+#include "com/diag/diminuto/diminuto_datum.h"
 #include <asm/ioctl.h>
 
 /*******************************************************************************

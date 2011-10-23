@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_timer.h"
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <sys/time.h>
 
 static diminuto_usec_t diminuto_timer(int which, diminuto_usec_t microseconds, int periodic)

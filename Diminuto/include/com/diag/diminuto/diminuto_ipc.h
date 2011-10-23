@@ -14,7 +14,7 @@
  * IPV4 sockets. It was ported from the Desperado library.
  */
 
-#include "diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * Convert a hostname or an IPV4 address string in dot notation into an IPV4

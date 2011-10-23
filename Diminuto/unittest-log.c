@@ -8,9 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_unittest.h"
-#include "diminuto/diminuto_daemon.h"
-#include "diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_daemon.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "unittest-log.h"
 
 int main(int argc, char ** argv)

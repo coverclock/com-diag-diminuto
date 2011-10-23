@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_list.h"
+#include "com/diag/diminuto/diminuto_list.h"
 
 diminuto_list * diminuto_list_init(
     diminuto_list * nodep

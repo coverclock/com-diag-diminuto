@@ -32,8 +32,8 @@
  *		insmod diminuto_mmdriver.ko begin=0x80000000 end=0x80001000
  */
 
-#include "diminuto/diminuto_mmdriver.h"
-#include "diminuto/diminuto_map.h"
+#include "com/diag/diminuto/diminuto_mmdriver.h"
+#include "com/diag/diminuto/diminuto_map.h"
 #include <linux/autoconf.h>
 #include <linux/types.h>
 #include <linux/kernel.h>

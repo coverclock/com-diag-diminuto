@@ -8,8 +8,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto/diminuto_hangup.h"
-#include "diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_hangup.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
 #include <errno.h>

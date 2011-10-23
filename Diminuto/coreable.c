@@ -21,7 +21,7 @@
  * generated in the event that it fails.
  */
 
-#include "diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_core.h"
 #include <unistd.h>
 #include <errno.h>
 

@@ -41,9 +41,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "diminuto/diminuto_time.h"
-#include "diminuto/diminuto_delay.h"
-#include "diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_number.h"
 
 void usage(const char * pgm, FILE * fp)
 {

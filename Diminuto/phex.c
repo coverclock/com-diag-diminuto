@@ -31,8 +31,8 @@
  * but intended to mean "print hex".
  */
 
-#include "diminuto/diminuto_serial.h"
-#include "diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_serial.h"
+#include "com/diag/diminuto/diminuto_number.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>

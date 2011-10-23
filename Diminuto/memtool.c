@@ -21,11 +21,11 @@
  * real memory addresses. Should probably only be run as root.
  */
 
-#include "diminuto/diminuto_map.h"
-#include "diminuto/diminuto_number.h"
-#include "diminuto/diminuto_delay.h"
-#include "diminuto/diminuto_barrier.h"
-#include "diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_map.h"
+#include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_barrier.h"
+#include "com/diag/diminuto/diminuto_core.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
