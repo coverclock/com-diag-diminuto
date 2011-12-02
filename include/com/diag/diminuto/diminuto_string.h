@@ -32,7 +32,7 @@ extern char * diminuto_strscpy(char * dest, const char * src, size_t n);
  * Hence only stores up to (size - 1) characters to leave room for the
  * terminating NUL. Unfortunately does fill the destination character array
  * with NULs if the underlying snprintf() does so.
- * @oaram str points to the destination character array.
+ * @param str points to the destination character array.
  * @param size is the size of the destination character array.
  * @param format points to the format string in the style of printf().
  * @return the number of characters printed not including the trailing NUL,
