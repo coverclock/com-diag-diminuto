@@ -31,7 +31,6 @@ extern diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t 
  * address in host byte order. Since a single host can map to multiple
  * addresses, the first address is returned.
  * @param hostname points to the hostname or IP address string.
- * @param index indicates which IP address to return.
  * @return the IPV4 address or 0 if no such hostname or the string is invalid.
  */
 extern diminuto_ipv4_t diminuto_ipc_address(const char * hostname);
@@ -253,7 +252,6 @@ extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t
  * in host byte order.
  * @param portp if non-NULL points to where the port will be stored
  * in host byte order.
- * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
