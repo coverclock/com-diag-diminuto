@@ -68,7 +68,7 @@ void * diminuto_map_map(uintptr_t start, size_t length, void ** startp, size_t *
 
 int diminuto_map_unmap(void ** startp, size_t * lengthp)
 {
-    int rc;
+    int rc = 0;
 
     if (*lengthp == 0) {
         /* Do nothing. */
