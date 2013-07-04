@@ -1,4 +1,4 @@
-# Copyright 2008-2011 Digital Aggregates Corporation, Colorado, USA
+# Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
@@ -22,8 +22,8 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	5
-MINOR		=	3
+MAJOR		=	6
+MINOR		=	0
 BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects

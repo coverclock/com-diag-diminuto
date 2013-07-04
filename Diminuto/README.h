@@ -4,7 +4,7 @@
 
 /*******************************************************************************
 
-    Copyright 2008-2010 by the Digital Aggregates Corporation, Colorado, USA.
+    Copyright 2008-2013 by the Digital Aggregates Corporation, Colorado, USA.
 
     ----------------------------------------------------------------------
 
@@ -75,28 +75,8 @@
 
     vi Makefile                 # establish your configuration
     make depend                 # make dependencies
-    make all                  	# make library, executables, and modules
-
-    The current version of Diminuto has been built and tested on the
-    following platforms:
-
-        Dell 530 P4
-        Linux 2.6.22
-        gcc 4.1.3
-        glibc 2.6.1
-
-        Atmel AT91RM9200-EK ARM9
-        Linux 2.6.26
-        gcc 4.2.3
-        Sourcery G++ Lite 2008q1-126
-
-    Prior versions of Diminuto have been built and tested on the following
-    platforms:
-
-        Atmel AT91RM9200-EK ARM9
-        Linux 2.6.25
-        gcc 4.2.4
-        uClibc 0.9.29
+    make						# make library, executables
+    make all                  	# make library, executables, and kernel modules
 
 *******************************************************************************/
 
