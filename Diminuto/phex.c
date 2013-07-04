@@ -33,6 +33,7 @@
 
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_phex.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,77 +42,7 @@
 #include <termio.h>
 
 static const int LENGTH = 80;
-
 static const char * program = "phex";
-static int debug = 0;
-
-static void limit(FILE * fp, const size_t length, ssize_t increment)
-{
-    static size_t current = 0;
-    static int end = 0;
-
-    if (length == 0) {
-        /* Do nothing. */
-    } else if ((increment < 0) && (!end)) {
-        fputc('\n', fp);
-        end = !0;
-    } else if ((increment == 0) && (current > 0) && (!end)) {
-        fputc('\n', fp);
-        end = !0;
-    } else if ((current += increment) > length) {
-        fputc('\n', fp);
-        end = !0;
-        current = increment;
-    } else {
-        end = 0;
-    }
-}
-
-static void phex(FILE * fp, unsigned char ch, size_t length, int nl, int esc, int hex)
-{
-    /*                                 BEL  BS   TAB  LF   VT   FF   CR  */
-    static unsigned char special[] = { 'a', 'b', 't', 'n', 'v', 'f', 'r' };
-
-    if ((ch == '\0') && hex) {
-        limit(fp, length, 4);
-        fprintf(fp, "\\x%2.2x", ch);
-    } else if (ch == '\0') {
-        limit(fp, length, 2);
-        fputc('\\', fp);
-        fputc('0', fp);
-    } else if ((ch == '\n') && nl) {
-        limit(fp, length, -1);
-    } else if ((('\a' <= ch) && (ch <= '\r')) && hex) {
-        limit(fp, length, 4);
-        fprintf(fp, "\\x%2.2x", ch);
-    } else if (('\a' <= ch) && (ch <= '\r')) {
-        limit(fp, length, 2);
-        fputc('\\', fp);
-        fputc(special[ch - '\a'], fp);
-    } else if ((ch == '\\') && hex) {
-        limit(fp, length, 4);
-        fprintf(fp, "\\x%2.2x", ch);
-    } else if (ch == '\\') {
-        limit(fp, length, 2);
-        fputc('\\', fp);
-        fputc(ch, fp);
-    } else if (((ch == '"') || (ch == '\'') || (ch == '?')) && esc && hex) {
-        limit(fp, length, 4);
-        fprintf(fp, "\\x%2.2x", ch);
-    } else if (((ch == '"') || (ch == '\'') || (ch == '?')) && esc) {
-        limit(fp, length, 2);
-        fputc('\\', fp);
-        fputc(ch, fp);
-    } else if ((' ' <= ch) && (ch <= '~')) {
-        limit(fp, length, 1);
-        fputc(ch, fp);
-    } else {
-        limit(fp, length, 4);
-        fprintf(fp, "\\x%2.2x", ch);
-    }
-
-    (void)fflush(fp);
-}
 
 static void usage(FILE * fp)
 {
@@ -126,6 +57,8 @@ static void usage(FILE * fp)
 
 int main(int argc, char * argv[])
 {
+    size_t current = 0;
+    int end = 0;
     int esc = 0;
     size_t length = LENGTH;
     int nl = 0;
@@ -195,11 +128,11 @@ int main(int argc, char * argv[])
     }
 
     while ((ch = fgetc(stdin)) != EOF) {
-        phex(out, ch, length, nl, esc, hex);
+        diminuto_phex_emit(out, ch, length, nl, esc, hex, &current, &end, !0);
         if (out == stderr) { fputc(ch, stdout); }
     }
 
-    limit(out, length, 0);
+    diminuto_phex_limit(out, length, 0, &current, &end);
 
     return 0;
 }

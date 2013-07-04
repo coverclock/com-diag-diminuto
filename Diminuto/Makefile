@@ -89,7 +89,7 @@ CPPARCH		=
 CARCH		=
 LDARCH		=	
 CROSS_COMPILE	=
-KERNEL_REV	=	2.6.32-31
+KERNEL_REV	=	3.2.0-39
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 #INCLUDE_DIR	=	$(KERNEL_DIR)/include
 INCLUDE_DIR	=	/usr/include
@@ -182,7 +182,7 @@ BROWSER		=	firefox
 
 .PHONY:	default all install host-install target-path target-install config-backup tftp-install package dist distribution build
 
-default:	$(TARGETPACKAGE)
+default:	$(TARGETDEFAULT)
 
 all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
 
