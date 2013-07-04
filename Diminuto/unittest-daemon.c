@@ -128,7 +128,7 @@ int main(int argc, char ** argv)
     rc = diminuto_lock_unlock(LOCKFILE);
     ASSERT(rc < 0);
 
-    CHECKPOINT("DAEMON");
+    CHECKPOINT("DAEMON\n");
 
     EXIT();
 }

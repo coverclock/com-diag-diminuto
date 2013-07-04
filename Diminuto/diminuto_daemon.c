@@ -99,7 +99,7 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
 
         /* Make sure we are not already a daemon. */
 
-        if ((ppid = getppid())  < 0) {
+        if ((ppid = getppid()) < 0) {
             diminuto_serror("diminuto_daemon: getppid");
             break;
         }
@@ -159,7 +159,7 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
 		if (pid > 0) {
 			if (!alarmed) {
 				alarm(10);
-				if (!alarmed) {
+				while (!alarmed) {
 					pause();
 				}
 			}
@@ -236,6 +236,23 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
             break;
         }
 
+        /*
+         * So why do we do all this stuff below? I saw an interesting bug
+         * the other day while helping someone else debug their code. The
+         * developer had closed file descriptors 0, 1, and 2, daemonized
+         * using his own technique, and then opened sockets to communicate with
+         * other processes. But a function in an underlying framework continued
+         * to use printf to emit debug messages. The FILE stdout was still
+         * using file descriptor 1, but that was now a socket for some
+         * completely different purpose. The receiver got all confused
+         * because this application was sending it debug output instead of
+         * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
+         * /dev/null, and then we make sure that stdin, stdout, and stderr are
+         * also redirected to /dev/null. And then we close everything else.
+         * We have to be careful not to close the file descriptor associated
+         * with sending stuff to syslog.
+         */
+
         /* Redirect the big three descriptors to /dev/null. */
 
         if ((fd = open("/dev/null", O_RDONLY, 0)) < 0) {
@@ -290,13 +307,17 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
         } else if (freopen("/dev/null", "r", stdin) == (FILE *)0) {
             diminuto_serror("diminuto_daemon: freopen(stdin)");
             break;
+        } else {
+        	/* Do nothing. */
         }
 
         if (fileno(stdout) == STDOUT_FILENO) {
         	/* Do nothing. */
-       } else if (freopen("/dev/null", "w", stdout) == (FILE *)0) {
+        } else if (freopen("/dev/null", "w", stdout) == (FILE *)0) {
             diminuto_serror("diminuto_daemon: freopen(stdout)");
             break;
+        } else {
+        	/* Do nothing. */
         }
 
         if (fileno(stdout) == STDOUT_FILENO) {
@@ -304,6 +325,8 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
         } else if (freopen("/dev/null", "w", stderr) == (FILE *)0) {
             diminuto_serror("diminuto_daemon: freopen(stderr)");
             break;
+        } else {
+        	/* Do nothing. */
         }
 
         /* Close the system log socket. */
@@ -333,9 +356,9 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
 
         /* Open a new system log socket. */
 
-        openlog(name, LOG_CONS | LOG_PID, LOG_USER);
+        openlog((name != (const char *)0) ? name : "(diminuto_daemon)", LOG_CONS | LOG_PID, LOG_USER);
 
-        /* If forced to fail, fail. */
+        /* If forced to fail, fail now. */
 
         if (fail) {
         	errno = 0;
