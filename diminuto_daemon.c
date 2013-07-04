@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <linux/limits.h>
 
 static int alarmed = 0;
 
@@ -82,7 +83,7 @@ static int diminuto_daemon_default(int signum)
     return 0;
 }
 
-int diminuto_daemon_test(const char * name, const char * file, int fail)
+int diminuto_daemon_full(const char * name, const char * file, unsigned int timeout, int fail)
 {
     int signum = SIGALRM;
     pid_t ppid = -1;
@@ -158,7 +159,7 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
 	if (pid != 0) {
 		if (pid > 0) {
 			if (!alarmed) {
-				alarm(10);
+				alarm(timeout);
 				while (!alarmed) {
 					pause();
 				}
@@ -414,5 +415,5 @@ int diminuto_daemon_test(const char * name, const char * file, int fail)
 
 int diminuto_daemon(const char * name, const char * file)
 {
-	return diminuto_daemon_test(name, file, 0);
+	return diminuto_daemon_full(name, file, 10, 0);
 }
