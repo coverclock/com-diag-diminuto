@@ -180,7 +180,7 @@ BROWSER		=	firefox
 
 ########## Main Entry Points
 
-.PHONY:	default all install host-install target-path target-install config-backup tftp-install package dist distribution build
+.PHONY:	default all install host-install target-path target-install config-backup tftp-install package distribution distributionfull build
 
 default:	$(TARGETDEFAULT)
 
@@ -221,6 +221,11 @@ package:	$(TARGETPACKAGE)
 dist:	distribution
 
 distribution:
+	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
+
+distributionfull:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
