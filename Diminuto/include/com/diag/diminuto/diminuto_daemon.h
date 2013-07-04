@@ -22,12 +22,13 @@
  * child process. All errors, whether they occurred in the parent or the
  * child, are however unconditionally logged to the system log. This function
  * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
- * @param name is the name used for logging to the system log.
- * @param file if non-null is the path and name of a lock file to be used.
- * @param fail if true forces the child to fail.
+ * @param name is the name used for the system log.
+ * @param file if non-null is the path and name of a lock/pid file to be used.
+ * @param timeout is the number of seconds to wait for the child to respond.
+ * @param fail if true forces the child to fail (useful for testing).
  * @return 0 to the child upon success, -1 to the parent otherwise.
  */
-extern int diminuto_daemon_test(const char * name, const char * file, int fail);
+extern int diminuto_daemon_full(const char * name, const char * file, unsigned int timeout, int fail);
 
 /**
  * Daemonize the application so that it cannot be affected by the invoking
@@ -40,8 +41,8 @@ extern int diminuto_daemon_test(const char * name, const char * file, int fail);
  * child process. All errors, whether they occurred in the parent or the
  * child, are however unconditionally logged to the system log. This function
  * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
- * @param name is the name used for logging to the system log.
- * @param file if non-null is the path and name of a lock file to be used.
+ * @param name is the name used for the system log and the lock file.
+ * @param file if non-null is the path and name of a lock/pid file to be used.
  * @return 0 to the child upon success, -1 to the parent otherwise.
  */
 extern int diminuto_daemon(const char * name, const char * file);

@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
 
     diminuto_lock_unlock(LOCKFILE);
 
-    rc = diminuto_daemon_test(LOGNAME, LOCKFILE, !0);
+    rc = diminuto_daemon_full(LOGNAME, LOCKFILE, 10, !0);
     ASSERT(rc < 0);
 
     pid8 = getpid();
