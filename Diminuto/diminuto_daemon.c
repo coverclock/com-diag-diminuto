@@ -23,7 +23,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <linux/limits.h>
 
 static int alarmed = 0;
 
