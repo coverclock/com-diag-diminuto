@@ -195,11 +195,11 @@ extern void diminuto_log_emit(const char * format, ...);
 /******************************************************************************/
 
 #if !defined(DIMINUTO_LOG_MASK)
-#define DIMINUTO_LOG_MASK diminuto_log_mask
+#	define DIMINUTO_LOG_MASK diminuto_log_mask
 #endif
 
 #if defined(DIMINUTO_LOG_ENABLED)
-#undef DIMINUTO_LOG_ENABLED
+#	undef DIMINUTO_LOG_ENABLED
 #endif
 
 #define DIMINUTO_LOG_ENABLED(_MASK_) (((DIMINUTO_LOG_MASK) & (_MASK_)) != 0)
@@ -207,124 +207,124 @@ extern void diminuto_log_emit(const char * format, ...);
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG)
-#undef DIMINUTO_LOG
+#	undef DIMINUTO_LOG
 #endif
 
 #if defined(DIMINUTO_LOG_IF)
-#undef DIMINUTO_LOG_IF
+#	undef DIMINUTO_LOG_IF
 #endif
 
 #if defined(DIMINUTO_LOG_DISABLE)
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) ((void)0)
-#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) ((void)0)
 
 #elif defined(__KERNEL__) || defined(MODULE)
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__)
-#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__) : ((void)0))
+#	define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__) : ((void)0))
 
 #else
 
-#define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
-#define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
+#	define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
 
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_EMERGENCY)
-#undef DIMINUTO_LOG_EMERGENCY
+#	undef DIMINUTO_LOG_EMERGENCY
 #endif
 
 #if defined(DIMINUTO_LOG_EMERGENCY_DISABLE)
-#define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) ((void)0)
 #else 
-#define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ALERT)
-#undef DIMINUTO_LOG_ALERT
+#	undef DIMINUTO_LOG_ALERT
 #endif
 
 #if defined(DIMINUTO_LOG_ALERT_DISABLE)
-#define DIMINUTO_LOG_ALERT(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_ALERT(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_ALERT(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_ALERT(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_CRITICAL)
-#undef DIMINUTO_LOG_CRITICAL
+#	undef DIMINUTO_LOG_CRITICAL
 #endif
 
 #if defined(DIMINUTO_LOG_CRITICAL_DISABLE)
-#define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ERROR)
-#undef DIMINUTO_LOG_ERROR
+#	undef DIMINUTO_LOG_ERROR
 #endif
 
 #if defined(DIMINUTO_LOG_ERROR_DISABLE)
-#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_WARNING)
-#undef DIMINUTO_LOG_WARNING
+#	undef DIMINUTO_LOG_WARNING
 #endif
 
 #if defined(DIMINUTO_LOG_WARNING_DISABLE)
-#define DIMINUTO_LOG_WARNING(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_WARNING(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_WARNING(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_WARNING(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_NOTICE)
-#undef DIMINUTO_LOG_NOTICE
+#	undef DIMINUTO_LOG_NOTICE
 #endif
 
 #if defined(DIMINUTO_LOG_NOTICE_DISABLE)
-#define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_INFORMATION)
-#undef DIMINUTO_LOG_INFORMATION
+#	undef DIMINUTO_LOG_INFORMATION
 #endif
 
 #if defined(DIMINUTO_LOG_INFORMATION_DISABLE)
-#define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/
 
 #if defined(DIMINUTO_LOG_DEBUG)
-#undef DIMINUTO_LOG_DEBUG
+#	undef DIMINUTO_LOG_DEBUG
 #endif
 
 #if defined(DIMINUTO_LOG_DEBUG_DISABLE)
-#define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) ((void)0)
+#	define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) ((void)0)
 #else
-#define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, _FORMAT_, ## __VA_ARGS__)
+#	define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, _FORMAT_, ## __VA_ARGS__)
 #endif
 
 /******************************************************************************/

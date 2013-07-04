@@ -20,12 +20,13 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_token.h"
 #include <stdlib.h>
 
 static int diminuto_unittest_errors = 0;
 
-#define CHECKPOINT(_STRING_) \
-    diminuto_log_log(LOG_NOTICE, "%s@%d: CHECKPOINT \"%s\"\n", __FILE__, __LINE__, _STRING_)
+#define CHECKPOINT(...) \
+    diminuto_log_log(LOG_NOTICE, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__)
 
 /**
  * @def EXIT()

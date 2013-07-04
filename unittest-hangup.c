@@ -19,7 +19,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-static const char * file = "/tmp/unittest-hangup.pid";
+static const char LOGNAME[] = "unittest-hangup";
+static const char LOCKFILE[] = "/tmp/unittest-hangup.pid";
 
 int main(int argc, char ** argv)
 {
@@ -29,11 +30,11 @@ int main(int argc, char ** argv)
 
 	if (argc > 1) {
 
-		diminuto_hangup_signal(diminuto_lock_check(file));
+		diminuto_hangup_signal(diminuto_lock_check(LOCKFILE));
 
 	} else {
 
-		rc = diminuto_daemon(file);
+		rc = diminuto_daemon(LOGNAME, LOCKFILE);
 		if (rc < 0) { return 2; }
 
 		rc = diminuto_hangup_install(0);
@@ -43,7 +44,7 @@ int main(int argc, char ** argv)
 			diminuto_delay(1000000, 1);
 		}
 
-        rc = diminuto_lock_unlock(file);
+        rc = diminuto_lock_unlock(LOCKFILE);
 		if (rc < 0) { return 4; }
 
 	}
