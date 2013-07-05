@@ -450,6 +450,9 @@ unittest-pool:	unittest-pool.c $(TARGETLIBRARIES)
 unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+unittest-testify:	unittest-testify.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
 ########## Drivers
 
 .PHONY:	drivers drivers-clean
