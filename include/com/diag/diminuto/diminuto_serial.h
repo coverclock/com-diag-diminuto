@@ -13,7 +13,20 @@
 
 #include <stdio.h>
 
-extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybits, int stopbits, int modemcontrol);
+/**
+ * If the specified file descriptor identifies a device that is a terminal
+ * (whatever the operating system thinks that means), places, sets the port
+ * according to the specified speed and data format and enables or disables
+ * modem control. For example, "115200 8n1" would be (fd, 115200, 8, 0, 1, 0).
+ * @param fd is the file descriptor.
+ * @param bitspersecond is the desired speed (e.g. 9600, 115200).
+ * @param databits is the number of data bits (e.g. 5, 6, 7, or 8).
+ * @param paritybit is zero for no parity, even for even, odd for odd.
+ * @param stopbits is the number of stop bits (e.g. 1 or 2).
+ * @param modemcontrol if true enables modem control, otherwise disables it.
+ * @return 0 for success or <0 if an error occurred.
+ */
+extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol);
 
 /**
  * If the specified file descriptor identifies a device that is a
@@ -27,7 +40,7 @@ extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int pari
 extern int diminuto_serial_raw(int fd);
 
 /**
- * If the specified file stream identifies a device that is a terminal
+ * If the specified FILE stream identifies a device that is a terminal
  * (whatever the operating system thinks that means), eliminates any
  * buffering of output to the port such that output characters are
  * emitted immediately.

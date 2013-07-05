@@ -48,7 +48,7 @@ extern void diminuto_phex_limit(FILE * fp, const size_t length, ssize_t incremen
  * @param hex if true causes normally escaped characters to be printed in hex (try false).
  * @param currentp points to a state variable initialized to zero.
  * @param endp points to a state variable initialized to zero.
- * @param flush if true causes the FILE to be flushed at the end of each emit.
+ * @param flush if true causes the FILE to be flushed at the end of each emit (try true).
  */
 extern void diminuto_phex_emit(FILE * fp, unsigned char ch, size_t length, int nl, int esc, int hex, size_t * currentp, int * endp, int flush);
 
