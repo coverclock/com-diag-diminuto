@@ -13,6 +13,8 @@
 
 #include <stdio.h>
 
+extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybits, int stopbits, int modemcontrol);
+
 /**
  * If the specified file descriptor identifies a device that is a
  * terminal (whatever the operating system thinks that means), places the

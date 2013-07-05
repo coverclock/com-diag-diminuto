@@ -34,7 +34,7 @@
  * @param currentp points to a state variable initialized to zero.
  * @param endp points to a state variable initialized to zero.
  */
-void diminuto_phex_limit(FILE * fp, const size_t length, ssize_t increment, size_t * currentp, int * endp);
+extern void diminuto_phex_limit(FILE * fp, const size_t length, ssize_t increment, size_t * currentp, int * endp);
 
 /**
  * Emit a character to an output FILE in a printable form that is more or less
@@ -50,6 +50,6 @@ void diminuto_phex_limit(FILE * fp, const size_t length, ssize_t increment, size
  * @param endp points to a state variable initialized to zero.
  * @param flush if true causes the FILE to be flushed at the end of each emit.
  */
-void diminuto_phex_emit(FILE * fp, unsigned char ch, size_t length, int nl, int esc, int hex, size_t * currentp, int * endp, int flush);
+extern void diminuto_phex_emit(FILE * fp, unsigned char ch, size_t length, int nl, int esc, int hex, size_t * currentp, int * endp, int flush);
 
 #endif
