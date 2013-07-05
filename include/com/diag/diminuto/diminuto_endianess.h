@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdint.h>
+#include "com/diag/diminuto/diminuto_types.h"
 
 /*
  * I use a union now instead of the older trick of casting an integer pointer
@@ -25,6 +25,6 @@ static union { uint32_t word; uint8_t bytes[sizeof(uint32_t)]; } diminuto_endian
  * the compiler to trivially inline this.
  * @return !0 if little endian, 0 if big endian.
  */
-static int diminuto_littleendian(void) { return diminuto_endian.bytes[0]; }
+static inline int diminuto_littleendian(void) { return diminuto_endian.bytes[0]; }
 
 #endif

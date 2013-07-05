@@ -9,8 +9,8 @@
  */
 
 #include "com/diag/diminuto/diminuto_comparator.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <string.h>
-#include <stdint.h>
 
 int diminuto_compare_strings(const void * a, const void * b)
 {

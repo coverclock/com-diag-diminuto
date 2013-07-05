@@ -9,6 +9,9 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1146,
+ * 1990-03
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -19,7 +22,8 @@
  * is for the caller to append the bytes (in that order) to the end of the
  * checksummed data block. A running checksum is computed: the caller should
  * initialize the A and B bytes to zero before calling the function at the
- * beginning of the block to be checksummed.
+ * beginning of the block to be checksummed. Additional data blocks can be
+ * added to the checksum.
  * @param buffer points to the starting octet at which to begin checksumming.
  * @param length is the number of octets over which to checksum.
  * @param ap points to the A byte which must initially be zero.
