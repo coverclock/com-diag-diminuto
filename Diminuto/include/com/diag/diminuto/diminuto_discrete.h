@@ -26,7 +26,7 @@
  * http://www.eng.utah.edu/~cs5780/debouncing.pdf
  */
 
-#include <stdint.h>
+#include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * This holds the state for the debouncer.
