@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_DEBUG_
-#define _H_COM_DIAG_DIMINUTO_DEBUG_
+#ifndef _H_COM_DIAG_DIMINUTO_EMIT_
+#define _H_COM_DIAG_DIMINUTO_EMIT_
 
 /**
  * @file
@@ -63,7 +63,7 @@ extern diminuto_log_mask_t diminuto_log_mask;
  * logged to this layer.
  */
 #if !defined(DIMINUTO_LOG_LAYER)
-#define DIMINUTO_LOG_LAYER DIMINUTO_LAYER_OTHER
+#	define DIMINUTO_LOG_LAYER DIMINUTO_LAYER_OTHER
 #endif
 
 /*
@@ -72,19 +72,19 @@ extern diminuto_log_mask_t diminuto_log_mask;
  */
 
 #if !defined(DIMINUTO_LOG_ERROR_ENABLE)
-#define DIMINUTO_LOG_ERROR_ENABLE (1)
+#	define DIMINUTO_LOG_ERROR_ENABLE (1)
 #endif
 
 #if defined(DIMINUTO_LOG_ERROR)
-#undef DIMINUTO_LOG_ERROR
+#	undef DIMINUTO_LOG_ERROR
 #endif
 
 #if DIMINUTO_LOG_ERROR_ENABLE
-#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
-    DIMINUTO_LOG_EMIT(\
-        DIMINUTO_LOG_MASK(DIMINUTO_LOG_LAYER, DIMINUTO_PRIORITY_ERROR), \
-        LOG_ERR, _FORMAT_, __VA_ARGS__)
+#	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
+		DIMINUTO_LOG_EMIT(\
+				DIMINUTO_LOG_MASK(DIMINUTO_LOG_LAYER, DIMINUTO_PRIORITY_ERROR), \
+				LOG_ERR, _FORMAT_, __VA_ARGS__)
 #else
-#define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
-    ((void)0)
+#	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
+		((void)0)
 #endif
