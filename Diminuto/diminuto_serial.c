@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <termio.h>
 
-int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybits, int stopbits, int modemcontrol)
+int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol)
 {
 	int rc = -1;
 	int error = 0;
@@ -149,7 +149,7 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybits,
 		}
 
 	    if (!isatty(fd)) {
-            errno = EINVAL;
+            errno = ENOTTY;
             diminuto_perror("diminuto_serial_set: isatty");
             break;
         }
@@ -192,6 +192,8 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybits,
         	diminuto_perror("diminuto_serial_set: tcsetattr");
         	break;
         }
+
+        rc = 0;
 
 	} while (0);
 
