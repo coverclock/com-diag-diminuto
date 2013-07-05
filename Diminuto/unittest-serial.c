@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_serial.h"
-#include "com/diag/diminuto/diminuto_phex.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -35,9 +35,16 @@ int main(int argc, char * argv[])
     int modemcontrol = 0;
     const char * device = "/dev/null";
     FILE * fp;
-    int datum;
+    int input;
+    int output;
     size_t current = 0;
     int end = 0;
+    diminuto_usec_t now;
+    diminuto_usec_t then;
+    double elapsed;
+    size_t count;
+    int bitspercharacter;
+    int running = 0;
 
     program = ((program = strchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -101,6 +108,15 @@ int main(int argc, char * argv[])
 
     }
 
+    fd = open("/dev/null", O_RDWR);
+    ASSERT(fd >= 0);
+
+    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol);
+    ASSERT(rc < 0);
+
+    rc = close(fd);
+    ASSERT(rc == 0);
+
     CHECKPOINT("\"%s\" %d %d%c%d %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local");
 
     fd = open(device, O_RDWR);
@@ -118,11 +134,39 @@ int main(int argc, char * argv[])
     rc = diminuto_serial_unbuffered(fp);
     ASSERT(rc == 0);
 
+    bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
+    output = 0x00;
+
     while (!0) {
 
-    	datum = fgetc(fp);
-    	diminuto_phex_emit(stderr, datum, 80, 0, 0, 0, &current, &end, !0);
-    	fputc(datum, fp);
+        count = 0;
+    	then = diminuto_time();
+
+    	while (!0) {
+
+       		fputc(output, fp);
+     		input = fgetc(fp);
+
+     		if (!running) {
+     			CHECKPOINT("running\n");
+     			running = !0;
+     		}
+
+      		ASSERT(input == output);
+
+      		output = (output + 1) % (1 << (sizeof(char) * 8));
+
+      		++count;
+
+        	now = diminuto_time();
+        	if ((now - then) >= 1000000) {
+        		break;
+        	}
+
+    	}
+
+    	elapsed = (now - then) / 1000000.0;
+    	CHECKPOINT("%lu characters in %.6lf seconds at %d bits per second and %d bits per character\n", count, elapsed, bitspersecond, bitspercharacter);
 
     }
 
