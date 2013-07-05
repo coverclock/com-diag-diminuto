@@ -18,6 +18,6 @@
  * @param otherwise is returned if the testimony is invalid, ambiguous, NULL.
  * @return !0 for true or 0 for false.
  */
-int diminuto_testify(const char * testimony, int otherwise);
+extern int diminuto_testify(const char * testimony, int otherwise);
 
 #endif
