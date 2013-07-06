@@ -12,8 +12,6 @@
 #include "com/diag/diminuto/diminuto_heap.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
-#define diminuto_pool_root(_POINTER_)
-
 diminuto_pool_t * diminuto_pool_init(diminuto_pool_t * poolp, size_t size)
 {
     size = (sizeof(diminuto_list_t) + size + 7) & ~(size_t)7;
