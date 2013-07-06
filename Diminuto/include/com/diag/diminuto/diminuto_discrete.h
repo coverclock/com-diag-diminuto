@@ -48,8 +48,9 @@ typedef struct DiminutoDiscreteState {
 extern void diminuto_discrete_initialize(diminuto_discrete_state_t * statep, int initial);
 
 /**
- * Feed successive discrete samples to the debounce algorithm and return the
- * current state, high/true/asserted or low/false/deasserted.
+ * Feed the next successive discrete sample to the debounce algorithm and
+ * return the current debounced state, high/true/asserted or
+ * low/false/deasserted.
  * @param statep points to the discrete state structure.
  * @param input is the next input, 0 for false, !0 for true.
  * @return the debouncer output, 0 for false, !0 for true.
