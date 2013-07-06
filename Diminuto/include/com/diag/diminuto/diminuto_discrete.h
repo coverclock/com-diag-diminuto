@@ -45,7 +45,7 @@ typedef struct DiminutoDiscreteState {
  * @param statep points to the discrete state structure.
  * @param initial is the initial value, 0 for false, !0 for true.
  */
-extern void diminuto_discrete_initialize(diminuto_discrete_state_t * statep, int initial);
+extern void diminuto_discrete_init(diminuto_discrete_state_t * statep, int initial);
 
 /**
  * Feed the next successive discrete sample to the debounce algorithm and
