@@ -16,8 +16,8 @@
 
 int main(void)
 {
-	diminuto_datum_value value;
-	diminuto_datum_width width;
+	diminuto_datum_value_t value;
+	diminuto_datum_width_t width;
 
 	EXPECT(WIDTH8  == sizeof(uint8_t));
 	EXPECT(WIDTH16 == sizeof(uint16_t));

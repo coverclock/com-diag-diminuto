@@ -10,8 +10,8 @@
 
 #include "com/diag/diminuto/diminuto_list.h"
 
-diminuto_list * diminuto_list_init(
-    diminuto_list * nodep
+diminuto_list_t * diminuto_list_init(
+    diminuto_list_t * nodep
 ) {
     nodep->next = nodep;
     nodep->prev = nodep;
@@ -19,8 +19,8 @@ diminuto_list * diminuto_list_init(
     return nodep;
 }
 
-diminuto_list * diminuto_list_remove(
-    diminuto_list * nodep
+diminuto_list_t * diminuto_list_remove(
+    diminuto_list_t * nodep
 ) {
     if ((!diminuto_list_isroot(nodep)) && (!diminuto_list_isempty(nodep))) {
         nodep->next->prev = nodep->prev;
@@ -30,9 +30,9 @@ diminuto_list * diminuto_list_remove(
     return nodep;
 }
 
-diminuto_list * diminuto_list_insert(
-    diminuto_list * rootp,
-    diminuto_list * nodep
+diminuto_list_t * diminuto_list_insert(
+    diminuto_list_t * rootp,
+    diminuto_list_t * nodep
 ) {
     if (!diminuto_list_isempty(nodep)) {
         diminuto_list_remove(nodep);
@@ -45,19 +45,19 @@ diminuto_list * diminuto_list_insert(
     return nodep;
 }
 
-diminuto_list * diminuto_list_reroot(
-    diminuto_list * nodep
+diminuto_list_t * diminuto_list_reroot(
+    diminuto_list_t * nodep
 ) {
-    diminuto_list * nextp = nodep;
+    diminuto_list_t * nextp = nodep;
     do {
         nextp->root = nodep;
     } while ((nextp = diminuto_list_next(nextp)) != nodep);
     return nodep;
 }
 
-diminuto_list * diminuto_list_apply(
+diminuto_list_t * diminuto_list_apply(
     diminuto_list_functor * funcp,
-    diminuto_list * nodep,
+    diminuto_list_t * nodep,
     void * contextp
 ) {
     int rc;

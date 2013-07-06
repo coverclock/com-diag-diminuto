@@ -39,12 +39,12 @@
  *  DATA STRUCTURES
  ******************************************************************************/
 
-typedef struct {
+typedef struct DiminutoMmDriverOp {
     uintptr_t offset;               /* Offset from beginning of driver space */
-    diminuto_datum_width width;		/* Datum width */
-    diminuto_datum_value datum;		/* Datum value */
-    diminuto_datum_value mask;		/* Mask value */
-} diminuto_mmdriver_op;
+    diminuto_datum_width_t width;		/* Datum width */
+    diminuto_datum_value_t datum;		/* Datum value */
+    diminuto_datum_value_t mask;		/* Mask value */
+} diminuto_mmdriver_op_t;
 
 /*******************************************************************************
  *  I/O CONTROL COMMANDS
@@ -55,27 +55,27 @@ typedef struct {
  *
  * Read at address of length octets into data.
  */
-#define DIMINUTO_MMDRIVER_READ       _IOWR(DIMINUTO_MMDRIVER_MAGIC, 0, diminuto_mmdriver_op)
+#define DIMINUTO_MMDRIVER_READ       _IOWR(DIMINUTO_MMDRIVER_MAGIC, 0, diminuto_mmdriver_op_t)
 
 /**
  * @def DIMINUTO_MMDRIVER_WRITE
  *
  * Write data to address of length octets.
  */
-#define DIMINUTO_MMDRIVER_WRITE      _IOW(DIMINUTO_MMDRIVER_MAGIC, 1, diminuto_mmdriver_op)
+#define DIMINUTO_MMDRIVER_WRITE      _IOW(DIMINUTO_MMDRIVER_MAGIC, 1, diminuto_mmdriver_op_t)
 
 /**
  * @def DIMINUTO_MMDRIVER_SET
  *
  * Or at address of length octets with data.
  */
-#define DIMINUTO_MMDRIVER_SET        _IOW(DIMINUTO_MMDRIVER_MAGIC, 2, diminuto_mmdriver_op)
+#define DIMINUTO_MMDRIVER_SET        _IOW(DIMINUTO_MMDRIVER_MAGIC, 2, diminuto_mmdriver_op_t)
 
 /**
  * @def DIMINUTO_MMDRIVER_CLEAR
  *
  * And at address of length octets with bit inverse of data.
  */
-#define DIMINUTO_MMDRIVER_CLEAR      _IOW(DIMINUTO_MMDRIVER_MAGIC, 3, diminuto_mmdriver_op)
+#define DIMINUTO_MMDRIVER_CLEAR      _IOW(DIMINUTO_MMDRIVER_MAGIC, 3, diminuto_mmdriver_op_t)
 
 #endif

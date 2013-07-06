@@ -22,19 +22,19 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-typedef union {
+typedef union DiminutoDatumValue {
     uint8_t  value8;
     uint16_t value16;
     uint32_t value32;
     uint64_t value64;
-} diminuto_datum_value;
+} diminuto_datum_value_t;
 
-typedef enum {
+typedef enum DiminutoDatumWidth {
     WIDTH8  = sizeof(uint8_t),
     WIDTH16 = sizeof(uint16_t),
     WIDTH32 = sizeof(uint32_t),
     WIDTH64 = sizeof(uint64_t)
-} diminuto_datum_width;
+} diminuto_datum_width_t;
 
 #define DIMINUTO_DATUM_ALIGNMENT(_WIDTH_) (((_WIDTH_) / 8 ) - 1)
 #define DIMINUTO_DATUM_WIDTH(_WIDTH_) WIDTH ## _WIDTH_
@@ -51,7 +51,7 @@ typedef enum {
  * @param datump points to where the datum will be returned.
  * @return 0 for success, !0 otherwise.
  */
-extern int diminuto_kernel_get(const void * address, diminuto_datum_width width, diminuto_datum_value * datump);
+extern int diminuto_kernel_get(const void * address, diminuto_datum_width_t width, diminuto_datum_value * datump);
 
 /**
  * Puts a datum of a specified width to a virtual address.
@@ -61,7 +61,7 @@ extern int diminuto_kernel_get(const void * address, diminuto_datum_width width,
  * @param datump points to where the datum will be loaded.
  * @return 0 for success, !0 otherwise.
  */
-extern int diminuto_kernel_put(void * address, diminuto_datum_width width, const diminuto_datum_value * datump);
+extern int diminuto_kernel_put(void * address, diminuto_datum_width_t width, const diminuto_datum_value_t * datump);
 
 #endif
 

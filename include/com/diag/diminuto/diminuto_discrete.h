@@ -32,11 +32,11 @@
  * This holds the state for the debouncer.
  */
 typedef struct DiminutoDiscreteState {
-	uint8_t a;
-	uint8_t b;
-	uint8_t c;
-	uint8_t r;
-	uint8_t p;
+	int8_t a;
+	int8_t b;
+	int8_t c;
+	int8_t r;
+	int8_t p;
 } diminuto_discrete_state_t;
 
 /**
@@ -69,10 +69,10 @@ static inline int diminuto_discrete_state(const diminuto_discrete_state_t * stat
  * These are all the possible return values for the edge detector.
  */
 typedef enum DiminutoDiscreteEdge {
-	DIMINUTO_DISCRETE_EDGE_LOW		= (0 << 1) | 0, /* 0 */
-	DIMINUTO_DISCRETE_EDGE_RISING	= (0 << 1) | 1, /* 1 */
-	DIMINUTO_DISCRETE_EDGE_HIGH		= (1 << 1) | 1, /* 3 */
-	DIMINUTO_DISCRETE_EDGE_FALLING	= (1 << 1) | 0, /* 2 */
+	LOW		= (0 << 1) | 0, /* 0 */
+	RISING	= (0 << 1) | 1, /* 1 */
+	HIGH	= (1 << 1) | 1, /* 3 */
+	FALLING	= (1 << 1) | 0, /* 2 */
 } diminuto_discrete_edge_t;
 
 /**

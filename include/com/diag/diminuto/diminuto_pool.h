@@ -14,7 +14,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_list.h"
 
-typedef diminuto_list diminuto_pool;
+typedef diminuto_list_t diminuto_pool_t;
 
 /**
  * Initialize a pool for objects of the specified size. The pool is initially
@@ -24,14 +24,14 @@ typedef diminuto_list diminuto_pool;
  * @param size is the desired size of objects to be kept in the pool.
  * @return a pointer to the pool.
  */
-extern diminuto_pool * diminuto_pool_init(diminuto_pool * poolp, size_t size);
+extern diminuto_pool_t * diminuto_pool_init(diminuto_pool_t * poolp, size_t size);
 
 /**
  * Release all of the objects stored in the pool, freeing their memory.
  * @param poolp points to a pool.
  * @return a pointer to the pool.
  */
-extern diminuto_pool * diminuto_pool_fini(diminuto_pool * poolp);
+extern diminuto_pool_t * diminuto_pool_fini(diminuto_pool_t * poolp);
 
 /**
  * Allocate an object from the pool. If an object is in the pool, it
@@ -41,7 +41,7 @@ extern diminuto_pool * diminuto_pool_fini(diminuto_pool * poolp);
  * @param poolp points to the pool.
  * @return a pointer to an object of the desired size.
  */
-extern void * diminuto_pool_alloc(diminuto_pool * poolp);
+extern void * diminuto_pool_alloc(diminuto_pool_t * poolp);
 
 /**
  * Free an object back to the pool. The object is returned to the pool.

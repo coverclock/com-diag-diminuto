@@ -22,8 +22,8 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	6
-MINOR		=	1
+MAJOR		=	7
+MINOR		=	0
 BUILD		=	0
 
 HOME_DIR	=	$(HOME)/projects
@@ -451,6 +451,9 @@ unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-testify:	unittest-testify.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+unittest-discrete:	unittest-discrete.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers
