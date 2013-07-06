@@ -16,10 +16,10 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define END ((diminuto_list *)0)
+#define END ((diminuto_list_t *)0)
 
-static diminuto_list head;
-static diminuto_list node[3];
+static diminuto_list_t head;
+static diminuto_list_t node[3];
 static char * name[countof(node)] = { "node0", "node1", "node2" };
 
 /*
@@ -57,15 +57,15 @@ static void initialize(void)
         ASSERT(diminuto_list_data(&node[ii]) == name[ii]);
         ASSERT(diminuto_list_dataif(&node[ii]) == name[ii]);
     }
-    ASSERT(diminuto_list_dataif((diminuto_list *)0) == (void *)0);
+    ASSERT(diminuto_list_dataif((diminuto_list_t *)0) == (void *)0);
 }
 
-static void audit(const char * file, int line, diminuto_list * rootp, ...)
+static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
 {
-    diminuto_list * stack[countof(node) + 2];
+    diminuto_list_t * stack[countof(node) + 2];
     int ii;
-    diminuto_list * expected;
-    diminuto_list * actual;
+    diminuto_list_t * expected;
+    diminuto_list_t * actual;
     va_list ap;
 
 #if 0
@@ -77,7 +77,7 @@ static void audit(const char * file, int line, diminuto_list * rootp, ...)
     actual = rootp;
     ii = 0;
     va_start(ap, rootp);
-    while ((expected = va_arg(ap, diminuto_list *)) != END) {
+    while ((expected = va_arg(ap, diminuto_list_t *)) != END) {
         ASSERT(ii < countof(stack));
         stack[ii++] = expected;
         ASSERT(expected == actual);
@@ -398,7 +398,7 @@ int main(void)
     {
         /* Reroot */
 
-        diminuto_list temp;
+        diminuto_list_t temp;
 
         diminuto_list_init(&temp);
 
@@ -431,7 +431,7 @@ int main(void)
     {
         /* Replace 1 */
 
-        diminuto_list temp;
+        diminuto_list_t temp;
 
         diminuto_list_init(&temp);
 
@@ -453,7 +453,7 @@ int main(void)
     {
         /* Replace 2 */
 
-        diminuto_list temp;
+        diminuto_list_t temp;
 
         diminuto_list_init(&temp);
 
@@ -476,7 +476,7 @@ int main(void)
 
     {
         int ii;
-        diminuto_list * np;
+        diminuto_list_t * np;
 
         /* Iteration */
 

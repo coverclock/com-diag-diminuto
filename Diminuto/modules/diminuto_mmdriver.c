@@ -116,7 +116,7 @@ static DECLARE_MUTEX(semaphore);
 static int
 mmdriver_operation_read(
     const void * pointer,
-    diminuto_mmdriver_op * opp
+    diminuto_mmdriver_op_t * opp
 ) {
     return diminuto_kernel_get(pointer, opp->width, &(opp->datum));
 }
@@ -124,7 +124,7 @@ mmdriver_operation_read(
 static int
 mmdriver_operation_write(
     void * pointer,
-    diminuto_mmdriver_op * opp
+    diminuto_mmdriver_op_t * opp
 ) {
 	return diminuto_kernel_put(pointer, opp->width, &(opp->datum));
 }
@@ -135,10 +135,10 @@ mmdriver_operation_write(
 static int
 mmdriver_operation_set(
     void * pointer,
-    diminuto_mmdriver_op * opp
+    diminuto_mmdriver_op_t * opp
 ) {
     int rc;
-    diminuto_datum_value tmp;
+    diminuto_datum_value_t tmp;
 
     do {
 
@@ -171,10 +171,10 @@ mmdriver_operation_set(
 static int
 mmdriver_operation_clear(
     void * pointer,
-    diminuto_mmdriver_op * opp
+    diminuto_mmdriver_op_t * opp
 ) {
     int rc;
-    diminuto_datum_value tmp;
+    diminuto_datum_value_t tmp;
 
     do {
 
@@ -234,7 +234,7 @@ mmdriver_ioctl(
     unsigned long arg
 ) {
     int rc;
-    diminuto_mmdriver_op op;
+    diminuto_mmdriver_op_t op;
     void * pointer;
 
     pr_debug("mmdriver_ioctl(0x%08x,0x%08lx)\n", cmd, arg);
@@ -251,7 +251,7 @@ mmdriver_ioctl(
 
         do {
 
-            if ((_IOC_DIR(cmd) & _IOC_WRITE) && copy_from_user(&op, (diminuto_mmdriver_op *)arg, sizeof(op))) {
+            if ((_IOC_DIR(cmd) & _IOC_WRITE) && copy_from_user(&op, (diminuto_mmdriver_op_t *)arg, sizeof(op))) {
                 ++errors;
                 rc = -EFAULT;
                 break;
@@ -281,7 +281,7 @@ mmdriver_ioctl(
                 break;
             }
 
-            if ((_IOC_DIR(cmd) & _IOC_READ) && copy_to_user((diminuto_mmdriver_op *)arg, &op, sizeof(op))) {
+            if ((_IOC_DIR(cmd) & _IOC_READ) && copy_to_user((diminuto_mmdriver_op_t *)arg, &op, sizeof(op))) {
                 ++errors;
                 rc = -EFAULT;
                 break;

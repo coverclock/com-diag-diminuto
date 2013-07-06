@@ -47,7 +47,7 @@ static const char * number(const char * string, uint64_t * valuep)
     return result;
 }
 
-static int control(int fd, int request, diminuto_mmdriver_op * opp)
+static int control(int fd, int request, diminuto_mmdriver_op_t * opp)
 {
     int rc = -1;
 
@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
     int debug = 0;
     int opt;
     extern char * optarg;
-    diminuto_mmdriver_op op;
+    diminuto_mmdriver_op_t op;
 
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;

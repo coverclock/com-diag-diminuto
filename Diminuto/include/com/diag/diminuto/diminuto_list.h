@@ -88,14 +88,14 @@
  * interface.
  */
 
-struct diminuto_list;
+struct DiminutoList;
 
-typedef struct diminuto_list diminuto_list;
+typedef struct DiminutoList diminuto_list_t;
 
-struct diminuto_list {
-    diminuto_list * next;   /* Points to the next node on the list. */
-    diminuto_list * prev;   /* Points to the previous node on the list. */
-    diminuto_list * root;   /* Points to the root node of the list. */
+struct DiminutoList {
+    diminuto_list_t * next;   /* Points to the next node on the list. */
+    diminuto_list_t * prev;   /* Points to the previous node on the list. */
+    diminuto_list_t * root;   /* Points to the root node of the list. */
     void * data;            /* Points to the payload of the node. */
 };
 
@@ -165,8 +165,8 @@ struct diminuto_list {
  * @param nodep points to the node to be initialized.
  * @return a pointer to the initialized node.
  */
-extern diminuto_list * diminuto_list_init(
-    diminuto_list * nodep
+extern diminuto_list_t * diminuto_list_init(
+    diminuto_list_t * nodep
 );
 
 /**
@@ -208,8 +208,8 @@ extern diminuto_list * diminuto_list_init(
  * @param nodep points to the node to be removed.
  * @return a pointer to the removed node.
  */
-extern diminuto_list * diminuto_list_remove(
-    diminuto_list * nodep
+extern diminuto_list_t * diminuto_list_remove(
+    diminuto_list_t * nodep
 );
 
 /**
@@ -220,9 +220,9 @@ extern diminuto_list * diminuto_list_remove(
  * @param nodep points to the node to be inserted.
  * @return a pointer to the inserted node.
  */
-extern diminuto_list * diminuto_list_insert(
-    diminuto_list * rootp,
-    diminuto_list * nodep
+extern diminuto_list_t * diminuto_list_insert(
+    diminuto_list_t * rootp,
+    diminuto_list_t * nodep
 );
 
 /**
@@ -231,8 +231,8 @@ extern diminuto_list * diminuto_list_insert(
  * @param nodep points to the node to become the root of the list.
  * @return a pointer to the new root node.
  */
-extern diminuto_list * diminuto_list_reroot(
-    diminuto_list * nodep
+extern diminuto_list_t * diminuto_list_reroot(
+    diminuto_list_t * nodep
 );
 
 typedef int (diminuto_list_functor)(
@@ -255,9 +255,9 @@ typedef int (diminuto_list_functor)(
  * @param contextp points to the caller provided context or null.
  * @return a pointer to the node for which the functor returns zero.
  */
-extern diminuto_list * diminuto_list_apply(
+extern diminuto_list_t * diminuto_list_apply(
     diminuto_list_functor * funcp,
-    diminuto_list * nodep,
+    diminuto_list_t * nodep,
     void * contextp
 );
 
@@ -267,7 +267,7 @@ extern diminuto_list * diminuto_list_apply(
  * @a _NODEP_ is non-NULL, otherwise return NULL.
  */
 #define diminuto_list_dataif(_NODEP_) \
-    (((_NODEP_) != (diminuto_list *)0) ? ((_NODEP_)->data) : (void *)0)
+    (((_NODEP_) != (diminuto_list_t *)0) ? ((_NODEP_)->data) : (void *)0)
 
 /**
  * @def diminuto_list_head(_ROOTP_)
@@ -277,7 +277,7 @@ extern diminuto_list * diminuto_list_apply(
  */
 #define diminuto_list_head(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
-        ? (diminuto_list *)0 \
+        ? (diminuto_list_t *)0 \
         : diminuto_list_next(diminuto_list_root(_ROOTP_)))
 
 /**
@@ -288,7 +288,7 @@ extern diminuto_list * diminuto_list_apply(
  */
 #define diminuto_list_tail(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
-        ? (diminuto_list *)0 \
+        ? (diminuto_list_t *)0 \
         : diminuto_list_prev(diminuto_list_root(_ROOTP_)))
 
 /**
@@ -306,7 +306,7 @@ extern diminuto_list * diminuto_list_apply(
  */
 #define diminuto_list_pop(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
-        ? (diminuto_list *)0 \
+        ? (diminuto_list_t *)0 \
         : diminuto_list_remove(diminuto_list_next(diminuto_list_root(_ROOTP_))))
 
 /**
@@ -324,7 +324,7 @@ extern diminuto_list * diminuto_list_apply(
  */
 #define diminuto_list_dequeue(_ROOTP_) \
     (diminuto_list_isempty(diminuto_list_root(_ROOTP_)) \
-        ? (diminuto_list *)0 \
+        ? (diminuto_list_t *)0 \
         : diminuto_list_remove(diminuto_list_next(diminuto_list_root(_ROOTP_))))
 
 /**

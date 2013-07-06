@@ -11,6 +11,7 @@
 #include "com/diag/diminuto/diminuto_discrete.h"
 
 void diminuto_discrete_initialize(diminuto_discrete_state_t * statep, int initial) {
+	initial = !!initial;
 	statep->a = initial;
 	statep->b = initial;
 	statep->c = initial;
@@ -21,7 +22,7 @@ void diminuto_discrete_initialize(diminuto_discrete_state_t * statep, int initia
 int diminuto_discrete_debounce(diminuto_discrete_state_t * statep, int input) {
 	statep->c = statep->b;
 	statep->b = statep->a;
-	statep->a = input;
+	statep->a = !!input;
 	statep->p = statep->r;
 	return statep->r = (statep->p && (statep->a || statep->b || statep->c)) || (statep->a && statep->b && statep->c);
 }
@@ -29,15 +30,15 @@ int diminuto_discrete_debounce(diminuto_discrete_state_t * statep, int input) {
 diminuto_discrete_edge_t diminuto_discrete_edge(const diminuto_discrete_state_t * statep) {
 	if (!statep->p) {
 		if (!statep->r) {
-			return DIMINUTO_DISCRETE_EDGE_LOW;
+			return LOW;
 		} else {
-			return DIMINUTO_DISCRETE_EDGE_RISING;
+			return RISING;
 		}
 	} else {
 		if (!statep->r) {
-			return DIMINUTO_DISCRETE_EDGE_FALLING;
+			return FALLING;
 		} else {
-			return DIMINUTO_DISCRETE_EDGE_HIGH;
+			return HIGH;
 		}
 	}
 }

@@ -20,9 +20,9 @@ static size_t total = 0;
 static void * myalloc(size_t size)
 {
     ++count;
-    ASSERT(size == (sizeof(diminuto_list) + 8));
+    ASSERT(size == (sizeof(diminuto_list_t) + 8));
     total += size;
-    ASSERT(total == ((sizeof(diminuto_list) + 8)) * count);
+    ASSERT(total == ((sizeof(diminuto_list_t) + 8)) * count);
     return malloc(size);
 }
 
@@ -35,7 +35,7 @@ static void myfree(void * pointer)
 
 int main(void)
 {
-    diminuto_pool pool;
+    diminuto_pool_t pool;
     void *pa[5];
     void *pb[countof(pa)];
     int ii;
@@ -55,7 +55,7 @@ int main(void)
     }
 
     ASSERT(count == countof(pa));
-    ASSERT(total == ((sizeof(diminuto_list) + 8) * countof(pa)));
+    ASSERT(total == ((sizeof(diminuto_list_t) + 8) * countof(pa)));
 
     for (ii = 0; ii < countof(pa); ++ii) {
         for (jj = 0; jj < countof(pa); ++jj) {
