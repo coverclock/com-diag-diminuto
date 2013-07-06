@@ -15,7 +15,7 @@ int main(int argc, char ** argv)
 {
 	{
 		diminuto_discrete_state_t state;
-		diminuto_discrete_initialize(&state, 0);
+		diminuto_discrete_init(&state, 0);
 		ASSERT(!diminuto_discrete_debounce(&state, 0));
 		ASSERT(!diminuto_discrete_state(&state));
 		ASSERT(diminuto_discrete_edge(&state) == LOW);
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 
 	{
 		diminuto_discrete_state_t state;
-		diminuto_discrete_initialize(&state, 1);
+		diminuto_discrete_init(&state, 1);
 		ASSERT(diminuto_discrete_debounce(&state, !0));
 		ASSERT(diminuto_discrete_edge(&state) == HIGH);
 		ASSERT(diminuto_discrete_debounce(&state, !0));
@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
 
 	{
 		diminuto_discrete_state_t state;
-		diminuto_discrete_initialize(&state, 0);
+		diminuto_discrete_init(&state, 0);
 		ASSERT(!diminuto_discrete_debounce(&state, !0));
 		ASSERT(diminuto_discrete_edge(&state) == LOW);
 		ASSERT(!diminuto_discrete_debounce(&state, 0));
@@ -144,7 +144,7 @@ int main(int argc, char ** argv)
 
 	{
 		diminuto_discrete_state_t state;
-		diminuto_discrete_initialize(&state, 1);
+		diminuto_discrete_init(&state, 1);
 		ASSERT(diminuto_discrete_debounce(&state, 0));
 		ASSERT(diminuto_discrete_edge(&state) == HIGH);
 		ASSERT(diminuto_discrete_debounce(&state, !0));

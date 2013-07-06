@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_discrete.h"
 
-void diminuto_discrete_initialize(diminuto_discrete_state_t * statep, int initial) {
+void diminuto_discrete_init(diminuto_discrete_state_t * statep, int initial) {
 	initial = !!initial;
 	statep->a = initial;
 	statep->b = initial;
