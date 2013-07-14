@@ -45,7 +45,7 @@ int main(void)
 	ssize_t pagesize;
 	ssize_t linesize;
     diminuto_well_t * wellp;
-    object_t * pa[5];
+    object_t * pa[10];
     size_t ii;
     size_t jj;
     int kk;
