@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * It is really helpful to run this with the valgrind tool.
  */
 
 #include "com/diag/diminuto/diminuto_pool.h"

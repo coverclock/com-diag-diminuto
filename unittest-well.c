@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * It is really helpful to run this with the valgrind tool.
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
@@ -51,6 +53,8 @@ int main(void)
     int kk;
     unsigned long value;
 
+    ASSERT(sizeof(object_t) == (sizeof(int) * 3));
+
     ASSERT(!is_valid(0));
     ASSERT(!is_valid(1));
     ASSERT(!is_valid(3));
@@ -67,7 +71,9 @@ int main(void)
     printf("linesize=0x%x=%d\n", linesize, linesize);
     ASSERT(is_valid(linesize));
 
-    wellp = diminuto_well_init(sizeof(object_t), countof(pa));
+    /**/
+
+    wellp = diminuto_well_init(sizeof(object_t), countof(pa), sizeof(((object_t *)0)->a));
     ASSERT(wellp != (diminuto_well_t *)0);
     ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
 
@@ -101,6 +107,38 @@ int main(void)
 		ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
 
     }
+
+    diminuto_well_fini(wellp);
+
+    /**/
+
+    wellp = diminuto_well_init(sizeof(object_t), 2, 0);
+    ASSERT(wellp != (diminuto_well_t *)0);
+    ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
+
+    pa[0] = (object_t *)diminuto_well_alloc(wellp);
+	ASSERT(pa[0] != (object_t *)0);
+
+    pa[1] = (object_t *)diminuto_well_alloc(wellp);
+	ASSERT(pa[1] != (object_t *)0);
+
+	ASSERT(((char *)pa[1] - (char *)pa[0]) == linesize);
+
+    diminuto_well_fini(wellp);
+
+    /**/
+
+    wellp = diminuto_well_init(sizeof(object_t), 2, 8);
+    ASSERT(wellp != (diminuto_well_t *)0);
+    ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
+
+    pa[0] = (object_t *)diminuto_well_alloc(wellp);
+	ASSERT(pa[0] != (object_t *)0);
+
+    pa[1] = (object_t *)diminuto_well_alloc(wellp);
+	ASSERT(pa[1] != (object_t *)0);
+
+	ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_well_alignment(sizeof(object_t), 8));
 
     diminuto_well_fini(wellp);
 }
