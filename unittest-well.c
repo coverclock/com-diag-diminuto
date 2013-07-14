@@ -20,7 +20,7 @@ typedef struct Object {
 	int c;
 } object_t;
 
-static int is_a_power_of_two(unsigned long value) {
+static int is_valid(unsigned long value) {
 	int bits = 0;
 
 	if (value == 0) {
@@ -52,34 +52,37 @@ int main(void)
     int rc;
     unsigned long value;
 
-    ASSERT(!is_a_power_of_two(0));
-    ASSERT(!is_a_power_of_two(1));
-    ASSERT(!is_a_power_of_two(3));
-    ASSERT(!is_a_power_of_two(6));
+    ASSERT(!is_valid(0));
+    ASSERT(!is_valid(1));
+    ASSERT(!is_valid(3));
+    ASSERT(!is_valid(6));
 	for (value = 2; value > 0; value <<= 1) {
-    	ASSERT(is_a_power_of_two(value));
+    	ASSERT(is_valid(value));
     }
 
     pagesize = diminuto_well_pagesize();
     printf("pagesize=0x%x=%d\n", pagesize, pagesize);
-    ASSERT(is_a_power_of_two(pagesize));
+    ASSERT(is_valid(pagesize));
 
     linesize = diminuto_well_linesize();
     printf("linesize=0x%x=%d\n", linesize, linesize);
-    ASSERT(is_a_power_of_two(linesize));
+    ASSERT(is_valid(linesize));
 
     wellp = diminuto_well_init(sizeof(object_t), countof(pa));
     ASSERT(wellp != (diminuto_well_t *)0);
+    ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
 
     for (kk = 0; kk < 4; ++kk) {
 
 		for (ii = 0; ii < countof(pa); ++ii) {
-			pa[ii] = diminuto_well_alloc(wellp);
-			ASSERT(pa[ii] != (void *)0);
+			pa[ii] = (object_t *)diminuto_well_alloc(wellp);
+			ASSERT(pa[ii] != (object_t *)0);
 		}
 
+	    ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
+
 		for (ii = 0; ii < (countof(pa) - 1); ++ii) {
-			ASSERT(((char *)pa[ii] - (char *)pa[ii + 1]) == sizeof(object_t));
+			ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
 		}
 
 		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
