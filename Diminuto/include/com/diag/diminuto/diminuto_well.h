@@ -22,16 +22,35 @@
 typedef diminuto_list_t diminuto_well_t;
 
 /**
+ * These are handy constants that expose structure of the list array.
+ */
+enum DiminutoWellIndex {
+	DIMINUTO_WELL_FREE = 0,
+	DIMINUTO_WELL_USED = 1,
+	DIMINUTO_WELL_NODE = 2,
+};
+
+/**
+ * This feature likes to know the virtual page size and the cache line size
+ * in bytes. If it can't figure it out from looking the system, these are the
+ * values it uses. It is not super-critical that they be absolutely correct.
+ */
+enum DiminutoWellDefault {
+	DIMINUTO_WELL_PAGESIZE = 4096,
+	DIMINUTO_WELL_LINESIZE = 64,
+};
+
+/**
  * Return the size of virtual memory pages of the underlying platform.
  * @return the size of virtual memory pages in bytes or <0 if error.
  */
-extern ssize_t diminuto_well_pagesize();
+extern ssize_t diminuto_well_pagesize(void);
 
 /**
  * Return the size of level 1 cache lines of the underlying platform.
  * @return the size of cache lines in bytes or <0 of error.
  */
-extern ssize_t diminuto_well_linesize();
+extern ssize_t diminuto_well_linesize(void);
 
 /**
  * Allocate a well for objects of the specified size. The well is initially
