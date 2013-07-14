@@ -16,26 +16,28 @@
 #include <stdio.h>
 #include <errno.h>
 
-static const ssize_t PAGESIZE = 4096;
-static const ssize_t LINESIZE = 64;
-
-static const size_t FREE = 0;
-static const size_t USED = 1;
-
 ssize_t diminuto_well_pagesize()
 {
 	ssize_t pagesize;
 
 #if defined(DIMINUTO_PAGESIZE)
+
 	pagesize = DIMINUTO_PAGESIZE;
+
 #elif defined(_SC_PAGESIZE)
+
 	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-		pagesize = PAGESIZE;
+		diminuto_perror("sysconf(_SC_PAGESIZE)");
+		pagesize = DIMINUTO_WELL_PAGESIZE;
 	}
+
 #else
+
 	if ((pagesize = getpagesize()) < 0) {
-		pagesize = PAGESIZE;
+		diminuto_perror("getpagesize");
+		pagesize = DIMINUTO_WELL_PAGESIZE;
 	}
+
 #endif
 
 	return pagesize;
@@ -46,24 +48,63 @@ ssize_t diminuto_well_linesize()
 	ssize_t linesize;
 
 #if defined(DIMINUT_LINESIZE)
+
 	linesize = DIMINUTO_LINESIZE;
-#elif defined(_SC_LEVEL1_DCACHE_LINESIZE)
-	if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) < 0) {
-		linesize = LINESIZE;
-	}
+
 #else
+
 	FILE * fp;
-	if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r")) != (FILE *)0) {
-		if (ffscanf(fp, "%zd", &linesize) == 0) {
-			linesize = LINESIZE;
+	int rc;
+
+	do {
+
+#if defined(_SC_LEVEL1_DCACHE_LINESIZE)
+
+		if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) >= 0) {
+			break;
 		}
-	} else if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/coherency_line_size", "r")) != (FILE *)0) {
-		if (ffscanf(fp, "%zd", &linesize) == 0) {
-			linesize = LINESIZE;
+		diminuto_perror("sysconf(_SC_LEVEL1_DCACHE_LINESIZE)");
+
+#endif
+
+		if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r")) == (FILE *)0) {
+			/* Do nothing. */
+		} else if ((rc = fscanf(fp, "%zd", &linesize)) > 0) {
+			/* Do nothing. */
+		} else {
+			errno = EINVAL;
+			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size");
 		}
-	} else {
-		linesize = LINESIZE;
-	}
+		close(fp);
+		if (fp == (FILE *)0) {
+			/* Do nothing. */
+		} else if (rc <= 0) {
+			/* Do nothing. */
+		} else {
+			break;
+		}
+
+		if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/coherency_line_size", "r")) == (FILE *)0) {
+			/* Do nothing. */
+		} else if ((rc = fscanf(fp, "%zd", &linesize)) > 0) {
+			/* Do nothing. */
+		} else {
+			errno = EINVAL;
+			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/coherency_line_size");
+		}
+		close(fp);
+		if (fp == (FILE *)0) {
+			/* Do nothing. */
+		} else if (rc <= 0) {
+			/* Do nothing. */
+		} else {
+			break;
+		}
+
+		linesize = DIMINUTO_WELL_LINESIZE;
+
+	} while (0);
+
 #endif
 
 	return linesize;
@@ -88,7 +129,7 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 			break;
 		}
 
-		rc = posix_memalign(&control, pagesize, sizeof(diminuto_list_t) * (2 + count));
+		rc = posix_memalign(&control, pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
 		if (rc != 0) {
 			errno = rc;
 			diminuto_perror("posix_memalign(control)");
@@ -104,10 +145,10 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 		}
 
 		well = (diminuto_well_t *)control;
-		diminuto_list_datainit(&well[FREE], control);
-		diminuto_list_datainit(&well[USED], data);
+		diminuto_list_datainit(&well[DIMINUTO_WELL_FREE], control);
+		diminuto_list_datainit(&well[DIMINUTO_WELL_USED], data);
 		for (ii = 0; ii < count; ++ii) {
-			diminuto_list_insert(&well[FREE], diminuto_list_datainit(&well[ii + 2], data));
+			diminuto_list_insert(&well[DIMINUTO_WELL_FREE], diminuto_list_datainit(&well[DIMINUTO_WELL_NODE + ii], data));
 			data += size;
 		}
 
@@ -120,8 +161,8 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 
 void diminuto_well_fini(diminuto_well_t * wellp)
 {
-	free(diminuto_list_data(&wellp[USED])); /* data */
-	free(diminuto_list_data(&wellp[FREE])); /* control */
+	free(diminuto_list_data(&wellp[DIMINUTO_WELL_USED])); /* data */
+	free(diminuto_list_data(&wellp[DIMINUTO_WELL_FREE])); /* control */
 }
 
 void * diminuto_well_alloc(diminuto_well_t * wellp)
@@ -130,11 +171,11 @@ void * diminuto_well_alloc(diminuto_well_t * wellp)
     diminuto_list_t * nodep;
 
     wellp = diminuto_list_root(wellp);
-    if (!diminuto_list_isempty(&wellp[FREE])) {
-        nodep = diminuto_list_remove(diminuto_list_next(&wellp[FREE]));
+    if (!diminuto_list_isempty(&wellp[DIMINUTO_WELL_FREE])) {
+        nodep = diminuto_list_remove(diminuto_list_next(&wellp[DIMINUTO_WELL_FREE]));
         if (nodep != (diminuto_well_t *)0) {
         	pointer = diminuto_list_data(nodep);
-        	diminuto_list_insert(diminuto_list_prev(&wellp[USED]), nodep);
+        	diminuto_list_insert(diminuto_list_prev(&wellp[DIMINUTO_WELL_USED]), nodep);
         } else {
         	errno = EFAULT;
         }
@@ -151,10 +192,10 @@ int diminuto_well_free(diminuto_well_t * wellp, void * pointer)
     diminuto_list_t * nodep;
 
     wellp = diminuto_list_root(wellp);
-    if (!diminuto_list_isempty(&wellp[USED])) {
-    	nodep = diminuto_list_remove(diminuto_list_next(&wellp[USED]));
+    if (!diminuto_list_isempty(&wellp[DIMINUTO_WELL_USED])) {
+    	nodep = diminuto_list_remove(diminuto_list_next(&wellp[DIMINUTO_WELL_USED]));
     	if (nodep != (diminuto_well_t *)0) {
-    		diminuto_list_insert(diminuto_list_prev(&wellp[FREE]), diminuto_list_datainit(nodep, pointer));
+    		diminuto_list_insert(diminuto_list_prev(&wellp[DIMINUTO_WELL_FREE]), diminuto_list_datainit(nodep, pointer));
     		rc = 0;
     	} else {
     		errno = EFAULT;

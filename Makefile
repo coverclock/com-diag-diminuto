@@ -456,6 +456,9 @@ unittest-testify:	unittest-testify.c $(TARGETLIBRARIES)
 unittest-discrete:	unittest-discrete.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+unittest-well:	unittest-well.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
 ########## Drivers
 
 .PHONY:	drivers drivers-clean
