@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-ssize_t diminuto_well_pagesize()
+size_t diminuto_well_pagesize()
 {
 	ssize_t pagesize;
 
@@ -43,7 +43,7 @@ ssize_t diminuto_well_pagesize()
 	return pagesize;
 }
 
-ssize_t diminuto_well_linesize()
+size_t diminuto_well_linesize()
 {
 	ssize_t linesize;
 
@@ -110,11 +110,13 @@ ssize_t diminuto_well_linesize()
 	return linesize;
 }
 
-diminuto_well_t * diminuto_well_init(size_t size, size_t count)
+static size_t pagesize = 0;
+static size_t linesize = 0;
+
+diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment)
 {
 	diminuto_well_t * wellp = (diminuto_well_t *)0;
 	diminuto_well_t * well;
-	size_t pagesize;
 	int rc;
 	void * control = (void *)0;
 	void * data = (void *)0;
@@ -122,11 +124,8 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 
 	do {
 
-		pagesize = diminuto_well_pagesize();
-		if (pagesize < 0) {
-			errno = EINVAL;
-			diminuto_perror("diminuto_well_pagesize");
-			break;
+		if (pagesize == 0) {
+			pagesize = diminuto_well_pagesize();
 		}
 
 		rc = posix_memalign(&control, pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
@@ -135,6 +134,16 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 			diminuto_perror("posix_memalign(control)");
 			break;
 		}
+
+		if (linesize == 0) {
+			linesize = diminuto_well_linesize();
+		}
+
+		if (alignment == 0) {
+			alignment = linesize;
+		}
+
+		size = diminuto_well_alignment(size, alignment);
 
 		rc = posix_memalign(&data, pagesize, size * count);
 		if (rc != 0) {
