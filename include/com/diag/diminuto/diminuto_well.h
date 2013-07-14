@@ -58,16 +58,28 @@ extern size_t diminuto_well_pagesize(void);
 extern size_t diminuto_well_linesize(void);
 
 /**
+ * Compute the smallest power of two that is greater than or equal to the
+ * specified alignment. Returns one if the alignment is zero.
+ * @param alignment is any arbitrary value greater than or equal two zero.
+ * @return a power of two (for example: 1, 2, 4, 8, etc.).
+ */
+extern size_t diminuto_well_power(size_t alignment);
+
+/**
+ * Return true if the specified alignment is a power of two (for example: 1, 2,
+ * 4, 8, etc.), false otherwise.
+ * @param alignment is any arbitrary value greater than or equal two zero.
+ * @return true if alignment is a power of two, false otherwise.
+ */
+extern int diminuto_well_is_power(size_t alignment);
+
+/**
  * Compute the effective size of an object given a specified alignment.
  * @param size is the desired size of an object..
  * @param alignment is the alignment of each object in the well; it MUST be
  * greater than zero AND a power of two (including one).
   */
-static inline size_t diminuto_well_alignment(size_t size, size_t alignment)
-{
-	alignment -= 1;
-	return (size + alignment) & (~alignment);
-}
+extern size_t diminuto_well_alignment(size_t size, size_t alignment);
 
 /**
  * Allocate a fixed-size well for objects of the specified size. The well is

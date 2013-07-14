@@ -22,26 +22,6 @@ typedef struct Object {
 	int c;
 } object_t;
 
-static int is_valid(unsigned long value) {
-	int bits = 0;
-
-	if (value == 0) {
-		/* Do nothing. */
-	} else if ((value & 1) != 0) {
-		/* Do nothing. */
-	} else {
-		value >>= 1;
-		while (value > 0) {
-			if ((value & 1) != 0) {
-				++bits;
-			}
-			value >>= 1;
-		}
-	}
-
-	return (bits == 1);
-}
-
 int main(void)
 {
 	ssize_t pagesize;
@@ -55,21 +35,9 @@ int main(void)
 
     ASSERT(sizeof(object_t) == (sizeof(int) * 3));
 
-    ASSERT(!is_valid(0));
-    ASSERT(!is_valid(1));
-    ASSERT(!is_valid(3));
-    ASSERT(!is_valid(6));
-	for (value = 2; value > 0; value <<= 1) {
-    	ASSERT(is_valid(value));
-    }
-
     pagesize = diminuto_well_pagesize();
-    printf("pagesize=0x%x=%d\n", pagesize, pagesize);
-    ASSERT(is_valid(pagesize));
 
     linesize = diminuto_well_linesize();
-    printf("linesize=0x%x=%d\n", linesize, linesize);
-    ASSERT(is_valid(linesize));
 
     /**/
 

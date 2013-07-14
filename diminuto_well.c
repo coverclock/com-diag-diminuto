@@ -110,6 +110,37 @@ size_t diminuto_well_linesize()
 	return linesize;
 }
 
+size_t diminuto_well_power(size_t alignment)
+{
+	size_t power = 1;
+
+	while ((0 < power) && (power < alignment)) {
+		power <<= 1;
+	}
+
+	return power;
+}
+
+int diminuto_well_is_power(size_t value)
+{
+	int bits = 0;
+
+	while (value > 0) {
+		if ((value & 1) != 0) {
+			++bits;
+		}
+		value >>= 1;
+	}
+
+	return (bits == 1);
+}
+
+size_t diminuto_well_alignment(size_t size, size_t alignment)
+{
+	alignment -= 1;
+	return (size + alignment) & (~alignment);
+}
+
 static size_t pagesize = 0;
 static size_t linesize = 0;
 
@@ -143,6 +174,7 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 			alignment = linesize;
 		}
 
+		alignment = diminuto_well_power(alignment);
 		size = diminuto_well_alignment(size, alignment);
 
 		rc = posix_memalign(&data, pagesize, size * count);
