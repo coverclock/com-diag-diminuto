@@ -49,7 +49,6 @@ int main(void)
     size_t ii;
     size_t jj;
     int kk;
-    int rc;
     unsigned long value;
 
     ASSERT(!is_valid(0));
@@ -85,8 +84,6 @@ int main(void)
 			ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
 		}
 
-		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
-
 		for (ii = 0; ii < countof(pa); ++ii) {
 			for (jj = 0; jj < countof(pa); ++jj) {
 				if (jj != ii) {
@@ -95,10 +92,13 @@ int main(void)
 			}
 		}
 
+		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
+
 		for (ii = 0; ii < countof(pa); ++ii) {
-			rc = diminuto_well_free(wellp, pa[ii]);
-			ASSERT(rc == 0);
+			ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
 		}
+
+		ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
 
     }
 
