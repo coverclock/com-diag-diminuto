@@ -148,7 +148,7 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count)
 		diminuto_list_datainit(&well[DIMINUTO_WELL_FREE], control);
 		diminuto_list_datainit(&well[DIMINUTO_WELL_USED], data);
 		for (ii = 0; ii < count; ++ii) {
-			diminuto_list_insert(&well[DIMINUTO_WELL_FREE], diminuto_list_datainit(&well[DIMINUTO_WELL_NODE + ii], data));
+			diminuto_list_insert(diminuto_list_prev(&well[DIMINUTO_WELL_FREE]), diminuto_list_datainit(&well[DIMINUTO_WELL_NODE + ii], data));
 			data += size;
 		}
 
