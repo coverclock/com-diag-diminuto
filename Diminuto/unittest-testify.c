@@ -19,9 +19,6 @@ int main(int argc, char ** argv)
 	ASSERT(diminuto_testify((const char *)0, !0) == !0);
 	ASSERT(diminuto_testify("", !0) == !0);
 
-	ASSERT(diminuto_testify((const char *)0, -1) == -1);
-	ASSERT(diminuto_testify("", -1) == -1);
-
 	ASSERT(diminuto_testify("asserted", 0) == !0);
 	ASSERT(diminuto_testify("closed", 0) == !0);
 	ASSERT(diminuto_testify("confirmed", 0) == !0);
@@ -94,9 +91,13 @@ int main(int argc, char ** argv)
 	ASSERT(diminuto_testify("00", !0) == 0);
 	ASSERT(diminuto_testify("0x0", !0) == 0);
 
-	ASSERT(diminuto_testify("o", -1) == -1);
-	ASSERT(diminuto_testify("O", -1) == -1);
-	ASSERT(diminuto_testify("?", -1) == -1);
+	ASSERT(diminuto_testify("o", 0) == 0);
+	ASSERT(diminuto_testify("O", 0) == 0);
+	ASSERT(diminuto_testify("?", 0) == 0);
+
+	ASSERT(diminuto_testify("o", !0) == !0);
+	ASSERT(diminuto_testify("O", !0) == !0);
+	ASSERT(diminuto_testify("?", !0) == !0);
 
     EXIT();
 }

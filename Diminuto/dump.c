@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     }
 
     while ((length = fread(buffer, 1, sizeof(buffer), stdin)) > 0) {
-        diminuto_dump_generic(out, buffer, length, 0, '.', 1, offset, 0);
+        diminuto_dump_general(out, buffer, length, 0, '.', 1, offset, 0);
         if (out == stderr) { fwrite(buffer, length, 1, stdout); }
         offset += length;
     }

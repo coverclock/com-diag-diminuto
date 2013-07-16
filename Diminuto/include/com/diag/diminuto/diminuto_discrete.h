@@ -70,10 +70,10 @@ static inline int diminuto_discrete_state(const diminuto_discrete_state_t * stat
  * These are all the possible return values for the edge detector.
  */
 typedef enum DiminutoDiscreteEdge {
-	LOW		= (0 << 1) | 0, /* 0 */
-	RISING	= (0 << 1) | 1, /* 1 */
-	HIGH	= (1 << 1) | 1, /* 3 */
-	FALLING	= (1 << 1) | 0, /* 2 */
+	DIMINUTO_DISCRETE_EDGE_LOW		= (0 << 1) | 0, /* 0 */
+	DIMINUTO_DISCRETE_EDGE_RISING	= (0 << 1) | 1, /* 1 */
+	DIMINUTO_DISCRETE_EDGE_HIGH		= (1 << 1) | 1, /* 3 */
+	DIMINUTO_DISCRETE_EDGE_FALLING	= (1 << 1) | 0, /* 2 */
 } diminuto_discrete_edge_t;
 
 /**

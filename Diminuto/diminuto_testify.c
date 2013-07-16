@@ -15,7 +15,7 @@ int diminuto_testify(const char * testimony, int otherwise) {
 	int result;
 	char * endp;
 
-	result = otherwise;
+	result = !!otherwise;
 
 	if (testimony != (const char *)0) {
 		switch (testimony[0]) {

@@ -12,8 +12,9 @@
  *
  * A well is like a Diminuto pool except the linked lists and allocated user
  * objects are kept in separately allocated sections of memory. Both sections
- * are page aligned, and the user objects can have any specified alignment
- * in memory instead of the usual eight-byte alignment.
+ * are page aligned, and objects in the well can have any specified alignment
+ * in memory instead of the usual eight-byte alignment. Also, a well is of
+ * fixed size; additional objects are never allocated after initialization.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -28,6 +29,7 @@ typedef diminuto_list_t diminuto_well_t;
 
 /**
  * These are handy indices that expose the composition of the list array.
+ * Note that the data field of nodes on the USED list have no meaning.
  */
 enum DiminutoWellIndex {
 	DIMINUTO_WELL_FREE = 0,
@@ -59,8 +61,8 @@ extern size_t diminuto_well_linesize(void);
 
 /**
  * Compute the smallest power of two that is greater than or equal to the
- * specified alignment. Returns one if the alignment is zero.
- * @param alignment is any arbitrary value greater than or equal two zero.
+ * specified alignment.
+ * @param alignment is any arbitrary value greater than or equal to zero.
  * @return a power of two (for example: 1, 2, 4, 8, etc.).
  */
 extern size_t diminuto_well_power(size_t alignment);
@@ -68,7 +70,7 @@ extern size_t diminuto_well_power(size_t alignment);
 /**
  * Return true if the specified alignment is a power of two (for example: 1, 2,
  * 4, 8, etc.), false otherwise.
- * @param alignment is any arbitrary value greater than or equal two zero.
+ * @param alignment is any arbitrary value greater than or equal to zero.
  * @return true if alignment is a power of two, false otherwise.
  */
 extern int diminuto_well_is_power(size_t alignment);
@@ -91,11 +93,13 @@ extern size_t diminuto_well_alignment(size_t size, size_t alignment);
  * a cache line. So field packing or careful ordering of fields in an object
  * can lead to more efficient memory use (but possible less efficient run-time).
  * Another approach is to align objects on a cache line, which may waste space
- * but avoids word tearing. As usual, life is a series of trade-offs.
+ * but avoids word tearing. As usual, life is a series of trade-offs. A zero
+ * alignment can be used to specify the cache line size returned by
+ * diminuto_well_cacheline(); values greater than zero will be adjusted to the
+ * smallest power of two greater than or equal to the specified value.
  * @param size is the desired size of objects to be kept in the well.
  * @param count is the desired number of objects in the well.
- * @param alignment is the alignment of each object in the well; it MUST be a
- * power of two (including one) or zero to use the cache line size.
+ * @param alignment is the alignment of each object in the well.
  * @return a pointer to the well.
  */
 extern diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment);
