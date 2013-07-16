@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -28,7 +28,7 @@
  * @param fail if true forces the child to fail (useful for testing).
  * @return 0 to the child upon success, -1 to the parent otherwise.
  */
-extern int diminuto_daemon_full(const char * name, const char * file, unsigned int timeout, int fail);
+extern int diminuto_daemon_generic(const char * name, const char * file, unsigned int timeout, int fail);
 
 /**
  * Daemonize the application so that it cannot be affected by the invoking

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -82,7 +82,7 @@ static int diminuto_daemon_default(int signum)
     return 0;
 }
 
-int diminuto_daemon_full(const char * name, const char * file, unsigned int timeout, int fail)
+int diminuto_daemon_generic(const char * name, const char * file, unsigned int timeout, int fail)
 {
     int signum = SIGALRM;
     pid_t ppid = -1;
@@ -414,5 +414,5 @@ int diminuto_daemon_full(const char * name, const char * file, unsigned int time
 
 int diminuto_daemon(const char * name, const char * file)
 {
-	return diminuto_daemon_full(name, file, 10, 0);
+	return diminuto_daemon_generic(name, file, 10, 0);
 }

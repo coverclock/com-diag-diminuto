@@ -15,7 +15,7 @@
  * Interpret a string as indicating true (closed, enabled, high, true, yes,
  * on, 1, 01, 0x1) or false (open, disabled, low, false, no, off, 0, 0x0).
  * @param testimony points to a C string.
- * @param otherwise is returned if the testimony is invalid, ambiguous, NULL.
+ * @param otherwise is returned as a boolean if missing, invalid, ambiguous.
  * @return !0 for true or 0 for false.
  */
 extern int diminuto_testify(const char * testimony, int otherwise);

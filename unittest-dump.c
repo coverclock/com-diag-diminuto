@@ -22,12 +22,12 @@ int main(void)
     for (ch = 0; ch < 256; ++ch) { data[ch] = ch; }
 
     for (offset = 0; offset < 16; ++offset) {
-        diminuto_dump_generic(stdout, data + offset, sizeof(data) - (offset * 2), 0, '.', 0, 0, 0);
+        diminuto_dump_general(stdout, data + offset, sizeof(data) - (offset * 2), 0, '.', 0, 0, 0);
     }
 
-    diminuto_dump_generic(stdout, data, sizeof(data), 1, '_', 1, 0, 4);
+    diminuto_dump_generic(stdout, data, sizeof(data), 1, '?', 0, 0, 2, 1, 16, "> ", " ", "<", '.', '_', ">\n");
 
-    diminuto_dump_custom(stdout, data, sizeof(data), 1, '?', 0, 0, 2, 1, 16, "> ", " ", "<", '.', '_', ">\n");
+    diminuto_dump_general(stdout, data, sizeof(data), 1, '_', 1, 0, 4);
 
     diminuto_dump(stdout, data, sizeof(data));
 

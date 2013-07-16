@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
 
     diminuto_lock_unlock(LOCKFILE);
 
-    rc = diminuto_daemon_full(LOGNAME, LOCKFILE, 10, !0);
+    rc = diminuto_daemon_generic(LOGNAME, LOCKFILE, 10, !0);
     ASSERT(rc < 0);
 
     pid8 = getpid();

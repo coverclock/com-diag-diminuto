@@ -30,15 +30,15 @@ int diminuto_discrete_debounce(diminuto_discrete_state_t * statep, int input) {
 diminuto_discrete_edge_t diminuto_discrete_edge(const diminuto_discrete_state_t * statep) {
 	if (!statep->p) {
 		if (!statep->r) {
-			return LOW;
+			return DIMINUTO_DISCRETE_EDGE_LOW;
 		} else {
-			return RISING;
+			return DIMINUTO_DISCRETE_EDGE_RISING;
 		}
 	} else {
 		if (!statep->r) {
-			return FALLING;
+			return DIMINUTO_DISCRETE_EDGE_FALLING;
 		} else {
-			return HIGH;
+			return DIMINUTO_DISCRETE_EDGE_HIGH;
 		}
 	}
 }

@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_dump.h"
 
-void diminuto_dump_custom(
+void diminuto_dump_generic(
     FILE * fp,
     const void * data,
     size_t length,
