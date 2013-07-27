@@ -68,7 +68,8 @@ diminuto_list_t * diminuto_list_apply(
         } else if (rc > 0) {
             nodep = diminuto_list_next(nodep);
         } else {
-            return nodep;
+            break;
         }
     }
+    return nodep;
 }
