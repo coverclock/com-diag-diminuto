@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -61,7 +61,7 @@ diminuto_list_t * diminuto_list_apply(
     void * contextp
 ) {
     int rc;
-    while (1) {
+    while (!0) {
         rc = (*funcp)(diminuto_list_data(nodep), contextp);
         if (rc < 0) {
             nodep = diminuto_list_prev(nodep);
