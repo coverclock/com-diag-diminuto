@@ -116,7 +116,7 @@ int main(void)
     {
         /* Core Operations */
 
-        const char * datum = "datum";
+        char datum[] = "datum";
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, END);
