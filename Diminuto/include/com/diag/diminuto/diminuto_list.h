@@ -70,8 +70,6 @@
  * list at a time. The data object destructor can trivially remove the data
  * object from any lists it is on in O(1) time.
  *
- * Caveats:
- *
  * Inserting a list node onto a list when it is already on a list causes
  * the list node to be first removed from the list is is already on.
  *
@@ -88,16 +86,195 @@
  * API.
  */
 
-struct DiminutoList;
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
 
-typedef struct DiminutoList diminuto_list_t;
+typedef struct DiminutoList {
+	struct DiminutoList * next;	/* Points to the next node on the list. */
+	struct DiminutoList * prev;	/* Points to the previous node on the list. */
+	struct DiminutoList * root;	/* Points to the root node of the list. */
+    void                * data;	/* Points to the payload of the node. */
+} diminuto_list_t;
 
-struct DiminutoList {
-    diminuto_list_t * next;	/* Points to the next node on the list. */
-    diminuto_list_t * prev;	/* Points to the previous node on the list. */
-    diminuto_list_t * root;	/* Points to the root node of the list. */
-    void            * data;	/* Points to the payload of the node. */
-};
+/**
+ * A list functor is used to walk the list. The functor is first applied to
+ * the whatever node the application specifies. If the functor returns a
+ * number less than zero, it is then applied to the previous node. If the
+ * functor returns a number greater than zero, it is then applied to the next
+ * node. This proceeds until the functor returns zero.
+ */
+typedef int (diminuto_list_functor_t)(
+    void * datap,
+    void * contextp
+);
+
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def DIMINUTO_LIST_DATAINIT
+ * Generate a storage initializer for the node @a _NODEP_ and data pointer
+ * @a _DATAP_.
+ */
+#define DIMINUTO_LIST_DATAINIT(_NODEP_, _DATAP_) \
+    { _NODEP_, _NODEP_, _NODEP_, _DATAP_ }
+
+/**
+ * @def DIMINUTO_LIST_NULLINIT
+ * Generate a storage initializer for the node @a _NODEP_.
+ */
+#define DIMINUTO_LIST_NULLINIT(_NODEP_) \
+    DIMINUTO_LIST_DATAINIT(_NODEP_, (void *)0)
+
+/*******************************************************************************
+ * PRIMITIVE OPERATIONS
+ ******************************************************************************/
+
+/**
+ * Remove the specified node from the list it is on. The node is
+ * reinitialized. The data pointer is left unaltered. If the node is
+ * not on a list, nothing is done.
+ * @param nodep points to the node to be removed.
+ * @return a pointer to the removed node.
+ */
+extern diminuto_list_t * diminuto_list_remove(
+    diminuto_list_t * nodep
+);
+
+/**
+ * Insert the specified node into list just after the specified root.
+ * If the node is already on a list, it is first removed from that
+ * list before being inserted on the specified root.
+ * @param rootp points to the root on which the node is inserted.
+ * @param nodep points to the node to be inserted.
+ * @return a pointer to the inserted node.
+ */
+extern diminuto_list_t * diminuto_list_insert(
+    diminuto_list_t * queuep,
+    diminuto_list_t * nodep
+);
+
+/**
+ * Make the specified node the root of all the other nodes that are
+ * on the list that the specified node is on.
+ * @param nodep points to the node to become the root of the list.
+ * @return a pointer to the new root node.
+ */
+extern diminuto_list_t * diminuto_list_reroot(
+    diminuto_list_t * nodep
+);
+
+/**
+ * Replace an old node with a new node on the same relative position on the
+ * list. If the old node was the root of the list, the new node becomes the
+ * root of the list.
+ * @param oldp points to the old node.
+ * @param newp points to the new node.
+ * return a pointer to the old node.
+ */
+extern diminuto_list_t * diminuto_list_replace(
+	diminuto_list_t * oldp,
+	diminuto_list_t * newp
+);
+
+extern diminuto_list_t * diminuto_list_cut(
+    diminuto_list_t * firstp,
+    diminuto_list_t * lastp
+);
+
+extern diminuto_list_t * diminuto_list_splice(
+    diminuto_list_t * top,
+    diminuto_list_t * fromp
+);
+
+/**
+ * Apply the specified functor to successive nodes. If the functor
+ * returns a positive number, the functor is then applied to the next
+ * node. If the functor returns a negative number, the functor is then
+ * applied to the previous node. If the functor returns zero, a pointer
+ * to the current node is returned. A pointer to the the data of the current
+ * node and a pointer to a caller supplied context pointer is passed
+ * to the functor each time it is called. If the functor needs to treat
+ * the root node specially, it must recognize it solely from its data
+ * pointer. A common approach is to set the data pointer of the root node
+ * to null.
+ * @param funcp points to the functor.
+ * @param nodep points to the initial node.
+ * @param contextp points to the caller provided context or null.
+ * @return a pointer to the node for which the functor returns zero.
+ */
+extern diminuto_list_t * diminuto_list_apply(
+	diminuto_list_functor_t * funcp,
+    diminuto_list_t * nodep,
+    void * contextp
+);
+
+extern diminuto_list_t * diminuto_list_fini(
+	diminuto_list_t * rootp
+);
+
+/*******************************************************************************
+ * SETTORS
+ ******************************************************************************/
+
+/**
+ * Initialize the specified node. The node is left initialized as an
+ * empty list with itself as its root. The data pointer is not initialized.
+ * @param nodep points to the node to be initialized.
+ * @return a pointer to the initialized node.
+ */
+static inline diminuto_list_t * diminuto_list_init(
+    diminuto_list_t * nodep
+) {
+    nodep->next = nodep;
+    nodep->prev = nodep;
+    nodep->root = nodep;
+    return nodep;
+}
+
+/**
+ * Set the data pointer to the data and return a pointer to the data.
+ * @param nodep points to a node.
+ * @param datap points to the data.
+ * @return a pointer to the data.
+ */
+static inline void * diminuto_list_dataset(
+	diminuto_list_t * nodep,
+	void * datap
+) {
+	return nodep->data = datap;
+}
+
+/**
+ * Initialize a node and set its data pointer.
+ * @param nodep points to a node.
+ * @param datap points to the data.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_datainit(
+	diminuto_list_t * nodep,
+	void * datap
+)  {
+	diminuto_list_dataset(diminuto_list_init(nodep), datap);
+	return nodep;
+}
+
+/**
+ * Initialize a node and set its data pointer to null.
+ * @param nodep points to a node.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_nullinit(
+	diminuto_list_t * nodep
+) {
+    return diminuto_list_datainit(nodep, (void *)0);
+}
+
+/*******************************************************************************
+ * GETTORS
+ ******************************************************************************/
 
 /**
  * Return a pointer to the next node.
@@ -143,18 +320,9 @@ static inline void * diminuto_list_data(
     return nodep->data;
 }
 
-/**
- * Set the data pointer to the data and return a pointer to the data.
- * @param nodep points to a node.
- * @param datap points to the data.
- * @return a pointer to the data.
- */
-static inline void * diminuto_list_dataset(
-	diminuto_list_t * nodep,
-	void * datap
-) {
-	return nodep->data = datap;
-}
+/*******************************************************************************
+ * QUERIES
+ ******************************************************************************/
 
 /**
  * Return true if the next node points to the node itself, indicating that
@@ -194,115 +362,9 @@ static inline int diminuto_list_ismember(
     return (rootp == diminuto_list_root(nodep));
 }
 
-/**
- * Initialize the specified node. The node is left initialized as an
- * empty list with itself as its root. The data pointer is not initialized.
- * @param nodep points to the node to be initialized.
- * @return a pointer to the initialized node.
- */
-extern diminuto_list_t * diminuto_list_init(
-    diminuto_list_t * nodep
-);
-
-/**
- * @def DIMINUTO_LIST_DATAINIT
- * Generate a storage initializer for the node @a _NODEP and data pointer
- * @a _DATAP_.
- */
-#define DIMINUTO_LIST_DATAINIT(_NODEP_, _DATAP_) \
-    { _NODEP_, _NODEP_, _NODEP_, _DATAP_ }
-
-/**
- * @def DIMINUTO_LIST_NULLINIT
- * Generate a storage initializer for the node @a _NODEP_.
- */
-#define DIMINUTO_LIST_NULLINIT(_NODEP_) \
-    DIMINUTO_LIST_DATAINIT(_NODEP_, (void *)0)
-
-/**
- * Initialize a node and set its data pointer.
- * @param nodep points to a node.
- * @param datap points to the data.
- * @return a pointer to the node.
- */
-static inline diminuto_list_t * diminuto_list_datainit(
-	diminuto_list_t * nodep,
-	void * datap
-)  {
-	diminuto_list_dataset(diminuto_list_init(nodep), datap);
-	return nodep;
-}
-
-/**
- * Initialize a node and set its data pointer to null.
- * @param nodep points to a node.
- * @return a pointer to the node.
- */
-static inline diminuto_list_t * diminuto_list_nullinit(
-	diminuto_list_t * nodep
-) {
-    return diminuto_list_datainit(nodep, (void *)0);
-}
-
-/**
- * Remove the specified node from the list it is on. The node is
- * reinitialized. The data pointer is left unaltered. If the node is
- * not on a list, nothing is done.
- * @param nodep points to the node to be removed.
- * @return a pointer to the removed node.
- */
-extern diminuto_list_t * diminuto_list_remove(
-    diminuto_list_t * nodep
-);
-
-/**
- * Insert the specified node into list just after the specified root.
- * If the node is already on a list, it is first removed from that
- * list before being inserted on the specified root.
- * @param rootp points to the root on which the node is inserted.
- * @param nodep points to the node to be inserted.
- * @return a pointer to the inserted node.
- */
-extern diminuto_list_t * diminuto_list_insert(
-    diminuto_list_t * rootp,
-    diminuto_list_t * nodep
-);
-
-/**
- * Make the specified node the root of all the other nodes that are
- * on the list that the specified node is on.
- * @param nodep points to the node to become the root of the list.
- * @return a pointer to the new root node.
- */
-extern diminuto_list_t * diminuto_list_reroot(
-    diminuto_list_t * nodep
-);
-
-typedef int (diminuto_list_functor)(
-    void * datap,
-    void * contextp
-);
-
-/**
- * Apply the specified functor to successive nodes. If the functor
- * returns a positive number, the functor is then applied to the next
- * node. If the functor returns a negative number, the functor is then
- * applied to the previous node. If the functor returns zero, a pointer
- * to the current node is returned. A pointer to the the data of the current
- * node and a pointer to a caller supplied context pointer is passed
- * to the functor each time it is called. If the functor needs to treat
- * the root node specially, it must recognize it solely from its data
- * pointer.
- * @param funcp points to the functor.
- * @param nodep points to the initial node.
- * @param contextp points to the caller provided context or null.
- * @return a pointer to the node for which the functor returns zero.
- */
-extern diminuto_list_t * diminuto_list_apply(
-    diminuto_list_functor * funcp,
-    diminuto_list_t * nodep,
-    void * contextp
-);
+/*******************************************************************************
+ * CONDITIONAL OPERATIONS
+ ******************************************************************************/
 
 /**
  * Return the data pointer of a node or null if the node pointer is null.
@@ -343,75 +405,88 @@ static inline diminuto_list_t * diminuto_list_tail(
         : diminuto_list_prev(diminuto_list_root(nodep)));
 }
 
+/*******************************************************************************
+ * LAST-IN FIRST-OUT (LIFO) STACK API
+ ******************************************************************************/
+
 /**
  * Push a node onto the top of a stack.
- * @param rootp points to the node that is on the stack.
+ * @param stackp points to a node that is on the stack (including the root).
  * @param nodep points to the node to be pushed onto the stack.
  * @return a pointer to the node that was pushed onto the stack.
  */
 static inline diminuto_list_t * diminuto_list_push(
-	diminuto_list_t * rootp,
+	diminuto_list_t * stackp,
 	diminuto_list_t * nodep
 ) {
-    return diminuto_list_insert(diminuto_list_root(rootp), nodep);
+    return diminuto_list_insert(diminuto_list_root(stackp), nodep);
 }
 
 /**
  * Pop a node off the top of a stack.
- * @param rootp points to a node that is on the stack.
+ * @param stackp points to a node that is on the stack (including the root).
  * @return a pointer to the node popped off or null if the stack was empty.
  */
 static inline diminuto_list_t * diminuto_list_pop(
-	diminuto_list_t * rootp
+	diminuto_list_t * stackp
 ) {
-    return (diminuto_list_isempty(diminuto_list_root(rootp))
+    return (diminuto_list_isempty(diminuto_list_root(stackp))
         ? (diminuto_list_t *)0
-        : diminuto_list_remove(diminuto_list_next(diminuto_list_root(rootp))));
+        : diminuto_list_remove(diminuto_list_next(diminuto_list_root(stackp))));
 }
 
+/*******************************************************************************
+ * FIRST-IN FIRST-OUT (FIFO) QUEUE API
+ ******************************************************************************/
+
 /**
- * Enqueue a node onto the end of a queue.
- * @param rootp points to a node that is on the queue.
+ * Enqueue a node onto the tail of a queue.
+ * @param queuep points to a node that is on the queue (including the root).
  * @param nodep points to the node to be enqueued.
  * @return a pointer to the node that was enqueued onto the queue.
  */
 static inline diminuto_list_t * diminuto_list_enqueue(
-	diminuto_list_t * rootp,
+	diminuto_list_t * queuep,
 	diminuto_list_t * nodep
 ) {
-    return diminuto_list_insert(diminuto_list_prev(diminuto_list_root(rootp)), nodep);
+    return diminuto_list_insert(diminuto_list_prev(diminuto_list_root(queuep)), nodep);
 }
 
 /**
- * Dequeue a node from the beginning of a queue.
- * @param rootp points to a node that is on the queue.
+ * Dequeue a node from the head of a queue.
+ * @param queuep points to a node that is on the queue (including the root).
  * @return a pointer to a node that was dequeued or null if the queue was empty.
  */
 static inline diminuto_list_t * diminuto_list_dequeue(
-	diminuto_list_t * rootp
+	diminuto_list_t * queuep
 ) {
-	return (diminuto_list_isempty(diminuto_list_root(rootp))
-        ? (diminuto_list_t *)0 \
-        : diminuto_list_remove(diminuto_list_next(diminuto_list_root(rootp))));
+	return (diminuto_list_isempty(diminuto_list_root(queuep))
+        ? (diminuto_list_t *)0
+        : diminuto_list_remove(diminuto_list_next(diminuto_list_root(queuep))));
 }
 
-/**
- * Replace an old node with a new node on the same relative position on the
- * list. If the old node was the root of the list, the new node becomes the
- * root of the list.
- * @param oldp points to the old node.
- * @param newp points to the new node.
- * return a pointer to the old node.
- */
-static inline diminuto_list_t * diminuto_list_replace(
-	diminuto_list_t * oldp,
-	diminuto_list_t * newp
+/*******************************************************************************
+ * MAILBOX API
+ ******************************************************************************/
+
+static inline diminuto_list_t * diminuto_list_receive(
+	diminuto_list_t * mboxp
 ) {
-    diminuto_list_insert(oldp, newp);
-    if (diminuto_list_isroot(oldp)) {
-    	diminuto_list_reroot(newp);
-    }
-    return diminuto_list_remove(oldp);
+	return diminuto_list_dequeue(mboxp);
+}
+
+static inline diminuto_list_t * diminuto_list_send(
+	diminuto_list_t * mboxp,
+	diminuto_list_t * nodep
+) {
+    return diminuto_list_enqueue(mboxp, nodep);
+}
+
+static inline diminuto_list_t * diminuto_list_express(
+	diminuto_list_t * mboxp,
+	diminuto_list_t * nodep
+) {
+    return diminuto_list_push(mboxp, nodep);
 }
 
 #endif

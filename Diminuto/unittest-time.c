@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -22,28 +22,38 @@ int main(int argc, char ** argv)
     diminuto_usec_t requested;
     diminuto_usec_t remaining;
     int64_t claimed;
+    diminuto_usec_t before;
+    diminuto_usec_t after;
+    int64_t elapsed;
 
     diminuto_core_enable();
 
-    printf("%10s %10s %10s %10s %10s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s\n",
         "requested",
         "remaining",
         "claimed",
         "measured",
+        "difference",
+        "elapsed",
         "difference");
 
     for (requested = 0; requested < 60000000; requested = requested ? requested * 2 : 1) {
-        then = diminuto_time();
+        then = diminuto_time_elapsed();
+        before = diminuto_time_clock();
         remaining = diminuto_delay(requested, 0);
-        now = diminuto_time();
+        now = diminuto_time_elapsed();
+        after = diminuto_time_clock();
         claimed = requested - remaining;
         measured = now - then;
-        printf("%10llu %10llu %10lld %10lld %10lld\n",
+        elapsed = after - before;
+        printf("%10llu %10llu %10lld %10lld %10lld %10llu %10lld\n",
             requested,
             remaining,
             claimed,
             measured,
-            measured - requested);
+            measured - requested,
+            elapsed,
+            elapsed - requested);
     }
 
     return 0;

@@ -174,7 +174,7 @@ CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
-LDFLAGS		=	$(LDARCH) -L. -ldiminuto
+LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt
 
 BROWSER		=	firefox
 

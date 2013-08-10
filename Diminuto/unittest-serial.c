@@ -140,7 +140,7 @@ int main(int argc, char * argv[])
     while (!0) {
 
         count = 0;
-    	then = diminuto_time();
+    	then = diminuto_time_elapsed();
 
     	while (!0) {
 
@@ -158,7 +158,7 @@ int main(int argc, char * argv[])
 
       		++count;
 
-        	now = diminuto_time();
+        	now = diminuto_time_elapsed();
         	if ((now - then) >= 1000000) {
         		break;
         	}

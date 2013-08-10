@@ -15,9 +15,18 @@
 
 /**
  * Return the system clock time in microseconds since the Epoch.
- * @return the number of microseconds elapsed since the Epoch or 0 with
+ * @return the number of microseconds elapsed since the Epoch or ~0ULL with
  * errno set if an error occurred.
  */
-extern diminuto_usec_t diminuto_time(void);
+extern diminuto_usec_t diminuto_time_clock(void);
+
+/**
+ * Return the elapsed time in microseconds of a monotonically increasing
+ * clock. This value is immune to time adjustments in the system clock and
+ * hence is usable to measure duration and elapsed time.
+ * @return the number of microseconds elapsed since an arbitrary epoch or
+ * ~0ULL with errno set if an error occurred.
+ */
+extern diminuto_usec_t diminuto_time_elapsed(void);
 
 #endif
