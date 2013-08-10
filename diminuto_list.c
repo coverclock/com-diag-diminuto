@@ -10,15 +10,6 @@
 
 #include "com/diag/diminuto/diminuto_list.h"
 
-diminuto_list_t * diminuto_list_init(
-    diminuto_list_t * nodep
-) {
-    nodep->next = nodep;
-    nodep->prev = nodep;
-    nodep->root = nodep;
-    return nodep;
-}
-
 diminuto_list_t * diminuto_list_remove(
     diminuto_list_t * nodep
 ) {
@@ -55,8 +46,19 @@ diminuto_list_t * diminuto_list_reroot(
     return nodep;
 }
 
+diminuto_list_t * diminuto_list_replace(
+	diminuto_list_t * oldp,
+	diminuto_list_t * newp
+) {
+    diminuto_list_insert(oldp, newp);
+    if (diminuto_list_isroot(oldp)) {
+    	diminuto_list_reroot(newp);
+    }
+    return diminuto_list_remove(oldp);
+}
+
 diminuto_list_t * diminuto_list_apply(
-    diminuto_list_functor * funcp,
+	diminuto_list_functor_t * funcp,
     diminuto_list_t * nodep,
     void * contextp
 ) {
@@ -72,4 +74,13 @@ diminuto_list_t * diminuto_list_apply(
         }
     }
     return nodep;
+}
+
+diminuto_list_t * diminuto_list_fini(
+	diminuto_list_t * rootp
+) {
+    while (!diminuto_list_isempty(rootp)) {
+    	diminuto_list_remove(diminuto_list_next(rootp));
+    }
+    return rootp;
 }

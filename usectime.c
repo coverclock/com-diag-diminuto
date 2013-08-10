@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2011 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2011-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
 {
 	diminuto_usec_t ticks;
 
-	if ((ticks = diminuto_time()) == 0) {
+	if ((ticks = diminuto_time_clock()) == 0) {
 		return 1;
 	}
 

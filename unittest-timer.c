@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2009-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -35,9 +35,9 @@ int main(int argc, char ** argv)
     for (requested = 1; requested < 60000000; requested *= 2) {
         EXPECT(!diminuto_alarm_check());
         diminuto_timer_oneshot(requested);
-        then = diminuto_time();
+        then = diminuto_time_elapsed();
         remaining = diminuto_delay(requested * 2, !0);
-        now = diminuto_time();
+        now = diminuto_time_elapsed();
         diminuto_timer_oneshot(0);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
