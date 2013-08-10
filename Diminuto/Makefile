@@ -22,9 +22,9 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	8
-MINOR		=	1
-BUILD		=	0
+MAJOR		=	9# Applications will probably have to be be modified.
+MINOR		=	0# Additional functionality has been added.
+BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
 HOME_DIR	=	$(HOME)/projects
 
