@@ -141,11 +141,11 @@ diminuto_list_t * diminuto_list_apply(
 }
 
 diminuto_list_t * diminuto_list_audit(
-	diminuto_list_t * nodep
+	const diminuto_list_t * nodep
 ) {
-	diminuto_list_t * rootp = diminuto_list_root(nodep);
-	diminuto_list_t * nextp = nodep;
-	diminuto_list_t * prevp = nodep;
+	const diminuto_list_t * rootp = diminuto_list_root(nodep);
+	const diminuto_list_t * nextp = nodep;
+	const diminuto_list_t * prevp = nodep;
 	while (!0) {
 		if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
 			nodep = nextp;
