@@ -101,7 +101,9 @@ diminuto_list_t * diminuto_list_splice(
     diminuto_list_t * top,
     diminuto_list_t * fromp
 ) {
-	if (fromp == fromp->next) {
+	if (fromp->root == top->root) {
+		/* Do nothing. */
+	} else if (fromp == fromp->next) {
 		diminuto_list_insert(top, fromp);
 	} else {
 		reroot(fromp, fromp->prev, top->root);

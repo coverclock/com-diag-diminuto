@@ -85,7 +85,7 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
     actual = rootp;
     ii = 0;
     va_start(ap, rootp);
-    while ((expected = va_arg(ap, diminuto_list_t *)) != END) {
+    while ((expected = va_arg(ap, diminuto_list_t *)) != DIMINUTO_LIST_NULL) {
         ASSERT(ii < countof(stack));
         stack[ii++] = expected;
         ASSERT(expected == actual);
@@ -140,72 +140,75 @@ int main(void)
 
         char datum[] = "datum";
 
+        ASSERT(COM_DIAG_DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
+        ASSERT(DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
+
         initialize();
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_insert(&head, &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_remove(&node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
 
         diminuto_list_remove(&head);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
 
         ASSERT(diminuto_list_init(&head) == &head);
         diminuto_list_dataset(&head, datum);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
 
         ASSERT(diminuto_list_init(&head) == &head);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
 
         ASSERT(diminuto_list_nullinit(&head) == &head);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT(diminuto_list_data(&head) == (void *)0);
 
         ASSERT(diminuto_list_datainit(&head, datum) == &head);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
     }
@@ -213,152 +216,152 @@ int main(void)
         /* Stack Operations */
 
         initialize();
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_pop(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_pop(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_push(&head, &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_push(&head, &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_push(&head, &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1],  &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1],  &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_pop(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_pop(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_pop(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_pop(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_pop(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
     }
 
     {
         /* Queue Operations */
 
         initialize();
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_dequeue(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_dequeue(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_enqueue(&head, &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_enqueue(&head, &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_enqueue(&head, &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1],  &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1],  &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_dequeue(&head) == &node[0]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_dequeue(&head) == &node[1]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_head(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_dequeue(&head) == &node[2]);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_dequeue(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_dequeue(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
 
-        ASSERT(diminuto_list_head(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
-        ASSERT(diminuto_list_tail(&head) == END);
-        audit(__FILE__, __LINE__, &head, &head, &head, END);
+        ASSERT(diminuto_list_head(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+        ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
     }
 
     {
@@ -372,7 +375,7 @@ int main(void)
             &node[1]),
         &node[2]);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_apply(&find, diminuto_list_next(&head), "node0") == &node[0]);
         ASSERT(diminuto_list_apply(&find, diminuto_list_next(&head), "node1") == &node[1]);
@@ -409,7 +412,7 @@ int main(void)
             &node[1]),
         &node[2]);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         total = 0;
         ASSERT(diminuto_list_apply(&count, diminuto_list_next(&head), &total) == &head);
@@ -432,7 +435,7 @@ int main(void)
             &node[1]),
         &node[2]);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         /* Example of moving all nodes from one root to another. */
 
@@ -442,11 +445,11 @@ int main(void)
             );
         }
 
-        audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, END);
+        audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, DIMINUTO_LIST_NULL);
 
         ASSERT(diminuto_list_reroot(&node[1]) == &node[1]);
 
-        audit(__FILE__, __LINE__, &node[1], &node[1], &node[2], &temp, &node[0], &node[1], END);
+        audit(__FILE__, __LINE__, &node[1], &node[1], &node[2], &temp, &node[0], &node[1], DIMINUTO_LIST_NULL);
 
     }
 
@@ -465,11 +468,11 @@ int main(void)
             &node[1]),
         &node[2]);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         diminuto_list_replace(&node[1], &temp);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &temp, &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &temp, &node[2], &head, DIMINUTO_LIST_NULL);
     }
 
     {
@@ -487,20 +490,20 @@ int main(void)
             &node[1]),
         &node[2]);
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         /* Another example of moving all nodes from one root to another. */
 
         diminuto_list_replace(&head, &temp);
 
-        audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, END);
+        audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, DIMINUTO_LIST_NULL);
     }
 
     {
+        /* Iteration */
+
         int ii;
         diminuto_list_t * np;
-
-        /* Iteration */
 
         initialize();
 
@@ -508,14 +511,18 @@ int main(void)
             diminuto_list_insert(diminuto_list_prev(&head), &node[ii]);
         }
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
 
         ii = 0;
         for (np = diminuto_list_next(&head); !diminuto_list_isroot(np); np = diminuto_list_next(np)) {
             ASSERT(np == &node[ii++]);
         }
 
-        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, END);
+        audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
+    }
+
+    {
+    	/* Splice */
     }
 
     return 0;
