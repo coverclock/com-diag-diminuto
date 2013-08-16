@@ -140,8 +140,7 @@ int main(void)
 
         char datum[] = "datum";
 
-        ASSERT(COM_DIAG_DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
-        ASSERT(DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
+         ASSERT(DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
