@@ -222,9 +222,11 @@ extern diminuto_list_t * diminuto_list_apply(
 /**
  * Audit a list. Return a pointer to the first node on the list that appears
  * to be incorrect, or NULL if the list appears correct. Next, previous, and
- * root pointers are checked.
+ * root pointers are checked. The list is traversed bi-directionally and only
+ * stops when an error is found or the traversals meet back at the original
+ * node.
  * @param nodep points to a node on the list.
- * @return a pointer to the first problematic node or null if none.
+ * @return a pointer to the first incorrect node or null if none.
  */
 extern diminuto_list_t * diminuto_list_audit(
 	const diminuto_list_t * nodep

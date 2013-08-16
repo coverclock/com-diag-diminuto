@@ -41,6 +41,7 @@ static int count(void * datap, void * contextp)
 static void initialize(void)
 {
     int ii;
+    int jj;
 
     diminuto_list_nullinit(&head);
     ASSERT(diminuto_list_isempty(&head));
@@ -58,12 +59,19 @@ static void initialize(void)
         ASSERT(diminuto_list_dataif(&node[ii]) == name[ii]);
     }
     ASSERT(diminuto_list_dataif((diminuto_list_t *)0) == (void *)0);
+
+    for (ii = 0; ii < countof(node); ++ii) {
+    	for (jj = 0; jj < countof(node); ++jj) {
+    		ASSERT(diminuto_list_aresiblings(&node[ii], &node[jj]) == (ii == jj));
+    	}
+    }
 }
 
 static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
 {
     diminuto_list_t * stack[countof(node) + 2];
     int ii;
+    int jj;
     diminuto_list_t * expected;
     diminuto_list_t * actual;
     va_list ap;
@@ -108,6 +116,20 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
         actual = diminuto_list_prev(actual);
     }
 
+    /* Siblingship */
+
+    actual = rootp;
+    expected = rootp;
+    do {
+    	do {
+    		ASSERT(diminuto_list_aresiblings(actual, expected));
+    	} while ((actual = diminuto_list_next(actual)) != rootp);
+    } while ((expected = diminuto_list_prev(expected)) != rootp);
+
+
+    /* Audit */
+
+    ASSERT(diminuto_list_audit(rootp) == (diminuto_list_t *)0);
 
 }
 
