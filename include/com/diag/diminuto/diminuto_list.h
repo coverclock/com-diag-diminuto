@@ -117,6 +117,21 @@ typedef int (diminuto_list_functor_t)(
 );
 
 /*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_LIST_NULL
+ * Defines the null pointer value used for those operations which may return it.
+ */
+#define COM_DIAG_DIMINUTO_LIST_NULL ((diminuto_list_t *)0)
+
+/**
+ * Defines the null pointer constant for those operations which may return it.
+ */
+static const diminuto_list_t * DIMINUTO_LIST_NULL = COM_DIAG_DIMINUTO_LIST_NULL;
+
+/*******************************************************************************
  * CODE GENERATORS
  ******************************************************************************/
 
@@ -138,6 +153,16 @@ typedef int (diminuto_list_functor_t)(
 /*******************************************************************************
  * PRIMITIVE OPERATIONS
  ******************************************************************************/
+
+/**
+ * Make the specified node the root of all the other nodes that are
+ * on the list that the node is on. This operation has a cost of O(N).
+ * @param nodep points to the node to become the root of the list.
+ * @return a pointer to the new root node.
+ */
+extern diminuto_list_t * diminuto_list_reroot(
+    diminuto_list_t * nodep
+);
 
 /**
  * Remove the specified node from the list it is on. The node is
@@ -165,19 +190,9 @@ extern diminuto_list_t * diminuto_list_insert(
 );
 
 /**
- * Make the specified node the root of all the other nodes that are
- * on the list that the node is on.
- * @param nodep points to the node to become the root of the list.
- * @return a pointer to the new root node.
- */
-extern diminuto_list_t * diminuto_list_reroot(
-    diminuto_list_t * nodep
-);
-
-/**
  * Replace an old node with a new node on the same relative position on the
- * list. If the old node was the root of the list, the new node becomes the
- * root of the list.
+ * list. If the old node was the root of the list, the list is rerooted to
+ * the new node.
  * @param oldp points to the old node.
  * @param newp points to the new node.
  * return a pointer to the old node.
@@ -187,11 +202,30 @@ extern diminuto_list_t * diminuto_list_replace(
 	diminuto_list_t * newp
 );
 
+/**
+ * Cut out a segment of a list, resulting in two lists: the original list
+ * minus the segment, and a new list rerooted in the first of the new segment.
+ * If any of the cut nodes are the root of the original list, the original list
+ * is rereooted to the node that was previously next to the last node. If the
+ * first and last nodes are the same node, this node is removed from the list
+ * it is on.
+ * @param firstp points to the first node in the new segment to be cut.
+ * @param lastp points to the last node in the new segment to be cut.
+ * @return a pointer to the first node in the new segment.
+ */
 extern diminuto_list_t * diminuto_list_cut(
     diminuto_list_t * firstp,
-    diminuto_list_t * secondp
+    diminuto_list_t * lastp
 );
 
+/**
+ * Splice a list into another list. If the list to be sliced is already on the
+ * destination list, this operation has no effect. The spliced list is rerooted
+ * to the root of the destination list.
+ * @param top points to the node after which the splice occurs.
+ * @param fromp points to the node of the list to be spliced.
+ * @return a pointer the node at the beginning of the splice.
+ */
 extern diminuto_list_t * diminuto_list_splice(
     diminuto_list_t * top,
     diminuto_list_t * fromp
