@@ -148,7 +148,7 @@ typedef int (diminuto_list_functor_t)(
  * @return a pointer to the removed node.
  */
 extern diminuto_list_t * diminuto_list_remove(
-    diminuto_list_t * secondp
+    diminuto_list_t * nodep
 );
 
 /**
@@ -161,7 +161,7 @@ extern diminuto_list_t * diminuto_list_remove(
  */
 extern diminuto_list_t * diminuto_list_insert(
     diminuto_list_t * queuep,
-    diminuto_list_t * secondp
+    diminuto_list_t * nodep
 );
 
 /**
@@ -171,7 +171,7 @@ extern diminuto_list_t * diminuto_list_insert(
  * @return a pointer to the new root node.
  */
 extern diminuto_list_t * diminuto_list_reroot(
-    diminuto_list_t * secondp
+    diminuto_list_t * nodep
 );
 
 /**
@@ -215,7 +215,7 @@ extern diminuto_list_t * diminuto_list_splice(
  */
 extern diminuto_list_t * diminuto_list_apply(
 	diminuto_list_functor_t * funcp,
-    diminuto_list_t * secondp,
+    diminuto_list_t * nodep,
     void * contextp
 );
 
@@ -223,9 +223,11 @@ extern diminuto_list_t * diminuto_list_apply(
  * Audit a list. Return a pointer to the first node on the list that appears
  * to be incorrect, or NULL if the list appears correct. Next, previous, and
  * root pointers are checked.
+ * @param nodep points to a node on the list.
+ * @return a pointer to the first problematic node or null if none.
  */
 extern diminuto_list_t * diminuto_list_audit(
-	diminuto_list_t * secondp
+	const diminuto_list_t * nodep
 );
 
 /*******************************************************************************
@@ -362,13 +364,26 @@ static inline int diminuto_list_isroot(
 }
 
 /**
+ * Returns true if a node is a member of a list.
+ * @param rootp points to the list root node.
+ * @param nodep points to the node.
+ * @return true the node is a member of the list with the root, false otherwise.
+ */
+static inline int diminuto_list_ismember(
+	const diminuto_list_t * rootp,
+	const diminuto_list_t * nodep
+) {
+    return (rootp == diminuto_list_root(nodep));
+}
+
+/**
  * Returns true two nodes are members of the same list. This works even if one
  * or both of the nodes are root nodes.
  * @param firstp points to the first node.
  * @param secondp points to the second node.
  * @return true if two nodes are members of the same list, false otherwise.
  */
-static inline int diminuto_list_ismember(
+static inline int diminuto_list_aresiblings(
 	const diminuto_list_t * firstp,
 	const diminuto_list_t * secondp
 ) {
@@ -385,7 +400,7 @@ static inline int diminuto_list_ismember(
  * @return the data pointer for a node or null.
  */
 static inline void * diminuto_list_dataif(
-	diminuto_list_t * nodep
+	const diminuto_list_t * nodep
 ) {
     return (nodep != (diminuto_list_t *)0) ? nodep->data : (void *)0;
 }
@@ -397,7 +412,7 @@ static inline void * diminuto_list_dataif(
  * @return a pointer to the first node on a list or null if the list is empty.
  */
 static inline diminuto_list_t * diminuto_list_head(
-	diminuto_list_t * nodep
+	const diminuto_list_t * nodep
 ) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
         ? (diminuto_list_t *)0
@@ -411,7 +426,7 @@ static inline diminuto_list_t * diminuto_list_head(
  * @return a pointer to the first node on a list or null if the list is empty.
  */
 static inline diminuto_list_t * diminuto_list_tail(
-	diminuto_list_t * nodep
+	const diminuto_list_t * nodep
 ) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
         ? (diminuto_list_t *)0
@@ -479,27 +494,56 @@ static inline diminuto_list_t * diminuto_list_dequeue(
 }
 
 /*******************************************************************************
- * MAILBOX API
+ * MESSAGING API
  ******************************************************************************/
 
+/**
+ * Receive a message from a mailbox.
+ * @param mboxp points to the mailbox.
+ * @return a pointer to a message or null if the mailbox was empty.
+ */
 static inline diminuto_list_t * diminuto_list_receive(
 	diminuto_list_t * mboxp
 ) {
 	return diminuto_list_dequeue(mboxp);
 }
 
+/**
+ * Send a message to a mailbox.
+ * @param mboxp points to the mailbox.
+ * @param mesgp points to the message to send.
+ * @return a pointer to the message.
+ */
 static inline diminuto_list_t * diminuto_list_send(
 	diminuto_list_t * mboxp,
-	diminuto_list_t * nodep
+	diminuto_list_t * mesgp
 ) {
-    return diminuto_list_enqueue(mboxp, nodep);
+    return diminuto_list_enqueue(mboxp, mesgp);
 }
 
+/**
+ * Send a high priority message to the mailbox. The message will be placed
+ * ahead of all the other messages in the mailbox.
+ * @param mboxp points to the mailbox.
+ * @param mesgp points to the message to send.
+ * @return pointer to the message.
+ */
 static inline diminuto_list_t * diminuto_list_express(
 	diminuto_list_t * mboxp,
-	diminuto_list_t * nodep
+	diminuto_list_t * mesgp
 ) {
-    return diminuto_list_push(mboxp, nodep);
+    return diminuto_list_push(mboxp, mesgp);
+}
+
+/**
+ * Remove a message from any mailbox it may be in.
+ * @param mesgp points to the message to cancel.
+ * @return a pointer to the message.
+ */
+static inline diminuto_list_t * diminuto_list_cancel(
+	diminuto_list_t * mesgp
+) {
+	return diminuto_list_remove(mesgp);
 }
 
 #endif
