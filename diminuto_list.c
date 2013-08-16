@@ -9,7 +9,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_list.h"
-#include <stdio.h>
 
 /**
  * This is a private internal general reroot operator that reroots a range of
@@ -143,11 +142,11 @@ diminuto_list_t * diminuto_list_apply(
 }
 
 diminuto_list_t * diminuto_list_audit(
-	const diminuto_list_t * nodep
+	diminuto_list_t * nodep
 ) {
-	const diminuto_list_t * rootp = diminuto_list_root(nodep);
-	const diminuto_list_t * nextp = nodep;
-	const diminuto_list_t * prevp = nodep;
+	diminuto_list_t * rootp = diminuto_list_root(nodep);
+	diminuto_list_t * nextp = nodep;
+	diminuto_list_t * prevp = nodep;
 	while (!0) {
 		if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
 			nodep = nextp;
@@ -156,7 +155,7 @@ diminuto_list_t * diminuto_list_audit(
 			nodep = prevp;
 			break;
 		} else if ((nextp = nextp->next) == (prevp = prevp->prev)) {
-			nodep = (diminuto_list_t *)0;
+			nodep = DIMINUTO_LIST_NULL;
 			break;
 		} else {
 			continue;
