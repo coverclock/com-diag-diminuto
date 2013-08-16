@@ -82,14 +82,21 @@
  *
  * Lists can be used to implement stacks (LIFO) or queues (FIFO), in which case
  * null pointers are returned to indicate that the container is empty. These
- * null pointers are not stored in the container but synthesized by the
- * API.
+ * null pointers are not stored in the container itself but synthesized by the
+ * API when appropriate.
  */
 
 /*******************************************************************************
  * TYPES
  ******************************************************************************/
 
+/**
+ * This is what a Diminuto doubly-linked-list data structure looks like: a
+ * pointer to the next node, a pointer to the previous node, a pointer to the
+ * root of the list, and a pointer to the payload (which could be anything, even
+ * a non-pointer, as long as it fits in sizeof(void *). The size and alignment
+ * of this structure was deliberately designed to fit in a typical cache line.
+ */
 typedef struct DiminutoList {
 	struct DiminutoList * next;	/* Points to the next node on the list. */
 	struct DiminutoList * prev;	/* Points to the previous node on the list. */
@@ -134,13 +141,14 @@ typedef int (diminuto_list_functor_t)(
 
 /**
  * Remove the specified node from the list it is on. The node is
- * reinitialized. The data pointer is left unaltered. If the node is
- * not on a list, nothing is done.
+ * reinitialized. The data pointer is left unaltered. If the node is the root
+ * of the list, the list is rerooted to the next node. If the node is
+ * not on a list, this operation has no effect.
  * @param nodep points to the node to be removed.
  * @return a pointer to the removed node.
  */
 extern diminuto_list_t * diminuto_list_remove(
-    diminuto_list_t * nodep
+    diminuto_list_t * secondp
 );
 
 /**
@@ -153,17 +161,17 @@ extern diminuto_list_t * diminuto_list_remove(
  */
 extern diminuto_list_t * diminuto_list_insert(
     diminuto_list_t * queuep,
-    diminuto_list_t * nodep
+    diminuto_list_t * secondp
 );
 
 /**
  * Make the specified node the root of all the other nodes that are
- * on the list that the specified node is on.
+ * on the list that the node is on.
  * @param nodep points to the node to become the root of the list.
  * @return a pointer to the new root node.
  */
 extern diminuto_list_t * diminuto_list_reroot(
-    diminuto_list_t * nodep
+    diminuto_list_t * secondp
 );
 
 /**
@@ -181,7 +189,7 @@ extern diminuto_list_t * diminuto_list_replace(
 
 extern diminuto_list_t * diminuto_list_cut(
     diminuto_list_t * firstp,
-    diminuto_list_t * lastp
+    diminuto_list_t * secondp
 );
 
 extern diminuto_list_t * diminuto_list_splice(
@@ -207,12 +215,17 @@ extern diminuto_list_t * diminuto_list_splice(
  */
 extern diminuto_list_t * diminuto_list_apply(
 	diminuto_list_functor_t * funcp,
-    diminuto_list_t * nodep,
+    diminuto_list_t * secondp,
     void * contextp
 );
 
-extern diminuto_list_t * diminuto_list_fini(
-	diminuto_list_t * rootp
+/**
+ * Audit a list. Return a pointer to the first node on the list that appears
+ * to be incorrect, or NULL if the list appears correct. Next, previous, and
+ * root pointers are checked.
+ */
+extern diminuto_list_t * diminuto_list_audit(
+	diminuto_list_t * secondp
 );
 
 /*******************************************************************************
@@ -349,17 +362,17 @@ static inline int diminuto_list_isroot(
 }
 
 /**
- * Returns true if a root node is the root of a node, indicating that the node
- * is on a list rooted by the root.
- * @param rootp points to a root node.
- * @param nodep points to a node.
- * @return true if the node is on a list rooted by the root, false otherwise.
+ * Returns true two nodes are members of the same list. This works even if one
+ * or both of the nodes are root nodes.
+ * @param firstp points to the first node.
+ * @param secondp points to the second node.
+ * @return true if two nodes are members of the same list, false otherwise.
  */
 static inline int diminuto_list_ismember(
-	const diminuto_list_t * rootp,
-	const diminuto_list_t * nodep
+	const diminuto_list_t * firstp,
+	const diminuto_list_t * secondp
 ) {
-    return (rootp == diminuto_list_root(nodep));
+    return (diminuto_list_root(firstp) == diminuto_list_root(secondp));
 }
 
 /*******************************************************************************

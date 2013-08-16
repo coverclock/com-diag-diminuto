@@ -9,10 +9,18 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * This facility was inspired by countless dump programs I have encountered
+ * over the years on platforms like the IBM 360 and the PDP-11. Depending on
+ * what you're doing, you might want to try diminuto_phex_emit() instead,
+ * particularly if you are dumping data byte by byte from a real-time source
+ * like a serial port. On the other hand, if your data is in a buffer or is
+ * structured, this approach is probably better.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
+#include <stdint.h>
 
 /**
  * Dumps a block of memory in hexadecimal along with printable characters.
@@ -59,16 +67,76 @@ extern void diminuto_dump_generic(
     const char * lineend
 );
 
-#define diminuto_dump_general(_FP_, _DATA_, _LENGTH_, _UPPER_, _DOT_, _VIRTUALIZE_, _ADDRESS_, _INDENT_) \
-		diminuto_dump_generic(_FP_, _DATA_, _LENGTH_, _UPPER_, _DOT_, _VIRTUALIZE_, _ADDRESS_, _INDENT_, 4, 4, ": ", " ", "|", ' ', ' ', "|\n")
+/**
+ * Specialize diminuto_dump_generic() using for four bytes per word and four
+ * words per line.
+ * @param fp points to the file stream to which to dump.
+ * @param data points to the data to dump.
+ * @param length is the size of data to dump in bytes.
+ * @param upper if true dumps in uppercase hex else lowercase hex.
+ * @param dot is the character to substitute for unprintable characters.
+ * @param virtualize if true cause the next parameter to be printed as the
+ * address instead of the actual address.
+ * @param address is used as the replacement address to be printed.
+ * @param indent causes each line to be indented by this many spaces.
+ */
+static inline void diminuto_dump_general(
+	FILE * fp,
+	const void * data,
+	size_t length,
+	int upper,
+	char dot,
+	int virtualize,
+	uintptr_t address,
+	size_t indent
+) {
+	diminuto_dump_generic(fp, data, length, upper, dot, virtualize, address, indent, sizeof(int32_t), 16 / sizeof(int32_t), ": ", " ", "|", ' ', ' ', "|\n");
+}
 
-#define diminuto_dump_bytes(_FP_, _DATA_, _LENGTH_) \
-		diminuto_dump_generic(_FP_, _DATA_, _LENGTH_, 0, '.', 0, 0, 0, 1, 16, ": ", " ", "|", ' ', ' ', "|\n")
+/**
+ * Specialize diminuto_dump_generic() for a byte by byte dump.
+ * @param fp points to the file stream to which to dump.
+ * @param data points to the data to dump.
+ * @param length is the size of data to dump in bytes.
+ */
+static inline void diminuto_dump_bytes(
+	FILE * fp,
+	const void * data,
+	size_t length
+) {
+	diminuto_dump_generic(fp, data, length, 0, '.', 0, 0, 0, 1, 2 * sizeof(int64_t), ": ", " ", "|", ' ', ' ', "|\n");
+}
 
-#define diminuto_dump_virtual(_FP_, _DATA_, _LENGTH_, _ADDRESS_) \
-		diminuto_dump_general(_FP_, _DATA_, _LENGTH_, 0, '.', !0, _ADDRESS_, 0)
+/**
+ * Specialize diminuto_dump_general() for a dump that displays offsets relative
+ * to a specified address instead of actual (virtual) memory addresses.
+ * @param fp points to the file stream to which to dump.
+ * @param data points to the data to dump.
+ * @param length is the size of data to dump in bytes.
+ * @param address is used as the replacement address to be printed.
+ */
+static inline void diminuto_dump_virtual(
+	FILE * fp,
+	const void * data,
+	size_t length,
+	uintptr_t address
+) {
+	diminuto_dump_general(fp, data, length, 0, '.', !0, address, 0);
+}
 
-#define diminuto_dump(_FP_, _DATA_, _LENGTH_) \
-		diminuto_dump_general(_FP_, _DATA_, _LENGTH_, 0, '.', 0, 0, 0)
+/**
+ * Specialize diminuto_dump_general() for a good old fashioned general purpose
+ * dump probably suitable for whatever you may have in mind.
+ * @param fp points to the file stream to which to dump.
+ * @param data points to the data to dump.
+ * @param length is the size of data to dump in bytes.
+ */
+static inline void diminuto_dump(
+	FILE * fp,
+	const void * data,
+	size_t length
+) {
+	diminuto_dump_general(fp, data, length, 0, '.', 0, 0, 0);
+}
 
 #endif
