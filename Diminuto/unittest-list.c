@@ -532,15 +532,13 @@ int main(void)
     }
 
     {
-    	/* Cut/Splice 1 */
+    	/* Cut/Splice */
 
     	diminuto_list_t head1;
     	diminuto_list_t list1[4];
     	diminuto_list_t head2;
     	diminuto_list_t list2[5];
     	diminuto_list_t * np;
-
-    	verbose = 1;
 
     	diminuto_list_datainit(&head1, (void*)0x10);
     	diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[0], (void *)0x11));
@@ -565,7 +563,37 @@ int main(void)
         np = diminuto_list_splice(&list1[1], &list2[2]);
         ASSERT(np == &list2[2]);
         audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
-    }
+
+        /* Different Lists */
+
+        np = diminuto_list_cut(&list2[1], &list2[0]);
+        ASSERT(np == &list2[1]);
+        audit(__FILE__, __LINE__, &head2, &head2, &list2[0], &list2[4], &head2, DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
+
+        /* Complete List */
+
+        np = diminuto_list_cut(&head2, &list2[4]);
+        ASSERT(np == &head2);
+        audit(__FILE__, __LINE__, &head2, &head2, &list2[0], &list2[4], &head2, DIMINUTO_LIST_NULL);
+
+        /* Single Node */
+
+        np = diminuto_list_cut(&list2[0], &list2[0]);
+        ASSERT(np == &list2[0]);
+        audit(__FILE__, __LINE__, &head2, &head2, &list2[4], &head2, DIMINUTO_LIST_NULL);
+        audit(__FILE__, __LINE__, &list2[0], &list2[0], &list2[0], DIMINUTO_LIST_NULL);
+
+        np = diminuto_list_splice(&list1[1], &list2[0]);
+        ASSERT(np == &list2[0]);
+        audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[0], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
+
+        /* Already There */
+
+        np = diminuto_list_splice(&list2[0], &list1[1]);
+        ASSERT(np == &list1[1]);
+        audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[0], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
+   }
 
     return 0;
 }
