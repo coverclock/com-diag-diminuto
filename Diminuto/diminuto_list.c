@@ -73,20 +73,21 @@ diminuto_list_t * diminuto_list_cut(
     diminuto_list_t * firstp,
     diminuto_list_t * lastp
 ) {
-	if (firstp->prev == lastp) {
+	if (firstp->root != lastp->root) {
+		/* Do nothing. */
+	} else if (firstp->prev == lastp) {
 		/* Do nothing. */
 	} else if (firstp == lastp) {
 		diminuto_list_remove(firstp);
 	} else {
-		diminuto_list_t * rootp = firstp->prev->root;
-		diminuto_list_t * nodep = firstp;
+		diminuto_list_t * nodep = firstp->prev;
 		do {
-			if (nodep == rootp) {
+			nodep = nodep->next;
+			if (nodep == firstp->root) {
 				reroot(lastp->next, firstp->prev, lastp->next);
 				break;
 			}
-			nodep = nodep->next;
-		} while (nodep != firstp);
+		} while (nodep != lastp);
 		firstp->prev->next = lastp->next;
 		lastp->next->prev = firstp->prev;
 		firstp->prev = lastp;
