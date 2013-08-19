@@ -21,7 +21,7 @@ extern "C" {
 #include <stdlib.h>
 
 enum {
-	ITERATIONS = 1000,
+	ITERATIONS = 10000,
 	CARDINALITY = 1000,
 };
 
@@ -67,14 +67,36 @@ public:
 
 COM_DIAG_DIMINUTO_WELL_DEFINITION(Doohickey, CARDINALITY);
 
+class Thingamajig : public Framistat {
+
+public:
+
+	Thingamajig()
+	: Framistat()
+	{}
+
+	Thingamajig(int skosh)
+	: Framistat(skosh)
+	{}
+
+	virtual ~Thingamajig() {}
+
+	COM_DIAG_DIMINUTO_SAFEWELL_DECLARATION(Thingamajig);
+
+};
+
+COM_DIAG_DIMINUTO_SAFEWELL_DEFINITION(Thingamajig, CARDINALITY);
+
 int main(int argc, char ** argv) {
 	Framistat * framistat[CARDINALITY];
-	Doohickey * doohickey[CARDINALITY];
+	Doohickey * doohickey[countof(framistat)];
+	Thingamajig * thingamajig[countof(framistat)];
 	size_t ii;
 	size_t jj;
 	int test;
 
 	test = (argc < 2) ? 0 : atoi(argv[1]);
+	ASSERT((0 <= test) && (test <= 4));
 	printf("TEST %d: BEGIN\n", test);
 
 	switch (test) {
@@ -104,6 +126,28 @@ int main(int argc, char ** argv) {
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Doohickey(jj);
+				ASSERT(framistat[jj] != (Framistat *)0);
+			}
+			for (jj = 0; jj < countof(framistat); ++jj) {
+				delete framistat[jj];
+			}
+		}
+		break;
+	case 3:
+		for (ii = 0; ii < ITERATIONS; ++ii) {
+			for (jj = 0; jj < countof(thingamajig); ++jj) {
+				thingamajig[jj] = new Thingamajig(jj);
+				ASSERT(thingamajig[jj] != (Thingamajig *)0);
+			}
+			for (jj = 0; jj < countof(thingamajig); ++jj) {
+				delete thingamajig[jj];
+			}
+		}
+		break;
+	case 4:
+		for (ii = 0; ii < ITERATIONS; ++ii) {
+			for (jj = 0; jj < countof(framistat); ++jj) {
+				framistat[jj] = new Thingamajig(jj);
 				ASSERT(framistat[jj] != (Framistat *)0);
 			}
 			for (jj = 0; jj < countof(framistat); ++jj) {

@@ -67,13 +67,13 @@ int main(int argc, char ** argv) {
 
 	for (jj = 0; jj < LIMIT; ++jj) {
 
-		ASSERT(Framistat::well.isFull());
+		ASSERT(Framistat::com_diag_diminuto_well.isFull());
 		for (ii = 0; ii < countof(framistat); ++ii) {
 			framistat[ii] = new Framistat(ii);
 			ASSERT(framistat[ii] != (Framistat *)0);
-			ASSERT(!Framistat::well.isFull());
+			ASSERT(!Framistat::com_diag_diminuto_well.isFull());
 		}
-		ASSERT(Framistat::well.isEmpty());
+		ASSERT(Framistat::com_diag_diminuto_well.isEmpty());
 
 		for (ii = 0; ii < countof(framistat); ++ii) {
 			ASSERT(framistat[ii]->discombobulate() == ii);
@@ -95,12 +95,12 @@ int main(int argc, char ** argv) {
 			ASSERT(fail == (Framistat *)0);
 		}
 
-		ASSERT(Framistat::well.isEmpty());
+		ASSERT(Framistat::com_diag_diminuto_well.isEmpty());
 		for (ii = 0; ii < countof(framistat); ++ii) {
 			delete framistat[countof(framistat) - ii - 1];
-			ASSERT(!Framistat::well.isEmpty());
+			ASSERT(!Framistat::com_diag_diminuto_well.isEmpty());
 		}
-		ASSERT(Framistat::well.isFull());
+		ASSERT(Framistat::com_diag_diminuto_well.isFull());
 
 	}
 
