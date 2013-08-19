@@ -140,7 +140,7 @@ extern int diminuto_well_free(diminuto_well_t * wellp, void * pointer);
  * @param wellp points to the well.
  * @return !0 if the well is full, 0 otherwise.
  */
-static inline int diminuto_well_isfull(diminuto_well_t * wellp) {
+static inline int diminuto_well_isfull(const diminuto_well_t * wellp) {
 	return diminuto_list_isempty(&wellp[DIMINUTO_WELL_USED]);
 }
 
@@ -149,7 +149,7 @@ static inline int diminuto_well_isfull(diminuto_well_t * wellp) {
  * @param wellp points to the well.
  * @return !0 if the well is empty, 0 otherwise.
  */
-static inline int diminuto_well_isempty(diminuto_well_t * wellp) {
+static inline int diminuto_well_isempty(const diminuto_well_t * wellp) {
 	return diminuto_list_isempty(&wellp[DIMINUTO_WELL_FREE]);
 }
 
@@ -196,7 +196,7 @@ namespace com {
 		 * @param cc is the fixed number of items of type _TYPE_ in the well.
 		 * @param pp if true causes memory to be allocated during construction.
 		 */
-		explicit Well(size_t cc = 0, bool pp = false, size_t aa = _ALIGNMENT_)
+		explicit Well(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
 		: cardinality(cc)
 		, alignment(aa)
 		, wellp(static_cast<diminuto_well_t *>(0))
@@ -279,6 +279,24 @@ namespace com {
 			pthread_mutex_lock(&mutex);
 				diminuto_well_free(wellp, pointer);
 			pthread_mutex_unlock(&mutex);
+		}
+
+		/**
+		 * Return true is the well is full, that is, no objects of type _TYPE_
+		 * are currently allocated from it.
+		 * @return true if the well is full, false otherwise.
+		 */
+		inline bool isFull() const {
+			return (diminuto_well_isfull(wellp) != 0);
+		}
+
+		/**
+		 * Return true if the well is empty, that is, the next new operator
+		 * will return a null pointer.
+		 * @return true if the well is empty, false otherwise.
+		 */
+		inline bool isEmpty() const {
+			return (diminuto_well_isempty(wellp) != 0);
 		}
 
 	protected:
