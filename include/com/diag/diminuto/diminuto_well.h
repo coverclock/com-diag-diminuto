@@ -164,7 +164,7 @@ namespace com {
  namespace diag {
   namespace diminuto {
 
-	template <class _TYPE__, size_t _ALIGNMENT_ = sizeof(uint64_t)>
+	template <class _TYPE_, size_t _ALIGNMENT_ = sizeof(uint64_t)>
 	/**
 	 * This is a templated Well class for objects of type _TYPE_. When a new()
 	 * operator is called for an object of type _TYPE_, the memory for the
@@ -175,14 +175,6 @@ namespace com {
 	 * that are never used.
 	 */
 	class Well {
-
-	protected:
-
-		/**
-		 * We can tell when the well has allocated because if it hasn't, its
-		 * pointer has this value.
-		 */
-		static const diminuto_well_t * NOWELL = static_cast<diminuto_well_t *>(0);
 
 	public:
 
@@ -207,7 +199,7 @@ namespace com {
 		explicit Well(size_t cc = 0, bool pp = false, size_t aa = _ALIGNMENT_)
 		: cardinality(cc)
 		, alignment(aa)
-		, wellp(NOWELL)
+		, wellp(static_cast<diminuto_well_t *>(0))
 		{
 			pthread_mutex_init(&mutex, (pthread_mutexattr_t *)0);
 			if (cc == 0) {
@@ -238,7 +230,7 @@ namespace com {
 		 * @param aa is the alignment of objects of type _TYPE_ in the well.
 		 */
 		void init(size_t cc, size_t aa = _ALIGNMENT_) {
-			if (wellp == NOWELL) {
+			if (wellp == static_cast<diminuto_well_t *>(0)) {
 				wellp = diminuto_well_init(sizeof(_TYPE_), cc, aa);
 			}
 		}
@@ -256,7 +248,7 @@ namespace com {
 		 * of type _TYPE_ allocated from the well.
 		 */
 		void fini() {
-			if (wellp == NOWELL) {
+			if (wellp == static_cast<diminuto_well_t *>(0)) {
 				/* Do nothing. */
 			} else if (diminuto_well_isfull(wellp)) {
 				diminuto_well_fini(wellp);
@@ -333,7 +325,7 @@ namespace com {
 #define COM_DIAG_DIMINUTO_WELL_DECLARATION(_TYPE_) \
 	static com::diag::diminuto::Well<_TYPE_> well; \
 	static void * operator new(size_t size) { return well.alloc(); } \
-	static void operator delete(void * pointer) { well.free(static_cast<_TYPE_*>(pointer)); }
+	static void operator delete(void * pointer) { well.free(static_cast<_TYPE_ *>(pointer)); }
 
 /**
  * @def COM_DIAG_DIMINUTO_WELL_DEFINITION
@@ -343,7 +335,7 @@ namespace com {
  * yourself if you want and specify any alignment you choose.
  */
 #define COM_DIAG_DIMINUTO_WELL_DEFINITION(_TYPE_, _COUNT_) \
-	com::diag::diminuto::Well<_TYPE_> well(_COUNT_)
+	com::diag::diminuto::Well<_TYPE_> _TYPE_::well(_COUNT_)
 
 #endif
 
