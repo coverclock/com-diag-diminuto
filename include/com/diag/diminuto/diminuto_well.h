@@ -168,7 +168,14 @@ namespace com {
   namespace diminuto {
 
 	/**
-	 * This is a base Well class.
+	 * This is a base Well class. You will be tempted to move the implementation
+	 * of this class into a C++ translation unit (e.g. a .cpp file), but doing
+	 * so, then compiling it and placing it in the Diminuto shared object used
+	 * for linking, will require that all of the Diminuto main programs, such
+	 * as the utilities and all of the unit tests, be in C++ translation units.
+	 * This seems like a bug to me, since those main programs don't make
+	 * reference to the C++ components. I haven't perused the GCC docs yet to
+	 * see if there's a way around this.
 	 */
 	class BaseWell {
 
@@ -397,7 +404,7 @@ namespace com {
 	 * is allocated. This prevents memory from being allocation for objects
 	 * that are never used.
 	 */
-	class SafeWell : public Well<_TYPE_, _ALIGNMENT_> {
+	class SafeWell : public BaseWell {
 
 	public:
 
@@ -420,7 +427,7 @@ namespace com {
 		 * @param pp if true causes memory to be allocated during construction.
 		 */
 		explicit SafeWell(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
-		: Well<_TYPE_, _ALIGNMENT_>(cc, pp, aa)
+		: BaseWell(sizeof(_TYPE_), cc, pp, aa)
 		{
 			pthread_mutex_init(&mutex, (pthread_mutexattr_t *)0);
 		}
@@ -436,12 +443,33 @@ namespace com {
 		}
 
 		/**
+		 * Allocate memory for the well. The cardinality and alignment of of
+		 * objects of type _TYPE_ in the well were specified at construction.
+		 */
+		void init() {
+			pthread_mutex_lock(&mutex);
+				BaseWell::init();
+			pthread_mutex_unlock(&mutex);
+		}
+
+		/**
+		 * Allocate memory for the well.
+		 * @param cc is the count of objects of type _TYPE_ in the well.
+		 * @param aa is the alignment of objects of type _TYPE_ in the well.
+		 */
+		void init(size_t cc, size_t aa = _ALIGNMENT_) {
+			pthread_mutex_lock(&mutex);
+				BaseWell::init(sizeof(_TYPE_), cc, aa);
+			pthread_mutex_unlock(&mutex);
+		}
+
+		/**
 		 * Deallocate memory for the well if and only iff there are no objects
 		 * of type _TYPE_ allocated from the well.
 		 */
 		void fini() {
 			pthread_mutex_lock(&mutex);
-				Well<_TYPE_, _ALIGNMENT_>::fini();
+				BaseWell::fini();
 			pthread_mutex_unlock(&mutex);
 		}
 
@@ -452,8 +480,7 @@ namespace com {
 		_TYPE_ * alloc() {
 			_TYPE_ * that;
 			pthread_mutex_lock(&mutex);
-				Well<_TYPE_, _ALIGNMENT_>::init();
-				that = Well<_TYPE_, _ALIGNMENT_>::alloc();
+				that = static_cast<_TYPE_ *>(BaseWell::alloc());
 			pthread_mutex_unlock(&mutex);
 			return that;
 		}
@@ -464,7 +491,7 @@ namespace com {
 		 */
 		void free(_TYPE_ * pointer) {
 			pthread_mutex_lock(&mutex);
-				Well<_TYPE_, _ALIGNMENT_>::free(pointer);
+				BaseWell::free(pointer);
 			pthread_mutex_unlock(&mutex);
 		}
 
