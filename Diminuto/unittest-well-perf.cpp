@@ -93,14 +93,14 @@ int main(int argc, char ** argv) {
 	Thingamajig * thingamajig[countof(framistat)];
 	size_t ii;
 	size_t jj;
-	int test;
+	int mask;
+	int bit;
 
-	test = (argc < 2) ? 0 : atoi(argv[1]);
-	ASSERT((0 <= test) && (test <= 4));
-	printf("TEST %d: BEGIN\n", test);
+	mask = (argc < 2) ? ~0 : atoi(argv[1]);
 
-	switch (test) {
-	case 0:
+	bit = 0;
+	if ((mask & (1 << bit)) != 0) {
+		printf("TEST %d: BEGIN\n", bit);
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Framistat(jj);
@@ -110,8 +110,12 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		break;
-	case 1:
+		printf("TEST %d: END\n", bit);
+	}
+
+	bit = 1;
+	if ((mask & (1 << bit)) != 0) {
+		printf("TEST %d: BEGIN\n", bit);
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(doohickey); ++jj) {
 				doohickey[jj] = new Doohickey(jj);
@@ -121,8 +125,12 @@ int main(int argc, char ** argv) {
 				delete doohickey[jj];
 			}
 		}
-		break;
-	case 2:
+		printf("TEST %d: END\n", bit);
+	}
+
+	bit = 2;
+	if ((mask & (1 << bit)) != 0) {
+		printf("TEST %d: BEGIN\n", bit);
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Doohickey(jj);
@@ -132,8 +140,12 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		break;
-	case 3:
+		printf("TEST %d: END\n", bit);
+	}
+
+	bit = 3;
+	if ((mask & (1 << bit)) != 0) {
+		printf("TEST %d: BEGIN\n", bit);
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(thingamajig); ++jj) {
 				thingamajig[jj] = new Thingamajig(jj);
@@ -143,8 +155,12 @@ int main(int argc, char ** argv) {
 				delete thingamajig[jj];
 			}
 		}
-		break;
-	case 4:
+		printf("TEST %d: END\n", bit);
+	}
+
+	bit = 4;
+	if ((mask & (1 << bit)) != 0) {
+		printf("TEST %d: BEGIN\n", bit);
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Thingamajig(jj);
@@ -154,11 +170,8 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		break;
-	default:
-		break;
+		printf("TEST %d: END\n", bit);
 	}
 
-	printf("TEST %d: END\n", test);
 	EXIT();
 }
