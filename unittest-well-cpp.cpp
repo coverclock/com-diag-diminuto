@@ -30,10 +30,16 @@ public:
 
 	int skoshification;
 
+	Framistat()
+	: skoshification(-1)
+	{
+		printf("%p->Framistat() skoshification=%d\n", this, skoshification);
+	}
+
 	Framistat(int skosh)
 	: skoshification(skosh)
 	{
-		printf("%p->Framistat(%d)\n", this, skosh);
+		printf("%p->Framistat(%d) skoshification=%d\n", this, skosh, skoshification);
 	}
 
 	~Framistat() {
@@ -53,6 +59,7 @@ COM_DIAG_DIMINUTO_WELL_DEFINITION(Framistat, CARDINALITY);
 int main(int argc, char ** argv) {
 	Framistat * framistat[CARDINALITY];
 	Framistat * fail;
+	Framistat * array;
 	size_t ii;
 	size_t jj;
 
@@ -96,6 +103,12 @@ int main(int argc, char ** argv) {
 		ASSERT(Framistat::well.isFull());
 
 	}
+
+	array = new Framistat[CARDINALITY];
+	for (ii = 0; ii < CARDINALITY; ++ii) {
+		ASSERT(array[ii].discombobulate() == -1);
+	}
+	delete [] array;
 
 	EXIT();
 }
