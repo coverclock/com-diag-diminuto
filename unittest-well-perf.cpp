@@ -125,7 +125,7 @@ int main(int argc, char ** argv) {
 	bit = 0;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
-		time = diminuto_time_elapsed();
+		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Framistat(jj);
@@ -135,7 +135,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
 	}
 
 	/* Thread-unsafe well. */
@@ -143,7 +143,7 @@ int main(int argc, char ** argv) {
 	bit = 1;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
-		time = diminuto_time_elapsed();
+		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(doohickey); ++jj) {
 				doohickey[jj] = new Doohickey(jj);
@@ -153,7 +153,7 @@ int main(int argc, char ** argv) {
 				delete doohickey[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
 	}
 
 	/* Thread-unsafe well from base class. */
@@ -161,7 +161,7 @@ int main(int argc, char ** argv) {
 	bit = 2;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
-		time = diminuto_time_elapsed();
+		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Doohickey(jj);
@@ -171,7 +171,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
 	}
 
 	/* Thread-safe well. */
@@ -179,7 +179,7 @@ int main(int argc, char ** argv) {
 	bit = 3;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
-		time = diminuto_time_elapsed();
+		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(thingamajig); ++jj) {
 				thingamajig[jj] = new Thingamajig(jj);
@@ -189,7 +189,7 @@ int main(int argc, char ** argv) {
 				delete thingamajig[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
 	}
 
 	/* Thread-safe well from base class. */
@@ -197,7 +197,7 @@ int main(int argc, char ** argv) {
 	bit = 4;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
-		time = diminuto_time_elapsed();
+		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Thingamajig(jj);
@@ -207,7 +207,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
 	}
 
 	EXIT();

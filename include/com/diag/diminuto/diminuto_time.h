@@ -29,4 +29,18 @@ extern diminuto_usec_t diminuto_time_clock(void);
  */
 extern diminuto_usec_t diminuto_time_elapsed(void);
 
+/**
+ * Return the CPU time in microseconds for the calling process.
+ * @return the number of microseconds elapsed since an arbitrary epoch or
+ * ~0ULL with errno set if an error occurred.
+ */
+extern diminuto_usec_t diminuto_time_process(void);
+
+/**
+ * Return the CPU time in microseconds for the calling thread.
+ * @return the number of microseconds elapsed since an arbitrary epoch or
+ * ~0ULL with errno set if an error occurred.
+ */
+extern diminuto_usec_t diminuto_time_thread(void);
+
 #endif
