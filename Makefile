@@ -23,7 +23,7 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	9# Applications will probably have to be be modified.
-MINOR		=	2# Additional functionality has been added.
+MINOR		=	3# Additional functionality has been added.
 BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
 HOME_DIR	=	$(HOME)/projects
@@ -172,6 +172,8 @@ ARFLAGS		=	rcv
 CPPFLAGS	=	$(CPPARCH) -iquoteinclude -isystem $(INCLUDE_DIR)
 CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
+#CXXFLAGS	=	$(CARCH) -O3
+#CFLAGS		=	$(CARCH) -O3
 CPFLAGS		=	-i
 MVFLAGS		=	-i
 LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt
