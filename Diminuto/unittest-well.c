@@ -115,4 +115,6 @@ int main(void)
 	ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_well_alignment(sizeof(object_t), 8));
 
     diminuto_well_fini(wellp);
+
+    EXIT();
 }

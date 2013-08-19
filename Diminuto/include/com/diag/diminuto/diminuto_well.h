@@ -160,6 +160,9 @@ static inline int diminuto_well_isempty(const diminuto_well_t * wellp) {
 #include <stdint.h>
 #include <sys/types.h>
 
+#include <exception>
+#include <new>
+
 namespace com {
  namespace diag {
   namespace diminuto {
@@ -334,16 +337,21 @@ namespace com {
 }
 
 /**
- * @def COM_DIAG_DIMINUTO_WELL_DECLARACTION
+ * @def COM_DIAG_DIMINUTO_WELL_DECLARACTION_EXCEPTIONS
  * Intended to be used inside the class declaration for the class @a _TYPE_.
  * Declares a static well and the static new() and delete() operators used
  * to allocate and free objects of type _CLASS_. You can also just declare
- * these yourself if you choose.
+ * these yourself if you choose. If the new operator fails to allocate an
+ * object of type _TYPE_ from the well, a std::bad_alloc exception is thrown.
+ * if the new(nothrow) operator fails to allocazte an object of type _TYPE_ from
+ * the well, a null pointer is returned.
  */
 #define COM_DIAG_DIMINUTO_WELL_DECLARATION(_TYPE_) \
 	static com::diag::diminuto::Well<_TYPE_> well; \
-	static void * operator new(size_t size) { return well.alloc(); } \
-	static void operator delete(void * pointer) { well.free(static_cast<_TYPE_ *>(pointer)); }
+	static void * operator new(std::size_t size) throw (std::bad_alloc) { _TYPE_ * pointer = well.alloc(); if (pointer == static_cast<_TYPE_ *>(0)) { std::bad_alloc oom; throw oom; } return pointer; } \
+	static void * operator new(std::size_t size, const std::nothrow_t& nothrow) throw() { return well.alloc(); } \
+	static void operator delete(void * pointer) throw() { well.free(static_cast<_TYPE_ *>(pointer)); } \
+	static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw() { well.free(static_cast<_TYPE_ *>(pointer)); } \
 
 /**
  * @def COM_DIAG_DIMINUTO_WELL_DEFINITION
