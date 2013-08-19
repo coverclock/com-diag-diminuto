@@ -89,7 +89,7 @@ CPPARCH		=
 CARCH		=
 LDARCH		=	
 CROSS_COMPILE	=
-KERNEL_REV	=	3.2.0-39
+KERNEL_REV	=	3.2.0-51
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 #INCLUDE_DIR	=	$(KERNEL_DIR)/include
 INCLUDE_DIR	=	/usr/include
@@ -151,7 +151,7 @@ TARGETSCRIPTS		=	S10provision
 TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep
 TARGETALIASES		=	hex oct
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
-TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.sh))
+TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.cpp)) $(basename $(wildcard unittest-*.sh))
 TARGETARCHIVE		=	lib$(PROJECT).a
 TARGETSHARED		=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTO_SO).$(MAJOR).$(MINOR) $(DIMINUTO_SO).$(MAJOR) $(DIMINUTO_SO)
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
@@ -461,6 +461,9 @@ unittest-well:	unittest-well.c $(TARGETLIBRARIES)
 
 unittest-alignment:	unittest-alignment.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+unittest-well-cpp:	unittest-well-cpp.cpp $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers
 
