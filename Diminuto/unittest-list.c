@@ -89,7 +89,6 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
     	} while ((actual = diminuto_list_next(actual)) != rootp);
     } while ((expected = diminuto_list_prev(expected)) != rootp);
 
-
     /* Audit */
 
     ASSERT(diminuto_list_audit(rootp) == (diminuto_list_t *)0);

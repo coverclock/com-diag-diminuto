@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_stacktrace.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <unistd.h>
 #include <execinfo.h>
 
@@ -19,8 +20,8 @@ int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd)
     return rc;
 }
 
-void diminuto_stacktrace()
+int diminuto_stacktrace()
 {
     void * buffer[DIMINUTO_STACKTRACE_SIZE];
-    (void)diminuto_stacktrace_generic(buffer, sizeof(buffer) / sizeof(buffer[0]), STDERR_FILENO);
+    return diminuto_stacktrace_generic(buffer, countof(buffer), STDERR_FILENO);
 }
