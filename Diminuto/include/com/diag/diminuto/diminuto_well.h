@@ -351,7 +351,7 @@ namespace com {
 	static void * operator new(std::size_t size) throw (std::bad_alloc) { _TYPE_ * pointer = well.alloc(); if (pointer == static_cast<_TYPE_ *>(0)) { std::bad_alloc oom; throw oom; } return pointer; } \
 	static void * operator new(std::size_t size, const std::nothrow_t& nothrow) throw() { return well.alloc(); } \
 	static void operator delete(void * pointer) throw() { well.free(static_cast<_TYPE_ *>(pointer)); } \
-	static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw() { well.free(static_cast<_TYPE_ *>(pointer)); } \
+	static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw() { well.free(static_cast<_TYPE_ *>(pointer)); }
 
 /**
  * @def COM_DIAG_DIMINUTO_WELL_DEFINITION

@@ -461,8 +461,14 @@ unittest-well:	unittest-well.c $(TARGETLIBRARIES)
 
 unittest-alignment:	unittest-alignment.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+unittest-version:	unittest-version.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 unittest-well-cpp:	unittest-well-cpp.cpp $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+	
+unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIES)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers
