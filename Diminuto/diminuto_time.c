@@ -30,21 +30,13 @@ diminuto_usec_t diminuto_time_clock()
     return microseconds;
 }
 
-diminuto_usec_t diminuto_time_elapsed()
+static diminuto_usec_t diminuto_time_generic(clockid_t clock)
 {
 	struct timespec elapsed;
 	diminuto_usec_t microseconds = ~0ULL;
 
-#	if defined(CLOCK_MONOTONIC_RAW)
-		/* Since Linux 2.6.28 */
-#		define DIMINUTO_TIME_ELAPSED CLOCK_MONOTONIC_RAW
-#	else
-		/* Prior to Linux 2.6.28 */
-#		define DIMINUTO_TIME_ELAPSED CLOCK_MONOTONIC
-#	endif
-
-	if (clock_gettime(DIMINUTO_TIME_ELAPSED, &elapsed) < 0) {
-		diminuto_perror("diminuto_time_elapsed: clock_gettime");
+	if (clock_gettime(clock, &elapsed) < 0) {
+		diminuto_perror("diminuto_time_generic: clock_gettime");
 	} else {
 		microseconds = elapsed.tv_sec;
 		microseconds *= 1000000ULL;
@@ -52,4 +44,23 @@ diminuto_usec_t diminuto_time_elapsed()
 	}
 
 	return microseconds;
+}
+
+diminuto_usec_t diminuto_time_elapsed()
+{
+#if defined(CLOCK_MONOTONIC_RAW)
+	return diminuto_time_generic(CLOCK_MONOTONIC_RAW); /* Since Linux 2.6.28 */
+#else
+	return diminuto_time_generic(CLOCK_MONOTONIC); /* Prior to Linux 2.6.28 */
+#endif
+}
+
+diminuto_usec_t diminuto_time_process()
+{
+	return diminuto_time_generic(CLOCK_PROCESS_CPUTIME_ID);
+}
+
+diminuto_usec_t diminuto_time_thread()
+{
+	return diminuto_time_generic(CLOCK_THREAD_CPUTIME_ID);
 }

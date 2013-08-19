@@ -28,14 +28,16 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s\n",
         "requested",
         "remaining",
         "claimed",
         "measured",
         "difference",
         "elapsed",
-        "difference");
+        "difference",
+        "process",
+        "thread");
 
     for (requested = 0; requested < 60000000; requested = requested ? requested * 2 : 1) {
         then = diminuto_time_elapsed();
@@ -46,14 +48,16 @@ int main(int argc, char ** argv)
         claimed = requested - remaining;
         measured = now - then;
         elapsed = after - before;
-        printf("%10llu %10llu %10lld %10lld %10lld %10llu %10lld\n",
+        printf("%10llu %10llu %10lld %10lld %10lld %10llu %10lld %10lld %10lld\n",
             requested,
             remaining,
             claimed,
             measured,
             measured - requested,
             elapsed,
-            elapsed - requested);
+            elapsed - requested,
+            diminuto_time_process(),
+            diminuto_time_thread());
     }
 
     return 0;
