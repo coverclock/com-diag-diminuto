@@ -16,11 +16,16 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+enum {
+	OVERHEAD = 6,
+	LIMIT = DIMINUTO_STACKTRACE_SIZE - OVERHEAD
+};
+
 int f(int depth, int limit)
 {
     int fd;
     int count;
-    void * buffer[16] = { 0 };
+    void * buffer[LIMIT] = { 0 };
     int ndx;
 
     if (depth > 0) {
@@ -32,7 +37,7 @@ int f(int depth, int limit)
     fd = open("/dev/null", O_WRONLY);
     ASSERT(fd >= 0);
 
-    count = diminuto_stacktrace3(buffer, countof(buffer), fd);
+    count = diminuto_stacktrace_generic(buffer, countof(buffer), fd);
 
     close(fd);
 
@@ -50,10 +55,11 @@ int f(int depth, int limit)
 
 int main(int argc, char ** argv)
 {
-    diminuto_unsigned_t value;
+    diminuto_unsigned_t value = LIMIT;
 
-    ASSERT(argc == 2);
-    ASSERT(*diminuto_number(argv[1], &value) == '\0');
+    if (argc >= 2) {
+        ASSERT(*diminuto_number(argv[1], &value) == '\0');
+    }
     ASSERT(f(value, value) == value);
 
     return 0;

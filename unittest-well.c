@@ -47,10 +47,13 @@ int main(void)
 
     for (kk = 0; kk < 4; ++kk) {
 
+        ASSERT(diminuto_well_isfull(wellp));
 		for (ii = 0; ii < countof(pa); ++ii) {
 			pa[ii] = (object_t *)diminuto_well_alloc(wellp);
 			ASSERT(pa[ii] != (object_t *)0);
+			ASSERT(!diminuto_well_isfull(wellp));
 		}
+		ASSERT(diminuto_well_isempty(wellp));
 
 	    ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
 
@@ -68,9 +71,12 @@ int main(void)
 
 		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
 
+		ASSERT(diminuto_well_isempty(wellp));
 		for (ii = 0; ii < countof(pa); ++ii) {
 			ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
+			ASSERT(!diminuto_well_isempty(wellp));
 		}
+		ASSERT(diminuto_well_isfull(wellp));
 
 		ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
 

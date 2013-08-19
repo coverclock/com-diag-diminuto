@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -13,7 +13,9 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-#define DIMINUTO_STACKTRACE_SIZE    64
+enum {
+	DIMINUTO_STACKTRACE_SIZE = 64,
+};
 
 /**
  * Generate a stack back trace in an array of void* pointers provided
@@ -33,9 +35,9 @@ extern int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd);
  * Generate a stack back trace and display it to standard error.
  * The back trace is generated in an array with DIMINUTO_STACKTRACE_SIZE
  * elements. If the trace is deeper than this size, it will be truncated.
+ * @return the number of pointers in the backtrace; if it equals
+ * DIMINUTO_STACKTRACE_SIZE, the trace may have been truncated.
  */
-extern void diminuto_stacktrace(void);
-
-#define diminuto_stacktrace3 diminuto_stacktrace_generic
+extern int diminuto_stacktrace(void);
 
 #endif
