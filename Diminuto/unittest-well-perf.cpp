@@ -7,13 +7,34 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * It is really helpful to run this with the valgrind tool.
+ * With -O3 optimization, run on a
+ *
+ * vendor_id       : GenuineIntel
+ * cpu family      : 6
+ * model           : 15
+ * model name      : Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
+ * cpu MHz         : 1600.000
+ * cache size      : 4096 KB
+ *
+ * this program yields
+ *
+ * TEST 0: BEGIN
+ * TEST 0: END 538965us
+ * TEST 1: BEGIN
+ * TEST 1: END 417154us
+ * TEST 2: BEGIN
+ * TEST 2: END 418591us
+ * TEST 3: BEGIN
+ * TEST 3: END 1303391us
+ * TEST 4: BEGIN
+ * TEST 4: END 1300946us
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
 
 extern "C" {
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 }
 
@@ -95,12 +116,16 @@ int main(int argc, char ** argv) {
 	size_t jj;
 	int mask;
 	int bit;
+	diminuto_usec_t time;
 
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
+
+	/* No well. */
 
 	bit = 0;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
+		time = diminuto_time_elapsed();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Framistat(jj);
@@ -110,12 +135,15 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END\n", bit);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
 	}
+
+	/* Thread-unsafe well. */
 
 	bit = 1;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
+		time = diminuto_time_elapsed();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(doohickey); ++jj) {
 				doohickey[jj] = new Doohickey(jj);
@@ -125,12 +153,15 @@ int main(int argc, char ** argv) {
 				delete doohickey[jj];
 			}
 		}
-		printf("TEST %d: END\n", bit);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
 	}
+
+	/* Thread-unsafe well from base class. */
 
 	bit = 2;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
+		time = diminuto_time_elapsed();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Doohickey(jj);
@@ -140,12 +171,15 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END\n", bit);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
 	}
+
+	/* Thread-safe well. */
 
 	bit = 3;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
+		time = diminuto_time_elapsed();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(thingamajig); ++jj) {
 				thingamajig[jj] = new Thingamajig(jj);
@@ -155,12 +189,15 @@ int main(int argc, char ** argv) {
 				delete thingamajig[jj];
 			}
 		}
-		printf("TEST %d: END\n", bit);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
 	}
+
+	/* Thread-safe well from base class. */
 
 	bit = 4;
 	if ((mask & (1 << bit)) != 0) {
 		printf("TEST %d: BEGIN\n", bit);
+		time = diminuto_time_elapsed();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
 				framistat[jj] = new Thingamajig(jj);
@@ -170,7 +207,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END\n", bit);
+		printf("TEST %d: END %lluus\n", bit, diminuto_time_elapsed() - time);
 	}
 
 	EXIT();
