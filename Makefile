@@ -23,7 +23,7 @@ PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
 MAJOR		=	9# Applications will probably have to be be modified.
-MINOR		=	4# Additional functionality has been added.
+MINOR		=	5# Additional functionality has been added.
 BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
 HOME_DIR	=	$(HOME)/projects
