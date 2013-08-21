@@ -133,6 +133,7 @@ IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
 
 CFILES		=	$(wildcard *.c)
+CXXFILES	=	$(wildcard *.cpp)
 HFILES		=	$(wildcard *.h)
 MFILES		=	$(wildcard modules/*.c)
 
@@ -458,20 +459,20 @@ unittest-testify:	unittest-testify.c $(TARGETLIBRARIES)
 unittest-discrete:	unittest-discrete.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-well:	unittest-well.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
 unittest-alignment:	unittest-alignment.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-version:	unittest-version.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-unittest-well-cpp:	unittest-well-cpp.cpp $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+unittest-well:	unittest-well.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+unittest-well-cpp:	unittest-well-cpp.cpp Well.cpp $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	
+unittest-well-perf:	unittest-well-perf.cpp Well.cpp $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 ########## Drivers
 

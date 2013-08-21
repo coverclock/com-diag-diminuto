@@ -167,343 +167,340 @@ namespace com {
  namespace diag {
   namespace diminuto {
 
+/**
+ * This is a base Well class.
+ */
+class BaseWell {
+
+public:
+
 	/**
-	 * This is a base Well class. You will be tempted to move the implementation
-	 * of this class into a C++ translation unit (e.g. a .cpp file), but doing
-	 * so, then compiling it and placing it in the Diminuto shared object used
-	 * for linking, will require that all of the Diminuto main programs, such
-	 * as the utilities and all of the unit tests, be in C++ translation units.
-	 * This seems like a bug to me, since those main programs don't make
-	 * reference to the C++ components. I haven't perused the GCC docs yet to
-	 * see if there's a way around this.
+	 * Constructor.
+	 * [1] If cardinality is zero, memory for the well must be explicitly
+	 * allocated by the application by calling the
+	 * init(cardinality, alignment) method with appropriate values sometime
+	 * after construction and prior to the first attempt at allocating an
+	 * object of type _TYPE_ from the well.
+	 * [2] If cardinality is greater than zero but preallocation is not
+	 * enabled, memory for the well will be allocated lazily on the first
+	 * attempt at calling the _TYPE_::new() operator. Hence if the well is
+	 * never used, memory is never allocated for it. However, that first
+	 * call to _TYPE_::new() is going to be more expensive than subsequent
+	 * calls.
+	 * [3] If cardinality is greater than zero and preallocation is enabled,
+	 * memory for the well is allocated at contruction.
+	 * @param ss is the size of objects in the well in bytes.
+	 * @param cc is the fixed number of objects in the well.
+	 * @param pp if true causes memory to be allocated during construction.
+	 * @param aa is the alignment of objects in the well.
 	 */
-	class BaseWell {
+	explicit BaseWell(size_t ss, size_t cc, bool pp, size_t aa);
 
-	public:
-
-		/**
-		 * Constructor.
-		 * [1] If cardinality is zero, memory for the well must be explicitly
-		 * allocated by the application by calling the
-		 * init(cardinality, alignment) method with appropriate values sometime
-		 * after construction and prior to the first attempt at allocating an
-		 * object of type _TYPE_ from the well.
-		 * [2] If cardinality is greater than zero but preallocation is not
-		 * enabled, memory for the well will be allocated lazily on the first
-		 * attempt at calling the _TYPE_::new() operator. Hence if the well is
-		 * never used, memory is never allocated for it. However, that first
-		 * call to _TYPE_::new() is going to be more expensive than subsequent
-		 * calls.
-		 * [3] If cardinality is greater than zero and preallocation is enabled,
-		 * memory for the well is allocated at contruction.
-		 * @param ss is the size of objects in the well in bytes.
-		 * @param cc is the fixed number of objects in the well.
-		 * @param pp if true causes memory to be allocated during construction.
-		 * @param aa is the alignment of objects in the well.
-		 */
-		explicit BaseWell(size_t ss, size_t cc, bool pp, size_t aa)
-		: size(ss)
-		, cardinality(cc)
-		, alignment(aa)
-		, wellp(static_cast<diminuto_well_t *>(0))
-		{
-			if (cc == 0) {
-				/* Do nothing. */
-			} else if (!pp) {
-				/* Do nothing. */
-			} else {
-				init(size, cardinality, alignment);
-			}
-		}
-
-		/**
-		 * Destructor.
-		 * If the well was lazily allocated, it is freed at this time. Any
-		 * objects of allocated from the well will have their
-		 * memory deallocated as well.
-		 */
-		virtual ~BaseWell() {
-			fini();
-		}
-
-		/**
-		 * Allocate memory for the well.
-		 * @param ss is the size of an object allocated from the well.
-		 * @param cc is the count of objects in the well.
-		 * @param aa is the alignment of objects in the well.
-		 */
-		void init(size_t ss, size_t cc, size_t aa) {
-			if (wellp == static_cast<diminuto_well_t *>(0)) {
-				wellp = diminuto_well_init(ss, cc, aa);
-			}
-		}
-
-		/**
-		 * Allocate memory for the well. The cardinality and alignment of of
-		 * objects of type _TYPE_ in the well were specified at construction.
-		 */
-		void init() {
-			init(size, cardinality, alignment);
-		}
-
-		/**
-		 * Deallocate memory for the well if and only iff there are no objects
-		 * of type _TYPE_ allocated from the well.
-		 */
-		void fini() {
-			if (wellp == static_cast<diminuto_well_t *>(0)) {
-				/* Do nothing. */
-			} else if (diminuto_well_isfull(wellp)) {
-				diminuto_well_fini(wellp);
-				wellp = (diminuto_well_t *)0;
-			} else {
-				/* Do nothing. */
-			}
-		}
-
-		/**
-		 * Allocate memory for an object of type _TYPE_ from the well.
-		 * @return a pointer to the memory allocated from the well.
-		 */
-		void * alloc() {
-			void * that;
-			init();
-			that = diminuto_well_alloc(wellp);
-			return that;
-		}
-
-		/**
-		 * Free memory for an object of type _TYPE_ back to the well.
-		 * @param pointer points to the memory to be freed.
-		 */
-		void free(void * pointer) {
-			diminuto_well_free(wellp, pointer);
-		}
-
-		/**
-		 * Return true is the well is full, that is, no objects of type _TYPE_
-		 * are currently allocated from it.
-		 * @return true if the well is full, false otherwise.
-		 */
-		inline bool isFull() const {
-			return (diminuto_well_isfull(wellp) != 0);
-		}
-
-		/**
-		 * Return true if the well is empty, that is, the next new operator
-		 * will return a null pointer.
-		 * @return true if the well is empty, false otherwise.
-		 */
-		inline bool isEmpty() const {
-			return (diminuto_well_isempty(wellp) != 0);
-		}
-
-	protected:
-
-		/**
-		 * This is the size of an object allocated in the well.
-		 */
-		size_t size;
-
-		/**
-		 * This is the number of objects of type _TYPE_ whose memory will be
-		 * allocated in the well.
-		 */
-		size_t cardinality;
-
-		/**
-		 * This is the alignment of the memory for each object of type _TYPE_ in
-		 * the well. For example, if each object is eight-byte aligned, this
-		 * value would be eight.
-		 */
-		size_t alignment;
-
-		/**
-		 * This is a pointer to the lazily allocated well for objects of type
-		 * _TYPE_. Underneath the hood, this is really an array of Diminuto
-		 * list structures.
-		 */
-		diminuto_well_t * wellp;
-
-	};
-
-	template <class _TYPE_, size_t _ALIGNMENT_ = sizeof(uint64_t)>
 	/**
-	 * This is a templated Well class for objects of type _TYPE_. When a new()
-	 * operator is called for an object of type _TYPE_, the memory for the
-	 * object is allocated from the well. However, the object is not pre-
-	 * constructed. Instead, C++ calls the _TYPE_ constructor at allocation
-	 * time. The well is allocated lazily when the first object of type _TYPE_
-	 * is allocated. This prevents memory from being allocation for objects
-	 * that are never used.
+	 * Destructor.
+	 * If the well was lazily allocated, it is freed at this time. Any
+	 * objects of allocated from the well will have their
+	 * memory deallocated as well.
 	 */
-	class Well : public BaseWell {
+	virtual ~BaseWell();
 
-	public:
-
-		/**
-		 * Constructor.
-		 * [1] If cardinality is zero, memory for the well must be explicitly
-		 * allocated by the application by calling the
-		 * init(cardinality, alignment) method with appropriate values sometime
-		 * after construction and prior to the first attempt at allocating an
-		 * object of type _TYPE_ from the well.
-		 * [2] If cardinality is greater than zero but preallocation is not
-		 * enabled, memory for the well will be allocated lazily on the first
-		 * attempt at calling the _TYPE_::new() operator. Hence if the well is
-		 * never used, memory is never allocated for it. However, that first
-		 * call to _TYPE_::new() is going to be more expensive than subsequent
-		 * calls.
-		 * [3] If cardinality is greater than zero and preallocation is enabled,
-		 * memory for the well is allocated at contruction.
-		 * @param cc is the fixed number of items of type _TYPE_ in the well.
-		 * @param pp if true causes memory to be allocated during construction.
-		 */
-		explicit Well(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
-		: BaseWell(sizeof(_TYPE_), cc, pp, aa)
-		{}
-
-		/**
-		 * Destructor.
-		 * If the well was lazily allocated, it is freed at this time. Any
-		 * objects of type _TYPE_ allocated from the well will have their
-		 * memory deallocated as well.
-		 */
-		virtual ~Well() {}
-
-		using BaseWell::init;
-
-		/**
-		 * Allocate memory for the well.
-		 * @param cc is the count of objects of type _TYPE_ in the well.
-		 * @param aa is the alignment of objects of type _TYPE_ in the well.
-		 */
-		void init(size_t cc, size_t aa = _ALIGNMENT_) { BaseWell::init(sizeof(_TYPE_), cc, aa); }
-
-		/**
-		 * Allocate memory for an object of type _TYPE_ from the well.
-		 * @return a pointer to the memory allocated from the well.
-		 */
-		_TYPE_ * alloc() { return static_cast<_TYPE_ *>(BaseWell::alloc()); }
-
-		/**
-		 * Free memory for an object of type _TYPE_ back to the well.
-		 * @param pointer points to the memory to be freed.
-		 */
-		void free(_TYPE_ * pointer) { BaseWell::free(pointer); }
-
-	};
-
-	template <class _TYPE_, size_t _ALIGNMENT_ = sizeof(uint64_t)>
 	/**
-	 * This is a templated Well class for objects of type _TYPE_. When a new()
-	 * operator is called for an object of type _TYPE_, the memory for the
-	 * object is allocated from the well. However, the object is not pre-
-	 * constructed. Instead, C++ calls the _TYPE_ constructor at allocation
-	 * time. The well is allocated lazily when the first object of type _TYPE_
-	 * is allocated. This prevents memory from being allocation for objects
-	 * that are never used.
+	 * Allocate memory for the well.
+	 * @param ss is the size of an object allocated from the well.
+	 * @param cc is the count of objects in the well.
+	 * @param aa is the alignment of objects in the well.
 	 */
-	class SafeWell : public BaseWell {
+	void init(size_t ss, size_t cc, size_t aa);
 
-	public:
+	/**
+	 * Allocate memory for the well. The cardinality and alignment of of
+	 * objects of type _TYPE_ in the well were specified at construction.
+	 */
+	void init();
 
-		/**
-		 * Constructor.
-		 * [1] If cardinality is zero, memory for the well must be explicitly
-		 * allocated by the application by calling the
-		 * init(cardinality, alignment) method with appropriate values sometime
-		 * after construction and prior to the first attempt at allocating an
-		 * object of type _TYPE_ from the well.
-		 * [2] If cardinality is greater than zero but preallocation is not
-		 * enabled, memory for the well will be allocated lazily on the first
-		 * attempt at calling the _TYPE_::new() operator. Hence if the well is
-		 * never used, memory is never allocated for it. However, that first
-		 * call to _TYPE_::new() is going to be more expensive than subsequent
-		 * calls.
-		 * [3] If cardinality is greater than zero and preallocation is enabled,
-		 * memory for the well is allocated at contruction.
-		 * @param cc is the fixed number of items of type _TYPE_ in the well.
-		 * @param pp if true causes memory to be allocated during construction.
-		 */
-		explicit SafeWell(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
-		: BaseWell(sizeof(_TYPE_), cc, pp, aa)
-		{
-			pthread_mutex_init(&mutex, (pthread_mutexattr_t *)0);
-		}
+	/**
+	 * Deallocate memory for the well if and only iff there are no objects
+	 * of type _TYPE_ allocated from the well.
+	 */
+	void fini();
 
-		/**
-		 * Destructor.
-		 * If the well was lazily allocated, it is freed at this time. Any
-		 * objects of type _TYPE_ allocated from the well will have their
-		 * memory deallocated as well.
-		 */
-		virtual ~SafeWell() {
-			pthread_mutex_destroy(&mutex);
-		}
+	/**
+	 * Allocate memory for an object of type _TYPE_ from the well.
+	 * @return a pointer to the memory allocated from the well.
+	 */
+	void * alloc();
 
-		/**
-		 * Allocate memory for the well. The cardinality and alignment of of
-		 * objects of type _TYPE_ in the well were specified at construction.
-		 */
-		void init() {
-			pthread_mutex_lock(&mutex);
-				BaseWell::init();
-			pthread_mutex_unlock(&mutex);
-		}
+	/**
+	 * Free memory for an object of type _TYPE_ back to the well.
+	 * @param pointer points to the memory to be freed.
+	 */
+	void free(void * pointer);
 
-		/**
-		 * Allocate memory for the well.
-		 * @param cc is the count of objects of type _TYPE_ in the well.
-		 * @param aa is the alignment of objects of type _TYPE_ in the well.
-		 */
-		void init(size_t cc, size_t aa = _ALIGNMENT_) {
-			pthread_mutex_lock(&mutex);
-				BaseWell::init(sizeof(_TYPE_), cc, aa);
-			pthread_mutex_unlock(&mutex);
-		}
+	/**
+	 * Return true is the well is full, that is, no objects of type _TYPE_
+	 * are currently allocated from it.
+	 * @return true if the well is full, false otherwise.
+	 */
+	bool isFull() const;
 
-		/**
-		 * Deallocate memory for the well if and only iff there are no objects
-		 * of type _TYPE_ allocated from the well.
-		 */
-		void fini() {
-			pthread_mutex_lock(&mutex);
-				BaseWell::fini();
-			pthread_mutex_unlock(&mutex);
-		}
+	/**
+	 * Return true if the well is empty, that is, the next new operator
+	 * will return a null pointer.
+	 * @return true if the well is empty, false otherwise.
+	 */
+	bool isEmpty() const;
 
-		/**
-		 * Allocate memory for an object of type _TYPE_ from the well.
-		 * @return a pointer to the memory allocated from the well.
-		 */
-		_TYPE_ * alloc() {
-			_TYPE_ * that;
-			pthread_mutex_lock(&mutex);
-				that = static_cast<_TYPE_ *>(BaseWell::alloc());
-			pthread_mutex_unlock(&mutex);
-			return that;
-		}
+protected:
 
-		/**
-		 * Free memory for an object of type _TYPE_ back to the well.
-		 * @param pointer points to the memory to be freed.
-		 */
-		void free(_TYPE_ * pointer) {
-			pthread_mutex_lock(&mutex);
-				BaseWell::free(pointer);
-			pthread_mutex_unlock(&mutex);
-		}
+	/**
+	 * This is the size of an object allocated in the well.
+	 */
+	size_t size;
 
-	protected:
+	/**
+	 * This is the number of objects of type _TYPE_ whose memory will be
+	 * allocated in the well.
+	 */
+	size_t cardinality;
 
-		/**
-		 * This is a POSIX thread mutex that makes operations on the well
-		 * thread-safe.
-		 */
-		pthread_mutex_t mutex;
+	/**
+	 * This is the alignment of the memory for each object of type _TYPE_ in
+	 * the well. For example, if each object is eight-byte aligned, this
+	 * value would be eight.
+	 */
+	size_t alignment;
 
-	};
+	/**
+	 * This is a pointer to the lazily allocated well for objects of type
+	 * _TYPE_. Underneath the hood, this is really an array of Diminuto
+	 * list structures.
+	 */
+	diminuto_well_t * wellp;
+
+};
+
+/**
+ * This is the thread-safe base Well class.
+ */
+class SafeBaseWell : public BaseWell {
+
+public:
+
+	/**
+	 * Constructor.
+	 * [1] If cardinality is zero, memory for the well must be explicitly
+	 * allocated by the application by calling the
+	 * init(cardinality, alignment) method with appropriate values sometime
+	 * after construction and prior to the first attempt at allocating an
+	 * object of type _TYPE_ from the well.
+	 * [2] If cardinality is greater than zero but preallocation is not
+	 * enabled, memory for the well will be allocated lazily on the first
+	 * attempt at calling the _TYPE_::new() operator. Hence if the well is
+	 * never used, memory is never allocated for it. However, that first
+	 * call to _TYPE_::new() is going to be more expensive than subsequent
+	 * calls.
+	 * [3] If cardinality is greater than zero and preallocation is enabled,
+	 * memory for the well is allocated at contruction.
+	 * @param ss is the size of objects in the well in bytes.
+	 * @param cc is the fixed number of objects in the well.
+	 * @param pp if true causes memory to be allocated during construction.
+	 * @param aa is the alignment of objects in the well.
+	 */
+	explicit SafeBaseWell(size_t ss, size_t cc, bool pp, size_t aa);
+
+	/**
+	 * Destructor.
+	 * If the well was lazily allocated, it is freed at this time. Any
+	 * objects of allocated from the well will have their
+	 * memory deallocated as well.
+	 */
+	virtual ~SafeBaseWell();
+
+	/**
+	 * Allocate memory for the well.
+	 * @param ss is the size of an object allocated from the well.
+	 * @param cc is the count of objects in the well.
+	 * @param aa is the alignment of objects in the well.
+	 */
+	void init(size_t ss, size_t cc, size_t aa);
+
+	/**
+	 * Allocate memory for the well. The cardinality and alignment of of
+	 * objects of type _TYPE_ in the well were specified at construction.
+	 */
+	void init();
+
+	/**
+	 * Deallocate memory for the well if and only iff there are no objects
+	 * of type _TYPE_ allocated from the well.
+	 */
+	void fini();
+
+	/**
+	 * Allocate memory for an object of type _TYPE_ from the well.
+	 * @return a pointer to the memory allocated from the well.
+	 */
+	void * alloc();
+
+	/**
+	 * Free memory for an object of type _TYPE_ back to the well.
+	 * @param pointer points to the memory to be freed.
+	 */
+	void free(void * pointer);
+
+protected:
+
+	/**
+	 * This is a POSIX thread mutex that makes operations on the well
+	 * thread-safe.
+	 */
+	pthread_mutex_t mutex;
+
+};
+
+template <class _TYPE_, size_t _ALIGNMENT_ = sizeof(uint64_t)>
+/**
+ * This is a templated Well class for objects of type _TYPE_. When a new()
+ * operator is called for an object of type _TYPE_, the memory for the
+ * object is allocated from the well. However, the object is not pre-
+ * constructed. Instead, C++ calls the _TYPE_ constructor at allocation
+ * time. The well is allocated lazily when the first object of type _TYPE_
+ * is allocated. This prevents memory from being allocation for objects
+ * that are never used.
+ */
+class Well : public BaseWell {
+
+public:
+
+	/**
+	 * Constructor.
+	 * [1] If cardinality is zero, memory for the well must be explicitly
+	 * allocated by the application by calling the
+	 * init(cardinality, alignment) method with appropriate values sometime
+	 * after construction and prior to the first attempt at allocating an
+	 * object of type _TYPE_ from the well.
+	 * [2] If cardinality is greater than zero but preallocation is not
+	 * enabled, memory for the well will be allocated lazily on the first
+	 * attempt at calling the _TYPE_::new() operator. Hence if the well is
+	 * never used, memory is never allocated for it. However, that first
+	 * call to _TYPE_::new() is going to be more expensive than subsequent
+	 * calls.
+	 * [3] If cardinality is greater than zero and preallocation is enabled,
+	 * memory for the well is allocated at contruction.
+	 * @param cc is the fixed number of items of type _TYPE_ in the well.
+	 * @param pp if true causes memory to be allocated during construction.
+	 */
+	explicit Well(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
+	: BaseWell(sizeof(_TYPE_), cc, pp, aa)
+	{}
+
+	/**
+	 * Destructor.
+	 * If the well was lazily allocated, it is freed at this time. Any
+	 * objects of type _TYPE_ allocated from the well will have their
+	 * memory deallocated as well.
+	 */
+	virtual ~Well() {}
+
+	using BaseWell::init;
+
+	/**
+	 * Allocate memory for the well.
+	 * @param cc is the count of objects of type _TYPE_ in the well.
+	 * @param aa is the alignment of objects of type _TYPE_ in the well.
+	 */
+	void init(size_t cc, size_t aa = _ALIGNMENT_) { BaseWell::init(sizeof(_TYPE_), cc, aa); }
+
+	/**
+	 * Allocate memory for an object of type _TYPE_ from the well.
+	 * @return a pointer to the memory allocated from the well.
+	 */
+	_TYPE_ * alloc() { return static_cast<_TYPE_ *>(BaseWell::alloc()); }
+
+	/**
+	 * Free memory for an object of type _TYPE_ back to the well.
+	 * @param pointer points to the memory to be freed.
+	 */
+	void free(_TYPE_ * pointer) { BaseWell::free(pointer); }
+
+};
+
+template <class _TYPE_, size_t _ALIGNMENT_ = sizeof(uint64_t)>
+/**
+ * This is a templated Well class for objects of type _TYPE_. When a new()
+ * operator is called for an object of type _TYPE_, the memory for the
+ * object is allocated from the well. However, the object is not pre-
+ * constructed. Instead, C++ calls the _TYPE_ constructor at allocation
+ * time. The well is allocated lazily when the first object of type _TYPE_
+ * is allocated. This prevents memory from being allocation for objects
+ * that are never used.
+ */
+class SafeWell : public SafeBaseWell {
+
+public:
+
+	/**
+	 * Constructor.
+	 * [1] If cardinality is zero, memory for the well must be explicitly
+	 * allocated by the application by calling the
+	 * init(cardinality, alignment) method with appropriate values sometime
+	 * after construction and prior to the first attempt at allocating an
+	 * object of type _TYPE_ from the well.
+	 * [2] If cardinality is greater than zero but preallocation is not
+	 * enabled, memory for the well will be allocated lazily on the first
+	 * attempt at calling the _TYPE_::new() operator. Hence if the well is
+	 * never used, memory is never allocated for it. However, that first
+	 * call to _TYPE_::new() is going to be more expensive than subsequent
+	 * calls.
+	 * [3] If cardinality is greater than zero and preallocation is enabled,
+	 * memory for the well is allocated at contruction.
+	 * @param cc is the fixed number of items of type _TYPE_ in the well.
+	 * @param pp if true causes memory to be allocated during construction.
+	 */
+	explicit SafeWell(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
+	: SafeBaseWell(sizeof(_TYPE_), cc, pp, aa)
+	{}
+
+	/**
+	 * Destructor.
+	 * If the well was lazily allocated, it is freed at this time. Any
+	 * objects of type _TYPE_ allocated from the well will have their
+	 * memory deallocated as well.
+	 */
+	virtual ~SafeWell() {}
+
+	/**
+	 * Allocate memory for the well. The cardinality and alignment of of
+	 * objects of type _TYPE_ in the well were specified at construction.
+	 */
+	void init() { SafeBaseWell::init(); }
+
+	/**
+	 * Allocate memory for the well.
+	 * @param cc is the count of objects of type _TYPE_ in the well.
+	 * @param aa is the alignment of objects of type _TYPE_ in the well.
+	 */
+	void init(size_t cc, size_t aa = _ALIGNMENT_) { SafeBaseWell::init(sizeof(_TYPE_), cc, aa); }
+
+	/**
+	 * Deallocate memory for the well if and only iff there are no objects
+	 * of type _TYPE_ allocated from the well.
+	 */
+	void fini() { SafeBaseWell::fini(); }
+
+	/**
+	 * Allocate memory for an object of type _TYPE_ from the well.
+	 * @return a pointer to the memory allocated from the well.
+	 */
+	_TYPE_ * alloc() { return static_cast<_TYPE_ *>(BaseWell::alloc()); }
+
+	/**
+	 * Free memory for an object of type _TYPE_ back to the well.
+	 * @param pointer points to the memory to be freed.
+	 */
+	void free(_TYPE_ * pointer) { SafeBaseWell::free(pointer); }
+
+};
 
   }
  }
