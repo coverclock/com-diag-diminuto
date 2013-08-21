@@ -18,7 +18,8 @@
  *
  * This header file can be included in both C and C++ translation units. If
  * included in C++, it will include additional C++ specific source code to
- * support the integration and use of wells in C++ applications.
+ * support the integration and use of wells in C++ applications through the
+ * C++ new and delete operators.
  */
 
 #if defined(__cplusplus)
@@ -469,11 +470,7 @@ public:
 	 */
 	virtual ~SafeWell() {}
 
-	/**
-	 * Allocate memory for the well. The cardinality and alignment of of
-	 * objects of type _TYPE_ in the well were specified at construction.
-	 */
-	void init() { SafeBaseWell::init(); }
+	using SafeBaseWell::init;
 
 	/**
 	 * Allocate memory for the well.
@@ -481,12 +478,6 @@ public:
 	 * @param aa is the alignment of objects of type _TYPE_ in the well.
 	 */
 	void init(size_t cc, size_t aa = _ALIGNMENT_) { SafeBaseWell::init(sizeof(_TYPE_), cc, aa); }
-
-	/**
-	 * Deallocate memory for the well if and only iff there are no objects
-	 * of type _TYPE_ allocated from the well.
-	 */
-	void fini() { SafeBaseWell::fini(); }
 
 	/**
 	 * Allocate memory for an object of type _TYPE_ from the well.
@@ -506,14 +497,18 @@ public:
  }
 }
 
-#define COM_DIAG_DIMINUTO_WELL_METHODS(_TYPE_) \
+/**
+ * @def COM_DIAG_DIMINUTO_WELL_OPERATORS
+ * Declares the new and delete operators for use inside a class declaration.
+ */
+#define COM_DIAG_DIMINUTO_WELL_OPERATORS(_TYPE_) \
 	static void * operator new(std::size_t size) throw (std::bad_alloc) { _TYPE_ * pointer = com_diag_diminuto_well.alloc(); if (pointer == static_cast<_TYPE_ *>(0)) { std::bad_alloc oom; throw oom; } return pointer; } \
 	static void * operator new(std::size_t size, const std::nothrow_t& nothrow) throw() { return com_diag_diminuto_well.alloc(); } \
 	static void operator delete(void * pointer) throw() { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); } \
 	static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw() { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); }
 
 /**
- * @def COM_DIAG_DIMINUTO_WELL_DECLARACTION_EXCEPTIONS
+ * @def COM_DIAG_DIMINUTO_WELL_DECLARACTION
  * Intended to be used inside the class declaration for the class @a _TYPE_.
  * Declares a static well and the static new() and delete() operators used
  * to allocate and free objects of type _CLASS_. You can also just declare
@@ -524,7 +519,7 @@ public:
  */
 #define COM_DIAG_DIMINUTO_WELL_DECLARATION(_TYPE_) \
 	static com::diag::diminuto::Well<_TYPE_> com_diag_diminuto_well; \
-	COM_DIAG_DIMINUTO_WELL_METHODS(_TYPE_)
+	COM_DIAG_DIMINUTO_WELL_OPERATORS(_TYPE_)
 
  /**
   * @def COM_DIAG_DIMINUTO_WELL_DEFINITION
@@ -538,7 +533,7 @@ public:
  	com::diag::diminuto::Well<_TYPE_> _TYPE_::com_diag_diminuto_well(_COUNT_)
 
  /**
-  * @def COM_DIAG_DIMINUTO_SAFEWELL_DECLARACTION_EXCEPTIONS
+  * @def COM_DIAG_DIMINUTO_SAFEWELL_DECLARACTION
   * Intended to be used inside the class declaration for the class @a _TYPE_.
   * Declares a static well and the static new() and delete() operators used
   * to allocate and free objects of type _CLASS_. You can also just declare
@@ -549,7 +544,7 @@ public:
   */
  #define COM_DIAG_DIMINUTO_SAFEWELL_DECLARATION(_TYPE_) \
  	static com::diag::diminuto::SafeWell<_TYPE_> com_diag_diminuto_well; \
-	COM_DIAG_DIMINUTO_WELL_METHODS(_TYPE_)
+ 	COM_DIAG_DIMINUTO_WELL_OPERATORS(_TYPE_)
 
  /**
   * @def COM_DIAG_DIMINUTO_SAFEWELL_DEFINITION
