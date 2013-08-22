@@ -147,61 +147,56 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
 {
     const char * ff;
     char * tt;
-    char buffer[sizeof("\\xff")];
-    char * bb;
-    size_t bsize;
-    size_t ii;
+    size_t ss;
 
     ff = from;
     tt = to;
 
-    while ((0 < fsize) && (1 < tsize)) {
-        bb = buffer;
-        if ('\0' == *ff) {
-            *(bb++) = '\\';             /* Escaped zero a.k.a. NUL. */
-            *(bb++) = '0';
-        } else if (((const char *)0 != special) && (0 != strchr(special, *ff))) {
-            *(bb++) = '\\';             /* Escaped character. */
-            *(bb++) = *ff;
+    while (0 < fsize) {
+        if (tsize <= (ss = 1)) {
+        	break;
         } else if ((' ' <= *ff) && (*ff <= '~')) {
-            *(bb++) = *ff;              /* Non-escaped character. */
+    		*(tt++) = *ff;              /* Non-escaped character. */
+        } else if (tsize <= (ss = 2)) {
+        	break;
+    	} else if ('\0' == *ff) {
+            *(tt++) = '\\';             /* Escaped zero a.k.a. NUL. */
+            *(tt++) = '0';
+        } else if (((const char *)0 != special) && (0 != strchr(special, *ff))) {
+            *(tt++) = '\\';             /* Escaped character. */
+            *(tt++) = *ff;
         } else if ('\a' == *ff) {
-            *(bb++) = '\\';             /* Alarm a.k.a. BEL. */
-            *(bb++) = 'a';
+            *(tt++) = '\\';             /* Alarm a.k.a. BEL. */
+            *(tt++) = 'a';
         } else if ('\b' == *ff) {
-            *(bb++) = '\\';             /* Backspace a.k.a. BS. */
-            *(bb++) = 'b';
+            *(tt++) = '\\';             /* Backspace a.k.a. BS. */
+            *(tt++) = 'b';
         } else if ('\f' == *ff) {
-            *(bb++) = '\\';             /* Formfeed a.k.a. FF. */
-            *(bb++) = 'f';
+            *(tt++) = '\\';             /* Formfeed a.k.a. FF. */
+            *(tt++) = 'f';
         } else if ('\n' == *ff) {
-            *(bb++) = '\\';             /* Newline a.k.a. NL or LF. */
-            *(bb++) = 'n';
+            *(tt++) = '\\';             /* Newline a.k.a. NL or LF. */
+            *(tt++) = 'n';
         } else if ('\r' == *ff) {
-            *(bb++) = '\\';             /* Return a.k.a. CR. */
-            *(bb++) = 'r';
+            *(tt++) = '\\';             /* Return a.k.a. CR. */
+            *(tt++) = 'r';
         } else if ('\t' == *ff) {
-            *(bb++) = '\\';             /* Horizontal tab a.k.a. HT. */
-            *(bb++) = 't';
+            *(tt++) = '\\';             /* Horizontal tab a.k.a. HT. */
+            *(tt++) = 't';
         } else if ('\v' == *ff) {
-            *(bb++) = '\\';             /* Vertical tab a.k.a. VT. */
-            *(bb++) = 'v';
+            *(tt++) = '\\';             /* Vertical tab a.k.a. VT. */
+            *(tt++) = 'v';
+        } else if (tsize <= (ss = 4)) {
+        	break;
         } else {
-            *(bb++) = '\\';             /* Hexadecimal sequence. */
-            *(bb++) = 'x';
-            *(bb++) = HEX[(*ff >> 4) & 0x0f];
-            *(bb++) = HEX[(*ff >> 0) & 0x0f];
+            *(tt++) = '\\';             /* Hexadecimal sequence. */
+            *(tt++) = 'x';
+            *(tt++) = HEX[(*ff >> 4) & 0x0f];
+            *(tt++) = HEX[(*ff >> 0) & 0x0f];
         }
         ++ff;
         --fsize;
-        bsize = bb - buffer;
-        if (bsize >= tsize) {
-            break;
-        }
-        for (ii = 0; ii < bsize; ++ii) {
-            *(tt++) = *(buffer + ii);
-        }
-        tsize -= bsize;
+        tsize -= ss;
     }
 
     if (0 < tsize) {
