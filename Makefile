@@ -473,6 +473,9 @@ unittest-well-cpp:	unittest-well-cpp.cpp Well.cpp $(TARGETLIBRARIES)
 	
 unittest-well-perf:	unittest-well-perf.cpp Well.cpp $(TARGETLIBRARIES)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	
+unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Drivers
 
