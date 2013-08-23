@@ -148,6 +148,7 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
     const char * ff;
     char * tt;
     size_t ss;
+    const char * ee;
 
     ff = from;
     tt = to;
@@ -155,16 +156,16 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
     while (0 < fsize) {
         if (tsize <= (ss = 1)) {
         	break;
-        } else if ((' ' <= *ff) && (*ff <= '~')) {
-    		*(tt++) = *ff;              /* Non-escaped character. */
+        } else if ((' ' <= *ff) && (*ff <= '~') && (((const char *)0 == special) || ((const char *)0 == (ee = strchr(special, *ff))))) {
+    		*(tt++) = *ff;              /* Unescaped character. */
         } else if (tsize <= (ss = 2)) {
         	break;
+        } else if ((const char *)0 != ee) {
+            *(tt++) = '\\';             /* Special character. */
+            *(tt++) = *ff;
     	} else if ('\0' == *ff) {
             *(tt++) = '\\';             /* Escaped zero a.k.a. NUL. */
             *(tt++) = '0';
-        } else if (((const char *)0 != special) && (0 != strchr(special, *ff))) {
-            *(tt++) = '\\';             /* Escaped character. */
-            *(tt++) = *ff;
         } else if ('\a' == *ff) {
             *(tt++) = '\\';             /* Alarm a.k.a. BEL. */
             *(tt++) = 'a';
@@ -186,7 +187,7 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
         } else if ('\v' == *ff) {
             *(tt++) = '\\';             /* Vertical tab a.k.a. VT. */
             *(tt++) = 'v';
-        } else if (tsize <= (ss = 4)) {
+       } else if (tsize <= (ss = 4)) {
         	break;
         } else {
             *(tt++) = '\\';             /* Hexadecimal sequence. */
