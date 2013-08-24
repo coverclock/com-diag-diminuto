@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -17,19 +17,23 @@
 int main(void)
 {
 	{
-		const char ONE[] = "\0\a\b\f\n\r\t\v\1\23\123\xa\xBC";
-		char two[64];
-		char three[64];
+		char one[1 << (sizeof(char) * 8)];
+		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + sizeof('\0')];
+		char three[sizeof(two)];
 		size_t size;
 
-		diminuto_dump(stdout, ONE, sizeof(ONE));
-		size = diminuto_escape_expand(two, ONE, sizeof(two), sizeof(ONE), (const char *)0);
-		printf("\"%s\"\n", two);
-		size = diminuto_escape_collapse(three, two, strlen(two));
+		for (size = 0; size < sizeof(one); ++size) {
+			one[size] = size + 1;
+		}
+		fputs("one\n", stdout);
+		diminuto_dump(stdout, one, sizeof(one));
+		size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "\" ");
+		fprintf(stdout, "two \"%s\"\n", two);
+		diminuto_dump(stdout, two, size);
+		size = diminuto_escape_collapse(three, two, sizeof(three));
+		fputs("three\n", stdout);
 		diminuto_dump(stdout, three, size);
-
 	}
-
 
     EXIT();
 }
