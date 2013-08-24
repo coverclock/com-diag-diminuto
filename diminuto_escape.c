@@ -21,7 +21,7 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
     ff = from;
     tt = to;
 
-    while (('\0' != *ff) && (sizeof("") < tsize)) {
+    while ((sizeof("") < tsize) && ('\0' != *ff)) {
         if ('\\' == *ff) {
             switch (*(ff + 1)) {
             case '\0':                  /* Terminating NUL. */

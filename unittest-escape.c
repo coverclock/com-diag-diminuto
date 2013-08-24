@@ -70,5 +70,10 @@ int main(void)
 		ASSERT(memcmp(one, three, sizeof(one)) == 0);
 	}
 
+	{
+		ASSERT(diminuto_escape_expand((char *)0, (const char *)0, 0, 0, (const char *)0) == 0);
+		ASSERT(diminuto_escape_collapse((char *)0, (const char *)0, 0) == 0);
+	}
+
     EXIT();
 }
