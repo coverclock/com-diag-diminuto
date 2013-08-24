@@ -18,7 +18,7 @@ int main(void)
 {
 	{
 		char one[1 << (sizeof(char) * 8)];
-		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + sizeof('\0')];
+		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + 1];
 		char three[sizeof(two)];
 		static const char FOUR[] = "\\x01\\x02\\x03\\x04\\x05\\x06"
 				                   "\\a\\b\\t\\n\\v\\f\\r"
@@ -57,10 +57,12 @@ int main(void)
 		}
 		fprintf(stdout, "one [%zu]\n", sizeof(one));
 		diminuto_dump(stdout, one, sizeof(one));
+		ASSERT(sizeof(one) == 256);
 		size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "\" ");
 		fprintf(stdout, "two [%zu] \"%s\"\n", size, two);
-		ASSERT(strcmp(two, FOUR) == 0);
 		diminuto_dump(stdout, two, size);
+		ASSERT(size == sizeof(FOUR));
+		ASSERT(strcmp(two, FOUR) == 0);
 		size = diminuto_escape_collapse(three, two, sizeof(three));
 		fprintf(stdout, "three [%zu]\n", size);
 		diminuto_dump(stdout, three, size);
