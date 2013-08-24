@@ -17,7 +17,7 @@
 int main(void)
 {
 	{
-		const char ONE[]="\0\a\b\f\n\r\t\v\1\23\123\xa\xBC";
+		const char ONE[] = "\0\a\b\f\n\r\t\v\1\23\123\xa\xBC";
 		char two[64];
 		char three[64];
 		size_t size;
