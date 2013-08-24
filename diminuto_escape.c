@@ -156,15 +156,18 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
     while (0 < fsize) {
         if (tsize <= (ss = 1)) {
         	break;
-        } else if ((' ' <= *ff) && (*ff <= '~') && (((const char *)0 == special) || ((const char *)0 == (ee = strchr(special, *ff))))) {
+        } else if ((((const char *)0 == special) || ((const char *)0 == (ee = strchr(special, *ff)))) && (((' ' <= *ff) && (*ff <= '[')) || ((']' <= *ff) && (*ff <= '~')))) {
     		*(tt++) = *ff;              /* Unescaped character. */
         } else if (tsize <= (ss = 2)) {
         	break;
-        } else if ((const char *)0 != ee) {
+        } else if (((const char *)0 != special) && ((const char *)0 != ee)) {
             *(tt++) = '\\';             /* Special character. */
             *(tt++) = *ff;
-    	} else if ('\0' == *ff) {
-            *(tt++) = '\\';             /* Escaped zero a.k.a. NUL. */
+        } else if ('\\' == *ff) {
+            *(tt++) = '\\';             /* Backslash. */
+            *(tt++) = '\\';
+        } else if ('\0' == *ff) {
+            *(tt++) = '\\';             /* Zero a.k.a. NUL. */
             *(tt++) = '0';
         } else if ('\a' == *ff) {
             *(tt++) = '\\';             /* Alarm a.k.a. BEL. */
@@ -173,10 +176,10 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
             *(tt++) = '\\';             /* Backspace a.k.a. BS. */
             *(tt++) = 'b';
         } else if ('\f' == *ff) {
-            *(tt++) = '\\';             /* Formfeed a.k.a. FF. */
+            *(tt++) = '\\';             /* Form feed a.k.a. FF. */
             *(tt++) = 'f';
         } else if ('\n' == *ff) {
-            *(tt++) = '\\';             /* Newline a.k.a. NL or LF. */
+            *(tt++) = '\\';             /* New line a.k.a. NL or LF. */
             *(tt++) = 'n';
         } else if ('\r' == *ff) {
             *(tt++) = '\\';             /* Return a.k.a. CR. */
