@@ -118,7 +118,8 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
                 --tsize;
                 break;
             default:
-                *(tt++) = *(ff++);  /* Unknown escape sequence. */
+                ff += 2;
+                *(tt++) = *(ff - 1);  /* Unknown escape sequence. */
                 --tsize;
                 break;
             }
