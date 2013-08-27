@@ -75,7 +75,7 @@ size_t diminuto_well_linesize()
 			errno = EINVAL;
 			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size");
 		}
-		close(fp);
+		fclose(fp);
 		if (fp == (FILE *)0) {
 			/* Do nothing. */
 		} else if (rc <= 0) {
@@ -92,7 +92,7 @@ size_t diminuto_well_linesize()
 			errno = EINVAL;
 			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/coherency_line_size");
 		}
-		close(fp);
+		fclose(fp);
 		if (fp == (FILE *)0) {
 			/* Do nothing. */
 		} else if (rc <= 0) {
