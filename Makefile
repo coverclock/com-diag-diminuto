@@ -22,8 +22,8 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	9# Applications will probably have to be be modified.
-MINOR		=	6# Additional functionality has been added.
+MAJOR		=	10# Applications will probably have to be be modified.
+MINOR		=	0# Additional functionality has been added.
 BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
 HOME_DIR	=	$(HOME)/projects
@@ -432,7 +432,7 @@ unittest-coreable:	unittest-coreable.c $(TARGETLIBRARIES)
 unittest-countof:	unittest-countof.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-fletcher8:	unittest-fletcher8.c $(TARGETLIBRARIES)
+unittest-fletcher:	unittest-fletcher.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-list:	unittest-list.c $(TARGETLIBRARIES)
