@@ -138,28 +138,35 @@ HFILES		=	$(wildcard *.h)
 MFILES		=	$(wildcard modules/*.c)
 
 DIMINUTO_SO		=	lib$(PROJECT).so
+DIMINUTOXX_SO	=	lib$(PROJECT)xx.so
 DESPERADO_SO	=	libdesperado.so
 FICL_SO			=	libficl.so
 
 DIMINUTO_LIB	=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD)
+DIMINUTOXX_LIB	=	$(DIMINUTOXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
 FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
 
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
 TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
+TARGETOBJECTSXX		=	$(addsuffix .o,$(basename $(wildcard [A-Z]*.cpp)))
 TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS		=	S10provision
 TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep
 TARGETALIASES		=	hex oct
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.cpp)) $(basename $(wildcard unittest-*.sh))
+
 TARGETARCHIVE		=	lib$(PROJECT).a
+TARGETARCHIVEXX		=	lib$(PROJECT)xx.a
 TARGETSHARED		=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTO_SO).$(MAJOR).$(MINOR) $(DIMINUTO_SO).$(MAJOR) $(DIMINUTO_SO)
+TARGETSHAREDXX		=	$(DIMINUTOXX_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTOXX_SO).$(MAJOR).$(MINOR) $(DIMINUTOXX_SO).$(MAJOR) $(DIMINUTOXX_SO)
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
+TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
-TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETPROGRAMS)
+TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETMODULES)
-ARTIFACTS			=	$(TARGETLIBRARIES) doxygen-local.cf
+ARTIFACTS			=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) doxygen-local.cf
 
 SCRIPT		=	dummy
 
@@ -178,6 +185,7 @@ CFLAGS		=	$(CARCH) -g
 CPFLAGS		=	-i
 MVFLAGS		=	-i
 LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt
+LDXXFLAGS	=	$(LDARCH) -L. -ldiminutoxx -ldiminuto -lpthread -lrt
 
 BROWSER		=	firefox
 
@@ -310,7 +318,7 @@ $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(LOCALLIB_DIR)/lib$(PROJECT
 $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
 
-########## Target Libraries
+########## Target C Libraries
 
 lib$(PROJECT).so:	lib$(PROJECT).so.$(MAJOR)
 	rm -f lib$(PROJECT).so
@@ -330,6 +338,27 @@ lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
 lib$(PROJECT).a:	$(TARGETOBJECTS)
 	$(AR) $(ARFLAGS) lib$(PROJECT).a $(TARGETOBJECTS)
 	$(RANLIB) lib$(PROJECT).a
+	
+########## Target C++ Libraries
+
+lib$(PROJECT)xx.so:	lib$(PROJECT)xx.so.$(MAJOR)
+	rm -f lib$(PROJECT)xx.so
+	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so
+
+lib$(PROJECT)xx.so.$(MAJOR):	lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
+	rm -f lib$(PROJECT)xx.so.$(MAJOR)
+	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so.$(MAJOR)
+
+lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
+	rm -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
+	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
+
+lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTSXX)
+	$(CXX) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTSXX)
+
+lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+	$(AR) $(ARFLAGS) lib$(PROJECT)xx.a $(TARGETOBJECTSXX)
+	$(RANLIB) lib$(PROJECT)xx.a
 
 ########## Target Binaries
 
@@ -468,11 +497,11 @@ unittest-version:	unittest-version.c $(TARGETLIBRARIES)
 unittest-well:	unittest-well.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-unittest-well-cpp:	unittest-well-cpp.cpp Well.cpp $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+unittest-well-cpp:	unittest-well-cpp.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 	
-unittest-well-perf:	unittest-well-perf.cpp Well.cpp $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 	
 unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)

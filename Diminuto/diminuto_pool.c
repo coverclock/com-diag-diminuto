@@ -15,7 +15,7 @@
 diminuto_pool_t * diminuto_pool_init(diminuto_pool_t * poolp, size_t size)
 {
     size = (sizeof(diminuto_list_t) + size + 7) & ~(size_t)7;
-    return diminuto_list_datainit(poolp, size);
+    return diminuto_list_datainit(poolp, (void *)size);
 }
 
 diminuto_pool_t * diminuto_pool_fini(diminuto_pool_t * poolp)
