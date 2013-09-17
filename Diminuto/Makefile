@@ -22,7 +22,7 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	10# Applications will probably have to be be modified.
+MAJOR		=	11# Applications will probably have to be be modified.
 MINOR		=	0# Additional functionality has been added.
 BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
