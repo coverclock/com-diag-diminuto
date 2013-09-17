@@ -866,15 +866,8 @@ INCLUDE_FILE_PATTERNS  =
 # omitted =1 is assumed.
 
 PREDEFINED             = DEBUG
-PREDEFINED            += DESPERADO_HAS_DEBUGGING
-PREDEFINED            += DESPERADO_HAS_EXCEPTIONS
-PREDEFINED            += DESPERADO_HAS_FICL
-PREDEFINED            += DESPERADO_HAS_JAVA
-PREDEFINED            += __cplusplus
 PREDEFINED            += __USE_GNU
 PREDEFINED            += __GNUC__
-PREDEFINED            += DESPERADO_PLATFORM_IS_Linux
-PREDEFINED            += DESPERADO_TARGET_IS_IA32
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
