@@ -148,7 +148,7 @@ DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
 FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
 
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
-TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard diminuto_*.c)))
+TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard $(PROJECT)_*.c)))
 TARGETOBJECTSXX		=	$(addsuffix .o,$(basename $(wildcard [A-Z]*.cpp)))
 TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS		=	S10provision
@@ -461,9 +461,6 @@ unittest-coreable:	unittest-coreable.c $(TARGETLIBRARIES)
 unittest-countof:	unittest-countof.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-unittest-fletcher:	unittest-fletcher.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
 unittest-list:	unittest-list.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
@@ -480,9 +477,6 @@ unittest-pool:	unittest-pool.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-testify:	unittest-testify.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 unittest-discrete:	unittest-discrete.c $(TARGETLIBRARIES)
