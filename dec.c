@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Arvada CO 80001-0587 USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -52,6 +52,7 @@ int main(int argc, char * argv[])
     const char * string;
     const char * next;
     uint64_t value;
+    int file;
 
     name = strrchr(argv[0], '/');
     name = (name == (char *)0) ? argv[0] : name + 1;
@@ -62,7 +63,9 @@ int main(int argc, char * argv[])
         return 1;
     }
 
-    if ((argc < 2) || ((argc == 2) && (strcmp(argv[1], "-") == 0))) {
+    file = (argc < 2) || ((argc == 2) && (strcmp(argv[1], "-") == 0));
+
+    if (file) {
         string = fgets(buffer, sizeof(buffer), stdin);
     } else {
         string = argv[1];
@@ -74,18 +77,31 @@ int main(int argc, char * argv[])
         return 2;
     }
 
-    next = diminuto_number(string, &value);
-    if ((*next != '\0') && (!isspace(*next))) {
-        perror(string);
-        return 3;
-    }
+    while (!0) {
 
-    if (strcmp(name, "hex") == 0) {
-        printf("0x%llx\n", value);
-    } else if (strcmp(name, "oct") == 0) {
-        printf("0%llo\n", value);
-    } else {
-        printf("%llu\n", value);
+		next = diminuto_number(string, &value);
+		if ((*next != '\0') && (!isspace(*next))) {
+			perror(string);
+			return 3;
+		}
+
+		if (strcmp(name, "hex") == 0) {
+			printf("0x%llx\n", value);
+		} else if (strcmp(name, "oct") == 0) {
+			printf("0%llo\n", value);
+		} else {
+			printf("%llu\n", value);
+		}
+
+		if (!file) {
+			break;
+		}
+
+        string = fgets(buffer, sizeof(buffer), stdin);
+        if (string == (const char *)0) {
+        	break;
+        }
+
     }
 
     return 0;
