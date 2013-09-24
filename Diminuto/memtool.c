@@ -2,22 +2,22 @@
 /**
  * @file
  *
- * Copyright 2009-2011 Digital Aggregates Corporation, Colorado USA<BR>
+ * Copyright 2009-2013 Digital Aggregates Corporation, Colorado USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * USAGE
  *
- * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -m NUMBER ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
+ * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
  *
  * EXAMPLES
  *
- * memtool -a 0xffff8000 -l 4096 -4 0xffff8004 -s 0x1 -u 1000 -c 0x1
+ * memtool -a 0xffff8000 -l 4096 -4 0x4 -s 0x1 -u 1000 -c 0x1
  *
  * ABSTRACT
  *
- * Allows manipulation of bytes, shorts, longs, and long longs at arbitary
+ * Allows manipulation of bytes, shorts, longs, and long longs at arbitrary
  * real memory addresses. Should probably only be run as root.
  */
 
@@ -67,7 +67,7 @@ static int operate(
     int opt,
     uintptr_t address,
     size_t length,
-    uintptr_t pointer,
+    uintptr_t offset,
     size_t size,
     void ** addressp,
     size_t * lengthp,
@@ -75,21 +75,22 @@ static int operate(
     diminuto_unsigned_t * valuep
 ) {
     void * datap;
+    uintptr_t effective;
 
     if (*basep != (void *)0) {
         /* Do nothing. */
     } else if (length == 0) {
-        *basep = diminuto_map_map(pointer, size, addressp, lengthp);
+        *basep = diminuto_map_map(offset, size, addressp, lengthp);
     } else {
         *basep = diminuto_map_map(address, length, addressp, lengthp);
     }
 
-    datap = (length == 0) ? *basep : (char *)(*basep) + (pointer - address);
+    effective = (length == 0) ? offset : address + offset;
+    datap = (length == 0) ? *basep : (char *)(*basep) + offset;
 
     if (debug) {
-        fprintf(stderr, "%s: a=%p l=%u p=%p s=%u b=%p d=%p m=0x%llx v=%p o=%c\n",
-            program, (void *)address, length, (void *)pointer, size, *basep,
-            datap, mask, valuep, opt);
+        fprintf(stderr, "%s: address=%p length=%u offset=%p size=%u effective=%p base=%p data=%p mask=0x%llx value=%p option=%c\n",
+            program, (void *)address, length, (void *)offset, size, (void *)effective, *basep, datap, mask, valuep, opt);
     }
 
     if (*basep == (void *)0) {
@@ -114,18 +115,18 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] ADDRESS ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
-    fprintf(stderr, "       -1 ADDRESS    Use byte at ADDRESS\n");
-    fprintf(stderr, "       -2 ADDRESS    Use halfword at ADDRESS\n");
-    fprintf(stderr, "       -4 ADDRESS    Use word at ADDRESS\n");
-    fprintf(stderr, "       -8 ADDRESS    Use doubleword at ADDRESS\n");
-    fprintf(stderr, "       -C NUMBER     Clear 1<<NUMBER mask at ADDRESS\n");
-    fprintf(stderr, "       -S NUMBER     Set 1<<NUMBER mask at ADDRESS\n");
-    fprintf(stderr, "       -a ADDRESS    Optionally map region at ADDRESS\n");
+    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
+    fprintf(stderr, "       -1 OFFSET     Use byte at OFFSET\n");
+    fprintf(stderr, "       -2 OFFSET     Use halfword at OFFSET\n");
+    fprintf(stderr, "       -4 OFFSET     Use word at OFFSET\n");
+    fprintf(stderr, "       -8 OFFSET     Use doubleword at OFFSET\n");
+    fprintf(stderr, "       -C NUMBER     Clear 1<<NUMBER mask at OFFSET\n");
+    fprintf(stderr, "       -S NUMBER     Set 1<<NUMBER mask at OFFSET\n");
+    fprintf(stderr, "       -a ADDRESS    Map region at ADDRESS\n");
     fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
     fprintf(stderr, "       -d            Enable debug mode\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
-    fprintf(stderr, "       -l BYTES      Optionally map BYTES in length\n");
+    fprintf(stderr, "       -l BYTES      Map length BYTES at ADDRESS\n");
     fprintf(stderr, "       -m NUMBER     Mask at ADDRESS with ~NUMBER prior to subsequent sets\n");
     fprintf(stderr, "       -o            Enable core dumps\n");
     fprintf(stderr, "       -r            Read ADDRESS\n");
@@ -145,7 +146,7 @@ int main(int argc, char * argv[])
     void * base = 0;
     void * unaddress = 0;
     size_t unlength = 0;
-    uintptr_t pointer = 0;
+    uintptr_t offset = 0;
     size_t size = 0;
     int opt;
     extern char * optarg;
@@ -164,8 +165,8 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 size = sizeof(uint8_t);
-                pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
+                offset = value;
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)offset); }
             }
             break;
 
@@ -174,8 +175,8 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 size = sizeof(uint16_t);
-                pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
+                offset = value;
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)offset); }
             }
             break;
 
@@ -184,8 +185,8 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 size = sizeof(uint32_t);
-                pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
+                offset = value;
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)offset); }
             }
             break;
 
@@ -194,8 +195,8 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 size = sizeof(uint64_t);
-                pointer = value;
-                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)pointer); }
+                offset = value;
+                if (debug) { fprintf(stderr, "%s -%c %p\n", program, opt, (void *)offset); }
             }
             break;
 
@@ -216,7 +217,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
+                error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;
 
@@ -255,7 +256,7 @@ int main(int argc, char * argv[])
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
+            error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, 0, &value) != 0);
             break;
 
         case 'S':
@@ -264,7 +265,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, mask, &value) != 0);
+                error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, mask, &value) != 0);
             }
             break;
 
@@ -287,7 +288,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
-                error = (operate(&base, opt, address, length, pointer, size, &unaddress, &unlength, 0, &value) != 0);
+                error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;
 
