@@ -13,7 +13,10 @@
  *
  * EXAMPLES
  *
- * memtool -a 0xffff8000 -l 4096 -4 0x4 -s 0x1 -u 1000 -c 0x1
+ * (These two commands are equivalent.)
+ *
+ * memtool -a 0xffff8000 -l 4096 -4 0x4        -s 0x1 -u 1000 -c 0x1
+ * memtool                       -4 0xffff8004 -s 0x1 -u 1000 -c 0x1
  *
  * ABSTRACT
  *
