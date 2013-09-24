@@ -9,7 +9,8 @@
  *
  * USAGE
  *
- * dec [ number ]<BR>
+ * dec [ number ]
+ * cat number | dec
  *
  * EXAMPLES
  *
@@ -53,22 +54,17 @@ int main(int argc, char * argv[])
     const char * next;
     uint64_t value;
     int file;
+    int argn = 1;
 
     name = strrchr(argv[0], '/');
     name = (name == (char *)0) ? argv[0] : name + 1;
-
-    if (argc > 2) {
-        errno = E2BIG;
-        perror(name);
-        return 1;
-    }
 
     file = (argc < 2) || ((argc == 2) && (strcmp(argv[1], "-") == 0));
 
     if (file) {
         string = fgets(buffer, sizeof(buffer), stdin);
     } else {
-        string = argv[1];
+        string = argv[argn++];
     }
 
     if (string == (const char *)0) {
@@ -93,11 +89,14 @@ int main(int argc, char * argv[])
 			printf("%llu\n", value);
 		}
 
-		if (!file) {
-			break;
-		}
+	    if (file) {
+	        string = fgets(buffer, sizeof(buffer), stdin);
+	    } else if (argn < argc) {
+	        string = argv[argn++];
+	    } else {
+	    	string = (const char *)0;
+	    }
 
-        string = fgets(buffer, sizeof(buffer), stdin);
         if (string == (const char *)0) {
         	break;
         }
