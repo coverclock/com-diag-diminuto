@@ -9,14 +9,14 @@
  *
  * USAGE
  *
- * memtool [ -d ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
+ * memtool [ -d ] [ -a ADDDRESS -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -[s|S|c|C|w] NUMBER | -r ] [ -u USECONDS ] [ ... ]
  *
  * EXAMPLES
  *
  * (These two commands are equivalent.)
  *
- * memtool -a 0xffff8000 -l 4096 -4 0x4        -s 0x1 -u 1000 -c 0x1
- * memtool                       -4 0xffff8004 -s 0x1 -u 1000 -c 0x1
+ * memtool -a 0xffff8000 -l 4096 -4 0x4        -s 0x1 -u 1000 -c 0x1 -4 0x8        -r
+ * memtool                       -4 0xffff8004 -s 0x1 -u 1000 -c 0x1 -4 0xffff8008 -r
  *
  * ABSTRACT
  *
@@ -118,22 +118,22 @@ static int operate(
 
 static void usage(void)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS ] [ -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
-    fprintf(stderr, "       -1 OFFSET     Use byte at OFFSET\n");
-    fprintf(stderr, "       -2 OFFSET     Use halfword at OFFSET\n");
-    fprintf(stderr, "       -4 OFFSET     Use word at OFFSET\n");
-    fprintf(stderr, "       -8 OFFSET     Use doubleword at OFFSET\n");
-    fprintf(stderr, "       -C NUMBER     Clear 1<<NUMBER mask at OFFSET\n");
-    fprintf(stderr, "       -S NUMBER     Set 1<<NUMBER mask at OFFSET\n");
+    fprintf(stderr, "usage: %s [ -d ] [ -o ] [ -a ADDDRESS -l BYTES ] [ -[1|2|4|8] OFFSET ] [ -m NUMBER ] [ -r | -[s|S|c|C|w] NUMBER ] [ -u USECONDS ] [ -t | -f ] [ ... ]\n", program);
+    fprintf(stderr, "       -1 OFFSET     Use byte at ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -2 OFFSET     Use halfword at ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -4 OFFSET     Use word at ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -8 OFFSET     Use doubleword at ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -C NUMBER     Clear 1<<NUMBER mask at ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -S NUMBER     Set 1<<NUMBER mask at ADDRESS+OFFSET\n");
     fprintf(stderr, "       -a ADDRESS    Map region at ADDRESS\n");
-    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS\n");
+    fprintf(stderr, "       -c NUMBER     Clear NUMBER mask at ADDRESS+OFFSET\n");
     fprintf(stderr, "       -d            Enable debug mode\n");
     fprintf(stderr, "       -f            Proceed if the last result was 0\n");
     fprintf(stderr, "       -l BYTES      Map length BYTES at ADDRESS\n");
-    fprintf(stderr, "       -m NUMBER     Mask at ADDRESS with ~NUMBER prior to subsequent sets\n");
+    fprintf(stderr, "       -m NUMBER     Mask at ADDRESS+OFFSET with ~NUMBER prior to subsequent sets\n");
     fprintf(stderr, "       -o            Enable core dumps\n");
-    fprintf(stderr, "       -r            Read ADDRESS\n");
-    fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS\n");
+    fprintf(stderr, "       -r            Read ADDRESS+OFFSET\n");
+    fprintf(stderr, "       -s NUMBER     Set NUMBER mask at ADDRESS+OFFSET\n");
     fprintf(stderr, "       -t            Proceed if the last result was !0\n");
     fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
     fprintf(stderr, "       -w NUMBER     Write NUMBER to ADDRESS\n");
