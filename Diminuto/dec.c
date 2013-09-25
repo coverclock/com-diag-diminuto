@@ -14,7 +14,7 @@
  *
  * where COMMAND may be
  *
- * dec, oct, hex, ntohs, htons, ntohl, htonl, ntohll, htonll.
+ * dec, oct, hex, ntohs, htons, ntohl, htonl.
  *
  * EXAMPLES
  *
