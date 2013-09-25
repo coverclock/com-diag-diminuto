@@ -22,7 +22,7 @@ COMPILEFOR	=	host
 PROJECT		=	diminuto
 PRODUCT		=	buildroot
 
-MAJOR		=	11# Applications will probably have to be be modified.
+MAJOR		=	12# Applications will probably have to be be modified.
 MINOR		=	0# Additional functionality has been added.
 BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
 
@@ -153,7 +153,7 @@ TARGETOBJECTSXX		=	$(addsuffix .o,$(basename $(wildcard [A-Z]*.cpp)))
 TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS		=	S10provision
 TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep
-TARGETALIASES		=	hex oct
+TARGETALIASES		=	hex oct ntohs htons ntohl htonl
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.cpp)) $(basename $(wildcard unittest-*.sh))
 
@@ -388,6 +388,18 @@ hex:	dec
 
 oct:	dec
 	ln -f dec oct
+
+ntohs:	dec
+	ln -f dec ntohs
+
+htons:	dec
+	ln -f dec htons
+
+ntohl:	dec
+	ln -f dec ntohl
+
+htonl:	dec
+	ln -f dec htonl
 
 phex_unstripped:	phex.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
