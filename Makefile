@@ -20,7 +20,7 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	contraption
 
 MAJOR		=	13# API changes requiring that applications be modified.
-MINOR		=	0# Functionality or features added but no API changes.
+MINOR		=	1# Functionality or features added but no API changes.
 BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
@@ -548,22 +548,43 @@ unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
 vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-.PHONY:	vintage.c
+.PHONY:	vintage.c diminuto_release.h diminuto_vintage.h
 
-vintage.c:
-	echo '/* GENERATED FILE! DO NOT EDIT! */' > vintage.c
-	echo '#include <stdio.h>' >> vintage.c
-	echo 'static const char DIMINUTO_VINTAGE[] =' >> vintage.c
-	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> vintage.c
-	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> vintage.c
-	echo "\"Stamp: $(VINTAGE)\\n\"" >> vintage.c
-	echo "\"Host: $(shell hostname)\\n\"" >> vintage.c
-	echo "\"Domain: $(shell dnsdomainname)\\n\"" >> vintage.c
-	echo "\"Directory: $(shell pwd)\\n\"" >> vintage.c
-	echo "\"User: $(shell logname)\\n\"" >> vintage.c
-	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> vintage.c || true
-	echo '"DIMINUTO_VINTAGE_END\n";' >> vintage.c
-	echo 'int main(void) { fputs(DIMINUTO_VINTAGE, stdout); }' >> vintage.c	
+# For embedding in a system where it can be executed from a shell.
+vintage.c:	diminuto_release.h diminuto_vintage.h
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
+	echo '#include "diminuto_release.h"' >> $@
+	echo '#include "diminuto_release.h"' >> $@
+	echo '#include "diminuto_vintage.h"' >> $@
+	echo '#include "diminuto_vintage.h"' >> $@
+	echo '#include <stdio.h>' >> $@
+	echo 'static const char VINTAGE[] =' >> $@
+	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> $@
+	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> $@
+	echo "\"Vintage: $(VINTAGE)\\n\"" >> $@
+	echo "\"Host: $(shell hostname)\\n\"" >> $@
+	echo "\"Domain: $(shell dnsdomainname)\\n\"" >> $@
+	echo "\"Directory: $(shell pwd)\\n\"" >> $@
+	echo "\"User: $(shell logname)\\n\"" >> $@
+	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
+	echo '"DIMINUTO_VINTAGE_END\n";' >> $@
+	echo 'int main(void) { fputs(VINTAGE, stdout); }' >> $@
+
+# For embedding in an application where it can be interrogated or displayed.
+diminuto_release.h:
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
+	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
+	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
+	echo "static const char DIMINUTO_RELEASE[] = \"DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo '#endif' >> $@
+
+# For embedding in an application where it can be interrogated or displayed.
+diminuto_vintage.h:
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
+	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
+	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
+	echo "static const char DIMINUTO_VINTAGE[] = \"DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
+	echo '#endif' >> $@
 
 ########## Drivers
 
