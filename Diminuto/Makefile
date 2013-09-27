@@ -11,7 +11,7 @@
 # to work. The library and toolkit I use all the time. So the default behavior
 # of this makefile is to just build the library and toolkit.
 
-########## Variables
+########## Customizations
 
 COMPILEFOR	=	host
 #COMPILEFOR	=	diminuto
@@ -19,14 +19,41 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-PROJECT		=	diminuto
-PRODUCT		=	buildroot
+MAJOR		=	13# API changes requiring that applications be modified.
+MINOR		=	0# Functionality or features added but no API changes.
+BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
-MAJOR		=	12# Applications will probably have to be be modified.
-MINOR		=	1# Additional functionality has been added.
-BUILD		=	0# Bug fixed but otherwise no API or behavior changes. 
+# Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
+# Aviation Administration or FAA) require that software builds for safety
+# critical or national security applications generate exactly the same binary
+# images bit for bit if the source code has not changed. (This is theoretically
+# a more stringent requirement than requiring that checksums or cryptographic
+# hashes are the same, although in practice it is the same thing.) This allows
+# agency inspectors to verify the integrity of the binary software images. This
+# makes embedding timestamps inside compiled translation units problematic.
+# If your application has this requirement, you can pass in any fixed string
+# for the value of the VINTAGE make variable and you should be able to generate
+# identical images with subsequent builds of Diminuto. This string is embedded
+# inside the Diminuto vintage application.
+VINTAGE		=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+
+# You can change the VINFO make variable into whatever tool you use to extract
+# version information from your source code control system. For example, I
+# use Subversion here, and hence VINFO is the "svn info" command. But elsewhere,
+# I use Git, so maybe I'd use "git describe" in those circumstances. Or maybe
+# I'd have my own shell script. Or I'd just set this to echo some constant
+# string. If you don't have a source code control system, don't sweat it. If
+# the VINFO command fails or does not exist, all that happens is no such version
+# information is included in the Diminuto vintage application.
+VINFO		=	svn info
+#VINFO		=	git describe
 
 HOME_DIR	=	$(HOME)/projects
+
+########## Configurations
+
+PROJECT		=	diminuto
+PRODUCT		=	buildroot
 
 ifeq ($(COMPILEFOR),diminuto)
 # Build for the AT91RM9200-EK board with the BuildRoot kernel.
@@ -95,6 +122,8 @@ KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 INCLUDE_DIR	=	/usr/include
 endif
 
+########## Variables
+
 HERE		:=	$(shell pwd)
 
 TGT_IPADDR	=	192.168.1.223
@@ -152,7 +181,7 @@ TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard $(PROJECT)_*.c)))
 TARGETOBJECTSXX		=	$(addsuffix .o,$(basename $(wildcard [A-Z]*.cpp)))
 TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
 TARGETSCRIPTS		=	S10provision
-TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep
+TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep vintage
 TARGETALIASES		=	hex oct ntohs htons ntohl htonl
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.cpp)) $(basename $(wildcard unittest-*.sh))
@@ -176,8 +205,10 @@ AR			=	$(CROSS_COMPILE)ar
 RANLIB		=	$(CROSS_COMPILE)ranlib
 STRIP		=	$(CROSS_COMPILE)strip
 
+CDEFINES	=	
+
 ARFLAGS		=	rcv
-CPPFLAGS	=	$(CPPARCH) -iquoteinclude -isystem $(INCLUDE_DIR)
+CPPFLAGS	=	$(CPPARCH) -iquoteinclude -isystem $(INCLUDE_DIR) $(CDEFINES)
 CXXFLAGS	=	$(CARCH) -g
 CFLAGS		=	$(CARCH) -g
 #CXXFLAGS	=	$(CARCH) -O3
@@ -511,6 +542,28 @@ unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIE
 	
 unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+########## Vintage
+
+vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+.PHONY:	vintage.c
+
+vintage.c:
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > vintage.c
+	echo '#include <stdio.h>' >> vintage.c
+	echo 'static const char DIMINUTO_VINTAGE[] =' >> vintage.c
+	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> vintage.c
+	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> vintage.c
+	echo "\"Stamp: $(VINTAGE)\\n\"" >> vintage.c
+	echo "\"Host: $(shell hostname)\\n\"" >> vintage.c
+	echo "\"Domain: $(shell dnsdomainname)\\n\"" >> vintage.c
+	echo "\"Directory: $(shell pwd)\\n\"" >> vintage.c
+	echo "\"User: $(shell logname)\\n\"" >> vintage.c
+	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> vintage.c || true
+	echo '"DIMINUTO_VINTAGE_END\n";' >> vintage.c
+	echo 'int main(void) { return fputs(DIMINUTO_VINTAGE, stdout); }' >> vintage.c	
 
 ########## Drivers
 

@@ -10,7 +10,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * Pre-processes and then stringifies an preprocessor symbol. This is
+ * Pre-processes and then stringifies a preprocessor symbol. This is
  * a common compiler trick trick to get C to turn the value of a preprocessor
  * symbol into a printable C-string at compile time.
  */
