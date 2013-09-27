@@ -51,7 +51,7 @@ typedef enum DiminutoDatumWidth {
  * @param datump points to where the datum will be returned.
  * @return 0 for success, !0 otherwise.
  */
-extern int diminuto_kernel_get(const void * address, diminuto_datum_width_t width, diminuto_datum_value * datump);
+extern int diminuto_kernel_get(const void * address, diminuto_datum_width_t width, diminuto_datum_value_t * datump);
 
 /**
  * Puts a datum of a specified width to a virtual address.

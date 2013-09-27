@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -34,7 +34,12 @@
 
 #include "com/diag/diminuto/diminuto_mmdriver.h"
 #include "com/diag/diminuto/diminuto_map.h"
-#include <linux/autoconf.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+#	include <linux/autoconf.h>
+#else
+#	include <generated/autoconf.h>
+#endif
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -107,7 +112,11 @@ static int closes = 0;
 static int ioctls = 0;
 static int procs = 0;
 static int errors = 0;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38)
 static DECLARE_MUTEX(semaphore);
+#else
+static DEFINE_SEMAPHORE(semaphore);
+#endif
 
 /*******************************************************************************
  * HELPER FUNCTIONS
@@ -226,6 +235,7 @@ mmdriver_release(
     return 0;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
 static int
 mmdriver_ioctl(
     struct inode * inode,
@@ -233,6 +243,14 @@ mmdriver_ioctl(
     unsigned int cmd,
     unsigned long arg
 ) {
+#else
+static long
+mmdriver_unlocked_ioctl(
+	struct file *filp,
+	unsigned int cmd,
+	unsigned long arg
+) {
+#endif
     int rc;
     diminuto_mmdriver_op_t op;
     void * pointer;
@@ -395,15 +413,19 @@ mmdriver_proc_read(
  ******************************************************************************/
 
 static struct file_operations fops = {
-    .owner      = THIS_MODULE,
-    .ioctl      = mmdriver_ioctl,
-    .open       = mmdriver_open,
-    .release    = mmdriver_release
+    .owner      	= THIS_MODULE,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+    .ioctl      	= mmdriver_ioctl,
+#else
+    .unlocked_ioctl	= mmdriver_unlocked_ioctl,
+#endif
+    .open       	= mmdriver_open,
+    .release    	= mmdriver_release
 };
 
 static struct miscdevice mdev = {
-	.minor		= MISC_DYNAMIC_MINOR,
-	.fops		= &fops
+	.minor			= MISC_DYNAMIC_MINOR,
+	.fops			= &fops
 };
 
 static int
