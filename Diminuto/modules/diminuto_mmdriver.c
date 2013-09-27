@@ -8,11 +8,31 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * This translation unit is the implementation of the Diminuto Generic Memory
- * Mapped Driver. It is compiled using the standard Linux 2.6 module build
- * process. It can be compiled to manipulate a specific real memory address
- * block, or the memory address block can be specified at module load time.
- * Examples of devices it can control include FPGAs or PIO pins. Additional
- * I/O control requests can be easily added.
+ * Mapped Driver. It is compiled using the standard Linux 2.4 (and 2.6) (and
+ * 3.2) module build process. It can be compiled to manipulate a specific real
+ * memory address block, or the memory address block can be specified at module
+ * load time. Examples of devices it can control include FPGAs or PIO pins.
+ * Additional I/O control requests can be easily added.
+ *
+ * Some example commands:
+ *
+ *		cat /proc/devices # Find an unused major device number.
+ *		cat /proc/iomem # Find some memory mapped hardware to read.
+ *		sudo insmod diminuto_kernel_datum.ko
+ *		sudo insmod diminuto_kernel_map.ko
+ *		sudo insmod diminuto_mmdriver.ko begin=0xfdff4000 end=0xfdff8000 major=150
+ *		lsmod
+ *		cat /proc/driver/mmdriver # Read the proc file.
+ *		sudo mknod /dev/mmdriver c 150 0 # Make a device node.
+ *		sudo chmod 666 /dev/mmdriver # Make is usable by non-root.
+ *		mmdrivertool -U /dev/mmdriver -4 0x0 -r | hex
+ *		mmdrivertool -U /dev/mmdriver -4 0x4 -r | hex
+ *		mmdrivertool -U /dev/mmdriver -4 0x8 -r | hex
+ *		:
+ *		sudo rmmod diminuto_mmdriver
+ *		sudo rmmod diminuto_kernel_map
+ *		sudo rmmod diminuto_kernel_datum
+ *		lsmod
  *
  * To enable pr_debug() statements, define the symbol DEBUG:
  *
