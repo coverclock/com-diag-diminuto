@@ -563,7 +563,7 @@ vintage.c:
 	echo "\"User: $(shell logname)\\n\"" >> vintage.c
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> vintage.c || true
 	echo '"DIMINUTO_VINTAGE_END\n";' >> vintage.c
-	echo 'int main(void) { return fputs(DIMINUTO_VINTAGE, stdout); }' >> vintage.c	
+	echo 'int main(void) { fputs(DIMINUTO_VINTAGE, stdout); }' >> vintage.c	
 
 ########## Drivers
 
