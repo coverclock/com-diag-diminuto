@@ -543,7 +543,7 @@ unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIE
 unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-########## Vintage
+########## Generated
 
 vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
@@ -559,7 +559,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo '#include "diminuto_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char VINTAGE[] =' >> $@
-	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> $@
+	echo '"DIMINUTO_VERSION_BEGIN\n"' >> $@
 	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> $@
 	echo "\"Vintage: $(VINTAGE)\\n\"" >> $@
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
@@ -567,7 +567,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	echo "\"User: $(shell logname)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"DIMINUTO_VINTAGE_END\n";' >> $@
+	echo '"DIMINUTO_VERSION_END\n";' >> $@
 	echo 'int main(void) { fputs(VINTAGE, stdout); }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
