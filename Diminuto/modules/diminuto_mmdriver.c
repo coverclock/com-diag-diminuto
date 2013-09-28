@@ -16,14 +16,15 @@
  *
  * Some example commands:
  *
- *		cat /proc/devices # Find an unused major device number.
+ *		cat /proc/devices # Get the misc major device number.
  *		cat /proc/iomem # Find some memory mapped hardware to read.
  *		sudo insmod diminuto_kernel_datum.ko
  *		sudo insmod diminuto_kernel_map.ko
- *		sudo insmod diminuto_mmdriver.ko begin=0xfdff4000 end=0xfdff8000 major=150
- *		lsmod
+ *		sudo insmod diminuto_mmdriver.ko begin=0xfdff4000 end=0xfdff8000
+ *		lsmod # Listed loaded modules.
  *		cat /proc/driver/mmdriver # Read the proc file.
- *		sudo mknod /dev/mmdriver c 150 0 # Make a device node.
+ *		cat /proc/misc # Get the misc minor device number.
+ *		sudo mknod /dev/mmdriver c 10 57 # Make a device node.
  *		sudo chmod 666 /dev/mmdriver # Make is usable by non-root.
  *		mmdrivertool -U /dev/mmdriver -4 0x0 -r | hex
  *		mmdrivertool -U /dev/mmdriver -4 0x4 -r | hex
