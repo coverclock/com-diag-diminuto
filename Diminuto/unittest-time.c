@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
     diminuto_usec_t elapsed;
     diminuto_usec_t process;
     diminuto_usec_t thread;
-    int rc;
+    diminuto_usec_t rc;
     int year;
     int month;
     int day;
@@ -35,11 +35,15 @@ int main(int argc, char ** argv)
     int minute;
     int second;
     int microsecond;
-    diminuto_usec_t epoch;
+    diminuto_usec_t zulu;
+    diminuto_usec_t juliet;
+    diminuto_usec_t west;
+    int daylightsaving;
+    double offset;
 
     diminuto_core_enable();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s %10s %26s %10s %10s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %26s %5s %3s %10s %10s\n",
         "requested",
         "remaining",
         "claimed",
@@ -47,8 +51,11 @@ int main(int argc, char ** argv)
         "difference",
         "elapsed",
         "difference",
-        "error",
+        "zulu",
+        "juliet",
         "timestamp",
+        "west",
+        "dst",
         "process",
         "thread"
     );
@@ -62,17 +69,37 @@ int main(int argc, char ** argv)
         claimed = requested - remaining;
         measured = now - then;
         elapsed = after - before;
+        year = -1;
+        month = -1;
+        day = -1;
+        hour = -1;
+        minute = -1;
+        second = -1;
+        microsecond = -1;
+        rc = diminuto_time_zulu(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
+        zulu = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, 0, 0);
+        west = diminuto_time_west();
+        offset = west;
+        offset /= 1000000.0;
+        offset /= 3600.0;
+        daylightsaving = diminuto_time_daylightsaving();
+        rc = diminuto_time_juliet(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
+        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, west, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        rc = diminuto_time_datetime(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
-        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
-        epoch = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond);
-        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d %10lld %10lld\n",
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d %5.2lf %3d %10lld %10lld\n",
             requested,
             remaining,
             claimed,
@@ -80,7 +107,8 @@ int main(int argc, char ** argv)
             measured - requested,
             elapsed,
             elapsed - requested,
-            after - epoch,
+            after - zulu,
+            after - juliet,
             year,
             month,
             day,
@@ -88,9 +116,12 @@ int main(int argc, char ** argv)
             minute,
             second,
             microsecond,
+            offset,
+            daylightsaving,
             process,
             thread
         );
+        diminuto_yield();
     }
 
     return 0;
