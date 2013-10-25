@@ -57,18 +57,22 @@ extern diminuto_usec_t diminuto_time_thread(void);
 
 /**
  * Return the number of microseconds east of Universal Coordinated Time (UTC)
- * of the target system. This will be a negative number that indicates how
- * much earlier the local time zone is from UTC.
+ * of the local time zone. This will be a negative number that indicates how
+ * much earlier the local time zone is from UTC. This offset does _not_ account
+ * for Daylight Saving Time (DST) if it is used and in effect.
+ * @param microseconds is the number of microseconds since the Epoch.
  * @return the number of microseconds east of UTC.
  */
-extern diminuto_usec_t diminuto_time_offset(void);
+extern diminuto_usec_t diminuto_time_timezone(diminuto_usec_t microseconds);
 
 /**
- * Return >0 if Daylight Saving Time is used in the local time zone _and_ is
- * currently in effect, <0 if an error occurred, 0 otherwise.
- * @return non-zero for DST, zero otherwise.
+ * Return the number of microseconds the local time zone is offset because of
+ * Daylight Saving Time (DST). It DST is not used for local time, or is not in
+ * effect for the specified time, then this value will be zero.
+ * @param microseconds is the number of microseconds since the Epoch.
+ * @return the number of microseconds added to this time zone.
  */
-extern int diminuto_time_daylightsaving(void);
+extern diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds);
 
 /**
  * Return the number of microseconds after the Epoch (shown here in ISO8601
@@ -81,17 +85,17 @@ extern int diminuto_time_daylightsaving(void);
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
  * @param microsecond is the fraction of a second in the range [0..999999].
- * @param offset is the number of microseconds east for the timezone (0 if UTC).
- * @param daylightsaving if true assumes DST is in effect (0 if UTC).
+ * @param offset is the number of microseconds east of the time zone (0 if UTC).
+ * @param daylightsaving is the number of microseconds offset for DST (0 if UTC).
  * @return the number of microseconds since the Epoch.
  */
-extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, int daylightsaving);
+extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, diminuto_usec_t daylightsaving);
 
 /**
  * Convert the number in microseconds since the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 into individual fields representing the
  * Common Era (CE) date and and Coordinated Universal Time (UTC) time.
- * @clock is the number of microseconds since the Epoch.
+ * @param microseconds is the number of microseconds since the Epoch.
  * @param yearp is where the year including the century will be returned.
  * @param monthp is where the month of the year will be returned.
  * @param dayp is where the day of the month will be returned.
@@ -101,13 +105,13 @@ extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hou
  * @param microsecondp is where the fraction of a second will be returned.
  * @return clock for success, -1 otherwise.
  */
-extern diminuto_usec_t diminuto_time_zulu(diminuto_usec_t clock, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
+extern diminuto_usec_t diminuto_time_zulu(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
 
 /**
  * Convert the number in microseconds since the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 into individual fields representing the
  * local date and time.
- * @clock is the number of microseconds since the Epoch.
+ * @param microseconds is the number of microseconds since the Epoch.
  * @param yearp is where the year including the century will be returned.
  * @param monthp is where the month of the year will be returned.
  * @param dayp is where the day of the month will be returned.
@@ -117,6 +121,6 @@ extern diminuto_usec_t diminuto_time_zulu(diminuto_usec_t clock, int * yearp, in
  * @param microsecondp is where the fraction of a second will be returned.
  * @return clock for success, -1 otherwise.
  */
-extern diminuto_usec_t diminuto_time_juliet(diminuto_usec_t clock, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
+extern diminuto_usec_t diminuto_time_juliet(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
 
 #endif

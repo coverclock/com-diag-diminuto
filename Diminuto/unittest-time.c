@@ -29,6 +29,10 @@ int main(int argc, char ** argv)
     diminuto_usec_t process;
     diminuto_usec_t thread;
     diminuto_usec_t rc;
+    diminuto_usec_t zulu;
+    diminuto_usec_t juliet;
+    diminuto_usec_t timezone;
+    diminuto_usec_t daylightsaving;
     int year;
     int month;
     int day;
@@ -36,12 +40,10 @@ int main(int argc, char ** argv)
     int minute;
     int second;
     int microsecond;
-    diminuto_usec_t zulu;
-    diminuto_usec_t juliet;
-    diminuto_usec_t offset;
-    int hh;
-    int mm;
-    int daylightsaving;
+    int zh;
+    int zm;
+    int dh;
+    int dm;
 
     diminuto_core_enable();
 
@@ -91,14 +93,16 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
-        offset = diminuto_time_offset();
-        hh = (-offset / 1000000) / 3600;
-        mm = (-offset / 1000000) % 3600;
-        daylightsaving = diminuto_time_daylightsaving();
-        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, offset, daylightsaving);
+        timezone = diminuto_time_timezone(after);
+        zh = (-timezone / 1000000) / 3600;
+        zm = (-timezone / 1000000) % 3600;
+        daylightsaving = diminuto_time_daylightsaving(after);
+        dh = (daylightsaving / 1000000) / 3600;
+        dm = (daylightsaving / 1000000) % 3600;
+        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:00\n",
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n",
             requested,
             remaining,
             claimed,
@@ -117,9 +121,10 @@ int main(int argc, char ** argv)
             minute,
             second,
             microsecond,
-            hh,
-            mm,
-            daylightsaving
+            zh,
+            zm,
+            dh,
+            dm
         );
         assert(remaining == 0);
         assert(after == zulu);

@@ -19,9 +19,9 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-MAJOR		=	14# API changes requiring that applications be modified.
+MAJOR		=	15# API changes requiring that applications be modified.
 MINOR		=	0# Functionality or features added but no API changes.
-BUILD		=	1# Bugs fixed but no API changes or new functionality.
+BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -541,6 +541,9 @@ unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIE
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 	
 unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+unittest-epoch:	unittest-epoch.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Generated

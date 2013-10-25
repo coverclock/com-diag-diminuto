@@ -14,6 +14,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+static const int HERTZ = 1000000;
+
 static diminuto_usec_t diminuto_time_microseconds(clockid_t clock)
 {
 	diminuto_usec_t microseconds = -1;
@@ -23,7 +25,7 @@ static diminuto_usec_t diminuto_time_microseconds(clockid_t clock)
 		diminuto_perror("diminuto_time_generic: clock_gettime");
 	} else {
 		microseconds = elapsed.tv_sec;
-		microseconds *= 1000000ULL;
+		microseconds *= HERTZ;
 		microseconds += (elapsed.tv_nsec / 1000);
 	}
 
@@ -54,47 +56,55 @@ diminuto_usec_t diminuto_time_thread()
 	return diminuto_time_microseconds(CLOCK_THREAD_CPUTIME_ID);
 }
 
-diminuto_usec_t diminuto_time_offset()
+diminuto_usec_t diminuto_time_timezone(diminuto_usec_t microseconds)
 {
-	diminuto_usec_t microseconds = -1;
+	diminuto_usec_t timezone = -1;
 	struct tm datetime;
 	struct tm * datetimep;
-	time_t juliet = 0;
+	time_t juliet;
 
+	microseconds /= HERTZ;
+	juliet = microseconds;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
-		diminuto_perror("diminuto_time_offset: localtime_r");
+		diminuto_perror("diminuto_time_timezone: localtime_r");
+	} else if (datetimep->tm_isdst) {
+		timezone = datetimep->tm_gmtoff;
+		timezone -= 3600;
+		timezone *= HERTZ;
 	} else {
-		microseconds = datetimep->tm_gmtoff;
-		microseconds *= 1000000;
+		timezone = datetimep->tm_gmtoff;
+		timezone *= HERTZ;
 	}
 
-	return microseconds;
+	return timezone;
 }
 
-int diminuto_time_daylightsaving(void)
+diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds)
 {
-	int daylightsaving = -1;
-	struct timespec elapsed;
+	diminuto_usec_t daylightsaving = -1;
 	struct tm datetime;
 	struct tm * datetimep;
+	time_t juliet;
 
-	if (clock_gettime(CLOCK_REALTIME, &elapsed) < 0) {
-		diminuto_perror("diminuto_time_daylightsaving: clock_gettime");
-	} else if ((datetimep = localtime_r(&elapsed.tv_sec, &datetime)) == (struct tm *)0) {
+	microseconds /= HERTZ;
+	juliet = microseconds;
+	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_daylightsaving: localtime_r");
+	} else if (datetimep->tm_isdst > 0) {
+		daylightsaving = 3600;
+		daylightsaving *= HERTZ;
 	} else {
-		daylightsaving = datetime.tm_isdst;
+		daylightsaving = 0;
 	}
 
 	return daylightsaving;
 }
 
-diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, int daylightsaving)
+diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t timezone, diminuto_usec_t daylightsaving)
 {
 	diminuto_usec_t microseconds = -1;
 	struct tm datetime;
 	time_t juliet;
-	extern long timezone;
 
 	datetime.tm_year = year;
 	datetime.tm_year -= 1900;
@@ -104,21 +114,22 @@ diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int 
 	datetime.tm_hour = hour;
 	datetime.tm_min = minute;
 	datetime.tm_sec = second;
-	datetime.tm_isdst = daylightsaving;
+	datetime.tm_isdst = 0;
 	if ((juliet = mktime(&datetime)) == -1) {
 		diminuto_perror("diminuto_time_epoch: mktime");
 	} else {
 		microseconds = juliet;
-		microseconds *= 1000000;
-		microseconds += diminuto_time_offset();
-		microseconds -= offset;
+		microseconds *= HERTZ;
+		microseconds += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
+		microseconds -= timezone;
+		microseconds -= daylightsaving;
 		microseconds += microsecond;
 	}
 
 	return microseconds;
 }
 
-static void diminuto_time_stamp(diminuto_usec_t clock, const struct tm *datetimep, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+static void diminuto_time_stamp(diminuto_usec_t microseconds, const struct tm *datetimep, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
 {
 	if (yearp        != (int *)0) { *yearp        = datetimep->tm_year + 1900; }
 	if (monthp       != (int *)0) { *monthp       = datetimep->tm_mon + 1;     }
@@ -126,39 +137,39 @@ static void diminuto_time_stamp(diminuto_usec_t clock, const struct tm *datetime
 	if (hourp        != (int *)0) { *hourp        = datetimep->tm_hour;        }
 	if (minutep      != (int *)0) { *minutep      = datetimep->tm_min;         }
 	if (secondp      != (int *)0) { *secondp      = datetimep->tm_sec;         }
-	if (microsecondp != (int *)0) { *microsecondp = clock % 1000000;           }
+	if (microsecondp != (int *)0) { *microsecondp = microseconds % HERTZ;      }
 }
 
-diminuto_usec_t diminuto_time_zulu(diminuto_usec_t clock, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+diminuto_usec_t diminuto_time_zulu(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
 {
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t zulu;
 
-	zulu = clock / 1000000;
+	zulu = microseconds / HERTZ;
 	if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: gmtime_r");
-		clock = -1;
+		microseconds = -1;
 	} else {
-		diminuto_time_stamp(clock, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
+		diminuto_time_stamp(microseconds, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
 	}
 
-	return clock;
+	return microseconds;
 }
 
-diminuto_usec_t diminuto_time_juliet(diminuto_usec_t clock, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+diminuto_usec_t diminuto_time_juliet(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
 {
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
 
-	juliet = clock / 1000000;
+	juliet = microseconds / HERTZ;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: localtime_r");
-		clock = -1;
+		microseconds = -1;
 	} else {
-		diminuto_time_stamp(clock, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
+		diminuto_time_stamp(microseconds, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
 	}
 
-	return clock;
+	return microseconds;
 }
