@@ -16,8 +16,8 @@
 
 diminuto_usec_t diminuto_time_clock()
 {
+    diminuto_usec_t microseconds = -1;
     struct timeval clock;
-    diminuto_usec_t microseconds = ~0ULL;
 
     if (gettimeofday(&clock, (struct timezone *)0) < 0) {
         diminuto_perror("diminuto_time_clock: gettimeofday");
@@ -32,8 +32,8 @@ diminuto_usec_t diminuto_time_clock()
 
 static diminuto_usec_t diminuto_time_generic(clockid_t clock)
 {
+	diminuto_usec_t microseconds = -1;
 	struct timespec elapsed;
-	diminuto_usec_t microseconds = ~0ULL;
 
 	if (clock_gettime(clock, &elapsed) < 0) {
 		diminuto_perror("diminuto_time_generic: clock_gettime");
@@ -63,4 +63,68 @@ diminuto_usec_t diminuto_time_process()
 diminuto_usec_t diminuto_time_thread()
 {
 	return diminuto_time_generic(CLOCK_THREAD_CPUTIME_ID);
+}
+
+diminuto_usec_t diminuto_time_timezone()
+{
+	diminuto_usec_t microseconds = -1;
+	extern long timezone;
+
+	tzset();
+
+	microseconds = timezone;
+	microseconds *= 1000000;
+
+	return microseconds;
+}
+
+diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond)
+{
+	diminuto_usec_t microseconds = -1;
+	struct tm datetime;
+	time_t juliet;
+	extern long timezone;
+
+	datetime.tm_year = year;
+	datetime.tm_year -= 1900;
+	datetime.tm_mon = month;
+	datetime.tm_mon -= 1;
+	datetime.tm_mday = day;
+	datetime.tm_hour = hour;
+	datetime.tm_min = minute;
+	datetime.tm_sec = second;
+	if ((juliet = mktime(&datetime)) == -1) {
+		diminuto_perror("diminuto_time_epoch: mktime");
+	} else {
+		microseconds = juliet;
+		microseconds *= 1000000;
+		microseconds -= diminuto_time_timezone();
+		microseconds += microsecond;
+	}
+
+	return microseconds;
+}
+
+int diminuto_time_datetime(diminuto_usec_t clock, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+{
+	int rc = -1;
+	struct tm datetime;
+	struct tm * datetimep;
+	time_t zulu;
+
+	zulu = clock / 1000000;
+	if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
+		diminuto_perror("diminuto_time_timestamp: gmtime_r");
+	} else {
+		if (yearp        != (int *)0) { *yearp        = datetimep->tm_year + 1900; }
+		if (monthp       != (int *)0) { *monthp       = datetimep->tm_mon + 1;     }
+		if (dayp         != (int *)0) { *dayp         = datetimep->tm_mday;        }
+		if (hourp        != (int *)0) { *hourp        = datetimep->tm_hour;        }
+		if (minutep      != (int *)0) { *minutep      = datetimep->tm_min;         }
+		if (secondp      != (int *)0) { *secondp      = datetimep->tm_sec;         }
+		if (microsecondp != (int *)0) { *microsecondp = clock % 1000000;           }
+		rc = 0;
+	}
+
+	return rc;
 }

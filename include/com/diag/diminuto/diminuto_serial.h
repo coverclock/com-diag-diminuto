@@ -19,14 +19,16 @@
  * according to the specified speed and data format and enables or disables
  * modem control. For example, "115200 8n1" would be (fd, 115200, 8, 0, 1, 0).
  * @param fd is the file descriptor.
- * @param bitspersecond is the desired speed (e.g. 9600, 115200).
+ * @param bitspersecond is the desired speed (e.g. 9600, 115200) or -1 to not set speed.
  * @param databits is the number of data bits (e.g. 5, 6, 7, or 8).
  * @param paritybit is zero for no parity, even for even, odd for odd.
  * @param stopbits is the number of stop bits (e.g. 1 or 2).
  * @param modemcontrol if true enables modem control, otherwise disables it.
+ * @param xonxoff if true enables software flow control, otherwise disables it.
+ * @param rtscts if true enables hardware flow control, otherwise disables it.
  * @return 0 for success or <0 if an error occurred.
  */
-extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol);
+extern int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol, int xonxoff, int rtscts);
 
 /**
  * If the specified file descriptor identifies a device that is a

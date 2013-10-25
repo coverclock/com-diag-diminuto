@@ -18,17 +18,28 @@ int main(int argc, char ** argv)
 {
     diminuto_usec_t then;
     diminuto_usec_t now;
-    int64_t measured;
+    diminuto_usec_t measured;
     diminuto_usec_t requested;
     diminuto_usec_t remaining;
-    int64_t claimed;
+    diminuto_usec_t claimed;
     diminuto_usec_t before;
     diminuto_usec_t after;
-    int64_t elapsed;
+    diminuto_usec_t elapsed;
+    diminuto_usec_t process;
+    diminuto_usec_t thread;
+    int rc;
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    int microsecond;
+    diminuto_usec_t epoch;
 
     diminuto_core_enable();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %26s %10s %10s\n",
         "requested",
         "remaining",
         "claimed",
@@ -36,8 +47,11 @@ int main(int argc, char ** argv)
         "difference",
         "elapsed",
         "difference",
+        "error",
+        "timestamp",
         "process",
-        "thread");
+        "thread"
+    );
 
     for (requested = 0; requested < 60000000; requested = requested ? requested * 2 : 1) {
         then = diminuto_time_elapsed();
@@ -48,7 +62,17 @@ int main(int argc, char ** argv)
         claimed = requested - remaining;
         measured = now - then;
         elapsed = after - before;
-        printf("%10llu %10llu %10lld %10lld %10lld %10llu %10lld %10lld %10lld\n",
+        process = diminuto_time_process();
+        thread = diminuto_time_thread();
+        rc = diminuto_time_datetime(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
+        rc = diminuto_time_datetime(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
+        epoch = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond);
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d %10lld %10lld\n",
             requested,
             remaining,
             claimed,
@@ -56,8 +80,17 @@ int main(int argc, char ** argv)
             measured - requested,
             elapsed,
             elapsed - requested,
-            diminuto_time_process(),
-            diminuto_time_thread());
+            after - epoch,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            microsecond,
+            process,
+            thread
+        );
     }
 
     return 0;

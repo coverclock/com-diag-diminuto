@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <termio.h>
 
-int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol)
+int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol, int xonxoff, int rtscts)
 {
 	int rc = -1;
 	int error = 0;
@@ -26,10 +26,15 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 	int stop;
 	int clocal;
 	int hupcl;
+	int ixon;
+	int ixoff;
+	int crtscts;
 
 	do {
 
 		switch (bitspersecond) {
+		case -1:
+			break;
 		case 0:
 			speed = B0;
 			break;
@@ -88,6 +93,7 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 			speed = B230400;
 			break;
 		default:
+			bitspersecond = -1;
 			error = !0;
 			errno = EINVAL;
 			diminuto_perror("diminuto_serial_set: bitspersecond");
@@ -116,7 +122,7 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 
 		if (parity == 0) {
 			parity = 0;
-		} else if ((parity % 2) == 1) {
+		} else if ((parity % 2) != 0) {
 			parity = PARENB | PARODD;
 		} else {
 			parity = PARENB;
@@ -144,6 +150,20 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 			hupcl = 0;
 		}
 
+		if (xonxoff) {
+			ixon = IXON;
+			ixoff = IXOFF;
+		} else {
+			ixon = 0;
+			ixoff = 0;
+		}
+
+		if (rtscts) {
+			crtscts = CRTSCTS;
+		} else {
+			crtscts = 0;
+		}
+
 		if (error) {
 			break;
 		}
@@ -159,25 +179,31 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
             break;
         }
 
-        tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+        tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXOFF);
         tios.c_oflag &= ~(OPOST);
         tios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-        tios.c_cflag &= ~(CSIZE | PARENB | CSTOPB | CLOCAL | HUPCL);
+        tios.c_cflag &= ~(CSIZE | PARENB  | PARODD | CSTOPB | CLOCAL | HUPCL | CRTSCTS);
+
+        tios.c_iflag |= ixon;
+        tios.c_iflag |= ixoff;
+
         tios.c_cflag |= CREAD;
         tios.c_cflag |= data;
         tios.c_cflag |= parity;
         tios.c_cflag |= stopbits;
         tios.c_cflag |= clocal;
         tios.c_cflag |= hupcl;
+        tios.c_cflag |= crtscts;
 
-        if (cfsetospeed(&tios, speed) < 0) {
-        	diminuto_perror("diminuto_serial_set: cfsetospeed");
-        	break;
-        }
-
-        if (cfsetispeed(&tios, speed) < 0) {
-        	diminuto_perror("diminuto_serial_set: cfsetispeed");
-        	break;
+        if (bitspersecond >= 0) {
+			if (cfsetospeed(&tios, speed) < 0) {
+				diminuto_perror("diminuto_serial_set: cfsetospeed");
+				break;
+			}
+			if (cfsetispeed(&tios, speed) < 0) {
+				diminuto_perror("diminuto_serial_set: cfsetispeed");
+				break;
+			}
         }
 
         tios.c_cc[VTIME] = 0;
