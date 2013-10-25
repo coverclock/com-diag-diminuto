@@ -37,13 +37,14 @@ int main(int argc, char ** argv)
     int microsecond;
     diminuto_usec_t zulu;
     diminuto_usec_t juliet;
-    diminuto_usec_t west;
+    diminuto_usec_t offset;
+    int hh;
+    int mm;
     int daylightsaving;
-    double offset;
 
     diminuto_core_enable();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %26s %5s %3s %10s %10s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %31s %3s %10s %10s\n",
         "requested",
         "remaining",
         "claimed",
@@ -53,8 +54,7 @@ int main(int argc, char ** argv)
         "difference",
         "zulu",
         "juliet",
-        "timestamp",
-        "west",
+        "iso8601",
         "dst",
         "process",
         "thread"
@@ -84,10 +84,7 @@ int main(int argc, char ** argv)
         rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
         rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
         zulu = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, 0, 0);
-        west = diminuto_time_west();
-        offset = west;
-        offset /= 1000000.0;
-        offset /= 3600.0;
+        offset = diminuto_time_offset();
         daylightsaving = diminuto_time_daylightsaving();
         rc = diminuto_time_juliet(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
@@ -96,10 +93,12 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
-        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, west, daylightsaving);
+        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, offset, daylightsaving);
+        hh = (-offset / 1000000) / 3600;
+        mm = (-offset / 1000000) % 3600;
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d %5.2lf %3d %10lld %10lld\n",
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d%2.2d %3d %10lld %10lld\n",
             requested,
             remaining,
             claimed,
@@ -116,7 +115,8 @@ int main(int argc, char ** argv)
             minute,
             second,
             microsecond,
-            offset,
+            hh,
+            mm,
             daylightsaving,
             process,
             thread

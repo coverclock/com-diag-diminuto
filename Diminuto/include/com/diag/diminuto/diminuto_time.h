@@ -53,11 +53,12 @@ extern diminuto_usec_t diminuto_time_process(void);
 extern diminuto_usec_t diminuto_time_thread(void);
 
 /**
- * Return the number of microseconds west of Universal Coordinated Time (UTC)
- * of the target system.
- * @return the number of microseconds west of UTC.
+ * Return the number of microseconds east of Universal Coordinated Time (UTC)
+ * of the target system. This will be a negative number that indicates how
+ * much earlier the local time zone is from UTC.
+ * @return the number of microseconds east of UTC.
  */
-extern diminuto_usec_t diminuto_time_west(void);
+extern diminuto_usec_t diminuto_time_offset(void);
 
 /**
  * Return true if the target system implements Daylight Saving Time, false
@@ -77,11 +78,11 @@ extern int diminuto_time_daylightsaving(void);
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
  * @param microsecond is the fraction of a second in the range [0..999999].
- * @param west is the number of microseconds west of UTC (0 if UTC).
+ * @param offset is the number of microseconds east of the timezone (0 if UTC).
  * @param daylightsaving if true assumes DST is in effect (0 if UTC).
  * @return the number of microseconds since the Epoch.
  */
-extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t west, int daylightsaving);
+extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, int daylightsaving);
 
 /**
  * Convert the number in microseconds since the Epoch (shown here in ISO8601
