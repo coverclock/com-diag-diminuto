@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -21,7 +21,7 @@
 #	include <sys/types.h>
 #endif
 
-typedef uint64_t diminuto_usec_t;
+typedef int64_t diminuto_usec_t;
 
 typedef uint32_t diminuto_ipv4_t;
 

@@ -33,6 +33,8 @@ int main(int argc, char * argv[])
     int paritybit = 0;
     int stopbits = 1;
     int modemcontrol = 0;
+    int xonxoff = 0;
+    int rtscts = 0;
     const char * device = "/dev/null";
     FILE * fp;
     int input;
@@ -48,7 +50,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678D:b:elmno")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678D:b:ehlmnos")) >= 0) {
 
     	switch (opt) {
 
@@ -88,6 +90,10 @@ int main(int argc, char * argv[])
     		paritybit = 2;
     		break;
 
+    	case 'h':
+    		rtscts = !0;
+    		break;
+
     	case 'l':
     		modemcontrol = 0;
     		break;
@@ -104,6 +110,10 @@ int main(int argc, char * argv[])
     		paritybit = 1;
     		break;
 
+    	case 's':
+    		xonxoff = !0;
+    		break;
+
     	}
 
     }
@@ -111,18 +121,18 @@ int main(int argc, char * argv[])
     fd = open("/dev/null", O_RDWR);
     ASSERT(fd >= 0);
 
-    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol);
+    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
     ASSERT(rc < 0);
 
     rc = close(fd);
     ASSERT(rc == 0);
 
-    CHECKPOINT("\"%s\" %d %d%c%d %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local");
+    CHECKPOINT("\"%s\" %d %d%c%d %s %s %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow");
 
     fd = open(device, O_RDWR);
     ASSERT(fd >= 0);
 
-    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol);
+    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
     ASSERT(rc == 0);
 
     rc = diminuto_serial_raw(fd);
