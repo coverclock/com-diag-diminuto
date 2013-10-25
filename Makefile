@@ -19,8 +19,8 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-MAJOR		=	13# API changes requiring that applications be modified.
-MINOR		=	2# Functionality or features added but no API changes.
+MAJOR		=	14# API changes requiring that applications be modified.
+MINOR		=	0# Functionality or features added but no API changes.
 BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
