@@ -73,11 +73,20 @@ diminuto_usec_t diminuto_time_offset()
 
 int diminuto_time_daylightsaving(void)
 {
-	extern int daylight;
+	int daylightsaving = -1;
+	struct timespec juliet;
+	struct tm datetime;
+	struct tm * datetimep;
 
-	tzset();
+	if (clock_gettime(CLOCK_REALTIME, &juliet) < 0) {
+		diminuto_perror("diminuto_time_daylightsaving: clock_gettime");
+	} else if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
+		diminuto_perror("diminuto_time_daylightsaving: localtime_r");
+	} else {
+		daylightsaving = datetime.tm_isdst;
+	}
 
-	return daylight;
+	return daylightsaving;
 }
 
 diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, int daylightsaving)

@@ -15,7 +15,10 @@
  * seconds. This means it isn't strictly UTC, and worse, the time may appear
  * discontinuous if and when the system clock is manually adjusted. This has
  * no effect on the monotonically increasing clock, which is why that's the
- * clock you should use to measure the passage of time.
+ * clock you should use to measure the passage of time. So UNIX doesn't quite
+ * do UTC, but it also doesn't quite do International Atomic Time (IAT) either,
+ * which also doesn't do leap seconds. (I think GPS time falls into this
+ * category as well.) Also: daylight saving time is just an abomination.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -61,8 +64,8 @@ extern diminuto_usec_t diminuto_time_thread(void);
 extern diminuto_usec_t diminuto_time_offset(void);
 
 /**
- * Return true if the target system implements Daylight Saving Time, false
- * otherwise.
+ * Return >0 if Daylight Saving Time is used in the local time zone _and_ is
+ * currently in effect, <0 if an error occurred, 0 otherwise.
  * @return non-zero for DST, zero otherwise.
  */
 extern int diminuto_time_daylightsaving(void);
@@ -78,7 +81,7 @@ extern int diminuto_time_daylightsaving(void);
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
  * @param microsecond is the fraction of a second in the range [0..999999].
- * @param offset is the number of microseconds east of the timezone (0 if UTC).
+ * @param offset is the number of microseconds east for the timezone (0 if UTC).
  * @param daylightsaving if true assumes DST is in effect (0 if UTC).
  * @return the number of microseconds since the Epoch.
  */
