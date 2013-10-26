@@ -43,6 +43,7 @@ int main(int argc, char * argv[])
     int end = 0;
     diminuto_ticks_t now;
     diminuto_ticks_t then;
+    diminuto_ticks_t hertz;
     double elapsed;
     size_t count;
     int bitspercharacter;
@@ -118,6 +119,8 @@ int main(int argc, char * argv[])
 
     }
 
+    hertz = diminuto_time_resolution();
+
     fd = open("/dev/null", O_RDWR);
     ASSERT(fd >= 0);
 
@@ -169,13 +172,13 @@ int main(int argc, char * argv[])
       		++count;
 
         	now = diminuto_time_elapsed();
-        	if ((now - then) >= 1000000) {
+        	if ((now - then) >= hertz) {
         		break;
         	}
 
     	}
 
-    	elapsed = (now - then) / 1000000.0;
+    	elapsed = (now - then) / (double)hertz;
     	CHECKPOINT("%lu characters in %.6lf seconds at %d bits per second and %d bits per character\n", count, elapsed, bitspersecond, bitspercharacter);
 
     }

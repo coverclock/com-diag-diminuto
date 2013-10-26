@@ -44,6 +44,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_number.h"
+#include "diminuto_frequency.h"
 
 void usage(const char * pgm, FILE * fp)
 {
@@ -104,7 +105,7 @@ int main(int argc, char ** argv)
 			break;
 		}
 
-		if (diminuto_delay(delay, 0) != 0) {
+		if (diminuto_delay(COM_DIAG_DIMINUTO_TICKS_TO(delay, 1000000), 0) != 0) {
 			break;
 		}
 
