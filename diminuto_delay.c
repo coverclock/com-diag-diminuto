@@ -10,19 +10,20 @@
 
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "diminuto_frequency.h"
 #include <sched.h>
 #include <errno.h>
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-diminuto_usec_t diminuto_delay(diminuto_usec_t microseconds, int interruptable)
+diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
 {
     struct timespec delay;
     struct timespec remaining;
     struct timespec result;
 
-    delay.tv_sec = microseconds / 1000000UL;
-    delay.tv_nsec = (microseconds % 1000000UL) * 1000UL;
+    delay.tv_sec = COM_DIAG_DIMINUTO_TICKS_FROM(ticks , 1);
+    delay.tv_nsec = COM_DIAG_DIMINUTO_TICKS_FROM((ticks % COM_DIAG_DIMINUTO_FREQUENCY), 1000000000);
 
     remaining = delay;
 
@@ -42,7 +43,10 @@ diminuto_usec_t diminuto_delay(diminuto_usec_t microseconds, int interruptable)
         }
     }
 
-    return (result.tv_sec * 1000000ULL) + (result.tv_nsec / 1000UL);
+    ticks = COM_DIAG_DIMINUTO_TICKS_TO(result.tv_sec, 1);
+    ticks += COM_DIAG_DIMINUTO_TICKS_TO(result.tv_nsec, 1000000000);
+
+    return ticks;
 }
 
 int diminuto_yield(void) {

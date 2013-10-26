@@ -25,7 +25,7 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_usec_t ticks;
+	diminuto_ticks_t ticks;
 
 	if ((ticks = diminuto_time_clock()) == 0) {
 		return 1;

@@ -19,11 +19,11 @@
 
 int main(int argc, char ** argv)
 {
-    diminuto_usec_t then;
-    diminuto_usec_t now;
+    diminuto_ticks_t then;
+    diminuto_ticks_t now;
     int64_t measured;
-    diminuto_usec_t requested;
-    diminuto_usec_t remaining;
+    diminuto_ticks_t requested;
+    diminuto_ticks_t remaining;
     int64_t computed;
 
     diminuto_core_enable();

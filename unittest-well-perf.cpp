@@ -116,7 +116,7 @@ int main(int argc, char ** argv) {
 	size_t jj;
 	int mask;
 	int bit;
-	diminuto_usec_t time;
+	diminuto_ticks_t time;
 
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
 

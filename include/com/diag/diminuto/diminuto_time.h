@@ -24,70 +24,68 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Return the resolution of the Diminuto time units in Hertz.
- * @return the resolution in Hertz.
+ * Return the resolution of the Diminuto time units in ticks per second (Hertz).
+ * @return the resolution in ticks per second.
  */
-static inline diminuto_usec_t diminuto_time_hertz(void) {
-	return 1000000;
-}
+extern diminuto_ticks_t diminuto_time_resolution(void);
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in
- * microseconds since the Epoch (shown here in ISO8601 format)
+ * ticks since the Epoch (shown here in ISO8601 format)
  * 1970-01-01T00:00:00+0000.
- * @return the number of microseconds elapsed since the Epoch or ~0ULL with
+ * @return the number of ticks elapsed since the Epoch or ~0ULL with
  * errno set if an error occurred.
  */
-extern diminuto_usec_t diminuto_time_clock(void);
+extern diminuto_ticks_t diminuto_time_clock(void);
 
 /**
- * Return the elapsed time in microseconds of a monotonically increasing
+ * Return the elapsed time in ticks of a monotonically increasing
  * clock. This value is immune to time adjustments in the system clock and
  * hence is usable to measure duration and elapsed time.
- * @return the number of microseconds elapsed since an arbitrary epoch or
+ * @return the number of ticks elapsed since an arbitrary epoch or
  * ~0ULL with errno set if an error occurred.
  */
-extern diminuto_usec_t diminuto_time_elapsed(void);
+extern diminuto_ticks_t diminuto_time_elapsed(void);
 
 /**
- * Return the CPU time in microseconds for the calling process.
- * @return the number of microseconds elapsed since an arbitrary epoch or
+ * Return the CPU time in ticks for the calling process.
+ * @return the number of ticks elapsed since an arbitrary epoch or
  * ~0ULL with errno set if an error occurred.
  */
-extern diminuto_usec_t diminuto_time_process(void);
+extern diminuto_ticks_t diminuto_time_process(void);
 
 /**
- * Return the CPU time in microseconds for the calling thread.
- * @return the number of microseconds elapsed since an arbitrary epoch or
+ * Return the CPU time in ticks for the calling thread.
+ * @return the number of ticks elapsed since an arbitrary epoch or
  * ~0ULL with errno set if an error occurred.
  */
-extern diminuto_usec_t diminuto_time_thread(void);
+extern diminuto_ticks_t diminuto_time_thread(void);
 
 /**
- * Return the number of microseconds the local time zone is offset _east_ of
+ * Return the number of ticks the local time zone is offset _east_ of
  * Coordinated Universal Time (UTC). This will be a _negative_ number that
  * indicates how much earlier the local time zone is from UTC. This offset
  * does _not_ account for Daylight Saving Time (DST) if it is used and in
  * effect. (Since the offset of the time zone doesn't shift over the span
  * of a year like DST does, the argument to this function can probably always
  * be zero.)
- * @param microseconds is the number of microseconds since the Epoch.
- * @return the number of microseconds east of UTC.
+ * @param ticks is the number of ticks since the Epoch.
+ * @return the number of ticks east of UTC.
  */
-extern diminuto_usec_t diminuto_time_timezone(diminuto_usec_t microseconds);
+extern diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks);
 
 /**
- * Return the number of microseconds the local time zone is offset _west_
+ * Return the number of ticks the local time zone is offset _west_
  * because of Daylight Saving Time (DST). It DST is not used for local time,
  * or is not in effect for the specified time, then this value will be zero,
  * otherwise it will be a _positive_ number.
- * @param microseconds is the number of microseconds since the Epoch.
- * @return the number of microseconds added to this time zone.
+ * @param ticks is the number of ticks since the Epoch.
+ * @return the number of ticks added to this time zone.
  */
-extern diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds);
+extern diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks);
 
 /**
- * Return the number of microseconds after the Epoch (shown here in ISO8601
+ * Return the number of ticks after the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 for the specified date and time. If the
  * specified date or time is invalid, the results are unspecified.
  * @param year is the year including the century in the range [1970..].
@@ -96,43 +94,43 @@ extern diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds
  * @param hour is the hour of the day in the range [0..23].
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
- * @param microsecond is the fraction of a second in the range [0..999999].
- * @param offset is the number of microseconds east of the time zone (0 if UTC).
- * @param daylightsaving is the number of microseconds offset for DST (0 if UTC).
- * @return the number of microseconds since the Epoch.
+ * @param ticks is the fraction of a second in the range [0..(resolution-1)].
+ * @param offset is the number of ticks east of the time zone (0 if UTC).
+ * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
+ * @return the number of ticks since the Epoch.
  */
-extern diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t offset, diminuto_usec_t daylightsaving);
+extern diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_ticks_t offset, diminuto_ticks_t daylightsaving);
 
 /**
- * Convert the number in microseconds since the Epoch (shown here in ISO8601
+ * Convert the number in ticks since the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 into individual fields representing the
  * Common Era (CE) date and and Coordinated Universal Time (UTC) time.
- * @param microseconds is the number of microseconds since the Epoch.
+ * @param ticks is the number of ticks since the Epoch.
  * @param yearp is where the year including the century will be returned.
  * @param monthp is where the month of the year will be returned.
  * @param dayp is where the day of the month will be returned.
  * @param hourp is where the hour of the day will be returned.
  * @param minutep is where the minute of the hour will be returned.
  * @param secondp is where the second of the minute will be returned.
- * @param microsecondp is where the fraction of a second will be returned.
+ * @param tickp is where the fraction of a second will be returned.
  * @return clock for success, -1 otherwise.
  */
-extern diminuto_usec_t diminuto_time_zulu(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
+extern diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 /**
- * Convert the number in microseconds since the Epoch (shown here in ISO8601
+ * Convert the number in ticks since the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 into individual fields representing the
  * local date and time.
- * @param microseconds is the number of microseconds since the Epoch.
+ * @param ticks is the number of ticks since the Epoch.
  * @param yearp is where the year including the century will be returned.
  * @param monthp is where the month of the year will be returned.
  * @param dayp is where the day of the month will be returned.
  * @param hourp is where the hour of the day will be returned.
  * @param minutep is where the minute of the hour will be returned.
  * @param secondp is where the second of the minute will be returned.
- * @param microsecondp is where the fraction of a second will be returned.
+ * @param ticksp is where the fraction of a second will be returned.
  * @return clock for success, -1 otherwise.
  */
-extern diminuto_usec_t diminuto_time_juliet(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp);
+extern diminuto_ticks_t diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * ticksp);
 
 #endif

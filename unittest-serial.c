@@ -41,8 +41,8 @@ int main(int argc, char * argv[])
     int output;
     size_t current = 0;
     int end = 0;
-    diminuto_usec_t now;
-    diminuto_usec_t then;
+    diminuto_ticks_t now;
+    diminuto_ticks_t then;
     double elapsed;
     size_t count;
     int bitspercharacter;

@@ -10,89 +10,91 @@
 
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "diminuto_frequency.h"
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 
-static const int HERTZ = 1000000;
+diminuto_ticks_t diminuto_time_resolution(void) {
+	return COM_DIAG_DIMINUTO_FREQUENCY;
+}
 
-static diminuto_usec_t diminuto_time_microseconds(clockid_t clock)
+static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 {
-	diminuto_usec_t microseconds = -1;
+	diminuto_ticks_t ticks = -1;
 	struct timespec elapsed;
 
 	if (clock_gettime(clock, &elapsed) < 0) {
 		diminuto_perror("diminuto_time_generic: clock_gettime");
 	} else {
-		microseconds = elapsed.tv_sec;
-		microseconds *= HERTZ;
-		microseconds += (elapsed.tv_nsec / 1000);
+		ticks = COM_DIAG_DIMINUTO_TICKS_TO(elapsed.tv_sec, 1);
+		ticks += COM_DIAG_DIMINUTO_TICKS_TO(elapsed.tv_nsec, 1000000000);
 	}
 
-	return microseconds;
+	return ticks;
 }
 
-diminuto_usec_t diminuto_time_clock()
+diminuto_ticks_t diminuto_time_clock()
 {
-    return diminuto_time_microseconds(CLOCK_REALTIME);
+    return diminuto_time_generic(CLOCK_REALTIME);
 }
 
-diminuto_usec_t diminuto_time_elapsed()
+diminuto_ticks_t diminuto_time_elapsed()
 {
 #if defined(CLOCK_MONOTONIC_RAW)
-	return diminuto_time_microseconds(CLOCK_MONOTONIC_RAW); /* Since Linux 2.6.28 */
+	return diminuto_time_generic(CLOCK_MONOTONIC_RAW); /* Since Linux 2.6.28 */
 #else
-	return diminuto_time_microseconds(CLOCK_MONOTONIC); /* Prior to Linux 2.6.28 */
+	return diminuto_time_generic(CLOCK_MONOTONIC); /* Prior to Linux 2.6.28 */
 #endif
 }
 
-diminuto_usec_t diminuto_time_process()
+diminuto_ticks_t diminuto_time_process()
 {
-	return diminuto_time_microseconds(CLOCK_PROCESS_CPUTIME_ID);
+	return diminuto_time_generic(CLOCK_PROCESS_CPUTIME_ID);
 }
 
-diminuto_usec_t diminuto_time_thread()
+diminuto_ticks_t diminuto_time_thread()
 {
-	return diminuto_time_microseconds(CLOCK_THREAD_CPUTIME_ID);
+	return diminuto_time_generic(CLOCK_THREAD_CPUTIME_ID);
 }
 
-diminuto_usec_t diminuto_time_timezone(diminuto_usec_t microseconds)
+diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 {
-	diminuto_usec_t timezone = -1;
+	diminuto_ticks_t timezone = -1;
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
 
-	microseconds /= HERTZ;
-	juliet = microseconds;
+	ticks /= COM_DIAG_DIMINUTO_FREQUENCY;
+	juliet = ticks;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timezone: localtime_r");
 	} else if (datetimep->tm_isdst) {
 		timezone = datetimep->tm_gmtoff;
 		timezone -= 3600;
-		timezone *= HERTZ;
+		timezone *= COM_DIAG_DIMINUTO_FREQUENCY;
 	} else {
 		timezone = datetimep->tm_gmtoff;
-		timezone *= HERTZ;
+		timezone *= COM_DIAG_DIMINUTO_FREQUENCY;
 	}
 
 	return timezone;
 }
 
-diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds)
+diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks)
 {
-	diminuto_usec_t daylightsaving = -1;
+	diminuto_ticks_t daylightsaving = -1;
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
 
-	microseconds /= HERTZ;
-	juliet = microseconds;
+	ticks /= COM_DIAG_DIMINUTO_FREQUENCY;
+	juliet = ticks;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_daylightsaving: localtime_r");
 	} else if (datetimep->tm_isdst > 0) {
 		daylightsaving = 3600;
-		daylightsaving *= HERTZ;
+		daylightsaving *= COM_DIAG_DIMINUTO_FREQUENCY;
 	} else {
 		daylightsaving = 0;
 	}
@@ -100,9 +102,9 @@ diminuto_usec_t diminuto_time_daylightsaving(diminuto_usec_t microseconds)
 	return daylightsaving;
 }
 
-diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int microsecond, diminuto_usec_t timezone, diminuto_usec_t daylightsaving)
+diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_ticks_t timezone, diminuto_ticks_t daylightsaving)
 {
-	diminuto_usec_t microseconds = -1;
+	diminuto_ticks_t ticks = -1;
 	struct tm datetime;
 	time_t juliet;
 
@@ -118,58 +120,57 @@ diminuto_usec_t diminuto_time_epoch(int year, int month, int day, int hour, int 
 	if ((juliet = mktime(&datetime)) == -1) {
 		diminuto_perror("diminuto_time_epoch: mktime");
 	} else {
-		microseconds = juliet;
-		microseconds *= HERTZ;
-		microseconds += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
-		microseconds -= timezone;
-		microseconds -= daylightsaving;
-		microseconds += microsecond;
+		ticks = COM_DIAG_DIMINUTO_TICKS_TO(juliet, 1);
+		ticks += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
+		ticks -= timezone;
+		ticks -= daylightsaving;
+		ticks += tick;
 	}
 
-	return microseconds;
+	return ticks;
 }
 
-static void diminuto_time_stamp(diminuto_usec_t microseconds, const struct tm *datetimep, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+static void diminuto_time_stamp(diminuto_ticks_t ticks, const struct tm *datetimep, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
-	if (yearp        != (int *)0) { *yearp        = datetimep->tm_year + 1900; }
-	if (monthp       != (int *)0) { *monthp       = datetimep->tm_mon + 1;     }
-	if (dayp         != (int *)0) { *dayp         = datetimep->tm_mday;        }
-	if (hourp        != (int *)0) { *hourp        = datetimep->tm_hour;        }
-	if (minutep      != (int *)0) { *minutep      = datetimep->tm_min;         }
-	if (secondp      != (int *)0) { *secondp      = datetimep->tm_sec;         }
-	if (microsecondp != (int *)0) { *microsecondp = microseconds % HERTZ;      }
+	if (yearp        != (int *)0) { *yearp   = datetimep->tm_year + 1900;           }
+	if (monthp       != (int *)0) { *monthp  = datetimep->tm_mon + 1;               }
+	if (dayp         != (int *)0) { *dayp    = datetimep->tm_mday;                  }
+	if (hourp        != (int *)0) { *hourp   = datetimep->tm_hour;                  }
+	if (minutep      != (int *)0) { *minutep = datetimep->tm_min;                   }
+	if (secondp      != (int *)0) { *secondp = datetimep->tm_sec;                   }
+	if (tickp        != (int *)0) { *tickp   = ticks % COM_DIAG_DIMINUTO_FREQUENCY; }
 }
 
-diminuto_usec_t diminuto_time_zulu(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t zulu;
 
-	zulu = microseconds / HERTZ;
+	zulu = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
 	if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: gmtime_r");
-		microseconds = -1;
+		ticks = -1;
 	} else {
-		diminuto_time_stamp(microseconds, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
+		diminuto_time_stamp(ticks, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
 	}
 
-	return microseconds;
+	return ticks;
 }
 
-diminuto_usec_t diminuto_time_juliet(diminuto_usec_t microseconds, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * microsecondp)
+diminuto_ticks_t diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
 
-	juliet = microseconds / HERTZ;
+	juliet = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: localtime_r");
-		microseconds = -1;
+		ticks = -1;
 	} else {
-		diminuto_time_stamp(microseconds, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, microsecondp);
+		diminuto_time_stamp(ticks, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
 	}
 
-	return microseconds;
+	return ticks;
 }
