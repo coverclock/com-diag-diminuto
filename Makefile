@@ -32,10 +32,10 @@ BUILD		=	0# Bugs fixed but no API changes or new functionality.
 # agency inspectors to verify the integrity of the binary software images. This
 # makes embedding timestamps inside compiled translation units problematic.
 # If your application has this requirement, you can pass in any fixed string
-# for the value of the BUILT make variable and you should be able to generate
+# for the value of the VINTAGE make variable and you should be able to generate
 # identical images with subsequent builds of Diminuto. This string is embedded
 # inside the Diminuto vintage application.
-BUILT		:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+VINTAGE		:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
 
 # This stuff all gets embedded in the vintage command.
 TITLE		=	Diminuto
@@ -579,7 +579,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"License: $(TITLE)\\n\"" >> $@
 	echo "\"Homepage: $(HOMEPAGE)\\n\"" >> $@
 	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> $@
-	echo "\"Built: $(BUILT)\\n\"" >> $@
+	echo "\"Built: $(VINTAGE)\\n\"" >> $@
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
