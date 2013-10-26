@@ -21,7 +21,7 @@
 #	include <sys/types.h>
 #endif
 
-typedef int64_t diminuto_usec_t;
+typedef int64_t diminuto_ticks_t;
 
 typedef uint32_t diminuto_ipv4_t;
 

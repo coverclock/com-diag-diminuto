@@ -225,8 +225,8 @@ int main(void)
         char buffer[1];
         diminuto_ipv4_t address = 0x12345678;
         diminuto_port_t port = 0x9abc;
-        diminuto_usec_t before;
-        diminuto_usec_t after;
+        diminuto_ticks_t before;
+        diminuto_ticks_t after;
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);

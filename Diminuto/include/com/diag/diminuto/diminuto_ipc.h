@@ -191,11 +191,11 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
 /**
  * Enable or disable the linger option.
  * @param fd is an open socket of any type.
- * @param microseconds is the number of microseconds to linger (although
+ * @param ticks is the number of ticks to linger (although
  * lingering has granularity of seconds), or 0 for no lingering.
  * @return 0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_linger(int fd, diminuto_usec_t microseconds);
+extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 
 /* (Many other options are possible, but these are the ones I have used.) */
 

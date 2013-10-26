@@ -19,7 +19,7 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-MAJOR		=	16# API changes requiring that applications be modified.
+MAJOR		=	17# API changes requiring that applications be modified.
 MINOR		=	0# Functionality or features added but no API changes.
 BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
@@ -544,6 +544,9 @@ unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 unittest-epoch:	unittest-epoch.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+unittest-frequency:	unittest-frequency.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Generated

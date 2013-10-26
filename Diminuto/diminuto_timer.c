@@ -10,15 +10,16 @@
 
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "diminuto_frequency.h"
 #include <sys/time.h>
 
-static diminuto_usec_t diminuto_timer(int which, diminuto_usec_t microseconds, int periodic)
+static diminuto_ticks_t diminuto_timer(int which, diminuto_ticks_t ticks, int periodic)
 {
     struct itimerval timer;
     struct itimerval remaining;
 
-    timer.it_value.tv_sec = microseconds / 1000000UL;
-    timer.it_value.tv_usec = microseconds % 1000000UL;
+    timer.it_value.tv_sec = COM_DIAG_DIMINUTO_TICKS_FROM(ticks, 1);
+    timer.it_value.tv_usec = COM_DIAG_DIMINUTO_TICKS_FROM(ticks % COM_DIAG_DIMINUTO_FREQUENCY, 1000000);
 
     if (periodic) {
         timer.it_interval = timer.it_value;
@@ -33,19 +34,18 @@ static diminuto_usec_t diminuto_timer(int which, diminuto_usec_t microseconds, i
         diminuto_perror("diminuto_timer: setitimer");
     }
 
-    microseconds = remaining.it_value.tv_sec;
-    microseconds *= 1000000ULL;
-    microseconds += remaining.it_value.tv_usec;
+    ticks = COM_DIAG_DIMINUTO_TICKS_TO(remaining.it_value.tv_sec, 1);
+    ticks += COM_DIAG_DIMINUTO_TICKS_TO(remaining.it_value.tv_usec, 1000000);
 
-    return microseconds;
+    return ticks;
 }
 
-diminuto_usec_t diminuto_timer_oneshot(diminuto_usec_t microseconds)
+diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-    return diminuto_timer(ITIMER_REAL, microseconds, 0);
+    return diminuto_timer(ITIMER_REAL, ticks, 0);
 }
 
-diminuto_usec_t diminuto_timer_periodic(diminuto_usec_t microseconds)
+diminuto_ticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-    return diminuto_timer(ITIMER_REAL, microseconds, !0);
+    return diminuto_timer(ITIMER_REAL, ticks, !0);
 }

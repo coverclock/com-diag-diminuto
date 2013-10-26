@@ -55,9 +55,9 @@ void usage(const char * pgm, FILE * fp)
 int main(int argc, char ** argv)
 {
 	int rc = 1;
-    diminuto_usec_t then;
-    diminuto_usec_t now;
-    diminuto_usec_t delay;
+    diminuto_ticks_t then;
+    diminuto_ticks_t now;
+    diminuto_ticks_t delay;
 
     if ((argc == 2) && (strcmp(argv[1], "-?") == 0)) {
         usage(argv[0], stdout);

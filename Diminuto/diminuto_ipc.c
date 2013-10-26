@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -113,13 +114,13 @@ int diminuto_ipc_set_debug(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
 }
 
-int diminuto_ipc_set_linger(int fd, diminuto_usec_t microseconds)
+int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 {
     struct linger opt;
 
-    if (microseconds > 0) {
+    if (ticks > 0) {
         opt.l_onoff = !0;
-        opt.l_linger = (microseconds + 999999ULL) / 1000000ULL;
+        opt.l_linger = (ticks + COM_DIAG_DIMINUTO_FREQUENCY - 1) / COM_DIAG_DIMINUTO_FREQUENCY;
     } else {
         opt.l_onoff = 0;
         opt.l_linger = 0;
