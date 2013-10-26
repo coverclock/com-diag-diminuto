@@ -31,7 +31,11 @@ static const int DEBUG = 0;
 
 int main(void)
 {
-    {
+	diminuto_ticks_t hertz;
+
+	hertz = diminuto_time_resolution();
+
+	{
         diminuto_ipv4_t address;
         char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
 
@@ -40,7 +44,7 @@ int main(void)
 
         EXPECT(diminuto_ipc_dotnotation(address, buffer, sizeof(buffer)) == buffer);
         EXPECT(strcmp(buffer, "127.0.0.1") == 0);
-    }
+	}
 
     {
         diminuto_ipv4_t address;
@@ -155,7 +159,7 @@ int main(void)
             EXPECT(diminuto_ipc_set_debug(fd, 0) >= 0);
         }
 
-        EXPECT(diminuto_ipc_set_linger(fd, 1000000UL) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, hertz) >= 0);
         EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
 
         EXPECT(diminuto_ipc_close(fd) >= 0);
@@ -277,7 +281,7 @@ int main(void)
             EXPECT(port != -1);
             EXPECT(port != PORT);
 
-            diminuto_delay(1000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
     		EXPECT(diminuto_ipc_close(producer) >= 0);
     		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
@@ -296,11 +300,11 @@ int main(void)
 
     		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
 
-            diminuto_delay(1000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
             EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 
-            diminuto_delay(10000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
     		EXPECT(diminuto_ipc_close(consumer) >= 0);
 
@@ -325,7 +329,7 @@ int main(void)
 
             EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
 
-            diminuto_delay(1000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
     		EXPECT(diminuto_ipc_close(producer) >= 0);
     		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
@@ -339,7 +343,7 @@ int main(void)
 
     		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
 
-            diminuto_delay(1000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
             EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 
@@ -494,7 +498,7 @@ int main(void)
 
     		ASSERT(diminuto_ipc_close(rendezvous) >= 0);
 
-            diminuto_delay(1000, !0);
+            diminuto_delay(hertz / 1000, !0);
 
             ASSERT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 

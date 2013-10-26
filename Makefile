@@ -32,10 +32,17 @@ BUILD		=	0# Bugs fixed but no API changes or new functionality.
 # agency inspectors to verify the integrity of the binary software images. This
 # makes embedding timestamps inside compiled translation units problematic.
 # If your application has this requirement, you can pass in any fixed string
-# for the value of the VINTAGE make variable and you should be able to generate
+# for the value of the BUILT make variable and you should be able to generate
 # identical images with subsequent builds of Diminuto. This string is embedded
 # inside the Diminuto vintage application.
-VINTAGE		=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+BUILT		:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+
+# This stuff all gets embedded in the vintage command.
+TITLE		=	Diminuto
+COPYRIGHT	=	2013 Digital Aggregates Corporation
+LICENSE		=	GNU Lesser General Public License 2.1
+CONTACT		=	coverclock@diag.com
+HOMEPAGE	=	http://www.diag.com/navigation/downloads/Diminuto.html
 
 # You can change the VINFO make variable into whatever tool you use to extract
 # version information from your source code control system. For example, I
@@ -565,15 +572,18 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo '#include "diminuto_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char VINTAGE[] =' >> $@
-	echo '"DIMINUTO_VERSION_BEGIN\n"' >> $@
+	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> $@
+	echo "\"Title: $(TITLE)\\n\"" >> $@
+	echo "\"Copyright: $(COPYRIGHT)\\n\"" >> $@
+	echo "\"Contact: $(CONTACT)\\n\"" >> $@
+	echo "\"License: $(TITLE)\\n\"" >> $@
+	echo "\"Homepage: $(HOMEPAGE)\\n\"" >> $@
 	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> $@
-	echo "\"Vintage: $(VINTAGE)\\n\"" >> $@
+	echo "\"Built: $(BUILT)\\n\"" >> $@
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
-	echo "\"Domain: $(shell dnsdomainname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
-	echo "\"User: $(shell logname)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"DIMINUTO_VERSION_END\n";' >> $@
+	echo '"DIMINUTO_VINTAGE_END\n";' >> $@
 	echo 'int main(void) { fputs(VINTAGE, stdout); }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.

@@ -19,6 +19,7 @@
 
 int main(int argc, char ** argv)
 {
+	diminuto_ticks_t hertz;
     diminuto_ticks_t then;
     diminuto_ticks_t now;
     int64_t measured;
@@ -28,12 +29,15 @@ int main(int argc, char ** argv)
     int ii;
 
     diminuto_core_enable();
+
+    hertz = diminuto_time_resolution();
+
     diminuto_alarm_install(0);
 
     printf("%10s %10s %10s\n",
         "requested", "computed", "measured");
 
-    for (requested = 1000; requested < 12000000; requested *= 2) {
+    for (requested = hertz / 1000; requested < (12 * hertz); requested *= 2) {
 
         diminuto_timer_periodic(requested);
         then = diminuto_time_elapsed();

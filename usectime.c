@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include "com/diag/diminuto/diminuto_time.h"
+#include "diminuto_frequency.h"
 
 int main(int argc, char ** argv)
 {
@@ -31,7 +32,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	printf("%llu\n", ticks);
+	printf("%llu\n", COM_DIAG_DIMINUTO_TICKS_FROM(ticks, 1000000));
 
     return 0;
 }

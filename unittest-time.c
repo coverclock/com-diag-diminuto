@@ -58,8 +58,8 @@ int main(int argc, char ** argv)
         "difference",
         "elapsed",
         "difference",
-        "zulu",
-        "juliet",
+        "error-z",
+        "error-j",
         "process",
         "thread",
         "iso8601"

@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_hangup.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_lock.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <errno.h>
@@ -25,8 +26,11 @@ static const char LOCKFILE[] = "/tmp/unittest-hangup.pid";
 int main(int argc, char ** argv)
 {
 	int rc;
+	diminuto_ticks_t hertz;
 
 	diminuto_core_enable();
+
+	hertz = diminuto_time_resolution();
 
 	if (argc > 1) {
 
@@ -41,7 +45,7 @@ int main(int argc, char ** argv)
 		if (rc < 0) { return 3; }
 
 		while (!diminuto_hangup_check()) {
-			diminuto_delay(1000000, 1);
+			diminuto_delay(hertz, 1);
 		}
 
         rc = diminuto_lock_unlock(LOCKFILE);
