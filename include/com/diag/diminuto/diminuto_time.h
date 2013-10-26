@@ -24,6 +24,14 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
+ * Return the resolution of the Diminuto time units in Hertz.
+ * @return the resolution in Hertz.
+ */
+static inline diminuto_usec_t diminuto_time_hertz(void) {
+	return 1000000;
+}
+
+/**
  * Return the system clock time in Coordinated Universal Time (UTC) in
  * microseconds since the Epoch (shown here in ISO8601 format)
  * 1970-01-01T00:00:00+0000.
@@ -56,19 +64,23 @@ extern diminuto_usec_t diminuto_time_process(void);
 extern diminuto_usec_t diminuto_time_thread(void);
 
 /**
- * Return the number of microseconds east of Universal Coordinated Time (UTC)
- * of the local time zone. This will be a negative number that indicates how
- * much earlier the local time zone is from UTC. This offset does _not_ account
- * for Daylight Saving Time (DST) if it is used and in effect.
+ * Return the number of microseconds the local time zone is offset _east_ of
+ * Coordinated Universal Time (UTC). This will be a _negative_ number that
+ * indicates how much earlier the local time zone is from UTC. This offset
+ * does _not_ account for Daylight Saving Time (DST) if it is used and in
+ * effect. (Since the offset of the time zone doesn't shift over the span
+ * of a year like DST does, the argument to this function can probably always
+ * be zero.)
  * @param microseconds is the number of microseconds since the Epoch.
  * @return the number of microseconds east of UTC.
  */
 extern diminuto_usec_t diminuto_time_timezone(diminuto_usec_t microseconds);
 
 /**
- * Return the number of microseconds the local time zone is offset because of
- * Daylight Saving Time (DST). It DST is not used for local time, or is not in
- * effect for the specified time, then this value will be zero.
+ * Return the number of microseconds the local time zone is offset _west_
+ * because of Daylight Saving Time (DST). It DST is not used for local time,
+ * or is not in effect for the specified time, then this value will be zero,
+ * otherwise it will be a _positive_ number.
  * @param microseconds is the number of microseconds since the Epoch.
  * @return the number of microseconds added to this time zone.
  */
