@@ -33,6 +33,7 @@ int main(int argc, char ** argv)
     diminuto_usec_t juliet;
     diminuto_usec_t timezone;
     diminuto_usec_t daylightsaving;
+    diminuto_usec_t hertz;
     int year;
     int month;
     int day;
@@ -46,6 +47,8 @@ int main(int argc, char ** argv)
     int dm;
 
     diminuto_core_enable();
+
+    hertz = diminuto_time_hertz();
 
     printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %38s\n",
         "requested",
@@ -94,11 +97,11 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &microsecond);
         timezone = diminuto_time_timezone(after);
-        zh = (-timezone / 1000000) / 3600;
-        zm = (-timezone / 1000000) % 3600;
+        zh = (-timezone / hertz) / 3600;
+        zm = (-timezone / hertz) % 3600;
         daylightsaving = diminuto_time_daylightsaving(after);
-        dh = (daylightsaving / 1000000) / 3600;
-        dm = (daylightsaving / 1000000) % 3600;
+        dh = (daylightsaving / hertz) / 3600;
+        dm = (daylightsaving / hertz) % 3600;
         juliet = diminuto_time_epoch(year, month, day, hour, minute, second, microsecond, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();

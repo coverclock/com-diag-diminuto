@@ -19,7 +19,7 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-MAJOR		=	15# API changes requiring that applications be modified.
+MAJOR		=	16# API changes requiring that applications be modified.
 MINOR		=	0# Functionality or features added but no API changes.
 BUILD		=	0# Bugs fixed but no API changes or new functionality.
 
