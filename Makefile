@@ -21,7 +21,7 @@ COMPILEFOR	=	host
 
 MAJOR		=	17# API changes requiring that applications be modified.
 MINOR		=	0# Functionality or features added but no API changes.
-BUILD		=	0# Bugs fixed but no API changes or new functionality.
+BUILD		=	1# Bugs fixed but no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -37,7 +37,7 @@ BUILD		=	0# Bugs fixed but no API changes or new functionality.
 # inside the Diminuto vintage application.
 VINTAGE		:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
 
-# This stuff all gets embedded in the vintage command.
+# This stuff all gets embedded in the vintage application.
 TITLE		=	Diminuto
 COPYRIGHT	=	2013 Digital Aggregates Corporation
 LICENSE		=	GNU Lesser General Public License 2.1
