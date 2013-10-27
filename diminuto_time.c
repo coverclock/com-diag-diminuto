@@ -104,7 +104,7 @@ diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks)
 
 diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_ticks_t timezone, diminuto_ticks_t daylightsaving)
 {
-	diminuto_ticks_t ticks = -1;
+	diminuto_ticks_t ticks;
 	struct tm datetime;
 	time_t juliet;
 
