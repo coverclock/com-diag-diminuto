@@ -272,6 +272,7 @@ dist:	distribution
 distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make; ./vintage )
 	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 
 distributionfull:
