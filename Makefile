@@ -571,20 +571,20 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo '#include "diminuto_vintage.h"' >> $@
 	echo '#include "diminuto_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
-	echo 'static const char VINTAGE[] =' >> $@
-	echo '"DIMINUTO_VINTAGE_BEGIN\n"' >> $@
+	echo 'static const char VERSION[] =' >> $@
+	echo '"DIMINUTO_VERSION_BEGIN\n"' >> $@
 	echo "\"Title: $(TITLE)\\n\"" >> $@
 	echo "\"Copyright: $(COPYRIGHT)\\n\"" >> $@
 	echo "\"Contact: $(CONTACT)\\n\"" >> $@
-	echo "\"License: $(TITLE)\\n\"" >> $@
+	echo "\"License: $(LICENSE)\\n\"" >> $@
 	echo "\"Homepage: $(HOMEPAGE)\\n\"" >> $@
 	echo "\"Release: $(MAJOR).$(MINOR).$(BUILD)\\n\"" >> $@
-	echo "\"Built: $(VINTAGE)\\n\"" >> $@
+	echo "\"Vintage: $(VINTAGE)\\n\"" >> $@
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"DIMINUTO_VINTAGE_END\n";' >> $@
-	echo 'int main(void) { fputs(VINTAGE, stdout); }' >> $@
+	echo '"DIMINUTO_VERSION_END\n";' >> $@
+	echo 'int main(void) { fputs(VERSION, stdout); }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_release.h:

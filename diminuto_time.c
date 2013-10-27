@@ -108,24 +108,24 @@ diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int
 	struct tm datetime;
 	time_t juliet;
 
-	datetime.tm_year = year;
-	datetime.tm_year -= 1900;
-	datetime.tm_mon = month;
-	datetime.tm_mon -= 1;
+	datetime.tm_year = year - 1900;
+	datetime.tm_mon = month - 1;
 	datetime.tm_mday = day;
 	datetime.tm_hour = hour;
 	datetime.tm_min = minute;
 	datetime.tm_sec = second;
 	datetime.tm_isdst = 0;
-	if ((juliet = mktime(&datetime)) == -1) {
-		diminuto_perror("diminuto_time_epoch: mktime");
-	} else {
-		ticks = COM_DIAG_DIMINUTO_TICKS_TO(juliet, 1);
-		ticks += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
-		ticks -= timezone;
-		ticks -= daylightsaving;
-		ticks += tick;
-	}
+	/**
+	 * mktime(3) indicates that a return of -1 indicates an error. But this
+	 * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
+	 * indicates a date and time one second earlier than the Epoch.
+	 */
+	juliet = mktime(&datetime);
+	ticks = COM_DIAG_DIMINUTO_TICKS_TO(juliet, 1);
+	ticks += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
+	ticks -= timezone;
+	ticks -= daylightsaving;
+	ticks += tick;
 
 	return ticks;
 }
