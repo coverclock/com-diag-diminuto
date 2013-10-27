@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include <stdio.h>
@@ -15,16 +16,24 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-static void epoch(diminuto_ticks_t now)
+static void epoch(diminuto_ticks_t now, bool verbose)
 {
-	int year;
-    int month;
-    int day;
-    int hour;
-    int minute;
-    int second;
-    int tick;
+	int zyear = -1;;
+    int zmonth = -1;;
+    int zday = -1;;
+    int zhour = -1;;
+    int zminute = -1;;
+    int zsecond = -1;;
+    int ztick = -1;;
+	int jyear = -1;;
+    int jmonth = -1;;
+    int jday = -1;;
+    int jhour = -1;;
+    int jminute = -1;;
+    int jsecond = -1;;
+    int jtick = -1;;
     diminuto_ticks_t zulu;
     diminuto_ticks_t juliet;
     diminuto_ticks_t timezone;
@@ -36,25 +45,37 @@ static void epoch(diminuto_ticks_t now)
     int dm;
     static int prior = -1;
 
-    diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &tick);
-    zulu = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
-    diminuto_time_juliet(now, &year, &month, &day, &hour, &minute, &second, &tick);
+    diminuto_time_zulu(now, &zyear, &zmonth, &zday, &zhour, &zminute, &zsecond, &ztick);
+    zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
+    diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     timezone = diminuto_time_timezone(now);
     daylightsaving = diminuto_time_daylightsaving(now);
-    juliet = diminuto_time_epoch(year, month, day, hour, minute, second, tick, timezone, daylightsaving);
+    juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
     hertz = diminuto_time_resolution();
     zh = (-timezone / hertz) / 3600;
     zm = (-timezone / hertz) % 3600;
     dh = (daylightsaving / hertz) / 3600;
     dm = (daylightsaving / hertz) % 3600;
-    if (year != prior) {
-    	printf("%4.4d\n", year);
-    	prior = year;
-    }
-	if ((now != zulu) || (now != juliet)) {
-    	printf("%10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n", now, zulu, juliet, year, month, day, hour, minute, second, tick, zh, zm, dh, dm);
-    	exit(1);
-    }
+	if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
+    	printf("%20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n", now, zulu, juliet, zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0, 0, 0, jyear, jmonth, jday, jhour, jminute, jsecond, jtick, zh, zm, dh, dm);
+	}
+	ASSERT(now == zulu);
+	ASSERT(now == juliet);
+	ASSERT((1901 <= zyear) && (zyear <= 2038));
+	ASSERT((1 <= zmonth) && (zmonth <= 12));
+	ASSERT((1 <= zday) && (zday <= 31));
+	ASSERT((0 <= zhour) && (zhour <= 23));
+	ASSERT((0 <= zminute) && (zminute <= 59));
+	ASSERT((0 <= zsecond) && (zsecond <= 60)); /* To account for leap seconds. */
+	ASSERT((0 <= ztick) && (ztick <= 999999));
+	ASSERT((1901 <= jyear) && (jyear <= 2038));
+	ASSERT((1 <= jmonth) && (jmonth <= 12));
+	ASSERT((1 <= jday) && (jday <= 31));
+	ASSERT((0 <= jhour) && (jhour <= 23));
+	ASSERT((0 <= jminute) && (jminute <= 59));
+	ASSERT((0 <= jsecond) && (jsecond <= 60)); /* To account for leap seconds. */
+	ASSERT((0 <= jtick) && (jtick <= 999999));
+	prior = zyear;
 }
 
 static const diminuto_ticks_t LOW = 0xffffffff80000000LL;
@@ -69,27 +90,41 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_time_resolution();
 
-    epoch(LOW * hertz);
-    epoch(HIGH * hertz);
+    fputs("TEST 1\n", stdout);
+
+    epoch(LOW * hertz, true);
+    epoch(-hertz, true);
+    epoch(0, true);
+    epoch(HIGH * hertz, true);
+
+    fputs("TEST 2\n", stdout);
 
     for (now = LOW; now <= HIGH; now += (365 * 24 * 60 * 60)) {
-    	epoch(now * hertz);
+    	epoch(now * hertz, false);
      }
 
+    fputs("TEST 3\n", stdout);
+
     for (now = LOW; now <= HIGH; now += (24 * 60 * 60)) {
-    	epoch(now * hertz);
+    	epoch(now * hertz, false);
     }
+
+    fputs("TEST 4\n", stdout);
 
     for (now = LOW; now <= HIGH; now += (60 * 60)) {
-    	epoch(now * hertz);
+    	epoch(now * hertz, false);
     }
+
+    fputs("TEST 5\n", stdout);
 
     for (now = LOW; now <= HIGH; now += 60) {
-    	epoch(now * hertz);
+    	epoch(now * hertz, false);
     }
 
+    fputs("TEST 6\n", stdout);
+
     for (now = LOW; now <= HIGH; now += 1) {
-    	epoch(now * hertz);
+    	epoch(now * hertz, false);
     }
 
     return 0;
