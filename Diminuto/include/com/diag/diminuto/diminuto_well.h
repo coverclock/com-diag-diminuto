@@ -132,6 +132,7 @@ extern void * diminuto_well_alloc(diminuto_well_t * wellp);
 /**
  * Free an object back to the well. The object is returned to the well.
  * @param wellp points to the well.
+ * @param pointer points to the object to be returned.
  * @return 0 for success or <0 for failure.
  */
 extern int diminuto_well_free(diminuto_well_t * wellp, void * pointer);

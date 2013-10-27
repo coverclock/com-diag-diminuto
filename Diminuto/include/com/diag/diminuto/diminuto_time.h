@@ -94,7 +94,7 @@ extern diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks);
  * @param hour is the hour of the day in the range [0..23].
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
- * @param ticks is the fraction of a second in the range [0..(resolution-1)].
+ * @param tick is the fraction of a second in the range [0..(resolution-1)].
  * @param offset is the number of ticks east of the time zone (0 if UTC).
  * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
  * @return the number of ticks since the Epoch.

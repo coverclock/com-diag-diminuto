@@ -177,7 +177,7 @@ extern diminuto_list_t * diminuto_list_remove(
  * Insert the specified node into list just after the specified root.
  * If the node is already on a list, it is first removed from that
  * list before being inserted on the specified root.
- * @param rootp points to the root on which the node is inserted.
+ * @param queuep points to the root on which the node is inserted.
  * @param nodep points to the node to be inserted.
  * @return a pointer to the inserted node.
  */

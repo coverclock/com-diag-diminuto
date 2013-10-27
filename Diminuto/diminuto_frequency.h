@@ -23,7 +23,7 @@
 #define COM_DIAG_DIMINUTO_FREQUENCY (1000000)
 
 /**
- * @def COM_DIAG_DIMINUTO_FROM_TICKS
+ * @def COM_DIAG_DIMINUTO_TICKS_FROM
  * If @a _HERTZ_ is a constant, the compiler will almost certainly optimize
  * most of this code out.
  */
@@ -33,7 +33,7 @@
 			(_TICKS_))
 
 /**
- * @def COM_DIAG_DIMINUTO_TO_TICKS
+ * @def COM_DIAG_DIMINUTO_TICKS_TO
  * If @a _HERTZ_ is a constant, the compiler will almost certainly optimize
  * most of this code out.
  */
