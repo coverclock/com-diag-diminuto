@@ -272,13 +272,10 @@ dist:	distribution
 distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make; ./vintage )
-	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 
-distributionfull:
-	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
+distributionfull:	distribution
 	( cd $(OPT_DIR); tar cvzf - $(PROJECT)/$(PRODUCT) ) > $(TMP_DIR)/$(PROJECT)-toolchain.tgz
 
 build:
@@ -585,7 +582,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
 	echo '"DIMINUTO_VERSION_END\n";' >> $@
-	echo 'int main(void) { fputs(VERSION, stdout); }' >> $@
+	echo 'int main(void) { fputs(VERSION, stdout); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_release.h:
