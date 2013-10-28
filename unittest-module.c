@@ -29,6 +29,28 @@ int main(int argc, char ** argv)
     diminuto_core_enable();
 
     /*
+     * Test non-existent and other error legs.
+     */
+
+    check = diminuto_module_handle("COM-DIAG-DIMINUTO-MODULE-NO-SUCH-FILE-OR-DIRECTORY");
+    EXPECT(check == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_load("COM-DIAG-DIMINUTO-MODULE-NO-SUCH-FILE-OR-DIRECTORY");
+    EXPECT(module == (diminuto_module_handle_t)0);
+
+    check = diminuto_module_handle("/dev/null");
+    EXPECT(check == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_load("/dev/null");
+    EXPECT(module == (diminuto_module_handle_t)0);
+
+    check = diminuto_module_handle("/dev/zero");
+    EXPECT(check == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_load("/dev/zero");
+    EXPECT(module == (diminuto_module_handle_t)0);
+
+    /*
      * Test basic load and unload.
      */
 
@@ -105,8 +127,14 @@ int main(int argc, char ** argv)
     check = diminuto_module_unload(check, 0);
     EXPECT(check == (diminuto_module_handle_t)0);
 
+    check = module;
+    ASSERT(check != (diminuto_module_handle_t)0);
+
     module = diminuto_module_unload(module, 0);
     EXPECT(module == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_unload(check, 0);
+    EXPECT(module == check);
 
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);

@@ -43,9 +43,12 @@ extern diminuto_module_handle_t diminuto_module_load(const char * filename);
 extern void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symbol, const char * version);
 
 /**
- * Unload a loaded module.
+ * Unload a loaded module. The module is not actually unloaded unless the
+ * number of unloads matches the number of loads, reducing the reference count
+ * to zero. The only time this function appears to return an error is if the
+ * module is already actually unloaded.
  * @param handle identifies a specific loaded module.
- * @param force
+ * @param force if true iterates on the unload until the reference count is zero.
  * @return NULL is the unload was successful, the value of handle otherwise.
  */
 extern diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle, int force);
