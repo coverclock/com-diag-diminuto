@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_module.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#define _GNU_SOURCE
+#define __USE_GNU
 #include <dlfcn.h>
 
 /*
@@ -40,7 +40,7 @@ diminuto_module_handle_t diminuto_module_handle(const char * filename)
 
 diminuto_module_handle_t diminuto_module_load(const char * filename)
 {
-	return diminuto_module_load_generic(filename, RTLD_LAZY | /* RTLD_GLOBAL | */ RTLD_DEEPBIND);
+	return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL | RTLD_DEEPBIND);
 }
 
 void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symbol, const char * version)
@@ -63,12 +63,27 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 }
 
 
-diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle)
+diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle, int force)
 {
-	if (dlclose(handle) != 0) {
-		diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "diminuto_module_unload: dlclose: %s\n", dlerror());
-	} else {
+	int rc;
+
+	/*
+	 * Forcing a dlclose() causes this code to iterate to reduce the reference
+	 * count until the dlclose() returns an error, indicating that it failed
+	 * because the module wasn't open. I got this idea from the Asterisk
+	 * module code. It is kind of counter-intuitive.
+	 */
+
+	do {
+		rc = dlclose(handle);
+	} while (force && (rc == 0));
+
+	if (force) {
 		handle = (diminuto_module_handle_t)0;
+	} else if (rc == 0) {
+		handle = (diminuto_module_handle_t)0;
+	} else {
+		diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, "diminuto_module_unload: dlclose: %s\n", dlerror());
 	}
 
 	return handle;

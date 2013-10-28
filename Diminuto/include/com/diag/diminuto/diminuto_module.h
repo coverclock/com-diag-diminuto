@@ -45,9 +45,10 @@ extern void * diminuto_module_symbol(diminuto_module_handle_t handle, const char
 /**
  * Unload a loaded module.
  * @param handle identifies a specific loaded module.
+ * @param force
  * @return NULL is the unload was successful, the value of handle otherwise.
  */
-extern diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle);
+extern diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle, int force);
 
 /**
  * @def COM_DIAG_DIMINUTO_MODULE_CTOR

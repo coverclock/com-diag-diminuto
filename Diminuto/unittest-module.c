@@ -37,6 +37,21 @@ int main(int argc, char ** argv)
     check = diminuto_module_handle(MODULE);
     EXPECT(check == module);
 
+    module = diminuto_module_unload(module, !0);
+    EXPECT(module == (diminuto_module_handle_t)0);
+
+    check = diminuto_module_handle(MODULE);
+    EXPECT(check == (diminuto_module_handle_t)0);
+
+    check = diminuto_module_handle(MODULE);
+    EXPECT(check == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_load(MODULE);
+    ASSERT(module != (diminuto_module_handle_t)0);
+
+    check = diminuto_module_handle(MODULE);
+    EXPECT(check == module);
+
     functionp = diminuto_module_symbol(module, "diminuto_module_example_function", (const char *)0);
     ASSERT(functionp != (void *)0);
 
@@ -48,15 +63,11 @@ int main(int argc, char ** argv)
     printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     EXPECT(*(int *)variablep == 0xc0edbabe);
 
-    /*
-     * Verify that the module is unloaded and its static variables are
-     * reinitialized upon reload.
-     */
-
     *(int *)variablep = 0xdeadbeef;
-    EXPECT(*(int *)variablep == 0xdeadbeef);
+    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+   EXPECT(*(int *)variablep == 0xdeadbeef);
 
-    module = diminuto_module_unload(module);
+    module = diminuto_module_unload(module, !0);
     EXPECT(module == (diminuto_module_handle_t)0);
 
     module = diminuto_module_load(MODULE);
@@ -66,8 +77,20 @@ int main(int argc, char ** argv)
     printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     EXPECT(*(int *)variablep == 0xc0edbabe);
 
-    module = diminuto_module_unload(module);
+    module = diminuto_module_unload(module, !0);
     EXPECT(module == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_load(MODULE);
+    ASSERT(module != (diminuto_module_handle_t)0);
+
+    check = diminuto_module_load(MODULE);
+    ASSERT(check != (diminuto_module_handle_t)0);
+
+    check = diminuto_module_unload(check, 0);
+    ASSERT(check == (diminuto_module_handle_t)0);
+
+    module = diminuto_module_unload(module, 0);
+    ASSERT(module == (diminuto_module_handle_t)0);
 
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);
