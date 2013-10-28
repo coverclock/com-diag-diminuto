@@ -11,8 +11,8 @@
 #include "com/diag/diminuto/diminuto_module.h"
 #include <stdio.h>
 
-int diminuto_module_example_ctor(void) __attribute__((constructor));
-int diminuto_module_example_dtor(void) __attribute__((destructor));
+COM_DIAG_DIMINUTO_MODULE_CTOR(diminuto_module_example_ctor);
+COM_DIAG_DIMINUTO_MODULE_DTOR(diminuto_module_example_dtor);
 
 int diminuto_module_example_ctor(void)
 {
@@ -26,6 +26,8 @@ int diminuto_module_example_dtor(void)
 	return 0;
 }
 
-int diminuto_module_example(int input) {
+int diminuto_module_example_function(int input) {
 	return ~input;
 }
+
+int diminuto_module_example_variable = 0xc0edbabe;

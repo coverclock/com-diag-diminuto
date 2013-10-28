@@ -22,6 +22,7 @@ int main(int argc, char ** argv)
 	diminuto_module_handle_t module;
 	diminuto_module_handle_t check;
 	void * functionp;
+	void * variablep;
 	int value = 0xa5a5a5a5;
 	int rc;
 
@@ -36,13 +37,16 @@ int main(int argc, char ** argv)
     check = diminuto_module_handle(MODULE);
     EXPECT(check == module);
 
-    functionp = diminuto_module_symbol(module, "diminuto_module_example", (const char *)0);
+    functionp = diminuto_module_symbol(module, "diminuto_module_example_function", (const char *)0);
     ASSERT(functionp != (void *)0);
 
     rc = (*(int (*)(int))functionp)(value);
     printf("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
     EXPECT(rc == ~value);
 
+    variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
+    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    EXPECT(*(int *)variablep == 0xc0edbabe);
 
     module = diminuto_module_unload(module);
     EXPECT(module == (diminuto_module_handle_t)0);
