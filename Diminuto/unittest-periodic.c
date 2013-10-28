@@ -27,6 +27,24 @@ int main(int argc, char ** argv)
     int64_t computed;
     diminuto_ticks_t requested;
     int ii;
+    char rs;
+    char cs;
+    char ms;
+    int rday;
+    int rhour;
+    int rminute;
+    int rsecond;
+    int rtick;
+    int cday;
+    int chour;
+    int cminute;
+    int csecond;
+    int ctick;
+    int mday;
+    int mhour;
+    int mminute;
+    int msecond;
+    int mtick;
 
     diminuto_core_enable();
 
@@ -34,7 +52,7 @@ int main(int argc, char ** argv)
 
     diminuto_alarm_install(0);
 
-    printf("%10s %10s %10s\n",
+    printf("%18s %18s %18s\n",
         "requested", "computed", "measured");
 
     for (requested = hertz / 1000; requested < (12 * hertz); requested *= 2) {
@@ -50,8 +68,14 @@ int main(int argc, char ** argv)
             now = diminuto_time_elapsed();
             computed = (requested * 2) - remaining;
             measured = now - then;
-            printf("%10llu %10llu %10lld\n",
-                requested, computed, measured);
+            rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
+            cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
+            ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
+            printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d\n"
+            	, rs, rday, rhour, rminute, rsecond, rtick
+            	, cs, cday, chour, cminute, csecond, ctick
+            	, ms, mday, mhour, mminute, msecond, mtick
+            );
             then = now;
         }
 

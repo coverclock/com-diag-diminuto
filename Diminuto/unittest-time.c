@@ -34,23 +34,36 @@ int main(int argc, char ** argv)
     diminuto_ticks_t timezone;
     diminuto_ticks_t daylightsaving;
     diminuto_ticks_t hertz;
-    int year;
-    int month;
-    int day;
-    int hour;
-    int minute;
-    int second;
-    int tick;
+    int dday;
+    int dhour;
+    int dminute;
+    int dsecond;
+    int dtick;
+    int zyear;
+    int zmonth;
+    int zday;
+    int zhour;
+    int zminute;
+    int zsecond;
+    int ztick;
     int zh;
     int zm;
     int dh;
     int dm;
+    int jyear;
+    int jmonth;
+    int jday;
+    int jhour;
+    int jminute;
+    int jsecond;
+    int jtick;
+    char ss;
 
     diminuto_core_enable();
 
     hertz = diminuto_time_resolution();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %38s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %18s %38s %38s\n",
         "requested",
         "remaining",
         "claimed",
@@ -62,10 +75,12 @@ int main(int argc, char ** argv)
         "error-j",
         "process",
         "thread",
-        "iso8601"
+        "duration",
+        "zulu",
+        "juliet"
     );
 
-    for (requested = 0; requested < 60000000; requested = requested ? requested * 2 : 1) {
+    for (requested = 0; requested <= (hertz * 240); requested = (requested > 0) ? requested * 2 : 1) {
         then = diminuto_time_elapsed();
         before = diminuto_time_clock();
         remaining = diminuto_delay(requested, 0);
@@ -74,60 +89,45 @@ int main(int argc, char ** argv)
         claimed = requested - remaining;
         measured = now - then;
         elapsed = after - before;
-        year = -1;
-        month = -1;
-        day = -1;
-        hour = -1;
-        minute = -1;
-        second = -1;
-        tick = -1;
-        rc = diminuto_time_zulu(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &tick);
-        zulu = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
-        rc = diminuto_time_juliet(after, &year,    (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, &month,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, &day,     (int *)0, (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, &hour,    (int *)0, (int *)0, (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &minute,  (int *)0, (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &second,  (int *)0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &tick);
+        dday = -1; dhour = -1; dminute = -1; dsecond = -1; dtick = -1;
+        ss = (diminuto_time_duration(elapsed, &dday, &dhour, &dminute, &dsecond, &dtick) < 0) ? '-' : '+';
+        zyear = -1; zmonth = -1; zday = -1; zhour = -1; zminute = -1; zsecond = -1; ztick = -1;
+        rc = diminuto_time_zulu(after, &zyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, &zmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, &zday,    (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, &zhour,   (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, &zminute, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &zsecond, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &ztick);
+        zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
+        jyear = -1; jmonth = -1; jday = -1; jhour = -1; jminute = -1; jsecond = -1; jtick = -1;
+        rc = diminuto_time_juliet(after, &jyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, &jmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, &jday,    (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, &jhour,   (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &jminute, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jsecond, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jtick);
         timezone = diminuto_time_timezone(after);
         zh = (-timezone / hertz) / 3600;
         zm = (-timezone / hertz) % 3600;
         daylightsaving = diminuto_time_daylightsaving(after);
         dh = (daylightsaving / hertz) / 3600;
         dm = (daylightsaving / hertz) % 3600;
-        juliet = diminuto_time_epoch(year, month, day, hour, minute, second, tick, timezone, daylightsaving);
+        juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n",
-            requested,
-            remaining,
-            claimed,
-            measured,
-            measured - requested,
-            elapsed,
-            elapsed - requested,
-            after - zulu,
-            after - juliet,
-            process,
-            thread,
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            tick,
-            zh,
-            zm,
-            dh,
-            dm
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n"
+            , requested, remaining
+            , claimed
+            , measured, measured - requested
+            , elapsed, elapsed - requested
+            , after - zulu
+            , after - juliet
+            , process, thread
+            , ss, dday, dhour, dminute, dsecond, dtick
+            , zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0, 0, 0
+            , jyear, jmonth, jday, jhour, jminute, jsecond, jtick, zh, zm, dh, dm
         );
         ASSERT(remaining == 0);
         ASSERT(after == zulu);

@@ -130,19 +130,20 @@ diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int
 	return ticks;
 }
 
-static void diminuto_time_stamp(diminuto_ticks_t ticks, const struct tm *datetimep, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
+static void diminuto_time_stamp(const struct tm *datetimep, diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
-	if (yearp        != (int *)0) { *yearp   = datetimep->tm_year + 1900;           }
-	if (monthp       != (int *)0) { *monthp  = datetimep->tm_mon + 1;               }
-	if (dayp         != (int *)0) { *dayp    = datetimep->tm_mday;                  }
-	if (hourp        != (int *)0) { *hourp   = datetimep->tm_hour;                  }
-	if (minutep      != (int *)0) { *minutep = datetimep->tm_min;                   }
-	if (secondp      != (int *)0) { *secondp = datetimep->tm_sec;                   }
-	if (tickp        != (int *)0) { *tickp   = ticks % COM_DIAG_DIMINUTO_FREQUENCY; }
+	if (yearp   != (int *)0) { *yearp   = datetimep->tm_year + 1900;           }
+	if (monthp  != (int *)0) { *monthp  = datetimep->tm_mon + 1;               }
+	if (dayp    != (int *)0) { *dayp    = datetimep->tm_mday;                  }
+	if (hourp   != (int *)0) { *hourp   = datetimep->tm_hour;                  }
+	if (minutep != (int *)0) { *minutep = datetimep->tm_min;                   }
+	if (secondp != (int *)0) { *secondp = datetimep->tm_sec;                   }
+	if (tickp   != (int *)0) { *tickp   = ticks % COM_DIAG_DIMINUTO_FREQUENCY; }
 }
 
-diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
+int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
+	int rc = 0;
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t zulu;
@@ -150,16 +151,17 @@ diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * m
 	zulu = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
 	if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: gmtime_r");
-		ticks = -1;
+		rc = -1;
 	} else {
-		diminuto_time_stamp(ticks, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
+		diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
 	}
 
-	return ticks;
+	return rc;
 }
 
-diminuto_ticks_t diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
+int diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
+	int rc = 0;
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
@@ -167,10 +169,38 @@ diminuto_ticks_t diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int *
 	juliet = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: localtime_r");
-		ticks = -1;
+		rc = -1;
 	} else {
-		diminuto_time_stamp(ticks, datetimep, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
+		diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
 	}
 
-	return ticks;
+	return rc;
+}
+
+int diminuto_time_duration(diminuto_ticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
+{
+	int rc;
+	diminuto_ticks_t divisor;
+
+	if (ticks < 0) {
+		ticks = -ticks;
+		rc = -1;
+	} else {
+		rc = 1;
+	}
+
+	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60 * 60 * 24;
+	if (dayp    != (int *)0) { *dayp    = ticks / divisor; }
+	ticks = ticks % divisor;
+	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60 * 60;
+	if (hourp   != (int *)0) { *hourp   = ticks / divisor; }
+	ticks = ticks % divisor;
+	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60;
+	if (minutep != (int *)0) { *minutep = ticks / divisor; }
+	ticks = ticks % divisor;
+	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY;
+	if (secondp != (int *)0) { *secondp = ticks / divisor; }
+	if (tickp   != (int *)0) { *tickp   = ticks % divisor; }
+
+	return rc;
 }
