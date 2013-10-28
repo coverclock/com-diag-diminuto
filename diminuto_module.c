@@ -71,7 +71,7 @@ diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle,
 	 * Forcing a dlclose() causes this code to iterate to reduce the reference
 	 * count until the dlclose() returns an error, indicating that it failed
 	 * because the module wasn't open. I got this idea from the Asterisk
-	 * module code. It is kind of counter-intuitive.
+	 * loader.c loadable module code. It is kind of counter-intuitive.
 	 */
 
 	do {
