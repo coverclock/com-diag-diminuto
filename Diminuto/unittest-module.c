@@ -48,13 +48,29 @@ int main(int argc, char ** argv)
     printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     EXPECT(*(int *)variablep == 0xc0edbabe);
 
+    /*
+     * Verify that the module is unloaded and its static variables are
+     * reinitialized upon reload.
+     */
+
+    *(int *)variablep = 0xdeadbeef;
+    EXPECT(*(int *)variablep == 0xdeadbeef);
+
     module = diminuto_module_unload(module);
     EXPECT(module == (diminuto_module_handle_t)0);
 
-    /*
+    module = diminuto_module_load(MODULE);
+    ASSERT(module != (diminuto_module_handle_t)0);
+
+    variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
+    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    EXPECT(*(int *)variablep == 0xc0edbabe);
+
+    module = diminuto_module_unload(module);
+    EXPECT(module == (diminuto_module_handle_t)0);
+
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);
-    */
 
     return 0;
 }

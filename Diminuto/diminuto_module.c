@@ -40,7 +40,7 @@ diminuto_module_handle_t diminuto_module_handle(const char * filename)
 
 diminuto_module_handle_t diminuto_module_load(const char * filename)
 {
-	return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL | RTLD_DEEPBIND);
+	return diminuto_module_load_generic(filename, RTLD_LAZY | /* RTLD_GLOBAL | */ RTLD_DEEPBIND);
 }
 
 void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symbol, const char * version)
