@@ -65,7 +65,7 @@ static void epoch(diminuto_ticks_t now, bool verbose)
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
 	if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
-    	printf("%20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d %6d/%2.2d:%2.2d:%2.2d.%6.6d\n"
+    	printf("%20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %6d/%2.2d:%2.2d:%2.2d.%9.9d\n"
     		, now, zulu, juliet
     		, zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0, 0, 0
     		, jyear, jmonth, jday, jhour, jminute, jsecond, jtick, zh, zm, dh, dm

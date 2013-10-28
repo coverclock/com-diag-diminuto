@@ -23,7 +23,7 @@
  * is a preprocessor symbol instead of a static constant to make it easier
  * to optimize (although I'm guessing GCC would be happy either way).
  */
-#define COM_DIAG_DIMINUTO_FREQUENCY (1000000)
+#define COM_DIAG_DIMINUTO_FREQUENCY (1000000000)
 
 /**
  * @def COM_DIAG_DIMINUTO_TICKS_FROM

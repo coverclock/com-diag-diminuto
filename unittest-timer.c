@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_time_resolution();
 
-    printf("%18s %18s %18s\n",
+    printf("%21s %21s %21s\n",
         "requested", "computed", "measured");
 
     for (requested = 1; requested <= (hertz * 240); requested *= 2) {
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
         rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
         cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
-        printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d\n"
+        printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d\n"
         	, rs, rday, rhour, rminute, rsecond, rtick
         	, cs, cday, chour, cminute, csecond, ctick
         	, ms, mday, mhour, mminute, msecond, mtick
