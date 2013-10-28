@@ -28,6 +28,10 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
+    /*
+     * Test basic load and unload.
+     */
+
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);
 
@@ -45,6 +49,10 @@ int main(int argc, char ** argv)
 
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);
+
+    /*
+     * Test function and variable access.
+     */
 
     module = diminuto_module_load(MODULE);
     ASSERT(module != (diminuto_module_handle_t)0);
@@ -67,8 +75,12 @@ int main(int argc, char ** argv)
     printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
    EXPECT(*(int *)variablep == 0xdeadbeef);
 
-    module = diminuto_module_unload(module, !0);
-    EXPECT(module == (diminuto_module_handle_t)0);
+   module = diminuto_module_unload(module, !0);
+   EXPECT(module == (diminuto_module_handle_t)0);
+
+   /*
+    * Test reinitialization of static variables upon reload.
+    */
 
     module = diminuto_module_load(MODULE);
     ASSERT(module != (diminuto_module_handle_t)0);
@@ -80,6 +92,10 @@ int main(int argc, char ** argv)
     module = diminuto_module_unload(module, !0);
     EXPECT(module == (diminuto_module_handle_t)0);
 
+    /*
+     * Test module reference counting.
+     */
+
     module = diminuto_module_load(MODULE);
     ASSERT(module != (diminuto_module_handle_t)0);
 
@@ -87,10 +103,10 @@ int main(int argc, char ** argv)
     ASSERT(check != (diminuto_module_handle_t)0);
 
     check = diminuto_module_unload(check, 0);
-    ASSERT(check == (diminuto_module_handle_t)0);
+    EXPECT(check == (diminuto_module_handle_t)0);
 
     module = diminuto_module_unload(module, 0);
-    ASSERT(module == (diminuto_module_handle_t)0);
+    EXPECT(module == (diminuto_module_handle_t)0);
 
     check = diminuto_module_handle(MODULE);
     EXPECT(check == (diminuto_module_handle_t)0);
