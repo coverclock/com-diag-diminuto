@@ -18,7 +18,10 @@
  * This symbol defines the period of the fundamental Diminuto time unit
  * "tick" expressed in Hertz or ticks per second. It is not part of the
  * public interface. A function that returns this value is available in
- * the Diminuto time API.
+ * the Diminuto time API. This value works best if it is a power of ten,
+ * and it is easier to comprehend if it is a power of one thousand. This
+ * is a preprocessor symbol instead of a static constant to make it easier
+ * to optimize (although I'm guessing GCC would be happy either way).
  */
 #define COM_DIAG_DIMINUTO_FREQUENCY (1000000)
 

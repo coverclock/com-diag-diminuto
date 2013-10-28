@@ -113,9 +113,9 @@ extern diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int ho
  * @param minutep is where the minute of the hour will be returned.
  * @param secondp is where the second of the minute will be returned.
  * @param tickp is where the fraction of a second will be returned.
- * @return clock for success, -1 otherwise.
+ * @return 0 for success, <0 otherwise.
  */
-extern diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
@@ -128,9 +128,23 @@ extern diminuto_ticks_t diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, 
  * @param hourp is where the hour of the day will be returned.
  * @param minutep is where the minute of the hour will be returned.
  * @param secondp is where the second of the minute will be returned.
- * @param ticksp is where the fraction of a second will be returned.
- * @return clock for success, -1 otherwise.
+ * @param tickp is where the fraction of a second will be returned.
+ * @return 0 for success, <0 otherwise.
  */
-extern diminuto_ticks_t diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * ticksp);
+extern int diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+
+/**
+ * Convert ticks into individual fields representing a time duration. All of
+ * the field values will be positive; the value returned by the function
+ * indicates whether the duration was positive or negative.
+ * @param ticks is the number of ticks in a time interval.
+ * @param dayp is where the number of days will be returned.
+ * @param hourp is where the number of hours will be returned.
+ * @param minutep is where the number of minutes will be returned.
+ * @param secondp is where the number of seconds will be returned.
+ * @param tickp is where the number of ticks will be returned.
+ * @return >0 if the duration was positive, <0 if the duration was negative.
+ */
+extern int diminuto_time_duration(diminuto_ticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 #endif
