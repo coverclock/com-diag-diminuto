@@ -20,7 +20,7 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	contraption
 
 MAJOR		=	18# API changes requiring that applications be modified.
-MINOR		=	0# Only functionality or features added with no API changes.
+MINOR		=	1# Only functionality or features added with no API changes.
 BUILD		=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
@@ -222,8 +222,8 @@ CFLAGS		=	$(CARCH) -g
 #CFLAGS		=	$(CARCH) -O3
 CPFLAGS		=	-i
 MVFLAGS		=	-i
-LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt
-LDXXFLAGS	=	$(LDARCH) -L. -ldiminutoxx -ldiminuto -lpthread -lrt
+LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt -ldl
+LDXXFLAGS	=	$(LDARCH) -L. -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
 
 BROWSER		=	firefox
 
@@ -356,6 +356,10 @@ $(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(
 
 ########## Target C Libraries
 
+lib$(PROJECT).a:	$(TARGETOBJECTS)
+	$(AR) $(ARFLAGS) lib$(PROJECT).a $(TARGETOBJECTS)
+	$(RANLIB) lib$(PROJECT).a
+
 lib$(PROJECT).so:	lib$(PROJECT).so.$(MAJOR)
 	rm -f lib$(PROJECT).so
 	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so
@@ -368,14 +372,14 @@ lib$(PROJECT).so.$(MAJOR).$(MINOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR)
 	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
 
-lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTS)
-
-lib$(PROJECT).a:	$(TARGETOBJECTS)
-	$(AR) $(ARFLAGS) lib$(PROJECT).a $(TARGETOBJECTS)
-	$(RANLIB) lib$(PROJECT).a
+lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).a
+	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 	
 ########## Target C++ Libraries
+
+lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+	$(AR) $(ARFLAGS) lib$(PROJECT)xx.a $(TARGETOBJECTSXX)
+	$(RANLIB) lib$(PROJECT)xx.a
 
 lib$(PROJECT)xx.so:	lib$(PROJECT)xx.so.$(MAJOR)
 	rm -f lib$(PROJECT)xx.so
@@ -389,12 +393,8 @@ lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUI
 	rm -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
 	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
 
-lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTSXX)
-	$(CXX) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) $(TARGETOBJECTSXX)
-
-lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
-	$(AR) $(ARFLAGS) lib$(PROJECT)xx.a $(TARGETOBJECTSXX)
-	$(RANLIB) lib$(PROJECT)xx.a
+lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT)xx.a
+	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 ########## Target Binaries
 
@@ -553,6 +553,12 @@ unittest-epoch:	unittest-epoch.c $(TARGETLIBRARIES)
 	
 unittest-frequency:	unittest-frequency.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+loadables/unittest-module-example.so:	loadables/unittest-module-example.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS)
+
+unittest-module:	unittest-module.o $(TARGETLIBRARIES) loadables/unittest-module-example.so
+	$(CC) -rdynamic $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Generated
 
