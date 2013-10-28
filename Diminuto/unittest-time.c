@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_time_resolution();
 
-    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %18s %38s %38s\n",
+    printf("%10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %10s %21s %41s %41s\n",
         "requested",
         "remaining",
         "claimed",
@@ -117,7 +117,7 @@ int main(int argc, char ** argv)
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %c%1.1d/%2.2d:%2.2d:%2.2d.%6.6d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6d-%2.2d:%2.2d+%2.2d:%2.2d\n"
+        printf("%10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %10lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d\n"
             , requested, remaining
             , claimed
             , measured, measured - requested
