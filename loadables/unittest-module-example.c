@@ -16,13 +16,13 @@ int diminuto_module_example_dtor(void) __attribute__((destructor));
 
 int diminuto_module_example_ctor(void)
 {
-	printf("%s[%d]\n", __FILE__, __LINE__);
+	fputs("diminuto_module_example_ctor\n", stderr);
 	return 0;
 }
 
 int diminuto_module_example_dtor(void)
 {
-	printf("%s[%d]\n", __FILE__, __LINE__);
+	fputs("diminuto_module_example_dtor\n", stderr);
 	return 0;
 }
 
