@@ -13,6 +13,11 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 
+/*
+ * This is deliberately global but not in the header file. So it is not part
+ * of the public API, but could be called from an application with the
+ * addition of a suitable external declaration.
+ */
 diminuto_module_handle_t diminuto_module_load_generic(const char * filename, int flags)
 {
 	diminuto_module_handle_t handle;
