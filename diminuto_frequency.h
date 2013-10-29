@@ -23,7 +23,7 @@
  * is a preprocessor symbol instead of a static constant to make it easier
  * to optimize (although I'm guessing GCC would be happy either way).
  */
-#define COM_DIAG_DIMINUTO_FREQUENCY (1000000000)
+#define COM_DIAG_DIMINUTO_FREQUENCY ((diminuto_ticks_t)1000000000)
 
 /**
  * @def COM_DIAG_DIMINUTO_TICKS_FROM
@@ -31,8 +31,8 @@
  * most of this code out.
  */
 #define COM_DIAG_DIMINUTO_TICKS_FROM(_TICKS_, _HERTZ_) \
-	((COM_DIAG_DIMINUTO_FREQUENCY < (_HERTZ_)) ? ((_TICKS_) * ((_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
-		(COM_DIAG_DIMINUTO_FREQUENCY > (_HERTZ_)) ? ((_TICKS_) / (COM_DIAG_DIMINUTO_FREQUENCY / (_HERTZ_))) : \
+	((COM_DIAG_DIMINUTO_FREQUENCY < (diminuto_ticks_t)(_HERTZ_)) ? ((diminuto_ticks_t)(_TICKS_) * ((diminuto_ticks_t)(_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
+		(COM_DIAG_DIMINUTO_FREQUENCY > (diminuto_ticks_t)(_HERTZ_)) ? ((diminuto_ticks_t)(_TICKS_) / (COM_DIAG_DIMINUTO_FREQUENCY / (diminuto_ticks_t)(_HERTZ_))) : \
 			(_TICKS_))
 
 /**
@@ -41,8 +41,8 @@
  * most of this code out.
  */
 #define COM_DIAG_DIMINUTO_TICKS_TO(_VALUE_, _HERTZ_) \
-	((COM_DIAG_DIMINUTO_FREQUENCY < (_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) / ((_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
-		(COM_DIAG_DIMINUTO_FREQUENCY > (_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) * (COM_DIAG_DIMINUTO_FREQUENCY / (_HERTZ_))) : \
+	((COM_DIAG_DIMINUTO_FREQUENCY < (diminuto_ticks_t)(_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) / ((diminuto_ticks_t)(_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
+		(COM_DIAG_DIMINUTO_FREQUENCY > (diminuto_ticks_t)(_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) * (COM_DIAG_DIMINUTO_FREQUENCY / (diminuto_ticks_t)(_HERTZ_))) : \
 			(_VALUE_))
 
 #endif

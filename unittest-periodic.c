@@ -56,10 +56,8 @@ int main(int argc, char ** argv)
         "requested", "computed", "measured");
 
     for (requested = hertz / 1000; requested < (12 * hertz); requested *= 2) {
-
         diminuto_timer_periodic(requested);
         then = diminuto_time_elapsed();
-
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
             remaining = diminuto_delay(requested * 2, !0);
@@ -78,7 +76,6 @@ int main(int argc, char ** argv)
             );
             then = now;
         }
-
         diminuto_timer_periodic(0);
     }
 

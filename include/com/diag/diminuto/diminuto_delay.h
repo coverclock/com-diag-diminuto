@@ -14,6 +14,14 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
+ * Return the resolution of the Diminuto delay units in ticks per second
+ * (Hertz). Delay durations smaller than the equivalent period in ticks may
+ * not yield the expected results.
+ * @return the resolution in ticks per second.
+ */
+extern diminuto_ticks_t diminuto_delay_resolution(void);
+
+/**
  * Delay the calling process for the specified number of ticks.
  * If interruptable, return if interrupted with errno set to EINTR,
  * otherwise continue delaying. Return with errno set to something other
