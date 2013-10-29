@@ -14,6 +14,14 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
+ * Return the resolution of the Diminuto timer units in ticks per second
+ * (Hertz). Timer intervals smaller than the equivalent period in ticks may
+ * not yield the expected results.
+ * @return the resolution in ticks per second.
+ */
+extern diminuto_ticks_t diminuto_timer_resolution(void);
+
+/**
  * Start a timer for the specified number of ticks. When the timer
  * expires, the calling process will receive a SIGALRM. If a timer is already
  * running, the amount of time left in the prior timer will be returned.

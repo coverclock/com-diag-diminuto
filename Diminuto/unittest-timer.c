@@ -19,13 +19,13 @@
 
 int main(int argc, char ** argv)
 {
-    diminuto_ticks_t then;
+	diminuto_ticks_t hertz;
+	diminuto_ticks_t then;
     diminuto_ticks_t now;
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
     diminuto_ticks_t remaining;
     diminuto_ticks_t computed;
-    diminuto_ticks_t hertz;
     char rs;
     char cs;
     char ms;
@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
     printf("%21s %21s %21s\n",
         "requested", "computed", "measured");
 
-    for (requested = 1; requested <= (hertz * 240); requested *= 2) {
+    for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
         diminuto_timer_oneshot(requested);
         then = diminuto_time_elapsed();
