@@ -15,8 +15,10 @@
 
 /**
  * Return the resolution of the Diminuto timer units in ticks per second
- * (Hertz). Timer intervals smaller than the equivalent period in ticks may
- * not yield the expected results.
+ * (Hertz). Timer intervals smaller than the equivalent period in ticks will
+ * not yield the expected results. In fact, there is no guarantee that the
+ * underlying software platform or hardware target can support timer intervals
+ * with even this resolution.
  * @return the resolution in ticks per second.
  */
 extern diminuto_ticks_t diminuto_timer_resolution(void);
