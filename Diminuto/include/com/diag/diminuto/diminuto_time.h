@@ -25,6 +25,9 @@
 
 /**
  * Return the resolution of the Diminuto time units in ticks per second (Hertz).
+ * Although the underlying platform may be able to return time with this
+ * resolution, there is no guarantee that the system clock actually has this
+ * resolution.
  * @return the resolution in ticks per second.
  */
 extern diminuto_ticks_t diminuto_time_resolution(void);
