@@ -11,8 +11,8 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * Important safety tip: although UNIX (and POSIX) professes to keep the time
- * in Coordinated Universal Time (UTC) it doesn't account for periodic leap
- * seconds. This means it isn't strictly UTC, and worse, the time may appear
+ * in Coordinated Universal Time (UTC), it doesn't account for the occasional
+ * leap second. This means it isn't strictly UTC. Worse, the time may appear
  * discontinuous if and when the system clock is manually adjusted. This has
  * no effect on the monotonically increasing clock, which is why that's the
  * clock you should use to measure the passage of time. So UNIX doesn't quite
@@ -27,7 +27,7 @@
  * Return the resolution of the Diminuto time units in ticks per second (Hertz).
  * Although the underlying platform may be able to return time with this
  * resolution, there is no guarantee that the system clock actually has this
- * resolution.
+ * degree of accuracy.
  * @return the resolution in ticks per second.
  */
 extern diminuto_ticks_t diminuto_time_resolution(void);
@@ -65,13 +65,16 @@ extern diminuto_ticks_t diminuto_time_process(void);
 extern diminuto_ticks_t diminuto_time_thread(void);
 
 /**
- * Return the number of ticks the local time zone is offset _east_ of
- * Coordinated Universal Time (UTC). This will be a _negative_ number that
- * indicates how much earlier the local time zone is from UTC. This offset
+ * Return the number of ticks the local time zone is offset from Coordinated
+ * Universal Time (UTC). For time zones west of UTC, this will be a negative
+ * value (eariler), and for east of UTC, a positive value (later). This offset
  * does _not_ account for Daylight Saving Time (DST) if it is used and in
- * effect. (Since the offset of the time zone doesn't shift over the span
- * of a year like DST does, the argument to this function can probably always
- * be zero.)
+ * effect. Note that one hundred and eighty degrees away from UTC is the
+ * International Date Line (IDL), which splits its time zone in half. Clocks on
+ * either side of the IDL in that time zone read the same clock time, but are
+ * twenty-four hours apart. (Since the offset of the time zone doesn't shift
+ * over the span of a year like Daylight Saving Time does, the argument to this
+ * function can probably always be zero.)
  * @param ticks is the number of ticks since the Epoch.
  * @return the number of ticks east of UTC.
  */
@@ -81,7 +84,8 @@ extern diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks);
  * Return the number of ticks the local time zone is offset _west_
  * because of Daylight Saving Time (DST). It DST is not used for local time,
  * or is not in effect for the specified time, then this value will be zero,
- * otherwise it will be a _positive_ number.
+ * otherwise it will be a positive number since when DST is in effect the local
+ * clock time moves forward. Note that DST is an abomination.
  * @param ticks is the number of ticks since the Epoch.
  * @return the number of ticks added to this time zone.
  */
