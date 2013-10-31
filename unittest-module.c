@@ -90,6 +90,8 @@ int main(int argc, char ** argv)
     EXPECT(rc == ~value);
 
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
+    ASSERT(variablep != (void *)0);
+
     printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     EXPECT(*(int *)variablep == 0xc0edbabe);
 

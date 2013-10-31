@@ -18,7 +18,7 @@
  * (Hertz). Delay durations smaller than the equivalent period in ticks may
  * not yield the expected results. In fact, there is no guarantee that the
  * underlying software platform or hardware target can support delay durations
- * with even this resolution..
+ * with even this resolution.
  * @return the resolution in ticks per second.
  */
 extern diminuto_ticks_t diminuto_delay_resolution(void);
