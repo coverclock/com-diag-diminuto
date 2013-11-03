@@ -11,10 +11,6 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_pin.h"
 
-static const char TMP_CLASS_GPIO_EXPORT[] = "/tmp/class/gpio/export";
-static const char TMP_CLASS_GPIO_DIRECTION[] = "/tmp/class/gpio/gpio%u/direction";
-static const char TMP_CLASS_GPIO_VALUE[] = "/tmp/class/gpio/gpio%u/value";
-
 int main(void)
 {
 	FILE * fp;
