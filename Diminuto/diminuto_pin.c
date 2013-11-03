@@ -64,7 +64,7 @@ FILE * diminuto_pin_open(int pin, int output)
 			break;
 		}
 
-		if (fputs(output ? "output" : "input", fp) == EOF) {
+		if (fputs(output ? "output\n" : "input\n", fp) == EOF) {
 			break;
 		}
 
@@ -119,6 +119,8 @@ int diminuto_pin_set(FILE * fp, int assert)
 		if (fp == (FILE *)0) {
 			break;
 		}
+
+		rewind(fp);
 
 		value = assert ? "1\n" : "0\n";
 		if (fputs(value, fp) == EOF) {
