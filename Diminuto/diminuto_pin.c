@@ -82,18 +82,11 @@ FILE * diminuto_pin_open(int pin, int output)
 
 	} while (0);
 
-	if (success) {
-		/* Do nothing. */
-	} else if (fp == (FILE *)0) {
-		/* Do nothing. */
-	} else {
-		fclose(fp);
-	}
-
 	if (!success) {
-		errno = ENOENT;
 		diminuto_perror(path);
-		fp = (FILE *)0;
+		if (fp != (FILE *)0) {
+			fclose(fp);
+		}
 	}
 
 	return fp;
@@ -112,28 +105,15 @@ FILE * diminuto_pin_output(int pin)
 int diminuto_pin_set(FILE * fp, int assert)
 {
 	int rc = EOF;
-	const char * value;
 
-	do {
-
-		if (fp == (FILE *)0) {
-			break;
-		}
-
-		rewind(fp);
-
-		value = assert ? "1\n" : "0\n";
-		if (fputs(value, fp) == EOF) {
-			break;
-		}
-
+	if (fseek(fp, 0L, SEEK_SET) < 0) {
+		diminuto_perror("diminuto_pin_set: fseek");
+	} else if (fputs(assert ? "1\n" : "0\n", fp) == EOF) {
+		diminuto_perror("diminuto_pin_set: fputs");
+	} else if (fflush(fp) == EOF) {
+		diminuto_perror("diminuto_pin_set: fflush");
+	} else {
 		rc = 0;
-
-	} while (0);
-
-	if (rc < 0) {
-		errno = EINVAL;
-		diminuto_perror("diminuto_pin_set");
 	}
 
 	return rc;
@@ -144,29 +124,18 @@ int diminuto_pin_get(FILE * fp)
 	int value = EOF;
 	int rc;
 
-	do {
-
-		if (fp == (FILE *)0) {
-			break;
-		}
-
-		rewind(fp);
-
-		if ((rc = fscanf(fp, "%u", &value)) == EOF) {
-			break;
-		}
-
-		if (rc < 1) {
-			break;
-		}
-
-		value = value ? !0 : 0;
-
-	} while (0);
-
-	if (value < 0) {
+	if (fseek(fp, 0L, SEEK_SET) < 0) {
+		diminuto_perror("diminuto_pin_get: fseek");
+	} else if ((rc = fscanf(fp, "%d", &value)) == 1) {
+		value = !!value;
+	} else if (rc != EOF) {
 		errno = EINVAL;
-		diminuto_perror("diminuto_pin_get");
+		diminuto_perror("diminuto_pin_get: fscanf");
+	} else if (ferror(fp)) {
+		diminuto_perror("diminuto_pin_get: fscanf");
+	} else {
+		errno = EINVAL;
+		diminuto_perror("diminuto_pin_get: fscanf");
 	}
 
 	return value;
