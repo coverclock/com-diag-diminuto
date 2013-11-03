@@ -66,6 +66,7 @@ ifeq ($(COMPILEFOR),diminuto)
 # Build for the AT91RM9200-EK board with the BuildRoot kernel.
 ARCH		=	arm
 PLATFORM	=	linux
+TARGET		=	armv4t
 CPPARCH		=
 CARCH		=	-march=armv4t
 LDARCH		=	-Bdynamic
@@ -79,6 +80,7 @@ ifeq ($(COMPILEFOR),arroyo)
 # Build for the AT91RM9200-EK board with the Arroyo kernel.
 ARCH		=	arm
 PLATFORM	=	linux
+TARGET		=	armv4t
 CPPARCH		=
 CARCH		=	-march=armv4t
 LDARCH		=	-Bdynamic
@@ -92,6 +94,7 @@ ifeq ($(COMPILEFOR),cascada)
 # Build for the BeagleBoard C4 with the Angstrom kernel.
 ARCH		=	arm
 PLATFORM	=	linux
+TARGET		=	cortex-A8
 CPPARCH		=
 CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH		=	-Bdynamic
@@ -105,6 +108,7 @@ ifeq ($(COMPILEFOR),contraption)
 # Build for the BeagleBoard C4 with the FroYo Android 2.2 kernel.
 ARCH		=	arm
 PLATFORM	=	linux
+TARGET		=	armv7-a
 CPPARCH		=
 CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH		=	-static
@@ -119,6 +123,7 @@ ifeq ($(COMPILEFOR),host)
 # Build for my build server with the Ubuntu kernel.
 ARCH		=	i386
 PLATFORM	=	linux
+TARGET		=	i686
 CPPARCH		=
 CARCH		=
 LDARCH		=	
@@ -145,8 +150,8 @@ TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
 LOCALBIN_DIR	=	${TOOLCHAIN_DIR}/usr/local/bin
 LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
 
-VENDOR		=	Atmel
-TARGET		=	at91rm9200ek
+CONFIG_VENDOR	=	Atmel
+CONFIG_TARGET	=	at91rm9200ek
 
 BUILDROOT_REV	=	22987
 BUSYBOX_REV		=	1.11.1
@@ -155,7 +160,7 @@ BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
 PROJECT_DIR		=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
 FAKEROOT_DIR	=	$(PROJECT_DIR)/root
 BUSYBOX_DIR		=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
-CONFIG_DIR		=	$(BUILDROOT_DIR)/target/device/$(VENDOR)/$(TARGET)
+CONFIG_DIR		=	$(BUILDROOT_DIR)/target/device/$(CONFIG_VENDOR)/$(CONFIG_TARGET)
 BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
 DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
 DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
@@ -286,7 +291,7 @@ build:
 	cat $(TMP_DIR)/config-initramfs-source.ex
 	ex -S $(TMP_DIR)/config-initramfs-source.ex $(KERNEL_DIR)/.config
 	rm -f $(TMP_DIR)/config-initramfs-source.ex
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(TARGET)-$(PLATFORM)-$(KERNEL_REV).config
+	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(CONFIG_TARGET)-$(PLATFORM)-$(KERNEL_REV).config
 	( cd $(BUILDROOT_DIR); $(MAKE) 2>&1 | tee LOG )
 
 ########## Host Scripts
@@ -554,8 +559,10 @@ unittest-epoch:	unittest-epoch.c $(TARGETLIBRARIES)
 unittest-frequency:	unittest-frequency.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
+LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
+
 loadables/unittest-module-example.so:	loadables/unittest-module-example.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 unittest-module:	unittest-module.o $(TARGETLIBRARIES) loadables/unittest-module-example.so
 	$(CC) -rdynamic $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
@@ -588,7 +595,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
 	echo '"DIMINUTO_VERSION_END\n";' >> $@
-	echo 'int main(void) { fputs(VERSION, stdout); return 0; }' >> $@
+	echo 'int main(void) { fputs(VERSION, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_release.h:
@@ -639,7 +646,7 @@ acquire:	$(HOME_DIR)/$(PROJECT)
 	svn co svn://uclibc.org/trunk/buildroot
 
 clean:
-	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(ARTIFACTS) *.o
+	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(TARGETUNITTESTS) $(ARTIFACTS) unittest-version.c unittest-version *.o *.so *.so.* core
 	rm -rf $(DOC_DIR)
 
 binaries-clean:

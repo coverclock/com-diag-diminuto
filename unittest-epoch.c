@@ -16,9 +16,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-static void epoch(diminuto_ticks_t now, bool verbose)
+static void epoch(diminuto_ticks_t now, int verbose)
 {
 	int dday = -1;
 	int dhour = -1;
@@ -111,39 +110,39 @@ int main(int argc, char ** argv)
 
     fputs("TEST 1\n", stdout);
 
-    epoch(LOW * hertz, true);
-    epoch(-hertz, true);
-    epoch(0, true);
-    epoch(HIGH * hertz, true);
+    epoch(LOW * hertz, !0);
+    epoch(-hertz, !0);
+    epoch(0, !0);
+    epoch(HIGH * hertz, !0);
 
     fputs("TEST 2\n", stdout);
 
     for (now = LOW; now <= HIGH; now += (365 * 24 * 60 * 60)) {
-    	epoch(now * hertz, false);
+    	epoch(now * hertz, 0);
      }
 
     fputs("TEST 3\n", stdout);
 
     for (now = LOW; now <= HIGH; now += (24 * 60 * 60)) {
-    	epoch(now * hertz, false);
+    	epoch(now * hertz, 0);
     }
 
     fputs("TEST 4\n", stdout);
 
     for (now = LOW; now <= HIGH; now += (60 * 60)) {
-    	epoch(now * hertz, false);
+    	epoch(now * hertz, 0);
     }
 
     fputs("TEST 5\n", stdout);
 
     for (now = LOW; now <= HIGH; now += 60) {
-    	epoch(now * hertz, false);
+    	epoch(now * hertz, 0);
     }
 
     fputs("TEST 6\n", stdout);
 
     for (now = LOW; now <= HIGH; now += 1) {
-    	epoch(now * hertz, false);
+    	epoch(now * hertz, 0);
     }
 
     return 0;
