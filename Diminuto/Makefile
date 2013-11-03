@@ -566,6 +566,9 @@ loadables/unittest-module-example.so:	loadables/unittest-module-example.c
 
 unittest-module:	unittest-module.o $(TARGETLIBRARIES) loadables/unittest-module-example.so
 	$(CC) -rdynamic $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+unittest-pin:	unittest-pin.c $(TARGETLIBRARIES)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 ########## Generated
 
