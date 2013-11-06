@@ -177,8 +177,8 @@ TARGETSOFTLINKS		=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
-TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c)))))
-TARGETLOADABLES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(LIB_DIR)/*.c)))
+TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c)))))
+TARGETLOADABLES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c)))
 TARGETSCRIPTS		=	
 TARGETBINARIES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETUTILITIES))
 TARGETALIASES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETSOFTLINKS))
@@ -612,7 +612,7 @@ $(OUT_DIR)/$(TARGET)/%:	$(OUT_DIR)/$(TARGET)/%_unstripped
 	
 depend:
 	cp /dev/null dependencies.mk
-	for S in $(SRC_DIR) $(MOD_DIR) $(LIB_DIR) $(TST_DIR); do \
+	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR); do \
 		for F in $$S/*.c; do \
 			D=`dirname $$F`; \
 			echo -n "$(OUT_DIR)/$(TARGET)/$$D/" >> dependencies.mk; \
