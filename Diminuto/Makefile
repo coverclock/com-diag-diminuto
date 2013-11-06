@@ -162,6 +162,8 @@ TST_DIR				=	tst
 
 HERE				:=	$(shell pwd)
 
+OUT					=	$(OUT_DIR)/$(TARGET)
+
 TMP_DIR				=	/var/tmp
 ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
@@ -181,28 +183,28 @@ PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
 TARGETSOFTLINKS		=	hex oct ntohs htons ntohl htonl
 
-TARGETOBJECTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
-TARGETOBJECTSXX		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
-TARGETDRIVERS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c))))
-TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
+TARGETOBJECTS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
+TARGETOBJECTSXX		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
+TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c))))
+TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
-TARGETBINARIES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
-TARGETALIASES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(TARGETSOFTLINKS))
+TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
+TARGETALIASES		=	$(addprefix $(OUT)/,$(TARGETSOFTLINKS))
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
-TARGETUNITTESTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.c)))
-TARGETUNITTESTS		+=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
-TARGETUNITTESTS		+=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
+TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
+TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
+TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
 
-TARGETARCHIVE		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_A)
-TARGETARCHIVEXX		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_A)
-TARGETSHARED		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
-TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR)
-TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR)
-TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_SO)
-TARGETSHAREDXX		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
-TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR)
-TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR)
-TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_SO)
+TARGETARCHIVE		=	$(OUT)/$(LIB_DIR)/$(PROJECT_A)
+TARGETARCHIVEXX		=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_A)
+TARGETSHARED		=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR)
+TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR)
+TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO)
+TARGETSHAREDXX		=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR)
+TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR)
+TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
@@ -228,8 +230,8 @@ CFLAGS				=	$(CARCH) -g
 #CFLAGS				=	$(CARCH) -O3
 CPFLAGS				=	-i
 MVFLAGS				=	-i
-LDFLAGS				=	$(LDARCH) -L$(OUT_DIR)/$(TARGET)/lib -ldiminuto -lpthread -lrt -ldl
-LDXXFLAGS			=	$(LDARCH) -L$(OUT_DIR)/$(TARGET)/lib -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
+LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -ldiminuto -lpthread -lrt -ldl
+LDXXFLAGS			=	$(LDARCH) -L$(OUT)/lib -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
 
 BROWSER		=	firefox
 
@@ -279,217 +281,67 @@ diminuto:	diminuto.sh
 
 ########## Target C Libraries
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 	
 ########## Target C++ Libraries
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 ########## Target Binaries
 
-getubenv_unstripped:	getubenv.c $(TARGETLIBRARIES)
+$(OUT)/$(BIN_DIR)/%_unstripped:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
+	test -d $(OUT)/$(BIN_DIR) || mkdir -p $(OUT)/$(BIN_DIR)
 	$(CC) $(CPPFLAGS) -I $(KERNEL_DIR)/include $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-ipcalc_unstripped:	ipcalc.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-memtool_unstripped:	memtool.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-mmdrivertool_unstripped:	mmdrivertool.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-dec_unstripped:	dec.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-usectime_unstripped:	usectime.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-usecsleep_unstripped:	usecsleep.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-hex:	dec
-	ln -f dec hex
-
-oct:	dec
-	ln -f dec oct
-
-ntohs:	dec
-	ln -f dec ntohs
-
-htons:	dec
-	ln -f dec htons
-
-ntohl:	dec
-	ln -f dec ntohl
-
-htonl:	dec
-	ln -f dec htonl
-
-phex_unstripped:	phex.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-dump_unstripped:	dump.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-coreable_unstripped:	coreable.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+$(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN_DIR)/htons $(OUT)/$(BIN_DIR)/ntohl $(OUT)/$(BIN_DIR)/htonl:	$(OUT)/$(BIN_DIR)/dec
+	ln -f $< $@
 	
 ########## Unit Tests
 
-unittest-unittest:	unittest-unittest.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-time:	unittest-time.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-daemon:	unittest-daemon.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-hangup:	unittest-hangup.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-number:	unittest-number.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-timer:	unittest-timer.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-periodic:	unittest-periodic.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-stacktrace:	unittest-stacktrace.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -O0 -rdynamic -o $@ $< $(LDFLAGS)
-
-unittest-log:	unittest-log.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-lock:	unittest-lock.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-map:	unittest-map.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-mmdriver-at91rm9200ek:	unittest-mmdriver-at91rm9200ek.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-mmdriver-at91rm9200ek
-
-unittest-phex:	unittest-phex.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-dump:	unittest-dump.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-endianess:	unittest-endianess.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-barrier:	unittest-barrier.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-serial:	unittest-serial.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-memtool-at91rm9200ek:	unittest-memtool-at91rm9200ek.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool-at91rm9200ek
-
-unittest-memtool2-at91rm9200ek:	unittest-memtool2-at91rm9200ek.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=unittest-memtool2-at91rm9200ek
-
-unittest-coreable:	unittest-coreable.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-countof:	unittest-countof.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-list:	unittest-list.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-ipc:	unittest-ipc.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-string:	unittest-string.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-heap:	unittest-heap.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-pool:	unittest-pool.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-datum:	unittest-datum.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-discrete:	unittest-discrete.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-alignment:	unittest-alignment.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-unittest-version:	unittest-version.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
-unittest-well:	unittest-well.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
-unittest-well-cpp:	unittest-well-cpp.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
-	
-unittest-well-perf:	unittest-well-perf.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
-	
-unittest-escape:	unittest-escape.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
-unittest-epoch:	unittest-epoch.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
-unittest-frequency:	unittest-frequency.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
-
-loadables/unittest-module-example.so:	loadables/unittest-module-example.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
-
-unittest-module:	unittest-module.o $(TARGETLIBRARIES) loadables/unittest-module-example.so
+$(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
+	test -d $(OUT)/$(TST_DIR) || mkdir -p $(OUT)/$(TST_DIR)
 	$(CC) -rdynamic $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-unittest-pin:	unittest-pin.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+$(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+	test -d $(OUT)/$(TST_DIR) || mkdir -p $(OUT)/$(TST_DIR)
+	$(CXX) -rdynamic $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
 ########## Generated
 
+.PHONY:	vintage.c diminuto_release.h diminuto_vintage.h
+
 vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
-.PHONY:	vintage.c diminuto_release.h diminuto_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
 vintage.c:	diminuto_release.h diminuto_vintage.h
@@ -517,18 +369,25 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_PROJECT_RELEASE_' >> $@
-	echo '#define _H_COM_DIAG_PROJECT_RELEASE_' >> $@
+	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
+	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
 	echo "static const char RELEASE[] = \"RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_PROJECT_VINTAGE_' >> $@
-	echo '#define _H_COM_DIAG_PROJECT_VINTAGE_' >> $@
+	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
+	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
 	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
+
+########## Modules
+
+LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
+
+loadables/unittest-module-example.so:	loadables/unittest-module-example.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 ########## Drivers
 
@@ -560,9 +419,10 @@ backup:	../$(PROJECT).bak.tgz
 
 ########## Documentation
 
-documentation:	$(DOC_DIR)/pdf
+documentation:
 	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > doxygen-local.cf
 	doxygen doxygen-local.cf
+	test -d $(DOC_DIR)/pdf || mkdir -p $(DOC_DIR)/pdf
 	( cd $(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
 	cat $(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(DOC_DIR)/pdf/manpages.ps
 	ps2pdf $(DOC_DIR)/pdf/manpages.ps $(DOC_DIR)/pdf/manpages.pdf
@@ -575,9 +435,6 @@ refman:
 
 manpages:
 	$(BROWSER) file:doc/pdf/manpages.pdf
-
-$(DOC_DIR)/pdf:
-	mkdir -p $(DOC_DIR)/pdf
 
 ########## Submakes
 
@@ -594,22 +451,24 @@ patch:
 
 ########## Directories
 
+$(OUT)/$(BIN_DIR) $(OUT)/$(DRV_DIR) $(OUT)/$(LIB_DIR) $(OUT)/$(MOD_DIR) $(OUT)/$(SRC_DIR) $(OUT)/$(TST_DIR):
+	mkdir -p $@
 
 ########## Rules
 
-$(OUT_DIR)/$(TARGET)/%.txt:	%.cpp
+$(OUT)/%.txt:	%.cpp
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT_DIR)/$(TARGET)/%.o:	%.cpp
+$(OUT)/%.o:	%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
-$(OUT_DIR)/$(TARGET)/%.txt:	%.c
+$(OUT)/%.txt:	%.c
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT_DIR)/$(TARGET)/%.o:	%.c
+$(OUT)/%.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-$(OUT_DIR)/$(TARGET)/%:	$(OUT_DIR)/$(TARGET)/%_unstripped
+%:	%_unstripped
 	$(STRIP) -o $@ $<
 
 ########## Dependencies
@@ -621,14 +480,14 @@ depend:
 	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR); do \
 		for F in $$S/*.c; do \
 			D=`dirname $$F`; \
-			echo -n "$(OUT_DIR)/$(TARGET)/$$D/" >> dependencies.mk; \
+			echo -n "$(OUT)/$$D/" >> dependencies.mk; \
 			$(CC) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
 		done; \
 	done
 	for S in $(SRC_DIR) $(TST_DIR); do \
 		for F in $$S/*.cpp; do \
 			D=`dirname $$F`; \
-			echo -n "$(OUT_DIR)/$(TARGET)/$$D/" >> dependencies.mk; \
+			echo -n "$(OUT)/$$D/" >> dependencies.mk; \
 			$(CXX) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
 		done; \
 	done
