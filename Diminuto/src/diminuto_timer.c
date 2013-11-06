@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <sys/time.h>
 
 #define TIMER_FREQUENCY (1000000)

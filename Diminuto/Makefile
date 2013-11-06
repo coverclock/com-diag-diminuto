@@ -189,7 +189,7 @@ TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(DRV_
 TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
-TARGETALIASES		=	$(addprefix $(OUT)/,$(TARGETSOFTLINKS))
+TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(TARGETSOFTLINKS))
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
@@ -233,7 +233,7 @@ MVFLAGS				=	-i
 LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -ldiminuto -lpthread -lrt -ldl
 LDXXFLAGS			=	$(LDARCH) -L$(OUT)/lib -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
 
-BROWSER		=	firefox
+BROWSER				=	firefox
 
 ########## Main Entry Points
 
@@ -441,15 +441,9 @@ script:	$(SCRIPT).sh
 	cp $(SCRIPT).sh $(SCRIPT)
 	chmod 755 $(SCRIPT)
 
-patch:
-	cd $(BUILDROOT_DIR)
+patch:	$(OLD) $(NEW)
 	echo "diff -purN $(OLD) $(NEW)"
 	diff -purN $(OLD) $(NEW)
-
-########## Directories
-
-$(OUT)/$(BIN_DIR) $(OUT)/$(DRV_DIR) $(OUT)/$(LIB_DIR) $(OUT)/$(MOD_DIR) $(OUT)/$(SRC_DIR) $(OUT)/$(TST_DIR):
-	mkdir -p $@
 
 ########## Rules
 

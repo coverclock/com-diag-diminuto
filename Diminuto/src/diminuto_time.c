@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>

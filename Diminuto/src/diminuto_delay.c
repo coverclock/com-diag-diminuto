@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <sched.h>
 #include <errno.h>
 /* #define _POSIX_C_SOURCE 199309 */

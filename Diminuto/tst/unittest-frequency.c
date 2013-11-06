@@ -9,7 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
 
