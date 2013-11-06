@@ -142,6 +142,7 @@ endif
 
 ########## Directory Tree
 
+BIN_DIR				=	bin
 DOC_DIR				=	doc
 DRV_DIR				=	drv
 INC_DIR				=	inc
