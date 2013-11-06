@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include "com/diag/diminuto/diminuto_time.h"
-#include "diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 
 int main(int argc, char ** argv)
 {
