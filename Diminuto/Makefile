@@ -31,7 +31,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: y
 
 # This stuff all gets embedded in the vintage application.
 TITLE				=	Diminuto
-COPYRIGHT			=	2013 Digital Aggregates Corporation
+COPYRIGHT			=	2013 Digital Aggregates Corporation, Colorado, USA.
 LICENSE				=	GNU Lesser General Public License 2.1
 CONTACT				=	coverclock@diag.com
 HOMEPAGE			=	http://www.diag.com/navigation/downloads/Diminuto.html
@@ -169,7 +169,6 @@ ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
 TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP			=	$(shell date +%Y%m%d)
-IMAGE				=	$(PROJECT)-linux-$(KERNEL_REV)
 SVNURL				=	svn://silver/diminuto/trunk/Diminuto
 
 PROJECT_A			=	lib$(PROJECT).a
@@ -180,8 +179,9 @@ PROJECTXX_SO		=	lib$(PROJECT)xx.so
 PROJECT_LIB			=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
-HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
-TARGETSOFTLINKS		=	hex oct ntohs htons ntohl htonl
+UTILITIES			=	dbdi dcscope dgdb diminuto dlib
+GENERATED			=	vintage
+ALIASES				=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
@@ -189,7 +189,8 @@ TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(DRV_
 TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
-TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(TARGETSOFTLINKS))
+TARGETGENERATED		=	$(addprefix $(OUT)/,$(basename $(GENERATED)))
+TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
@@ -208,7 +209,7 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
-TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
+TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED)
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS) $(TARGETMODULES)
 ARTIFACTS			=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) doxygen-local.cf
@@ -241,16 +242,16 @@ BROWSER				=	firefox
 
 default:	$(TARGETDEFAULT)
 
-all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
+all:	$(UTILITIES) $(TARGETPACKAGE)
 
 dist:	distribution
 
 clean:
-	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(TARGETUNITTESTS) $(ARTIFACTS) unittest-version.c unittest-version
+	rm -rf $(OUT)
 	rm -rf $(DOC_DIR)
 
 pristine:	clean
-	rm -f $(TARGETLIBRARIES)
+	rm -f $(OUT_DIR)
 
 ########## Distribution
 
@@ -341,15 +342,15 @@ vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # For embedding in a system where it can be executed from a shell.
-vintage.c:	diminuto_release.h diminuto_vintage.h
+vintage.c:	$(INC_DIR)/com/diag/diminuto/diminuto_release.h $(INC_DIR)/com/diag/diminuto/diminuto_vintage.h
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#include "diminuto_release.h"' >> $@
-	echo '#include "diminuto_release.h"' >> $@
-	echo '#include "diminuto_vintage.h"' >> $@
-	echo '#include "diminuto_vintage.h"' >> $@
+	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
+	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
+	echo '#include "com/diag/diminuto/diminuto_vintage.h"' >> $@
+	echo '#include "com/diag/diminuto/diminuto_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
-	echo 'static const char VERSION[] =' >> $@
-	echo '"VERSION_BEGIN\n"' >> $@
+	echo 'static const char METADATA[] =' >> $@
+	echo '"METADATA_BEGIN\n"' >> $@
 	echo "\"Title: $(TITLE)\\n\"" >> $@
 	echo "\"Copyright: $(COPYRIGHT)\\n\"" >> $@
 	echo "\"Contact: $(CONTACT)\\n\"" >> $@
@@ -360,11 +361,11 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"VERSION_END\n";' >> $@
-	echo 'int main(void) { fputs(VERSION, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
+	echo '"METADATA_END\n";' >> $@
+	echo 'int main(void) { fputs(METADATA, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-diminuto_release.h:
+$(INC_DIR)/com/diag/diminuto/diminuto_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
@@ -372,7 +373,7 @@ diminuto_release.h:
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-diminuto_vintage.h:
+$(INC_DIR)/com/diag/diminuto/diminuto_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
