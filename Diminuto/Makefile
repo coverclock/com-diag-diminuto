@@ -2,14 +2,6 @@
 # Licensed under the terms in README.h
 # Chip Overclock <coverclock@diag.com>
 # http://www.diag.com/navigation/downloads/Diminuto.html
-# When I first started Diminuto, it began as both an exercise in using the open
-# source buildroot tool and as an associated Linux systems programming library
-# and toolkit written in C. But with later projects like Arroyo, Cascada and
-# Contraption, the library and toolkit built on top of it became much more
-# useful than the artifacts that came out of buildroot. I've left in the
-# buildroot rules, but have not tested them in ages and would not expect them
-# to work. The library and toolkit I use all the time. So the default behavior
-# of this makefile is to just build the library and toolkit.
 
 ########## Customizations
 
@@ -19,7 +11,7 @@ COMPILEFOR	=	host
 #COMPILEFOR	=	cascada
 #COMPILEFOR	=	contraption
 
-MAJOR		=	19# API changes requiring that applications be modified.
+MAJOR		=	20# API changes requiring that applications be modified.
 MINOR		=	0# Only functionality or features added with no API changes.
 BUILD		=	0# Only bugs fixed with no API changes or new functionality.
 
@@ -66,7 +58,7 @@ ifeq ($(COMPILEFOR),diminuto)
 # Build for the AT91RM9200-EK board with the BuildRoot kernel.
 ARCH		=	arm
 PLATFORM	=	linux
-TARGET		=	armv4t
+TARGET		=	diminuto
 CPPARCH		=
 CARCH		=	-march=armv4t
 LDARCH		=	-Bdynamic
@@ -80,7 +72,7 @@ ifeq ($(COMPILEFOR),arroyo)
 # Build for the AT91RM9200-EK board with the Arroyo kernel.
 ARCH		=	arm
 PLATFORM	=	linux
-TARGET		=	armv4t
+TARGET		=	arroyo
 CPPARCH		=
 CARCH		=	-march=armv4t
 LDARCH		=	-Bdynamic
@@ -94,7 +86,7 @@ ifeq ($(COMPILEFOR),cascada)
 # Build for the BeagleBoard C4 with the Angstrom kernel.
 ARCH		=	arm
 PLATFORM	=	linux
-TARGET		=	cortex-A8
+TARGET		=	cascada
 CPPARCH		=
 CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH		=	-Bdynamic
@@ -108,7 +100,22 @@ ifeq ($(COMPILEFOR),contraption)
 # Build for the BeagleBoard C4 with the FroYo Android 2.2 kernel.
 ARCH		=	arm
 PLATFORM	=	linux
-TARGET		=	armv7-a
+TARGET		=	contraption
+CPPARCH		=
+CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+#LDARCH		=	-static
+LDARCH		=	-Bdynamic
+CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV	=	2.6.32
+KERNEL_DIR	=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+INCLUDE_DIR	=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(COMPILEFOR),cobbler)
+# Build for the Raspberry Pi version B.
+ARCH		=	arm
+PLATFORM	=	linux
+TARGET		=	cobbler
 CPPARCH		=
 CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH		=	-static
@@ -130,78 +137,66 @@ LDARCH		=
 CROSS_COMPILE	=
 KERNEL_REV	=	3.2.0-51
 KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-#INCLUDE_DIR	=	$(KERNEL_DIR)/include
 INCLUDE_DIR	=	/usr/include
 endif
 
+########## Directory Tree
+
+DOC_DIR				=	doc
+INC_DIR				=	inc
+LIB_DIR				=	lib
+MOD_DIR				=	mod
+OUT_DIR				=	out
+SRC_DIR				=	src
+TST_DIR				=	tst
+
 ########## Variables
 
-HERE		:=	$(shell pwd)
+HERE				:=	$(shell pwd)
 
-TGT_IPADDR	=	192.168.1.223
-BDI_IPADDR	=	192.168.1.224
-BDI_PORT	=	2001
-TFTP_DIR	=	/var/lib/tftpboot
-TMP_DIR		=	/var/tmp
-ROOT_DIR	=	$(HOME_DIR)/$(PROJECT)
-OPT_DIR		=	/opt
-TOOLCHAIN_DIR	=	$(OPT_DIR)/$(PROJECT)/$(PRODUCT)
-TOOLBIN_DIR	=	${TOOLCHAIN_DIR}/usr/bin
-LOCALBIN_DIR	=	${TOOLCHAIN_DIR}/usr/local/bin
-LOCALLIB_DIR	=	${TOOLCHAIN_DIR}/usr/local/lib
+TMP_DIR				=	/var/tmp
+ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
-CONFIG_VENDOR	=	Atmel
-CONFIG_TARGET	=	at91rm9200ek
+TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
+DATESTAMP			=	$(shell date +%Y%m%d)
+IMAGE				=	$(PROJECT)-linux-$(KERNEL_REV)
+SVNURL				=	svn://silver/diminuto/trunk/Diminuto
 
-BUILDROOT_REV	=	22987
-BUSYBOX_REV		=	1.11.1
+PROJECT_A			=	lib$(PROJECT).a
+PROJECTXX_A		=	lib$(PROJECT)xx.a
+PROJECT_SO			=	lib$(PROJECT).so
+PROJECTXX_SO		=	lib$(PROJECT)xx.so
 
-BUILDROOT_DIR	=	$(ROOT_DIR)/$(PRODUCT)
-PROJECT_DIR		=	$(BUILDROOT_DIR)/project_build_$(ARCH)/$(PROJECT)
-FAKEROOT_DIR	=	$(PROJECT_DIR)/root
-BUSYBOX_DIR		=	$(PROJECT_DIR)/busybox-$(BUSYBOX_REV)
-CONFIG_DIR		=	$(BUILDROOT_DIR)/target/device/$(CONFIG_VENDOR)/$(CONFIG_TARGET)
-BINARIES_DIR	=	$(BUILDROOT_DIR)/binaries
-DIMINUTO_DIR	=	$(ROOT_DIR)/$(PROJECT)/trunk/Diminuto
-DESPERADO_DIR	=	$(ROOT_DIR)/desperado/trunk/Desperado
-FICL_DIR		=	$(ROOT_DIR)/ficl-4.0.31
-UTILS_DIR		=	$(BUILDROOT_DIR)/toolchain_build_$(ARCH)/uClibc-0.9.29/utils
-DOC_DIR			=	doc
-
-TIMESTAMP	=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
-DATESTAMP	=	$(shell date +%Y%m%d)
-IMAGE		=	$(PROJECT)-linux-$(KERNEL_REV)
-SVNURL		=	svn://192.168.1.220/diminuto/trunk/Diminuto
-
-CFILES		=	$(wildcard *.c)
-CXXFILES	=	$(wildcard *.cpp)
-HFILES		=	$(wildcard *.h)
-MFILES		=	$(wildcard modules/*.c)
-
-DIMINUTO_SO		=	lib$(PROJECT).so
-DIMINUTOXX_SO	=	lib$(PROJECT)xx.so
-DESPERADO_SO	=	libdesperado.so
-FICL_SO			=	libficl.so
-
-DIMINUTO_LIB	=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD)
-DIMINUTOXX_LIB	=	$(DIMINUTOXX_SO).$(MAJOR).$(MINOR).$(BUILD)
-DESPERADO_LIB	=	$(DESPERADO_DIR)/$(DESPERADO_SO).[0-9]*.[0-9]*.[0-9]*
-FICL_LIB		=	$(FICL_DIR)/$(FICL_SO).[0-9]*.[0-9]*.[0-9]*
+PROJECT_LIB		=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
-TARGETOBJECTS		=	$(addsuffix .o,$(basename $(wildcard $(PROJECT)_*.c)))
-TARGETOBJECTSXX		=	$(addsuffix .o,$(basename $(wildcard [A-Z]*.cpp)))
-TARGETMODULES		=	modules/diminuto_mmdriver.ko modules/diminuto_utmodule.ko modules/diminuto_kernel_datum.ko modules/diminuto_kernel_map.ko
-TARGETSCRIPTS		=	S10provision
-TARGETBINARIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep vintage
-TARGETALIASES		=	hex oct ntohs htons ntohl htonl
-TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
-TARGETUNITTESTS		=	$(basename $(wildcard unittest-*.c)) $(basename $(wildcard unittest-*.cpp)) $(basename $(wildcard unittest-*.sh))
+TARGETUTILITIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep vintage
+TARGETSOFTLINKS		=	hex oct ntohs htons ntohl htonl
 
-TARGETARCHIVE		=	lib$(PROJECT).a
-TARGETARCHIVEXX		=	lib$(PROJECT)xx.a
-TARGETSHARED		=	$(DIMINUTO_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTO_SO).$(MAJOR).$(MINOR) $(DIMINUTO_SO).$(MAJOR) $(DIMINUTO_SO)
-TARGETSHAREDXX		=	$(DIMINUTOXX_SO).$(MAJOR).$(MINOR).$(BUILD) $(DIMINUTOXX_SO).$(MAJOR).$(MINOR) $(DIMINUTOXX_SO).$(MAJOR) $(DIMINUTOXX_SO)
+TARGETOBJECTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
+TARGETOBJECTSXX		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
+TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c)))))
+TARGETLOADABLES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(LIB_DIR)/*.c)))
+TARGETSCRIPTS		=	
+TARGETBINARIES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETUTILITIES))
+TARGETALIASES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETSOFTLINKS))
+TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
+TARGETUNITTESTS		=	$(basename $(wildcard $(TST_DIR)/*.c))
+TARGETUNITTESTS		+=	$(basename $(wildcard $(TST_DIR)/*.cpp))
+TARGETUNITTESTS		+=	$(basename $(wildcard $(TST_DIR)/*.sh))
+
+TARGETARCHIVE		=	$(OUT_DIR)/$(TARGET)/$(PROJECT_A)
+TARGETARCHIVEXX		=	$(OUT_DIR)/$(TARGET)/$(PROJECTXX_A)
+TARGETSHARED		=	$(OUT_DIR)/$(TARGET)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(PROJECT_SO).$(MAJOR).$(MINOR)
+TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(PROJECT_SO).$(MAJOR)
+TARGETSHARED		+=	$(OUT_DIR)/$(TARGET)/$(PROJECT_SO)
+TARGETSHAREDXX		=	$(OUT_DIR)/$(TARGET)/$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(PROJECTXX_SO).$(MAJOR).$(MINOR)
+TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(PROJECTXX_SO).$(MAJOR)
+TARGETSHAREDXX		+=	$(OUT_DIR)/$(TARGET)/$(PROJECTXX_SO)
+
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
@@ -209,90 +204,54 @@ TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETMODULES)
 ARTIFACTS			=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) doxygen-local.cf
 
-SCRIPT		=	dummy
+SCRIPT				=	dummy
 
-CC			=	$(CROSS_COMPILE)gcc
-CXX			=	$(CROSS_COMPILE)g++
-AR			=	$(CROSS_COMPILE)ar
-RANLIB		=	$(CROSS_COMPILE)ranlib
-STRIP		=	$(CROSS_COMPILE)strip
+CC					=	$(CROSS_COMPILE)gcc
+CXX					=	$(CROSS_COMPILE)g++
+AR					=	$(CROSS_COMPILE)ar
+RANLIB				=	$(CROSS_COMPILE)ranlib
+STRIP				=	$(CROSS_COMPILE)strip
 
-CDEFINES	=	
-
-ARFLAGS		=	rcv
-CPPFLAGS	=	$(CPPARCH) -iquoteinclude -isystem $(INCLUDE_DIR) $(CDEFINES)
-CXXFLAGS	=	$(CARCH) -g
-CFLAGS		=	$(CARCH) -g
-#CXXFLAGS	=	$(CARCH) -O3
-#CFLAGS		=	$(CARCH) -O3
-CPFLAGS		=	-i
-MVFLAGS		=	-i
-LDFLAGS		=	$(LDARCH) -L. -ldiminuto -lpthread -lrt -ldl
-LDXXFLAGS	=	$(LDARCH) -L. -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
+CDEFINES			=	
+ARFLAGS				=	rcv
+CPPFLAGS			=	$(CPPARCH) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
+CXXFLAGS			=	$(CARCH) -g
+CFLAGS				=	$(CARCH) -g
+#CXXFLAGS			=	$(CARCH) -O3
+#CFLAGS				=	$(CARCH) -O3
+CPFLAGS				=	-i
+MVFLAGS				=	-i
+LDFLAGS				=	$(LDARCH) -L$(OUT_DIR)/$(TARGET) -ldiminuto -lpthread -lrt -ldl
+LDXXFLAGS			=	$(LDARCH) -L$(OUT_DIR)/$(TARGET) -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
 
 BROWSER		=	firefox
 
 ########## Main Entry Points
 
-.PHONY:	default all install host-install target-path target-install config-backup tftp-install package distribution distributionfull build
+.PHONY:	default all dist
 
 default:	$(TARGETDEFAULT)
 
 all:	$(HOSTPROGRAMS) $(TARGETPACKAGE)
 
-install:	host-install target-install
-
-host-install:	$(HOSTPROGRAMS) $(LOCALBIN_DIR) $(LOCALLIB_DIR)/lib$(PROJECT).so
-	cp $(CPFLAGS) $(HOSTPROGRAMS) $(LOCALBIN_DIR)
-
-target-patch:	patches
-	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(KERNEL_REV)-head.patch
-	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(KERNNEL_REV)-vmlinuxlds.patch
-	( cd $(BUILDROOT_DIR); patch -p0 ) < $(PROJECT)-$(PRODUCT)-devicetable.patch
-
-target-install:	$(TARGETSHARED) $(TARGETPROGRAMS) $(FAKEROOT_DIR)/usr/local/bin $(FAKEROOT_DIR)/usr/local/lib
-	cp $(CPFLAGS) S10provision $(FAKEROOT_DIR)/etc/init.d
-	cp $(CPFLAGS) getubenv $(FAKEROOT_DIR)/usr/local/bin
-	cp $(CPFLAGS) $(UTILS_DIR)/ldconfig $(FAKEROOT_DIR)/sbin
-	cp $(CPFLAGS) $(UTILS_DIR)/ldd $(FAKEROOT_DIR)/usr/bin
-	echo "/usr/local/lib" > $(FAKEROOT_DIR)/etc/ld.so.conf
-	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DIMINUTO_SO)*
-	cp $(CPFLAGS) $(DIMINUTO_LIB) $(FAKEROOT_DIR)/usr/local/lib
-	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(DESPERADO_SO)* && cp $(CPFLAGS) $(DESPERADO_LIB) $(FAKEROOT_DIR)/usr/local/lib
-	rm -f $(FAKEROOT_DIR)/usr/local/lib/$(FICL_SO)* && cp $(CPFLAGS) $(FICL_LIB) $(FAKEROOT_DIR)/usr/local/lib
-
-config-backup:
-	cp $(CPFLAGS) $(BUILDROOT_DIR)/.config diminuto-buildroot-$(BUILDROOT_REV).config
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).config
-	cp $(CPFLAGS) $(BUSYBOX_DIR)/.config diminuto-busybox-$(BUSYBOX_REV).config
-
-tftp-install:
-	cp $(CPFLAGS) $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(TFTP_DIR)/$(IMAGE)
-
-package:	$(TARGETPACKAGE)
-	tar cvzf - $(TARGETPACKAGE) > $(COMPILEFOR)-$(MAJOR).$(MINOR).$(BUILD).tgz
-
 dist:	distribution
+
+clean:
+	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(TARGETUNITTESTS) $(ARTIFACTS) unittest-version.c unittest-version
+	rm -rf $(DOC_DIR)
+
+pristine:	clean
+	rm -f $(TARGETLIBRARIES)
+
+########## Distribution
+
+.PHONY:	distribution
 
 distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make; ./vintage )
-
-distributionfull:	distribution
-	( cd $(OPT_DIR); tar cvzf - $(PROJECT)/$(PRODUCT) ) > $(TMP_DIR)/$(PROJECT)-toolchain.tgz
-
-build:
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config diminuto-linux-$(KERNEL_REV).bak
-	cp /dev/null $(TMP_DIR)/config-initramfs-source.ex
-	echo "g/^CONFIG_INITRAMFS_SOURCE=/s/\.arm-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]\./.arm-$(DATESTAMP)./" >> $(TMP_DIR)/config-initramfs-source.ex
-	echo "wq" >> $(TMP_DIR)/config-initramfs-source.ex
-	cat $(TMP_DIR)/config-initramfs-source.ex
-	ex -S $(TMP_DIR)/config-initramfs-source.ex $(KERNEL_DIR)/.config
-	rm -f $(TMP_DIR)/config-initramfs-source.ex
-	cp $(CPFLAGS) $(KERNEL_DIR)/.config $(CONFIG_DIR)/$(CONFIG_TARGET)-$(PLATFORM)-$(KERNEL_REV).config
-	( cd $(BUILDROOT_DIR); $(MAKE) 2>&1 | tee LOG )
 
 ########## Host Scripts
 
@@ -311,94 +270,40 @@ dlib:	dlib.sh
 diminuto:	diminuto.sh
 	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=diminuto
 
-diminuto.sh:	Makefile
-	echo "# GENERATED FILE! DO NOT EDIT!" > $@
-	echo ARCH=\"$(ARCH)\" >> $@
-	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> $@
-	echo BDIPORT=\"$(BDI_PORT)\" >> $@
-	echo BINARIES=\"$(BINARIES_DIR)\" >> $@
-	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> $@
-	echo CONFIG=\"$(CONFIG_DIR)\" >> $@
-	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> $@
-	echo DATESTAMP=\"$(DATESTAMP)\" >> $@
-	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> $@
-	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> $@
-	echo DESPERADO=\"$(DESPERADO_DIR)\" >> $@
-	echo FICL=\"$(FICL_DIR)\" >> $@
-	echo IMAGE=\"$(IMAGE)\" >> $@
-	echo KERNEL=\"$(KERNEL_DIR)\" >> $@
-	echo PLATFORM=\"$(PLATFORM)\" >> $@
-	echo PROJECT=\"$(PROJECT)\" >> $@
-	echo RELEASE=\"$(KERNEL_REV)\" >> $@
-	echo TARGET=\"$(TARGET)\" >> $@
-	echo TFTP=\"$(TFTP_DIR)\" >> $@
-	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> $@
-	echo TMPDIR=\"$(TMP_DIR)\" >> $@
-	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> $@
-	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> $@
-
-########## Target Scripts
-
-S10provision:	S10provision.sh getubenv
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=S10provision
-
-########## Install Libraries
-
-$(LOCALLIB_DIR)/lib$(PROJECT).so:	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR)
-	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so )
-	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so )
-
-$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR) )
-	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR) )
-
-$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(LOCALLIB_DIR); rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR) )
-	( cd $(LOCALLIB_DIR); ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR) )
-
-$(LOCALLIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
-	cp $(CPFLAGS) lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(LOCALLIB_DIR)
-
 ########## Target C Libraries
 
-lib$(PROJECT).a:	$(TARGETOBJECTS)
-	$(AR) $(ARFLAGS) lib$(PROJECT).a $(TARGETOBJECTS)
-	$(RANLIB) lib$(PROJECT).a
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+	$(AR) $(ARFLAGS) $@ $^
+	$(RANLIB) $@
 
-lib$(PROJECT).so:	lib$(PROJECT).so.$(MAJOR)
-	rm -f lib$(PROJECT).so
-	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT).so.$(MAJOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	rm -f lib$(PROJECT).so.$(MAJOR)
-	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR)
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT).so.$(MAJOR).$(MINOR):	lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-	rm -f lib$(PROJECT).so.$(MAJOR).$(MINOR)
-	ln -s -f lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT).so.$(MAJOR).$(MINOR)
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT).a
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 	
 ########## Target C++ Libraries
 
-lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
-	$(AR) $(ARFLAGS) lib$(PROJECT)xx.a $(TARGETOBJECTSXX)
-	$(RANLIB) lib$(PROJECT)xx.a
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+	$(AR) $(ARFLAGS) $@ $^
+	$(RANLIB) $@
 
-lib$(PROJECT)xx.so:	lib$(PROJECT)xx.so.$(MAJOR)
-	rm -f lib$(PROJECT)xx.so
-	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT)xx.so.$(MAJOR):	lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
-	rm -f lib$(PROJECT)xx.so.$(MAJOR)
-	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so.$(MAJOR)
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
-	rm -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
-	ln -s -f lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) lib$(PROJECT)xx.so.$(MAJOR).$(MINOR)
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	ln -s -f $< $@
 
-lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	lib$(PROJECT)xx.a
+$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 ########## Target Binaries
@@ -450,6 +355,8 @@ dump_unstripped:	dump.c $(TARGETLIBRARIES)
 
 coreable_unstripped:	coreable.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+########## Unit Tests
 
 unittest-unittest:	unittest-unittest.c $(TARGETLIBRARIES)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
@@ -586,7 +493,7 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo '#include "diminuto_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char VERSION[] =' >> $@
-	echo '"DIMINUTO_VERSION_BEGIN\n"' >> $@
+	echo '"VERSION_BEGIN\n"' >> $@
 	echo "\"Title: $(TITLE)\\n\"" >> $@
 	echo "\"Copyright: $(COPYRIGHT)\\n\"" >> $@
 	echo "\"Contact: $(CONTACT)\\n\"" >> $@
@@ -597,23 +504,23 @@ vintage.c:	diminuto_release.h diminuto_vintage.h
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"DIMINUTO_VERSION_END\n";' >> $@
+	echo '"VERSION_END\n";' >> $@
 	echo 'int main(void) { fputs(VERSION, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
-	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
-	echo "static const char DIMINUTO_RELEASE[] = \"DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo '#ifndef _H_COM_DIAG_PROJECT_RELEASE_' >> $@
+	echo '#define _H_COM_DIAG_PROJECT_RELEASE_' >> $@
+	echo "static const char RELEASE[] = \"RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 diminuto_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
-	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
-	echo "static const char DIMINUTO_VINTAGE[] = \"DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
+	echo '#ifndef _H_COM_DIAG_PROJECT_VINTAGE_' >> $@
+	echo '#define _H_COM_DIAG_PROJECT_VINTAGE_' >> $@
+	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
 
 ########## Drivers
@@ -644,33 +551,6 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > ../diminuto.bak.tgz
 
-acquire:	$(HOME_DIR)/$(PROJECT)
-	cd $(HOME_DIR)/$(PROJECT)
-	svn co svn://uclibc.org/trunk/buildroot
-
-clean:
-	rm -f $(HOSTPROGRAMS) $(TARGETPROGRAMS) $(TARGETUNITTESTS) $(ARTIFACTS) unittest-version.c unittest-version *.o *.so *.so.* core
-	rm -rf $(DOC_DIR)
-
-binaries-clean:
-	 rm -f $(BINARIES_DIR)/$(PROJECT)/$(PLATFORM)-kernel-$(KERNEL_REV)-$(ARCH) $(BINARIES_DIR)/$(PROJECT)/rootfs.*
-
-libraries-clean:
-	rm -f $(TARGETLIBRARIES)
-
-########## Patches
-
-$(PROJECT)-$(kERNEL_REV)-head.patch:
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/head.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/head.S > $(PROJECT)-$(KERNEL_REV)-head.patch
-
-$(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch:
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV).orig/arch/arm/kernel/vmlinux.lds.S NEW=project_build_$(ARCH)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/arch/arm/kernel/vmlinux.lds.S > $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch
-
-$(PROJECT)-$(PRODUCT)-devicetable.patch:
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) patch OLD=target/device/Atmel/root/device_table.txt.orig NEW=target/device/Atmel/root/device_table.txt > $(PROJECT)-$(PRODUCT)-devicetable.patch
-
-patches:	$(PROJECT)-$(kERNEL_REV)-head.patch $(PROJECT)-$(KERNEL_REV)-vmlinuxlds.patch $(PROJECT)-$(PRODUCT)-devicetable.patch
-
 ########## Documentation
 
 documentation:	$(DOC_DIR)/pdf
@@ -689,6 +569,9 @@ refman:
 manpages:
 	$(BROWSER) file:doc/pdf/manpages.pdf
 
+$(DOC_DIR)/pdf:
+	mkdir -p $(DOC_DIR)/pdf
+
 ########## Submakes
 
 .PHONY:	script patch
@@ -704,50 +587,43 @@ patch:
 
 ########## Directories
 
-$(CONFIG_DIR):
-	mkdir -p $(CONFIG_DIR)
-
-$(LOCALBIN_DIR):
-	mkdir -p $(LOCALBIN_DIR)
-
-$(LOCALLIB_DIR):
-	mkdir -p $(LOCALLIB_DIR)
-
-$(FAKEROOT_DIR)/usr/local/bin:
-	mkdir -p $(FAKEROOT_DIR)/usr/local/bin
-
-$(FAKEROOT_DIR)/usr/local/lib:
-	mkdir -p $(FAKEROOT_DIR)/usr/local/lib
-
-$(HOME_DIR)/$(PROJECT):
-	mkdir -p $(HOME_DIR)/$(PROJECT)
-
-$(DOC_DIR)/pdf:
-	mkdir -p $(DOC_DIR)/pdf
 
 ########## Rules
 
-%.txt:	%.cpp
-	$(CXX) -E $(CPPFLAGS) -c $< > $*.txt
+$(OUT_DIR)/$(TARGET)/%.txt:	%.cpp
+	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
-%.o:	%.cpp
+$(OUT_DIR)/$(TARGET)/%.o:	%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
-%.txt:	%.c
-	$(CC) -E $(CPPFLAGS) -c $< > $*.txt
+$(OUT_DIR)/$(TARGET)/%.txt:	%.c
+	$(CC) -E $(CPPFLAGS) -c $< > $@
 
-%.o:	%.c
+$(OUT_DIR)/$(TARGET)/%.o:	%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-%:	%_unstripped
+$(OUT_DIR)/$(TARGET)/%:	$(OUT_DIR)/$(TARGET)/%_unstripped
 	$(STRIP) -o $@ $<
 
 ########## Dependencies
 
 .PHONY:	depend
-
+	
 depend:
-	$(CC) $(CPPFLAGS) -M -MG $(CFILES) $(MFILES) > dependencies.mk
+	cp /dev/null dependencies.mk
+	for S in $(SRC_DIR) $(MOD_DIR) $(LIB_DIR) $(TST_DIR); do \
+		for F in $$S/*.c; do \
+			D=`dirname $$F`; \
+			echo -n "$(OUT_DIR)/$(TARGET)/$$D/" >> dependencies.mk; \
+			$(CC) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+		done; \
+	done
+	for S in $(SRC_DIR) $(TST_DIR); do \
+		for F in $$S/*.cpp; do \
+			D=`dirname $$F`; \
+			echo -n "$(OUT_DIR)/$(TARGET)/$$D/" >> dependencies.mk; \
+			$(CXX) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+		done; \
+	done
 
 -include dependencies.mk
-
