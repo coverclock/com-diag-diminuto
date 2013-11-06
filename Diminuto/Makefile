@@ -276,9 +276,6 @@ dgdb:	dgdb.sh diminuto
 dlib:	dlib.sh
 	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dlib
 
-diminuto:	diminuto.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=diminuto
-
 ########## Target C Libraries
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
@@ -457,15 +454,19 @@ $(OUT)/$(BIN_DIR) $(OUT)/$(DRV_DIR) $(OUT)/$(LIB_DIR) $(OUT)/$(MOD_DIR) $(OUT)/$
 ########## Rules
 
 $(OUT)/%.txt:	%.cpp
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
 $(OUT)/%.o:	%.cpp
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 $(OUT)/%.txt:	%.c
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
 $(OUT)/%.o:	%.c
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 %:	%_unstripped
