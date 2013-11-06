@@ -5,15 +5,15 @@
 
 ########## Customizations
 
-COMPILEFOR	=	host
-#COMPILEFOR	=	diminuto
-#COMPILEFOR	=	arroyo
-#COMPILEFOR	=	cascada
-#COMPILEFOR	=	contraption
+COMPILEFOR			=	host
+#COMPILEFOR			=	diminuto
+#COMPILEFOR			=	arroyo
+#COMPILEFOR			=	cascada
+#COMPILEFOR			=	contraption
 
-MAJOR		=	20# API changes requiring that applications be modified.
-MINOR		=	0# Only functionality or features added with no API changes.
-BUILD		=	0# Only bugs fixed with no API changes or new functionality.
+MAJOR				=	20# API changes requiring that applications be modified.
+MINOR				=	0# Only functionality or features added with no API changes.
+BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -27,14 +27,14 @@ BUILD		=	0# Only bugs fixed with no API changes or new functionality.
 # for the value of the VINTAGE make variable and you should be able to generate
 # identical images with subsequent builds of Diminuto. This string is embedded
 # inside the Diminuto vintage application.
-VINTAGE		:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
 
 # This stuff all gets embedded in the vintage application.
-TITLE		=	Diminuto
-COPYRIGHT	=	2013 Digital Aggregates Corporation
-LICENSE		=	GNU Lesser General Public License 2.1
-CONTACT		=	coverclock@diag.com
-HOMEPAGE	=	http://www.diag.com/navigation/downloads/Diminuto.html
+TITLE				=	Diminuto
+COPYRIGHT			=	2013 Digital Aggregates Corporation
+LICENSE				=	GNU Lesser General Public License 2.1
+CONTACT				=	coverclock@diag.com
+HOMEPAGE			=	http://www.diag.com/navigation/downloads/Diminuto.html
 
 # You can change the VINFO make variable into whatever tool you use to extract
 # version information from your source code control system. For example, I
@@ -44,100 +44,106 @@ HOMEPAGE	=	http://www.diag.com/navigation/downloads/Diminuto.html
 # string. If you don't have a source code control system, don't sweat it. If
 # the VINFO command fails or does not exist, all that happens is no such version
 # information is included in the Diminuto vintage application.
-VINFO		=	svn info
-#VINFO		=	git describe
+VINFO				=	svn info
+#VINFO				=	git describe
 
-HOME_DIR	=	$(HOME)/projects
+# This is where I store collateral associated with projects that I have
+# downloaded off the web and use without alteration. Examples: Linux kernel
+# sources, toolchains, etc.
+HOME_DIR			=	$(HOME)/projects
 
 ########## Configurations
 
-PROJECT		=	diminuto
-PRODUCT		=	buildroot
+PROJECT				=	diminuto
+PRODUCT				=	buildroot
 
 ifeq ($(COMPILEFOR),diminuto)
 # Build for the AT91RM9200-EK board with the BuildRoot kernel.
-ARCH		=	arm
-PLATFORM	=	linux
-TARGET		=	diminuto
-CPPARCH		=
-CARCH		=	-march=armv4t
-LDARCH		=	-Bdynamic
-CROSS_COMPILE	=	$(ARCH)-$(PLATFORM)-
-KERNEL_REV	=	2.6.25.10
-KERNEL_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+ARCH				=	arm
+PLATFORM			=	linux
+TARGET				=	diminuto
+CPPARCH				=
+CARCH				=	-march=armv4t
+LDARCH				=	-Bdynamic
+CROSS_COMPILE		=	$(ARCH)-$(PLATFORM)-
+KERNEL_REV			=	2.6.25.10
+KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
 # Build for the AT91RM9200-EK board with the Arroyo kernel.
-ARCH		=	arm
-PLATFORM	=	linux
-TARGET		=	arroyo
-CPPARCH		=
-CARCH		=	-march=armv4t
-LDARCH		=	-Bdynamic
-CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
-KERNEL_REV	=	2.6.26.3
-KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+ARCH				=	arm
+PLATFORM			=	linux
+TARGET				=	arroyo
+CPPARCH				=
+CARCH				=	-march=armv4t
+LDARCH				=	-Bdynamic
+CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV			=	2.6.26.3
+KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),cascada)
 # Build for the BeagleBoard C4 with the Angstrom kernel.
-ARCH		=	arm
-PLATFORM	=	linux
-TARGET		=	cascada
-CPPARCH		=
-CARCH		=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
-LDARCH		=	-Bdynamic
-CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
-KERNEL_REV	=	2.6.32.7
-KERNEL_DIR	=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR	=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+ARCH				=	arm
+PLATFORM			=	linux
+TARGET				=	cascada
+CPPARCH				=
+CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+LDARCH				=	-Bdynamic
+CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV			=	2.6.32.7
+KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),contraption)
 # Build for the BeagleBoard C4 with the FroYo Android 2.2 kernel.
-ARCH		=	arm
-PLATFORM	=	linux
-TARGET		=	contraption
-CPPARCH		=
-CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
-#LDARCH		=	-static
-LDARCH		=	-Bdynamic
-CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
-KERNEL_REV	=	2.6.32
-KERNEL_DIR	=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-INCLUDE_DIR	=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+ARCH				=	arm
+PLATFORM			=	linux
+TARGET				=	contraption
+CPPARCH				=
+CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+#LDARCH				=	-static
+LDARCH				=	-Bdynamic
+CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV			=	2.6.32
+KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),cobbler)
 # Build for the Raspberry Pi version B.
-ARCH		=	arm
-PLATFORM	=	linux
-TARGET		=	cobbler
-CPPARCH		=
-CARCH		=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
-#LDARCH		=	-static
-LDARCH		=	-Bdynamic
-CROSS_COMPILE	=	$(ARCH)-none-$(PLATFORM)-gnueabi-
-KERNEL_REV	=	2.6.32
-KERNEL_DIR	=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-INCLUDE_DIR	=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+# Toolchain: https://github.com/raspberrypi/tools
+# Kernel: https://github.com/raspberrypi/linux
+# Bootloader: https://github.com/raspberrypi/firmware
+ARCH				=	arm
+PLATFORM			=	linux
+TARGET				=	cobbler
+CPPARCH				=
+CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+#LDARCH				=	-static
+LDARCH				=	-Bdynamic
+CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNEL_REV			=	2.6.32
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),host)
-# Build for my build server with the Ubuntu kernel.
-ARCH		=	i386
-PLATFORM	=	linux
-TARGET		=	i686
-CPPARCH		=
-CARCH		=
-LDARCH		=	
-CROSS_COMPILE	=
-KERNEL_REV	=	3.2.0-51
-KERNEL_DIR	=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-INCLUDE_DIR	=	/usr/include
+# Build for my Dell build server with the Ubuntu kernel.
+ARCH				=	i386
+PLATFORM			=	linux
+TARGET				=	i686
+CPPARCH				=
+CARCH				=
+LDARCH				=	
+CROSS_COMPILE		=
+KERNEL_REV			=	3.2.0-51
+KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+INCLUDE_DIR			=	/usr/include
 endif
 
 ########## Directory Tree
@@ -173,20 +179,19 @@ PROJECT_LIB			=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
 HOSTPROGRAMS		=	dbdi dcscope dgdb diminuto dlib
-TARGETUTILITIES		=	getubenv ipcalc coreable memtool mmdrivertool phex dump dec usectime usecsleep vintage
 TARGETSOFTLINKS		=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
-TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c)))))
-TARGETLOADABLES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c)))
+TARGETDRIVERS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c))))
+TARGETMODULES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
-TARGETBINARIES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETUTILITIES))
-TARGETALIASES		=	$(addprefix $(OUT_DIR)/$(TARGET)/, $(TARGETSOFTLINKS))
+TARGETBINARIES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
+TARGETALIASES		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(TARGETSOFTLINKS))
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
-TARGETUNITTESTS		=	$(basename $(wildcard $(TST_DIR)/*.c))
-TARGETUNITTESTS		+=	$(basename $(wildcard $(TST_DIR)/*.cpp))
-TARGETUNITTESTS		+=	$(basename $(wildcard $(TST_DIR)/*.sh))
+TARGETUNITTESTS		=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.c)))
+TARGETUNITTESTS		+=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
+TARGETUNITTESTS		+=	$(addprefix $(OUT_DIR)/$(TARGET)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
 
 TARGETARCHIVE		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECT_A)
 TARGETARCHIVEXX		=	$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/$(PROJECTXX_A)
@@ -203,7 +208,7 @@ TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS)
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
-TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETMODULES)
+TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS) $(TARGETMODULES)
 ARTIFACTS			=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) doxygen-local.cf
 
 SCRIPT				=	dummy
@@ -214,7 +219,7 @@ AR					=	$(CROSS_COMPILE)ar
 RANLIB				=	$(CROSS_COMPILE)ranlib
 STRIP				=	$(CROSS_COMPILE)strip
 
-CDEFINES			=	
+CDEFINES			=	-DCOM_DIAG_DIMINUTO_VINTAGE=\"$(VINTAGE)\"
 ARFLAGS				=	rcv
 CPPFLAGS			=	$(CPPARCH) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
 CXXFLAGS			=	$(CARCH) -g
@@ -223,8 +228,8 @@ CFLAGS				=	$(CARCH) -g
 #CFLAGS				=	$(CARCH) -O3
 CPFLAGS				=	-i
 MVFLAGS				=	-i
-LDFLAGS				=	$(LDARCH) -L$(OUT_DIR)/$(TARGET) -ldiminuto -lpthread -lrt -ldl
-LDXXFLAGS			=	$(LDARCH) -L$(OUT_DIR)/$(TARGET) -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
+LDFLAGS				=	$(LDARCH) -L$(OUT_DIR)/$(TARGET)/lib -ldiminuto -lpthread -lrt -ldl
+LDXXFLAGS			=	$(LDARCH) -L$(OUT_DIR)/$(TARGET)/lib -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
 
 BROWSER		=	firefox
 
@@ -253,7 +258,7 @@ distribution:
 	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
-	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make; ./vintage )
+	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
 
 ########## Host Scripts
 
@@ -274,38 +279,38 @@ diminuto:	diminuto.sh
 
 ########## Target C Libraries
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 	
 ########## Target C++ Libraries
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	ln -s -f $< $@
 
-$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a
+$(OUT_DIR)/$(TARGET)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT_DIR)/$(TARGET)/lib$(PROJECT)xx.a
 	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 ########## Target Binaries
@@ -535,7 +540,7 @@ modules/Makefile:	Makefile
 	echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include" >> $@
 	#echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include -DDEBUG" >> $@
 
-${TARGETMODULES}:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
+$(TARGETDRIVERS):	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
