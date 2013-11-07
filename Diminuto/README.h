@@ -58,7 +58,6 @@
     Information regarding Diminuto can be found here:
 
         http://www.diag.com/navigation/downloads/Diminuto.html
-        http://www.diag.com/navigation/downloads/Arroyo.html
 
     Contact:
 
