@@ -6,13 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * These are the classes used to integrate Diminuto C-based wells into C++.
- * The are not stored in the Diminuto shared object because to do so,
- * apparently, requires that all of the applications that link with the Diminuto
- * shared object (like all of the unit tests) have C++ main programs. So this
- * is a temporary fix until I figure out how I want to handle this (a second
- * library, another project, etc.).
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
