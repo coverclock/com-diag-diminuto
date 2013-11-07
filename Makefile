@@ -163,6 +163,7 @@ LIB_DIR				=	lib
 MOD_DIR				=	mod
 OUT_DIR				=	out
 SRC_DIR				=	src
+SYM_DIR				=	sym
 TMP_DIR				=	tmp
 TST_DIR				=	tst
 
@@ -199,7 +200,7 @@ TARGETSCRIPTS		=
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
 TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
-TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
+#TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
@@ -344,11 +345,13 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
-########## Target Binaries
+########## Target Unstripped Binaries
 
-$(OUT)/$(BIN_DIR)/%_unstripped:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
-	test -d $(OUT)/$(BIN_DIR) || mkdir -p $(OUT)/$(BIN_DIR)
+$(OUT)/$(SYM_DIR)/%:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
+	test -d $(OUT)/$(SYM_DIR) || mkdir -p $(OUT)/$(SYM_DIR)
 	$(CC) $(CPPFLAGS) -I $(KERNEL_DIR)/include $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+########## Target Aliases
 
 $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN_DIR)/htons $(OUT)/$(BIN_DIR)/ntohl $(OUT)/$(BIN_DIR)/htonl:	$(OUT)/$(BIN_DIR)/dec
 	ln -f $< $@
@@ -411,7 +414,7 @@ $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
 	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
 
-$(OUT)/$(BIN_DIR)/vintage:	$(OUT)/$(TMP_DIR)/vintage.c
+$(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(TMP_DIR)/vintage.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 ########## Modules
@@ -502,7 +505,8 @@ $(OUT)/%.o:	%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
-%:	%_unstripped
+$(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(STRIP) -o $@ $<
 
 ########## Dependencies
