@@ -163,6 +163,7 @@ LIB_DIR				=	lib
 MOD_DIR				=	mod
 OUT_DIR				=	out
 SRC_DIR				=	src
+TMP_DIR				=	tmp
 TST_DIR				=	tst
 
 ########## Variables
@@ -171,12 +172,12 @@ HERE				:=	$(shell pwd)
 
 OUT					=	$(OUT_DIR)/$(TARGET)
 
-TMP_DIR				=	/var/tmp
+TEMP_DIR				=	/var/tmp
 ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
 TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP			=	$(shell date +%Y%m%d)
-SVNURL				=	svn://silver/diminuto/trunk/Diminuto
+SVNURL				=	svn://graphite/diminuto/trunk/Diminuto
 
 PROJECT_A			=	lib$(PROJECT).a
 PROJECTXX_A			=	lib$(PROJECT)xx.a
@@ -266,10 +267,10 @@ pristine:
 .PHONY:	distribution
 
 distribution:
-	rm -rf $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	svn export $(SVNURL) $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
-	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
+	rm -rf $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	svn export $(SVNURL) $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
+	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
 
 ########## Utilities
 
@@ -301,7 +302,7 @@ diminuto.sh:	Makefile
 	echo TARGET=\"$(TARGET)\" >> $@
 	echo TFTP=\"$(TFTP_DIR)\" >> $@
 	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> $@
-	echo TMPDIR=\"$(TMP_DIR)\" >> $@
+	echo TMPDIR=\"$(TEMP_DIR)\" >> $@
 	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> $@
 	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> $@
 
@@ -364,10 +365,10 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ########## Generated
 
-.PHONY:	$(OUT)/$(BIN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+.PHONY:	$(OUT)/$(TMP_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
-$(OUT)/$(BIN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+$(OUT)/$(TMP_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
@@ -394,9 +395,6 @@ $(OUT)/$(BIN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $
 	echo '"METADATA_END\n";' >> $@
 	echo 'int main(void) { fputs(METADATA, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
 
-$(OUT)/$(BIN_DIR)/vintage:	$(OUT)/$(BIN_DIR)/vintage.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
-
 # For embedding in an application where it can be interrogated or displayed.
 $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -412,6 +410,9 @@ $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
 	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
 	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
+
+$(OUT)/$(BIN_DIR)/vintage:	$(OUT)/$(TMP_DIR)/vintage.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 ########## Modules
 
