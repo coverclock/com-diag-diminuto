@@ -155,17 +155,18 @@ endif
 
 ########## Directory Tree
 
-BIN_DIR				=	bin
-DOC_DIR				=	doc
-DRV_DIR				=	drv
-INC_DIR				=	inc
-LIB_DIR				=	lib
-MOD_DIR				=	mod
-OUT_DIR				=	out
-SRC_DIR				=	src
-SYM_DIR				=	sym
-TMP_DIR				=	tmp
-TST_DIR				=	tst
+BIN_DIR				=	bin# Stripped executable binaries
+DOC_DIR				=	doc# Documentation
+DRV_DIR				=	drv# Loadable kernel modules
+ETC_DIR				=	etc# Miscellaneous files
+INC_DIR				=	inc# Header files
+LIB_DIR				=	lib# Archives and shared objects
+MOD_DIR				=	mod# Loadable user modules
+OUT_DIR				=	out# Build artifacts
+SRC_DIR				=	src# Library source files
+SYM_DIR				=	sym# Unstripped executable binaries
+TMP_DIR				=	tmp# Generated files
+TST_DIR				=	tst# Unit tests
 
 ########## Variables
 
