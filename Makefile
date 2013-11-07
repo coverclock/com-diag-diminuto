@@ -504,6 +504,8 @@ $(OUT)/%.txt:	%.c
 $(OUT)/%.o:	%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+	
+.SECONDARY:
 
 $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
