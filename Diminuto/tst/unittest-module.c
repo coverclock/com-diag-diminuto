@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-const char MODULE[] = "./loadables/unittest-module-example.so";
+const char MODULE[] = "./out/i686/mod/unittest-module-example.so";
 
 int main(int argc, char ** argv)
 {

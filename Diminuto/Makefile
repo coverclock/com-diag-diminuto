@@ -66,7 +66,8 @@ TARGET				=	diminuto
 CPPARCH				=
 CARCH				=	-march=armv4t
 LDARCH				=	-Bdynamic
-CROSS_COMPILE		=	$(ARCH)-$(PLATFORM)-
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)
+CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	2.6.25.10
 KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
@@ -80,7 +81,8 @@ TARGET				=	arroyo
 CPPARCH				=
 CARCH				=	-march=armv4t
 LDARCH				=	-Bdynamic
-CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	2.6.26.3
 KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
@@ -94,7 +96,8 @@ TARGET				=	cascada
 CPPARCH				=
 CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH				=	-Bdynamic
-CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	2.6.32.7
 KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
@@ -109,7 +112,8 @@ CPPARCH				=
 CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH				=	-static
 LDARCH				=	-Bdynamic
-CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	2.6.32
 KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
 INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
@@ -127,7 +131,8 @@ CPPARCH				=
 CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH				=	-static
 LDARCH				=	-Bdynamic
-CROSS_COMPILE		=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	2.6.32
 KERNEL_DIR			=	$(HOME_DIR)/cobbler/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
@@ -140,7 +145,8 @@ PLATFORM			=	linux
 TARGET				=	i686
 CPPARCH				=
 CARCH				=
-LDARCH				=	
+LDARCH				=
+TOOLCHAIN			=
 CROSS_COMPILE		=
 KERNEL_REV			=	3.2.0-51
 KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
@@ -190,7 +196,7 @@ TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV
 TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
-TARGETGENERATED		=	$(addprefix $(OUT)/,$(basename $(GENERATED)))
+TARGETGENERATED		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
 TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
 TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
@@ -358,10 +364,11 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ########## Generated
 
-.PHONY:	vintage.c diminuto_release.h diminuto_vintage.h
+.PHONY:	$(OUT)/$(BIN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
-vintage.c:	$(INC_DIR)/com/diag/diminuto/diminuto_release.h $(INC_DIR)/com/diag/diminuto/diminuto_vintage.h
+$(OUT)/$(BIN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
 	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
@@ -379,12 +386,19 @@ vintage.c:	$(INC_DIR)/com/diag/diminuto/diminuto_release.h $(INC_DIR)/com/diag/d
 	echo "\"Vintage: $(VINTAGE)\\n\"" >> $@
 	echo "\"Host: $(shell hostname)\\n\"" >> $@
 	echo "\"Directory: $(shell pwd)\\n\"" >> $@
+	echo "\"Arch: $(ARCH)\\n\"" >> $@
+	echo "\"Target: $(TARGET)\\n\"" >> $@
+	echo "\"Platform: $(PLATFORM)\\n\"" >> $@
+	echo "\"Toolchain: $(TOOLCHAIN)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
 	echo '"METADATA_END\n";' >> $@
 	echo 'int main(void) { fputs(METADATA, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
 
+$(OUT)/$(BIN_DIR)/vintage:	$(OUT)/$(BIN_DIR)/vintage.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/diminuto/diminuto_release.h:
+$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
@@ -392,7 +406,7 @@ $(INC_DIR)/com/diag/diminuto/diminuto_release.h:
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/diminuto/diminuto_vintage.h:
+$(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
