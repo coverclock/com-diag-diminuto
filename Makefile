@@ -1,6 +1,7 @@
 # Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in README.h
-# Chip Overclock <coverclock@diag.com>
+# Chip Overclock
+# mailto:coverclock@diag.com
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
 ########## Customizations
@@ -10,6 +11,7 @@ COMPILEFOR			=	host
 #COMPILEFOR			=	arroyo
 #COMPILEFOR			=	cascada
 #COMPILEFOR			=	contraption
+#COMPILEFOR			=	cobbler
 
 MAJOR				=	20# API changes requiring that applications be modified.
 MINOR				=	0# Only functionality or features added with no API changes.
@@ -27,7 +29,7 @@ BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 # for the value of the VINTAGE make variable and you should be able to generate
 # identical images with subsequent builds of Diminuto. This string is embedded
 # inside the Diminuto vintage application.
-VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)# UTC in ISO8601 format: yyyy-mm-ddThh:mm:ss.nnnnnnnnn-zzzz
+VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
 TITLE				=	Diminuto
@@ -52,10 +54,9 @@ VINFO				=	svn info
 # sources, toolchains, etc.
 HOME_DIR			=	$(HOME)/projects
 
-########## Configurations
-
 PROJECT				=	diminuto
-PRODUCT				=	buildroot
+
+########## Configurations
 
 ifeq ($(COMPILEFOR),diminuto)
 # Build for the AT91RM9200-EK board with the BuildRoot kernel.
@@ -68,7 +69,7 @@ LDARCH				=	-Bdynamic
 CROSS_COMPILE		=	$(ARCH)-$(PLATFORM)-
 KERNEL_REV			=	2.6.25.10
 KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PRODUCT)/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
 ifeq ($(COMPILEFOR),arroyo)
@@ -185,8 +186,8 @@ ALIASES				=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
-TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(DRV_DIR)/*.c))))
-TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(MOD_DIR)/*.c))))
+TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
+TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		=	
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		=	$(addprefix $(OUT)/,$(basename $(GENERATED)))
@@ -210,8 +211,8 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED)
-TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
-TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS) $(TARGETMODULES)
+TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
+TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 ARTIFACTS			=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) doxygen-local.cf
 
 SCRIPT				=	dummy
@@ -250,8 +251,9 @@ clean:
 	rm -rf $(OUT)
 	rm -rf $(DOC_DIR)
 
-pristine:	clean
-	rm -f $(OUT_DIR)
+pristine:
+	rm -rf $(OUT_DIR)
+	rm -rf $(DOC_DIR)
 
 ########## Distribution
 
@@ -263,19 +265,39 @@ distribution:
 	( cd $(TMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
 
-########## Host Scripts
+########## Utilities
 
-dbdi:	dbdi.sh diminuto
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dbdi
+%:	%.sh diminuto
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=$@
 
-dcscope:	dcscope.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dcscope
+diminuto:	diminuto.sh
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=$@
 
-dgdb:	dgdb.sh diminuto
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dgdb
-
-dlib:	dlib.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=dlib
+diminuto.sh:	Makefile
+	echo "# GENERATED FILE! DO NOT EDIT!" > $@
+	echo ARCH=\"$(ARCH)\" >> $@
+	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> $@
+	echo BDIPORT=\"$(BDI_PORT)\" >> $@
+	echo BINARIES=\"$(BINARIES_DIR)\" >> $@
+	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> $@
+	echo CONFIG=\"$(CONFIG_DIR)\" >> $@
+	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> $@
+	echo DATESTAMP=\"$(DATESTAMP)\" >> $@
+	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> $@
+	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> $@
+	echo DESPERADO=\"$(DESPERADO_DIR)\" >> $@
+	echo FICL=\"$(FICL_DIR)\" >> $@
+	echo IMAGE=\"$(IMAGE)\" >> $@
+	echo KERNEL=\"$(KERNEL_DIR)\" >> $@
+	echo PLATFORM=\"$(PLATFORM)\" >> $@
+	echo PROJECT=\"$(PROJECT)\" >> $@
+	echo RELEASE=\"$(KERNEL_REV)\" >> $@
+	echo TARGET=\"$(TARGET)\" >> $@
+	echo TFTP=\"$(TFTP_DIR)\" >> $@
+	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> $@
+	echo TMPDIR=\"$(TMP_DIR)\" >> $@
+	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> $@
+	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> $@
 
 ########## Target C Libraries
 
@@ -338,9 +360,6 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 .PHONY:	vintage.c diminuto_release.h diminuto_vintage.h
 
-vintage_unstripped:	vintage.c $(TARGETLIBRARIES)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-
 # For embedding in a system where it can be executed from a shell.
 vintage.c:	$(INC_DIR)/com/diag/diminuto/diminuto_release.h $(INC_DIR)/com/diag/diminuto/diminuto_vintage.h
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -384,28 +403,33 @@ $(INC_DIR)/com/diag/diminuto/diminuto_vintage.h:
 
 LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
 
-loadables/unittest-module-example.so:	loadables/unittest-module-example.c
+$(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
+	test -d $(OUT)/$(MOD_DIR) || mkdir -p $(OUT)/$(MOD_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 ########## Drivers
 
 .PHONY:	drivers drivers-clean
 
-modules/Makefile:	Makefile
+$(OUT)/$(DRV_DIR)/Makefile:	Makefile
+	test -d $(OUT)/$(DRV_DIR) || mkdir -p $(OUT)/$(DRV_DIR)
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
-	echo "obj-m := diminuto_utmodule.o diminuto_mmdriver.o diminuto_kernel_datum.o diminuto_kernel_map.o" >> $@
-	echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include" >> $@
-	#echo "EXTRA_CFLAGS := -I$(HERE) -I$(HERE)/include -DDEBUG" >> $@
+	echo "obj-m := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))" >> $@
+	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
+	#echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -DDEBUG" >> $@
 
-$(TARGETDRIVERS):	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+$(OUT)/$(DRV_DIR)/%.c:	$(DRV_DIR)/%.c
+	cp $< $@
 
-drivers:	modules/Makefile modules/diminuto_mmdriver.c modules/diminuto_utmodule.c modules/diminuto_kernel_datum.c modules/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+$(TARGETDRIVERS):	$(OUT)/$(DRV_DIR)/Makefile $(OUT)/$(DRV_DIR)/diminuto_mmdriver.c $(OUT)/$(DRV_DIR)/diminuto_utmodule.c $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.c $(OUT)/$(DRV_DIR)/diminuto_kernel_map.c
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+
+drivers:	$(OUT)/$(DRV_DIR)/Makefile $(OUT)/$(DRV_DIR)/diminuto_mmdriver.c $(OUT)/$(DRV_DIR)/diminuto_utmodule.c $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.c $(OUT)/$(DRV_DIR)/diminuto_kernel_map.c
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers-clean:
-	make -C $(KERNEL_DIR) M=$(shell cd modules; pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
-	rm -f modules/Makefile
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	rm -f $(OUT)/$(DRV_DIR)/Makefile
 
 ########## Helpers
 
@@ -443,7 +467,6 @@ script:	$(SCRIPT).sh
 	chmod 755 $(SCRIPT)
 
 patch:	$(OLD) $(NEW)
-	echo "diff -purN $(OLD) $(NEW)"
 	diff -purN $(OLD) $(NEW)
 
 ########## Rules
