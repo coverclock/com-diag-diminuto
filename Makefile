@@ -174,7 +174,7 @@ HERE				:=	$(shell pwd)
 
 OUT					=	$(OUT_DIR)/$(TARGET)
 
-TEMP_DIR				=	/var/tmp
+TEMP_DIR			=	/var/tmp
 ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
 TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
@@ -201,7 +201,6 @@ TARGETSCRIPTS		=
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
 TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
-#TARGETUNSTRIPPED	=	$(addsuffix _unstripped,$(TARGETBINARIES))
 TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
@@ -219,11 +218,13 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
-TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETUNSTRIPPED) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED)
+TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED)
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
-ARTIFACTS			=	doxygen-local.cf
 
+BUILDARTIFACTS		=	doxygen-local.cf $(ETC_DIR)/diminuto.sh dependencies.mk
+
+COMMAND				=	dummy
 SCRIPT				=	dummy
 
 CC					=	$(CROSS_COMPILE)gcc
@@ -248,7 +249,7 @@ BROWSER				=	firefox
 
 ########## Main Entry Points
 
-.PHONY:	default all dist
+.PHONY:	default all dist clean pristine
 
 default:	$(TARGETDEFAULT)
 
@@ -257,12 +258,11 @@ all:	$(UTILITIES) $(TARGETPACKAGE)
 dist:	distribution
 
 clean:
-	rm -rf $(OUT) $(ARTIFACTS)
+	rm -rf $(OUT) $(UTILITIES) $(BUILDARTIFACTS)
 	rm -rf $(DOC_DIR)
 
-pristine:
+pristine:	clean
 	rm -rf $(OUT_DIR)
-	rm -rf $(DOC_DIR)
 
 ########## Distribution
 
@@ -274,15 +274,12 @@ distribution:
 	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
 
-########## Utilities
+########## Host Utilities
 
-%:	%.sh diminuto
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=$@
+%:	$(ETC_DIR)/%.sh
+	$(MAKE) COMPILEFOR=$(COMPILEFOR) script COMMAND=$@ SCRIPT=$<
 
-diminuto:	diminuto.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script SCRIPT=$@
-
-diminuto.sh:	Makefile
+$(ETC_DIR)/diminuto.sh:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo ARCH=\"$(ARCH)\" >> $@
 	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> $@
@@ -452,6 +449,8 @@ drivers-clean:
 
 ########## Helpers
 
+.PHONY:	backup
+
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
 
@@ -459,6 +458,8 @@ backup:	../$(PROJECT).bak.tgz
 	tar cvzf - . > ../diminuto.bak.tgz
 
 ########## Documentation
+
+.PHONY:	documentation browse refman manpages
 
 documentation:
 	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > doxygen-local.cf
@@ -480,10 +481,12 @@ manpages:
 ########## Submakes
 
 .PHONY:	script patch
+	
+script:	$(COMMAND)
 
-script:	$(SCRIPT).sh
-	cp $(SCRIPT).sh $(SCRIPT)
-	chmod 755 $(SCRIPT)
+$(COMMAND):	$(SCRIPT)
+	cp $< $@
+	chmod 755 $@
 
 patch:	$(OLD) $(NEW)
 	diff -purN $(OLD) $(NEW)
