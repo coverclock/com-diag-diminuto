@@ -8,12 +8,12 @@ PROJECT				=	diminuto
 
 ########## Customizations
 
-COMPILEFOR			=	host
-#COMPILEFOR			=	diminuto
-#COMPILEFOR			=	arroyo
-#COMPILEFOR			=	cascada
-#COMPILEFOR			=	contraption
-#COMPILEFOR			=	cobbler
+TARGET			=	host
+#TARGET			=	diminuto
+#TARGET			=	arroyo
+#TARGET			=	cascada
+#TARGET			=	contraption
+#TARGET			=	cobbler
 
 MAJOR				=	20# API changes requiring that applications be modified.
 MINOR				=	0# Only functionality or features added with no legacy API changes.
@@ -58,11 +58,9 @@ HOME_DIR			=	$(HOME)/projects
 
 ########## Configurations
 
-ifeq ($(COMPILEFOR),diminuto)
-# Build for the AT91RM9200-EK board with the BuildRoot kernel.
+ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
 ARCH				=	arm
 PLATFORM			=	linux
-TARGET				=	diminuto
 CPPARCH				=
 CARCH				=	-march=armv4t
 LDARCH				=	-Bdynamic
@@ -73,11 +71,9 @@ KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
-ifeq ($(COMPILEFOR),arroyo)
-# Build for the AT91RM9200-EK board with the Arroyo kernel.
+ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
 ARCH				=	arm
 PLATFORM			=	linux
-TARGET				=	arroyo
 CPPARCH				=
 CARCH				=	-march=armv4t
 LDARCH				=	-Bdynamic
@@ -88,11 +84,9 @@ KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(COMPILEFOR),cascada)
-# Build for the BeagleBoard C4 with the Angstrom kernel.
+ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				=	arm
 PLATFORM			=	linux
-TARGET				=	cascada
 CPPARCH				=
 CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH				=	-Bdynamic
@@ -103,11 +97,9 @@ KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(COMPILEFOR),contraption)
-# Build for the BeagleBoard C4 with the FroYo Android 2.2 kernel.
+ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				=	arm
 PLATFORM			=	linux
-TARGET				=	contraption
 CPPARCH				=
 CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH				=	-static
@@ -119,30 +111,23 @@ KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Androi
 INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(COMPILEFOR),cobbler)
-# Build for the Raspberry Pi version B.
-# Toolchain: https://github.com/raspberrypi/tools
-# Kernel: https://github.com/raspberrypi/linux
-# Bootloader: https://github.com/raspberrypi/firmware
+ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
 ARCH				=	arm
 PLATFORM			=	linux
-TARGET				=	cobbler
 CPPARCH				=
-CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+CARCH				=	
 #LDARCH				=	-static
 LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
 CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.32
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+KERNEL_REV			=	rpi-3.6.y
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(COMPILEFOR),host)
-# Build for my Dell build server with the Ubuntu kernel.
+ifeq ($(TARGET),host)# Build for an Intel build server with the Ubuntu kernel.
 ARCH				=	i386
 PLATFORM			=	linux
-TARGET				=	i686
 CPPARCH				=
 CARCH				=
 LDARCH				=
@@ -159,13 +144,14 @@ BIN_DIR				=	bin# Stripped executable binaries
 DOC_DIR				=	doc# Documentation
 DRV_DIR				=	drv# Loadable kernel modules
 ETC_DIR				=	etc# Miscellaneous files
+GEN_DIR				=	gen# Generated files
 INC_DIR				=	inc# Header files
 LIB_DIR				=	lib# Archives and shared objects
 MOD_DIR				=	mod# Loadable user modules
 OUT_DIR				=	out# Build artifacts
 SRC_DIR				=	src# Library source files
 SYM_DIR				=	sym# Unstripped executable binaries
-TMP_DIR				=	tmp# Generated files
+TMP_DIR				=	tmp# Temporary files
 TST_DIR				=	tst# Unit tests
 
 ########## Variables
@@ -272,12 +258,12 @@ distribution:
 	rm -rf $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	svn export $(SVNURL) $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
-	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make COMPILEFOR=host; ./out/i686/bin/vintage )
+	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make TARGET=host; ./out/i686/bin/vintage )
 
 ########## Host Utilities
 
 %:	$(ETC_DIR)/%.sh
-	$(MAKE) COMPILEFOR=$(COMPILEFOR) script COMMAND=$@ SCRIPT=$<
+	$(MAKE) TARGET=$(TARGET) script COMMAND=$@ SCRIPT=$<
 
 $(ETC_DIR)/diminuto.sh:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
@@ -366,10 +352,10 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ########## Generated
 
-.PHONY:	$(OUT)/$(TMP_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+.PHONY:	$(OUT)/$(GEN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
-$(OUT)/$(TMP_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
@@ -412,7 +398,7 @@ $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
 	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
 
-$(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(TMP_DIR)/vintage.c
+$(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 ########## Modules
@@ -427,35 +413,43 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 
 .PHONY:	drivers drivers-clean
 
-$(OUT)/$(DRV_DIR)/Makefile:	Makefile
-	test -d $(OUT)/$(DRV_DIR) || mkdir -p $(OUT)/$(DRV_DIR)
+OBJ_M =	$(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
+
+$(OUT)/$(TMP_DIR)/Makefile:	Makefile
+	test -d $(OUT)/$(TMP_DIR) || mkdir -p $(OUT)/$(TMP_DIR)
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
-	echo "obj-m := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))" >> $@
+	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
 	#echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -DDEBUG" >> $@
 
-$(OUT)/$(DRV_DIR)/%.c:	$(DRV_DIR)/%.c
+$(OUT)/$(TMP_DIR)/%.c:	$(DRV_DIR)/%.c
 	cp $< $@
 
-$(TARGETDRIVERS):	$(OUT)/$(DRV_DIR)/Makefile $(OUT)/$(DRV_DIR)/diminuto_mmdriver.c $(OUT)/$(DRV_DIR)/diminuto_utmodule.c $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.c $(OUT)/$(DRV_DIR)/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+$(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(TMP_DIR)/%.ko
+	cp $< $@
 
-drivers:	$(OUT)/$(DRV_DIR)/Makefile $(OUT)/$(DRV_DIR)/diminuto_mmdriver.c $(OUT)/$(DRV_DIR)/diminuto_utmodule.c $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.c $(OUT)/$(DRV_DIR)/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+$(TARGETDRIVERS):	$(OUT)/$(TMP_DIR)/Makefile $(OUT)/$(TMP_DIR)/diminuto_mmdriver.c $(OUT)/$(TMP_DIR)/diminuto_utmodule.c $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.c $(OUT)/$(TMP_DIR)/diminuto_kernel_map.c
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+
+drivers:	$(OUT)/$(TMP_DIR)/Makefile $(OUT)/$(TMP_DIR)/diminuto_mmdriver.c $(OUT)/$(TMP_DIR)/diminuto_utmodule.c $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.c $(OUT)/$(TMP_DIR)/diminuto_kernel_map.c
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers-clean:
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(DRV_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
-	rm -f $(OUT)/$(DRV_DIR)/Makefile
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	rm -f $(OUT)/$(TMP_DIR)/Makefile
 
 ########## Helpers
 
-.PHONY:	backup
+.PHONY:	backup package
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
 
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > ../diminuto.bak.tgz
+
+package ../$(PROJECT).tgz:
+	tar -C $(OUT) -cvzf - ./bin ./drv ./lib ./mod > ../$(PROJECT).tgz
 
 ########## Documentation
 
@@ -481,7 +475,7 @@ manpages:
 ########## Submakes
 
 .PHONY:	script patch
-	
+
 script:	$(COMMAND)
 
 $(COMMAND):	$(SCRIPT)
@@ -518,7 +512,7 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 ########## Dependencies
 
 .PHONY:	depend
-	
+
 depend:
 	cp /dev/null dependencies.mk
 	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR); do \
