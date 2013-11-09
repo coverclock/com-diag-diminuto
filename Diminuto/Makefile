@@ -220,12 +220,13 @@ RANLIB				=	$(CROSS_COMPILE)ranlib
 STRIP				=	$(CROSS_COMPILE)strip
 
 CDEFINES			=	-DCOM_DIAG_DIMINUTO_VINTAGE=\"$(VINTAGE)\"
+
 ARFLAGS				=	rcv
 CPPFLAGS			=	$(CPPARCH) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
-CXXFLAGS			=	$(CARCH) -g
-CFLAGS				=	$(CARCH) -g
-#CXXFLAGS			=	$(CARCH) -O3
-#CFLAGS				=	$(CARCH) -O3
+CXXFLAGS			=	$(CARCH) -fPIC -g
+CFLAGS				=	$(CARCH) -fPIC -g
+#CXXFLAGS			=	$(CARCH) -fPIC -O3
+#CFLAGS				=	$(CARCH) -fPIC -O3
 CPFLAGS				=	-i
 MVFLAGS				=	-i
 LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -ldiminuto -lpthread -lrt -ldl
@@ -299,7 +300,7 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 	$(RANLIB) $@
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).a
-	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -318,7 +319,7 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 	$(RANLIB) $@
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a
-	$(CC) $(CARCH) -shared -Wl,-soname,$@ -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -447,8 +448,8 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > ../diminuto.bak.tgz
 
-package ../$(PROJECT).tgz:
-	tar -C $(OUT) -cvzf - ./bin ./drv ./lib ./mod > ../$(PROJECT).tgz
+package $(PROJECT).tgz:
+	tar -C $(OUT) -cvzf - ./bin ./drv ./lib ./mod ./tst > $(PROJECT).tgz
 
 ########## Documentation
 
