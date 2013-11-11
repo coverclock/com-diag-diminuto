@@ -402,7 +402,7 @@ $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
-########## Modules
+########## User-Space Loadable Modules
 
 LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
 
@@ -410,7 +410,7 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 	test -d $(OUT)/$(MOD_DIR) || mkdir -p $(OUT)/$(MOD_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
-########## Drivers
+########## Kernel-Space Loadable Modules
 
 .PHONY:	drivers drivers-clean
 
@@ -431,7 +431,7 @@ $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(TMP_DIR)/%.ko
 	test -d $(OUT)/$(DRV_DIR) || mkdir -p $(OUT)/$(DRV_DIR)
 	cp $< $@
 
-$(OUT)/$(TMP_DIR)/diminuto_mmdriver.ko $(OUT)/$(TMP_DIR)/diminuto_utmodule.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(TMP_DIR)/Makefile $(OUT)/$(TMP_DIR)/diminuto_mmdriver.c $(OUT)/$(TMP_DIR)/diminuto_utmodule.c $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.c $(OUT)/$(TMP_DIR)/diminuto_kernel_map.c
+drivers $(OUT)/$(TMP_DIR)/diminuto_mmdriver.ko $(OUT)/$(TMP_DIR)/diminuto_utmodule.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(TMP_DIR)/Makefile $(OUT)/$(TMP_DIR)/diminuto_mmdriver.c $(OUT)/$(TMP_DIR)/diminuto_utmodule.c $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.c $(OUT)/$(TMP_DIR)/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers-clean:
