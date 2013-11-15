@@ -117,8 +117,11 @@ int main(int argc, char ** argv) {
 	int mask;
 	int bit;
 	diminuto_ticks_t time;
+	diminuto_ticks_t frequency;
 
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
+
+	frequency = diminuto_time_resolution();
 
 	/* No well. */
 
@@ -135,7 +138,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
+		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-unsafe well. */
@@ -153,7 +156,7 @@ int main(int argc, char ** argv) {
 				delete doohickey[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
+		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-unsafe well from base class. */
@@ -171,7 +174,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
+		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-safe well. */
@@ -189,7 +192,7 @@ int main(int argc, char ** argv) {
 				delete thingamajig[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
+		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-safe well from base class. */
@@ -207,7 +210,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %lluus\n", bit, diminuto_time_thread() - time);
+		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	EXIT();
