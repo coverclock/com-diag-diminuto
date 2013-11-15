@@ -23,7 +23,6 @@ int main(void)
 	size_t alignment;
 	size_t power;
 	size_t allocated;
-	size_t previous;
 	int method;
 
 	method = -1;
@@ -57,7 +56,7 @@ int main(void)
        	ASSERT(diminuto_memory_is_power(power));
    }
 
-	for (candidate = 3; candidate < 0x80000000; candidate = (candidate << 1) | 1) {
+	for (candidate = 0x3; candidate < 0x80000000; candidate = (candidate << 1) | 1) {
     	ASSERT(!diminuto_memory_is_power(candidate));
     	power = diminuto_memory_power(candidate);
      	ASSERT(power > candidate);
@@ -70,16 +69,15 @@ int main(void)
     	ASSERT(diminuto_memory_is_power(power));
     }
 
-	fprintf(stderr, "%8s %8s %8s %8s\n", "SIZE", "ALIGN", "POWER", "ALLOC");
-	previous = 0;
-	for (size = 1; size <= DIMINUTO_MEMORY_PAGESIZE_BYTES; ++size) {
-		for (alignment = 1; alignment <= DIMINUTO_MEMORY_LINESIZE_BYTES; ++alignment) {
+	pagesize2 = pagesize * 2;
+	linesize2 = linesize * 2;
+	for (size = 1; size <= pagesize2; ++size) {
+		for (alignment = 1; alignment <= linesize2; ++alignment) {
 			power = diminuto_memory_power(alignment);
 			allocated = diminuto_memory_alignment(size, power);
-			if (allocated != previous) {
-				fprintf(stderr, "%8u %8u %8u %8u\n", size, alignment, power, allocated);
-				previous = allocated;
-			}
+			ASSERT(allocated >= size);
+			ASSERT(allocated <= pagesize2);
+			ASSERT((allocated % power) == 0);
 		}
 	}
 }

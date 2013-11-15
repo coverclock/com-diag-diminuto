@@ -58,14 +58,21 @@ enum DiminutoWellIndex {
  * Another approach is to align objects on a cache line, which may waste space
  * but avoids word tearing. As usual, life is a series of trade-offs. A zero
  * alignment can be used to specify the cache line size returned by
- * diminuto_well_cacheline(); values greater than zero will be adjusted to the
- * smallest power of two greater than or equal to the specified value.
+ * diminuto_memory_linesize(); values greater than zero will be adjusted to the
+ * smallest power of two greater than or equal to the specified value. If zero
+ * is specified for either the page size or the line size, the function will
+ * automatically call diminuto_memory_pagesize() and/or
+ * diminuto_memory_linesize() to determine the values (but there is some
+ * overhead in repeatedly calling these functions even though their values are
+ * not going to change).
  * @param size is the desired size of objects to be kept in the well.
  * @param count is the desired number of objects in the well.
- * @param alignment is the alignment of each object in the well.
+ * @param alignment is the desired alignment of each object in the well.
+ * @param pagesize is the virtual page size of the underlying platform or zero.
+ * @param linesize is the cache line size of the underlying target or zero.
  * @return a pointer to the well.
  */
-extern diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment);
+extern diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment, size_t pagesize, size_t linesize);
 
 /**
  * Release all of memory associated with the well. This includes not just
@@ -183,18 +190,22 @@ protected:
 	 * memory for the well is allocated at the time of well construction.
 	 * @param ss is the size of objects in the well in bytes.
 	 * @param cc is the fixed number of objects in the well.
-	 * @param pp if true causes memory to be allocated during construction.
+	 * @param mm if true causes memory to be allocated during construction.
 	 * @param aa is the alignment of objects in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	explicit BaseWell(size_t ss, size_t cc, bool pp, size_t aa);
+	explicit BaseWell(size_t ss, size_t cc, bool mm, size_t aa, size_t pp = 0, size_t ll = 0);
 
 	/**
 	 * Allocate memory for the well.
 	 * @param ss is the size of an object allocated from the well.
 	 * @param cc is the count of objects in the well.
 	 * @param aa is the alignment of objects in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	void init(size_t ss, size_t cc, size_t aa);
+	void init(size_t ss, size_t cc, size_t aa, size_t pp = 0, size_t ll = 0);
 
 	/**
 	 * Allocate memory for an object of type _TYPE_ from the well.
@@ -225,6 +236,18 @@ protected:
 	 * value would be eight.
 	 */
 	size_t alignment;
+
+	/**
+	 * This is the virtual page size of the underlying platform, or zero
+	 * to use the platform default.
+	 */
+	size_t pagesize;
+
+	/**
+	 * This is the cache line size of the underlying target, or zero to use
+	 * the platform default.
+	 */
+	size_t linesize;
 
 	/**
 	 * This is a pointer to the lazily allocated well for objects of type
@@ -281,18 +304,22 @@ protected:
 	 * memory for the well is allocated at the time of well construction.
 	 * @param ss is the size of objects in the well in bytes.
 	 * @param cc is the fixed number of objects in the well.
-	 * @param pp if true causes memory to be allocated during construction.
+	 * @param mm if true causes memory to be allocated during construction.
 	 * @param aa is the alignment of objects in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	explicit SafeBaseWell(size_t ss, size_t cc, bool pp, size_t aa);
+	explicit SafeBaseWell(size_t ss, size_t cc, bool mm, size_t aa, size_t pp = 0, size_t ll = 0);
 
 	/**
 	 * Allocate memory for the well.
 	 * @param ss is the size of an object allocated from the well.
 	 * @param cc is the count of objects in the well.
 	 * @param aa is the alignment of objects in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	void init(size_t ss, size_t cc, size_t aa);
+	void init(size_t ss, size_t cc, size_t aa, size_t pp, size_t ll);
 
 	/**
 	 * Allocate memory for an object of type _TYPE_ from the well.
@@ -344,10 +371,13 @@ public:
 	 * [3] If cardinality is greater than zero and preallocation is enabled,
 	 * memory for the well is allocated at the time of well construction.
 	 * @param cc is the fixed number of items of type _TYPE_ in the well.
-	 * @param pp if true causes memory to be allocated during construction.
+	 * @param mm if true causes memory to be allocated during construction.
+	 * @param aa is the alignment of objects in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	explicit Well(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
-	: BaseWell(sizeof(_TYPE_), cc, pp, aa)
+	explicit Well(size_t cc = 0, bool mm = true, size_t aa = _ALIGNMENT_, size_t pp = 0, size_t ll = 0)
+	: BaseWell(sizeof(_TYPE_), cc, mm, aa, pp, ll)
 	{}
 
 	/**
@@ -364,8 +394,10 @@ public:
 	 * Allocate memory for the well.
 	 * @param cc is the count of objects of type _TYPE_ in the well.
 	 * @param aa is the alignment of objects of type _TYPE_ in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	void init(size_t cc, size_t aa = _ALIGNMENT_) { BaseWell::init(sizeof(_TYPE_), cc, aa); }
+	void init(size_t cc, size_t aa = _ALIGNMENT_, size_t pp = 0, size_t ll = 0) { BaseWell::init(sizeof(_TYPE_), cc, aa, pp, ll); }
 
 	/**
 	 * Allocate memory for an object of type _TYPE_ from the well.
@@ -411,10 +443,13 @@ public:
 	 * [3] If cardinality is greater than zero and preallocation is enabled,
 	 * memory for the well is allocated at the time of well construction.
 	 * @param cc is the fixed number of items of type _TYPE_ in the well.
-	 * @param pp if true causes memory to be allocated during construction.
+	 * @param mm if true causes memory to be allocated during construction.
+	 * @param aa is the alignment of objects of type _TYPE_ in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	explicit SafeWell(size_t cc = 0, bool pp = true, size_t aa = _ALIGNMENT_)
-	: SafeBaseWell(sizeof(_TYPE_), cc, pp, aa)
+	explicit SafeWell(size_t cc = 0, bool mm = true, size_t aa = _ALIGNMENT_, size_t pp = 0, size_t ll = 0)
+	: SafeBaseWell(sizeof(_TYPE_), cc, pp, aa, pp, ll)
 	{}
 
 	/**
@@ -431,8 +466,10 @@ public:
 	 * Allocate memory for the well.
 	 * @param cc is the count of objects of type _TYPE_ in the well.
 	 * @param aa is the alignment of objects of type _TYPE_ in the well.
+	 * @param pp is the virtual page size of the underlying platform or zero.
+	 * @param ll is the cache line size of the underlying target or zero.
 	 */
-	void init(size_t cc, size_t aa = _ALIGNMENT_) { SafeBaseWell::init(sizeof(_TYPE_), cc, aa); }
+	void init(size_t cc, size_t aa = _ALIGNMENT_, size_t pp = 0, size_t ll = 0) { SafeBaseWell::init(sizeof(_TYPE_), cc, aa, pp, ll); }
 
 	/**
 	 * Allocate memory for an object of type _TYPE_ from the well.

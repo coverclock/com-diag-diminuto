@@ -18,18 +18,20 @@ namespace com {
  * BASE WELL
  ******************************************************************************/
 
-BaseWell::BaseWell(size_t ss, size_t cc, bool pp, size_t aa)
+BaseWell::BaseWell(size_t ss, size_t cc, bool mm, size_t aa, size_t pp, size_t ll)
 : size(ss)
 , cardinality(cc)
 , alignment(aa)
+, pagesize(pp)
+, linesize(ll)
 , wellp(static_cast<diminuto_well_t *>(0))
 {
 	if (cc == 0) {
 		/* Do nothing. */
-	} else if (!pp) {
+	} else if (!mm) {
 		/* Do nothing. */
 	} else {
-		init(size, cardinality, alignment);
+		init(size, cardinality, alignment, pagesize, linesize);
 	}
 }
 
@@ -37,9 +39,9 @@ BaseWell::~BaseWell() {
 	fini();
 }
 
-void BaseWell::init(size_t ss, size_t cc, size_t aa) {
+void BaseWell::init(size_t ss, size_t cc, size_t aa, size_t pp, size_t ll) {
 	if (wellp == static_cast<diminuto_well_t *>(0)) {
-		wellp = diminuto_well_init(ss, cc, aa);
+		wellp = diminuto_well_init(ss, cc, aa, pp, ll);
 	}
 }
 
@@ -81,8 +83,8 @@ bool BaseWell::isEmpty() const {
  * SAFE BASE WELL
  ******************************************************************************/
 
-SafeBaseWell::SafeBaseWell(size_t ss, size_t cc, bool pp, size_t aa)
-: BaseWell(ss, cc, pp, aa)
+SafeBaseWell::SafeBaseWell(size_t ss, size_t cc, bool mm, size_t aa, size_t pp, size_t ll)
+: BaseWell(ss, cc, mm, aa, pp, ll)
 {
 	pthread_mutex_init(&mutex, (pthread_mutexattr_t *)0);
 }
@@ -97,9 +99,9 @@ void SafeBaseWell::init() {
 	pthread_mutex_unlock(&mutex);
 }
 
-void SafeBaseWell::init(size_t ss, size_t cc, size_t aa) {
+void SafeBaseWell::init(size_t ss, size_t cc, size_t aa, size_t pp, size_t ll) {
 	pthread_mutex_lock(&mutex);
-		BaseWell::init(ss, cc, aa);
+		BaseWell::init(ss, cc, aa, pp, ll);
 	pthread_mutex_unlock(&mutex);
 }
 
