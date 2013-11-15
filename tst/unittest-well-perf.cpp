@@ -42,7 +42,7 @@ extern "C" {
 #include <stdlib.h>
 
 enum {
-	ITERATIONS = 10000,
+	ITERATIONS = 1000000,
 	CARDINALITY = 1000,
 };
 
