@@ -62,9 +62,9 @@ enum DiminutoWellIndex {
  * smallest power of two greater than or equal to the specified value. If zero
  * is specified for either the page size or the line size, the function will
  * automatically call diminuto_memory_pagesize() and/or
- * diminuto_memory_linesize() to determine the values (but there is some
- * overhead in repeatedly calling these functions even though their values are
- * not going to change).
+ * diminuto_memory_linesize() to determine the values. (There is some overhead
+ * in repeatedly calling these functions even though their values are never
+ * going to change).
  * @param size is the desired size of objects to be kept in the well.
  * @param count is the desired number of objects in the well.
  * @param alignment is the desired alignment of each object in the well.
