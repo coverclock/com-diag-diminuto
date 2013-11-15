@@ -17,10 +17,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-static size_t pagesize = 0;
-static size_t linesize = 0;
-
-diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment)
+diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment, size_t pagesize, size_t linesize)
 {
 	diminuto_well_t * wellp = (diminuto_well_t *)0;
 	diminuto_well_t * well;
