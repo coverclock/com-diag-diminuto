@@ -44,12 +44,19 @@ extern FILE * diminuto_pin_output(int pin);
 extern int diminuto_pin_get(FILE * fp);
 
 /**
- * Set a GPIO pin to high (true) or low (false). The application is responsible
+ * Set a GPIO pin to high (true). The application is responsible
  * for inversion (if, for example, the pin is active low).
  * @param fp points to an output GPIO FILE pointer.
- * @param assert is true to set the pin to high, false to set it to low.
  * @return >=0 for success, <0 for error.
  */
-extern int diminuto_pin_set(FILE * fp, int assert);
+extern int diminuto_pin_set(FILE * fp);
+
+/**
+ * Set a GPIO pin to low (false). The application is responsible
+ * for inversion (if, for example, the pin is active low).
+ * @param fp points to an output GPIO FILE pointer.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_clear(FILE * fp);
 
 #endif

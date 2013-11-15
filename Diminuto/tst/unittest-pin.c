@@ -30,28 +30,29 @@ int main(void)
 	EXPECT(diminuto_pin_debug(!0) == 0);
 
 	ASSERT((pin98 = diminuto_pin_input(98)) != (FILE *)0);
-	EXPECT(system("test `cat /tmp/class/gpio/export` == 98") == 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio98/direction` == input") == 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio98/direction` == output") != 0);
+	EXPECT(system("test `tail -1 /tmp/class/gpio/export` == 98") == 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio98/direction` == in") == 0);
 
 	ASSERT((pin99 = diminuto_pin_output(99)) != (FILE *)0);
-	EXPECT(system("test `cat /tmp/class/gpio/export` == 99") == 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio99/direction` == output") == 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio99/direction` == input") != 0);
+	EXPECT(system("test `tail -1 /tmp/class/gpio/export` == 99") == 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio99/direction` == out") == 0);
 
 	EXPECT(system("echo 0 > /tmp/class/gpio/gpio98/value") == 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio98/value` -eq 0") == 0);
 	EXPECT(!diminuto_pin_get(pin98));
 	EXPECT(system("echo 1 > /tmp/class/gpio/gpio98/value") == 0);
-	EXPECT(!!diminuto_pin_get(pin98));
+	EXPECT(system("test `cat /tmp/class/gpio/gpio98/value` -eq 1") == 0);
+	EXPECT(diminuto_pin_get(pin98));
 	EXPECT(system("echo 0 > /tmp/class/gpio/gpio98/value") == 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio98/value` -eq 0") == 0);
 	EXPECT(!diminuto_pin_get(pin98));
 
-	EXPECT(diminuto_pin_set(pin99, 0) >= 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` == 0") == 0);
-	EXPECT(diminuto_pin_set(pin99, !0) >= 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` == 1") == 0);
-	EXPECT(diminuto_pin_set(pin99, 0) >= 0);
-	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` == 0") == 0);
+	EXPECT(diminuto_pin_clear(pin99) >= 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` -eq 0") == 0);
+	EXPECT(diminuto_pin_set(pin99) >= 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` -eq 1") == 0);
+	EXPECT(diminuto_pin_clear(pin99) >= 0);
+	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` -eq 0") == 0);
 
 	EXPECT(fclose(pin98) != EOF);
 	EXPECT(fclose(pin99) != EOF);
