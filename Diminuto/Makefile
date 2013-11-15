@@ -381,7 +381,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $
 	echo "\"Toolchain: $(TOOLCHAIN)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
 	echo '"METADATA_END\n";' >> $@
-	echo 'int main(void) { fputs(METADATA, stdout); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr); return 0; }' >> $@
+	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
 $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h:

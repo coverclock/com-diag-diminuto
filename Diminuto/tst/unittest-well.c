@@ -11,6 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdlib.h>
@@ -35,9 +36,8 @@ int main(void)
 
     ASSERT(sizeof(object_t) == (sizeof(int) * 3));
 
-    pagesize = diminuto_well_pagesize();
-
-    linesize = diminuto_well_linesize();
+    pagesize = diminuto_memory_pagesize(0);
+    linesize = diminuto_memory_linesize(0);
 
     /**/
 
@@ -112,7 +112,7 @@ int main(void)
     pa[1] = (object_t *)diminuto_well_alloc(wellp);
 	ASSERT(pa[1] != (object_t *)0);
 
-	ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_well_alignment(sizeof(object_t), 8));
+	ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_memory_alignment(sizeof(object_t), 8));
 
     diminuto_well_fini(wellp);
 
