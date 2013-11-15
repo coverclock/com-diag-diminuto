@@ -9,137 +9,13 @@
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_heap.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
-
-size_t diminuto_well_pagesize()
-{
-	ssize_t pagesize;
-
-#if defined(DIMINUTO_PAGESIZE)
-
-	pagesize = DIMINUTO_PAGESIZE;
-
-#elif defined(_SC_PAGESIZE)
-
-	if ((pagesize = sysconf(_SC_PAGESIZE)) < 0) {
-		diminuto_perror("sysconf(_SC_PAGESIZE)");
-		pagesize = DIMINUTO_WELL_PAGESIZE;
-	}
-
-#else
-
-	if ((pagesize = getpagesize()) < 0) {
-		diminuto_perror("getpagesize");
-		pagesize = DIMINUTO_WELL_PAGESIZE;
-	}
-
-#endif
-
-	return pagesize;
-}
-
-size_t diminuto_well_linesize()
-{
-	ssize_t linesize;
-
-#if defined(DIMINUT_LINESIZE)
-
-	linesize = DIMINUTO_LINESIZE;
-
-#else
-
-	FILE * fp;
-	int rc;
-
-	do {
-
-#if defined(_SC_LEVEL1_DCACHE_LINESIZE)
-
-		if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) >= 0) {
-			break;
-		}
-		diminuto_perror("sysconf(_SC_LEVEL1_DCACHE_LINESIZE)");
-
-#endif
-
-		if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size", "r")) == (FILE *)0) {
-			/* Do nothing. */
-		} else if ((rc = fscanf(fp, "%zd", &linesize)) > 0) {
-			/* Do nothing. */
-		} else {
-			errno = EINVAL;
-			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size");
-		}
-		fclose(fp);
-		if (fp == (FILE *)0) {
-			/* Do nothing. */
-		} else if (rc <= 0) {
-			/* Do nothing. */
-		} else {
-			break;
-		}
-
-		if ((fp = fopen("/sys/devices/system/cpu/cpu0/cache/coherency_line_size", "r")) == (FILE *)0) {
-			/* Do nothing. */
-		} else if ((rc = fscanf(fp, "%zd", &linesize)) > 0) {
-			/* Do nothing. */
-		} else {
-			errno = EINVAL;
-			diminuto_perror("/sys/devices/system/cpu/cpu0/cache/coherency_line_size");
-		}
-		fclose(fp);
-		if (fp == (FILE *)0) {
-			/* Do nothing. */
-		} else if (rc <= 0) {
-			/* Do nothing. */
-		} else {
-			break;
-		}
-
-		linesize = DIMINUTO_WELL_LINESIZE;
-
-	} while (0);
-
-#endif
-
-	return linesize;
-}
-
-size_t diminuto_well_power(size_t alignment)
-{
-	size_t power = 1;
-
-	while ((0 < power) && (power < alignment)) {
-		power <<= 1;
-	}
-
-	return power;
-}
-
-int diminuto_well_is_power(size_t value)
-{
-	int bits = 0;
-
-	while (value > 0) {
-		if ((value & 1) != 0) {
-			++bits;
-		}
-		value >>= 1;
-	}
-
-	return (bits == 1);
-}
-
-size_t diminuto_well_alignment(size_t size, size_t alignment)
-{
-	alignment -= 1;
-	return (size + alignment) & (~alignment);
-}
 
 static size_t pagesize = 0;
 static size_t linesize = 0;
@@ -156,7 +32,7 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 	do {
 
 		if (pagesize == 0) {
-			pagesize = diminuto_well_pagesize();
+			pagesize = diminuto_memory_pagesize(0);
 		}
 
 		rc = posix_memalign(&control, pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
@@ -167,15 +43,15 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 		}
 
 		if (linesize == 0) {
-			linesize = diminuto_well_linesize();
+			linesize = diminuto_memory_linesize(0);
 		}
 
 		if (alignment == 0) {
 			alignment = linesize;
 		}
 
-		alignment = diminuto_well_power(alignment);
-		size = diminuto_well_alignment(size, alignment);
+		alignment = diminuto_memory_power(alignment);
+		size = diminuto_memory_alignment(size, alignment);
 
 		rc = posix_memalign(&data, pagesize, size * count);
 		if (rc != 0) {
