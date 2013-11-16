@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
@@ -146,7 +147,7 @@ FILE * diminuto_pin_open(int pin)
 	return fp;
 }
 
-int diminuto_pin_write(FILE * fp, int assert)
+int diminuto_pin_put(FILE * fp, int assert)
 {
 	int rc = -1;
 
@@ -175,7 +176,7 @@ int diminuto_pin_write(FILE * fp, int assert)
 	return rc;
 }
 
-int diminuto_pin_read(FILE * fp)
+int diminuto_pin_get(FILE * fp)
 {
 	int value = -1;
 	int rc;
@@ -244,15 +245,10 @@ FILE * diminuto_pin_output(int pin)
 
 int diminuto_pin_set(FILE * fp)
 {
-	return diminuto_pin_write(fp, !0);
+	return diminuto_pin_put(fp, !0);
 }
 
 int diminuto_pin_clear(FILE * fp)
 {
-	return diminuto_pin_write(fp, 0);
-}
-
-int diminuto_pin_get(FILE * fp)
-{
-	return diminuto_pin_read(fp);
+	return diminuto_pin_put(fp, 0);
 }
