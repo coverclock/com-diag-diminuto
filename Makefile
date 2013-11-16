@@ -223,7 +223,7 @@ STRIP				=	$(CROSS_COMPILE)strip
 CDEFINES			=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
 ARFLAGS				=	rcv
-CPPFLAGS			=	$(CPPARCH) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
+CPPFLAGS			=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
 CXXFLAGS			=	$(CARCH) -fPIC -g
 CFLAGS				=	$(CARCH) -fPIC -g
 #CXXFLAGS			=	$(CARCH) -fPIC -O3
