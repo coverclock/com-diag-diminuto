@@ -17,9 +17,9 @@ TARGET				=	host
 #TARGET				=	contraption
 #TARGET				=	cobbler
 
-MAJOR				=	20# API changes requiring that applications be modified.
+MAJOR				=	21# API changes requiring that applications be modified.
 MINOR				=	0# Only functionality or features added with no legacy API changes.
-BUILD				=	3# Only bugs fixed with no API changes or new functionality.
+BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
