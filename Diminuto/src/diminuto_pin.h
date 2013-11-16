@@ -22,6 +22,14 @@
 extern int diminuto_pin_export(int pin);
 
 /**
+ * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
+ * system.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_unexport(int pin);
+
+/**
  * Ask that the specified GPIO pin be configured as an input or an output pin.
  * @param pin identifies the pin by number from the data sheet.
  * @param output if true configures the pin for output, else input.
@@ -35,5 +43,12 @@ extern int diminuto_pin_direction(int pin, int output);
  * @return a FILE pointer or NULL if error.
  */
 extern FILE * diminuto_pin_open(int pin);
+
+/**
+ * Close an opened FILE pointer for a GPIO pin.
+ * @param fp points to a standard I/O FILE object.
+ * @return NULL if successful or fp if error.
+ */
+extern FILE * diminuto_pin_close(FILE * fp);
 
 #endif

@@ -14,10 +14,12 @@
 #include <errno.h>
 
 static const char SYS_CLASS_GPIO_EXPORT[] = "/sys/class/gpio/export";
+static const char SYS_CLASS_GPIO_UNEXPORT[] = "/sys/class/gpio/unexport";
 static const char SYS_CLASS_GPIO_DIRECTION[] = "/sys/class/gpio/gpio%u/direction";
 static const char SYS_CLASS_GPIO_VALUE[] = "/sys/class/gpio/gpio%u/value";
 
 static const char TMP_CLASS_GPIO_EXPORT[] = "/tmp/class/gpio/export";
+static const char TMP_CLASS_GPIO_UNEXPORT[] = "/tmp/class/gpio/unexport";
 static const char TMP_CLASS_GPIO_DIRECTION[] = "/tmp/class/gpio/gpio%u/direction";
 static const char TMP_CLASS_GPIO_VALUE[] = "/tmp/class/gpio/gpio%u/value";
 
@@ -69,6 +71,49 @@ int diminuto_pin_export(int pin)
 
 	if (rc != 0) {
 		diminuto_perror("diminuto_pin_export");
+	}
+
+	return rc;
+}
+
+int diminuto_pin_unexport(int pin)
+{
+	int rc = -1;
+	FILE * fp = (FILE *)0;
+
+	do {
+
+		if (pin < 0) {
+			errno = EINVAL;
+			break;
+		}
+
+		if ((fp = fopen(debug ? TMP_CLASS_GPIO_UNEXPORT : SYS_CLASS_GPIO_UNEXPORT, "a")) == (FILE *)0) {
+			break;
+		}
+
+		if (fseek(fp, 0L, SEEK_SET) < 0) {
+			break;
+		}
+
+		if (fprintf(fp, "%d\n", pin) < 0) {
+			break;
+		}
+
+		rc = 0;
+
+	} while (0);
+
+	if (fp == (FILE *)0) {
+		/* Do nothing. */
+	} else if (fclose(fp) == 0) {
+		/* Do nothing. */
+	} else {
+		rc = -1;
+	}
+
+	if (rc != 0) {
+		diminuto_perror("diminuto_pin_unexport");
 	}
 
 	return rc;
@@ -147,66 +192,17 @@ FILE * diminuto_pin_open(int pin)
 	return fp;
 }
 
-int diminuto_pin_put(FILE * fp, int assert)
+FILE * diminuto_pin_close(FILE * fp)
 {
-	int rc = -1;
-
-	do {
-
-		if (fseek(fp, 0L, SEEK_SET) < 0) {
-			break;
-		}
-
-		if (fputs(assert ? "1\n" : "0\n", fp) == EOF) {
-			break;
-		}
-
-		if (fflush(fp) == EOF) {
-			break;
-		}
-
-		rc = 0;
-
-	} while (0);
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_write");
+	if (fp == (FILE *)0) {
+		/* Do nothing. */
+	} else if (fclose(fp) == 0) {
+		fp = (FILE *)0;
+	} else {
+		diminuto_perror("diminuto_pin_close");
 	}
 
-	return rc;
-}
-
-int diminuto_pin_get(FILE * fp)
-{
-	int value = -1;
-	int rc;
-
-	do {
-
-		if (fseek(fp, 0, SEEK_SET) < 0) {
-			break;
-		}
-
-		if ((rc = fscanf(fp, "%d\n", &value)) == EOF) {
-			break;
-		}
-
-		if (rc < 1) {
-			errno = EAGAIN;
-			break;
-		}
-
-		value = !!value;
-
-		rc = 0;
-
-	} while (0);
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_read");
-	}
-
-	return value;
+	return fp;
 }
 
 FILE * diminuto_pin_input(int pin)
@@ -241,6 +237,76 @@ FILE * diminuto_pin_output(int pin)
 	}
 
 	return fp;
+}
+
+FILE * diminuto_pin_unused(FILE * fp, int pin)
+{
+	fp = diminuto_pin_close(fp);
+	diminuto_pin_unexport(pin);
+
+	return fp;
+}
+
+int diminuto_pin_put(FILE * fp, int assert)
+{
+	int rc = -1;
+
+	do {
+
+		if (fseek(fp, 0L, SEEK_SET) < 0) {
+			break;
+		}
+
+		if (fputs(assert ? "1\n" : "0\n", fp) == EOF) {
+			break;
+		}
+
+		if (fflush(fp) == EOF) {
+			break;
+		}
+
+		rc = 0;
+
+	} while (0);
+
+	if (rc != 0) {
+		diminuto_perror("diminuto_pin_put");
+	}
+
+	return rc;
+}
+
+int diminuto_pin_get(FILE * fp)
+{
+	int value = -1;
+	int rc;
+
+	do {
+
+		if (fseek(fp, 0, SEEK_SET) < 0) {
+			break;
+		}
+
+		if ((rc = fscanf(fp, "%d\n", &value)) == EOF) {
+			break;
+		}
+
+		if (rc < 1) {
+			errno = EAGAIN;
+			break;
+		}
+
+		value = !!value;
+
+		rc = 0;
+
+	} while (0);
+
+	if (rc != 0) {
+		diminuto_perror("diminuto_pin_get");
+	}
+
+	return value;
 }
 
 int diminuto_pin_set(FILE * fp)

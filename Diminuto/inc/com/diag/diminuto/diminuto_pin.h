@@ -34,18 +34,27 @@
 extern int diminuto_pin_debug(int enable);
 
 /**
- * Return a FILE pointer for the specified GPIO pin configured for as an input.
+ * Return a FILE pointer for the specified GPIO pin configured as an input.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.
  */
 extern FILE * diminuto_pin_input(int pin);
 
 /**
- * Return a FILE pointer for the specified GPIO pin configured for as an output.
+ * Return a FILE pointer for the specified GPIO pin configured as an output.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.
  */
 extern FILE * diminuto_pin_output(int pin);
+
+/**
+ * Close a FILE pointer to a GPIO pin, and deconfigure the pin. It is not an
+ * error to call this with a NULL FILE pointer and/or an unconfigured pin.
+ * @param fp points to a GPIO FILE pointer.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return NULL for success, fp otherwise.
+ */
+extern FILE * diminuto_pin_unused(FILE * fp, int pin);
 
 /**
  * Return the value of a GPIO pin, true (high) or false (low). The application
@@ -54,6 +63,15 @@ extern FILE * diminuto_pin_output(int pin);
  * @return >0 for high, 0 for low, <0 for error.
  */
 extern int diminuto_pin_get(FILE * fp);
+
+/**
+ * Set a GPIO pin to low (false) or high (true). The application is responsible
+ * for inversion (if, for example, the pin is active low).
+ * @param fp points to an output GPIO FILE pointer.
+ * @param assert is !0 for true, 0 for false.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_put(FILE * fp, int assert);
 
 /**
  * Set a GPIO pin to high (true). The application is responsible
@@ -70,14 +88,5 @@ extern int diminuto_pin_set(FILE * fp);
  * @return >=0 for success, <0 for error.
  */
 extern int diminuto_pin_clear(FILE * fp);
-
-/**
- * Set a GPIO pin to low (false) or high (true). The application is responsible
- * for inversion (if, for example, the pin is active low).
- * @param fp points to an output GPIO FILE pointer.
- * @param assert is !0 for true, 0 for false.
- * @return >=0 for success, <0 for error.
- */
-extern int diminuto_pin_put(FILE * fp, int assert);
 
 #endif
