@@ -5,15 +5,17 @@
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
 PROJECT				=	diminuto
+TITLE				=	Diminuto
+SYMBOL				=	DIMINUTO
 
 ########## Customizations
 
-TARGET			=	host
-#TARGET			=	diminuto
-#TARGET			=	arroyo
-#TARGET			=	cascada
-#TARGET			=	contraption
-#TARGET			=	cobbler
+TARGET				=	host
+#TARGET				=	diminuto
+#TARGET				=	arroyo
+#TARGET				=	cascada
+#TARGET				=	contraption
+#TARGET				=	cobbler
 
 MAJOR				=	20# API changes requiring that applications be modified.
 MINOR				=	0# Only functionality or features added with no legacy API changes.
@@ -34,11 +36,10 @@ BUILD				=	3# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-TITLE				=	Diminuto
 COPYRIGHT			=	2013 Digital Aggregates Corporation, Colorado, USA.
 LICENSE				=	GNU Lesser General Public License 2.1
 CONTACT				=	coverclock@diag.com
-HOMEPAGE			=	http://www.diag.com/navigation/downloads/Diminuto.html
+HOMEPAGE			=	http://www.diag.com/navigation/downloads/$(TITLE).html
 
 # You can change the VINFO make variable into whatever tool you use to extract
 # version information from your source code control system. For example, I
@@ -165,7 +166,7 @@ ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 
 TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP			=	$(shell date +%Y%m%d)
-SVNURL				=	svn://graphite/diminuto/trunk/Diminuto
+SVNURL				=	svn://graphite/$(PROJECT)/trunk/$(TITLE)
 
 PROJECT_A			=	lib$(PROJECT).a
 PROJECTXX_A			=	lib$(PROJECT)xx.a
@@ -219,7 +220,7 @@ AR					=	$(CROSS_COMPILE)ar
 RANLIB				=	$(CROSS_COMPILE)ranlib
 STRIP				=	$(CROSS_COMPILE)strip
 
-CDEFINES			=	-DCOM_DIAG_DIMINUTO_VINTAGE=\"$(VINTAGE)\"
+CDEFINES			=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
 ARFLAGS				=	rcv
 CPPFLAGS			=	$(CPPARCH) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
@@ -229,8 +230,8 @@ CFLAGS				=	$(CARCH) -fPIC -g
 #CFLAGS				=	$(CARCH) -fPIC -O3
 CPFLAGS				=	-i
 MVFLAGS				=	-i
-LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -ldiminuto -lpthread -lrt -ldl
-LDXXFLAGS			=	$(LDARCH) -L$(OUT)/lib -ldiminutoxx -ldiminuto -lpthread -lrt -ldl
+LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -l$(PROJECT) -lpthread -lrt -ldl
+LDXXFLAGS			=	$(LDARCH) -L$(OUT)/lib -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
 
 BROWSER				=	firefox
 
@@ -353,16 +354,16 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ########## Generated
 
-.PHONY:	$(OUT)/$(GEN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+.PHONY:	$(OUT)/$(GEN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
-$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h
+$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
-	echo '#include "com/diag/diminuto/diminuto_release.h"' >> $@
-	echo '#include "com/diag/diminuto/diminuto_vintage.h"' >> $@
-	echo '#include "com/diag/diminuto/diminuto_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
 	echo '"METADATA_BEGIN\n"' >> $@
@@ -384,22 +385,23 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h $
 	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/$(PROJECT)/diminuto_release.h:
+$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
-	echo '#define _H_COM_DIAG_DIMINUTO_RELEASE_' >> $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo "static const char RELEASE[] = \"RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/$(PROJECT)/diminuto_vintage.h:
+$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
-	echo '#define _H_COM_DIAG_DIMINUTO_VINTAGE_' >> $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
 	echo '#endif' >> $@
 
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
+	test -d $(OUT)/$(SYM_DIR) || mkdir -p $(OUT)/$(SYM_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 ########## User-Space Loadable Modules
@@ -446,7 +448,7 @@ backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
 
 ../$(PROJECT).bak.tgz:
-	tar cvzf - . > ../diminuto.bak.tgz
+	tar cvzf - . > $@
 
 package $(PROJECT).tgz:
 	tar -C $(OUT) -cvzf - ./bin ./drv ./lib ./mod ./tst > $(PROJECT).tgz

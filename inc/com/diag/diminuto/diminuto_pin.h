@@ -9,13 +9,25 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * There is a lower level interface upon which these functions are implemented.
+ * It is deliberately not exposed as part of the public interface, but it is
+ * never the less safe to use if you choose to do so. See the implementation
+ * of this feature for the necessary function prototypes.
+ *
+ * If you are reading a GPIO pin that changes in real-time, you will probably
+ * need a debouncing algorithm and/or an edge detector. The Telegraph library,
+ * which is not Linux-specific, has both. It can be found at
+ * http://www.diag.com/navigation/downloads/Telegraph.html .
  */
 
 #include <stdio.h>
 
 /**
  * Place the feature in debug mode in which the functions write to files
- * in the /tmp directory instead of in /sys.
+ * in the /tmp directory instead of in /sys. This allows programs using this
+ * feature to be tested without actually manipulating GPIO pins (which may
+ * or may not even exist).
  * @param enable if true places feature in debug mode, otherwise in run mode.
  * @return the prior mode.
  */
