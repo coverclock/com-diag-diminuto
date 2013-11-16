@@ -54,8 +54,10 @@ int main(void)
 	EXPECT(diminuto_pin_clear(pin99) >= 0);
 	EXPECT(system("test `cat /tmp/class/gpio/gpio99/value` -eq 0") == 0);
 
-	EXPECT(fclose(pin98) != EOF);
-	EXPECT(fclose(pin99) != EOF);
+	EXPECT(diminuto_pin_unused(pin98, 98) == (FILE *)0);
+	EXPECT(system("test `tail -1 /tmp/class/gpio/unexport` == 98") == 0);
+	EXPECT(diminuto_pin_unused(pin99, 99) == (FILE *)0);
+	EXPECT(system("test `tail -1 /tmp/class/gpio/unexport` == 99") == 0);
 
 	EXPECT(diminuto_pin_debug(0) == !0);
 
