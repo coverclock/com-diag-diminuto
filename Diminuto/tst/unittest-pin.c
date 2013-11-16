@@ -17,15 +17,16 @@ int main(void)
 	FILE * pin98;
 	FILE * pin99;
 
-	EXPECT(system("rm -rf /tmp/class/gpio") >= 0);
-	EXPECT(system("mkdir -p /tmp/class/gpio") >= 0);
-	EXPECT(system("mkdir -p /tmp/class/gpio/gpio98") >= 0);
-	EXPECT(system("mkdir -p /tmp/class/gpio/gpio99") >= 0);
-	EXPECT(system("touch /tmp/class/gpio/export") >= 0);
-	EXPECT(system("touch /tmp/class/gpio/gpio98/direction") >= 0);
-	EXPECT(system("touch /tmp/class/gpio/gpio98/value") >= 0);
-	EXPECT(system("touch /tmp/class/gpio/gpio99/direction") >= 0);
-	EXPECT(system("touch /tmp/class/gpio/gpio99/value") >= 0);
+	EXPECT(system("rm -rf /tmp/class/gpio") == 0);
+	EXPECT(system("mkdir -p /tmp/class/gpio") == 0);
+	EXPECT(system("mkdir -p /tmp/class/gpio/gpio98") == 0);
+	EXPECT(system("mkdir -p /tmp/class/gpio/gpio99") == 0);
+	EXPECT(system("touch /tmp/class/gpio/export") == 0);
+	EXPECT(system("touch /tmp/class/gpio/unexport") == 0);
+	EXPECT(system("touch /tmp/class/gpio/gpio98/direction") == 0);
+	EXPECT(system("touch /tmp/class/gpio/gpio98/value") == 0);
+	EXPECT(system("touch /tmp/class/gpio/gpio99/direction") == 0);
+	EXPECT(system("touch /tmp/class/gpio/gpio99/value") == 0);
 
 	EXPECT(diminuto_pin_debug(!0) == 0);
 
@@ -58,8 +59,11 @@ int main(void)
 	EXPECT(system("test `tail -1 /tmp/class/gpio/unexport` == 98") == 0);
 	EXPECT(diminuto_pin_unused(pin99, 99) == (FILE *)0);
 	EXPECT(system("test `tail -1 /tmp/class/gpio/unexport` == 99") == 0);
+	EXPECT(diminuto_pin_unused((FILE *)0, 100) == (FILE *)0);
 
 	EXPECT(diminuto_pin_debug(0) == !0);
+
+	EXPECT(system("rm -rf /tmp/class/gpio") == 0);
 
 	EXIT();
 }

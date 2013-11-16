@@ -37,13 +37,14 @@ int f(int depth, int limit)
     fd = open("/dev/null", O_WRONLY);
     ASSERT(fd >= 0);
 
-    count = diminuto_stacktrace_generic(buffer, countof(buffer), fd);
+    count = diminuto_stacktrace_fd(buffer, countof(buffer), fd);
 
     close(fd);
 
     printf("unittest-stacktrace: countof(buffer)=%u limit=%d count=%d\n", countof(buffer), limit, count);
 
-    ASSERT(count > 0);
+    ASSERT(count >= 0);
+
     for (ndx = 0; ndx < count; ++ndx) {
         EXPECT(buffer[ndx] != 0);
     }

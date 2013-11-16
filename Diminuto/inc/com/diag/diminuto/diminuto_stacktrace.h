@@ -29,7 +29,7 @@ enum {
  * @return the number of pointers in the backtrace; if it equals size,
  * the trace may have been truncated.
  */
-extern int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd);
+extern int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd);
 
 /**
  * Generate a stack back trace and display it to standard error.
