@@ -23,7 +23,7 @@ static const char * SYS_LINE_SIZE[] = {
 size_t diminuto_memory_pagesize(int * methodp)
 {
 	ssize_t pagesize = 0;
-	int method = 0;
+	int method = -1;
 
 	do {
 
@@ -32,9 +32,11 @@ size_t diminuto_memory_pagesize(int * methodp)
 		if ((pagesize = COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES) > 0) {
 			method = 1;
 			break;
+		} else if (pagesize < 0) {
+			diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES");
+		} else {
+			/* Do nothing. */
 		}
-		errno = EINVAL;
-		diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES");
 
 #endif
 
@@ -43,25 +45,25 @@ size_t diminuto_memory_pagesize(int * methodp)
 		if ((pagesize = sysconf(_SC_PAGESIZE)) > 0) {
 			method = 2;
 			break;
+		} else if (pagesize < 0) {
+			diminuto_perror("sysconf(_SC_PAGESIZE)");
+		} else {
+			/* Do nothing. */
 		}
-		if (pagesize == 0) {
-			errno = EINVAL;
-		}
-		diminuto_perror("sysconf(_SC_PAGESIZE)");
 
 #endif
 
 		if ((pagesize = getpagesize()) > 0) {
 			method = 3;
 			break;
+		} else if (pagesize < 0) {
+			diminuto_perror("getpagesize");
+		} else {
+			/* Do nothing. */
 		}
-		if (pagesize == 0) {
-			errno = EINVAL;
-		}
-		diminuto_perror("getpagesize");
 
 		pagesize = DIMINUTO_MEMORY_PAGESIZE_BYTES;
-		method = 4;
+		method = 0;
 
 	} while (0);
 
@@ -75,7 +77,7 @@ size_t diminuto_memory_pagesize(int * methodp)
 size_t diminuto_memory_linesize(int * methodp)
 {
 	ssize_t linesize = 0;
-	int method = 0;
+	int method = -1;
 	FILE * fp;
 	unsigned int ii;
 
@@ -86,9 +88,11 @@ size_t diminuto_memory_linesize(int * methodp)
 		if ((linesize = COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES) > 0) {
 			method = 1;
 			break;
+		} else if (linesize < 0) {
+			diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES");
+		} else {
+			/* Do nothing. */
 		}
-		errno = EINVAL;
-		diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES");
 
 #endif
 
@@ -97,11 +101,11 @@ size_t diminuto_memory_linesize(int * methodp)
 		if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0) {
 			method = 2;
 			break;
+		} else if (linesize < 0) {
+			diminuto_perror("sysconf(_SC_LEVEL1_DCACHE_LINESIZE)");
+		} else {
+			/* Do nothing. */
 		}
-		if (linesize == 0) {
-			errno = EINVAL;
-		}
-		diminuto_perror("sysconf(_SC_LEVEL1_DCACHE_LINESIZE)");
 
 #endif
 
@@ -111,7 +115,7 @@ size_t diminuto_memory_linesize(int * methodp)
 				continue;
 			}
 
-			if ((fscanf(fp, "%zd", &linesize) <= 0) || (linesize <= 0)) {
+			if ((fscanf(fp, "%zd", &linesize) <= 0) || (linesize < 0)) {
 				errno = EINVAL;
 				diminuto_perror(SYS_LINE_SIZE[ii]);
 			}
@@ -119,7 +123,7 @@ size_t diminuto_memory_linesize(int * methodp)
 			fclose(fp);
 
 			if (linesize > 0) {
-				method = ii + 3;
+				method = 3 + ii;
 				break;
 			}
 
@@ -130,6 +134,7 @@ size_t diminuto_memory_linesize(int * methodp)
 		}
 
 		linesize = DIMINUTO_MEMORY_LINESIZE_BYTES;
+		method = 0;
 
 	} while (0);
 

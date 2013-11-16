@@ -13,15 +13,15 @@
 #include <unistd.h>
 #include <execinfo.h>
 
-int diminuto_stacktrace_generic(void ** buffer, size_t size, int fd)
+int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     int rc;
     backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
-    return rc;
+	return rc;
 }
 
 int diminuto_stacktrace()
 {
     void * buffer[DIMINUTO_STACKTRACE_SIZE];
-    return diminuto_stacktrace_generic(buffer, countof(buffer), STDERR_FILENO);
+    return diminuto_stacktrace_fd(buffer, countof(buffer), STDERR_FILENO);
 }
