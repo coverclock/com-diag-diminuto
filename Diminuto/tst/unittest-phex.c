@@ -31,12 +31,12 @@ int main(int argc, char ** argv)
     fp = popen(command, "w");
     ASSERT(fp != (FILE *)0);
 
-    fputc('\n', stdout);
-    fputc('\n', stderr);
-
     for (ch = 0; ch < 256; ++ch) { fputc(ch, fp); }
 
     fflush(fp);
+
+    ii = pclose(fp);
+    ASSERT(ii >= 0);
 
     EXIT();
 }
