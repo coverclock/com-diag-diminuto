@@ -58,7 +58,10 @@ int main(int argc, char ** argv)
 	result = diminuto_path_find("PATH", "com_diag_diminuto_notfound");
 	ASSERT(result == (char *)0);
 
-	result = diminuto_path_find((const char *)0, "com_diag_diminuto_notfound");
+	result = diminuto_path_find("COM_DIAG_DIMINUTO_NOTFOUND", "ls");
+	ASSERT(result == (char *)0);
+
+	result = diminuto_path_find((const char *)0, "ls");
 	ASSERT(result == (char *)0);
 
 	result = diminuto_path_find("PATH", (const char *)0);
