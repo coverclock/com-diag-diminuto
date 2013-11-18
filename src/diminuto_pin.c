@@ -241,8 +241,15 @@ FILE * diminuto_pin_output(int pin)
 
 FILE * diminuto_pin_unused(FILE * fp, int pin)
 {
-	fp = diminuto_pin_close(fp);
-	diminuto_pin_unexport(pin);
+	if (fp == (FILE *)0) {
+		/* Do nothing. */
+	} else if (diminuto_pin_unexport(pin) < 0) {
+		/* Do nothing. */
+	} else if (diminuto_pin_close(fp) != (FILE *)0) {
+		/* Do nothing. */
+	} else {
+		fp = (FILE *)0;
+	}
 
 	return fp;
 }
