@@ -37,7 +37,7 @@ int main(int argc, char * argv[])
 			break;
 		}
 
-		if (diminuto_number_signed(argv[1], &pin) != (const char *)0) {
+		if (*diminuto_number_signed(argv[1], &pin) != '\0') {
 			errno = EINVAL;
 			diminuto_perror(argv[1]);
 			break;
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
 			break;
 		}
 
-		if (diminuto_number_signed(argv[2], &state) != (const char *)0) {
+		if (*diminuto_number_signed(argv[2], &state) != '\0') {
 			errno = EINVAL;
 			diminuto_perror(argv[2]);
 			rc = 1;
@@ -75,9 +75,7 @@ int main(int argc, char * argv[])
 
 	} while (0);
 
-	if (fp != (FILE *)0) {
-		fclose(fp);
-	}
+	diminuto_pin_unused(fp, pin);
 
 	return rc;
 }
