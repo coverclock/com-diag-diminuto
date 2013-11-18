@@ -177,14 +177,14 @@ PROJECT_LIB			=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
 UTILITIES			=	dbdi dcscope dgdb diminuto dlib
-GENERATED			=	vintage
+GENERATED			=	vintage setup
 ALIASES				=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
 TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
 TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
-TARGETSCRIPTS		=	
+TARGETSCRIPTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
 TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
 TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
@@ -205,7 +205,7 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
 TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
-TARGETPROGRAMS		=	$(TARGETSCRIPTS) $(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED)
+TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
@@ -265,7 +265,8 @@ distribution:
 ########## Host Utilities
 
 %:	$(ETC_DIR)/%.sh
-	$(MAKE) TARGET=$(TARGET) script COMMAND=$@ SCRIPT=$<
+	cp $< $@
+	chmod 755 $@
 
 $(ETC_DIR)/diminuto.sh:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
@@ -404,6 +405,14 @@ $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 	test -d $(OUT)/$(SYM_DIR) || mkdir -p $(OUT)/$(SYM_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
+# For sourcing into a bash shell (for example, ". setup").
+$(OUT)/$(BIN_DIR)/setup:	Makefile
+	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
+	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
+	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
+	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
+	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
+
 ########## User-Space Loadable Modules
 
 LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
@@ -476,13 +485,7 @@ manpages:
 
 ########## Submakes
 
-.PHONY:	script patch
-
-script:	$(COMMAND)
-
-$(COMMAND):	$(SCRIPT)
-	cp $< $@
-	chmod 755 $@
+.PHONY:	patch
 
 patch:	$(OLD) $(NEW)
 	diff -purN $(OLD) $(NEW)
@@ -504,6 +507,11 @@ $(OUT)/%.txt:	%.c
 $(OUT)/%.o:	%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+$(OUT)/%:	%.sh
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	cp $< $@
+	chmod 755 $@
 	
 .SECONDARY:
 
