@@ -141,17 +141,19 @@ endif
 
 ########## Directory Tree
 
+ARC_DIR				=	arc# Archive files
 BIN_DIR				=	bin# Stripped executable binaries
 DOC_DIR				=	doc# Documentation
 DRV_DIR				=	drv# Loadable kernel modules
 ETC_DIR				=	etc# Miscellaneous files
 GEN_DIR				=	gen# Generated files
 INC_DIR				=	inc# Header files
-LIB_DIR				=	lib# Archives and shared objects
+LIB_DIR				=	lib# Shared objects
 MOD_DIR				=	mod# Loadable user modules
 OUT_DIR				=	out# Build artifacts
 SRC_DIR				=	src# Library source files
 SYM_DIR				=	sym# Unstripped executable binaries
+SYS_DIR				=	sys# Kernel module build directory
 TMP_DIR				=	tmp# Temporary files
 TST_DIR				=	tst# Unit tests
 
@@ -192,8 +194,8 @@ TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
 
-TARGETARCHIVE		=	$(OUT)/$(LIB_DIR)/$(PROJECT_A)
-TARGETARCHIVEXX		=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_A)
+TARGETARCHIVE		=	$(OUT)/$(ARC_DIR)/$(PROJECT_A)
+TARGETARCHIVEXX		=	$(OUT)/$(ARC_DIR)/$(PROJECTXX_A)
 TARGETSHARED		=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR)
 TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR)
@@ -296,12 +298,13 @@ $(ETC_DIR)/diminuto.sh:	Makefile
 
 ########## Target C Libraries
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
-	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
+$(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+	test -d $(OUT)/$(ARC_DIR) || mkdir -p $(OUT)/$(ARC_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
+	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
 	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -315,12 +318,13 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PRO
 	
 ########## Target C++ Libraries
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
-	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
+$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+	test -d $(OUT)/$(ARC_DIR) || mkdir -p $(OUT)/$(ARC_DIR)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a
+	test -d $(OUT)/$(LIB_DIR) || mkdir -p $(OUT)/$(LIB_DIR)
 	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
@@ -427,31 +431,31 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 
 OBJ_M =	$(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
-$(OUT)/$(TMP_DIR)/Makefile:	Makefile
-	test -d $(OUT)/$(TMP_DIR) || mkdir -p $(OUT)/$(TMP_DIR)
+$(OUT)/$(SYS_DIR)/Makefile:	Makefile
+	test -d $(OUT)/$(SYS_DIR) || mkdir -p $(OUT)/$(SYS_DIR)
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
 	#echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -DDEBUG" >> $@
 
-$(OUT)/$(TMP_DIR)/%.c:	$(DRV_DIR)/%.c
-	test -d $(OUT)/$(TMP_DIR) || mkdir -p $(OUT)/$(TMP_DIR)
+$(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
+	test -d $(OUT)/$(SYS_DIR) || mkdir -p $(OUT)/$(SYS_DIR)
 	cp $< $@
 
-$(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(TMP_DIR)/%.ko
+$(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
 	test -d $(OUT)/$(DRV_DIR) || mkdir -p $(OUT)/$(DRV_DIR)
 	cp $< $@
 
-drivers $(OUT)/$(TMP_DIR)/diminuto_mmdriver.ko $(OUT)/$(TMP_DIR)/diminuto_utmodule.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.ko $(OUT)/$(TMP_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(TMP_DIR)/Makefile $(OUT)/$(TMP_DIR)/diminuto_mmdriver.c $(OUT)/$(TMP_DIR)/diminuto_utmodule.c $(OUT)/$(TMP_DIR)/diminuto_kernel_datum.c $(OUT)/$(TMP_DIR)/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+drivers $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
 
 drivers-clean:
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(TMP_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
-	rm -f $(OUT)/$(TMP_DIR)/Makefile
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	rm -f $(OUT)/$(SYS_DIR)/Makefile
 
 ########## Helpers
 
-.PHONY:	backup package
+.PHONY:	backup package implicit
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
@@ -459,8 +463,13 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > $@
 
+TARGETMANIFEST = ./bin ./drv ./lib ./mod ./tst
+
 package $(PROJECT).tgz:
-	tar -C $(OUT) -cvzf - ./bin ./drv ./lib ./mod ./tst > $(PROJECT).tgz
+	tar -C $(OUT) -cvzf - $(TARGETMANIFEST) > $(PROJECT).tgz
+	
+implicit:
+	$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
 
 ########## Documentation
 

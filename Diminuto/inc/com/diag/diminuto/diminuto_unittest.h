@@ -22,6 +22,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_token.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 static int diminuto_unittest_errors = 0;
 
@@ -34,7 +35,11 @@ static int diminuto_unittest_errors = 0;
  * or a non-zero exit code if there are.
  */
 #define EXIT() \
-    exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors)
+	do { \
+		fflush(stdout); \
+		fflush(stderr); \
+		exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
+	} while (0)
 
 /**
  * @def EXPECT(_COND_)
