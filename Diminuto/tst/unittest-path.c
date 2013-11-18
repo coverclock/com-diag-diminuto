@@ -29,14 +29,17 @@ int main(int argc, char ** argv)
 	result = diminuto_path_find("PATH", "ls");
 	ASSERT(result != (char *)0);
 	EXPECT(strcmp(result, "/bin/ls") == 0);
+	free(result);
 
 	result = diminuto_path_find("PATH", "rm");
 	ASSERT(result != (char *)0);
 	EXPECT(strcmp(result, "/bin/rm") == 0);
+	free(result);
 
 	result = diminuto_path_find("PATH", "head");
 	ASSERT(result != (char *)0);
 	EXPECT(strcmp(result, "/usr/bin/head") == 0);
+	free(result);
 
 	/*
 	 * This next one has the added benefit that it tests soft links. It has
@@ -46,6 +49,7 @@ int main(int argc, char ** argv)
 
 	result = diminuto_path_find("LD_LIBRARY_PATH", "libdiminuto.so");
 	ASSERT(result != (char *)0);
+	free(result);
 
 	/*
 	 * And of course some should fail.
