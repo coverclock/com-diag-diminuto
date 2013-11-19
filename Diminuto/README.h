@@ -73,10 +73,14 @@
 
     Here is the sequence of commands to build Diminuto:
 
-    vi Makefile                 # establish your configuration
-    make depend                 # make dependencies
-    make						# make library, executables
-    make all                  	# make library, executables, and kernel modules
+    vi Makefile						# establish your configuration.
+    make TARGET=<target> depend     # make dependencies.
+    make TARGET=<target>			# make library, binaries.
+    make TARGET=<target> all        # make library, binaries, modules, drivers.
+    make TARGET=<target> package	# make tarball to copy to target.
+
+    . out/<target>/bin/setup		# establish PATH etc. environment.
+    unittest-<test>					# run unit test.
 
 *******************************************************************************/
 
