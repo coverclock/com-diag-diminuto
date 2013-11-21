@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
     diminuto_core_enable();
     diminuto_alarm_install(0);
 
-    hertz = diminuto_time_resolution();
+    hertz = diminuto_time_frequency();
 
     printf("%21s %21s %21s\n",
         "requested", "computed", "measured");

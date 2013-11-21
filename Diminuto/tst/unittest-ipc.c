@@ -33,7 +33,7 @@ int main(void)
 {
 	diminuto_ticks_t hertz;
 
-	hertz = diminuto_time_resolution();
+	hertz = diminuto_time_frequency();
 
 	{
         diminuto_ipv4_t address;

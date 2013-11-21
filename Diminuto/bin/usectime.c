@@ -17,7 +17,8 @@
  *
  * ABSTRACT
  *
- * Prints on standard output the number of microseconds since the Epoch.
+ * Prints on standard output the elapsed number of microseconds of a rate
+ * monotonic clock.
  */
 
 #include <stdio.h>
@@ -28,11 +29,11 @@ int main(int argc, char ** argv)
 {
 	diminuto_ticks_t ticks;
 
-	if ((ticks = diminuto_time_clock()) == 0) {
+	if ((ticks = diminuto_time_elapsed()) == 0) {
 		return 1;
 	}
 
-	printf("%llu\n", COM_DIAG_DIMINUTO_TICKS_FROM(ticks, 1000000));
+	printf("%llu\n", diminuto_frequency_ticks2units(ticks, 1000000));
 
     return 0;
 }

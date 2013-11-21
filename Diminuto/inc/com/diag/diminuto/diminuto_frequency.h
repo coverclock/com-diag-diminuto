@@ -9,40 +9,77 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * This is _not_ part of the public interface.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * @def COM_DIAG_DIMINUTO_FREQUENCY
- * This symbol defines the period of the fundamental Diminuto time unit
- * "tick" expressed in Hertz or ticks per second. It is not part of the
- * public interface. A function that returns this value is available in
- * the Diminuto time API. This value works best if it is a power of ten,
- * and it is easier to comprehend if it is a power of one thousand. This
- * is a preprocessor symbol instead of a static constant to make it easier
- * to optimize (although I'm guessing GCC would be happy either way).
+ * Return the fundamental Diminuto frequency in Hertz.
+ * @return the number of ticks per second.
  */
-#define COM_DIAG_DIMINUTO_FREQUENCY ((diminuto_ticks_t)1000000000)
+static inline diminuto_ticks_t diminuto_frequency(void)
+{
+	return 1000000000LL;
+}
 
 /**
- * @def COM_DIAG_DIMINUTO_TICKS_FROM
- * If @a _HERTZ_ is a constant, the compiler will almost certainly optimize
- * most of this code out.
+ * Convert a value in ticks into units of the specified frequency.
+ * @param ticks is the value in ticks.
+ * @param hertz is the specified frequency.
+ * @return a value in units of the specified frequency.
  */
-#define COM_DIAG_DIMINUTO_TICKS_FROM(_TICKS_, _HERTZ_) \
-	((COM_DIAG_DIMINUTO_FREQUENCY < (diminuto_ticks_t)(_HERTZ_)) ? ((diminuto_ticks_t)(_TICKS_) * ((diminuto_ticks_t)(_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
-		(COM_DIAG_DIMINUTO_FREQUENCY > (diminuto_ticks_t)(_HERTZ_)) ? ((diminuto_ticks_t)(_TICKS_) / (COM_DIAG_DIMINUTO_FREQUENCY / (diminuto_ticks_t)(_HERTZ_))) : \
-			(_TICKS_))
+static inline diminuto_ticks_t diminuto_frequency_ticks2units(diminuto_ticks_t ticks, diminuto_ticks_t hertz)
+{
+	return (hertz > diminuto_frequency()) ? (ticks * (hertz / diminuto_frequency())) : (hertz < diminuto_frequency()) ? (ticks / (diminuto_frequency() / hertz)) : ticks;
+}
 
 /**
- * @def COM_DIAG_DIMINUTO_TICKS_TO
- * If @a _HERTZ_ is a constant, the compiler will almost certainly optimize
- * most of this code out.
+ * Convert a value in units of the specified frequency into ticks.
+ * @param units is the value in units of a specified frequency.
+ * @param hertz is the specified frequency.
+ * @return a value in ticks.
  */
-#define COM_DIAG_DIMINUTO_TICKS_TO(_VALUE_, _HERTZ_) \
-	((COM_DIAG_DIMINUTO_FREQUENCY < (diminuto_ticks_t)(_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) / ((diminuto_ticks_t)(_HERTZ_) / COM_DIAG_DIMINUTO_FREQUENCY)) : \
-		(COM_DIAG_DIMINUTO_FREQUENCY > (diminuto_ticks_t)(_HERTZ_)) ? (((diminuto_ticks_t)(_VALUE_)) * (COM_DIAG_DIMINUTO_FREQUENCY / (diminuto_ticks_t)(_HERTZ_))) : \
-			(_VALUE_))
+static inline diminuto_ticks_t diminuto_frequency_units2ticks(diminuto_ticks_t units, diminuto_ticks_t hertz)
+{
+	return (hertz > diminuto_frequency()) ? (units / (hertz / diminuto_frequency())) : (hertz < diminuto_frequency()) ? (units * (diminuto_frequency() / hertz)) : units;
+
+}
+
+/**
+ * Convert a value in ticks into whole seconds with no fractional part.
+ * @param ticks is the value in ticks.
+ * @return the value in whole seconds.
+ */
+static inline diminuto_ticks_t diminuto_frequency_ticks2wholeseconds(diminuto_ticks_t ticks)
+{
+    return diminuto_frequency_ticks2units(ticks, 1);
+}
+
+/**
+ * Convert a value in ticks into a fraction of a second in units of the
+ * specified frequency and discard the whole seconds portion of the result.
+ * @param ticks is the value in ticks.
+ * @param hertz is the specified frequency.
+ * @return the fractional portion of the value in seconds.
+ */
+static inline diminuto_ticks_t diminuto_frequency_ticks2fractionalseconds(diminuto_ticks_t ticks, diminuto_ticks_t hertz)
+{
+	return diminuto_frequency_ticks2units(ticks % diminuto_frequency(), hertz);
+}
+
+/**
+ * Convert a value in whole and fraction of a second in the specified frequency
+ * into ticks.
+ * @param whole is the value of whole seconds.
+ * @param fraction is the value of the fractions of a second.
+ * @param hertz is the specified frequency.
+ * @return the value in ticks.
+ */
+static inline diminuto_frequency_seconds2ticks(diminuto_ticks_t whole, diminuto_ticks_t fraction, diminuto_ticks_t hertz)
+{
+	return diminuto_frequency_units2ticks(whole, 1) + diminuto_frequency_units2ticks(fraction, hertz);
+}
 
 #endif

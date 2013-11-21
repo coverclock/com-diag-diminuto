@@ -120,7 +120,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 
     if (ticks > 0) {
         opt.l_onoff = !0;
-        opt.l_linger = (ticks + COM_DIAG_DIMINUTO_FREQUENCY - 1) / COM_DIAG_DIMINUTO_FREQUENCY;
+        opt.l_linger = (ticks + diminuto_frequency() - 1) / diminuto_frequency();
     } else {
         opt.l_onoff = 0;
         opt.l_linger = 0;

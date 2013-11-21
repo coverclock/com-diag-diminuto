@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
 
     }
 
-    hertz = diminuto_time_resolution();
+    hertz = diminuto_time_frequency();
 
     fd = open("/dev/null", O_RDWR);
     ASSERT(fd >= 0);
