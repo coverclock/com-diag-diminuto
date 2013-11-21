@@ -15,8 +15,10 @@
 #include <time.h>
 #include <sys/time.h>
 
-diminuto_ticks_t diminuto_time_resolution(void) {
-	return COM_DIAG_DIMINUTO_FREQUENCY;
+#define COM_DIAG_DIMINUTO_TIME_FREQUENCY 1000000000LL
+
+diminuto_ticks_t diminuto_time_frequency(void) {
+	return COM_DIAG_DIMINUTO_TIME_FREQUENCY;
 }
 
 static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
@@ -27,8 +29,7 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 	if (clock_gettime(clock, &elapsed) < 0) {
 		diminuto_perror("diminuto_time_generic: clock_gettime");
 	} else {
-		ticks = COM_DIAG_DIMINUTO_TICKS_TO(elapsed.tv_sec, 1);
-		ticks += COM_DIAG_DIMINUTO_TICKS_TO(elapsed.tv_nsec, 1000000000);
+		ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_nsec, COM_DIAG_DIMINUTO_TIME_FREQUENCY);
 	}
 
 	return ticks;
@@ -65,17 +66,13 @@ diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 	struct tm * datetimep;
 	time_t juliet;
 
-	ticks /= COM_DIAG_DIMINUTO_FREQUENCY;
-	juliet = ticks;
+	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timezone: localtime_r");
 	} else if (datetimep->tm_isdst) {
-		timezone = datetimep->tm_gmtoff;
-		timezone -= 3600;
-		timezone *= COM_DIAG_DIMINUTO_FREQUENCY;
+		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
 	} else {
-		timezone = datetimep->tm_gmtoff;
-		timezone *= COM_DIAG_DIMINUTO_FREQUENCY;
+		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
 	}
 
 	return timezone;
@@ -88,13 +85,11 @@ diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks)
 	struct tm * datetimep;
 	time_t juliet;
 
-	ticks /= COM_DIAG_DIMINUTO_FREQUENCY;
-	juliet = ticks;
+	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_daylightsaving: localtime_r");
 	} else if (datetimep->tm_isdst > 0) {
-		daylightsaving = 3600;
-		daylightsaving *= COM_DIAG_DIMINUTO_FREQUENCY;
+		daylightsaving = diminuto_frequency_seconds2ticks(3600, 0, 1);
 	} else {
 		daylightsaving = 0;
 	}
@@ -121,7 +116,7 @@ diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int
 	 * indicates a date and time one second earlier than the Epoch.
 	 */
 	juliet = mktime(&datetime);
-	ticks = COM_DIAG_DIMINUTO_TICKS_TO(juliet, 1);
+	ticks = diminuto_frequency_seconds2ticks(juliet, 0, 1);
 	ticks += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
 	ticks -= timezone;
 	ticks -= daylightsaving;
@@ -132,13 +127,13 @@ diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int
 
 static void diminuto_time_stamp(const struct tm *datetimep, diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
 {
-	if (yearp   != (int *)0) { *yearp   = datetimep->tm_year + 1900;           }
-	if (monthp  != (int *)0) { *monthp  = datetimep->tm_mon + 1;               }
-	if (dayp    != (int *)0) { *dayp    = datetimep->tm_mday;                  }
-	if (hourp   != (int *)0) { *hourp   = datetimep->tm_hour;                  }
-	if (minutep != (int *)0) { *minutep = datetimep->tm_min;                   }
-	if (secondp != (int *)0) { *secondp = datetimep->tm_sec;                   }
-	if (tickp   != (int *)0) { *tickp   = ticks % COM_DIAG_DIMINUTO_FREQUENCY; }
+	if (yearp   != (int *)0) { *yearp   = datetimep->tm_year + 1900;	}
+	if (monthp  != (int *)0) { *monthp  = datetimep->tm_mon + 1;		}
+	if (dayp    != (int *)0) { *dayp    = datetimep->tm_mday;			}
+	if (hourp   != (int *)0) { *hourp   = datetimep->tm_hour;			}
+	if (minutep != (int *)0) { *minutep = datetimep->tm_min;			}
+	if (secondp != (int *)0) { *secondp = datetimep->tm_sec;			}
+	if (tickp   != (int *)0) { *tickp   = ticks % diminuto_frequency(); }
 }
 
 int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp)
@@ -148,7 +143,7 @@ int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * 
 	struct tm * datetimep;
 	time_t zulu;
 
-	zulu = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
+	zulu = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: gmtime_r");
 		rc = -1;
@@ -166,7 +161,7 @@ int diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int 
 	struct tm * datetimep;
 	time_t juliet;
 
-	juliet = ticks / COM_DIAG_DIMINUTO_FREQUENCY;
+	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timestamp: localtime_r");
 		rc = -1;
@@ -189,16 +184,16 @@ int diminuto_time_duration(diminuto_ticks_t ticks, int * dayp, int * hourp, int 
 		rc = 1;
 	}
 
-	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60 * 60 * 24;
+	divisor = diminuto_frequency() * 60 * 60 * 24;
 	if (dayp    != (int *)0) { *dayp    = ticks / divisor; }
 	ticks = ticks % divisor;
-	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60 * 60;
+	divisor = diminuto_frequency() * 60 * 60;
 	if (hourp   != (int *)0) { *hourp   = ticks / divisor; }
 	ticks = ticks % divisor;
-	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY * 60;
+	divisor = diminuto_frequency() * 60;
 	if (minutep != (int *)0) { *minutep = ticks / divisor; }
 	ticks = ticks % divisor;
-	divisor = (diminuto_ticks_t)COM_DIAG_DIMINUTO_FREQUENCY;
+	divisor = diminuto_frequency();
 	if (secondp != (int *)0) { *secondp = ticks / divisor; }
 	if (tickp   != (int *)0) { *tickp   = ticks % divisor; }
 

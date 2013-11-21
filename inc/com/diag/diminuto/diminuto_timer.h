@@ -21,7 +21,7 @@
  * with even this resolution.
  * @return the resolution in ticks per second.
  */
-extern diminuto_ticks_t diminuto_timer_resolution(void);
+extern diminuto_ticks_t diminuto_timer_frequency(void);
 
 /**
  * Start a timer for the specified number of ticks. When the timer

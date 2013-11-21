@@ -30,7 +30,7 @@
  * degree of accuracy.
  * @return the resolution in ticks per second.
  */
-extern diminuto_ticks_t diminuto_time_resolution(void);
+extern diminuto_ticks_t diminuto_time_frequency(void);
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in

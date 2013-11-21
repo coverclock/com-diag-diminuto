@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
 			break;
 		}
 
-		if (diminuto_delay(COM_DIAG_DIMINUTO_TICKS_TO(delay, 1000000), 0) != 0) {
+		if (diminuto_delay(diminuto_frequency_units2ticks(delay, 1000000), 0) != 0) {
 			break;
 		}
 

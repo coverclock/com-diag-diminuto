@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
-    hertz = diminuto_time_resolution();
+    hertz = diminuto_time_frequency();
 
     printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %41s %41s\n",
         "requested",

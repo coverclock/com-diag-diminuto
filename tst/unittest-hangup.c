@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
 
 	diminuto_core_enable();
 
-	hertz = diminuto_time_resolution();
+	hertz = diminuto_time_frequency();
 
 	if (argc > 1) {
 

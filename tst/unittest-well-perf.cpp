@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
 
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
 
-	frequency = diminuto_time_resolution();
+	frequency = diminuto_time_frequency();
 
 	/* No well. */
 

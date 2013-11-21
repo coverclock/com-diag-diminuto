@@ -15,31 +15,61 @@
 
 int main(int argc, char ** argv)
 {
+	EXPECT(diminuto_frequency_ticks2units(0LL, 1LL) == 0LL);
+	EXPECT(diminuto_frequency_ticks2units(0LL, 1000LL) == 0LL);
+	EXPECT(diminuto_frequency_ticks2units(0LL, 1000000LL) == 0LL);
+	EXPECT(diminuto_frequency_ticks2units(0LL, 1000000000LL) == 0LL);
+	EXPECT(diminuto_frequency_ticks2units(0LL, 10000000000LL) == 0LL);
 
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(COM_DIAG_DIMINUTO_FREQUENCY, 1) == 1LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(COM_DIAG_DIMINUTO_FREQUENCY, 1000) == 1000LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(COM_DIAG_DIMINUTO_FREQUENCY, 1000000) == 1000000LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(COM_DIAG_DIMINUTO_FREQUENCY, 1000000000) == 1000000000LL);
+	EXPECT(diminuto_frequency_ticks2units(diminuto_frequency(), 1LL) == 1LL);
+	EXPECT(diminuto_frequency_ticks2units(diminuto_frequency(), 1000LL) == 1000LL);
+	EXPECT(diminuto_frequency_ticks2units(diminuto_frequency(), 1000000LL) == 1000000LL);
+	EXPECT(diminuto_frequency_ticks2units(diminuto_frequency(), 1000000000LL) == 1000000000LL);
+	EXPECT(diminuto_frequency_ticks2units(diminuto_frequency(), 10000000000LL) == 10000000000LL);
 
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(1, 1) == COM_DIAG_DIMINUTO_FREQUENCY);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(1000, 1000) == COM_DIAG_DIMINUTO_FREQUENCY);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(1000000, 1000000) == COM_DIAG_DIMINUTO_FREQUENCY);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(1000000000, 1000000000) == COM_DIAG_DIMINUTO_FREQUENCY);
+	EXPECT(diminuto_frequency_units2ticks(0LL, 1LL) == 0LL);
+	EXPECT(diminuto_frequency_units2ticks(0LL, 1000LL) == 0LL);
+	EXPECT(diminuto_frequency_units2ticks(0LL, 1000000LL) == 0LL);
+	EXPECT(diminuto_frequency_units2ticks(0LL, 1000000000LL) == 0LL);
+	EXPECT(diminuto_frequency_units2ticks(0LL, 10000000000LL) == 0LL);
+
+	EXPECT(diminuto_frequency_units2ticks(1LL, 1LL) == diminuto_frequency());
+	EXPECT(diminuto_frequency_units2ticks(1000LL, 1000LL) == diminuto_frequency());
+	EXPECT(diminuto_frequency_units2ticks(1000000LL, 1000000LL) == diminuto_frequency());
+	EXPECT(diminuto_frequency_units2ticks(1000000000LL, 1000000000LL) == diminuto_frequency());
+	EXPECT(diminuto_frequency_units2ticks(10000000000LL, 10000000000LL) == diminuto_frequency());
+
+	EXPECT(diminuto_frequency_units2ticks(100000000000LL, 10000000000LL) == (diminuto_frequency() * 10));
+
+	EXPECT(diminuto_frequency_ticks2wholeseconds(0) == 0);
+
+	EXPECT(diminuto_frequency_ticks2wholeseconds(diminuto_frequency() * 1) == 1);
+	EXPECT(diminuto_frequency_ticks2wholeseconds(diminuto_frequency() * 3) == 3);
+	EXPECT(diminuto_frequency_ticks2wholeseconds(diminuto_frequency() * 5) == 5);
+
+	EXPECT(diminuto_frequency_ticks2fractionalseconds(diminuto_frequency() - 1, diminuto_frequency()) == (diminuto_frequency() - 1));
+
+	EXPECT(diminuto_frequency_seconds2ticks(0, 0, diminuto_frequency()) == 0);
+	EXPECT(diminuto_frequency_seconds2ticks(1, 0, diminuto_frequency()) == diminuto_frequency());
+	EXPECT(diminuto_frequency_seconds2ticks(1, diminuto_frequency() - 1, diminuto_frequency()) == ((2 * diminuto_frequency()) - 1));
 
 	/*
 	 * If we ever change the duration of a tick, these tests will have to be
 	 * changed.
 	 */
 
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(250, 1000000000) == 250LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(250, 1000000) == 0LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(250, 1000) == 0LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_FROM(250, 1) == 0LL);
+	EXPECT(diminuto_frequency() == 1000000000LL);
 
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(250, 1000000000) == 250LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(250, 1000000) == 250000LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(250, 1000) == 250000000LL);
-	EXPECT(COM_DIAG_DIMINUTO_TICKS_TO(250, 1) == 250000000000LL);
+	EXPECT(diminuto_frequency_ticks2units(250LL, 10000000000LL) == 2500LL);
+	EXPECT(diminuto_frequency_ticks2units(250LL, 1000000000LL) == 250LL);
+	EXPECT(diminuto_frequency_ticks2units(250LL, 100000000LL) == 25LL);
+	EXPECT(diminuto_frequency_ticks2units(250LL, 1000000LL) == 0LL);
+
+	EXPECT(diminuto_frequency_units2ticks(250LL, 10000000000LL) == 25LL);
+	EXPECT(diminuto_frequency_units2ticks(250LL, 1000000000LL) == 250LL);
+	EXPECT(diminuto_frequency_units2ticks(250LL, 1000000LL) == 250000LL);
+	EXPECT(diminuto_frequency_units2ticks(250LL, 1000LL) == 250000000LL);
+	EXPECT(diminuto_frequency_units2ticks(250LL, 1LL) == 250000000000LL);
 
     EXIT();
 }

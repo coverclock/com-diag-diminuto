@@ -16,11 +16,11 @@
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-#define DELAY_FREQUENCY (1000000000)
+#define COM_DIAG_DIMINUTO_DELAY_FREQUENCY 1000000000LL
 
-diminuto_ticks_t diminuto_delay_resolution()
+diminuto_ticks_t diminuto_delay_frequency()
 {
-	return DELAY_FREQUENCY;
+	return COM_DIAG_DIMINUTO_DELAY_FREQUENCY;
 }
 
 diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
@@ -29,8 +29,8 @@ diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
     struct timespec remaining;
     struct timespec result;
 
-    delay.tv_sec = COM_DIAG_DIMINUTO_TICKS_FROM(ticks , 1);
-    delay.tv_nsec = COM_DIAG_DIMINUTO_TICKS_FROM((ticks % COM_DIAG_DIMINUTO_FREQUENCY), DELAY_FREQUENCY);
+    delay.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
+    delay.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, COM_DIAG_DIMINUTO_DELAY_FREQUENCY);
 
     remaining = delay;
 
@@ -50,8 +50,7 @@ diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
         }
     }
 
-    ticks = COM_DIAG_DIMINUTO_TICKS_TO(result.tv_sec, 1);
-    ticks += COM_DIAG_DIMINUTO_TICKS_TO(result.tv_nsec, DELAY_FREQUENCY);
+    ticks = diminuto_frequency_seconds2ticks(result.tv_sec, result.tv_nsec, COM_DIAG_DIMINUTO_DELAY_FREQUENCY);
 
     return ticks;
 }
