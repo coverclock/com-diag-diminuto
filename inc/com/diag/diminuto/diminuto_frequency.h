@@ -77,7 +77,7 @@ static inline diminuto_ticks_t diminuto_frequency_ticks2fractionalseconds(diminu
  * @param hertz is the specified frequency.
  * @return the value in ticks.
  */
-static inline diminuto_frequency_seconds2ticks(diminuto_ticks_t whole, diminuto_ticks_t fraction, diminuto_ticks_t hertz)
+static inline diminuto_ticks_t diminuto_frequency_seconds2ticks(diminuto_ticks_t whole, diminuto_ticks_t fraction, diminuto_ticks_t hertz)
 {
 	return diminuto_frequency_units2ticks(whole, 1) + diminuto_frequency_units2ticks(fraction, hertz);
 }

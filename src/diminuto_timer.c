@@ -13,20 +13,13 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <sys/time.h>
 
-#define COM_DIAG_DIMINUTO_TIMER_FREQUENCY 1000000LL
-
-diminuto_ticks_t diminuto_timer_frequency()
-{
-	return COM_DIAG_DIMINUTO_TIMER_FREQUENCY;
-}
-
 static diminuto_ticks_t diminuto_timer(int which, diminuto_ticks_t ticks, int periodic)
 {
     struct itimerval timer;
     struct itimerval remaining;
 
     timer.it_value.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
-    timer.it_value.tv_usec = diminuto_frequency_ticks2fractionalseconds(ticks, COM_DIAG_DIMINUTO_TIMER_FREQUENCY);
+    timer.it_value.tv_usec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_timer_frequency());
 
     if (periodic) {
         timer.it_interval = timer.it_value;
@@ -41,7 +34,7 @@ static diminuto_ticks_t diminuto_timer(int which, diminuto_ticks_t ticks, int pe
         diminuto_perror("diminuto_timer: setitimer");
     }
 
-    ticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_usec, COM_DIAG_DIMINUTO_TIMER_FREQUENCY);
+    ticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_usec, diminuto_timer_frequency());
 
     return ticks;
 }
