@@ -16,20 +16,19 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <sys/select.h>
 
+typedef struct DiminutoMuxSet {
+	int minimum;
+	int maximum;
+	int next;
+	fd_set active;
+	fd_set ready;
+} diminuto_mux_set_t;
+
 typedef struct DiminutoMux {
 	int nfds;
-	int minrfd;
-	int minwfd;
-	int minefd;
-	int maxrfd;
-	int maxwfd;
-	int maxefd;
-	fd_set reading;
-	fd_set writing;
-	fd_set excepting;
-	fd_set readable;
-	fd_Set writeable;
-	fd_set exceptional;
+	diminuto_mux_set_t read;
+	diminuto_mux_set_t write;
+	diminuto_mux_set_t exception;
 	sigset_t mask;
 } diminuto_mux_t;
 
