@@ -21,7 +21,10 @@
  * with even this resolution.
  * @return the resolution in ticks per second.
  */
-extern diminuto_ticks_t diminuto_timer_frequency(void);
+static inline diminuto_ticks_t diminuto_timer_frequency(void)
+{
+	return 1000000LL;
+}
 
 /**
  * Start a timer for the specified number of ticks. When the timer

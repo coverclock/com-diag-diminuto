@@ -15,12 +15,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define COM_DIAG_DIMINUTO_TIME_FREQUENCY 1000000000LL
-
-diminuto_ticks_t diminuto_time_frequency(void) {
-	return COM_DIAG_DIMINUTO_TIME_FREQUENCY;
-}
-
 static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 {
 	diminuto_ticks_t ticks = -1;
@@ -29,7 +23,7 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 	if (clock_gettime(clock, &elapsed) < 0) {
 		diminuto_perror("diminuto_time_generic: clock_gettime");
 	} else {
-		ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_nsec, COM_DIAG_DIMINUTO_TIME_FREQUENCY);
+		ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_nsec, diminuto_time_frequency());
 	}
 
 	return ticks;

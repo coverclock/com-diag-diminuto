@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
 
 	EXPECT(diminuto_frequency_seconds2ticks(0, 0, diminuto_frequency()) == 0);
 	EXPECT(diminuto_frequency_seconds2ticks(1, 0, diminuto_frequency()) == diminuto_frequency());
-	EXPECT(diminuto_frequency_seconds2ticks(1, diminuto_frequency() - 1, diminuto_frequency()) == ((2 * diminuto_frequency()) - 1));
+	EXPECT(diminuto_frequency_seconds2ticks(2, diminuto_frequency() - 1, diminuto_frequency()) == ((diminuto_frequency() * 3) - 1));
 
 	/*
 	 * If we ever change the duration of a tick, these tests will have to be
