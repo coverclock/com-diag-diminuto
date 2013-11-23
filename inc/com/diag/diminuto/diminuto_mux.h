@@ -43,7 +43,7 @@ static inline diminuto_ticks_t diminuto_mux_frequency(void) {
 	return 1000000000LL;
 }
 
-extern int diminuto_mux_init(diminuto_mux_t * that);
+extern void diminuto_mux_init(diminuto_mux_t * that);
 
 extern int diminuto_mux_register_read(diminuto_mux_t * that, int fd);
 

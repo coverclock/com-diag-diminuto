@@ -15,23 +15,21 @@
 #include <signal.h>
 #include <string.h>
 
-int diminuto_mux_init(diminuto_mux_t * that)
+static void diminuto_mux_set_init(diminuto_mux_t * that, diminuto_mux_set_t * set)
+{
+	set->minimum = ~(1 << ((sizeof(set->minimum) * 8) - 1));
+	set->maximum = -1;
+	set->next = -1;
+	FD_ZERO(&set->active);
+	FD_ZERO(&set->ready);
+}
+
+void diminuto_mux_init(diminuto_mux_t * that)
 {
 	that->count = 0;
 	that->nfds = -1;
-
-	that->read.minimum = ~(1 << ((sizeof(that->read.minimum) * 8) - 1));
-	that->read.maximum = -1;
-	that->read.next = -1;
-	FD_ZERO(&that->read.active);
-	FD_ZERO(&that->read.ready);
-
-	that->write.minimum = ~(1 << ((sizeof(that->write.minimum) * 8) - 1));
-	that->write.maximum = -1;
-	that->write.next = -1;
-	FD_ZERO(&that->write.active);
-	FD_ZERO(&that->write.ready);
-
+	diminuto_mux_set_init(that, &that->read);
+	diminuto_mux_set_init(that, &that->write);
 	sigemptyset(&that->mask);
 
 	return 0;
@@ -190,25 +188,32 @@ int diminuto_mux_close(diminuto_mux_t * that, int fd)
 	return (diminuto_mux_unregister_read(that, fd) || diminuto_mux_unregister_write(that, fd)) ? close(fd) : -2;
 }
 
-int diminuto_mux_fini(diminuto_mux_t * that)
+static int diminuto_mux_set_fini(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {
 	int rc = 0;
 	int fd;
 
-	for (fd = that->read.minimum; fd <= that->read.maximum; ++fd) {
-		if (diminuto_mux_unregister_read(that, fd)) {
+	for (fd = set->minimum; fd <= set->maximum; ++fd) {
+		if (diminuto_mux_unregister(that, set, fd)) {
 			if (close(fd) < 0) {
 				rc = -1;
 			}
 		}
 	}
 
-	for (fd = that->write.minimum; fd <= that->write.maximum; ++fd) {
-		if (diminuto_mux_unregister_write(that, fd)) {
-			if (close(fd) < 0) {
-				rc = -1;
-			}
-		}
+	return rc;
+}
+
+int diminuto_mux_fini(diminuto_mux_t * that)
+{
+	int rc = 0;
+
+	if (diminuto_mux_set_fini(that, &that->read) < 0) {
+		rc = -1;
+	}
+
+	if (diminuto_mux_set_fini(that, &that->write) < 0) {
+		rc = -1;
 	}
 
 	diminuto_mux_init(that);
