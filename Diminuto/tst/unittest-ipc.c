@@ -292,7 +292,9 @@ int main(void)
     		 * address by the time the next unit test begins.
     		 */
 
-            waitpid(pid, &status, 0);
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
 
         } else {
 
@@ -368,7 +370,9 @@ int main(void)
     		 * address by the time the next unit test begins.
     		 */
 
-            waitpid(pid, &status, 0);
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
         }
     }
 
@@ -485,7 +489,9 @@ int main(void)
     		ASSERT(diminuto_ipc_close(producer) >= 0);
     		ASSERT(diminuto_ipc_close(rendezvous) >= 0);
 
-            waitpid(pid, &status, 0);
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
 
         } else {
 
