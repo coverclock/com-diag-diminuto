@@ -25,12 +25,25 @@ typedef struct DiminutoMuxSet {
 } diminuto_mux_set_t;
 
 typedef struct DiminutoMux {
+	int count;
 	int nfds;
 	diminuto_mux_set_t read;
 	diminuto_mux_set_t write;
-	diminuto_mux_set_t exception;
 	sigset_t mask;
 } diminuto_mux_t;
+
+/**
+ * Return the resolution of the Diminuto mux units in ticks per second (Hertz).
+ * Although the underlying platform may be able to return time with this
+ * resolution, there is no guarantee that the underlying platform actually has
+ * this degree of accuracy.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_ticks_t diminuto_mux_frequency(void) {
+	return 1000000000LL;
+}
+
+extern int diminuto_mux_init(diminuto_mux_t * that);
 
 extern int diminuto_mux_register_read(diminuto_mux_t * that, int fd);
 
@@ -40,20 +53,18 @@ extern int diminuto_mux_register_write(diminuto_mux_t * that, int fd);
 
 extern int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd);
 
-extern int diminuto_mux_register_exception(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_register_signal(diminuto_mux_t * that, int signum);
 
-extern int diminuto_mux_unregister_exception(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
 
-extern int diminuto_mux_register_signal(diminuto_mux_t * that, int sig);
-
-extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int sig);
+extern int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t timeout);
 
 extern int diminuto_mux_ready_read(diminuto_mux_t * that);
 
 extern int diminuto_mux_ready_write(diminuto_mux_t * that);
 
-extern int diminuto_mux_ready_exception(diminuto_mux_t * that);
+extern int diminuto_mux_close(diminuto_mux_t * that, int fd);
 
-extern int diminuto_mux_ready(diminuto_mux_t * that, diminuto_ticks_t timeout);
+extern int diminuto_mux_fini(diminuto_mux_t * that);
 
 #endif
