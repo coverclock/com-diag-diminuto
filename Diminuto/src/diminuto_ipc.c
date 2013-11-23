@@ -134,16 +134,18 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     return fd;
 }
 
-diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t index)
+diminuto_ipv4_t * diminuto_ipc_addresses(const char * hostname)
 {
-    diminuto_ipv4_t address = 0;
+	diminuto_ipv4_t * addresses = (diminuto_ipv4_t *)0;
     struct  hostent * hostp;
     struct in_addr inaddr;
+    size_t index;
     size_t limit;
-    size_t size;
 
     if (inet_aton(hostname, &inaddr)) {
-        address = ntohl(inaddr.s_addr);
+        addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * 2);
+        addresses[0] = ntohl(inaddr.s_addr);
+        addresses[1] = 0;
     } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
         /* Do nothing: no host entry. */
     } else if (hostp->h_addrtype != AF_INET) {
@@ -152,26 +154,32 @@ diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t index)
         for (limit = 0; hostp->h_addr_list[limit] != 0; ++limit) {
             continue;
         }
-        if (index < limit) {
-            memset(&inaddr, 0, sizeof(inaddr));
-            if (hostp->h_length < (int)sizeof(inaddr)) {
-                size = hostp->h_length;
-            } else {
-                size = sizeof(inaddr);
-            }
-            memcpy(&inaddr, hostp->h_addr_list[index], size);
-            address = ntohl(inaddr.s_addr);
-        } else {
-            /* Do nothing: no address at provided index. */
+        if (limit > 0) {
+        	addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * (limit + 1));
+        	for (index = 0; index < limit; ++index) {
+        		memset(&inaddr, 0, sizeof(inaddr));
+         		memcpy(&inaddr, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(inaddr)) ? hostp->h_length : sizeof(inaddr));
+        		addresses[index] = ntohl(inaddr.s_addr);
+        	}
+        	addresses[index] = 0;
         }
     }
 
-    return address;
+    return addresses;
 }
 
 diminuto_ipv4_t diminuto_ipc_address(const char * hostname)
 {
-    return diminuto_ipc_address_index(hostname, 0);
+	diminuto_ipv4_t address = 0;
+	diminuto_ipv4_t * addresses;
+
+	addresses = diminuto_ipc_addresses(hostname);
+	if (addresses != (diminuto_ipv4_t *)0) {
+		address = addresses[0];
+		free(addresses);
+	}
+
+	return address;
 }
 
 const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)

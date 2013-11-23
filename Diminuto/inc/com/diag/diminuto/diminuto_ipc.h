@@ -17,14 +17,15 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Convert a hostname or an IPV4 address string in dot notation into an IPV4
- * address in host byte order. Since a single host can map to multiple
- * addresses, indicate which address is desired.
+ * Convert a hostname or an IPV4 address string in dot notation into one
+ * or more IPV4 addresses in host byte order. Since a single host can map to
+ * multiple addresses, this returns a list of addresses in dynamically acquired
+ * memory. The last address will be all zeros. The list must be freed by the
+ * application.
  * @param hostname points to the hostname or IP address string.
- * @param index indicates which IP address to return.
- * @return the IPV4 address or 0 if no such hostname or the string is invalid.
+ * @return an array or NULL if no such hostname or the string is invalid.
  */
-extern diminuto_ipv4_t diminuto_ipc_address_index(const char * hostname, size_t index);
+extern diminuto_ipv4_t * diminuto_ipc_addresses(const char * hostname);
 
 /**
  * Convert a hostname or an IPV4 address string in dot notation into an IPV4
