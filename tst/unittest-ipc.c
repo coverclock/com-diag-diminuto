@@ -23,6 +23,7 @@
 #include <string.h>
 
 static const diminuto_ipv4_t LOCALHOST = 0x7f000001UL;
+static const size_t LIMIT = 256;
 static const diminuto_port_t PORT = 0xfff0;
 static const diminuto_port_t PORT1 = 65535;
 static const diminuto_port_t PORT2 = 65534;
@@ -64,6 +65,23 @@ int main(void)
          */
         EXPECT(address == 0UL);
 #endif
+    }
+
+    {
+    	diminuto_ipv4_t * addresses;
+    	size_t ii;
+
+    	addresses = diminuto_ipc_addresses("google.com");
+    	ASSERT(addresses != (diminuto_ipv4_t *)0);
+
+    	for (ii = 0; ii < LIMIT; ++ii) {
+    		if (addresses[ii] == (diminuto_ipv4_t *)0) {
+    			break;
+    		}
+    	}
+    	EXPECT(ii < LIMIT);
+
+    	free(addresses);
     }
 
     {
