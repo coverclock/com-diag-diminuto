@@ -75,11 +75,29 @@ int main(void)
     	ASSERT(addresses != (diminuto_ipv4_t *)0);
 
     	for (ii = 0; ii < LIMIT; ++ii) {
-    		if (addresses[ii] == (diminuto_ipv4_t *)0) {
+    		if (addresses[ii] == 0UL) {
     			break;
     		}
     	}
+    	EXPECT(ii > 1);
     	EXPECT(ii < LIMIT);
+
+    	free(addresses);
+    }
+
+    {
+    	diminuto_ipv4_t * addresses;
+    	size_t ii;
+
+    	addresses = diminuto_ipc_addresses("www.diag.com");
+    	ASSERT(addresses != (diminuto_ipv4_t *)0);
+
+    	for (ii = 0; ii < LIMIT; ++ii) {
+    		if (addresses[ii] == 0UL) {
+    			break;
+    		}
+    	}
+    	EXPECT(ii == 1);
 
     	free(addresses);
     }
