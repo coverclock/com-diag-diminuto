@@ -6,8 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * WORK IN PROGRESS
  */
 
 #include "com/diag/diminuto/diminuto_mux.h"
@@ -153,7 +151,7 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 		that->read.ready = that->read.active;
 		that->write.ready = that->write.active;
 
-		if (ticks >= 0) {
+		if (ticks < diminuto_mux_indefinite()) {
 			timeout.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
 			timeout.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_mux_frequency());
 			top = &timeout;
