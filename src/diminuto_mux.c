@@ -173,6 +173,7 @@ static int diminuto_mux_ready(diminuto_mux_t * that, diminuto_mux_set_t * set)
 
 			if (FD_ISSET(set->next, &set->ready)) {
 				fd = set->next;
+				FD_CLR(fd, &set->ready);
 			}
 
 			set->next = (set->next + 1) % modulo;
