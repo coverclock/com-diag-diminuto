@@ -188,10 +188,6 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 int main(int argc, char ** argv)
 {
 	{
-		ASSERT(diminuto_mux_indefinite() == 0x7fffffffffffffffLL);
-	}
-
-	{
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
@@ -332,7 +328,7 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
 
-		ASSERT(diminuto_mux_wait(&mux, diminuto_mux_indefinite()) == 2);
+		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next == 0);
 		ASSERT(mux.write.next == 0);
@@ -363,7 +359,7 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
 
-		ASSERT(diminuto_mux_wait(&mux, diminuto_mux_indefinite()) == 1);
+		ASSERT(diminuto_mux_wait(&mux, -1) == 1);
 		ASSERT(mux.nfds == STDOUT_FILENO);
 		ASSERT(mux.read.next == 0);
 		ASSERT(mux.write.next == 0);
@@ -382,7 +378,7 @@ int main(int argc, char ** argv)
 	}
 
 	{
-		diminuto_mux_test(diminuto_mux_indefinite());
+		diminuto_mux_test(-1);
 		diminuto_mux_test(diminuto_frequency());
 		diminuto_mux_test(0);
 	}
