@@ -263,22 +263,30 @@ int main(int argc, char ** argv)
 
 	{
 		diminuto_mux_t mux;
-		int pipefd[16][2]; /* 16^2=256 */
+		int pipefd[16][2]; /* 16^2==256 */
 		int ii;
 		int rc;
 		int fd;
-		int nn;
-		int mm;
+		int cc; /* consumers */
+		int pp; /* producers */
 		uint8_t input[countof(pipefd)];
 		uint8_t output[countof(pipefd)];
 		uint8_t buffer;
-		int reads[1 << (sizeof(uint8_t) * 8)] = { 0 };
-		int writes[1 << (sizeof(uint8_t) * 8)] = { 0 };
+		int reads[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
+		int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
 
 		diminuto_mux_init(&mux);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
+
+		for (ii = 0; ii < countof(reads); ++ii) {
+			reads[ii] = 0;
+		}
+
+		for (ii = 0; ii < countof(writes); ++ii) {
+			writes[ii] = 0;
+		}
 
 		for (ii = 0; ii < countof(pipefd); ++ii) {
 			input[ii] = ii * countof(input);
@@ -291,10 +299,10 @@ int main(int argc, char ** argv)
 			ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) == 0);
 		}
 
-		nn = countof(pipefd);
-		mm = countof(pipefd);
+		cc = countof(pipefd);
+		pp = countof(pipefd);
 
-		while ((nn > 0) || (mm > 0)) {
+		while ((cc > 0) || (pp > 0)) {
 			rc = diminuto_mux_wait(&mux, diminuto_frequency());
 			if (rc == 0) {
 				continue;
@@ -309,12 +317,12 @@ int main(int argc, char ** argv)
 				ASSERT(ii < countof(pipefd));
 				rc = read(pipefd[ii][0], &buffer, sizeof(buffer));
 				if (rc == 0) {
-					fprintf(stderr, "nn=%d fd=%d ii=%d read(%d)=%d close\n", nn, fd, ii, pipefd[ii][0], rc);
+					fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d close\n", cc, pp, fd, ii, pipefd[ii][0], rc);
 					ASSERT(diminuto_mux_close(&mux, pipefd[ii][0]) == 0);
-					--nn;
+					--cc;
 					continue;
 				}
-				fprintf(stderr, "nn=%d fd=%d ii=%d read(%d)=%d %u\n", nn, fd, ii, pipefd[ii][0], rc, buffer);
+				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, pipefd[ii][0], rc, buffer);
 				ASSERT(rc == sizeof(buffer));
 				ASSERT(buffer == input[ii]);
 				++reads[input[ii]];
@@ -328,18 +336,21 @@ int main(int argc, char ** argv)
 				}
 				ASSERT(ii < countof(pipefd));
 				rc = write(pipefd[ii][1], &output[ii], sizeof(output[ii]));
-				fprintf(stderr, "nn=%d fd=%d ii=%d write(%d)=%d %u\n", nn, fd, ii, pipefd[ii][1], rc, output[ii]);
+				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, pipefd[ii][1], rc, output[ii]);
 				ASSERT(rc == sizeof(output[ii]));
 				++writes[output[ii]];
 				if (output[ii] == (((ii + 1) * countof(output)) - 1)) {
-					fprintf(stderr, "nn=%d fd=%d ii=%d write(%d)=%d close\n", nn, fd, ii, pipefd[ii][1], rc);
+					fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d close\n", cc, pp, fd, ii, pipefd[ii][1], rc);
 					ASSERT(diminuto_mux_close(&mux, pipefd[ii][1]) == 0);
-					--mm;
+					--pp;
 					continue;
 				}
 				++output[ii];
 			}
 		}
+
+		ASSERT(cc == 0);
+		ASSERT(pp == 0);
 
 		for (ii = 0; ii < countof(reads); ++ii) {
 			ASSERT(reads[ii] == 1);
