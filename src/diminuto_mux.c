@@ -13,130 +13,116 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <signal.h>
-#include <string.h>
+#include <unistd.h>
 
-static void diminuto_mux_init_set(diminuto_mux_t * that, diminuto_mux_set_t * set)
+static void diminuto_mux_set_init(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {
-	set->minimum = ~(1 << ((sizeof(set->minimum) * 8) - 1));
-	set->maximum = -1;
-
 	set->next = -1;
-
 	FD_ZERO(&set->active);
 	FD_ZERO(&set->ready);
 }
 
 void diminuto_mux_init(diminuto_mux_t * that)
 {
-	that->count = 0;
-
 	that->nfds = -1;
-
-	diminuto_mux_init_set(that, &that->read);
-	diminuto_mux_init_set(that, &that->write);
-
+	diminuto_mux_set_init(that, &that->read);
+	diminuto_mux_set_init(that, &that->write);
 	sigemptyset(&that->mask);
 }
 
-static int diminuto_mux_register(diminuto_mux_t * that, diminuto_mux_set_t * set, int fd)
+static int diminuto_mux_set_register(diminuto_mux_t * that, diminuto_mux_set_t * set, int fd)
 {
 	int rc;
 
-	rc = FD_ISSET(fd, &set->active);
-	if (!rc) {
-
-		++that->count;
-
+	rc = !FD_ISSET(fd, &set->active);
+	if (rc) {
+		FD_SET(fd, &set->active);
+		FD_CLR(fd, &set->ready);
 		if (fd > that->nfds) {
 			that->nfds = fd;
 		}
-
-		if (fd < set->minimum) {
-			set->minimum = fd;
-		}
-
-		if (fd > set->maximum) {
-			set->maximum = fd;
-		}
-
-		FD_SET(fd, &set->active);
-		FD_CLR(fd, &set->ready);
-
 	}
 
-	return fd;
+	return rc ? 0 : -1;
 }
 
 int diminuto_mux_register_read(diminuto_mux_t * that, int fd)
 {
-	return diminuto_mux_register(that, &that->read, fd);
+	return diminuto_mux_set_register(that, &that->read, fd);
 }
 
 int diminuto_mux_register_write(diminuto_mux_t * that, int fd)
 {
-	return diminuto_mux_register(that, &that->write, fd);
+	return diminuto_mux_set_register(that, &that->write, fd);
 }
 
-static int diminuto_mux_unregister(diminuto_mux_t * that, diminuto_mux_set_t * set, int fd)
+static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t * set, int fd)
 {
 	int rc;
+	int nfds;
 
-	rc = FD_ISSET(fd, &that->read.active);
-	if (!rc) {
-
-		/* Do nothing. */
-
-	} else if (--that->count == 0) {
-
-		diminuto_mux_init(that);
-
-	} else {
-
+	rc = FD_ISSET(fd, &set->active);
+	if (rc) {
+		FD_CLR(fd, &set->active);
+		FD_CLR(fd, &set->ready);
 		if (fd == that->nfds) {
-			--that->nfds;
+			nfds = that->nfds;
+			that->nfds = -1;
+			for (fd = 0; fd < nfds; ++fd) {
+				if (FD_ISSET(fd, &that->read.active) || (FD_ISSET(fd, &that->write.active))) {
+					that->nfds = fd;
+				}
+			}
+			if (that->read.next > that->nfds) {
+				that->read.next = 0;
+			}
+			if (that->write.next > that->nfds) {
+				that->write.next = 0;
+			}
 		}
-
-		if (fd == set->maximum) {
-			--set->maximum;
-		}
-
-		if (fd == set->minimum) {
-			++set->maximum;
-		}
-
-		if (set->maximum < set->minimum) {
-			set->minimum = ~(1 << ((sizeof(set->minimum) * 8) - 1));
-			set->maximum = -1;
-			FD_ZERO(&set->active);
-			FD_ZERO(&set->ready);
-		} else {
-			FD_CLR(fd, &set->active);
-			FD_CLR(fd, &set->ready);
-		}
-
 	}
 
-	return rc;
+	return rc ? 0 : -1;
 }
 
 int diminuto_mux_unregister_read(diminuto_mux_t * that, int fd)
 {
-	return diminuto_mux_unregister(that, &that->read, fd);
+	return diminuto_mux_set_unregister(that, &that->read, fd);
 }
 
 int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd)
 {
-	return diminuto_mux_unregister(that, &that->write, fd);
+	return diminuto_mux_set_unregister(that, &that->write, fd);
 }
 
 int diminuto_mux_register_signal(diminuto_mux_t * that, int signum)
 {
-    return sigaddset(&that->mask, signum);
+	int rc = -1;
+
+	if (sigismember(&that->mask, signum) != 0) {
+		/* Do nothing. */
+	} else if (sigaddset(&that->mask, signum) < 0) {
+		/* Do nothing. */
+	} else {
+		rc = 0;
+	}
+
+    return rc;
 }
 
 int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum)
 {
-	return sigdelset(&that->mask, signum);
+	int rc = -1;
+
+	if (sigismember(&that->mask, signum) <= 0) {
+		/* Do nothing. */
+	} else if (sigdelset(&that->mask, signum) < 0) {
+		/* Do nothing. */
+	} else {
+		rc = 0;
+	}
+
+    return rc;
 }
 
 int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
@@ -145,21 +131,27 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 	struct timespec * top = (struct timespec *)0;
 	struct timespec timeout;
 
-	if (that->count > 0) {
+	if (that->nfds >= 0) {
 
 		that->read.ready = that->read.active;
 		that->write.ready = that->write.active;
 
 		if (ticks >= 0) {
+			timeout.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
+			timeout.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_mux_frequency());
 			top = &timeout;
-			top->tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
-			top->tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_mux_frequency());
 		}
 
-		rc = pselect(that->nfds, &that->read.ready, &that->write.ready, (fd_set *)0, top, &that->mask);
+		rc = pselect(that->nfds + 1, &that->read.ready, &that->write.ready, (fd_set *)0, top, &that->mask);
 
-		that->read.next = that->read.minimum;
-		that->write.next = that->write.minimum;
+		if (rc > 0) {
+			if (that->read.next < 0) {
+				that->read.next = 0;
+			}
+			if (that->write.next < 0) {
+				that->write.next = 0;
+			}
+		}
 
 	}
 
@@ -169,15 +161,23 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 static int diminuto_mux_ready(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {
 	int fd = -1;
+	int limit;
+	int modulo;
 
-	while (set->next <= set->maximum) {
+	if (set->next >= 0) {
 
-		if (FD_ISSET(set->next, &set->ready)) {
-			fd = set->next++;
-			break;
-		}
+		limit = set->next;
+		modulo = that->nfds + 1;
 
-		++set->next;
+		do {
+
+			if (FD_ISSET(set->next, &set->ready)) {
+				fd = set->next;
+			}
+
+			set->next = (set->next + 1) % modulo;
+
+		} while ((fd < 0) && (set->next != limit));
 
 	}
 
@@ -196,42 +196,11 @@ int diminuto_mux_ready_write(diminuto_mux_t * that)
 
 int diminuto_mux_close(diminuto_mux_t * that, int fd)
 {
-	return (diminuto_mux_unregister_read(that, fd) || diminuto_mux_unregister_write(that, fd)) ? close(fd) : -2;
-}
+	int rr;
+	int ww;
 
-static int diminuto_mux_fini_set(diminuto_mux_t * that, diminuto_mux_set_t * set)
-{
-	int rc = 0;
-	int fd;
+	rr = diminuto_mux_unregister_read(that, fd);
+	ww = diminuto_mux_unregister_write(that, fd);
 
-	for (fd = set->minimum; fd <= set->maximum; ++fd) {
-
-		if (diminuto_mux_unregister(that, set, fd)) {
-
-			if (close(fd) < 0) {
-				rc = -1;
-			}
-
-		}
-
-	}
-
-	return rc;
-}
-
-int diminuto_mux_fini(diminuto_mux_t * that)
-{
-	int rc = 0;
-
-	if (diminuto_mux_fini_set(that, &that->read) < 0) {
-		rc = -1;
-	}
-
-	if (diminuto_mux_fini_set(that, &that->write) < 0) {
-		rc = -1;
-	}
-
-	diminuto_mux_init(that);
-
-	return rc;
+	return ((rr == 0) || (ww == 0)) ? close(fd) : -2;
 }
