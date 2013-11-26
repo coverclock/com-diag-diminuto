@@ -391,6 +391,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 
 # For embedding in an application where it can be interrogated or displayed.
 $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
@@ -399,6 +400,7 @@ $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
 
 # For embedding in an application where it can be interrogated or displayed.
 $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
@@ -406,11 +408,12 @@ $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:
 	echo '#endif' >> $@
 
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
-	test -d $(OUT)/$(SYM_DIR) || mkdir -p $(OUT)/$(SYM_DIR)
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 # For sourcing into a bash shell (for example, ". setup").
 $(OUT)/$(BIN_DIR)/setup:	Makefile
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -432,18 +435,18 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 OBJ_M =	$(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
 $(OUT)/$(SYS_DIR)/Makefile:	Makefile
-	test -d $(OUT)/$(SYS_DIR) || mkdir -p $(OUT)/$(SYS_DIR)
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
 	#echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -DDEBUG" >> $@
 
 $(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
-	test -d $(OUT)/$(SYS_DIR) || mkdir -p $(OUT)/$(SYS_DIR)
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	cp $< $@
 
 $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
-	test -d $(OUT)/$(DRV_DIR) || mkdir -p $(OUT)/$(DRV_DIR)
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	cp $< $@
 
 drivers $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
