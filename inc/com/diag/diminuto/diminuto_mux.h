@@ -48,15 +48,6 @@ static inline diminuto_ticks_t diminuto_mux_frequency(void) {
 }
 
 /**
- * Return the maximum possible timeout value that causes the multiplexer to
- * block indefinitely.
- * @return the maximum possible timeout value.
- */
-static inline diminuto_ticks_t diminuto_mux_indefinite(void) {
-	return ~(((diminuto_ticks_t)1) << ((sizeof(diminuto_ticks_t) * 8) - 1));
-}
-
-/**
  * Initialize a multiplexer. Any prior state is lost, although this does not
  * effect any file descriptors.
  * @param that points to a multiplexer structure.
@@ -116,11 +107,10 @@ extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
  * Wait until one or more registered file descriptors are ready for either
  * reading or writing, a timeout occurs, or a signal interrupt occurs. A
  * timeout of zero returns immediately, which is useful for polling. A timeout
- * of diminuto_mux_indefinite() causes the multiplexer to block indefinitely
- * until either a file descriptor is ready or one of the registered signals
- * is caught.
+ * that is negative causes the multiplexer to block indefinitely until either
+ * a file descriptor is ready or one of the registered signals is caught.
  * @param that points to an initialized multiplexer structure.
- * @param timeout is a timeout period in ticks.
+ * @param timeout is a timeout period in ticks, 0 for polling, <0 for none.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
 extern int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t timeout);

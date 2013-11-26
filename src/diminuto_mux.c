@@ -151,7 +151,7 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 		that->read.ready = that->read.active;
 		that->write.ready = that->write.active;
 
-		if (ticks < diminuto_mux_indefinite()) {
+		if (ticks >= 0) {
 			timeout.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
 			timeout.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_mux_frequency());
 			top = &timeout;
