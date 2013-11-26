@@ -200,5 +200,30 @@ int main(int argc, char ** argv)
 		diminuto_mux_dump(&mux, stderr);
 	}
 
+	{
+		diminuto_mux_t mux;
+
+		diminuto_mux_init(&mux);
+
+		EXPECT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
+
+		EXPECT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
+		EXPECT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
+
+		EXPECT(diminuto_mux_wait(&mux, 0) == 2);
+		diminuto_mux_dump(&mux, stderr);
+
+		EXPECT(diminuto_mux_ready_read(&mux) < 0);
+
+		EXPECT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
+		EXPECT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
+		EXPECT(diminuto_mux_ready_write(&mux) < 0);
+
+		EXPECT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
+
+		EXPECT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+	}
+
     EXIT();
 }
