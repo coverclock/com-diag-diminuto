@@ -70,6 +70,121 @@ static void diminuto_mux_dump(diminuto_mux_t * that, FILE * fp)
 	fprintf(fp, "mux@%p: mask=<", that); diminuto_mux_sigs_dump(&that->mask, fp); fputs(" >\n", fp);
 }
 
+static void diminuto_mux_test(diminuto_ticks_t timeout)
+{
+	diminuto_mux_t mux;
+	int pipefd[16][2]; /* 16^2==256 */
+	int ss;
+	int ii;
+	int rc;
+	int fd;
+	int cc; /* consumers */
+	int pp; /* producers */
+	uint8_t input[countof(pipefd)];
+	uint8_t output[countof(pipefd)];
+	uint8_t buffer;
+	int reads[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
+	int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
+	int * map;
+
+	ss = getdtablesize();
+	map = (int *)calloc(ss, sizeof(int));
+	ASSERT(map != (int *)0);
+	for (ii = 0; ii < ss; ++ii) {
+		map[ii] = -1;
+	}
+
+	diminuto_mux_init(&mux);
+	ASSERT(mux.nfds < 0);
+	ASSERT(mux.read.next < 0);
+	ASSERT(mux.write.next < 0);
+
+	for (ii = 0; ii < countof(reads); ++ii) {
+		reads[ii] = 0;
+	}
+
+	for (ii = 0; ii < countof(writes); ++ii) {
+		writes[ii] = 0;
+	}
+
+	for (ii = 0; ii < countof(pipefd); ++ii) {
+		input[ii] = ii * countof(input);
+		output[ii] = ii * countof(output);
+		ASSERT(pipe(pipefd[ii]) == 0);
+		ASSERT(pipefd[ii][0] < ss);
+		ASSERT(pipefd[ii][0] >= 0);
+		ASSERT(pipefd[ii][1] < ss);
+		ASSERT(pipefd[ii][0] != pipefd[ii][1]);
+		ASSERT(diminuto_mux_register_read(&mux, pipefd[ii][0]) == 0);
+		ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) == 0);
+		map[pipefd[ii][0]] = ii;
+		map[pipefd[ii][1]] = ii;
+	}
+
+	cc = countof(pipefd);
+	pp = countof(pipefd);
+
+	while ((cc > 0) || (pp > 0)) {
+		rc = diminuto_mux_wait(&mux, timeout);
+		if (rc == 0) {
+			break;
+		}
+		ASSERT(rc > 0);
+		while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
+			ASSERT(fd < ss);
+			ii = map[fd];
+			ASSERT(ii >= 0);
+			ASSERT(ii < countof(pipefd));
+			rc = read(fd, &buffer, sizeof(buffer));
+			if (rc == 0) {
+				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
+				ASSERT(diminuto_mux_close(&mux, fd) == 0);
+				--cc;
+				continue;
+			}
+			fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+			ASSERT(rc == sizeof(buffer));
+			ASSERT(buffer == input[ii]);
+			++reads[buffer];
+			++input[ii];
+		}
+		while ((fd = diminuto_mux_ready_write(&mux)) >= 0) {
+			ASSERT(fd < ss);
+			ii = map[fd];
+			ASSERT(ii >= 0);
+			ASSERT(ii < countof(pipefd));
+			buffer = output[ii]++;
+			rc = write(fd, &buffer, sizeof(buffer));
+			fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+			ASSERT(rc == sizeof(buffer));
+			++writes[buffer];
+			if (buffer == (((ii + 1) * countof(output)) - 1)) {
+				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
+				ASSERT(diminuto_mux_close(&mux, fd) == 0);
+				--pp;
+				continue;
+			}
+		}
+	}
+
+	ASSERT(cc == 0);
+	ASSERT(pp == 0);
+
+	for (ii = 0; ii < countof(reads); ++ii) {
+		ASSERT(reads[ii] == 1);
+	}
+
+	for (ii = 0; ii < countof(writes); ++ii) {
+		ASSERT(writes[ii] == 1);
+	}
+
+	ASSERT(mux.nfds < 0);
+	ASSERT(mux.read.next < 0);
+	ASSERT(mux.write.next < 0);
+
+	free(map);
+}
+
 int main(int argc, char ** argv)
 {
 	{
@@ -267,117 +382,9 @@ int main(int argc, char ** argv)
 	}
 
 	{
-		diminuto_mux_t mux;
-		int pipefd[16][2]; /* 16^2==256 */
-		int ss;
-		int ii;
-		int rc;
-		int fd;
-		int cc; /* consumers */
-		int pp; /* producers */
-		uint8_t input[countof(pipefd)];
-		uint8_t output[countof(pipefd)];
-		uint8_t buffer;
-		int reads[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
-		int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
-		int * map;
-
-		ss = getdtablesize();
-		map = (int *)calloc(ss, sizeof(int));
-		ASSERT(map != (int *)0);
-		for (ii = 0; ii < ss; ++ii) {
-			map[ii] = -1;
-		}
-
-		diminuto_mux_init(&mux);
-		ASSERT(mux.nfds < 0);
-		ASSERT(mux.read.next < 0);
-		ASSERT(mux.write.next < 0);
-
-		for (ii = 0; ii < countof(reads); ++ii) {
-			reads[ii] = 0;
-		}
-
-		for (ii = 0; ii < countof(writes); ++ii) {
-			writes[ii] = 0;
-		}
-
-		for (ii = 0; ii < countof(pipefd); ++ii) {
-			input[ii] = ii * countof(input);
-			output[ii] = ii * countof(output);
-			ASSERT(pipe(pipefd[ii]) == 0);
-			ASSERT(pipefd[ii][0] < ss);
-			ASSERT(pipefd[ii][0] >= 0);
-			ASSERT(pipefd[ii][1] < ss);
-			ASSERT(pipefd[ii][0] != pipefd[ii][1]);
-			ASSERT(diminuto_mux_register_read(&mux, pipefd[ii][0]) == 0);
-			ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) == 0);
-			map[pipefd[ii][0]] = ii;
-			map[pipefd[ii][1]] = ii;
-		}
-
-		cc = countof(pipefd);
-		pp = countof(pipefd);
-
-		while ((cc > 0) || (pp > 0)) {
-			rc = diminuto_mux_wait(&mux, diminuto_mux_indefinite());
-			if (rc == 0) {
-				break;
-			}
-			ASSERT(rc > 0);
-			while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
-				ASSERT(fd < ss);
-				ii = map[fd];
-				ASSERT(ii >= 0);
-				ASSERT(ii < countof(pipefd));
-				rc = read(fd, &buffer, sizeof(buffer));
-				if (rc == 0) {
-					fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
-					ASSERT(diminuto_mux_close(&mux, fd) == 0);
-					--cc;
-					continue;
-				}
-				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
-				ASSERT(rc == sizeof(buffer));
-				ASSERT(buffer == input[ii]);
-				++reads[buffer];
-				++input[ii];
-			}
-			while ((fd = diminuto_mux_ready_write(&mux)) >= 0) {
-				ASSERT(fd < ss);
-				ii = map[fd];
-				ASSERT(ii >= 0);
-				ASSERT(ii < countof(pipefd));
-				buffer = output[ii]++;
-				rc = write(fd, &buffer, sizeof(buffer));
-				fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
-				ASSERT(rc == sizeof(buffer));
-				++writes[buffer];
-				if (buffer == (((ii + 1) * countof(output)) - 1)) {
-					fprintf(stderr, "cc=%d pp=%d fd=%d ii=%d write(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
-					ASSERT(diminuto_mux_close(&mux, fd) == 0);
-					--pp;
-					continue;
-				}
-			}
-		}
-
-		ASSERT(cc == 0);
-		ASSERT(pp == 0);
-
-		for (ii = 0; ii < countof(reads); ++ii) {
-			ASSERT(reads[ii] == 1);
-		}
-
-		for (ii = 0; ii < countof(writes); ++ii) {
-			ASSERT(writes[ii] == 1);
-		}
-
-		ASSERT(mux.nfds < 0);
-		ASSERT(mux.read.next < 0);
-		ASSERT(mux.write.next < 0);
-
-		free(map);
+		diminuto_mux_test(diminuto_mux_indefinite());
+		diminuto_mux_test(diminuto_frequency());
+		diminuto_mux_test(0);
 	}
 
     EXIT();
