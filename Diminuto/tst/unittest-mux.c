@@ -73,6 +73,10 @@ static void diminuto_mux_dump(diminuto_mux_t * that, FILE * fp)
 int main(int argc, char ** argv)
 {
 	{
+		ASSERT(diminuto_mux_indefinite() == 0x7fffffffffffffffLL);
+	}
+
+	{
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
@@ -316,9 +320,9 @@ int main(int argc, char ** argv)
 		pp = countof(pipefd);
 
 		while ((cc > 0) || (pp > 0)) {
-			rc = diminuto_mux_wait(&mux, diminuto_frequency());
+			rc = diminuto_mux_wait(&mux, diminuto_mux_indefinite());
 			if (rc == 0) {
-				continue;
+				break;
 			}
 			ASSERT(rc > 0);
 			while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
