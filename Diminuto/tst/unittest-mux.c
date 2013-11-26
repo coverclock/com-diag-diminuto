@@ -16,12 +16,19 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <values.h>
+
+static const char * diminuto_mux_set_name(diminuto_mux_t * that, diminuto_mux_set_t * set)
+{
+	return (set == &that->read) ? "read" : (set == &that->write) ? "write" : "other";
+}
 
 static void diminuto_mux_sigs_dump(sigset_t * sigs, FILE * fp)
 {
 	int signum;
 
-	for (signum = 0; signum <= 31; ++signum) {
+	for (signum = 1; signum < NSIG; ++signum) {
 		if (sigismember(sigs, signum)) {
 			fprintf(fp, " %d", signum);
 		}
@@ -46,10 +53,7 @@ static void diminuto_mux_set_dump(diminuto_mux_t * that, diminuto_mux_set_t * se
 {
 	const char * name;
 
-	name = (set == &that->read) ? "read" : (set == &that->write) ? "write" : "other";
-
-	fprintf(fp, "mux@%p: %s.minimum=%d\n", that, name, set->minimum);
-	fprintf(fp, "mux@%p: %s.maximum=%d\n", that, name, set->maximum);
+	name = diminuto_mux_set_name(that, set);
 	fprintf(fp, "mux@%p: %s.next=%d\n", that, name, set->next);
 	fprintf(fp, "mux@%p: %s.active=<", that, name); diminuto_mux_fds_dump(&set->active, fp); fputs(" >\n", fp);
 	fprintf(fp, "mux@%p: %s.ready=<", that, name); diminuto_mux_fds_dump(&set->ready, fp); fputs(" >\n", fp);
@@ -59,7 +63,6 @@ static void diminuto_mux_dump(diminuto_mux_t * that, FILE * fp)
 {
 	int signum;
 
-	fprintf(fp, "mux@%p: count=%d\n", that, that->count);
 	fprintf(fp, "mux@%p: nfds=%d\n", that, that->nfds);
 	diminuto_mux_set_dump(that, &that->read, fp);
 	diminuto_mux_set_dump(that, &that->write, fp);
@@ -68,10 +71,39 @@ static void diminuto_mux_dump(diminuto_mux_t * that, FILE * fp)
 
 int main(int argc, char ** argv)
 {
-	diminuto_mux_t mux;
+	{
+		diminuto_mux_t mux;
 
-	diminuto_mux_init(&mux);
-	diminuto_mux_dump(&mux, stderr);
+		diminuto_mux_init(&mux);
+
+		EXPECT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
+		diminuto_mux_dump(&mux, stderr);
+
+		EXPECT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
+		EXPECT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
+		EXPECT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
+		EXPECT(diminuto_mux_register_signal(&mux, SIGHUP) == 0);
+		EXPECT(diminuto_mux_register_signal(&mux, SIGINT) == 0);
+		diminuto_mux_dump(&mux, stderr);
+
+		EXPECT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGHUP) == 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGINT) == 0);
+		diminuto_mux_dump(&mux, stderr);
+
+		EXPECT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) < 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
+		EXPECT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
+		diminuto_mux_dump(&mux, stderr);
+	}
 
     EXIT();
 }

@@ -17,15 +17,12 @@
 #include <sys/select.h>
 
 typedef struct DiminutoMuxSet {
-	int minimum;
-	int maximum;
 	int next;
 	fd_set active;
 	fd_set ready;
 } diminuto_mux_set_t;
 
 typedef struct DiminutoMux {
-	int count;
 	int nfds;
 	diminuto_mux_set_t read;
 	diminuto_mux_set_t write;
@@ -64,7 +61,5 @@ extern int diminuto_mux_ready_read(diminuto_mux_t * that);
 extern int diminuto_mux_ready_write(diminuto_mux_t * that);
 
 extern int diminuto_mux_close(diminuto_mux_t * that, int fd);
-
-extern int diminuto_mux_fini(diminuto_mux_t * that);
 
 #endif
