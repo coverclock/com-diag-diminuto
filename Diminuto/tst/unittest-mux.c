@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
 #include <stdio.h>
@@ -127,7 +128,8 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	while ((cc > 0) || (pp > 0)) {
 		rc = diminuto_mux_wait(&mux, timeout);
 		if (rc == 0) {
-			break;
+			diminuto_yield();
+			continue;
 		}
 		ASSERT(rc > 0);
 		while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
