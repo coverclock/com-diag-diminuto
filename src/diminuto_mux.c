@@ -60,6 +60,8 @@ static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t
 {
 	int rc;
 	int nfds;
+	int reads;
+	int writes;
 
 	rc = FD_ISSET(fd, &set->active);
 	if (rc) {
@@ -68,16 +70,31 @@ static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t
 		if (fd == that->nfds) {
 			nfds = that->nfds;
 			that->nfds = -1;
+			reads = 0;
+			writes = 0;
 			for (fd = 0; fd < nfds; ++fd) {
-				if (FD_ISSET(fd, &that->read.active) || (FD_ISSET(fd, &that->write.active))) {
+				if (FD_ISSET(fd, &that->read.active)) {
 					that->nfds = fd;
+					++reads;
+				}
+				if (FD_ISSET(fd, &that->write.active)) {
+					that->nfds = fd;
+					++writes;
 				}
 			}
-			if (that->read.next > that->nfds) {
+			if (reads == 0) {
+				that->read.next = -1;
+			} else if (that->read.next > that->nfds) {
 				that->read.next = 0;
+			} else {
+				/* Do nothing. */
 			}
-			if (that->write.next > that->nfds) {
+			if (writes == 0) {
+				that->write.next = -1;
+			} else if (that->write.next > that->nfds) {
 				that->write.next = 0;
+			} else {
+				/* Do nothing. */
 			}
 		}
 	}

@@ -204,6 +204,9 @@ int main(int argc, char ** argv)
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
+		EXPECT(mux.nfds < 0);
+		EXPECT(mux.read.next < 0);
+		EXPECT(mux.write.next < 0);
 
 		EXPECT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
 
@@ -211,6 +214,9 @@ int main(int argc, char ** argv)
 		EXPECT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
 
 		EXPECT(diminuto_mux_wait(&mux, 0) == 2);
+		EXPECT(mux.nfds == STDERR_FILENO);
+		EXPECT(mux.read.next == 0);
+		EXPECT(mux.write.next == 0);
 		diminuto_mux_dump(&mux, stderr);
 
 		EXPECT(diminuto_mux_ready_read(&mux) < 0);
@@ -223,6 +229,38 @@ int main(int argc, char ** argv)
 
 		EXPECT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
 		EXPECT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+		EXPECT(mux.nfds < 0);
+		EXPECT(mux.read.next < 0);
+		EXPECT(mux.write.next < 0);
+	}
+
+	{
+		diminuto_mux_t mux;
+
+		diminuto_mux_init(&mux);
+		EXPECT(mux.nfds < 0);
+		EXPECT(mux.read.next < 0);
+		EXPECT(mux.write.next < 0);
+
+		EXPECT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
+		EXPECT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
+
+		EXPECT(diminuto_mux_wait(&mux, 0) == 1);
+		EXPECT(mux.nfds == STDOUT_FILENO);
+		EXPECT(mux.read.next == 0);
+		EXPECT(mux.write.next == 0);
+		diminuto_mux_dump(&mux, stderr);
+
+		EXPECT(diminuto_mux_ready_read(&mux) < 0);
+
+		EXPECT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
+		EXPECT(diminuto_mux_ready_write(&mux) < 0);
+
+		EXPECT(diminuto_mux_close(&mux, STDIN_FILENO) == 0);
+		EXPECT(diminuto_mux_close(&mux, STDOUT_FILENO) == 0);
+		EXPECT(mux.nfds < 0);
+		EXPECT(mux.read.next < 0);
+		EXPECT(mux.write.next < 0);
 	}
 
     EXIT();
