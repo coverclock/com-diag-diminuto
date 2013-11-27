@@ -130,7 +130,8 @@ extern int diminuto_mux_ready_read(diminuto_mux_t * that);
 extern int diminuto_mux_ready_write(diminuto_mux_t * that);
 
 /**
- * Unregister a registered file descriptor and close it.
+ * Unregister a registered file descriptor and close it. The file descriptor
+ * is not closed if it is not registered.
  * @param that points to an initialized multiplexer structure.
  * @param fd is a registered file descriptor.
  * @return 0 for success, <0 for error.

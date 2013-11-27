@@ -69,4 +69,11 @@ static int diminuto_unittest_errors = 0;
         } \
     } while (0)
 
+#define FATAL(...) \
+	    do { \
+	        diminuto_log_log(LOG_ERR, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__); \
+	        ++diminuto_unittest_errors; \
+	        EXIT(); \
+	    } while (0)
+
 #endif
