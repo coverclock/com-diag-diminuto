@@ -10,8 +10,10 @@
 
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <signal.h>
 #include <unistd.h>
+#include <errno.h>
 
 static void diminuto_mux_set_init(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {
@@ -171,6 +173,12 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 			if (that->write.next < 0) {
 				that->write.next = 0;
 			}
+		} else if (rc == 0) {
+			/* Do nothing. */
+		} else if (errno == EINTR) {
+			/* Do nothing. */
+		} else {
+			diminuto_perror("diminuto_mux_wait");
 		}
 
 	}
@@ -217,11 +225,15 @@ int diminuto_mux_ready_write(diminuto_mux_t * that)
 
 int diminuto_mux_close(diminuto_mux_t * that, int fd)
 {
-	int rr;
-	int ww;
+	int rc = -2;
 
-	rr = diminuto_mux_unregister_read(that, fd);
-	ww = diminuto_mux_unregister_write(that, fd);
+	if ((diminuto_mux_unregister_read(that, fd) < 0) && (diminuto_mux_unregister_write(that, fd) < 0)) {
+		/* Do nothing. */
+	} else if ((rc = close(fd)) == 0) {
+		/* Do nothing. */
+	} else {
+		diminuto_perror("diminuto_mux_close");
+	}
 
-	return ((rr == 0) || (ww == 0)) ? close(fd) : -2;
+	return rc;
 }

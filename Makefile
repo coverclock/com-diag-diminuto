@@ -362,6 +362,10 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 .PHONY:	$(OUT)/$(GEN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 
 # For embedding in a system where it can be executed from a shell.
+# The major.minor.build is emitted to standard output, a bunch more
+# metadata to standard error. Hence, they can be redirected to separate
+# files. The metadata file can be read by a number of property-parsing
+# packages.
 $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -371,7 +375,6 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo '"COM_DIAG_DIMINUTO_METADATA_BEGIN\n"' >> $@
 	echo "\"Title: $(TITLE)\\n\"" >> $@
 	echo "\"Copyright: $(COPYRIGHT)\\n\"" >> $@
 	echo "\"Contact: $(CONTACT)\\n\"" >> $@
@@ -386,7 +389,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo "\"Platform: $(PLATFORM)\\n\"" >> $@
 	echo "\"Toolchain: $(TOOLCHAIN)\\n\"" >> $@
 	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
-	echo '"COM_DIAG_DIMINUTO_METADATA_END\n";' >> $@
+	echo ';' >> $@
 	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout); return 0; }' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
