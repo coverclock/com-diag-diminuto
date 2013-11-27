@@ -30,7 +30,11 @@ static const int DEBUG = 0;
 static const int VERBOSE = 0;
 
 static const diminuto_port_t PORT = 0xfff0;
+#if defined(__arm__)
+static const size_t TOTAL = 1024 * 512;
+#else
 static const size_t TOTAL = 1024 * 1024 * 1024;
+#endif
 
 static const char * diminuto_mux_set_name(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {

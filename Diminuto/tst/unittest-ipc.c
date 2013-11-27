@@ -27,7 +27,11 @@ static const size_t LIMIT = 256;
 static const diminuto_port_t PORT = 0xfff0;
 static const diminuto_port_t PORT1 = 65535;
 static const diminuto_port_t PORT2 = 65534;
+#if defined(__arm__)
+static const size_t TOTAL = 1024 * 512;
+#else
 static const size_t TOTAL = 1024 * 1024 * 100;
+#endif
 static const int DEBUG = 0;
 
 int main(void)
