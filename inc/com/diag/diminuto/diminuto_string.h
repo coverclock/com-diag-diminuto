@@ -14,7 +14,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Copys no more than (n - 1) characters up to and including the
+ * Copy no more than (n - 1) characters up to and including the
  * terminating NUL character from a source character array
  * to the destination character array. Guarantees that the
  * destination character array is NUL terminated. Does not NUL

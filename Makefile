@@ -364,9 +364,9 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # For embedding in a system where it can be executed from a shell.
 # The major.minor.build is emitted to standard output, a bunch more
 # metadata to standard error. Hence, they can be redirected to separate
-# files. The metadata file can be read by a number of property-parsing
-# packages.
-$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
+# files. The metadata file is intended to parsable as a standard properties
+# file (although I have not tried it).
+$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -388,7 +388,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo "\"Target: $(TARGET)\\n\"" >> $@
 	echo "\"Platform: $(PLATFORM)\\n\"" >> $@
 	echo "\"Toolchain: $(TOOLCHAIN)\\n\"" >> $@
-	$(VINFO) | sed 's/"/\\"/g' | awk '/^$$/ { next; } { print "\""$$0"\\n\""; }' >> $@ || true
+	$(VINFO) | awk '/^$$/ { next; } { gsub(/\"/, "\\\"", $$0); colon = index($$0, ":"); keyword = substr($$0, 1, colon - 1); value = substr($$0, colon + 1); gsub(/ /, "\\\\\\\\ ", keyword); print "\"" keyword ":" value "\\n\""; }' >> $@ || true
 	echo ';' >> $@
 	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout); return 0; }' >> $@
 
