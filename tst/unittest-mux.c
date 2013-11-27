@@ -88,6 +88,15 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
 	int * map;
 
+	/*
+	 * This is a useful trade off of memory for processing time: allocating
+	 * an array big enough to map any file descriptor to something else. You
+	 * might reduce the footprint by playing double indirection games, making
+	 * each entry one byte, then mapping into a second array that is say 256
+	 * bytes or smaller. Note that calloc() automatically zeros the memory that
+	 * it allocates. That would be more useful if we were storing pointers, but
+	 * alas zero is a valid file descriptor value.
+	 */
 	ss = sysconf(_SC_OPEN_MAX);
 	map = (int *)calloc(ss, sizeof(int));
 	ASSERT(map != (int *)0);
