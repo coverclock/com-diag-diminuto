@@ -42,7 +42,7 @@ static void diminuto_mux_fds_dump(fd_set * fds, FILE *fp)
 	int fd;
 	int nfds;
 
-	nfds = getdtablesize();
+	nfds = sysconf(_SC_OPEN_MAX);
 	for (fd = 0; fd < nfds; ++fd) {
 		if (FD_ISSET(fd, fds)) {
 			fprintf(fp, " %d", fd);
@@ -88,7 +88,7 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
 	int * map;
 
-	ss = getdtablesize();
+	ss = sysconf(_SC_OPEN_MAX);
 	map = (int *)calloc(ss, sizeof(int));
 	ASSERT(map != (int *)0);
 	for (ii = 0; ii < ss; ++ii) {

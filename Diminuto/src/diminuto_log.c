@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -25,14 +26,14 @@ int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
 int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
 
 static const char * levels[] = {
-    "EMRG",
-    "ALRT",
-    "CRIT",
-    "EROR",
-    "WARN",
-    "NOTC",
-    "INFO",
-    "DBUG"
+    "EMR",
+    "ALR",
+    "CRI",
+    "ERR",
+    "WRN",
+    "NTC",
+    "INC",
+    "DBG"
 };
 
 static int initialized = 0;
@@ -48,10 +49,12 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
+	int year, month, day, hour, minute, second, nanosecond;
     if (getppid() != 1) {
+        diminuto_time_zulu(diminuto_time_clock(), &year, &month, &day, &hour, &minute, &second, &nanosecond);
         const char * level = "UNKN";
         level = levels[priority & 0x7];
-        fprintf(stderr, "[%d] %s ", getpid(), level);
+        fprintf(stderr, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ %s [%d] ", year, month, day, hour, minute, second, nanosecond / 1000000, level, getpid());
         vfprintf(stderr, format, ap);
     } else {
         diminuto_log_vsyslog(priority, format, ap);
