@@ -88,7 +88,7 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
     pid_t ppid = -1;
     pid_t spid = -1;
     pid_t pid = -1;
-    int fds = 0;
+    long fds = 0;
     int fd = -1;
 
     /*
@@ -335,7 +335,7 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 
         /* Close all unused file descriptors. */
 
-        fds = getdtablesize();
+        fds = sysconf(_SC_OPEN_MAX);
         for (fd = 0; fd < fds; ++fd) {
         	if (fd == STDIN_FILENO) {
         		/* Do nothing. */
