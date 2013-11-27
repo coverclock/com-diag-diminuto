@@ -231,11 +231,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -261,14 +261,15 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_register_signal(&mux, SIGHUP) == 0);
+		ASSERT(diminuto_mux_block_signal(&mux, SIGHUP) == 0);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_register_signal(&mux, SIGINT) == 0);
+		ASSERT(diminuto_mux_block_signal(&mux, SIGINT) == 0);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
+
 		ASSERT(diminuto_mux_ready_read(&mux) < 0);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
@@ -291,11 +292,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) == 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) == 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) == 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) == 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -321,11 +322,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
+		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -439,19 +440,25 @@ int main(int argc, char ** argv)
 			int status;
 			int ready;
 			int fd;
+			int timeouts;
+			int alarms;
+			sigset_t mask;
 
 			ASSERT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
 
 			ASSERT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
 
-			ASSERT(diminuto_alarm_install(0) == 0);
-			ASSERT(diminuto_timer_periodic(diminuto_frequency() / 10) == 0);
+			sigemptyset(&mask);
+			sigaddset(&mask, SIGALRM);
+			sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0);
 
 			diminuto_mux_init(&mux);
 			ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
 			ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
-			ASSERT(diminuto_mux_register_signal(&mux, SIGALRM) == 0);
-			ASSERT(diminuto_mux_block_signals(&mux) == 0);
+			ASSERT(diminuto_mux_unblock_signal(&mux, SIGALRM) == 0);
+
+			ASSERT(diminuto_alarm_install(0) == 0);
+			ASSERT(diminuto_timer_oneshot(diminuto_frequency() / 100) == 0);
 
 			here = output;
 			used = sizeof(output);
@@ -460,6 +467,9 @@ int main(int argc, char ** argv)
 			there = input;
 			available = sizeof(input);
 			received = 0;
+
+			timeouts = 0;
+			alarms = 0;
 
 			totalsent = 0;
 			totalreceived = 0;
@@ -474,18 +484,20 @@ int main(int argc, char ** argv)
 			do {
 
 				while (!0) {
-					if ((ready = diminuto_mux_wait(&mux, -1)) > 0) {
+					if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() / 10)) > 0) {
 						break;
 					} else if (ready == 0) {
-						diminuto_yield();
+						if (DEBUG) { fprintf(stderr, "producer timed out\n"); }
+						++timeouts;
 					} else if (errno == EINTR) {
 						if (diminuto_alarm_check()) {
-							fprintf(stderr, "producer alarmed\n");
+							if (DEBUG) { fprintf(stderr, "producer alarmed\n"); }
+							++alarms;
 						} else {
-							fprintf(stderr, "producer interrupted\n");
+							FATAL("diminuto_mux_wait: interrupted");
 						}
 					} else {
-						FATAL("diminuto_mux_wait");
+						FATAL("diminuto_mux_wait: error");
 					}
 				}
 
@@ -549,6 +561,9 @@ int main(int argc, char ** argv)
 			ASSERT(diminuto_mux_close(&mux, producer) == 0);
 			ASSERT(diminuto_ipc_close(rendezvous) >= 0);
 
+			ASSERT(timeouts > 0);
+			ASSERT(alarms > 0);
+
 			EXPECT(waitpid(pid, &status, 0) == pid);
 			EXPECT(WIFEXITED(status));
 			EXPECT(WEXITSTATUS(status) == 0);
@@ -566,8 +581,6 @@ int main(int argc, char ** argv)
 			int fd;
 			int done;
 
-			diminuto_delay(diminuto_time_frequency() / 1000, !0);
-
 			ASSERT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 
 			diminuto_mux_init(&mux);
@@ -576,6 +589,8 @@ int main(int argc, char ** argv)
 			totalreceived = 0;
 			totalsent = 0;
 			done = 0;
+
+			diminuto_delay(diminuto_time_frequency(), !0);
 
 			do {
 

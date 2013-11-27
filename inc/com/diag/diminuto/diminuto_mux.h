@@ -32,7 +32,6 @@ typedef struct DiminutoMux {
 	int nfds;
 	diminuto_mux_set_t read;
 	diminuto_mux_set_t write;
-	sigset_t save;
 	sigset_t mask;
 } diminuto_mux_t;
 
@@ -50,7 +49,11 @@ static inline diminuto_ticks_t diminuto_mux_frequency(void) {
 
 /**
  * Initialize a multiplexer. Any prior state is lost, although this does not
- * effect any file descriptors.
+ * effect any file descriptors. The multiplexer inherits the current signal
+ * mask of the caller such that signals that are blocked when the multiplexer
+ * is initialized will continue to be blocked when the multiplexer is waiting.
+ * Signals can be removed from this cached mask using the unblock multiplexer
+ * function.
  * @param that points to a multiplexer structure.
  */
 extern void diminuto_mux_init(diminuto_mux_t * that);
@@ -88,37 +91,21 @@ extern int diminuto_mux_register_write(diminuto_mux_t * that, int fd);
 extern int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd);
 
 /**
- * Register a blocked signal with the multiplexer for interrupting while
- * waiting.
+ * Add a signal to be blocked while the multiplexer is waiting.
  * @param that points to an initialized multiplexer structure.
  * @param signum is an unregistered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_register_signal(diminuto_mux_t * that, int signum);
+extern int diminuto_mux_block_signal(diminuto_mux_t * that, int signum);
 
 /**
- * Unregister a signal from the multiplexer for interrupting while waiting.
+ * Remove a signal so that it will not be blocked while the multiplexer
+ * is waiting.
  * @param that points to an initialized multiplexer structure.
  * @param signum is a registered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
-
-/**
- * Add the signals that have been registered to those that are blocked in the
- * application, and save the old signal mask.
- * @param that points to an initialized multiplexer structure.
- * @return 0 for success, <0 for error.
- */
-extern int diminuto_mux_block_signals(diminuto_mux_t * that);
-
-/**
- * Restore the old signal mask that was saved when registered signals were
- * blocked.
- * @param that points to an initialized multiplexer structure.
- * @return 0 for success, <0 for error.
- */
-extern int diminuto_mux_unblock_signals(diminuto_mux_t * that);
+extern int diminuto_mux_unblock_signal(diminuto_mux_t * that, int signum);
 
 /**
  * Wait until one or more registered file descriptors are ready for either
