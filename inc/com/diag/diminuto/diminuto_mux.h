@@ -32,6 +32,7 @@ typedef struct DiminutoMux {
 	int nfds;
 	diminuto_mux_set_t read;
 	diminuto_mux_set_t write;
+	sigset_t save;
 	sigset_t mask;
 } diminuto_mux_t;
 
@@ -102,6 +103,22 @@ extern int diminuto_mux_register_signal(diminuto_mux_t * that, int signum);
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
+
+/**
+ * Add the signals that have been registered to those that are blocked in the
+ * application, and save the old signal mask.
+ * @param that points to an initialized multiplexer structure.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_block_signals(diminuto_mux_t * that);
+
+/**
+ * Restore the old signal mask that was saved when registered signals were
+ * blocked.
+ * @param that points to an initialized multiplexer structure.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_unblock_signals(diminuto_mux_t * that);
 
 /**
  * Wait until one or more registered file descriptors are ready for either
