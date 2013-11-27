@@ -451,6 +451,7 @@ int main(int argc, char ** argv)
 			ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
 			ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
 			ASSERT(diminuto_mux_register_signal(&mux, SIGALRM) == 0);
+			ASSERT(diminuto_mux_block_signals(&mux) == 0);
 
 			here = output;
 			used = sizeof(output);
@@ -478,7 +479,11 @@ int main(int argc, char ** argv)
 					} else if (ready == 0) {
 						diminuto_yield();
 					} else if (errno == EINTR) {
-						if (DEBUG) { fprintf(stderr, "producer interrupted\n"); }
+						if (diminuto_alarm_check()) {
+							fprintf(stderr, "producer alarmed\n");
+						} else {
+							fprintf(stderr, "producer interrupted\n");
+						}
 					} else {
 						FATAL("diminuto_mux_wait");
 					}

@@ -27,6 +27,7 @@ void diminuto_mux_init(diminuto_mux_t * that)
 	that->nfds = -1;
 	diminuto_mux_set_init(that, &that->read);
 	diminuto_mux_set_init(that, &that->write);
+	sigprocmask(SIG_BLOCK, (sigset_t *)0, &that->save);
 	sigemptyset(&that->mask);
 }
 
@@ -140,6 +141,16 @@ int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum)
 	}
 
     return rc;
+}
+
+int diminuto_mux_block_signals(diminuto_mux_t * that)
+{
+	return sigprocmask(SIG_BLOCK, &that->mask, &that->save);
+}
+
+int diminuto_mux_unblock_signals(diminuto_mux_t * that)
+{
+	return sigprocmask(SIG_SETMASK, &that->save, (sigset_t *)0);
 }
 
 int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
