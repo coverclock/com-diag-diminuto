@@ -31,7 +31,7 @@ static const int VERBOSE = 0;
 
 static const diminuto_port_t PORT = 0xfff0;
 #if defined(__arm__)
-static const size_t TOTAL = 1024 * 512;
+static const size_t TOTAL = 1024 * 1024 * 100;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
