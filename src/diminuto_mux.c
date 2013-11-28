@@ -112,7 +112,7 @@ int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd)
 	return diminuto_mux_set_unregister(that, &that->write, fd);
 }
 
-int diminuto_mux_block_signal(diminuto_mux_t * that, int signum)
+int diminuto_mux_register_signal(diminuto_mux_t * that, int signum)
 {
 	int rc = -1;
 
@@ -127,7 +127,7 @@ int diminuto_mux_block_signal(diminuto_mux_t * that, int signum)
     return rc;
 }
 
-int diminuto_mux_unblock_signal(diminuto_mux_t * that, int signum)
+int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum)
 {
 	int rc = -1;
 
