@@ -235,11 +235,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) < 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) < 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -265,11 +265,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_block_signal(&mux, SIGHUP) == 0);
+		ASSERT(diminuto_mux_register_signal(&mux, SIGHUP) == 0);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_block_signal(&mux, SIGINT) == 0);
+		ASSERT(diminuto_mux_register_signal(&mux, SIGINT) == 0);
 		ASSERT(mux.nfds == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -296,11 +296,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) == 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) == 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) == 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) == 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -326,11 +326,11 @@ int main(int argc, char ** argv)
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGHUP) < 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
-		ASSERT(diminuto_mux_unblock_signal(&mux, SIGINT) < 0);
+		ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) < 0);
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -370,13 +370,39 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
 		ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
+		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
+		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
+		ASSERT(mux.nfds == STDERR_FILENO);
+		ASSERT(mux.read.next == 0);
+		ASSERT(mux.write.next == 0);
+
+		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
+
+		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
+		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
+
+		ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
+		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
+		ASSERT(diminuto_mux_ready_write(&mux) < 0);
+
 		ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
-		ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
 		ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
+
+		ASSERT(diminuto_mux_wait(&mux, -1) == 1);
+		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
+		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
+		ASSERT(diminuto_mux_ready_write(&mux) < 0);
+
+		ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
 		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
 		ASSERT(mux.nfds < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
+
+		ASSERT(diminuto_mux_wait(&mux, -1) == 0);
+		if (DEBUG) { diminuto_mux_dump(&mux, stderr); }
+		ASSERT(diminuto_mux_ready_write(&mux) < 0);
 	}
 
 	{
@@ -459,7 +485,7 @@ int main(int argc, char ** argv)
 			diminuto_mux_init(&mux);
 			ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
 			ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
-			ASSERT(diminuto_mux_unblock_signal(&mux, SIGALRM) == 0);
+			ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
 
 			ASSERT(diminuto_alarm_install(0) == 0);
 			ASSERT(diminuto_timer_oneshot(diminuto_frequency() / 100) == 0);

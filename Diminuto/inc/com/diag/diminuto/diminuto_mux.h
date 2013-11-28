@@ -91,21 +91,22 @@ extern int diminuto_mux_register_write(diminuto_mux_t * that, int fd);
 extern int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd);
 
 /**
- * Add a signal to be blocked while the multiplexer is waiting.
+ * Add a signal to the mask of those to be atomically unblocked while the
+ * multiplexer is waiting.
  * @param that points to an initialized multiplexer structure.
  * @param signum is an unregistered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_block_signal(diminuto_mux_t * that, int signum);
+extern int diminuto_mux_register_signal(diminuto_mux_t * that, int signum);
 
 /**
- * Remove a signal so that it will not be blocked while the multiplexer
- * is waiting.
+ * Remove a signal from the mask of those to be atomically unblocked while the
+ * multiplexer is waiting.
  * @param that points to an initialized multiplexer structure.
  * @param signum is a registered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_unblock_signal(diminuto_mux_t * that, int signum);
+extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
 
 /**
  * Wait until one or more registered file descriptors are ready for either
