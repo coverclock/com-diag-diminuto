@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <errno.h>
 
 int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
@@ -108,4 +109,23 @@ ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
     }
 
     return total;
+}
+
+size_t diminuto_fd_count(void)
+{
+	long count;
+
+	count = sysconf(_SC_OPEN_MAX);
+
+	return (count >= 0) ? count : 0;
+}
+
+void ** diminuto_fd_allocate(size_t count)
+{
+	void ** map;
+
+	map = (void **)calloc(count + 1, sizeof(void *));
+	map[0] = (void *)count;
+
+	return map;
 }
