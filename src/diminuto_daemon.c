@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -335,7 +336,7 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 
         /* Close all unused file descriptors. */
 
-        fds = sysconf(_SC_OPEN_MAX);
+        fds = diminuto_fd_count();
         for (fd = 0; fd < fds; ++fd) {
         	if (fd == STDIN_FILENO) {
         		/* Do nothing. */

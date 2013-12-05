@@ -60,4 +60,33 @@ extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
  */
 extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max);
 
+/**
+ * Return the maximum possible number of unique open file descriptor values. The
+ * value of any file descriptor will range from zero to one less than this
+ * number.
+ * @return the maximum possible number of open file descriptors.
+ */
+extern size_t diminuto_fd_count(void);
+
+/**
+ * Allocate and initialize a table that maps file descriptors to a void pointer
+ * (as, to a structure or a function). Although any number of file descriptors
+ * can be supported, applications will typically pass the maximum possible
+ * number of unique open file descriptor values. This table is dynamically
+ * allocated and must be freed by the application.
+ * @param count is the number of entries in the table.
+ * @return a table of void pointers initially null.
+ */
+extern void ** diminuto_fd_allocate(size_t count);
+
+/**
+ * Map a file descriptor to position in the mapping table.
+ * @param map pointers to the mapping table.
+ * @param fd is the file descriptor.
+ * @return a pointer to a position in the table or null.
+ */
+static inline void ** diminuto_fd_map(void ** map, int fd) {
+	return ((0 <= fd) && (fd < (size_t)map[0])) ? &map[fd + 1] : (void **)0;
+}
+
 #endif
