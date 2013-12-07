@@ -2,19 +2,21 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
@@ -120,12 +122,20 @@ size_t diminuto_fd_count(void)
 	return (count >= 0) ? count : 0;
 }
 
-void ** diminuto_fd_allocate(size_t count)
+diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
 {
-	void ** map;
+	diminuto_fd_map_t * mapp;
+	size_t size;
 
-	map = (void **)calloc(count + 1, sizeof(void *));
-	map[0] = (void *)count;
+	size = count * sizeof(mapp->data);
+	mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) - sizeof(mapp->data) + size);
+	mapp->count = count;
+	memset(&mapp->data, 0, size);
 
-	return map;
+	return mapp;
+}
+
+void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd)
+{
+	return ((0 <= fd) && (fd < mapp->count)) ? &mapp->data[fd] : (void **)0;
 }
