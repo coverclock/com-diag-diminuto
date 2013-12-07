@@ -69,24 +69,34 @@ extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t
 extern size_t diminuto_fd_count(void);
 
 /**
+ * This is a table that can be used to map file descriptors to a void pointer
+ * by using the fd as an index.
+ */
+typedef struct DiminutoFdMap {
+	size_t count;
+	void * data[1];
+} diminuto_fd_map_t;
+
+/**
  * Allocate and initialize a table that maps file descriptors to a void pointer
  * (as, to a structure or a function). Although any number of file descriptors
  * can be supported, applications will typically pass the maximum possible
  * number of unique open file descriptor values. This table is dynamically
- * allocated and must be freed by the application.
+ * allocated and must be freed by the application. The void pointers in the
+ * table are initialized to null.
  * @param count is the number of entries in the table.
- * @return a table of void pointers initially null.
+ * @return a pointer to a dynamically allocated file descriptor mapping table.
  */
-extern void ** diminuto_fd_allocate(size_t count);
+extern diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count);
 
 /**
- * Map a file descriptor to position in the mapping table.
- * @param map pointers to the mapping table.
+ * Map a file descriptor to position in the mapping table. Note that this does
+ * not return the void pointer in the mapping table but a pointer to the void
+ * pointer in the mapping table, or null if the file descriptor is invalid.
+ * @param mapp points to the mapping table.
  * @param fd is the file descriptor.
- * @return a pointer to a position in the table or null.
+ * @return a pointer to a position in the mapping table or null.
  */
-static inline void ** diminuto_fd_map(void ** map, int fd) {
-	return ((0 <= fd) && (fd < (size_t)map[0])) ? &map[fd + 1] : (void **)0;
-}
+extern void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd);
 
 #endif

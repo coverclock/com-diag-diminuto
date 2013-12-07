@@ -102,20 +102,17 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	uint8_t buffer;
 	int reads[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
 	int writes[1 << (sizeof(uint8_t) * 8)]; /* 1<<(1*8)==256 */
-	void ** map;
+	diminuto_fd_map_t * mapp;
+	int * datap;
 
-	/*
-	 * This is a useful trade off of memory for processing time: allocating
-	 * an array big enough to map any file descriptor to something else. You
-	 * might reduce the footprint by playing double indirection games, making
-	 * each entry one byte, then mapping into a second array that is say 256
-	 * bytes or smaller.
-	 */
 	ss = diminuto_fd_count();
-	map = diminuto_fd_allocate(ss);
-	ASSERT(map != (void **)0);
+	mapp = diminuto_fd_map_alloc(ss);
+	ASSERT(mapp != (diminuto_fd_map_t *)0);
+	datap = malloc(sizeof(*datap) * ss);
+	ASSERT(datap != (int *)0);
 	for (ii = 0; ii < ss; ++ii) {
-		*diminuto_fd_map(map, ii) = (void *)-1;
+		datap[ii] = -1;
+		*diminuto_fd_map_ref(mapp, ii) = &datap[ii];
 	}
 
 	diminuto_mux_init(&mux);
@@ -141,8 +138,8 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 		ASSERT(pipefd[ii][0] != pipefd[ii][1]);
 		ASSERT(diminuto_mux_register_read(&mux, pipefd[ii][0]) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) == 0);
-		*diminuto_fd_map(map, pipefd[ii][0]) = (void *)ii;
-		*diminuto_fd_map(map, pipefd[ii][1]) = (void *)ii;
+		*(int *)*diminuto_fd_map_ref(mapp, pipefd[ii][0]) = ii;
+		*(int *)*diminuto_fd_map_ref(mapp, pipefd[ii][1]) = ii;
 	}
 
 	cc = countof(pipefd);
@@ -157,7 +154,7 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 		ASSERT(rc > 0);
 		while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 			ASSERT(fd < ss);
-			ii = (int)*diminuto_fd_map(map, fd);
+			ii = *(int *)*diminuto_fd_map_ref(mapp, fd);
 			ASSERT(ii >= 0);
 			ASSERT(ii < countof(pipefd));
 			rc = read(fd, &buffer, sizeof(buffer));
@@ -175,7 +172,7 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 		}
 		while ((fd = diminuto_mux_ready_write(&mux)) >= 0) {
 			ASSERT(fd < ss);
-			ii = (int)*diminuto_fd_map(map, fd);
+			ii = *(int *)*diminuto_fd_map_ref(mapp, fd);
 			ASSERT(ii >= 0);
 			ASSERT(ii < countof(pipefd));
 			buffer = output[ii]++;
@@ -207,7 +204,8 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	ASSERT(mux.read.next < 0);
 	ASSERT(mux.write.next < 0);
 
-	free(map);
+	free(datap);
+	free(mapp);
 }
 
 int main(int argc, char ** argv)
