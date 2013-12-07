@@ -18,7 +18,7 @@ TARGET				=	host
 #TARGET				=	cobbler
 
 MAJOR				=	22# API changes requiring that applications be modified.
-MINOR				=	2# Only functionality or features added with no legacy API changes.
+MINOR				=	3# Only functionality or features added with no legacy API changes.
 BUILD				=	2# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
@@ -30,9 +30,10 @@ BUILD				=	2# Only bugs fixed with no API changes or new functionality.
 # agency inspectors to verify the integrity of the binary software images. This
 # makes embedding timestamps inside compiled translation units problematic.
 # If your application has this requirement, you can pass in any fixed string
-# for the value of the VINTAGE make variable and you should be able to generate
-# identical images with subsequent builds of Diminuto. This string is embedded
-# inside the Diminuto vintage application.
+# for the value of the VINTAGE make variable, and only use the value of this
+# symbol as a build time stamp, and you should be able to generate identical
+# images with subsequent builds of Diminuto. This string is embedded inside the
+# Diminuto "vintage" application.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.

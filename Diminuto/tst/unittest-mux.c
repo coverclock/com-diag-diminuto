@@ -110,9 +110,14 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 	ASSERT(mapp != (diminuto_fd_map_t *)0);
 	datap = malloc(sizeof(*datap) * ss);
 	ASSERT(datap != (int *)0);
+	ASSERT(diminuto_fd_map_ref(mapp, -1) == (void **)0);
+	ASSERT(diminuto_fd_map_ref(mapp, ss) == (void **)0);
 	for (ii = 0; ii < ss; ++ii) {
 		datap[ii] = -1;
+		ASSERT(diminuto_fd_map_ref(mapp, ii) != (void **)0);
+		ASSERT(*diminuto_fd_map_ref(mapp, ii) == (void *)0);
 		*diminuto_fd_map_ref(mapp, ii) = &datap[ii];
+		ASSERT(*diminuto_fd_map_ref(mapp, ii) == &datap[ii]);
 	}
 
 	diminuto_mux_init(&mux);
