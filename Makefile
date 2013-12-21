@@ -127,6 +127,20 @@ KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
+ifeq ($(TARGET),uclibc)# Build for uClibc built for the Raspberry Pi.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	
+#LDARCH				=	-static
+LDARCH				=	-Bdynamic
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	rpi-3.6.y
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+endif
+
 ifeq ($(TARGET),host)# Build for an Intel build server with the Ubuntu kernel.
 ARCH				=	i386
 PLATFORM			=	linux
