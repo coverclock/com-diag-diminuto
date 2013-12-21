@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_module.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #define __USE_GNU
 #include <dlfcn.h>
@@ -24,8 +25,10 @@ diminuto_module_handle_t diminuto_module_load_generic(const char * filename, int
 
 	if ((handle = dlopen(filename, flags)) != (diminuto_module_handle_t)0) {
 		/* Do nothing: successful. */
+#if defined(RTLD_NOLOAD)
 	} else if ((flags & RTLD_NOLOAD) == RTLD_NOLOAD) {
 		/* Do nothing: nominal. */
+#endif
 	} else {
 		diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "diminuto_module_load_generic: dlopen: %s\n", dlerror());
 	}
@@ -35,12 +38,20 @@ diminuto_module_handle_t diminuto_module_load_generic(const char * filename, int
 
 diminuto_module_handle_t diminuto_module_handle(const char * filename)
 {
+#if defined(RTLD_NOLOAD)
 	return diminuto_module_load_generic(filename, RTLD_NOLOAD);
+#else
+	return diminuto_module_load_generic(filename, 0);
+#endif
 }
 
 diminuto_module_handle_t diminuto_module_load(const char * filename)
 {
+#if defined(RTLD_DEEPBIND)
 	return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL | RTLD_DEEPBIND);
+#else
+	return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL);
+#endif
 }
 
 void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symbol, const char * version)
@@ -48,6 +59,10 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 	void * resolved;
 	const char * label;
 
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+	label = "dlsym";
+	resolved = dlsym(handle, symbol);
+#else
 	if (version == (const char *)0) {
 		label = "dlsym";
 		resolved = dlsym(handle, symbol);
@@ -55,6 +70,7 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 		label = "dlvsym";
 		resolved = dlvsym(handle, symbol, version);
 	}
+#endif
 	if (resolved == (void *)0) {
 		diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, "diminuto_module_symbol: %s: %s\n", label, dlerror());
 	}

@@ -10,7 +10,19 @@
 
 #include "com/diag/diminuto/diminuto_stacktrace.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include <errno.h>
 #include <unistd.h>
+
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+
+int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
+{
+	errno = EPERM;
+    return -1;
+}
+
+#else
+
 #include <execinfo.h>
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
@@ -19,6 +31,8 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
     backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
 	return rc;
 }
+
+#endif
 
 int diminuto_stacktrace()
 {
