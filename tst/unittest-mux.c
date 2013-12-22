@@ -25,7 +25,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 static const int DEBUG = 0;
 static const int VERBOSE = 0;

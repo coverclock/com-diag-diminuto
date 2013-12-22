@@ -16,6 +16,7 @@ TARGET				=	host
 #TARGET				=	cascada
 #TARGET				=	contraption
 #TARGET				=	cobbler
+#TARGET				=	uclibc
 
 MAJOR				=	22# API changes requiring that applications be modified.
 MINOR				=	3# Only functionality or features added with no legacy API changes.
@@ -58,102 +59,6 @@ VINFO				=	svn info
 # sources, toolchains, etc.
 HOME_DIR			=	$(HOME)/projects
 
-########## Configurations
-
-ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv4t
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.25.10
-KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv4t
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.26.3
-KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.32.7
-KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
-#LDARCH				=	-static
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.32
-KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	
-#LDARCH				=	-static
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	rpi-3.6.y
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),uclibc)# Build for uClibc built for the Raspberry Pi.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	
-#LDARCH				=	-static
-LDARCH				=	-Bdynamic
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	rpi-3.6.y
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
-endif
-
-ifeq ($(TARGET),host)# Build for an Intel build server with the Ubuntu kernel.
-ARCH				=	i386
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=
-LDARCH				=
-TOOLCHAIN			=
-CROSS_COMPILE		=
-KERNEL_REV			=	3.2.0-51
-KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-INCLUDE_DIR			=	/usr/include
-endif
-
 ########## Directory Tree
 
 ARC_DIR				=	arc# Archive files
@@ -171,6 +76,102 @@ SYM_DIR				=	sym# Unstripped executable binaries
 SYS_DIR				=	sys# Kernel module build directory
 TMP_DIR				=	tmp# Temporary files
 TST_DIR				=	tst# Unit tests
+
+########## Configurations
+
+ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	-march=armv4t
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	2.6.25.10
+KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	-march=armv4t
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	2.6.26.3
+KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	2.6.32.7
+KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+#LDARCH				=	-static
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	2.6.32
+KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	
+#LDARCH				=	-static
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	rpi-3.6.y
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),uclibc)# Build for uClibc built for the Raspberry Pi.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	
+LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
+#LDARCH				=	-Bdynamic
+TOOLCHAIN			=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	rpi-3.6.y
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+endif
+
+ifeq ($(TARGET),host)# Build for an Intel build server with the Ubuntu kernel.
+ARCH				=	i386
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=
+LDARCH				= -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=
+CROSS_COMPILE		=
+KERNEL_REV			=	3.2.0-51
+KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+INCLUDE_DIR			=	/usr/include
+endif
 
 ########## Variables
 
@@ -247,8 +248,8 @@ CFLAGS				=	$(CARCH) -fPIC -g
 #CFLAGS				=	$(CARCH) -fPIC -O3
 CPFLAGS				=	-i
 MVFLAGS				=	-i
-LDFLAGS				=	$(LDARCH) -L$(OUT)/lib -l$(PROJECT) -lpthread -lrt -ldl
-LDXXFLAGS			=	$(LDARCH) -L$(OUT)/lib -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
+LDFLAGS				=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl
+LDXXFLAGS			=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
 
 BROWSER				=	firefox
 

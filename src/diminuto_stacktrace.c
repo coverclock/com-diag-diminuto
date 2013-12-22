@@ -10,6 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_stacktrace.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 #include <errno.h>
 #include <unistd.h>
 
