@@ -13,7 +13,7 @@
 
 #include <sys/types.h>
 #if defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__) && defined(__UCLIBC_SUBLEVEL__)
-#	define COM_DIAG_DIMINUTO_PLATFORM_UCLIBC 1
+#	define COM_DIAG_DIMINUTO_PLATFORM_UCLIBC (1000000 + ((__UCLIBC_MAJOR__) * 10000) + ((__UCLIBC_MINOR__) * 100) + (__UCLIBC_SUBLEVEL__))
 #else
 #	undef  COM_DIAG_DIMINUTO_PLATFORM_UCLIBC
 #endif

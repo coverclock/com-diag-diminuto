@@ -16,9 +16,10 @@
 /**
  * Return the fundamental Diminuto frequency in ticks per second (Hertz). The
  * inverse of this value is the duration of a Diminuto tick, the smallest
- * expressible unit of time. Other features in Diminuto may implement lower
- * frequencies, typically because of inherent limitations in the underlying
- * platform or target, but all of them express time in units of this period.
+ * expressible unit of time, in seconds. Other features in Diminuto may
+ * implement lower frequencies, typically because of inherent limitations in
+ * the underlying platform or target, but all of them express time in units of
+ * this period.
  * @return the number of ticks per second.
  */
 static inline diminuto_ticks_t diminuto_frequency(void)
