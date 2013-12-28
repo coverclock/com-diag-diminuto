@@ -227,6 +227,8 @@ TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGET
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
+PACKAGEMANIFEST		=	./$(BIN_DIR) ./$(DRV_DIR) ./$(LIB_DIR) ./$(MOD_DIR) ./$(TST_DIR)
+
 BUILDARTIFACTS		=	doxygen-local.cf $(ETC_DIR)/diminuto.sh dependencies.mk
 
 COMMAND				=	dummy
@@ -485,10 +487,8 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > $@
 
-TARGETMANIFEST = ./bin ./drv ./lib ./mod ./tst
-
-package $(PROJECT).tgz:
-	tar -C $(OUT) -cvzf - $(TARGETMANIFEST) > $(PROJECT).tgz
+package $(PROJECT)-$(TARGET).tgz:
+	tar -C $(OUT) -cvzf - $(PACKAGEMANIFEST) > $(PROJECT)-$(TARGET).tgz
 	
 implicit:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
