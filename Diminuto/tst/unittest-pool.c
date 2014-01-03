@@ -43,7 +43,7 @@ int main(void)
     int ii;
     int jj;
 
-    diminuto_heap_alloc_set(&myalloc);
+    diminuto_heap_malloc_set(&myalloc);
     diminuto_heap_free_set(&myfree);
 
     ASSERT(diminuto_pool_init(&pool, 1) == &pool);

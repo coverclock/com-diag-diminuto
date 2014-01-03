@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_heap.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 
 static uint64_t data = 0;
@@ -31,11 +32,11 @@ int main(void)
     void * p3;
     void * p4;
 
-    p1 = diminuto_heap_alloc(sizeof(int));
+    p1 = diminuto_heap_malloc(sizeof(int));
     ASSERT(p1 != (void *)0);
     ASSERT(p1 != (void *)&data);
 
-    p2 = diminuto_heap_alloc(sizeof(int));
+    p2 = diminuto_heap_malloc(sizeof(int));
     ASSERT(p2 != (void *)0);
     ASSERT(p2 != (void *)&data);
     ASSERT(p2 != p1);
@@ -43,8 +44,8 @@ int main(void)
     diminuto_heap_free(p1);
     diminuto_heap_free(p2);
 
-    diminuto_heap_alloc_set(myalloc);
-    p3 = diminuto_heap_alloc(sizeof(int));
+    diminuto_heap_malloc_set(myalloc);
+    p3 = diminuto_heap_malloc(sizeof(int));
     ASSERT(p3 = (void *)&data);
 
     data = 0;
@@ -53,10 +54,10 @@ int main(void)
     diminuto_heap_free(p3);
     ASSERT(data == 1);
 
-    diminuto_heap_alloc_set((diminuto_heap_alloc_func *)0);
-    diminuto_heap_free_set((diminuto_heap_free_func *)0);
+    diminuto_heap_malloc_set((diminuto_heap_malloc_func_t *)0);
+    diminuto_heap_free_set((diminuto_heap_free_func_t *)0);
 
-    p1 = diminuto_heap_alloc(sizeof(int));
+    p1 = diminuto_heap_malloc(sizeof(int));
     ASSERT(p1 != (void *)0);
     ASSERT(p1 != (void *)&data);
     data = 0;
