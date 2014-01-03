@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -18,46 +18,22 @@
  * bread.)
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_proxy.h"
 #include <stdlib.h>
 
-typedef void * (diminuto_heap_alloc_func)(size_t size);
+COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
-typedef void (diminuto_heap_free_func)(void * pointer);
+COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
-extern diminuto_heap_alloc_func * diminuto_heap_alloc_funcp;
-extern diminuto_heap_free_func * diminuto_heap_free_funcp;
-
-/**
- * diminuto_heap_alloc_set(_ALLOC_)
- * Install an alternative heap memory allocation function pointed to
- * by @a _ALLOC_.
- */
-#define diminuto_heap_alloc_set(_ALLOC_) \
-    (diminuto_heap_alloc_funcp = (_ALLOC_))
-
-/**
- * diminuto_heap_free_set(_ALLOC_)
- * Install an alternative heap memory free function pointed to
- * by @a _ALLOC_.
- */
-#define diminuto_heap_free_set(_FREE_) \
-    (diminuto_heap_free_funcp = (_FREE_))
-
-/**
- * diminuto_heap_alloc(_SIZE_)
- * Allocate a block of memory of size @a _SIZE_ bytes from the heap and
- * return its address or NULL if the allocation failed.
- */
-#define diminuto_heap_alloc(_SIZE_) \
-    ((*(diminuto_heap_alloc_funcp ? diminuto_heap_alloc_funcp : &malloc))(_SIZE_))
-
-/**
- * diminuto_heap_free(_POINTER_)
- * Free a block of previously allocated memory pointed to by @a _POINTER_
- * back to the heap.
- */
-#define diminuto_heap_free(_POINTER_) \
-    ((*(diminuto_heap_free_funcp ? diminuto_heap_free_funcp : &free))(_POINTER_))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
 #endif

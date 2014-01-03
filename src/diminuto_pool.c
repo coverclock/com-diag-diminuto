@@ -37,7 +37,7 @@ void * diminuto_pool_alloc(diminuto_pool_t * poolp)
     if (!diminuto_list_isempty(poolp)) {
         nodep = diminuto_list_remove(diminuto_list_next(poolp));
     } else {
-        voidp = diminuto_heap_alloc((size_t)diminuto_list_data(poolp));
+        voidp = diminuto_heap_malloc((size_t)diminuto_list_data(poolp));
         if (voidp == (void *)0) {
             diminuto_perror("malloc");
             return voidp;

@@ -10,5 +10,17 @@
 
 #include "com/diag/diminuto/diminuto_heap.h"
 
-diminuto_heap_alloc_func * diminuto_heap_alloc_funcp = 0;
-diminuto_heap_free_func * diminuto_heap_free_funcp = 0;
+COM_DIAG_DIMINUTO_PROXY_POINTER_C(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_POINTER_C(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_POINTER_C(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_POINTER_C(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
+
+COM_DIAG_DIMINUTO_PROXY_SETTOR_C(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_C(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_C(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_SETTOR_C(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
+
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_C(heap, malloc, void *, (size_t size), return, (size))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_C(heap, free, void, (void * ptr), (void), (ptr))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_C(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+COM_DIAG_DIMINUTO_PROXY_FUNCTION_C(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
