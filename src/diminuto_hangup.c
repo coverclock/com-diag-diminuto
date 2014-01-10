@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_hangup.h"
+#include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
@@ -39,17 +40,13 @@ pid_t diminuto_hangup_signal(pid_t pid)
 int diminuto_hangup_check(void)
 {
     int result;
-    sigset_t set;
-    sigset_t was;
 
-    sigemptyset(&set);
-    sigaddset(&set, SIGHUP);
-    sigprocmask(SIG_BLOCK, &set, &was);
+    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGHUP);
 
-    result = signaled;
-    signaled = 0;
+    	result = signaled;
+    	signaled = 0;
 
-    sigprocmask(SIG_SETMASK, &was, (sigset_t *)0);
+    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
 
     return result;
 }

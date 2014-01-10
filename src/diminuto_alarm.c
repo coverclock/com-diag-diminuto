@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_alarm.h"
+#include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
@@ -41,17 +42,13 @@ pid_t diminuto_alarm_signal(pid_t pid)
 int diminuto_alarm_check(void)
 {
     int mysignaled;
-    sigset_t set;
-    sigset_t was;
 
-    sigemptyset(&set);
-    sigaddset(&set, SIGALRM);
-    sigprocmask(SIG_BLOCK, &set, &was);
+    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
 
-    mysignaled = signaled;
-    signaled = 0;
+		mysignaled = signaled;
+		signaled = 0;
 
-    sigprocmask(SIG_SETMASK, &was, (sigset_t *)0);
+    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
 
     return mysignaled;
 }
