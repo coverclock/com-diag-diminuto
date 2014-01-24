@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -59,6 +59,14 @@ extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
  * @return the number of bytes received, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
  */
 extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max);
+
+/**
+ * Return the number of bytes buffered for a file descriptor for device drivers
+ * which do such buffering. This typically includes serial devices and sockets.
+ * @param fd is an open file descriptor.
+ * @return the number of bytes buffered or <0 if an error occurred.
+ */
+extern ssize_t diminuto_fd_readable(int fd);
 
 /**
  * Return the maximum possible number of unique open file descriptor values. The
