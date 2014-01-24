@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -87,10 +87,16 @@ void diminuto_log_emit(const char * format, ...)
 
 void diminuto_serror(const char * s)
 {
+	int save;
+	save = errno;
     diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    errno = save;
 }
 
 void diminuto_perror(const char * s)
 {
+	int save;
+	save = errno;
     diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    errno = save;
 }

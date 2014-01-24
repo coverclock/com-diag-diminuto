@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <asm/termios.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -37,7 +38,7 @@ int diminuto_fd_relinquish(int fd, const char * device)
     if (fd < 0) {
         /* Do nothing: not open. */
     } else if (close(fd) < 0) {
-        diminuto_perror(device ? device : "close");
+        diminuto_perror(device ? device : "diminuto_fd_relinquish: close");
     } else {
         fd = -1;
     }
@@ -111,6 +112,20 @@ ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
     }
 
     return total;
+}
+
+ssize_t diminuto_fd_readable(int fd)
+{
+	ssize_t result = -1;
+	int count;
+
+	if (ioctl(fd, FIONREAD, &count) >= 0) {
+		result = count;
+	} else {
+        diminuto_perror("diminuto_fd_readable: ioctl");
+	}
+
+	return result;
 }
 
 size_t diminuto_fd_count(void)

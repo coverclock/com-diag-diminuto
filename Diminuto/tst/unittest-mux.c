@@ -29,7 +29,7 @@
 #include <sys/wait.h>
 
 static const int DEBUG = 0;
-static const int VERBOSE = 0;
+static const int VERBOSE = !0;
 
 static const diminuto_port_t PORT = 0xfff0;
 #if defined(__arm__)
@@ -453,6 +453,8 @@ int main(int argc, char ** argv)
 
 		if (pid) {
 
+			/* PRODUCER */
+
 			int rendezvous;
 	        diminuto_ipv4_t address;
 	        diminuto_port_t port;
@@ -476,6 +478,8 @@ int main(int argc, char ** argv)
 			int timeouts;
 			int alarms;
 			sigset_t mask;
+			ssize_t readable;
+			double percentage;
 
 			ASSERT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
 
@@ -546,7 +550,10 @@ int main(int argc, char ** argv)
 						ASSERT(sent <= used);
 
 						totalsent += sent;
-						if (VERBOSE) { fprintf(stderr, "producer sent %d %u\n", sent, totalsent); }
+						percentage = totalsent;
+						percentage *= 100;
+						percentage /= TOTAL;
+						if (VERBOSE) { fprintf(stderr, "producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage); }
 
 						here += sent;
 						used -= sent;
@@ -568,11 +575,12 @@ int main(int argc, char ** argv)
 
 				while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 
+					ASSERT((readable = diminuto_fd_readable(fd)) > 0);
 					ASSERT((received = diminuto_ipc_stream_read(fd, there, 1, available)) > 0);
 					ASSERT(received <= available);
 
 					totalreceived += received;
-					if (VERBOSE) { fprintf(stderr, "producer received %d %u\n", received, totalreceived); }
+					if (VERBOSE) { fprintf(stderr, "producer received %10d %10d %10u\n", readable, received, totalreceived); }
 
 					there += received;
 					available -= received;
@@ -603,6 +611,8 @@ int main(int argc, char ** argv)
 
 		} else {
 
+			/* CONSUMER */
+
 			diminuto_mux_t mux;
 			int consumer;
 			uint8_t buffer[64];
@@ -613,6 +623,8 @@ int main(int argc, char ** argv)
 			int ready;
 			int fd;
 			int done;
+			ssize_t readable;
+			double percentage;
 
 			ASSERT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 
@@ -641,11 +653,15 @@ int main(int argc, char ** argv)
 
 				while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 
+					ASSERT((readable = diminuto_fd_readable(fd)) >= 0);
 					ASSERT((received = diminuto_ipc_stream_read(fd, buffer, 1, sizeof(buffer))) >= 0);
 					ASSERT(received <= sizeof(buffer));
 
 					totalreceived += received;
-					if (VERBOSE) { fprintf(stderr, "consumer received %d %u\n", received, totalreceived); }
+					percentage = totalreceived;
+					percentage *= 100;
+					percentage /= TOTAL;
+					if (VERBOSE) { fprintf(stderr, "consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage); }
 
 					if (received == 0) {
 						done = !0;
@@ -658,7 +674,7 @@ int main(int argc, char ** argv)
 						ASSERT(sent <= received);
 
 						totalsent += sent;
-						if (VERBOSE) { fprintf(stderr, "consumer sent %d %u\n", sent, totalsent); }
+						if (VERBOSE) { fprintf(stderr, "consumer sent     %10s %10d %10u\n", "", sent, totalsent); }
 
 						received -= sent;
 					}
