@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
     int bitspercharacter;
     int running = 0;
 
-    program = ((program = strchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
     while ((opt = getopt(argc, argv, "125678D:b:ehlmnos")) >= 0) {
 
