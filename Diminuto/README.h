@@ -64,10 +64,11 @@
     Contact:
 
         Chip Overclock
-        mailto:coverclock@diag.com
         Digital Aggregates Corporation
         3440 Youngfield Street, Suite 209
         Wheat Ridge CO 80033 USA
+        http://www.diag.com
+        mailto:coverclock@diag.com
 
     ----------------------------------------------------------------------
 
