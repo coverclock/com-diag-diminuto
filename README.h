@@ -47,11 +47,13 @@
 
     ABSTRACT
 
-    This file is part of the Digital Aggregates Corporation Diminuto
-    library. Diminuto is an open source library of systems programming
-    functions and tools written in C to simplify the writing of device
-    drivers, daemons, and systems applications for the Linux operating
-    system.
+    This file is part of the Digital Aggregates Corporation Diminuto package.
+    Diminuto is an open source library of systems programming functions and
+    tools written in C to simplify the writing of device drivers, daemons, and
+    systems applications for the Linux operating system. It has found it's way
+    into a number of commercial products of the Corporation's clients, so don't
+    be surprised if you find this code being used legitimately elsewhere in
+    your travels.
 
     This software is an original work of its author(s).
 
