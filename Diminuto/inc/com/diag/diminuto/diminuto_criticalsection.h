@@ -20,7 +20,7 @@
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &_diminuto_critical_section_cancel_state_); \
 		pthread_mutex_lock(_diminuto_critical_section_mutexp_); \
 		do { \
-	    	do {} while (0)
+			do {} while (0)
 
 #define DIMINUTO_CRITICAL_SECTION_END \
 		} while (0); \
