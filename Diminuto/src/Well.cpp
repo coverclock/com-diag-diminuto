@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_well.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 
 namespace com {
  namespace diag {
@@ -94,35 +95,35 @@ SafeBaseWell::~SafeBaseWell() {
 }
 
 void SafeBaseWell::init() {
-	pthread_mutex_lock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 		BaseWell::init();
-	pthread_mutex_unlock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void SafeBaseWell::init(size_t ss, size_t cc, size_t aa, size_t pp, size_t ll) {
-	pthread_mutex_lock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 		BaseWell::init(ss, cc, aa, pp, ll);
-	pthread_mutex_unlock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void SafeBaseWell::fini() {
-	pthread_mutex_lock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 		BaseWell::fini();
-	pthread_mutex_unlock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void * SafeBaseWell::alloc() {
 	void * that;
-	pthread_mutex_lock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 		that = BaseWell::alloc();
-	pthread_mutex_unlock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_END;
 	return that;
 }
 
 void SafeBaseWell::free(void * pointer) {
-	pthread_mutex_lock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 		BaseWell::free(pointer);
-	pthread_mutex_unlock(&mutex);
+	DIMINUTO_CRITICAL_SECTION_END;
 }
 
   }
