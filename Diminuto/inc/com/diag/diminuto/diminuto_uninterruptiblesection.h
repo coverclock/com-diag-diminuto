@@ -19,9 +19,12 @@
 		sigset_t _diminuto_uninterruptible_section_was_; \
 	    sigemptyset(&_diminuto_uninterruptible_section_now_); \
 	    sigaddset(&_diminuto_uninterruptible_section_now_, _SIGNAL_); \
-	    sigprocmask(SIG_BLOCK, &_diminuto_uninterruptible_section_now_, &_diminuto_uninterruptible_section_was_)
+	    sigprocmask(SIG_BLOCK, &_diminuto_uninterruptible_section_now_, &_diminuto_uninterruptible_section_was_); \
+	    do { \
+	    	do {} while (0)
 
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
+	    } while (0); \
 		sigprocmask(SIG_SETMASK, &_diminuto_uninterruptible_section_was_, (sigset_t *)0); \
 	} while (0)
 

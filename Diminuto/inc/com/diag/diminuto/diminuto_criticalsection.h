@@ -15,13 +15,16 @@
 
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MUTEXP_) \
 	do { \
-		pthread_mutex_t * _diminuto_critical_section_mutex_ = (_MUTEXP_); \
+		pthread_mutex_t * _diminuto_critical_section_mutexp_ = (_MUTEXP_); \
 		int _diminuto_critical_section_cancel_state_; \
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &_diminuto_critical_section_cancel_state_); \
-		pthread_mutex_lock(_diminuto_critical_section_mutex_)
+		pthread_mutex_lock(_diminuto_critical_section_mutexp_); \
+		do { \
+	    	do {} while (0)
 
 #define DIMINUTO_CRITICAL_SECTION_END \
-		pthread_mutex_unlock(_diminuto_critical_section_mutex_); \
+		} while (0); \
+		pthread_mutex_unlock(_diminuto_critical_section_mutexp_); \
 		pthread_setcancelstate(_diminuto_critical_section_cancel_state_, (int *)0); \
 	} while (0)
 
