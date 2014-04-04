@@ -185,7 +185,7 @@ ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
 TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP			=	$(shell date +%Y%m%d)
 SVNURL				=	svn://graphite/$(PROJECT)/trunk/$(TITLE)
-GITURL				=	https://github.com/coverclock/com-diag-$(PROJECT)
+GITURL				=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
 PROJECT_A			=	lib$(PROJECT).a
 PROJECTXX_A			=	lib$(PROJECT)xx.a
