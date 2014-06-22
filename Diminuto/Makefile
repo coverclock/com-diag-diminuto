@@ -38,7 +38,7 @@ BUILD				=	3# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			=	2014 Digital Aggregates Corporation, Colorado, USA.
+COPYRIGHT			=	2008-2014 Digital Aggregates Corporation, Colorado, USA.
 LICENSE				=	GNU Lesser General Public License 2.1
 CONTACT				=	coverclock@diag.com
 HOMEPAGE			=	http://www.diag.com/navigation/downloads/$(TITLE).html
@@ -296,11 +296,6 @@ push:
 
 origin:
 	git remote add origin $(GITURL)
-
-init:	pristine
-	git svn init $(SVNURL)
-	git add .
-	git commit .
 
 ########## Host Utilities
 
