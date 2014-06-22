@@ -1,4 +1,4 @@
-# Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA
+# Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in README.h
 # Chip Overclock
 # mailto:coverclock@diag.com
@@ -38,7 +38,7 @@ BUILD				=	3# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			=	2013 Digital Aggregates Corporation, Colorado, USA.
+COPYRIGHT			=	2014 Digital Aggregates Corporation, Colorado, USA.
 LICENSE				=	GNU Lesser General Public License 2.1
 CONTACT				=	coverclock@diag.com
 HOMEPAGE			=	http://www.diag.com/navigation/downloads/$(TITLE).html
@@ -283,7 +283,7 @@ distribution:
 	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make TARGET=host; ./out/host/bin/vintage )
 
-.PHONY: commit dcommit push origin
+.PHONY: commit dcommit push origin init
 
 commit:
 	git commit .
@@ -296,6 +296,11 @@ push:
 
 origin:
 	git remote add origin $(GITURL)
+
+init:	pristine
+	git svn init $(SVNURL)
+	git add .
+	git commit .
 
 ########## Host Utilities
 
