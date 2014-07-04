@@ -1,6 +1,8 @@
 com-diag-diminuto
 =================
 
+Copyright 2008-2014 by the Digital Aggregates Corporation, Colorado, USA.
+
 LICENSE
 
 This library is free software; you can redistribute it and/or
@@ -36,8 +38,6 @@ License along with this library; if not, contact
     Boston MA 02111-1307 USA
     http://www.gnu.org/copyleft/lesser.txt
 
-----------------------------------------------------------------------
-
 ABSTRACT
 
 This file is part of the Digital Aggregates Corporation Diminuto package.
@@ -62,4 +62,3 @@ Contact:
     Wheat Ridge CO 80033 USA
     http://www.diag.com
     mailto:coverclock@diag.com
-
