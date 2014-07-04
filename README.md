@@ -1,12 +1,65 @@
 com-diag-diminuto
 =================
 
-Linux systems programming library.
+LICENSE
 
-Yeah, the directory structure here is all hosed up. I made some minor (I thought) tweaks to how I was using
-"git svn" with my legacy SVN repository and as a result everything ended up in a subdirectory. D'oh! I'm going
-to fix it, but I need to think about how I want to do this since it actually affects every project I'm hosting
-at GitHub. My bad! Worse: I'm busy with a paying gig and am only working on this today because it's the July
-Fourth holiday in the U.S. and Mrs. Overclock (a.k.a. Dr. Overclock, Medicine Woman) has to work.
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
 
-Chip
+As a special exception, if other files instantiate templates or
+use macros or inline functions from this file, or you compile
+this file and link it with other works to produce a work based on
+this file, this file does not by itself cause the resulting work
+to be covered by the GNU Lesser General Public License. However
+the source code for this file must still be made available in
+accordance with the GNU Lesser General Public License.
+
+This exception does not invalidate any other reasons why a work
+based on this file might be covered by the GNU Lesser General
+Public License.
+
+Alternative commercial licensing terms are available from the copyright
+holder. Contact Digital Aggregates Corporation for more information.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, contact
+
+    Free Software Foundation, Inc.
+    59 Temple Place, Suite 330
+    Boston MA 02111-1307 USA
+    http://www.gnu.org/copyleft/lesser.txt
+
+----------------------------------------------------------------------
+
+ABSTRACT
+
+This file is part of the Digital Aggregates Corporation Diminuto package.
+Diminuto is an open source library of systems programming functions and
+tools written in C to simplify the writing of device drivers, daemons, and
+systems applications for the Linux operating system. It has found it's way
+into a number of commercial products of the Corporation's clients, so don't
+be surprised if you find this code being used legitimately elsewhere in
+your travels.
+
+This software is an original work of its author(s).
+
+Information regarding Diminuto can be found here:
+
+    http://www.diag.com/navigation/downloads/Diminuto.html
+
+Contact:
+
+    Chip Overclock
+    Digital Aggregates Corporation
+    3440 Youngfield Street, Suite 209
+    Wheat Ridge CO 80033 USA
+    http://www.diag.com
+    mailto:coverclock@diag.com
+
