@@ -20,8 +20,10 @@
  * Convert a hostname or an IPV4 address string in dot notation into one
  * or more IPV4 addresses in host byte order. Since a single host can map to
  * multiple addresses, this returns a list of addresses in dynamically acquired
- * memory. The last address will be all zeros. The list must be freed by the
- * application.
+ * memory. The last entry will be all zeros. The list must be freed by the
+ * application. IMPORTANT SAFETY TIP: the underlying glibc gethostbyname()
+ * function ONLY works if the application is dynamically linked; the build will
+ * emit a warning to this effect.
  * @param hostname points to the hostname or IP address string.
  * @return an array or NULL if no such hostname or the string is invalid.
  */
@@ -30,7 +32,9 @@ extern diminuto_ipv4_t * diminuto_ipc_addresses(const char * hostname);
 /**
  * Convert a hostname or an IPV4 address string in dot notation into an IPV4
  * address in host byte order. Since a single host can map to multiple
- * addresses, the first address is returned.
+ * addresses, only the first address is returned. IMPORTANT SAFETY TIP: the
+ * underlying glibc gethostbyname() function ONLY works if the application is
+ * dynamically linked; the build will emit a warning to this effect.
  * @param hostname points to the hostname or IP address string.
  * @return the IPV4 address or 0 if no such hostname or the string is invalid.
  */

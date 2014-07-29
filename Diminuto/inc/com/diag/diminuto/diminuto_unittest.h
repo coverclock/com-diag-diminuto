@@ -26,6 +26,25 @@
 
 static int diminuto_unittest_errors = 0;
 
+/**
+ * @def SETLOGMASK()
+ * Set the log mask from the string value of the environmental variable
+ * DIMINUTO_LOG_MASK. The value of the environmental variable can be in decimal,
+ * hexadecimal, or octal in strtoul() format.
+ */
+#define SETLOGMASK() \
+	do { \
+		const char * diminuto_unittest_log_mask; \
+		if ((diminuto_unittest_log_mask = getenv("DIMINUTO_LOG_MASK")) != (const char *)0) { \
+			DIMINUTO_LOG_MASK = strtoul(diminuto_unittest_log_mask, (char **)0, 0); \
+		} \
+	} while (0)
+
+/**
+ * @def CHECKPOINT(...)
+ * Emit a notice message with the current translation unit file and line number
+ * and an optional manifest string argument.
+ */
 #define CHECKPOINT(...) \
     diminuto_log_log(LOG_NOTICE, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__)
 
@@ -69,6 +88,10 @@ static int diminuto_unittest_errors = 0;
         } \
     } while (0)
 
+/**
+ * @def FATAL(...)
+ * Emit a error message and exit the calling process with a non-zero exit code.
+ */
 #define FATAL(...) \
 	    do { \
 	        diminuto_log_log(LOG_ERR, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__); \

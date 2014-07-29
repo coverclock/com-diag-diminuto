@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <signal.h>
@@ -24,7 +25,7 @@ static void diminuto_mux_set_init(diminuto_mux_t * that, diminuto_mux_set_t * se
 
 void diminuto_mux_init(diminuto_mux_t * that)
 {
-	that->nfds = -1;
+	that->maxfd = -1;
 	diminuto_mux_set_init(that, &that->read);
 	diminuto_mux_set_init(that, &that->write);
 	sigprocmask(SIG_BLOCK, (sigset_t *)0, &that->mask);
@@ -38,8 +39,8 @@ static int diminuto_mux_set_register(diminuto_mux_t * that, diminuto_mux_set_t *
 	if (rc) {
 		FD_SET(fd, &set->active);
 		FD_CLR(fd, &set->ready);
-		if (fd > that->nfds) {
-			that->nfds = fd;
+		if (fd > that->maxfd) {
+			that->maxfd = fd;
 		}
 	}
 
@@ -59,7 +60,7 @@ int diminuto_mux_register_write(diminuto_mux_t * that, int fd)
 static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t * set, int fd)
 {
 	int rc;
-	int nfds;
+	int maxfd;
 	int reads;
 	int writes;
 
@@ -67,31 +68,31 @@ static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t
 	if (rc) {
 		FD_CLR(fd, &set->active);
 		FD_CLR(fd, &set->ready);
-		if (fd == that->nfds) {
-			nfds = that->nfds;
-			that->nfds = -1;
+		if (fd == that->maxfd) {
+			maxfd = that->maxfd;
+			that->maxfd = -1;
 			reads = 0;
 			writes = 0;
-			for (fd = 0; fd < nfds; ++fd) {
+			for (fd = 0; fd < maxfd; ++fd) {
 				if (FD_ISSET(fd, &that->read.active)) {
-					that->nfds = fd;
+					that->maxfd = fd;
 					++reads;
 				}
 				if (FD_ISSET(fd, &that->write.active)) {
-					that->nfds = fd;
+					that->maxfd = fd;
 					++writes;
 				}
 			}
 			if (reads == 0) {
 				that->read.next = -1;
-			} else if (that->read.next > that->nfds) {
+			} else if (that->read.next > that->maxfd) {
 				that->read.next = 0;
 			} else {
 				/* Do nothing. */
 			}
 			if (writes == 0) {
 				that->write.next = -1;
-			} else if (that->write.next > that->nfds) {
+			} else if (that->write.next > that->maxfd) {
 				that->write.next = 0;
 			} else {
 				/* Do nothing. */
@@ -148,8 +149,19 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 	struct timespec * top = (struct timespec *)0;
 	struct timespec timeout;
 	sigset_t * smp = (sigset_t *)0;
+	int nfds;
 
-	if (that->nfds >= 0) {
+	nfds = (that->maxfd >= 0) ? (that->maxfd + 1) : 0;
+
+	/*
+	 * It's perfectly legal to call this function with no registered file
+	 * descriptors. In fact, that's a common idiom in POSIX systems, using
+	 * the select(2) system call (or here, pselect(2)) to wait. But if you call
+	 * this function with no registered file descriptors _and_ an infinite wait
+	 * time, that's probably not correct. So we check for that.
+	 */
+
+	if ((nfds > 0) || (ticks >= 0)) {
 
 		that->read.ready = that->read.active;
 		that->write.ready = that->write.active;
@@ -164,7 +176,7 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 			smp = &that->mask;
 		}
 
-		rc = pselect(that->nfds + 1, &that->read.ready, &that->write.ready, (fd_set *)0, top, smp);
+		rc = pselect(nfds, &that->read.ready, &that->write.ready, (fd_set *)0, top, smp);
 
 		if (rc > 0) {
 			if (that->read.next < 0) {
@@ -195,7 +207,7 @@ static int diminuto_mux_ready(diminuto_mux_t * that, diminuto_mux_set_t * set)
 	if (set->next >= 0) {
 
 		limit = set->next;
-		modulo = that->nfds + 1;
+		modulo = that->maxfd + 1;
 
 		do {
 
