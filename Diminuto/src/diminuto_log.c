@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -15,26 +15,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
-
 char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
-
 int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
-
 int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
+int diminuto_log_stream = DIMINUTO_LOG_STREAM_DEFAULT;
 
-static const char * levels[] = {
-    "EMR",
-    "ALR",
-    "CRI",
-    "ERR",
-    "WRN",
-    "NTC",
-    "INC",
-    "DBG"
-};
+static const char levels[] = "01234567";
 
 static int initialized = 0;
 
@@ -49,13 +39,37 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-	int year, month, day, hour, minute, second, nanosecond;
     if (getppid() != 1) {
+        int year, month, day, hour, minute, second, nanosecond;
+        char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+        int rc;
+        char * pointer = buffer;
+        size_t space = sizeof(buffer);
+        size_t total = 0;
         diminuto_time_zulu(diminuto_time_clock(), &year, &month, &day, &hour, &minute, &second, &nanosecond);
-        const char * level = "UNKN";
-        level = levels[priority & 0x7];
-        fprintf(stderr, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%3.3dZ %s [%d] ", year, month, day, hour, minute, second, nanosecond / 1000000, level, getpid());
-        vfprintf(stderr, format, ap);
+        rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, levels[priority & 0x7], getpid());
+        if (rc < 0) { rc = 0; }
+        else if (rc >= space) { rc = space - 1; }
+        else { /* Do nothing. */ }
+        pointer += rc;
+        space -= rc;
+        total += rc;
+        rc = vsnprintf(pointer, space, format, ap);
+        if (rc < 0) { rc = 0; }
+        else if (rc >= space) { rc = space - 1; }
+        else { /* Do nothing. */ }
+        pointer += rc;
+        space -= rc;
+        total += rc;
+        if (space <= 1) {
+        	buffer[total - 1] = '\n';
+        } else if (buffer[total - 1] != '\n') {
+        	buffer[total++] = '\n';
+        	buffer[total] = '\0';
+        } else {
+        	/* Do nothing. */
+        }
+        (void)write(diminuto_log_stream, buffer, total);
     } else {
         diminuto_log_vsyslog(priority, format, ap);
     }
@@ -87,16 +101,16 @@ void diminuto_log_emit(const char * format, ...)
 
 void diminuto_serror(const char * s)
 {
-	int save;
-	save = errno;
+    int save;
+    save = errno;
     diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
     errno = save;
 }
 
 void diminuto_perror(const char * s)
 {
-	int save;
-	save = errno;
+    int save;
+    save = errno;
     diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
     errno = save;
 }

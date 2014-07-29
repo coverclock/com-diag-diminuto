@@ -12,9 +12,18 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "unittest-log.h"
+#include <stdlib.h>
 
 int main(int argc, char ** argv)
 {
+	char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+	int ii;
+	diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, DIMINUTO_LOG_HERE "HERE");
+	for (ii = 0; ii < sizeof(buffer) - 1; ++ii) {
+		buffer[ii] = (ii % ('~' - ' ' + 1)) + ' ';
+	}
+	buffer[sizeof(buffer) - 1] = '\0';
+	diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, "%s%s%s", DIMINUTO_LOG_HERE, "THERE", buffer);
     if (argc > 1) {
         int rc;
         diminuto_log_emit("DAEMONIZING\n");
@@ -143,5 +152,5 @@ int main(int argc, char ** argv)
     none();
     mine();
     diminuto_log_emit("END\n");
-    return 0;
+    EXIT();
 }

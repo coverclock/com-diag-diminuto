@@ -25,6 +25,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <stdio.h>
+
 static int identify(struct sockaddr_in * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp) {
     int result = 0;
 
@@ -170,16 +172,23 @@ diminuto_ipv4_t * diminuto_ipc_addresses(const char * hostname)
 
 diminuto_ipv4_t diminuto_ipc_address(const char * hostname)
 {
-	diminuto_ipv4_t address = 0;
-	diminuto_ipv4_t * addresses;
+	diminuto_ipv4_t address = (diminuto_ipv4_t)0;
+    struct  hostent * hostp;
+    struct in_addr inaddr;
 
-	addresses = diminuto_ipc_addresses(hostname);
-	if (addresses != (diminuto_ipv4_t *)0) {
-		address = addresses[0];
-		free(addresses);
-	}
+    if (inet_aton(hostname, &inaddr)) {
+        address = ntohl(inaddr.s_addr);
+    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
+        /* Do nothing: no host entry. */
+    } else if (hostp->h_addrtype != AF_INET) {
+        /* Do nothing: not in the IP address family. */
+    } else {
+        memset(&inaddr, 0, sizeof(inaddr));
+        memcpy(&inaddr, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(inaddr)) ? hostp->h_length : sizeof(inaddr));
+        address = ntohl(inaddr.s_addr);
+    }
 
-	return address;
+    return address;
 }
 
 const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)

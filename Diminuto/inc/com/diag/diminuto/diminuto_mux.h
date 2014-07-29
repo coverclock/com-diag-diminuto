@@ -29,7 +29,7 @@ typedef struct DiminutoMuxSet {
  * This is the multiplexer state.
  */
 typedef struct DiminutoMux {
-	int nfds;
+	int maxfd;
 	diminuto_mux_set_t read;
 	diminuto_mux_set_t write;
 	sigset_t mask;
