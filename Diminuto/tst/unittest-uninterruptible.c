@@ -19,29 +19,29 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_ticks_t hertz;
+    diminuto_ticks_t hertz;
     diminuto_ticks_t remaining;
     int alarmed;
 
     diminuto_alarm_install(0);
     hertz = diminuto_time_frequency();
 
-	diminuto_timer_periodic(hertz / 20);
-	remaining = diminuto_delay(hertz, !0);
-	alarmed = diminuto_alarm_check();
-	diminuto_timer_periodic(0);
-	(void)diminuto_alarm_check();
+    diminuto_timer_periodic(hertz / 20);
+    remaining = diminuto_delay(hertz, !0);
+    alarmed = diminuto_alarm_check();
+    diminuto_timer_periodic(0);
+    (void)diminuto_alarm_check();
 
     EXPECT(remaining > 0);
     EXPECT(alarmed);
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
 
-    	diminuto_timer_periodic(hertz / 20);
-    	remaining = diminuto_delay(hertz, !0);
-    	alarmed = diminuto_alarm_check();
-    	diminuto_timer_periodic(0);
-    	(void)diminuto_alarm_check();
+        diminuto_timer_periodic(hertz / 20);
+        remaining = diminuto_delay(hertz, !0);
+        alarmed = diminuto_alarm_check();
+        diminuto_timer_periodic(0);
+        (void)diminuto_alarm_check();
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
 

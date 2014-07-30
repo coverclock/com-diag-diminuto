@@ -45,6 +45,7 @@ int main(int argc, char ** argv)
     int mminute;
     int msecond;
     int mtick;
+    double delta;
 
     diminuto_core_enable();
 
@@ -66,13 +67,15 @@ int main(int argc, char ** argv)
             now = diminuto_time_elapsed();
             computed = (requested * 2) - remaining;
             measured = now - then;
+            delta = (100.0 * (measured - requested)) / requested;
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
             cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
-            printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d\n"
+            printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %7.3lf%%\n"
             	, rs, rday, rhour, rminute, rsecond, rtick
             	, cs, cday, chour, cminute, csecond, ctick
             	, ms, mday, mhour, mminute, msecond, mtick
+            	, delta
             );
             then = now;
         }

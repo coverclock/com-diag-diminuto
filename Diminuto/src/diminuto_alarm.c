@@ -20,7 +20,10 @@ static int signaled = 0;
 static void diminuto_alarm_handler(int signum)
 {
 	if (signum == SIGALRM) {
-		signaled = !0;
+        signaled = !0;
+        /*
+        diminuto_log_emit("SIGALRM!");
+        */
 	}
 }
 
@@ -45,8 +48,11 @@ int diminuto_alarm_check(void)
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
 
-		mysignaled = signaled;
-		signaled = 0;
+        mysignaled = signaled;
+        signaled = 0;
+        /*
+        if (mysignaled) diminuto_log_emit("SIGALRM.");
+        */
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
 
@@ -65,6 +71,10 @@ int diminuto_alarm_install(int restart)
         diminuto_perror("diminuto_alarm_install: sigaction");
         return -1;
     }
+
+    /*
+    diminuto_log_emit("SIGALRM?");
+    */
 
     return 0;
 }
