@@ -47,7 +47,7 @@ HOMEPAGE			=	http://www.diag.com/navigation/downloads/$(TITLE).html
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
 # sources, toolchains, etc.
-HOME_DIR			=	$(HOME)/projects
+HOME_DIR			=	$(HOME)/Projects
 
 ########## Directory Tree
 
@@ -155,9 +155,9 @@ ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
 CARCH				=	
-LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
-#LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
+#LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
 CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	3.10.24-jetson
 KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
@@ -234,7 +234,8 @@ TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGET
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
-PACKAGEMANIFEST		=	./$(BIN_DIR) ./$(DRV_DIR) ./$(LIB_DIR) ./$(MOD_DIR) ./$(TST_DIR)
+#PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
+PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 
 BUILDARTIFACTS		=	doxygen-local.cf $(ETC_DIR)/diminuto.sh dependencies.mk
 
@@ -288,6 +289,11 @@ distribution:
 	svn export $(SVNURL) $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
 	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make TARGET=host; ./out/host/bin/vintage )
+
+.PHONY:	package
+
+package $(PROJECT)-$(TARGET).tgz:
+	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(PROJECT)-$(TARGET).tgz
 
 .PHONY: commit dcommit push origin init
 
@@ -501,16 +507,13 @@ drivers-clean:
 
 ########## Helpers
 
-.PHONY:	backup package implicit
+.PHONY:	backup implicit
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
 
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > $@
-
-package $(PROJECT)-$(TARGET).tgz:
-	tar -C $(OUT) -cvzf - $(PACKAGEMANIFEST) > $(PROJECT)-$(TARGET).tgz
 	
 implicit:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null

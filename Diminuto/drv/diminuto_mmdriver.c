@@ -485,6 +485,13 @@ __init mmdriver_init(
 
         strncat(proc, name, sizeof(name));
 
+        /*
+         * N.B. create_proc_read_entry() was deprecated and has been removed
+         * from the /proc API circa kernel 3.10. I haven't had a change to
+         * port this to later kernels (e.g. the 3.10.24 kernel that I'm
+         * currently using) yet.
+         */
+
         if (!create_proc_read_entry(proc, 0, NULL, mmdriver_proc_read, NULL)) {
             pr_err("mmdriver_init: create_proc_read_entry failed!\n");
             unregister_chrdev(major, name);
