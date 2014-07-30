@@ -148,7 +148,6 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 	int rc = 0;
 	struct timespec * top = (struct timespec *)0;
 	struct timespec timeout;
-	sigset_t * smp = (sigset_t *)0;
 	int nfds;
 
 	nfds = (that->maxfd >= 0) ? (that->maxfd + 1) : 0;
@@ -172,11 +171,7 @@ int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t ticks)
 			top = &timeout;
 		}
 
-		if (!sigisemptyset(&that->mask)) {
-			smp = &that->mask;
-		}
-
-		rc = pselect(nfds, &that->read.ready, &that->write.ready, (fd_set *)0, top, smp);
+		rc = pselect(nfds, &that->read.ready, &that->write.ready, (fd_set *)0, top, &that->mask);
 
 		if (rc > 0) {
 			if (that->read.next < 0) {

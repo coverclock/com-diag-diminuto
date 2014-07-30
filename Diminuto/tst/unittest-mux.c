@@ -488,14 +488,13 @@ int main(int argc, char ** argv)
 			sigemptyset(&mask);
 			sigaddset(&mask, SIGALRM);
 			sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0);
-
 			diminuto_mux_init(&mux);
 			ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
 			ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
 			ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
 
 			ASSERT(diminuto_alarm_install(0) == 0);
-			ASSERT(diminuto_timer_oneshot(diminuto_frequency() / 100) == 0);
+			ASSERT(diminuto_timer_oneshot(diminuto_frequency()) == 0);
 
 			here = output;
 			used = sizeof(output);
@@ -521,6 +520,7 @@ int main(int argc, char ** argv)
 			do {
 
 				while (!0) {
+					ASSERT(!diminuto_alarm_check());
 					if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() / 10)) > 0) {
 						break;
 					} else if (ready == 0) {
@@ -551,7 +551,7 @@ int main(int argc, char ** argv)
 						percentage = totalsent;
 						percentage *= 100;
 						percentage /= TOTAL;
-						DIMINUTO_LOG_NOTICE("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
+						DIMINUTO_LOG_INFORMATION("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
 
 						here += sent;
 						used -= sent;
@@ -578,7 +578,7 @@ int main(int argc, char ** argv)
 					ASSERT(received <= available);
 
 					totalreceived += received;
-					DIMINUTO_LOG_NOTICE("producer received %10d %10d %10u\n", readable, received, totalreceived);
+					DIMINUTO_LOG_INFORMATION("producer received %10d %10d %10u\n", readable, received, totalreceived);
 
 					there += received;
 					available -= received;
@@ -600,7 +600,7 @@ int main(int argc, char ** argv)
 			ASSERT(diminuto_mux_close(&mux, producer) == 0);
 			ASSERT(diminuto_ipc_close(rendezvous) >= 0);
 
-			ASSERT(timeouts > 0);
+			EXPECT(timeouts > 0);
 			EXPECT(alarms > 0);
 
 			EXPECT(waitpid(pid, &status, 0) == pid);
@@ -659,7 +659,7 @@ int main(int argc, char ** argv)
 					percentage = totalreceived;
 					percentage *= 100;
 					percentage /= TOTAL;
-					DIMINUTO_LOG_NOTICE("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
+					DIMINUTO_LOG_INFORMATION("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
 
 					if (received == 0) {
 						done = !0;
@@ -672,7 +672,7 @@ int main(int argc, char ** argv)
 						ASSERT(sent <= received);
 
 						totalsent += sent;
-						DIMINUTO_LOG_NOTICE("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
+						DIMINUTO_LOG_INFORMATION("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
 
 						received -= sent;
 					}
