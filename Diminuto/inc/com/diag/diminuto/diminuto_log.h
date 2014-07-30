@@ -35,8 +35,6 @@
  * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
-
 /******************************************************************************/
 
 /*
@@ -49,6 +47,8 @@
  * used, because that makes it easier to use as a parameter for loadable
  * kernel or device driver modules.
  */
+
+#include "com/diag/diminuto/diminuto_types.h"
 
 typedef uint8_t diminuto_log_mask_t;
 
@@ -190,9 +190,9 @@ extern void diminuto_log_emit(const char * format, ...);
 
 #define DIMINUTO_LOG_PRIORITY_DEFAULT       DIMINUTO_LOG_PRIORITY_NOTICE
 
-#define DIMINUTO_LOG_STRINGIFY(_STRING_)    #_STRING_
-#define DIMINUTO_LOG_TOKENIZE(_TOKEN_)      DIMINUTO_LOG_STRINGIFY(_TOKEN_)
-#define DIMINUTO_LOG_HERE                   __FILE__ "@" DIMINUTO_LOG_TOKENIZE(__LINE__) ": "
+#include "com/diag/diminuto/diminuto_token.h"
+
+#define DIMINUTO_LOG_HERE                   __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": "
 
 #endif
 

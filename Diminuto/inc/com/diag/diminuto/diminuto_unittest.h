@@ -20,7 +20,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_token.h"
+#include "com/diag/diminuto/diminuto_core.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -46,7 +46,7 @@ static int diminuto_unittest_errors = 0;
  * and an optional manifest string argument.
  */
 #define CHECKPOINT(...) \
-    diminuto_log_log(LOG_NOTICE, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__)
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE __VA_ARGS__)
 
 /**
  * @def EXIT()
@@ -68,7 +68,7 @@ static int diminuto_unittest_errors = 0;
 #define EXPECT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(LOG_WARNING, "%s@%d: !EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "!EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
             ++diminuto_unittest_errors; \
         } \
     } while (0)
@@ -82,7 +82,7 @@ static int diminuto_unittest_errors = 0;
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(LOG_ERR, "%s@%d: !ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "!ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
             ++diminuto_unittest_errors; \
             EXIT(); \
         } \
@@ -93,10 +93,25 @@ static int diminuto_unittest_errors = 0;
  * Emit a error message and exit the calling process with a non-zero exit code.
  */
 #define FATAL(...) \
-	    do { \
-	        diminuto_log_log(LOG_ERR, __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": " __VA_ARGS__); \
-	        ++diminuto_unittest_errors; \
-	        EXIT(); \
+        do { \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
+            ++diminuto_unittest_errors; \
+            EXIT(); \
 	    } while (0)
+
+/**
+ * @def PANIC(...)
+ * Emit a error message and try to dump core.
+ */
+#define PANIC(...) \
+        do { \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
+            fflush(stdout); \
+            fflush(stderr); \
+            diminuto_core_enable(); \
+            FATAL("0x%x", *((volatile char *)0)); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
+            EXIT(); \
+        } while (0)
 
 #endif
