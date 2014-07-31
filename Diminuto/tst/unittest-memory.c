@@ -8,8 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include <stdio.h>
 
 int main(void)
@@ -25,10 +26,12 @@ int main(void)
 	size_t allocated;
 	int method;
 
+	SETLOGMASK();
+
 	method = -1;
 	pagesize = diminuto_memory_pagesize(&method);
 	pagesize2 = diminuto_memory_pagesize((int *)0);
-    fprintf(stderr, "pagesize=0x%x=%d method=%d\n", pagesize, pagesize, method);
+    DIMINUTO_LOG_INFORMATION("pagesize=0x%x=%d method=%d\n", pagesize, pagesize, method);
     ASSERT(method >= 0);
     ASSERT(pagesize > 0);
     ASSERT(pagesize == pagesize2);
@@ -37,7 +40,7 @@ int main(void)
     method = -1;
 	linesize = diminuto_memory_linesize(&method);
     linesize2 = diminuto_memory_linesize((int *)0);
-	fprintf(stderr, "linesize=0x%x=%d method=%d\n", linesize, linesize, method);
+    DIMINUTO_LOG_INFORMATION("linesize=0x%x=%d method=%d\n", linesize, linesize, method);
     ASSERT(method >= 0);
 	ASSERT(linesize > 0);
 	ASSERT(linesize == linesize2);
@@ -80,4 +83,6 @@ int main(void)
 			ASSERT((allocated % power) == 0);
 		}
 	}
+
+	EXIT();
 }

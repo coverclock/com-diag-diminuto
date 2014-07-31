@@ -2,13 +2,14 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_path.h"
 #include "com/diag/diminuto/diminuto_module.h"
@@ -29,11 +30,13 @@ int main(int argc, char ** argv)
 	int value = 0xa5a5a5a5;
 	int rc;
 
+	SETLOGMASK();
+
     diminuto_core_enable();
 
     file = diminuto_path_find(KEYWORD, NAME);
     if (file == (const char *)0) {
-    	fprintf(stderr, "%s not found amongst %s!\n", NAME, KEYWORD);
+    	DIMINUTO_LOG_ERROR("%s not found amongst %s!\n", NAME, KEYWORD);
     }
     ASSERT(file != (const char *)0);
 
@@ -76,17 +79,17 @@ int main(int argc, char ** argv)
     ASSERT(functionp != (void *)0);
 
     rc = (*(int (*)(int))functionp)(value);
-    printf("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
+    DIMINUTO_LOG_DEBUG("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
     ASSERT(rc == ~value);
 
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
     ASSERT(variablep != (void *)0);
 
-    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xc0edbabe);
 
     *(int *)variablep = 0xdeadbeef;
-    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xdeadbeef);
 
     functionp = diminuto_module_symbol(module, "diminuto_module_example_function_notfound", (const char *)0);
@@ -106,7 +109,7 @@ int main(int argc, char ** argv)
     ASSERT(module != (diminuto_module_handle_t)0);
 
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
-    printf("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xc0edbabe);
 
     module = diminuto_module_unload(module, !0);

@@ -8,14 +8,16 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_escape.h"
 #include "com/diag/diminuto/diminuto_dump.h"
-#include "com/diag/diminuto/diminuto_unittest.h"
 #include <string.h>
-#include <stdio.h>
 
 int main(void)
 {
+	SETLOGMASK();
+
 	{
 		char one[1 << (sizeof(char) * 8)];
 		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + 1];
@@ -85,42 +87,42 @@ int main(void)
 		for (size = 0; size < sizeof(one); ++size) {
 			one[size] = size + 1;
 		}
-		fprintf(stdout, "one [%zu]\n", sizeof(one));
+		DIMINUTO_LOG_DEBUG("one [%zu]\n", sizeof(one));
 		diminuto_dump(stdout, one, sizeof(one));
 		ASSERT(sizeof(one) == 256);
 
 		size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "\" ");
-		fprintf(stdout, "two [%zu] \"%s\"\n", size, two);
+		DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
 		diminuto_dump(stdout, two, size);
 		ASSERT(size == sizeof(FOUR));
 		ASSERT(strcmp(two, FOUR) == 0);
 
 		size = diminuto_escape_collapse(three, two, sizeof(three));
-		fprintf(stdout, "three [%zu]\n", size);
+		DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
 		diminuto_dump(stdout, three, size);
 		ASSERT(size == (sizeof(one) + 1));
 		ASSERT(memcmp(one, three, sizeof(one)) == 0);
 
 		size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "");
-		fprintf(stdout, "two [%zu] \"%s\"\n", size, two);
+		DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
 		diminuto_dump(stdout, two, size);
 		ASSERT(size == sizeof(FIVE));
 		ASSERT(strcmp(two, FIVE) == 0);
 
 		size = diminuto_escape_collapse(three, two, sizeof(three));
-		fprintf(stdout, "three [%zu]\n", size);
+		DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
 		diminuto_dump(stdout, three, size);
 		ASSERT(size == (sizeof(one) + 1));
 		ASSERT(memcmp(one, three, sizeof(one)) == 0);
 
 		size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), (const char *)0);
-		fprintf(stdout, "two [%zu] \"%s\"\n", size, two);
+		DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
 		diminuto_dump(stdout, two, size);
 		ASSERT(size == sizeof(FIVE));
 		ASSERT(strcmp(two, FIVE) == 0);
 
 		size = diminuto_escape_collapse(three, two, sizeof(three));
-		fprintf(stdout, "three [%zu]\n", size);
+		DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
 		diminuto_dump(stdout, three, size);
 		ASSERT(size == (sizeof(one) + 1));
 		ASSERT(memcmp(one, three, sizeof(one)) == 0);

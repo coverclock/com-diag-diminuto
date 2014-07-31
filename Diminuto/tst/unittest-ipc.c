@@ -2,18 +2,18 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_unittest.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -513,7 +513,7 @@ int main(void)
 					ASSERT(sent <= used);
 
 		            totalsent += sent;
-					if (DEBUG) { fprintf(stderr, "producer sent %d %u\n", sent, totalsent); }
+		            DIMINUTO_LOG_DEBUG("producer sent %d %u\n", sent, totalsent);
 
 					here += sent;
 					used -= sent;
@@ -535,7 +535,7 @@ int main(void)
 				ASSERT(received <= available);
 
 				totalreceived += received;
-				if (DEBUG) { fprintf(stderr, "producer received %d %u\n", received, totalreceived); }
+				DIMINUTO_LOG_DEBUG("producer received %d %u\n", received, totalreceived);
 
 				there += received;
 				available -= received;
@@ -583,7 +583,7 @@ int main(void)
 				ASSERT(received <= sizeof(buffer));
 
 				totalreceived += received;
-				if (DEBUG) { fprintf(stderr, "consumer received %d %u\n", received, totalreceived); }
+				DIMINUTO_LOG_DEBUG("consumer received %d %u\n", received, totalreceived);
 
 				if (received == 0) {
 					break;
@@ -595,7 +595,7 @@ int main(void)
 					ASSERT(sent <= received);
 
 					totalsent += sent;
-					if (DEBUG) { fprintf(stderr, "consumer sent %d %u\n", sent, totalsent); }
+					DIMINUTO_LOG_DEBUG("consumer sent %d %u\n", sent, totalsent);
 
 					received -= sent;
 				}

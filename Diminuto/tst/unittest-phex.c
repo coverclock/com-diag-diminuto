@@ -8,9 +8,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <stdio.h>
-#include <string.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include <string.h>
 
 int main(int argc, char ** argv)
 {
@@ -19,6 +19,8 @@ int main(int argc, char ** argv)
 	int ii;
     int ch;
 
+    SETLOGMASK();
+
     strncat(command, "phex", sizeof(command) - strlen(command) - 1);
 
     for (ii = 1; ii < argc; ++ii) {
@@ -26,7 +28,7 @@ int main(int argc, char ** argv)
     	strncat(command, argv[ii], sizeof(command) - strlen(command) - 1);
      }
 
-    fprintf(stderr, "command: \"%s\"\n", command);
+    DIMINUTO_LOG_DEBUG("command: \"%s\"\n", command);
 
     fp = popen(command, "w");
     ASSERT(fp != (FILE *)0);
