@@ -9,12 +9,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
-#include <stdio.h>
 #include <errno.h>
 
 int main(int argc, char ** argv)
@@ -46,12 +45,14 @@ int main(int argc, char ** argv)
     int mtick;
     double delta;
 
+    SETLOGMASK();
+
     diminuto_core_enable();
     diminuto_alarm_install(0);
 
     hertz = diminuto_time_frequency();
 
-    printf("%21s %21s %21s %11s\n",
+    DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
         "requested", "computed", "measured", "error");
 
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
@@ -69,7 +70,7 @@ int main(int argc, char ** argv)
         rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
         cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
-        printf("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %10.3lf%%\n"
+        DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %10.3lf%%\n"
         	, rs, rday, rhour, rminute, rsecond, rtick
         	, cs, cday, chour, cminute, csecond, ctick
         	, ms, mday, mhour, mminute, msecond, mtick

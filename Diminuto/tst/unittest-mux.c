@@ -41,18 +41,18 @@ static const char * diminuto_mux_set_name(diminuto_mux_t * that, diminuto_mux_se
 	return (set == &that->read) ? "read" : (set == &that->write) ? "write" : "other";
 }
 
-static void diminuto_mux_sigs_dump(sigset_t * sigs, FILE * fp)
+static void diminuto_mux_sigs_dump(sigset_t * sigs)
 {
 	int signum;
 
 	for (signum = 1; signum < NSIG; ++signum) {
 		if (sigismember(sigs, signum)) {
-			fprintf(fp, " %d", signum);
+			DIMINUTO_LOG_DEBUG(" %d", signum);
 		}
 	}
 }
 
-static void diminuto_mux_fds_dump(fd_set * fds, FILE *fp)
+static void diminuto_mux_fds_dump(fd_set * fds)
 {
 	int fd;
 	int nfds;
@@ -60,30 +60,30 @@ static void diminuto_mux_fds_dump(fd_set * fds, FILE *fp)
 	nfds = diminuto_fd_count();
 	for (fd = 0; fd < nfds; ++fd) {
 		if (FD_ISSET(fd, fds)) {
-			fprintf(fp, " %d", fd);
+			DIMINUTO_LOG_DEBUG(" %d", fd);
 		}
 	}
 
 }
 
-static void diminuto_mux_set_dump(diminuto_mux_t * that, diminuto_mux_set_t * set, FILE * fp)
+static void diminuto_mux_set_dump(diminuto_mux_t * that, diminuto_mux_set_t * set)
 {
 	const char * name;
 
 	name = diminuto_mux_set_name(that, set);
-	fprintf(fp, "mux@%p: %s.next=%d\n", that, name, set->next);
-	fprintf(fp, "mux@%p: %s.active=<", that, name); diminuto_mux_fds_dump(&set->active, fp); fputs(" >\n", fp);
-	fprintf(fp, "mux@%p: %s.ready=<", that, name); diminuto_mux_fds_dump(&set->ready, fp); fputs(" >\n", fp);
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.next=%d", that, name, set->next);
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.active=<", that, name); diminuto_mux_fds_dump(&set->active); DIMINUTO_LOG_DEBUG(">");
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.ready=<", that, name); diminuto_mux_fds_dump(&set->ready); DIMINUTO_LOG_DEBUG(">");
 }
 
-static void diminuto_mux_dump(diminuto_mux_t * that, FILE * fp)
+static void diminuto_mux_dump(diminuto_mux_t * that)
 {
 	int signum;
 
-	fprintf(fp, "mux@%p: maxfd=%d\n", that, that->maxfd);
-	diminuto_mux_set_dump(that, &that->read, fp);
-	diminuto_mux_set_dump(that, &that->write, fp);
-	fprintf(fp, "mux@%p: mask=<", that); diminuto_mux_sigs_dump(&that->mask, fp); fputs(" >\n", fp);
+	DIMINUTO_LOG_DEBUG("mux@%p: maxfd=%d", that, that->maxfd);
+	diminuto_mux_set_dump(that, &that->read);
+	diminuto_mux_set_dump(that, &that->write);
+	DIMINUTO_LOG_DEBUG("mux@%p: mask=<", that); diminuto_mux_sigs_dump(&that->mask); DIMINUTO_LOG_DEBUG(">");
 }
 
 static void diminuto_mux_test(diminuto_ticks_t timeout)
@@ -220,13 +220,13 @@ int main(int argc, char ** argv)
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) < 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -256,7 +256,7 @@ int main(int argc, char ** argv)
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd == STDIN_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -287,7 +287,7 @@ int main(int argc, char ** argv)
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd == STDERR_FILENO);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -317,7 +317,7 @@ int main(int argc, char ** argv)
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) < 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -351,7 +351,7 @@ int main(int argc, char ** argv)
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
@@ -359,10 +359,10 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd == STDERR_FILENO);
 		ASSERT(mux.read.next == 0);
 		ASSERT(mux.write.next == 0);
@@ -374,7 +374,7 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd == STDERR_FILENO);
 		ASSERT(mux.read.next == 0);
 		ASSERT(mux.write.next == 0);
@@ -382,7 +382,7 @@ int main(int argc, char ** argv)
 		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 2);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 
 		ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
 		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
@@ -390,21 +390,21 @@ int main(int argc, char ** argv)
 
 		ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
 		ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 1);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
 		ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
 		ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(diminuto_mux_ready_write(&mux) < 0);
 	}
 
@@ -412,17 +412,17 @@ int main(int argc, char ** argv)
 		diminuto_mux_t mux;
 
 		diminuto_mux_init(&mux);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);
 
 		ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
 		ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 
 		ASSERT(diminuto_mux_wait(&mux, -1) == 1);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd == STDOUT_FILENO);
 		ASSERT(mux.read.next == 0);
 		ASSERT(mux.write.next == 0);
@@ -434,7 +434,7 @@ int main(int argc, char ** argv)
 
 		ASSERT(diminuto_mux_close(&mux, STDIN_FILENO) == 0);
 		ASSERT(diminuto_mux_close(&mux, STDOUT_FILENO) == 0);
-		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux, stderr); }
+		if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) { diminuto_mux_dump(&mux); }
 		ASSERT(mux.maxfd < 0);
 		ASSERT(mux.read.next < 0);
 		ASSERT(mux.write.next < 0);

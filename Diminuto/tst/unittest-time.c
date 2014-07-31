@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_time.h"
@@ -59,11 +60,13 @@ int main(int argc, char ** argv)
     int jtick;
     char ss;
 
+    SETLOGMASK();
+
     diminuto_core_enable();
 
     hertz = diminuto_time_frequency();
 
-    printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %41s %41s\n",
+    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %41s %41s\n",
         "requested",
         "remaining",
         "claimed",
@@ -117,7 +120,7 @@ int main(int argc, char ** argv)
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        printf("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d\n"
+        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d\n"
             , requested, remaining
             , claimed
             , measured, measured - requested
@@ -135,5 +138,5 @@ int main(int argc, char ** argv)
         diminuto_yield();
     }
 
-    return 0;
+    EXIT();
 }

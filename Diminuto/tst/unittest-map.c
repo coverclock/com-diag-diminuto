@@ -24,6 +24,8 @@ int main(int argc, char ** argv)
     void * start = (void *)0;
     size_t length = 0;
 
+    SETLOGMASK();
+
     rc = diminuto_map_minimum(0);
     EXPECT(rc == 0);
 
@@ -35,7 +37,7 @@ int main(int argc, char ** argv)
     ASSERT(start != (void *)0);
     ASSERT(length != 0);
 
-    diminuto_log_emit("unittest-map: *(void *)0=0x%08x start=0x%08x length=%lu\n", *(int *)pointer, start, length);
+    DIMINUTO_LOG_NOTICE("unittest-map: *(void *)0=0x%08x start=0x%08x length=%lu\n", *(int *)pointer, start, length);
 
     rc = diminuto_map_unmap(&start, &length);
     ASSERT(rc == 0);

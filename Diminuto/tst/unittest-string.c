@@ -8,13 +8,15 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "com/diag/diminuto/diminuto_string.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_string.h"
 #include <string.h>
-#include <stdio.h>
 
 int main(void)
 {
+	SETLOGMASK();
+
     {
         char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
         char * src = "ABC";

@@ -20,8 +20,8 @@ TARGET				=	host
 #TARGET				=	stampede
 
 MAJOR				=	23# API changes requiring that applications be modified.
-MINOR				=	4# Only functionality or features added with no legacy API changes.
-BUILD				=	0# Only bugs fixed with no API changes or new functionality.
+MINOR				=	5# Only functionality or features added with no legacy API changes.
+BUILD				=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -170,7 +170,7 @@ ARCH				=	i386
 PLATFORM			=	linux
 CPPARCH				=
 CARCH				=
-LDARCH				= -L$(OUT)/$(LIB_DIR)
+LDARCH				=	-L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=
 CROSS_COMPILE		=
 KERNEL_REV			=	3.2.0-51
@@ -248,10 +248,10 @@ TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGET
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
-#PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
+#PACKAGEMANIFEST	=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 
-BUILDARTIFACTS		=	doxygen-local.cf $(ETC_DIR)/diminuto.sh dependencies.mk
+BUILDARTIFACTS		=	doxygen-local.cf dependencies.mk
 
 COMMAND				=	dummy
 SCRIPT				=	dummy
@@ -320,42 +320,13 @@ dcommit:
 push:
 	git push origin master
 
+pull:
+	git pull origin master
+
 init:
 	git svn show-ignore > .gitignore
 	git add .gitignore
 	git remote add origin $(GITURL)
-
-########## Host Utilities
-
-%:	$(ETC_DIR)/%.sh
-	cp $< $@
-	chmod 755 $@
-
-$(ETC_DIR)/diminuto.sh:	Makefile
-	echo "# GENERATED FILE! DO NOT EDIT!" > $@
-	echo ARCH=\"$(ARCH)\" >> $@
-	echo BDIADDRESS=\"$(BDI_IPADDR)\" >> $@
-	echo BDIPORT=\"$(BDI_PORT)\" >> $@
-	echo BINARIES=\"$(BINARIES_DIR)\" >> $@
-	echo BUILDROOT=\"$(BUILDROOT_DIR)\" >> $@
-	echo CONFIG=\"$(CONFIG_DIR)\" >> $@
-	echo CROSS_COMPILE=\"$(CROSS_COMPILE)\" >> $@
-	echo DATESTAMP=\"$(DATESTAMP)\" >> $@
-	echo TOOLCHAIN=\"$(TOOLCHAIN_DIR)\" >> $@
-	echo DIMINUTO=\"$(DIMINUTO_DIR)\" >> $@
-	echo DESPERADO=\"$(DESPERADO_DIR)\" >> $@
-	echo FICL=\"$(FICL_DIR)\" >> $@
-	echo IMAGE=\"$(IMAGE)\" >> $@
-	echo KERNEL=\"$(KERNEL_DIR)\" >> $@
-	echo PLATFORM=\"$(PLATFORM)\" >> $@
-	echo PROJECT=\"$(PROJECT)\" >> $@
-	echo RELEASE=\"$(KERNEL_REV)\" >> $@
-	echo TARGET=\"$(TARGET)\" >> $@
-	echo TFTP=\"$(TFTP_DIR)\" >> $@
-	echo TGTADDRESS=\"$(TGT_IPADDR)\" >> $@
-	echo TMPDIR=\"$(TEMP_DIR)\" >> $@
-	echo 'echo $${PATH} | grep -q "$(TOOLBIN_DIR)" || export PATH=$(TOOLBIN_DIR):$${PATH}' >> $@
-	echo 'echo $${PATH} | grep -q "$(LOCALBIN_DIR)" || export PATH=$(LOCALBIN_DIR):$${PATH}' >> $@
 
 ########## Target C Libraries
 

@@ -30,7 +30,8 @@
  * machine instructions.
  */
 
-#include <stdio.h>
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdlib.h>
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_types.h"
@@ -46,6 +47,8 @@ int main(int argc, char ** argv)
 	typedef diminuto_ticks_t (function_t)(void);
 	function_t * functionp = &diminuto_time_clock;
 	const char * label = "realtime";
+
+	SETLOGMASK();
 
 	if (argc > 1) {
 		limit = strtoll(argv[1], (char **)0, 0);
@@ -73,12 +76,12 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	printf("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
+	DIMINUTO_LOG_NOTICE("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
 
 	if (after < 0) {
 		diminuto_perror(label);
 		return 2;
 	}
 
-	return 0;
+	EXIT();
 }

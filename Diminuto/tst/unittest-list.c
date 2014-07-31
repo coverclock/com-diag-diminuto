@@ -2,16 +2,17 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_list.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
-#include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -20,13 +21,12 @@ static diminuto_list_t head;
 static diminuto_list_t node[3];
 static char * name[countof(node)] = { "node0", "node1", "node2" };
 static diminuto_list_t * stack[64];
-static int verbose = 0;
 
-static void dump(FILE *fp, const char * prefix, diminuto_list_t * nodep) {
+static void dump(const char * prefix, diminuto_list_t * nodep) {
 	diminuto_list_t * nextp = nodep;
 	int ii = 0;
 	do {
-		fprintf(fp, "%s[%d] %p: next=%p prev=%p root=%p data=%p\n", prefix, ii++, nextp, nextp->next, nextp->prev, nextp->root, nextp->data);
+		DIMINUTO_LOG_DEBUG("%s[%d] %p: next=%p prev=%p root=%p data=%p\n", prefix, ii++, nextp, nextp->next, nextp->prev, nextp->root, nextp->data);
 		nextp = nextp->next;
 	} while (nextp != nodep);
 }
@@ -39,9 +39,7 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
     diminuto_list_t * actual;
     va_list ap;
 
-    if (verbose) {
-    	printf("audit:%s@%d\n", file, line);
-    }
+    DIMINUTO_LOG_DEBUG("audit:%s@%d\n", file, line);
 
     /* Forward */
 
@@ -138,13 +136,15 @@ static void initialize(void)
     	}
     }
 
-    if (verbose) {
-    	dump(stderr, "head", &head);
+    if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) {
+    	dump("head", &head);
     }
 }
 
 int main(void)
 {
+	SETLOGMASK();
+
     {
         /* Core Operations */
 
@@ -594,5 +594,5 @@ int main(void)
         audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[0], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
    }
 
-    return 0;
+    EXIT();
 }

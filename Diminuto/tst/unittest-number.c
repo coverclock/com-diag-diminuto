@@ -2,21 +2,23 @@
 /**
  * @file
  *
- * Copyright 2008-2009 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_number.h"
-#include <stdio.h>
 #include <errno.h>
 
 int main(int argc, char ** argv)
 {
 	const char * p;
 	diminuto_unsigned_t n;
+
+	SETLOGMASK();
 
     errno = 0;
 
@@ -95,8 +97,8 @@ int main(int argc, char ** argv)
 	++argv;
 	while ((argc--) > 0) {
 		p = diminuto_number(*(argv++), &n);
-		printf("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
+		DIMINUTO_LOG_NOTICE("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
 	}
 
-	return 0;
+	EXIT();
 }
