@@ -154,6 +154,7 @@ ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
+#CARCH				=
 CARCH				=	-rdynamic -fno-omit-frame-pointer -funwind-tables
 #LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
@@ -181,8 +182,8 @@ ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
 ARCH				=	i386
 PLATFORM			=	linux
 CPPARCH				=
-CARCH				=
-LDARCH				= -L$(OUT)/$(LIB_DIR)
+CARCH				=	-rdynamic
+LDARCH				=	-L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=
 CROSS_COMPILE		=
 KERNEL_REV			=	3.13.0-24
