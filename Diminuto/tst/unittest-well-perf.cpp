@@ -33,9 +33,10 @@
 #include "com/diag/diminuto/diminuto_well.h"
 
 extern "C" {
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "com/diag/diminuto/diminuto_unittest.h"
 }
 
 #include <stdio.h>
@@ -119,6 +120,8 @@ int main(int argc, char ** argv) {
 	diminuto_ticks_t time;
 	diminuto_ticks_t frequency;
 
+	SETLOGMASK();
+
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
 
 	frequency = diminuto_time_frequency();
@@ -127,7 +130,7 @@ int main(int argc, char ** argv) {
 
 	bit = 0;
 	if ((mask & (1 << bit)) != 0) {
-		printf("TEST %d: BEGIN\n", bit);
+		DIMINUTO_LOG_DEBUG("TEST %d: BEGIN\n", bit);
 		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
@@ -138,14 +141,14 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
+		DIMINUTO_LOG_DEBUG("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-unsafe well. */
 
 	bit = 1;
 	if ((mask & (1 << bit)) != 0) {
-		printf("TEST %d: BEGIN\n", bit);
+		DIMINUTO_LOG_DEBUG("TEST %d: BEGIN\n", bit);
 		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(doohickey); ++jj) {
@@ -156,14 +159,14 @@ int main(int argc, char ** argv) {
 				delete doohickey[jj];
 			}
 		}
-		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
+		DIMINUTO_LOG_DEBUG("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-unsafe well from base class. */
 
 	bit = 2;
 	if ((mask & (1 << bit)) != 0) {
-		printf("TEST %d: BEGIN\n", bit);
+		DIMINUTO_LOG_DEBUG("TEST %d: BEGIN\n", bit);
 		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
@@ -174,14 +177,14 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
+		DIMINUTO_LOG_DEBUG("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-safe well. */
 
 	bit = 3;
 	if ((mask & (1 << bit)) != 0) {
-		printf("TEST %d: BEGIN\n", bit);
+		DIMINUTO_LOG_DEBUG("TEST %d: BEGIN\n", bit);
 		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(thingamajig); ++jj) {
@@ -192,14 +195,14 @@ int main(int argc, char ** argv) {
 				delete thingamajig[jj];
 			}
 		}
-		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
+		DIMINUTO_LOG_DEBUG("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	/* Thread-safe well from base class. */
 
 	bit = 4;
 	if ((mask & (1 << bit)) != 0) {
-		printf("TEST %d: BEGIN\n", bit);
+		DIMINUTO_LOG_DEBUG("TEST %d: BEGIN\n", bit);
 		time = diminuto_time_thread();
 		for (ii = 0; ii < ITERATIONS; ++ii) {
 			for (jj = 0; jj < countof(framistat); ++jj) {
@@ -210,7 +213,7 @@ int main(int argc, char ** argv) {
 				delete framistat[jj];
 			}
 		}
-		printf("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
+		DIMINUTO_LOG_DEBUG("TEST %d: END %12.9lf seconds\n", bit, (double)(diminuto_time_thread() - time) / frequency);
 	}
 
 	EXIT();

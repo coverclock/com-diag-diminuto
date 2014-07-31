@@ -13,8 +13,9 @@
 #include "com/diag/diminuto/diminuto_well.h"
 
 extern "C" {
-#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 }
 
 #include <stdio.h>
@@ -33,17 +34,17 @@ public:
 	Framistat()
 	: skoshification(-1)
 	{
-		printf("%p->Framistat() skoshification=%d\n", this, skoshification);
+		DIMINUTO_LOG_DEBUG("%p->Framistat() skoshification=%d\n", this, skoshification);
 	}
 
 	Framistat(int skosh)
 	: skoshification(skosh)
 	{
-		printf("%p->Framistat(%d) skoshification=%d\n", this, skosh, skoshification);
+		DIMINUTO_LOG_DEBUG("%p->Framistat(%d) skoshification=%d\n", this, skosh, skoshification);
 	}
 
 	~Framistat() {
-		printf("%p->~Framistat() skoshification=%d\n", this, skoshification);
+		DIMINUTO_LOG_DEBUG("%p->~Framistat() skoshification=%d\n", this, skoshification);
 	}
 
 	int discombobulate() {
@@ -63,7 +64,9 @@ int main(int argc, char ** argv) {
 	size_t ii;
 	size_t jj;
 
-	printf("sizeof(Framistat)=%zu\n", sizeof(Framistat));
+	SETLOGMASK();
+
+	DIMINUTO_LOG_DEBUG("sizeof(Framistat)=%zu\n", sizeof(Framistat));
 
 	for (jj = 0; jj < LIMIT; ++jj) {
 
