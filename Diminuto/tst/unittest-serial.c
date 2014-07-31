@@ -130,7 +130,7 @@ int main(int argc, char * argv[])
     rc = close(fd);
     ASSERT(rc == 0);
 
-    CHECKPOINT("\"%s\" %d %d%c%d %s %s %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow");
+    CHECKPOINT("LOOPBACK \"%s\" %d %d%c%d %s %s %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow");
 
     fd = open(device, O_RDWR);
     ASSERT(fd >= 0);

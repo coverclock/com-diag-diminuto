@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -10,58 +10,107 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_stacktrace.h"
-#include "com/diag/diminuto/diminuto_number.h"
-#include "com/diag/diminuto/diminuto_countof.h"
-#include <stdio.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "com/diag/diminuto/diminuto_log.h"
 
-enum {
-	OVERHEAD = 6,
-	LIMIT = DIMINUTO_STACKTRACE_SIZE - OVERHEAD
-};
+int f9(void) {
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 9);
+    rc = diminuto_stacktrace();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 9, rc);
+    return rc;
+}
 
-int f(int depth, int limit)
+int f8(void) {
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 8);
+    rc = f9();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 8, rc);
+    return rc;
+}
+
+int f7(void) {
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 7);
+    rc = f8();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 7, rc);
+    return rc;
+}
+
+int f6(void) {
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 6);
+    rc = f7();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 6, rc);
+    return rc;
+}
+
+int f5(void)
 {
-    int fd;
-    int count;
-    void * buffer[LIMIT] = { 0 };
-    int ndx;
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 5);
+    rc = f6();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 5, rc);
+    return rc;
+}
 
-    if (depth > 0) {
-        count = f(depth - 1, limit);
-        count = count + 1;
-        return count;
-    }
+int f4(void)
+{
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 4);
+    rc = f5();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 4, rc);
+    return rc;
+}
 
-    fd = open("/dev/null", O_WRONLY);
-    ASSERT(fd >= 0);
+int f3(void)
+{
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 3);
+    rc = f4();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 3, rc);
+    return rc;
+}
 
-    count = diminuto_stacktrace_fd(buffer, countof(buffer), fd);
+int f2(void)
+{
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 2);
+    rc = f3();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 2, rc);
+    return rc;
+}
 
-    close(fd);
+int f1(void)
+{
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 1);
+    rc = f2();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 1, rc);
+    return rc;
+}
 
-    printf("unittest-stacktrace: countof(buffer)=%u limit=%d count=%d\n", countof(buffer), limit, count);
-
-    ASSERT(count >= 0);
-
-    for (ndx = 0; ndx < count; ++ndx) {
-        EXPECT(buffer[ndx] != 0);
-    }
-
-    diminuto_stacktrace();
-
-    return 0;
+int f0(void)
+{
+    int rc;
+    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 0);
+    rc = f1();
+    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 0, rc);
+    return rc;
 }
 
 int main(int argc, char ** argv)
 {
-    diminuto_unsigned_t value = LIMIT;
+    int count;
 
-    if (argc >= 2) {
-        ASSERT(*diminuto_number(argv[1], &value) == '\0');
-    }
-    ASSERT(f(value, value) == value);
+    SETLOGMASK();
 
-    return 0;
+    DIMINUTO_LOG_DEBUG("%s main\n", DIMINUTO_LOG_HERE);
+
+    count = f0();
+
+    DIMINUTO_LOG_DEBUG("%s main %d\n", DIMINUTO_LOG_HERE, count);
+
+    ASSERT(count >= 0);
+
+    EXIT();
 }
