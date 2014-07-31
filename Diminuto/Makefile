@@ -20,8 +20,8 @@ TARGET				=	host
 #TARGET				=	stampede
 
 MAJOR				=	23# API changes requiring that applications be modified.
-MINOR				=	3# Only functionality or features added with no legacy API changes.
-BUILD				=	4# Only bugs fixed with no API changes or new functionality.
+MINOR				=	4# Only functionality or features added with no legacy API changes.
+BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -99,7 +99,7 @@ ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
-CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
 CROSS_COMPILE		=	$(TOOLCHAIN)-
@@ -112,7 +112,7 @@ ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Androi
 ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
-CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp
 #LDARCH				=	-static
 LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
@@ -136,7 +136,7 @@ KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(TARGET),uclibc)# Build for uClibc built for the Raspberry Pi.
+ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
 ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
@@ -150,21 +150,21 @@ KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
+ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				=	arm
 PLATFORM			=	linux
 CPPARCH				=
-CARCH				=	
+CARCH				=	-rdynamic -fno-omit-frame-pointer -funwind-tables
 #LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
 CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	3.10.24-jetson
-KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/stampede/include-$(KERNEL_REV)/include
+KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)-jetson
+INCLUDE_DIR			=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)-jetson/include
 endif
 
-ifeq ($(TARGET),host)# Build for an Intel build server with the Ubuntu kernel.
+ifeq ($(TARGET),host0)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				=	i386
 PLATFORM			=	linux
 CPPARCH				=
@@ -174,6 +174,19 @@ TOOLCHAIN			=
 CROSS_COMPILE		=
 KERNEL_REV			=	3.2.0-51
 KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+INCLUDE_DIR			=	/usr/include
+endif
+
+ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
+ARCH				=	i386
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=
+LDARCH				= -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=
+CROSS_COMPILE		=
+KERNEL_REV			=	3.13.0-24
+KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)
 INCLUDE_DIR			=	/usr/include
 endif
 
@@ -398,11 +411,11 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) -rdynamic $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CXX) -rdynamic $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
 ########## Generated
 

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -15,6 +15,8 @@
 #include <unistd.h>
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+
+#	warning backtrace(3) not implemented in uClibc!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
