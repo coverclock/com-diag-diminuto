@@ -161,8 +161,8 @@ LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
 CROSS_COMPILE		=	$(TOOLCHAIN)-
 KERNEL_REV			=	3.10.24-jetson
-KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)-jetson
-INCLUDE_DIR			=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)-jetson/include
+KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),host0)# Build for an Intel build server with Ubuntu 12.04.
@@ -215,7 +215,7 @@ PROJECTXX_SO		=	lib$(PROJECT)xx.so
 PROJECT_LIB			=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
-UTILITIES			=	dbdi dcscope dgdb diminuto dlib
+UTILITIES			=	
 GENERATED			=	vintage setup
 ALIASES				=	hex oct ntohs htons ntohl htonl
 
@@ -248,8 +248,7 @@ TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGET
 TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
 TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
-#PACKAGEMANIFEST	=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
-PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
+PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 
 BUILDARTIFACTS		=	doxygen-local.cf dependencies.mk
 
@@ -307,6 +306,7 @@ distribution:
 .PHONY:	package
 
 package $(PROJECT)-$(TARGET).tgz:
+	( cd ..; mkdir -p $(PACKAGEMANIFEST) )
 	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(PROJECT)-$(TARGET).tgz
 
 .PHONY: commit dcommit push origin init
@@ -473,7 +473,6 @@ $(OUT)/$(SYS_DIR)/Makefile:	Makefile
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
-	#echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -DDEBUG" >> $@
 
 $(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
@@ -483,8 +482,10 @@ $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	cp $< $@
 
-drivers $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
+$(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+
+drivers:	$(OUT)/$(DRV_DIR)/diminuto_mmdriver.ko $(OUT)/$(DRV_DIR)/diminuto_utmodule.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_map.ko
 
 drivers-clean:
 	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean

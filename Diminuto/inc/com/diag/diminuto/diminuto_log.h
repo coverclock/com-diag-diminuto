@@ -45,12 +45,13 @@
  * but the native interfaces won't understand other priorities. We define
  * the mask to be an int, even though only the lowest order eight bits are
  * used, because that makes it easier to use as a parameter for loadable
- * kernel or device driver modules.
+ * kernel or device driver modules. (Making it anything else except an int
+ * will result in a compile-time error unless code elsewhere is changed.)
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-typedef uint8_t diminuto_log_mask_t;
+typedef int diminuto_log_mask_t;
 
 #define DIMINUTO_LOG_MASK_EMERGENCY     (1<<0)
 #define DIMINUTO_LOG_MASK_ALERT         (1<<1)

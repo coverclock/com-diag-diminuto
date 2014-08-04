@@ -70,6 +70,9 @@
 #include <linux/proc_fs.h>
 #include <linux/semaphore.h>
 #include <linux/miscdevice.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
+#	include <linux/seq_file.h>
+#endif
 #include <asm/uaccess.h>
 
 /*******************************************************************************
@@ -95,17 +98,17 @@
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
 	/* Not exclusive user of the memory range. */
-#   define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
+#	define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
 	/* Registered as a minor device of the miscellaneous device driver. */
-#   define DIMINUTO_MMDRIVER_MAJOR (0)
+#	define DIMINUTO_MMDRIVER_MAJOR (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
 	/* Change this name if you install more than one instance. */
-#   define DIMINUTO_MMDRIVER_NAME ("mmdriver")
+#	define DIMINUTO_MMDRIVER_NAME ("mmdriver")
 #endif
 
 /*******************************************************************************
@@ -340,6 +343,8 @@ mmdriver_unlocked_ioctl(
  * PROC FILE SYSTEM FUNCTIONS
  ******************************************************************************/
 
+#if defined(CONFIG_PROC_FS)
+#	if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
 static int
 mmdriver_proc_read(
     char * bufferp,
@@ -428,6 +433,52 @@ mmdriver_proc_read(
 
     return total;
 }
+#	else
+static int
+mmdriver_proc_read(struct seq_file *stream, void *unused)
+{
+    pr_debug("mmdriver_proc_read\n");
+
+    ++procs;
+
+    seq_printf(stream, "name=\"%s\"\n", name);
+    seq_printf(stream, "major=%u\n", major);
+    seq_printf(stream, "exclusive=%d\n", exclusive);
+    seq_printf(stream, "start=0x%08lx\n", (unsigned long)start);
+    seq_printf(stream, "length=%lu\n", (unsigned long)length);
+    seq_printf(stream, "base=0x%08lx\n", (unsigned long)basep);
+    seq_printf(stream, "page=0x%08lx\n", (unsigned long)pagep);
+    if (regionp) {
+    	seq_printf(stream, "region.start=0x%016llx\n", (unsigned long long)regionp->start);
+        seq_printf(stream, "region.end=0x%016llx\n", (unsigned long long)regionp->end);
+        seq_printf(stream, "region.name=\"%s\"\n", regionp->name);
+        seq_printf(stream, "region.flags=0x%08lx\n", regionp->flags);
+    }
+    seq_printf(stream, "proc=\"%s\"\n", proc);
+    seq_printf(stream, "opens=%d\n", opens);
+    seq_printf(stream, "closes=%d\n", closes);
+    seq_printf(stream, "ioctls=%d\n", ioctls);
+    seq_printf(stream, "procs=%d\n", procs);
+    seq_printf(stream, "errors=%d\n", errors);
+
+    return 0;
+}
+
+static int
+mmdriver_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, mmdriver_proc_read, PDE_DATA(inode));
+}
+
+static struct file_operations pops = {
+    .owner			= THIS_MODULE,
+    .open			= mmdriver_proc_open,
+    .read			= seq_read,
+    .llseek			= seq_lseek,
+    .release		= single_release,
+};
+#	endif
+#endif
 
 /*******************************************************************************
  * LOADABLE MODULE INSERT AND REMOVE
@@ -485,13 +536,8 @@ __init mmdriver_init(
 
         strncat(proc, name, sizeof(name));
 
-        /*
-         * N.B. create_proc_read_entry() was deprecated and has been removed
-         * from the /proc API circa kernel 3.10. I haven't had a change to
-         * port this to later kernels (e.g. the 3.10.24 kernel that I'm
-         * currently using) yet.
-         */
-
+#if defined(CONFIG_PROC_FS)
+#	if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
         if (!create_proc_read_entry(proc, 0, NULL, mmdriver_proc_read, NULL)) {
             pr_err("mmdriver_init: create_proc_read_entry failed!\n");
             unregister_chrdev(major, name);
@@ -499,6 +545,16 @@ __init mmdriver_init(
             rc = -EIO;
             break;
         }
+#	else
+        if (!proc_create_data(proc, 0, NULL, &pops, NULL)) {
+            pr_err("mmdriver_init: create_proc_read_entry failed!\n");
+            unregister_chrdev(major, name);
+            diminuto_kernel_unmap(&pagep, regionpp);
+            rc = -EIO;
+            break;
+        }
+#	endif
+#endif
 
     } while (0);
 
