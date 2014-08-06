@@ -15,6 +15,17 @@
  *
  * Allows simple manipulation of general purpose input/output (GPIO) pins.
  * Should probably only be run as root.
+ *
+ * DEPRECATED
+ *
+ * gpiotool is depcrecated in favor of pintool, which has a much more
+ * complicated user interface. Porting Diminuto to the NVIDIA Jetson TK1 board,
+ * with its 3.10 Linux kernel, revealed that the GPIO driver for that kernel
+ * and on that board returns the GPIO pin to its default state (which in this
+ * case was floating) when gpiotool unexports the pin. This is not so useful.
+ * Prior ports, like that to the Raspberry Pi, didn't do that. Rather than
+ * completely rewrite gpiotool, breaking existing uses of it, I decided to
+ * deprecate it and replace it with pintool.
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"

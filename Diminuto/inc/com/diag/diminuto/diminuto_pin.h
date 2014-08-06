@@ -5,15 +5,10 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * There is a lower level interface upon which these functions are implemented.
- * It is deliberately not exposed as part of the public interface, but it is
- * never the less safe to use if you choose to do so. See the implementation
- * of this feature for the necessary function prototypes.
  *
  * If you are reading a GPIO pin that changes in real-time, you will probably
  * need a debouncing algorithm and/or an edge detector. The Telegraph library,
@@ -36,28 +31,40 @@
  */
 extern const char * diminuto_pin_debug(const char * tmp);
 
+/*******************************************************************************
+ * LOW LEVEL API
+ ******************************************************************************/
+
 /**
- * Return a FILE pointer for the specified GPIO pin configured as an input.
+ * Ask that the specified GPIO pin be exported to the /sys/class/gpio file
+ * system.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_export(int pin);
+
+/**
+ * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
+ * system.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_unexport(int pin);
+
+/**
+ * Ask that the specified GPIO pin be configured as an input or an output pin.
+ * @param pin identifies the pin by number from the data sheet.
+ * @param output if !0 configures the pin for output, else input.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_direction(int pin, int output);
+
+/**
+ * Return a FILE pointer for the specified GPIO pin.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.
  */
-extern FILE * diminuto_pin_input(int pin);
-
-/**
- * Return a FILE pointer for the specified GPIO pin configured as an output.
- * @param pin identifies the pin by number from the data sheet.
- * @return a FILE pointer or NULL if error.
- */
-extern FILE * diminuto_pin_output(int pin);
-
-/**
- * Close a FILE pointer to a GPIO pin, and deconfigure the pin. It is not an
- * error to call this with a NULL FILE pointer and/or an unconfigured pin.
- * @param fp points to a GPIO FILE pointer.
- * @param pin identifies the pin by number from the data sheet.
- * @return NULL for success, fp otherwise.
- */
-extern FILE * diminuto_pin_unused(FILE * fp, int pin);
+extern FILE * diminuto_pin_open(int pin);
 
 /**
  * Return the value of a GPIO pin, true (high) or false (low). The application
@@ -77,6 +84,33 @@ extern int diminuto_pin_get(FILE * fp);
 extern int diminuto_pin_put(FILE * fp, int assert);
 
 /**
+ * Close an opened FILE pointer for a GPIO pin.
+ * @param fp points to a standard I/O FILE object.
+ * @return NULL if successful or fp if error.
+ */
+extern FILE * diminuto_pin_close(FILE * fp);
+
+/*******************************************************************************
+ * HIGH LEVEL API
+ ******************************************************************************/
+
+/**
+ * Return a FILE pointer for the specified GPIO pin configured as an input.
+ * This function combines the open, export, and direction functions.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return a FILE pointer or NULL if error.
+ */
+extern FILE * diminuto_pin_input(int pin);
+
+/**
+ * Return a FILE pointer for the specified GPIO pin configured as an output.
+ * This function combines the open, export, and direction functions.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return a FILE pointer or NULL if error.
+ */
+extern FILE * diminuto_pin_output(int pin);
+
+/**
  * Set a GPIO pin to high (true). The application is responsible
  * for inversion (if, for example, the pin is active low).
  * @param fp points to an output GPIO FILE pointer.
@@ -91,5 +125,15 @@ extern int diminuto_pin_set(FILE * fp);
  * @return >=0 for success, <0 for error.
  */
 extern int diminuto_pin_clear(FILE * fp);
+
+/**
+ * Close a FILE pointer to a GPIO pin, and deconfigure the pin. It is not an
+ * error to call this with a NULL FILE pointer and/or an unconfigured pin.
+ * This functions combines the close and unexport functions.
+ * @param fp points to a GPIO FILE pointer.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return NULL for success, fp otherwise.
+ */
+extern FILE * diminuto_pin_unused(FILE * fp, int pin);
 
 #endif

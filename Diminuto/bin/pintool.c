@@ -9,93 +9,338 @@
  *
  * USAGE
  *
- * gpiotool PIN [ VALUE ]
+ * pintool [ -d ] [ -D PATH ] [ -p PIN ] [ -E ] [ -U ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -U MICROSECONDS ] [ ... ]
  *
  * ABSTRACT
  *
- * Allows simple manipulation of general purpose input/output (GPIO) pins.
- * Should probably only be run as root.
+ * Allows manipulation of general purpose input/output (GPIO) pins using the
+ * lower level calls of the pin facility. Should probably only be run as root.
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_number.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_string.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -p PIN ] [ -e ] [ -u ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -u MICROSECONDS ] [ ... ]\n", program);
-    fprintf(stderr, "       -c            Write 0 to PIN\n");
-    fprintf(stderr, "       -d            Enable debug mode\n");
-    fprintf(stderr, "       -e            Export PIN\n");
-    fprintf(stderr, "       -f            Proceed if the last result was 0\n");
-    fprintf(stderr, "       -i            Set PIN direction to input\n");
-    fprintf(stderr, "       -o            Set PIN direction to output\n");
-    fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
-    fprintf(stderr, "       -r            Read PIN\n");
-    fprintf(stderr, "       -s            Write 1 to PIN\n");
-    fprintf(stderr, "       -t            Proceed if the last result was !0\n");
-    fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
-    fprintf(stderr, "       -w BOOLEAN    Write BOOLEAN to PIN\n");
-    fprintf(stderr, "       -?            Print menu\n");
+	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] [ -p PIN ] [ -E ] [ -U ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -U MICROSECONDS ] [ ... ]\n", program);
+	fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
+	fprintf(stderr, "       -E            Export PIN\n");
+	fprintf(stderr, "       -U            Unexport PIN\n");
+	fprintf(stderr, "       -c            Write 0 to PIN\n");
+	fprintf(stderr, "       -d            Enable debug mode\n");
+	fprintf(stderr, "       -f            Proceed if the last result was 0\n");
+	fprintf(stderr, "       -i            Set PIN direction to input\n");
+	fprintf(stderr, "       -o            Set PIN direction to output\n");
+	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
+	fprintf(stderr, "       -r            Read PIN\n");
+	fprintf(stderr, "       -s            Write 1 to PIN\n");
+	fprintf(stderr, "       -t            Proceed if the last result was !0\n");
+	fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
+	fprintf(stderr, "       -w BOOLEAN    Write BOOLEAN to PIN\n");
+	fprintf(stderr, "       -?            Print menu\n");
 }
 
 int main(int argc, char * argv[])
 {
-	int rc = 1;
+	int rc = 0;
 	const char * program = "gpiotool";
+	int done = 0;
+	int error = 0;
+	int debug = 0;
 	FILE * fp = (FILE *)0;
-	diminuto_unsigned_t pin;
-	diminuto_unsigned_t state;
+	diminuto_unsigned_t value = 0;
+	int pin = -1;
+	int state = 0;
+	int export = 0;
+	int output = 0;
+	const char * path = "/sys";
+	char opts[2] = { '\0', '\0' };
+	int opt;
+	extern char * optarg;
 
-	do {
+	program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-		if (argc < 2) {
-			fprintf(stderr, "usage: %s PIN [ VALUE ]\n", argv[0]);
+	while ((opt = opts[0] = getopt(argc, argv, "D:EUcdfiop:rstu:vw:?")) >= 0) {
+
+		switch (opt) {
+
+		case 'D':
+			if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
+			path = diminuto_pin_debug(optarg);
 			break;
+
+		case 'E':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (export) {
+				/* Do nothing. */
+			} else if (diminuto_pin_export(pin) < 0) {
+				error = !0;
+				break;
+			} else {
+				export = !0;
+			}
+			break;
+
+		case 'U':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (!export) {
+				/* Do nothing. */
+			} else if (diminuto_pin_unexport(pin) < 0) {
+				error = !0;
+				break;
+			} else {
+				export = 0;
+			}
+			break;
+
+		case 'c':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			state = 0;
+			if (!export) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (!output) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (fp != (FILE *)0) {
+				/* Do nothing. */
+			} else if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			if (diminuto_pin_put(fp, state) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'd':
+			debug = !0;
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			break;
+
+		case 'f':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			done = (value != 0);
+			break;
+
+		case 'i':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_direction(pin, 0) < 0) {
+				error = !0;
+				break;
+			} else {
+				output = 0;
+			}
+			break;
+
+		case 'o':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_direction(pin, !0) < 0) {
+				error = !0;
+				break;
+			} else {
+				output = !0;
+			}
+			break;
+
+		case 'p':
+			if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
+				perror(optarg);
+				error = !0;
+				break;
+			} else {
+				pin = value;
+				if (debug) { fprintf(stderr, "%s -%c %d\n", program, opt, pin); }
+				if (pin < 0) {
+					errno = EINVAL;
+					perror(optarg);
+					error = !0;
+					break;
+				} else if (fp == (FILE *)0) {
+					/* Do nothing. */
+				} else if ((fp = diminuto_pin_close(fp)) != (FILE *)0) {
+					error = !0;
+					break;
+				} else {
+					export = 0;
+					output = 0;
+				}
+
+			}
+			break;
+
+		case 'r':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (!export) {
+				errno = EINVAL;
+				perror(optarg);
+				error = !0;
+				break;
+			} else if (!output) {
+				errno = EINVAL;
+				perror(optarg);
+				error = !0;
+				break;
+			} else if (fp != (FILE *)0) {
+				/* Do nothing. */
+			} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			if ((state = diminuto_pin_get(fp)) < 0) {
+				error = !0;
+				break;
+			} else {
+				state = !!state;
+				printf("%d\n", state);
+			}
+			break;
+
+		case 's':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			state = !0;
+			if (!export) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (!output) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (fp != (FILE *)0) {
+				/* Do nothing. */
+			} else if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			if (diminuto_pin_put(fp, state) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 't':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			done = (value == 0);
+			break;
+
+		case 'u':
+			if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
+				perror(optarg);
+			} else {
+				if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
+				diminuto_delay(value, 0);
+			}
+			break;
+
+		case 'w':
+			if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
+				perror(optarg);
+				error = !0;
+				break;
+			} else {
+				state = !!value;
+				if (debug) { fprintf(stderr, "%s -%c %d\n", program, opt, state); }
+				if (!export) {
+					errno = EINVAL;
+					perror(optarg);
+					error = !0;
+					break;
+				} else if (!output) {
+					errno = EINVAL;
+					perror(optarg);
+					error = !0;
+					break;
+				} else if (fp != (FILE *)0) {
+					/* Do nothing. */
+				} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+					error = !0;
+					break;
+				} else {
+					/* Do nothing. */
+				}
+				if (diminuto_pin_put(fp, state) < 0) {
+					error = !0;
+					break;
+				} else {
+					/* Do nothing. */
+				}
+			}
+			break;
+
+		case '?':
+			usage(program);
+			break;
+
+		default:
+			error = !0;
+			break;
+
 		}
 
-		if (*diminuto_number_signed(argv[1], &pin) != '\0') {
-			errno = EINVAL;
-			diminuto_perror(argv[1]);
-			break;
-		}
-
-		if (argc != 2) {
-			/* Do nothing. */
-		} else if ((fp = diminuto_pin_input(pin)) == (FILE *)0) {
-			break;
-		} else if ((state = diminuto_pin_get(fp)) < 0) {
-			break;
-		} else {
-			printf("%d\n", !!state);
-			rc = 0;
-			break;
-		}
-
-		if (*diminuto_number_signed(argv[2], &state) != '\0') {
-			errno = EINVAL;
-			diminuto_perror(argv[2]);
+		if (error) {
+			usage(program);
 			rc = 1;
 			break;
 		}
 
-		if (argc != 3) {
-			/* Do nothing. */
-		} else if ((fp = diminuto_pin_output(pin)) == (FILE *)0) {
-			break;
-		} else if (diminuto_pin_put(fp, !!state) < 0) {
-			break;
-		} else {
-			rc = 0;
+		if (done) {
 			break;
 		}
 
-	} while (0);
-
-	diminuto_pin_unused(fp, pin);
+    }
 
 	return rc;
 }

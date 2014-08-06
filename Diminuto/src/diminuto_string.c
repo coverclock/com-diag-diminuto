@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -22,22 +22,6 @@ char * diminuto_strscpy(char * dest, const char * src, size_t n)
     if (n > 0) {
         *dest = '\0';
     }
-
-    return result;
-}
-
-
-int diminuto_ssprintf(char * str, size_t size, const char * format, ...)
-{
-    int result;
-    va_list ap;
-
-    va_start(ap, format);
-    result = vsnprintf(str, size, format, ap);
-    if (size > 0) {
-        str[size - 1] = '\0';
-    }
-    va_end(ap);
 
     return result;
 }
