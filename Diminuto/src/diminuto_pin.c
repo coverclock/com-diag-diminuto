@@ -12,30 +12,29 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
+#include <linux/limits.h>
 
-static const char SYS_CLASS_GPIO_EXPORT[] = "/sys/class/gpio/export";
-static const char SYS_CLASS_GPIO_UNEXPORT[] = "/sys/class/gpio/unexport";
-static const char SYS_CLASS_GPIO_DIRECTION[] = "/sys/class/gpio/gpio%u/direction";
-static const char SYS_CLASS_GPIO_VALUE[] = "/sys/class/gpio/gpio%u/value";
+static const char ROOT[] = "/sys";
 
-static const char TMP_CLASS_GPIO_EXPORT[] = "/tmp/class/gpio/export";
-static const char TMP_CLASS_GPIO_UNEXPORT[] = "/tmp/class/gpio/unexport";
-static const char TMP_CLASS_GPIO_DIRECTION[] = "/tmp/class/gpio/gpio%u/direction";
-static const char TMP_CLASS_GPIO_VALUE[] = "/tmp/class/gpio/gpio%u/value";
+static const char * root = ROOT;
 
-static int debug = 0;
+static const char ROOT_CLASS_GPIO_EXPORT[] = "%s/class/gpio/export";
+static const char ROOT_CLASS_GPIO_UNEXPORT[] = "%s/class/gpio/unexport";
+static const char ROOT_CLASS_GPIO_PIN_DIRECTION[] = "%s/class/gpio/gpio%u/direction";
+static const char ROOT_CLASS_GPIO_PIN_VALUE[] = "%s/class/gpio/gpio%u/value";
 
-int diminuto_pin_debug(int enable)
+const char * diminuto_pin_debug(const char * tmp)
 {
-	int prior;
-	prior = debug;
-	debug = enable;
+	const char * prior;
+	prior = root;
+	root = (tmp != NULL) ? tmp : ROOT;
 	return prior;
 }
 
 int diminuto_pin_export(int pin)
 {
 	int rc = -1;
+	char filename[PATH_MAX];
 	FILE * fp = (FILE *)0;
 
 	do {
@@ -45,7 +44,9 @@ int diminuto_pin_export(int pin)
 			break;
 		}
 
-		if ((fp = fopen(debug ? TMP_CLASS_GPIO_EXPORT : SYS_CLASS_GPIO_EXPORT, "a")) == (FILE *)0) {
+		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_EXPORT, root);
+
+		if ((fp = fopen(filename, "a")) == (FILE *)0) {
 			break;
 		}
 
@@ -79,6 +80,7 @@ int diminuto_pin_export(int pin)
 int diminuto_pin_unexport(int pin)
 {
 	int rc = -1;
+	char filename[PATH_MAX];
 	FILE * fp = (FILE *)0;
 
 	do {
@@ -88,7 +90,9 @@ int diminuto_pin_unexport(int pin)
 			break;
 		}
 
-		if ((fp = fopen(debug ? TMP_CLASS_GPIO_UNEXPORT : SYS_CLASS_GPIO_UNEXPORT, "a")) == (FILE *)0) {
+		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_UNEXPORT, root);
+
+		if ((fp = fopen(filename, "a")) == (FILE *)0) {
 			break;
 		}
 
@@ -122,8 +126,8 @@ int diminuto_pin_unexport(int pin)
 int diminuto_pin_direction(int pin, int output)
 {
 	int rc = -1;
+	char filename[PATH_MAX];
 	FILE * fp = (FILE *)0;
-	char filename[sizeof(SYS_CLASS_GPIO_DIRECTION) + sizeof("2147483647") + 1];
 
 	do {
 
@@ -132,7 +136,7 @@ int diminuto_pin_direction(int pin, int output)
 			break;
 		}
 
-		snprintf(filename, sizeof(filename), debug ? TMP_CLASS_GPIO_DIRECTION : SYS_CLASS_GPIO_DIRECTION, pin);
+		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_PIN_DIRECTION, root, pin);
 
 		if ((fp = fopen(filename, "a")) == (FILE *)0) {
 			break;
@@ -168,7 +172,7 @@ int diminuto_pin_direction(int pin, int output)
 FILE * diminuto_pin_open(int pin)
 {
 	FILE * fp = (FILE *)0;
-	char filename[sizeof(SYS_CLASS_GPIO_DIRECTION) + sizeof("2147483647") + 1];
+	char filename[PATH_MAX];
 
 	do {
 
@@ -177,7 +181,7 @@ FILE * diminuto_pin_open(int pin)
 			break;
 		}
 
-		snprintf(filename, sizeof(filename), debug ? TMP_CLASS_GPIO_VALUE : SYS_CLASS_GPIO_VALUE, pin);
+		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_PIN_VALUE, root, pin);
 
 		if ((fp = fopen(filename, "r+")) == (FILE *)0) {
 			break;

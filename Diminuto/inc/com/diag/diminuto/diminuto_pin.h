@@ -25,13 +25,16 @@
 
 /**
  * Place the feature in debug mode in which the functions write to files
- * in the /tmp directory instead of in /sys. This allows programs using this
- * feature to be tested without actually manipulating GPIO pins (which may
- * or may not even exist).
- * @param enable if true places feature in debug mode, otherwise in run mode.
- * @return the prior mode.
+ * in the specified directory (for example, /tmp) instead of in /sys. This
+ * allows programs using this feature to be tested without actually manipulating
+ * GPIO pins (which may or may not even exist on the system on which the code
+ * is being unit tested). Note that the feature stores the actual pointer passed
+ * as a parameter, so its data must persist for the duration of its use. If the
+ * parameter is NULL, the default /sys directory is used by default.
+ * @param tmp points to the new root directory to use instead of /sys, or NULL.
+ * @return the prior root directory.
  */
-extern int diminuto_pin_debug(int enable);
+extern const char * diminuto_pin_debug(const char * tmp);
 
 /**
  * Return a FILE pointer for the specified GPIO pin configured as an input.
