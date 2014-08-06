@@ -31,12 +31,18 @@
 
 static void usage(const char * program)
 {
-	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]\n", program);
+	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]\n", program);
+	fprintf(stderr, "       -B            Set PIN edge to both");
 	fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
+	fprintf(stderr, "       -F            Set PIN edge to falling");
+	fprintf(stderr, "       -N            Set PIN edge to none");
+	fprintf(stderr, "       -R            Set PIN edge to rising");
 	fprintf(stderr, "       -c            Write 0 to PIN\n");
 	fprintf(stderr, "       -d            Enable debug mode\n");
 	fprintf(stderr, "       -f            Proceed if the last result was 0\n");
+	fprintf(stderr, "       -h            Set PIN active to high\n");
 	fprintf(stderr, "       -i            Set PIN direction to input\n");
+	fprintf(stderr, "       -l            Set PIN active to low\n");
 	fprintf(stderr, "       -n            Unexport PIN\n");
 	fprintf(stderr, "       -o            Set PIN direction to output\n");
 	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
@@ -67,15 +73,75 @@ int main(int argc, char * argv[])
 
 	program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-	while ((opt = getopt(argc, argv, "D:cdfinop:rstu:vw:x?")) >= 0) {
+	while ((opt = getopt(argc, argv, "BD:FNRcdfhilnop:rstu:vw:x?")) >= 0) {
 
 		opts[0] = opt;
 
 		switch (opt) {
 
+		case 'B':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_BOTH) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
 		case 'D':
 			if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
 			path = diminuto_pin_debug(optarg);
+			break;
+
+		case 'F':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_FALLING) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'N':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_NONE) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'R':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_RISING) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
 			break;
 
 		case 'c':
@@ -112,6 +178,21 @@ int main(int argc, char * argv[])
 			done = (value != 0);
 			break;
 
+		case 'h':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_active(pin, !0) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
 		case 'i':
 			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
 			if (pin < 0) {
@@ -120,6 +201,21 @@ int main(int argc, char * argv[])
 				error = !0;
 				break;
 			} else if (diminuto_pin_direction(pin, 0) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'l':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_active(pin, 0) < 0) {
 				error = !0;
 				break;
 			} else {

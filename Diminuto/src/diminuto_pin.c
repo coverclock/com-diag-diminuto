@@ -6,6 +6,10 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * REFERENCES
+ *
+ * "GPIO Interfaces", Documentation/gpio.txt, Linux 3.10.24
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
@@ -18,9 +22,11 @@ static const char ROOT[] = "/sys";
 static const char * root = ROOT;
 
 static const char ROOT_CLASS_GPIO_EXPORT[] = "%s/class/gpio/export";
-static const char ROOT_CLASS_GPIO_UNEXPORT[] = "%s/class/gpio/unexport";
 static const char ROOT_CLASS_GPIO_PIN_DIRECTION[] = "%s/class/gpio/gpio%u/direction";
+static const char ROOT_CLASS_GPIO_PIN_ACTIVELOW[] = "%s/class/gpio/gpio%u/active_low";
+static const char ROOT_CLASS_GPIO_PIN_EDGE[] = "%s/class/gpio/gpio%u/edge";
 static const char ROOT_CLASS_GPIO_PIN_VALUE[] = "%s/class/gpio/gpio%u/value";
+static const char ROOT_CLASS_GPIO_UNEXPORT[] = "%s/class/gpio/unexport";
 
 const char * diminuto_pin_debug(const char * tmp)
 {
@@ -30,7 +36,7 @@ const char * diminuto_pin_debug(const char * tmp)
 	return prior;
 }
 
-int diminuto_pin_export(int pin)
+static int diminuto_pin_configure(const char * format, int pin, const char * string, const char * name)
 {
 	int rc = -1;
 	char filename[PATH_MAX];
@@ -43,7 +49,7 @@ int diminuto_pin_export(int pin)
 			break;
 		}
 
-		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_EXPORT, root);
+		snprintf(filename, sizeof(filename), format, root, pin);
 
 		if ((fp = fopen(filename, "a")) == (FILE *)0) {
 			break;
@@ -53,7 +59,7 @@ int diminuto_pin_export(int pin)
 			break;
 		}
 
-		if (fprintf(fp, "%d\n", pin) < 0) {
+		if (fputs(string, fp) < 0) {
 			break;
 		}
 
@@ -70,102 +76,50 @@ int diminuto_pin_export(int pin)
 	}
 
 	if (rc != 0) {
-		diminuto_perror("diminuto_pin_export");
+		diminuto_perror(name);
 	}
 
 	return rc;
+}
+
+static int diminuto_pin_port(const char * format, int pin, const char * name)
+{
+	char buffer[sizeof("-9223372036854775807\n")];
+	snprintf(buffer, sizeof(buffer), "%d\n", pin);
+	return diminuto_pin_configure(format, pin, buffer, name);
+}
+
+int diminuto_pin_export(int pin)
+{
+	return diminuto_pin_port(ROOT_CLASS_GPIO_EXPORT, pin, "diminuto_pin_export");
 }
 
 int diminuto_pin_unexport(int pin)
 {
-	int rc = -1;
-	char filename[PATH_MAX];
-	FILE * fp = (FILE *)0;
+	return diminuto_pin_port(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport");
+}
 
-	do {
+int diminuto_pin_active(int pin, int high)
+{
+	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_ACTIVELOW, pin, high ? "0\n" : "1\n", "diminuto_pin_active");
+}
 
-		if (pin < 0) {
-			errno = EINVAL;
-			break;
-		}
-
-		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_UNEXPORT, root);
-
-		if ((fp = fopen(filename, "a")) == (FILE *)0) {
-			break;
-		}
-
-		if (fseek(fp, 0L, SEEK_SET) < 0) {
-			break;
-		}
-
-		if (fprintf(fp, "%d\n", pin) < 0) {
-			break;
-		}
-
-		rc = 0;
-
-	} while (0);
-
-	if (fp == (FILE *)0) {
-		/* Do nothing. */
-	} else if (fclose(fp) == 0) {
-		/* Do nothing. */
-	} else {
-		rc = -1;
+int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
+{
+	const char * string;
+	switch (edge) {
+	case DIMINUTO_PIN_EDGE_NONE:	string = "none\n";		break;
+	case DIMINUTO_PIN_EDGE_RISING:	string = "rising\n";		break;
+	default:
+	case DIMINUTO_PIN_EDGE_FALLING:	string = "falling\n";	break;
+	case DIMINUTO_PIN_EDGE_BOTH:	string = "both\n";		break;
 	}
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_unexport");
-	}
-
-	return rc;
+	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_EDGE, pin, string, "diminuto_pin_edge");
 }
 
 int diminuto_pin_direction(int pin, int output)
 {
-	int rc = -1;
-	char filename[PATH_MAX];
-	FILE * fp = (FILE *)0;
-
-	do {
-
-		if (pin < 0) {
-			errno = EINVAL;
-			break;
-		}
-
-		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_PIN_DIRECTION, root, pin);
-
-		if ((fp = fopen(filename, "a")) == (FILE *)0) {
-			break;
-		}
-
-		if (fseek(fp, 0L, SEEK_SET) < 0) {
-			break;
-		}
-
-		if (fputs(output ? "out\n" : "in\n", fp) < 0) {
-			break;
-		}
-
-		rc = 0;
-
-	} while (0);
-
-	if (fp == (FILE *)0) {
-		/* Do nothing. */
-	} else if (fclose(fp) == 0) {
-		/* Do nothing. */
-	} else {
-		rc = -1;
-	}
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_direction");
-	}
-
-	return rc;
+	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, output ? "out\n" : "in\n", "diminuto_pin_direction");
 }
 
 FILE * diminuto_pin_open(int pin)

@@ -52,6 +52,32 @@ extern int diminuto_pin_export(int pin);
 extern int diminuto_pin_unexport(int pin);
 
 /**
+ * Ask that the specified GPIO pin be configured to be active low or high.
+ * @param pin identifies the pin by number from the data sheet. This is only
+ * useful for pins wired to produce an interrupt.
+ * @param high if !0 configures the pin for active high, else active low.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_active(int pin, int high);
+
+typedef enum DiminutoPinEdge {
+	DIMINUTO_PIN_EDGE_NONE = 0,
+	DIMINUTO_PIN_EDGE_RISING = 1,
+	DIMINUTO_PIN_EDGE_FALLING = 2,
+	DIMINUTO_PIN_EDGE_BOTH = 3,
+} diminuto_pin_edge_t;
+
+/**
+ * Ask that the specified GPIO pin be configured to for no edge (0), rising
+ * edge (1), falling edge (2), or both edges (3). This is only useful for pins
+ * wired to produce an interrupt.
+ * @param pin identifies the pin by number from the data sheet.
+ * @param high if !0 configures the pin for active high, else active low.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge);
+
+/**
  * Ask that the specified GPIO pin be configured as an input or an output pin.
  * @param pin identifies the pin by number from the data sheet.
  * @param output if !0 configures the pin for output, else input.
