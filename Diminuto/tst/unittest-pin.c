@@ -71,7 +71,6 @@ int main(int argc, char ** argv)
 	EXPECT(systemf("touch %s/class/gpio/gpio%u/value", root, 98) == 0);
 	EXPECT(systemf("touch %s/class/gpio/gpio%u/direction", root, 99) == 0);
 	EXPECT(systemf("touch %s/class/gpio/gpio%u/value", root, 99) == 0);
-	EXPECT(systemf("ls -dR %s/class/gpio", root) == 0);
 
 	ASSERT((pin98 = diminuto_pin_input(98)) != (FILE *)0);
 	EXPECT(systemf("test `tail -1 %s/class/gpio/export` -eq %u", root, 98) == 0);
