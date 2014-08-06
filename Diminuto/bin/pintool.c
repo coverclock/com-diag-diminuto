@@ -11,6 +11,10 @@
  *
  * pintool [ -d ] [ -D PATH ] [ -p PIN ] [ -E ] [ -U ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -U MICROSECONDS ] [ ... ]
  *
+ * EXAMPLE (for stamplede)
+ *
+ * pintool -p 160 -x -o -r -s -r -u 5000000 -r -c -r -p 161 -x -o -r -w 1 -r -u 5000000 -r -w 0 -r -p 160 -n -p 161 -n
+ *
  * ABSTRACT
  *
  * Allows manipulation of general purpose input/output (GPIO) pins using the
@@ -27,7 +31,7 @@
 
 static void usage(const char * program)
 {
-	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] [ -p PIN ] [ -E ] [ -U ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -U MICROSECONDS ] [ ... ]\n", program);
+	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]\n", program);
 	fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
 	fprintf(stderr, "       -c            Write 0 to PIN\n");
 	fprintf(stderr, "       -d            Enable debug mode\n");
@@ -36,7 +40,7 @@ static void usage(const char * program)
 	fprintf(stderr, "       -n            Unexport PIN\n");
 	fprintf(stderr, "       -o            Set PIN direction to output\n");
 	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
-	fprintf(stderr, "       -r            Read PIN\n");
+	fprintf(stderr, "       -r            Read and print PIN\n");
 	fprintf(stderr, "       -s            Write 1 to PIN\n");
 	fprintf(stderr, "       -t            Proceed if the last result was !0\n");
 	fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
@@ -231,6 +235,8 @@ int main(int argc, char * argv[])
 				perror(optarg);
 			} else {
 				if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
+                value *= diminuto_delay_frequency();
+                value /= 1000000;
 				diminuto_delay(value, 0);
 			}
 			break;
