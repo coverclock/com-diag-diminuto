@@ -7,18 +7,15 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * USAGE
- *
- * pintool [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -H | -L ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]
- *
- * EXAMPLE (for stamplede)
+ * EXAMPLE (for stampede)
  *
  * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -L -N -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
  *
  * ABSTRACT
  *
  * Allows manipulation of general purpose input/output (GPIO) pins using the
- * lower level calls of the pin facility. Should probably only be run as root.
+ * lower level calls of the pin facility. Usees the /sys GPIO driver interface.
+ * Probably must be run as root.
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
@@ -39,19 +36,19 @@ static void usage(const char * program)
 	fprintf(stderr, "       -L            Set PIN active to low\n");
 	fprintf(stderr, "       -N            Set PIN edge to none\n");
 	fprintf(stderr, "       -R            Set PIN edge to rising\n");
-	fprintf(stderr, "       -c            Write 0 to PIN\n");
+	fprintf(stderr, "       -c            Clear PIN by writing 0\n");
 	fprintf(stderr, "       -d            Enable debug mode\n");
-	fprintf(stderr, "       -f            Proceed if the last result was 0\n");
-	fprintf(stderr, "       -l            Set PIN direction to output and initially 1\n");
+	fprintf(stderr, "       -f            Proceed if the last PIN state was 0\n");
+	fprintf(stderr, "       -h            Set PIN direction to output and write !0\n");
 	fprintf(stderr, "       -i            Set PIN direction to input\n");
-	fprintf(stderr, "       -l            Set PIN direction to output and initially 0\n");
+	fprintf(stderr, "       -l            Set PIN direction to output and write 0\n");
 	fprintf(stderr, "       -n            Unexport PIN\n");
 	fprintf(stderr, "       -o            Set PIN direction to output\n");
 	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
-	fprintf(stderr, "       -r            Read and print PIN\n");
-	fprintf(stderr, "       -s            Write 1 to PIN\n");
-	fprintf(stderr, "       -t            Proceed if the last result was !0\n");
-	fprintf(stderr, "       -u USECONDS   Sleep for USECONDS microseconds\n");
+	fprintf(stderr, "       -r            Read PIN and print to standard output\n");
+	fprintf(stderr, "       -s            Set PIN by writing !0\n");
+	fprintf(stderr, "       -t            Proceed if the last PIN state was !0\n");
+	fprintf(stderr, "       -u USECONDS   Delay for USECONDS microseconds\n");
 	fprintf(stderr, "       -w BOOLEAN    Write BOOLEAN to PIN\n");
 	fprintf(stderr, "       -x            Export PIN\n");
 	fprintf(stderr, "       -?            Print menu\n");
@@ -60,7 +57,7 @@ static void usage(const char * program)
 int main(int argc, char * argv[])
 {
 	int rc = 0;
-	const char * program = "gpiotool";
+	const char * program = "pintool";
 	int done = 0;
 	int error = 0;
 	int debug = 0;
@@ -207,7 +204,7 @@ int main(int argc, char * argv[])
 
 		case 'f':
 			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-			done = (value != 0);
+			done = (state != 0);
 			break;
 
 		case 'h':
@@ -355,7 +352,7 @@ int main(int argc, char * argv[])
 
 		case 't':
 			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-			done = (value == 0);
+			done = (state == 0);
 			break;
 
 		case 'u':
