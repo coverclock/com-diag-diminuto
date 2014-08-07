@@ -86,6 +86,15 @@ extern int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge);
 extern int diminuto_pin_direction(int pin, int output);
 
 /**
+ * Ask that the specified GPIO pin be configured as an output pin and
+ * simultaneously its output state be set.
+ * @param pin identifies the pin by number from the data sheet.
+ * @param high if !0 sets the pin high, else low.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_initialize(int pin, int high);
+
+/**
  * Return a FILE pointer for the specified GPIO pin.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.

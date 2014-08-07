@@ -51,7 +51,7 @@ static int diminuto_pin_configure(const char * format, int pin, const char * str
 
 		snprintf(filename, sizeof(filename), format, root, pin);
 
-		if ((fp = fopen(filename, "a")) == (FILE *)0) {
+		if ((fp = fopen(filename, "w")) == (FILE *)0) {
 			break;
 		}
 
@@ -60,6 +60,10 @@ static int diminuto_pin_configure(const char * format, int pin, const char * str
 		}
 
 		if (fputs(string, fp) < 0) {
+			break;
+		}
+
+		if (fflush(fp) == EOF) {
 			break;
 		}
 
@@ -120,6 +124,11 @@ int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
 int diminuto_pin_direction(int pin, int output)
 {
 	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, output ? "out\n" : "in\n", "diminuto_pin_direction");
+}
+
+int diminuto_pin_initialize(int pin, int high)
+{
+	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, high ? "high\n" : "low\n", "diminuto_pin_initialize");
 }
 
 FILE * diminuto_pin_open(int pin)

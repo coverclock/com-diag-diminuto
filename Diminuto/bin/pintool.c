@@ -9,11 +9,11 @@
  *
  * USAGE
  *
- * pintool [ -d ] [ -D PATH ] [ -p PIN ] [ -E ] [ -U ] [ -i ] [ -o ] [ -r ] [ -t ] [ -f ] [ -w BOOLEAN ] [ -s ] [ -c ] [ -U MICROSECONDS ] [ ... ]
+ * pintool [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -H | -L ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]
  *
  * EXAMPLE (for stamplede)
  *
- * pintool -p 160 -x -o -r -s -r -u 5000000 -r -c -r -p 161 -x -o -r -w 1 -r -u 5000000 -r -w 0 -r -p 160 -n -p 161 -n
+ * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -L -N -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
  *
  * ABSTRACT
  *
@@ -31,18 +31,20 @@
 
 static void usage(const char * program)
 {
-	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t ] [ -f ] [ -n ] [ -U MICROSECONDS ] [ ... ]\n", program);
-	fprintf(stderr, "       -B            Set PIN edge to both");
+	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t | -f ] [ -U MICROSECONDS ] [ -n ] [ ... ]\n", program);
+	fprintf(stderr, "       -B            Set PIN edge to both\n");
 	fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
-	fprintf(stderr, "       -F            Set PIN edge to falling");
-	fprintf(stderr, "       -N            Set PIN edge to none");
-	fprintf(stderr, "       -R            Set PIN edge to rising");
+	fprintf(stderr, "       -F            Set PIN edge to falling\n");
+	fprintf(stderr, "       -H            Set PIN active to high\n");
+	fprintf(stderr, "       -L            Set PIN active to low\n");
+	fprintf(stderr, "       -N            Set PIN edge to none\n");
+	fprintf(stderr, "       -R            Set PIN edge to rising\n");
 	fprintf(stderr, "       -c            Write 0 to PIN\n");
 	fprintf(stderr, "       -d            Enable debug mode\n");
 	fprintf(stderr, "       -f            Proceed if the last result was 0\n");
-	fprintf(stderr, "       -h            Set PIN active to high\n");
+	fprintf(stderr, "       -l            Set PIN direction to output and initially 1\n");
 	fprintf(stderr, "       -i            Set PIN direction to input\n");
-	fprintf(stderr, "       -l            Set PIN active to low\n");
+	fprintf(stderr, "       -l            Set PIN direction to output and initially 0\n");
 	fprintf(stderr, "       -n            Unexport PIN\n");
 	fprintf(stderr, "       -o            Set PIN direction to output\n");
 	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
@@ -73,7 +75,7 @@ int main(int argc, char * argv[])
 
 	program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-	while ((opt = getopt(argc, argv, "BD:FNRcdfhilnop:rstu:vw:x?")) >= 0) {
+	while ((opt = getopt(argc, argv, "BD:FHLNRcdfhilnop:rstu:vw:x?")) >= 0) {
 
 		opts[0] = opt;
 
@@ -107,6 +109,36 @@ int main(int argc, char * argv[])
 				error = !0;
 				break;
 			} else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_FALLING) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'H':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_active(pin, !0) < 0) {
+				error = !0;
+				break;
+			} else {
+				/* Do nothing. */
+			}
+			break;
+
+		case 'L':
+			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+			if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
+			} else if (diminuto_pin_active(pin, 0) < 0) {
 				error = !0;
 				break;
 			} else {
@@ -185,7 +217,7 @@ int main(int argc, char * argv[])
 				perror(opts);
 				error = !0;
 				break;
-			} else if (diminuto_pin_active(pin, !0) < 0) {
+			} else if (diminuto_pin_initialize(pin, !0) < 0) {
 				error = !0;
 				break;
 			} else {
@@ -215,7 +247,7 @@ int main(int argc, char * argv[])
 				perror(opts);
 				error = !0;
 				break;
-			} else if (diminuto_pin_active(pin, 0) < 0) {
+			} else if (diminuto_pin_initialize(pin, 0) < 0) {
 				error = !0;
 				break;
 			} else {
