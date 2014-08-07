@@ -360,8 +360,8 @@ int main(int argc, char * argv[])
 				perror(optarg);
 			} else {
 				if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
-                value *= diminuto_delay_frequency();
-                value /= 1000000;
+				value *= diminuto_delay_frequency();
+				value /= 1000000;
 				diminuto_delay(value, 0);
 			}
 			break;

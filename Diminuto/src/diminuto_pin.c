@@ -55,10 +55,6 @@ static int diminuto_pin_configure(const char * format, int pin, const char * str
 			break;
 		}
 
-		if (fseek(fp, 0L, SEEK_SET) < 0) {
-			break;
-		}
-
 		if (fputs(string, fp) < 0) {
 			break;
 		}
