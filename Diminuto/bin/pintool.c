@@ -9,7 +9,7 @@
  *
  * EXAMPLE (for stampede)
  *
- * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -L -N -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
+ * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
  *
  * ABSTRACT
  *
