@@ -19,8 +19,8 @@ SYMBOL				=	DIMINUTO
 #TARGET				=	uclibc
 TARGET				=	stampede
 
-MAJOR				=	24# API changes requiring that applications be modified.
-MINOR				=	5# Only functionality or features added with no legacy API changes.
+MAJOR				=	25# API changes that may require that applications be modified.
+MINOR				=	0# Only functionality or features added with no legacy API changes.
 BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
@@ -407,21 +407,29 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo "\"Title = $(TITLE)\\\\n\"" >> $@
-	echo "\"Copyright = $(COPYRIGHT)\\\\n\"" >> $@
-	echo "\"Contact = $(CONTACT)\\\\n\"" >> $@
-	echo "\"License = $(LICENSE)\\\\n\"" >> $@
-	echo "\"Homepage = $(HOMEPAGE)\\\\n\"" >> $@
-	echo "\"Release = $(MAJOR).$(MINOR).$(BUILD)\\\\n\"" >> $@
-	echo "\"Vintage = $(VINTAGE)\\\\n\"" >> $@
-	echo "\"Host = $(shell hostname)\\\\n\"" >> $@
-	echo "\"Directory = $(shell pwd)\\\\n\"" >> $@
-	echo "\"Arch = $(ARCH)\\\\n\"" >> $@
-	echo "\"Target = $(TARGET)\\\\n\"" >> $@
-	echo "\"Platform = $(PLATFORM)\\\\n\"" >> $@
-	echo "\"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
+	echo "    \"Title = $(TITLE)\\\\n\"" >> $@
+	echo "    \"Copyright = $(COPYRIGHT)\\\\n\"" >> $@
+	echo "    \"Contact = $(CONTACT)\\\\n\"" >> $@
+	echo "    \"License = $(LICENSE)\\\\n\"" >> $@
+	echo "    \"Homepage = $(HOMEPAGE)\\\\n\"" >> $@
+	echo "    \"Release = $(MAJOR).$(MINOR).$(BUILD)\\\\n\"" >> $@
+	echo "    \"Vintage = $(VINTAGE)\\\\n\"" >> $@
+	echo "    \"Host = $(shell hostname)\\\\n\"" >> $@
+	echo "    \"Directory = $(shell pwd)\\\\n\"" >> $@
+	echo "    \"Arch = $(ARCH)\\\\n\"" >> $@
+	echo "    \"Target = $(TARGET)\\\\n\"" >> $@
+	echo "    \"Platform = $(PLATFORM)\\\\n\"" >> $@
+	echo "    \"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
 	echo ';' >> $@
-	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout); return 0; }' >> $@
+	echo 'int main(void) {' >> $@
+	echo '    fputs(METADATA, stderr);' >> $@
+	echo '    fprintf(stderr, "RELEASE_KEYWORD = %s\\n", DIMINUTO_RELEASE_KEYWORD);' >> $@
+	echo '    fprintf(stderr, "RELEASE_VALUE = %s\\n", DIMINUTO_RELEASE_VALUE);' >> $@
+	echo '    fprintf(stderr, "VINTAGE_KEYWORD = %s\\n", DIMINUTO_VINTAGE_KEYWORD);' >> $@
+	echo '    fprintf(stderr, "VINTAGE_VALUE = %s\\n", DIMINUTO_VINTAGE_VALUE);' >> $@
+	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout);' >> $@
+	echo '    return 0;' >> $@
+	echo '}' >> $@
 
 # Why do we generate the release and vintage header files into a source code
 # directory? Because a common thing to do is to build the library, then
@@ -435,7 +443,8 @@ $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
-	echo "static const char RELEASE[] = \"RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo "static const char DIMINUTO_RELEASE_KEYWORD[] = \"DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo "static const char * DIMINUTO_RELEASE_VALUE = &DIMINUTO_RELEASE_KEYWORD[sizeof(\"DIMINUTO_RELEASE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
@@ -444,7 +453,8 @@ $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
-	echo "static const char VINTAGE[] = \"VINTAGE=$(VINTAGE)\";" >> $@
+	echo "static const char DIMINUTO_VINTAGE_KEYWORD[] = \"DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
+	echo "static const char * DIMINUTO_VINTAGE_VALUE = &DIMINUTO_VINTAGE_KEYWORD[sizeof(\"DIMINUTO_VINTAGE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
