@@ -38,7 +38,7 @@
              * Use a gcc built-in function (if it exists) to create a read
              * (acquire) memory barrier as a side effect.
              */
-#           define diminuto_acquire() do { int _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
+#           define diminuto_acquire() do { volatile int _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
 #       endif
 #   endif
 #endif
@@ -56,7 +56,7 @@
              * Use a gcc built-in function (if it exists) to create a write
              * (release) memory barrier as a side effect.
              */
-#           define diminuto_release() do { int _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
+#           define diminuto_release() do { volatile int _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
 #       endif
 #   endif
 #endif
