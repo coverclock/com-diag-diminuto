@@ -21,7 +21,7 @@ TARGET				=	stampede
 
 MAJOR				=	24# API changes requiring that applications be modified.
 MINOR				=	4# Only functionality or features added with no legacy API changes.
-BUILD				=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
