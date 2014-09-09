@@ -9,11 +9,13 @@
  */
 
 #include "com/diag/diminuto/diminuto_path.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <linux/limits.h>
 
 char * diminuto_path_scan(const char * string, const char * file)
 {
@@ -22,7 +24,7 @@ char * diminuto_path_scan(const char * string, const char * file)
 	char * prefix;
 	char * here;
 	char * context;
-	char * candidate = (char *)0;
+	int size;
 	struct stat status;
 
 	do {
@@ -43,20 +45,16 @@ char * diminuto_path_scan(const char * string, const char * file)
 
 		while ((prefix = strtok_r(here, ":", &context)) != (char *)0) {
 
-			if ((candidate = (char *)malloc(strlen(prefix) + strlen("/") + strlen(file) + sizeof(char))) == (char *)0) {
+			char candidate[PATH_MAX];
+			size = snprintf(candidate, sizeof(candidate), "%s/%s", prefix, file);
+			if (size >= sizeof(candidate)) {
 				break;
 			}
-
-			strcpy(candidate, prefix);
-			strcat(candidate, "/");
-			strcat(candidate, file);
 
 			if (stat(candidate, &status) == 0) {
-				path = candidate;
+				path = strdup(candidate);
 				break;
 			}
-
-			free(candidate);
 
 			here = (char *)0;
 		}
