@@ -20,8 +20,8 @@ SYMBOL				=	DIMINUTO
 TARGET				=	stampede
 
 MAJOR				=	24# API changes requiring that applications be modified.
-MINOR				=	4# Only functionality or features added with no legacy API changes.
-BUILD				=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				=	5# Only functionality or features added with no legacy API changes.
+BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -422,6 +422,12 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo "\"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
 	echo ';' >> $@
 	echo 'int main(void) { fputs(METADATA, stderr); fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout); return 0; }' >> $@
+
+# Why do we generate the release and vintage header files into a source code
+# directory? Because a common thing to do is to build the library, then
+# copy the include directory and the library or shared object to some public
+# location. We want the generated header files to be in the public include
+# directory with all of the other header files.
 
 # For embedding in an application where it can be interrogated or displayed.
 $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
