@@ -2,12 +2,13 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_barrier.h"
 
 /*
@@ -22,5 +23,8 @@ int main(void)
     diminuto_barrier();
     reg = 1;
     diminuto_barrier();
-    return 0;
+    diminuto_acquire();
+    reg = 0;
+    diminuto_release();
+    EXIT();
 }
