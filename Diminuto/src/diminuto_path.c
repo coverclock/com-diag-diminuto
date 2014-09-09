@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -15,10 +15,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-char * diminuto_path_find(const char * keyword, const char * file)
+char * diminuto_path_scan(const char * string, const char * file)
 {
 	char * path = (char *)0;
-	const char * value;
 	char * list = (char *)0;
 	char * prefix;
 	char * here;
@@ -28,7 +27,7 @@ char * diminuto_path_find(const char * keyword, const char * file)
 
 	do {
 
-		if (keyword == (const char *)0) {
+		if (string == (const char *)0) {
 			break;
 		}
 
@@ -36,11 +35,7 @@ char * diminuto_path_find(const char * keyword, const char * file)
 			break;
 		}
 
-		if ((value = getenv(keyword)) == (const char *)0) {
-			break;
-		}
-
-		if ((list = strdup(value)) == (char *)0) {
+		if ((list = strdup(string)) == (char *)0) {
 			break;
 		}
 
@@ -69,6 +64,26 @@ char * diminuto_path_find(const char * keyword, const char * file)
 	} while (0);
 
 	free(list);
+
+	return path;
+}
+
+char * diminuto_path_find(const char * keyword, const char * file)
+{
+	char * path = (char *)0;
+	const char * value;
+
+	do {
+
+		if (keyword == (const char *)0) {
+			break;
+		}
+
+		value = getenv(keyword);
+
+		path = diminuto_path_scan(value, file);
+
+	} while (0);
 
 	return path;
 }

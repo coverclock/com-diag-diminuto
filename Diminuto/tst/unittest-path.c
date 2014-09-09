@@ -26,6 +26,11 @@ int main(int argc, char ** argv)
 	 * so that this could be run on the target.
 	 */
 
+	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", "ls");
+	ASSERT(result != (char *)0);
+	EXPECT(strcmp(result, "/bin/ls") == 0);
+	free(result);
+
 	result = diminuto_path_find("PATH", "ls");
 	ASSERT(result != (char *)0);
 	EXPECT(strcmp(result, "/bin/ls") == 0);
@@ -55,7 +60,19 @@ int main(int argc, char ** argv)
 	 * And of course some should fail.
 	 */
 
-	result = diminuto_path_find("PATH", "com_diag_diminuto_notfound");
+	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", "COM_DIAG_DIMINUTO_NOTFOUND");
+	ASSERT(result == (char *)0);
+
+	result = diminuto_path_scan((const char *)0, "ls");
+	ASSERT(result == (char *)0);
+
+	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", (const char *)0);
+	ASSERT(result == (char *)0);
+
+	result = diminuto_path_scan("/COM_DIAG_DIMINUTO_NOTFOUND/sbin:/COM_DIAG_DIMINUTO_NOTFOUND/bin", "ls");
+	ASSERT(result == (char *)0);
+
+	result = diminuto_path_find("PATH", "COM_DIAG_DIMINUTO_NOTFOUND");
 	ASSERT(result == (char *)0);
 
 	result = diminuto_path_find("COM_DIAG_DIMINUTO_NOTFOUND", "ls");
