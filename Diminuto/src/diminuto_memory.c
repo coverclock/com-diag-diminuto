@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -30,12 +30,8 @@ size_t diminuto_memory_pagesize(int * methodp)
 #if defined(COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES)
 
 		if ((pagesize = COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES) > 0) {
-			method = 1;
+			method = DIMINUTO_MEMORY_PAGESIZE_METHOD_EXPLICIT;
 			break;
-		} else if (pagesize < 0) {
-			diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES");
-		} else {
-			/* Do nothing. */
 		}
 
 #endif
@@ -43,27 +39,19 @@ size_t diminuto_memory_pagesize(int * methodp)
 #if defined(_SC_PAGESIZE)
 
 		if ((pagesize = sysconf(_SC_PAGESIZE)) > 0) {
-			method = 2;
+			method = DIMINUTO_MEMORY_PAGESIZE_METHOD_SYSCONF_PAGESIZE;
 			break;
-		} else if (pagesize < 0) {
-			diminuto_perror("sysconf(_SC_PAGESIZE)");
-		} else {
-			/* Do nothing. */
 		}
 
 #endif
 
 		if ((pagesize = getpagesize()) > 0) {
-			method = 3;
+			method = DIMINUTO_MEMORY_PAGESIZE_METHOD_GETPAGESIZE;
 			break;
-		} else if (pagesize < 0) {
-			diminuto_perror("getpagesize");
-		} else {
-			/* Do nothing. */
 		}
 
 		pagesize = DIMINUTO_MEMORY_PAGESIZE_BYTES;
-		method = 0;
+		method = DIMINUTO_MEMORY_PAGESIZE_METHOD_IMPLICIT;
 
 	} while (0);
 
@@ -86,12 +74,8 @@ size_t diminuto_memory_linesize(int * methodp)
 #if defined(COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES)
 
 		if ((linesize = COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES) > 0) {
-			method = 1;
+			method = DIMINUTO_MEMORY_LINESIZE_METHOD_EXPLICIT;
 			break;
-		} else if (linesize < 0) {
-			diminuto_perror("COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES");
-		} else {
-			/* Do nothing. */
 		}
 
 #endif
@@ -99,12 +83,8 @@ size_t diminuto_memory_linesize(int * methodp)
 #if defined(_SC_LEVEL1_DCACHE_LINESIZE)
 
 		if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0) {
-			method = 2;
+			method = DIMINUTO_MEMORY_LINESIZE_METHOD_SYSCONF_LEVEL1_DCACHE_LINESIZE;
 			break;
-		} else if (linesize < 0) {
-			diminuto_perror("sysconf(_SC_LEVEL1_DCACHE_LINESIZE)");
-		} else {
-			/* Do nothing. */
 		}
 
 #endif
@@ -115,15 +95,12 @@ size_t diminuto_memory_linesize(int * methodp)
 				continue;
 			}
 
-			if ((fscanf(fp, "%zd", &linesize) <= 0) || (linesize < 0)) {
-				errno = EINVAL;
-				diminuto_perror(SYS_LINE_SIZE[ii]);
-			}
+			fscanf(fp, "%zd", &linesize);
 
 			fclose(fp);
 
 			if (linesize > 0) {
-				method = 3 + ii;
+				method = DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_INDEX0_COHERENCY_LINE_SIZE + ii;
 				break;
 			}
 
@@ -134,7 +111,7 @@ size_t diminuto_memory_linesize(int * methodp)
 		}
 
 		linesize = DIMINUTO_MEMORY_LINESIZE_BYTES;
-		method = 0;
+		method = DIMINUTO_MEMORY_LINESIZE_METHOD_IMPLICIT;
 
 	} while (0);
 

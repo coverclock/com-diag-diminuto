@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -27,6 +27,29 @@ enum DiminutoMemoryDefault {
 	DIMINUTO_MEMORY_PAGESIZE_BYTES = 4096,
 	DIMINUTO_MEMORY_LINESIZE_BYTES = 64,
 };
+
+/**
+ * This enumerated type indexes the ways in which we can determine the virtual
+ * page size.
+ */
+typedef enum DiminutoMemoryPagesizeMethod {
+	DIMINUTO_MEMORY_PAGESIZE_METHOD_IMPLICIT = 0,
+	DIMINUTO_MEMORY_PAGESIZE_METHOD_EXPLICIT = 1,
+	DIMINUTO_MEMORY_PAGESIZE_METHOD_SYSCONF_PAGESIZE = 2,
+	DIMINUTO_MEMORY_PAGESIZE_METHOD_GETPAGESIZE = 3,
+} diminuto_memory_pagesize_method_t;
+
+/**
+ * This enumerated type indexes the ways in which we can determine the cache
+ * line size.
+ */
+typedef enum DiminutoMemoryLinesizeMethod {
+	DIMINUTO_MEMORY_LINESIZE_METHOD_IMPLICIT = 0,
+	DIMINUTO_MEMORY_LINESIZE_METHOD_EXPLICIT = 1,
+	DIMINUTO_MEMORY_LINESIZE_METHOD_SYSCONF_LEVEL1_DCACHE_LINESIZE = 2,
+	DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_INDEX0_COHERENCY_LINE_SIZE = 3,
+	DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_COHERENCY_LINE_SIZE = 4,
+} diminuto_memory_linesize_method_t;
 
 /**
  * Return the size of virtual memory pages of the underlying platform.
