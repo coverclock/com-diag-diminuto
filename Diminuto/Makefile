@@ -21,7 +21,7 @@ TARGET				=	stampede
 
 MAJOR				=	25# API changes that may require that applications be modified.
 MINOR				=	0# Only functionality or features added with no legacy API changes.
-BUILD				=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				=	3# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -381,6 +381,16 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 	ln -f $< $@
 	
 ########## Unit Tests
+
+# Generally if the unit tests work they exit with an exit code of zero;
+# otherwise they exit with something else (or core dump). But left to their
+# own devices, then unit tests aren't very chatty. If you want to see more log
+# output from them, you can tune the logging using the environmental variable
+# DIMINUTO_LOG_MASK. For example, the bash command
+#
+#	export DIMINUTO_LOG_MASK=0xffff
+#
+# turns on everything.
 
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
