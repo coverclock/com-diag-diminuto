@@ -16,7 +16,7 @@
 #   if defined(__GNUC_MINOR__)
 #       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
             /**
-             * @def diminuto_barrier()
+             * @def diminuto_barrier
              * Use a gcc built-in function (if it exists) to create a full
              * memory barrier.
              */
@@ -34,9 +34,9 @@
 #   if defined(__GNUC_MINOR__)
 #       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
             /**
-             * @def diminuto_acquire()
-             * Use a gcc built-in function (if it exists) to create a read
-             * (acquire) memory barrier as a side effect.
+             * @def diminuto_acquire
+             * Use a gcc built-in function (if it exists) to create an acquire
+             * (read) memory barrier. (The barrier is a side-effect.)
              */
 #           define diminuto_acquire() do { volatile int _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
 #       endif
@@ -52,9 +52,9 @@
 #   if defined(__GNUC_MINOR__)
 #       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
             /**
-             * @def diminuto_release()
-             * Use a gcc built-in function (if it exists) to create a write
-             * (release) memory barrier as a side effect.
+             * @def diminuto_release
+             * Use a gcc built-in function (if it exists) to create a release
+             * (write) memory barrier. (The barrier is a side-effect.)
              */
 #           define diminuto_release() do { volatile int _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
 #       endif

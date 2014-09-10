@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -13,6 +13,12 @@
 
 #include <signal.h>
 
+/**
+ * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN
+ * Begin a code block that is uninterruptible by a caller specified signal
+ * @a _SIGNAL_ by adding that signal to the mask of signals that are already
+ * blocked.
+ */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(_SIGNAL_) \
 	do { \
 		sigset_t _diminuto_uninterruptible_section_now_; \
@@ -23,6 +29,12 @@
 	    do { \
 	    	do {} while (0)
 
+/**
+ * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_END
+ * End a code block that was uninterruptible by the signal specified at the
+ * beginning of the block by returning the mask of blocked signals back to its
+ * original state at the beginning of the block.
+ */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
 	    } while (0); \
 		sigprocmask(SIG_SETMASK, &_diminuto_uninterruptible_section_was_, (sigset_t *)0); \

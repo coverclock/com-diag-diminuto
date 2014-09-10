@@ -21,7 +21,7 @@ TARGET				=	stampede
 
 MAJOR				=	25# API changes that may require that applications be modified.
 MINOR				=	0# Only functionality or features added with no legacy API changes.
-BUILD				=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -35,7 +35,8 @@ BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 # for the value of the VINTAGE make variable, and only use the value of this
 # symbol as a build time stamp, and you should be able to generate identical
 # images with subsequent builds of Diminuto. This string is embedded inside the
-# Diminuto "vintage" application.
+# Diminuto "vintage" application. The default build time stamp is an ISO-8601
+# complaint string with the time specified in UTC with nanosecond resolution.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
