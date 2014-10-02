@@ -85,4 +85,16 @@ static inline diminuto_ticks_t diminuto_frequency_seconds2ticks(diminuto_ticks_t
 	return diminuto_frequency_units2ticks(whole, 1) + diminuto_frequency_units2ticks(fraction, hertz);
 }
 
+static inline diminuto_ticks_t diminuto_frequency_roundup(diminuto_ticks_t ticks, diminuto_ticks_t hertz) {
+	diminuto_ticks_t remainder;
+	remainder = ticks % hertz;
+	return (remainder == 0) ? ticks : (ticks - remainder) + hertz;
+}
+
+static inline diminuto_ticks_t diminuto_frequency_rounddown(diminuto_ticks_t ticks, diminuto_ticks_t hertz) {
+	diminuto_ticks_t remainder;
+	remainder = ticks % hertz;
+	return (remainder == 0) ? ticks : (ticks - remainder);
+}
+
 #endif

@@ -13,9 +13,13 @@
 #include "com/diag/diminuto/diminuto_string.h"
 #include <string.h>
 
-int main(void)
+int main(int argc, char ** argv)
 {
 	SETLOGMASK();
+
+    {
+        EXPECT(strcmp(diminuto_string_program(argv[0]), "unittest-string"));
+    }
 
     {
         char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };

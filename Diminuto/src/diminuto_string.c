@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-char * diminuto_strscpy(char * dest, const char * src, size_t n)
+char * diminuto_string_copy(char * dest, const char * src, size_t n)
 {
     char * result;
 

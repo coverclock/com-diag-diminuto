@@ -25,6 +25,15 @@
  * @param n is the size of the destination character array.
  * @return the pointer to the destination character array.
  */
-extern char * diminuto_strscpy(char * dest, const char * src, size_t n);
+extern char * diminuto_string_copy(char * dest, const char * src, size_t n);
+
+static inline char * diminuto_strscpy(char * dest, const char * src, size_t n) {
+	return diminuto_string_copy(dest, src, n);
+}
+
+static inline const char * diminuto_string_program(const char * argvzero) {
+	const char * program;
+	return ((program = strrchr(argvzero, '/')) == (char *)0) ? argvzero : program + 1;
+}
 
 #endif
