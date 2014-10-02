@@ -31,9 +31,9 @@ static inline char * diminuto_strscpy(char * dest, const char * src, size_t n) {
 	return diminuto_string_copy(dest, src, n);
 }
 
-static inline const char * diminuto_string_program(const char * argvzero) {
-	const char * program;
-	return ((program = strrchr(argvzero, '/')) == (char *)0) ? argvzero : program + 1;
+static inline const char * diminuto_string_basename(const char * argvzero) {
+	const char * basename;
+	return ((basename = strrchr(argvzero, '/')) == (char *)0) ? argvzero : basename + 1;
 }
 
 #endif

@@ -18,7 +18,11 @@ int main(int argc, char ** argv)
 	SETLOGMASK();
 
     {
-        EXPECT(strcmp(diminuto_string_program(argv[0]), "unittest-string"));
+        EXPECT(strcmp(diminuto_string_basename("/usr/bin/basename1"), "basename1"));
+        EXPECT(strcmp(diminuto_string_basename("bin/basename2"), "basename2"));
+        EXPECT(strcmp(diminuto_string_basename("/basename3"), "basename3"));
+        EXPECT(strcmp(diminuto_string_basename("basename4"), "basename4"));
+        EXPECT(strcmp(diminuto_string_basename(argv[0]), "unittest-string"));
     }
 
     {
