@@ -85,12 +85,24 @@ static inline diminuto_ticks_t diminuto_frequency_seconds2ticks(diminuto_ticks_t
 	return diminuto_frequency_units2ticks(whole, 1) + diminuto_frequency_units2ticks(fraction, hertz);
 }
 
+/**
+ * Round up a value in ticks to an even multiple of the specified frequency.
+ * @param ticks is the value in ticks.
+ * @param hertz is the spefified frequency.
+ * @return the value in ticks.
+ */
 static inline diminuto_ticks_t diminuto_frequency_roundup(diminuto_ticks_t ticks, diminuto_ticks_t hertz) {
 	diminuto_ticks_t remainder;
 	remainder = ticks % hertz;
 	return (remainder == 0) ? ticks : (ticks - remainder) + hertz;
 }
 
+/**
+ * Round down a value in ticks to an even multiple of the specified frequency.
+ * @param ticks is the value in ticks.
+ * @param hertz is the spefified frequency.
+ * @return the value in ticks.
+ */
 static inline diminuto_ticks_t diminuto_frequency_rounddown(diminuto_ticks_t ticks, diminuto_ticks_t hertz) {
 	diminuto_ticks_t remainder;
 	remainder = ticks % hertz;

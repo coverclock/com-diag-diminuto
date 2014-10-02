@@ -31,6 +31,13 @@ static inline char * diminuto_strscpy(char * dest, const char * src, size_t n) {
 	return diminuto_string_copy(dest, src, n);
 }
 
+/**
+ * Return a pointer to the basename of the specified pathname. When the
+ * argv[0] of a main program is passed as the parameter, this returns a
+ * pointer to the program name without the leading path.
+ * @param argvzero is the pathname.
+ * @return a pointer to the basename in the specified pathname.
+ */
 static inline const char * diminuto_string_basename(const char * argvzero) {
 	const char * basename;
 	return ((basename = strrchr(argvzero, '/')) == (char *)0) ? argvzero : basename + 1;
