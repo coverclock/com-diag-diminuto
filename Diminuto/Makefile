@@ -10,14 +10,14 @@ SYMBOL				=	DIMINUTO
 
 ########## Customizations
 
-#TARGET				=	host
+TARGET				=	host
 #TARGET				=	diminuto
 #TARGET				=	arroyo
 #TARGET				=	cascada
 #TARGET				=	contraption
 #TARGET				=	cobbler
 #TARGET				=	uclibc
-TARGET				=	stampede
+#TARGET				=	stampede
 
 MAJOR				=	25# API changes that may require that applications be modified.
 MINOR				=	1# Only functionality or features added with no legacy API changes.

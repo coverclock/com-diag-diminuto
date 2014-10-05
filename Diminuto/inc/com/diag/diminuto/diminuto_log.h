@@ -118,7 +118,7 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
 #define DIMINUTO_LOG_STREAM_DEFAULT          STDERR_FILENO
 
-#define DIMINUTO_LOG_BUFFER_MAXIMUM          (256)
+#define DIMINUTO_LOG_BUFFER_MAXIMUM          (1024)
 
 extern char * diminuto_log_ident;
 extern int diminuto_log_option;
