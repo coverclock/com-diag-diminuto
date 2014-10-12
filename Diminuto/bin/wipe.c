@@ -51,7 +51,11 @@ int main(int argc, char ** argv)
             break;
         }
 
+        fprintf(stderr, "%s: \"%s\" device\n", argv[0], argv[1]);
+
         base = random();
+
+        fprintf(stderr, "%s: %d seed\n", argv[0], base);
 
         pagesize = getpagesize();
         if (pagesize <= 0) {
