@@ -56,8 +56,10 @@ int main(int argc, char ** argv)
         pagesize = getpagesize();
         if (pagesize <= 0) {
             perror("getpagesize");
-            break;
+            pagesize = 4096;
         }
+
+        fprintf(stderr, "%s: %d bytes pagesize\n", argv[0], pagesize);
 
         buffer = memalign(pagesize, pagesize);
         if (buffer == 0) {
@@ -70,6 +72,8 @@ int main(int argc, char ** argv)
             perror(argv[1]);
             break;
         }
+
+        fprintf(stderr, "%s: writing\n", argv[0]);
 
         datum = base;
         total = 0;
@@ -119,6 +123,8 @@ int main(int argc, char ** argv)
             perror(argv[1]);
             break;
         }
+
+        fprintf(stderr, "%s: reading\n", argv[0]);
 
         datum = base;
         total = 0;
