@@ -151,6 +151,20 @@ KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
+ifeq ($(TARGET),cm-10.2-flo)# Build for CM-10.2 on the Nexus-7 with bionic.
+ARCH				=	arm
+PLATFORM			=	linux
+CPPARCH				=
+CARCH				=	
+LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			=	$(ARCH)-eabi
+CROSS_COMPILE		=	$(TOOLCHAIN)-
+KERNEL_REV			=	rpi-3.6.y
+KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+# export PATH=${HOME_DIR}/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin:${PATH}
+endif
+
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				=	arm
 PLATFORM			=	linux
@@ -166,7 +180,7 @@ KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
 INCLUDE_DIR			=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 endif
 
-ifeq ($(TARGET),host0)# Build for an Intel build server with Ubuntu 12.04.
+ifeq ($(TARGET),old)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				=	i386
 PLATFORM			=	linux
 CPPARCH				=

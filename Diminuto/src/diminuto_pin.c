@@ -32,7 +32,7 @@ const char * diminuto_pin_debug(const char * tmp)
 {
 	const char * prior;
 	prior = root;
-	root = (tmp != NULL) ? tmp : ROOT;
+	root = (tmp != 0) ? tmp : ROOT;
 	return prior;
 }
 

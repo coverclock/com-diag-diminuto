@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -14,10 +14,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <asm/termios.h>
+#if !defined(__USE_GNU)
+#	define __USE_GNU
+#	define UNDEF__USE_GNU
+#endif
 #include <fcntl.h>
+#if defined(UNDEF__USE_GNU)
+#	undef __USE_GNU
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
 #include <errno.h>
 
 int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
@@ -153,4 +161,26 @@ diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
 void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd)
 {
 	return ((0 <= fd) && (fd < mapp->count)) ? &mapp->data[fd] : (void **)0;
+}
+
+void * diminuto_fd_direct_alloc(size_t size)
+{
+    ssize_t alignment;
+    void * pointer;
+
+    if ((alignment = getpagesize()) <= 0) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_fd_direct_alloc: getpagesize");
+    } else if ((pointer = memalign(alignment, size)) == 0) {
+        diminuto_perror("diminuto_fd_direct_alloc: memalign");
+    } else {
+        /* Do nothing. */
+    }
+
+    return pointer;
+}
+
+int diminuto_fd_direct_acquire(int fd, const char * device, int flags, mode_t mode)
+{
+    return diminuto_fd_acquire(fd, device, flags | O_DIRECT | O_SYNC, mode);
 }
