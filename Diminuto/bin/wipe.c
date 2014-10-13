@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
     uint64_t * data = 0;
     uint64_t total = 0;
     uint64_t errors = 0;
-    long base = 0;
+    long seed = 0;
     time_t start = 0;
     time_t end = 0;
     int error = 0;
@@ -53,9 +53,11 @@ int main(int argc, char ** argv)
 
         fprintf(stderr, "%s: \"%s\" device\n", argv[0], argv[1]);
 
-        base = random();
+	seed = time(0);
+	srandom(seed);
+        seed = random();
 
-        fprintf(stderr, "%s: %d seed\n", argv[0], base);
+        fprintf(stderr, "%s: %d seed\n", argv[0], seed);
 
         pagesize = getpagesize();
         if (pagesize <= 0) {
@@ -79,7 +81,7 @@ int main(int argc, char ** argv)
 
         fprintf(stderr, "%s: writing\n", argv[0]);
 
-        datum = base;
+        datum = seed;
         total = 0;
         start = time(0);
 
@@ -130,7 +132,7 @@ int main(int argc, char ** argv)
 
         fprintf(stderr, "%s: reading\n", argv[0]);
 
-        datum = base;
+        datum = seed;
         total = 0;
         start = time(0);
 
