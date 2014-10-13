@@ -19,7 +19,7 @@
  * until it gets an error (typically ENOSPC or "No space left on device"). Then
  * it reads the device from the beginning and verifies that the pattern read
  * matches the pattern written. By default, writes are done in a multiple of
- * the system page size that is at least 4096 bytes. I wrote it to address data
+ * the system page size that is at least 4096 bytes. I wrote it to address
  * data remanance issues on flash devices. It can wipe any storage (including
  * your root partition if you're not careful). It can also be used to test flash
  * devices for both performance and capacity, although it is destructive to
