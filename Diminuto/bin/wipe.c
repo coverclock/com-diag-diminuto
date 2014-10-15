@@ -19,8 +19,8 @@
  * until it gets an error (typically ENOSPC or "No space left on device"). Then
  * it reads the device from the beginning and verifies that the pattern read
  * matches the pattern written. By default, writes are done using a block size
- * that is a multiple of the system page size and that is at least 4096 bytes.
- * I wrote it to address personal data remanance issues on flash devices.
+ * that is a multiple of the sector size. I wrote this program to address
+ * personal data remanance issues on flash devices.
  *
  * It can wipe any storage, including storage you don't want wiped, if you are
  * not careful. IT IS ONLY FOR CASUAL CONSUMER USE. Organizations like the U.S.
@@ -73,6 +73,9 @@ static const char DEVICE[] = "/dev/null";
 static const size_t BLOCKSIZE = 4096UL;
 static const uint64_t MODULO = 100000000ULL;
 static const size_t PAGESIZE = 4096UL;
+static const size_t SECTORSIZE = 512UL;
+static const uint64_t A1 = 4294967311ULL;
+static const uint64_t A0 = 17ULL;
 
 int main(int argc, char ** argv)
 {
@@ -81,6 +84,7 @@ int main(int argc, char ** argv)
     size_t blocksize = 0;
     uint64_t modulo = 0;
     size_t pagesize = 0;
+    size_t sectorsize = 0;
     void * buffer = 0;
     int fd = -1;
     ssize_t rc = 0;
@@ -105,10 +109,11 @@ int main(int argc, char ** argv)
     blocksize = BLOCKSIZE;
     modulo = MODULO;
     pagesize = PAGESIZE;
+    sectorsize = SECTORSIZE;
 
     do {
 
-        while ((opt = getopt(argc, argv, "D:b:m:p:")) >= 0) {
+        while ((opt = getopt(argc, argv, "D:b:m:p:s:")) >= 0) {
 
             switch (opt) {
 
@@ -128,8 +133,12 @@ int main(int argc, char ** argv)
                 pagesize = strtoul(optarg, 0, 0);
                 break;
 
+            case 's':
+                sectorsize = strtoul(optarg, 0, 0);
+                break;
+
             default:
-                fprintf(stderr, "usage: %s [ -D DEVICE ] [ -b BLOCKSIZE ] [ -m MODULO ] [ -p PAGESIZE ]\n", program);
+                fprintf(stderr, "usage: %s [ -D DEVICE ] [ -b BLOCKSIZE ] [ -m MODULO ] [ -p PAGESIZE ] [ -s SECTORSIZE ]\n", program);
                 ++errors;
                 break;
 
@@ -163,7 +172,10 @@ int main(int argc, char ** argv)
         }
         printf("%s: pagesize %zu bytes\n", program, pagesize);
 
-        blocksize = ((blocksize + pagesize - 1) / pagesize) * pagesize;
+        sectorsize = ((sectorsize + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
+        printf("%s: sectorsize %zu bytes\n", program, sectorsize);
+
+        blocksize = ((blocksize + sectorsize - 1) / sectorsize) * sectorsize;
         printf("%s: blocksize %zu bytes\n", program, blocksize);
 
         modulo = ((modulo + blocksize - 1) / blocksize) * blocksize;
@@ -199,7 +211,7 @@ int main(int argc, char ** argv)
             count = blocksize / sizeof(datum);
             while ((count--) > 0) {
                 *(data++) = datum;
-                datum = (datum * 4294967311ULL) + 17;
+                datum = (datum * A1) + A0;
             }
 
             pointer = (char *)buffer;
@@ -220,8 +232,8 @@ int main(int argc, char ** argv)
                     perror("write: ERROR");
                     ++errors;
                     break;
-                } else if (size > 1) {
-                    --size;
+                } else if (size > sectorsize) {
+                    size -= sectorsize;
                 } else {
                     perror("write");
                     break;
@@ -302,7 +314,7 @@ int main(int argc, char ** argv)
                     ++mismatches;
                     ++errors;
                 }
-                datum = (datum * 4294967311ULL) + 17;
+                datum = (datum * A1) + A0;
             }
 
         } while (rc > 0);
