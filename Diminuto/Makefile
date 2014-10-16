@@ -4,24 +4,25 @@
 # mailto:coverclock@diag.com
 # http://www.diag.com/navigation/downloads/Diminuto.html
 
-PROJECT				=	diminuto
-TITLE				=	Diminuto
-SYMBOL				=	DIMINUTO
+PROJECT				:=	diminuto
+TITLE				:=	Diminuto
+SYMBOL				:=	DIMINUTO
 
 ########## Customizations
 
-TARGET				=	host
-#TARGET				=	diminuto
-#TARGET				=	arroyo
-#TARGET				=	cascada
-#TARGET				=	contraption
-#TARGET				=	cobbler
-#TARGET				=	uclibc
-#TARGET				=	stampede
+#TARGET				:=	host
+#TARGET				:=	diminuto
+#TARGET				:=	arroyo
+#TARGET				:=	cascada
+#TARGET				:=	contraption
+#TARGET				:=	cobbler
+#TARGET				:=	uclibc
+#TARGET				:=	stampede
+TARGET				:=	bionic
 
-MAJOR				=	25# API changes that may require that applications be modified.
-MINOR				=	1# Only functionality or features added with no legacy API changes.
-BUILD				=	0# Only bugs fixed with no API changes or new functionality.
+MAJOR				:=	25# API changes that may require that applications be modified.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -40,256 +41,264 @@ BUILD				=	0# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			=	2008-2014 Digital Aggregates Corporation, Colorado, USA.
-LICENSE				=	GNU Lesser General Public License 2.1
-CONTACT				=	coverclock@diag.com
-HOMEPAGE			=	http://www.diag.com/navigation/downloads/$(TITLE).html
+COPYRIGHT			:=	2008-2014 Digital Aggregates Corporation, Colorado, USA.
+LICENSE				:=	GNU Lesser General Public License 2.1
+CONTACT				:=	coverclock@diag.com
+HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
 # sources, toolchains, etc.
-HOME_DIR			=	$(HOME)/Projects
+HOME_DIR			:=	$(HOME)/Projects
 
 ########## Directory Tree
 
-ARC_DIR				=	arc# Archive files
-BIN_DIR				=	bin# Stripped executable binaries
-DOC_DIR				=	doc# Documentation
-DRV_DIR				=	drv# Loadable kernel modules
-ETC_DIR				=	etc# Miscellaneous files
-GEN_DIR				=	gen# Generated files
-INC_DIR				=	inc# Header files
-LIB_DIR				=	lib# Shared objects
-MOD_DIR				=	mod# Loadable user modules
-OUT_DIR				=	out# Build artifacts
-SRC_DIR				=	src# Library source files
-SYM_DIR				=	sym# Unstripped executable binaries
-SYS_DIR				=	sys# Kernel module build directory
-TMP_DIR				=	tmp# Temporary files
-TST_DIR				=	tst# Unit tests
+ARC_DIR				:=	arc# Archive files
+BIN_DIR				:=	bin# Stripped executable binaries
+DOC_DIR				:=	doc# Documentation
+DRV_DIR				:=	drv# Loadable kernel modules
+ETC_DIR				:=	etc# Miscellaneous files
+GEN_DIR				:=	gen# Generated files
+INC_DIR				:=	inc# Header files
+LIB_DIR				:=	lib# Shared objects
+MOD_DIR				:=	mod# Loadable user modules
+OUT_DIR				:=	out# Build artifacts
+SRC_DIR				:=	src# Library source files
+SYM_DIR				:=	sym# Unstripped executable binaries
+SYS_DIR				:=	sys# Kernel module build directory
+TMP_DIR				:=	tmp# Temporary files
+TST_DIR				:=	tst# Unit tests
 
 ########## Configurations
 
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv4t
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.25.10
-KERNEL_DIR			=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	-march=armv4t
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	2.6.25.10
+KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv4t
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.26.3
-KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	-march=armv4t
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	2.6.26.3
+KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.32.7
-KERNEL_DIR			=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	2.6.32.7
+KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp
-#LDARCH				=	-static
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	2.6.32
-KERNEL_DIR			=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-INCLUDE_DIR			=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp
+#LDARCH				:=	-static
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	2.6.32
+KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+HEADERS_DIR			:=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	
-#LDARCH				=	-static
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	rpi-3.6.y
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	
+#LDARCH				:=	-static
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	rpi-3.6.y
+KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	
-#LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	rpi-3.6.y
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	
+#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	rpi-3.6.y
+KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 endif
 
-ifeq ($(TARGET),cm-10.2-flo)# Build for CM-10.2 on the Nexus-7 with bionic.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-eabi
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	rpi-3.6.y
-KERNEL_DIR			=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
-# export PATH=${HOME_DIR}/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin:${PATH}
+ifeq ($(TARGET),bionic)# Build for CM-10.2 on the Nexus-7 a.k.a. "flo" with bionic.
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
+KERNEL_DIR			:=	$(HOME)/src/cm-10.2/kernel/google/msm
+HEADERS_DIR			:=	$(HOME)/src/cm-10.2/external/kernel-headers/original
+# export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
-ARCH				=	arm
-PLATFORM			=	linux
-CPPARCH				=
-#CARCH				=
-CARCH				=	-rdynamic -fno-omit-frame-pointer -funwind-tables
-#LDARCH				=	-static -L$(OUT)/$(ARC_DIR)
-LDARCH				=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		=	$(TOOLCHAIN)-
-KERNEL_REV			=	3.10.24-jetson
-KERNEL_DIR			=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
-INCLUDE_DIR			=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
+ARCH				:=	arm
+PLATFORM			:=	linux
+CPPARCH				:=
+#CARCH				:=
+CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables
+#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
+KERNEL_REV			:=	3.10.24-jetson
+KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
+HEADERS_DIR			:=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 endif
 
-ifeq ($(TARGET),old)# Build for an Intel build server with Ubuntu 12.04.
-ARCH				=	i386
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=
-LDARCH				=	-L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=
-CROSS_COMPILE		=
-KERNEL_REV			=	3.2.0-51
-KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-INCLUDE_DIR			=	/usr/include
+ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
+ARCH				:=	i386
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=
+LDARCH				:=	-L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
+KERNEL_REV			:=	3.2.0-51
+KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+HEADERS_DIR			:=	/usr/include
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
-ARCH				=	i386
-PLATFORM			=	linux
-CPPARCH				=
-CARCH				=	-rdynamic
-LDARCH				=	-L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			=
-CROSS_COMPILE		=
-KERNEL_REV			=	3.13.0-24
-KERNEL_DIR			=	/usr/src/linux-headers-$(KERNEL_REV)
-INCLUDE_DIR			=	/usr/include
+ARCH				:=	i386
+PLATFORM			:=	linux
+CPPARCH				:=
+CARCH				:=	-rdynamic
+LDARCH				:=	-L$(OUT)/$(LIB_DIR)
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
+KERNEL_REV			:=	3.13.0-24
+KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
+HEADERS_DIR			:=	/usr/include
 endif
 
 ########## Variables
 
 HERE				:=	$(shell pwd)
 
-OUT					=	$(OUT_DIR)/$(TARGET)
+OUT					:=	$(OUT_DIR)/$(TARGET)
 
-TEMP_DIR			=	/var/tmp
-ROOT_DIR			=	$(HOME_DIR)/$(PROJECT)
+TEMP_DIR			:=	/var/tmp
+ROOT_DIR			:=	$(HOME_DIR)/$(PROJECT)
 
-TIMESTAMP			=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
-DATESTAMP			=	$(shell date +%Y%m%d)
+TIMESTAMP			:=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
+DATESTAMP			:=	$(shell date +%Y%m%d)
 
-SVNREPO				=	svn://graphite/$(PROJECT)
-SVNURL				=	$(SVNREPO)/trunk/$(TITLE)
-GITURL				=	https://github.com/coverclock/com-diag-$(PROJECT).git
+SVNREPO				:=	svn://graphite/$(PROJECT)
+SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
+GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
-PROJECT_A			=	lib$(PROJECT).a
-PROJECTXX_A			=	lib$(PROJECT)xx.a
-PROJECT_SO			=	lib$(PROJECT).so
-PROJECTXX_SO		=	lib$(PROJECT)xx.so
+PROJECT_A			:=	lib$(PROJECT).a
+PROJECTXX_A			:=	lib$(PROJECT)xx.a
+PROJECT_SO			:=	lib$(PROJECT).so
+PROJECTXX_SO		:=	lib$(PROJECT)xx.so
 
-PROJECT_LIB			=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
-PROJECTXX_LIB		=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
+PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
-UTILITIES			=	
-GENERATED			=	vintage setup
-ALIASES				=	hex oct ntohs htons ntohl htonl
+UTILITIES			:=	
+GENERATED			:=	vintage setup
+ALIASES				:=	hex oct ntohs htons ntohl htonl
 
-TARGETOBJECTS		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
-TARGETOBJECTSXX		=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
-TARGETDRIVERS		=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
-TARGETMODULES		=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
-TARGETSCRIPTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
-TARGETBINARIES		=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
-TARGETGENERATED		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
-TARGETALIASES		=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
-TARGETUNITTESTS		=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
+TARGETOBJECTS		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
+TARGETOBJECTSXX		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
+TARGETDRIVERS		:=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
+TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
+TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
+TARGETBINARIES		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
+TARGETGENERATED		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
+TARGETALIASES		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
+TARGETUNITTESTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
 
-TARGETARCHIVE		=	$(OUT)/$(ARC_DIR)/$(PROJECT_A)
-TARGETARCHIVEXX		=	$(OUT)/$(ARC_DIR)/$(PROJECTXX_A)
-TARGETSHARED		=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETARCHIVE		:=	$(OUT)/$(ARC_DIR)/$(PROJECT_A)
+TARGETARCHIVEXX		:=	$(OUT)/$(ARC_DIR)/$(PROJECTXX_A)
+TARGETSHARED		:=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR).$(MINOR)
 TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO).$(MAJOR)
 TARGETSHARED		+=	$(OUT)/$(LIB_DIR)/$(PROJECT_SO)
-TARGETSHAREDXX		=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
+TARGETSHAREDXX		:=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR).$(MINOR)
 TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO).$(MAJOR)
 TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
-TARGETLIBRARIES		=	$(TARGETARCHIVE) $(TARGETSHARED)
-TARGETLIBRARIESXX	=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
-TARGETPROGRAMS		=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
-TARGETDEFAULT		=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
-TARGETPACKAGE		=	$(TARGETDEFAULT) $(TARGETDRIVERS)
+TARGETLIBRARIES		:=	$(TARGETARCHIVE) $(TARGETSHARED)
+TARGETLIBRARIESXX	:=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
+TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
+TARGETDEFAULT		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
+TARGETPACKAGE		:=	$(TARGETDEFAULT) $(TARGETDRIVERS)
 
-PACKAGEMANIFEST		=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
+PACKAGEMANIFEST		:=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 
-BUILDARTIFACTS		=	doxygen-local.cf dependencies.mk
+BUILDARTIFACTS		:=	doxygen-local.cf dependencies.mk
 
-COMMAND				=	dummy
-SCRIPT				=	dummy
+COMMAND				:=	dummy
+SCRIPT				:=	dummy
 
-CC					=	$(CROSS_COMPILE)gcc
-CXX					=	$(CROSS_COMPILE)g++
-AR					=	$(CROSS_COMPILE)ar
-RANLIB				=	$(CROSS_COMPILE)ranlib
-STRIP				=	$(CROSS_COMPILE)strip
+CC					:=	$(CROSS_COMPILE)gcc
+CXX					:=	$(CROSS_COMPILE)g++
+AR					:=	$(CROSS_COMPILE)ar
+RANLIB				:=	$(CROSS_COMPILE)ranlib
+STRIP				:=	$(CROSS_COMPILE)strip
 
-CDEFINES			=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
+CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
-ARFLAGS				=	rcv
-CPPFLAGS			=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) -isystem $(INCLUDE_DIR) $(CDEFINES)
-CXXFLAGS			=	$(CARCH) -fPIC -g
-CFLAGS				=	$(CARCH) -fPIC -g
-#CXXFLAGS			=	$(CARCH) -fPIC -O3
-#CFLAGS				=	$(CARCH) -fPIC -O3
-CPFLAGS				=	-i
-MVFLAGS				=	-i
-LDFLAGS				=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl
-LDXXFLAGS			=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
+ISYSTEMDIRECTORIES	:=	$(shell $(CC) -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' ')
+ISYSTEMOPTIONS		:=	$(addprefix -isystem ,$(ISYSTEMDIRECTORIES))
 
-BROWSER				=	firefox
+isystem:
+	echo $(ISYSTEMDIRECTORIES)
+	echo $(ISYSTEMOPTIONS)
+
+ARFLAGS				:=	rcv
+CPPFLAGS			:=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CDEFINES)
+#CPPFLAGS			:=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) -isystem $(HEADERS_DIR) $(CDEFINES)
+CXXFLAGS			:=	$(CARCH) -fPIC -g
+CFLAGS				:=	$(CARCH) -fPIC -g
+#CXXFLAGS			:=	$(CARCH) -fPIC -O3
+#CFLAGS				:=	$(CARCH) -fPIC -O3
+CPFLAGS				:=	-i
+MVFLAGS				:=	-i
+LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl
+LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
+
+BROWSER				:=	firefox
 
 ########## Main Entry Points
 

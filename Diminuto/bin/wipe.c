@@ -337,7 +337,7 @@ int main(int argc, char ** argv)
             count = (blocksize - size) / sizeof(datum);
             while ((count--) > 0) {
                 if (*(data++) != datum) {
-                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", total);
+                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", total - (blocksize - size) + ((count + 1) * sizeof(datum)));
                     ++mismatches;
                     ++errors;
                 }
