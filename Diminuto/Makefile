@@ -10,7 +10,7 @@ SYMBOL				:=	DIMINUTO
 
 ########## Customizations
 
-#TARGET				:=	host
+TARGET				:=	host
 #TARGET				:=	diminuto
 #TARGET				:=	arroyo
 #TARGET				:=	cascada
@@ -18,7 +18,7 @@ SYMBOL				:=	DIMINUTO
 #TARGET				:=	cobbler
 #TARGET				:=	uclibc
 #TARGET				:=	stampede
-TARGET				:=	bionic
+#TARGET				:=	bionic
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
@@ -51,7 +51,7 @@ HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
 # sources, toolchains, etc.
 HOME_DIR			:=	$(HOME)/Projects
 
-########## Directory Tree
+########## Directories
 
 ARC_DIR				:=	arc# Archive files
 BIN_DIR				:=	bin# Stripped executable binaries
@@ -74,137 +74,170 @@ TST_DIR				:=	tst# Unit tests
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	-march=armv4t
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.25.10
 KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+CARCH				:=	-march=armv4t -fPIC
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	-march=armv4t
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.26.3
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+CARCH				:=	-march=armv4t -fPIC
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.32.7
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
+CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp
-#LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.32
 KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-HEADERS_DIR			:=	$(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+#LDARCH				:=	-static
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	
-#LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+CARCH				:=	-fPIC
+#LDARCH				:=	-static
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	
-#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+CARCH				:=	-fPIC
+#LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),bionic)# Build for CM-10.2 on the Nexus-7 a.k.a. "flo" with bionic.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
 KERNEL_DIR			:=	$(HOME)/src/cm-10.2/kernel/google/msm
-HEADERS_DIR			:=	$(HOME)/src/cm-10.2/external/kernel-headers/original
+CPPARCH				:=	-isystem bionic/libc/arch-arm/include
+CPPARCH				+=	-isystem bionic/libc/include
+CPPARCH				+=	-isystem bionic/libstdc++/include
+CPPARCH				+=	-isystem bionic/libc/kernel/common
+CPPARCH				+=	-isystem bionic/libc/kernel/arch-arm
+CPPARCH				+=	-isystem bionic/libm/include
+CPPARCH				+=	-isystem bionic/libm/include/arm
+CARCH				:=	-fno-exceptions
+CARCH				+=	-Wno-multichar
+CARCH				+=	-msoft-float
+CARCH				+=	-fpic
+CARCH				+=	-fPIE
+CARCH				+=	-ffunction-sections
+CARCH				+=	-fdata-sections
+CARCH				+=	-funwind-tables
+CARCH				+=	-fstack-protector
+CARCH				+=	-Wa,--noexecstack
+CARCH				+=	-Werror=format-security
+CARCH				+=	-fno-short-enums
+CARCH				+=	-mcpu=cortex-a9
+CARCH				+=	-mfloat-abi=softfp
+CARCH				+=	-mfpu=neon
+CARCH				+=	-Wno-unused-but-set-variable
+CARCH				+=	-fno-builtin-sin
+CARCH				+=	-fno-strict-volatile-bitfields
+CARCH				+=	-Wno-psabi
+CARCH				+=	-mthumb-interwork
+CARCH				+=	-DANDROID
+CARCH				+=	-fmessage-length=0
+CARCH				+=	-W
+CARCH				+=	-Wall
+CARCH				+=	-Wno-unused
+CARCH				+=	-Winit-self
+CARCH				+=	-Wpointer-arith
+CARCH				+=	-Werror=return-type
+CARCH				+=	-Werror=non-virtual-dtor
+CARCH				+=	-Werror=address
+CARCH				+=	-Werror=sequence-point
+CARCH				+=	-Wstrict-aliasing=2
+CARCH				+=	-fgcse-after-reload
+CARCH				+=	-frerun-cse-after-loop
+CARCH				+=	-frename-registers
+CARCH				+=	-mthumb
+CARCH				+=	-fomit-frame-pointer
+CARCH				+=	-fno-strict-aliasing
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 # export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				:=	arm
 PLATFORM			:=	linux
-CPPARCH				:=
-#CARCH				:=
-CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables
-#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.10.24-jetson
 KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
-HEADERS_DIR			:=	$(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
+CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
+#CARCH				:=
+CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
+#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=
-LDARCH				:=	-L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=
-CROSS_COMPILE		:=
 KERNEL_REV			:=	3.2.0-51
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-HEADERS_DIR			:=	/usr/include
+CPPARCH				:=
+CARCH				:=	-fPIC
+LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
-CPPARCH				:=
-CARCH				:=	-rdynamic
-LDARCH				:=	-L$(OUT)/$(LIB_DIR)
-TOOLCHAIN			:=
-CROSS_COMPILE		:=
 KERNEL_REV			:=	3.13.0-24
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
-HEADERS_DIR			:=	/usr/include
+CPPARCH				:=
+CARCH				:=	-rdynamic -fPIC
+LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
 endif
 
 ########## Variables
@@ -279,20 +312,12 @@ STRIP				:=	$(CROSS_COMPILE)strip
 
 CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
-ISYSTEMDIRECTORIES	:=	$(shell $(CC) -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' ')
-ISYSTEMOPTIONS		:=	$(addprefix -isystem ,$(ISYSTEMDIRECTORIES))
-
-isystem:
-	echo $(ISYSTEMDIRECTORIES)
-	echo $(ISYSTEMOPTIONS)
-
 ARFLAGS				:=	rcv
 CPPFLAGS			:=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CDEFINES)
-#CPPFLAGS			:=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) -isystem $(HEADERS_DIR) $(CDEFINES)
-CXXFLAGS			:=	$(CARCH) -fPIC -g
-CFLAGS				:=	$(CARCH) -fPIC -g
-#CXXFLAGS			:=	$(CARCH) -fPIC -O3
-#CFLAGS				:=	$(CARCH) -fPIC -O3
+CXXFLAGS			:=	$(CARCH) -g
+CFLAGS				:=	$(CARCH) -g
+#CXXFLAGS			:=	$(CARCH) -O3
+#CFLAGS				:=	$(CARCH) -O3
 CPFLAGS				:=	-i
 MVFLAGS				:=	-i
 LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl
@@ -543,7 +568,7 @@ drivers-clean:
 
 ########## Helpers
 
-.PHONY:	backup implicit
+.PHONY:	backup implicit isystemdirectories
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
@@ -553,6 +578,11 @@ backup:	../$(PROJECT).bak.tgz
 	
 implicit:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
+
+ISYSTEMDIRECTORIES	:=	$(shell $(CC) -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' ')
+
+isystemdirectories:
+	echo $(ISYSTEMDIRECTORIES)
 
 ########## Documentation
 
