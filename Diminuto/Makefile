@@ -3,6 +3,8 @@
 # Chip Overclock
 # mailto:coverclock@diag.com
 # http://www.diag.com/navigation/downloads/Diminuto.html
+# "Chip Overclock" is a registered trademark.
+# "Digital Aggregates Corporation" is a registered trademark.
 
 PROJECT				:=	diminuto
 TITLE				:=	Diminuto
@@ -74,84 +76,87 @@ TST_DIR				:=	tst# Unit tests
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.25.10
 KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.26.3
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.32.7
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	2.6.32
 KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
 CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),bionic)# Build for CM-10.2 on the Nexus-7 a.k.a. "flo" with bionic.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
 KERNEL_DIR			:=	$(HOME)/src/cm-10.2/kernel/google/msm
-CPPARCH				:=	-isystem device/asus/flo/kernel-headers
+CPPARCH				:=	$(addprefix -isystem ,$(shell $(CROSS_COMPILE)gcc -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' '))
+CPPARCH				+=	-isystem device/asus/flo/kernel-headers
 CPPARCH				+=	-isystem bionic/libc/arch-arm/include
 CPPARCH				+=	-isystem bionic/libc/include
 CPPARCH				+=	-isystem bionic/libstdc++/include
@@ -197,14 +202,14 @@ CARCH				+=	-mthumb
 CARCH				+=	-fomit-frame-pointer
 CARCH				+=	-fno-strict-aliasing
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 # export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				:=	arm
 PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
+CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.10.24-jetson
 KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
@@ -212,32 +217,30 @@ CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
 endif
 
 ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
 KERNEL_REV			:=	3.2.0-51
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CPPARCH				:=
 CARCH				:=	-fPIC
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=
-CROSS_COMPILE		:=
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
+TOOLCHAIN			:=
+CROSS_COMPILE		:=
 KERNEL_REV			:=	3.13.0-24
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
 CPPARCH				:=
 CARCH				:=	-rdynamic -fPIC
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-TOOLCHAIN			:=
-CROSS_COMPILE		:=
 endif
 
 ########## Variables
@@ -313,7 +316,7 @@ STRIP				:=	$(CROSS_COMPILE)strip
 CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
 ARFLAGS				:=	rcv
-CPPFLAGS			:=	$(CPPARCH) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CDEFINES)
+CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CPPARCH)
 CXXFLAGS			:=	$(CARCH) -g
 CFLAGS				:=	$(CARCH) -g
 #CXXFLAGS			:=	$(CARCH) -O3
@@ -434,11 +437,10 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 # otherwise they exit with something else (or core dump). But left to their
 # own devices, then unit tests aren't very chatty. If you want to see more log
 # output from them, you can tune the logging using the environmental variable
-# DIMINUTO_LOG_MASK. For example, the bash command
+# DIMINUTO_LOG_MASK. For example, this bash command turns on everything.
 #
 #	export DIMINUTO_LOG_MASK=0xffff
 #
-# turns on everything.
 
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
@@ -568,7 +570,7 @@ drivers-clean:
 
 ########## Helpers
 
-.PHONY:	backup implicit isystemdirectories
+.PHONY:	backup implicit includes
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
@@ -576,13 +578,14 @@ backup:	../$(PROJECT).bak.tgz
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > $@
 	
-implicit:
-	$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
+defines:
+	$(CC) $(CFLAGS) -dM -E - < /dev/null
 
-ISYSTEMDIRECTORIES	:=	$(shell $(CC) -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' ')
+iquotes:
+	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null 2>&1 | awk 'BEGIN { S=0; } ($$0=="#include \"...\" search starts here:") { S=1; next; } ($$0=="#include <...> search starts here:") { S=0; next; } (S!=0) { print $$1; } { next; }'
 
-isystemdirectories:
-	echo $(ISYSTEMDIRECTORIES)
+isystems:
+	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null 2>&1 | awk 'BEGIN { S=0; } ($$0=="#include <...> search starts here:") { S=1; next; } ($$0=="End of search list.") { S=0; next; } (S!=0) { print $$1; } { next; }'
 
 ########## Documentation
 
