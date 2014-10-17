@@ -83,6 +83,7 @@ KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
@@ -95,6 +96,7 @@ KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
@@ -107,6 +109,7 @@ KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
@@ -120,6 +123,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
@@ -133,6 +137,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
@@ -146,9 +151,10 @@ CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
-ifeq ($(TARGET),bionic)# Build for CM-10.2 on the Nexus-7 a.k.a. "flo" with bionic.
+ifeq ($(TARGET),bionic)# Build for CyanogenMod 10.2 on the Nexus-7 with bionic.
 ARCH				:=	arm
 PLATFORM			:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
@@ -160,8 +166,8 @@ CYANOGENMODCHIP		:=	msm
 CYANOGENMODMAKER	:=	asus
 CYANOGENMOD_DIR		:=	$(HOME)/src/cm-10.2
 KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODVENDOR)/$(CYANOGENMODCPU)
-#CPPARCH				:=	$(addprefix -isystem ,$(shell $(CROSS_COMPILE)gcc -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' '))
-CPPARCH				:=	-isystem ${CYANOGENMOD_DIR}/device/$(CYANOGENMODMAKER)/$(CYANOGENMODDEVICE)/kernel-headers
+CPPARCH				:=
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/device/$(CYANOGENMODMAKER)/$(CYANOGENMODDEVICE)/kernel-headers
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/arch-arm/include
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/include
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libstdc++/include
@@ -169,7 +175,8 @@ CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/common
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/arch-arm
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include
 CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include/arm
-CARCH				:=	-fno-exceptions
+CARCH				:=
+CARCH				+=	-fno-exceptions
 CARCH				+=	-Wno-multichar
 CARCH				+=	-msoft-float
 CARCH				+=	-fpic
@@ -206,7 +213,62 @@ CARCH				+=	-frename-registers
 CARCH				+=	-mthumb
 CARCH				+=	-fomit-frame-pointer
 CARCH				+=	-fno-strict-aliasing
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=
+LDARCH				+=	-nostdlib
+LDARCH				+=	-Bdynamic
+LDARCH				+=	-fPIE
+LDARCH				+=	-pie
+LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
+LDARCH				+=	-Wl,--gc-sections
+LDARCH				+=	-Wl,-z,nocopyreloc
+LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
+LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtbegin_dynamic.o
+LDARCH				+=	-Wl,--whole-archive
+LDARCH				+=	-Wl,--no-whole-archive
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				+=	-ldl
+LDARCH				+=	-lc
+LDARCH				+=	-lm
+LDARCH				+=	-Wl,-z,noexecstack
+LDARCH				+=	-Wl,-z,relro
+LDARCH				+=	-Wl,-z,now
+LDARCH				+=	-Wl,--warn-shared-textrel
+LDARCH				+=	-Wl,--fatal-warnings
+LDARCH				+=	-Wl,--icf=safe
+LDARCH				+=	-Wl,--fix-cortex-a8
+LDARCH				+=	-Wl,--no-undefined
+LDARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtend_android.o
+SOARCH				:=
+SOARCH				+=	-nostdlib
+SOARCH				+=	-Bdynamic
+SOARCH				+=	-fPIE
+SOARCH				+=	-pie
+SOARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
+SOARCH				+=	-Wl,--gc-sections
+SOARCH				+=	-Wl,-z,nocopyreloc
+SOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
+SOARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
+#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtbegin_dynamic.o
+SOARCH				+=	-Wl,--whole-archive
+SOARCH				+=	-Wl,--no-whole-archive
+#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+SOARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				+=	-ldl
+SOARCH				+=	-lc
+SOARCH				+=	-lm
+SOARCH				+=	-Wl,-z,noexecstack
+SOARCH				+=	-Wl,-z,relro
+SOARCH				+=	-Wl,-z,now
+SOARCH				+=	-Wl,--warn-shared-textrel
+SOARCH				+=	-Wl,--fatal-warnings
+SOARCH				+=	-Wl,--icf=safe
+SOARCH				+=	-Wl,--fix-cortex-a8
+SOARCH				+=	-Wl,--no-undefined
+#SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtend_android.o
 # export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
@@ -222,6 +284,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
@@ -234,6 +297,7 @@ KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CPPARCH				:=
 CARCH				:=	-fPIC
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
@@ -246,6 +310,7 @@ KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
 CPPARCH				:=
 CARCH				:=	-rdynamic -fPIC
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
 endif
 
 ########## Variables
@@ -329,8 +394,8 @@ CFLAGS				:=	$(CARCH) -g
 #CFLAGS				:=	$(CARCH) -O3
 CPFLAGS				:=	-i
 MVFLAGS				:=	-i
-LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl
-LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl
+LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl -lm
+LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl -lm
 
 BROWSER				:=	firefox
 
@@ -395,7 +460,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
