@@ -120,9 +120,9 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 			break;
 		}
 
-		if (parity == 0) {
+		if (paritybit == 0) {
 			parity = 0;
-		} else if ((parity % 2) != 0) {
+		} else if ((paritybit % 2) != 0) {
 			parity = PARENB | PARODD;
 		} else {
 			parity = PARENB;

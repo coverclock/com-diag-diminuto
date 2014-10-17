@@ -14,11 +14,17 @@
 #include <errno.h>
 #include <unistd.h>
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC) || defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
-#	warning backtrace(3) not implemented in uClibc!
+#	warning backtrace(3) not implemented on this platform!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
+{
+	errno = EPERM;
+    return -1;
+}
+
+int diminuto_stacktrace()
 {
 	errno = EPERM;
     return -1;
@@ -35,10 +41,10 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 	return rc;
 }
 
-#endif
-
 int diminuto_stacktrace()
 {
     void * buffer[DIMINUTO_STACKTRACE_SIZE];
     return diminuto_stacktrace_fd(buffer, countof(buffer), STDERR_FILENO);
 }
+
+#endif

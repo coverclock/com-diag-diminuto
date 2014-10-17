@@ -154,16 +154,21 @@ PLATFORM			:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
 CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
-KERNEL_DIR			:=	$(HOME)/src/cm-10.2/kernel/google/msm
-CPPARCH				:=	$(addprefix -isystem ,$(shell $(CROSS_COMPILE)gcc -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' '))
-CPPARCH				+=	-isystem device/asus/flo/kernel-headers
-CPPARCH				+=	-isystem bionic/libc/arch-arm/include
-CPPARCH				+=	-isystem bionic/libc/include
-CPPARCH				+=	-isystem bionic/libstdc++/include
-CPPARCH				+=	-isystem bionic/libc/kernel/common
-CPPARCH				+=	-isystem bionic/libc/kernel/arch-arm
-CPPARCH				+=	-isystem bionic/libm/include
-CPPARCH				+=	-isystem bionic/libm/include/arm
+CYANOGENMODDEVICE	:=	flo
+CYANOGENMODVENDOR	:=	google
+CYANOGENMODCHIP		:=	msm
+CYANOGENMODMAKER	:=	asus
+CYANOGENMOD_DIR		:=	$(HOME)/src/cm-10.2
+KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODVENDOR)/$(CYANOGENMODCPU)
+#CPPARCH				:=	$(addprefix -isystem ,$(shell $(CROSS_COMPILE)gcc -x c -E -v - < /dev/null 2>&1 | grep '^[ ]' | sed 's/^ //' | grep -v ' '))
+CPPARCH				:=	-isystem ${CYANOGENMOD_DIR}/device/$(CYANOGENMODMAKER)/$(CYANOGENMODDEVICE)/kernel-headers
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/arch-arm/include
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/include
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libstdc++/include
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/common
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/arch-arm
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include
+CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include/arm
 CARCH				:=	-fno-exceptions
 CARCH				+=	-Wno-multichar
 CARCH				+=	-msoft-float
@@ -316,6 +321,7 @@ STRIP				:=	$(CROSS_COMPILE)strip
 CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
 ARFLAGS				:=	rcv
+#CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CPPARCH)
 CXXFLAGS			:=	$(CARCH) -g
 CFLAGS				:=	$(CARCH) -g
@@ -577,9 +583,15 @@ backup:	../$(PROJECT).bak.tgz
 
 ../$(PROJECT).bak.tgz:
 	tar cvzf - . > $@
+
+gccversion:
+	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null
+
+implicit:
+	@$(CC) $(CFLAGS) -dM -E - < /dev/null
 	
 defines:
-	$(CC) $(CFLAGS) -dM -E - < /dev/null
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
 
 iquotes:
 	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null 2>&1 | awk 'BEGIN { S=0; } ($$0=="#include \"...\" search starts here:") { S=1; next; } ($$0=="#include <...> search starts here:") { S=0; next; } (S!=0) { print $$1; } { next; }'

@@ -11,12 +11,21 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include <sys/types.h>
+#undef COM_DIAG_DIMINUTO_PLATFORM_GLIBC
+#undef COM_DIAG_DIMINUTO_PLATFORM_UCLIBC
+#undef COM_DIAG_DIMINUTO_PLATFORM_BIONIC
 
-#if defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__) && defined(__UCLIBC_SUBLEVEL__)
+#include <features.h>
+#include <sys/cdefs.h>
+
+#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+#	define COM_DIAG_DIMINUTO_PLATFORM_GLIBC (((__GLIBC__) << 16) + __GLIBC_MINOR__)
+#elif defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__) && defined(__UCLIBC_SUBLEVEL__)
 #	define COM_DIAG_DIMINUTO_PLATFORM_UCLIBC (1000000 + ((__UCLIBC_MAJOR__) * 10000) + ((__UCLIBC_MINOR__) * 100) + (__UCLIBC_SUBLEVEL__))
+#elif defined(__BIONIC__)
+#	define COM_DIAG_DIMINUTO_PLATFORM_BIONIC (!0)
 #else
-#	undef  COM_DIAG_DIMINUTO_PLATFORM_UCLIBC
+#	warning Cannot implicitly determine platform!
 #endif
 
 #endif
