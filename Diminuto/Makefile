@@ -151,7 +151,8 @@ ARCH				:=	arm
 PLATFORM			:=	linux
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
 KERNEL_DIR			:=	$(HOME)/src/cm-10.2/kernel/google/msm
-CPPARCH				:=	-isystem bionic/libc/arch-arm/include
+CPPARCH				:=	-isystem device/asus/flo/kernel-headers
+CPPARCH				+=	-isystem bionic/libc/arch-arm/include
 CPPARCH				+=	-isystem bionic/libc/include
 CPPARCH				+=	-isystem bionic/libstdc++/include
 CPPARCH				+=	-isystem bionic/libc/kernel/common
@@ -178,7 +179,6 @@ CARCH				+=	-fno-builtin-sin
 CARCH				+=	-fno-strict-volatile-bitfields
 CARCH				+=	-Wno-psabi
 CARCH				+=	-mthumb-interwork
-CARCH				+=	-DANDROID
 CARCH				+=	-fmessage-length=0
 CARCH				+=	-W
 CARCH				+=	-Wall
