@@ -571,6 +571,8 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo "static const char * DIMINUTO_RELEASE_VALUE = &DIMINUTO_RELEASE_KEYWORD[sizeof(\"DIMINUTO_RELEASE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
+$(OUT)/$(SRC_DIR)/diminuto_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
+
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
@@ -580,6 +582,8 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo "static const char DIMINUTO_VINTAGE_KEYWORD[] = \"DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
 	echo "static const char * DIMINUTO_VINTAGE_VALUE = &DIMINUTO_VINTAGE_KEYWORD[sizeof(\"DIMINUTO_VINTAGE=\") - 1];" >> $@
 	echo '#endif' >> $@
+
+$(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
@@ -719,7 +723,7 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 depend:
 	cp /dev/null dependencies.mk
-	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR); do \
+	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR) $(MOD_DIR) $(DRV_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
@@ -728,7 +732,7 @@ depend:
 			done; \
 		fi; \
 	done
-	for S in $(SRC_DIR) $(TST_DIR); do \
+	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR) $(MOD_DIR) $(DRV_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
