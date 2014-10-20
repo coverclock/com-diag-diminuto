@@ -24,6 +24,7 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
 
 int main(int argc, char **argv) {
 

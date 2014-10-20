@@ -56,10 +56,12 @@ int main(int argc, char ** argv)
      */
 #if defined(__arm__)
 #	warning Suppressing module handle check.
-#else
+#elif 1
     check = diminuto_module_handle(file);
     EXPECT(check != (diminuto_module_handle_t)0);
     EXPECT(check == module);
+#else
+#	warning Suppressing module handle check.
 #endif
 
     module = diminuto_module_unload(module, !0);

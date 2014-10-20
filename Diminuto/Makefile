@@ -55,6 +55,7 @@ HOME_DIR			:=	$(HOME)/Projects
 
 ########## Directories
 
+ART_DIR				:=	art# Temporary build artifacts
 ARC_DIR				:=	arc# Archive files for static linking
 BIN_DIR				:=	bin# Utility source files or stripped executable binaries
 DOC_DIR				:=	doc# Documentation
@@ -84,6 +85,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJ
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -100,6 +102,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -116,6 +119,7 @@ CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -133,6 +137,7 @@ CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -150,6 +155,7 @@ CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -167,6 +173,7 @@ CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -274,10 +281,9 @@ LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 LDARCH				+=	-Wl,--gc-sections
 LDARCH				+=	-Wl,-z,nocopyreloc
 LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-#LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
-LDARCH				+=	-Wl,--whole-archive
-LDARCH				+=	-Wl,--no-whole-archive
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 LDARCH				+=	-Wl,-z,noexecstack
@@ -290,6 +296,24 @@ LDARCH				+=	-Wl,--fix-cortex-a8
 LDARCH				+=	-Wl,--no-undefined
 LDARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_android.o
+MOARCH				:=
+MOARCH				+=	-nostdlib
+MOARCH				+=	-Wl,--gc-sections
+MOARCH				+=	-Wl,-shared,-Bsymbolic
+MOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
+MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+MOARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				+=	-Wl,-z,noexecstack
+MOARCH				+=	-Wl,-z,relro
+MOARCH				+=	-Wl,-z,now
+MOARCH				+=	-Wl,--warn-shared-textrel
+MOARCH				+=	-Wl,--fatal-warnings
+MOARCH				+=	-Wl,--icf=safe
+MOARCH				+=	-Wl,--fix-cortex-a8
+MOARCH				+=	-Wl,--no-undefined
+MOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
 SOARCH				:=
 SOARCH				+=	-nostdlib
 SOARCH				+=	-Wl,--gc-sections
@@ -331,6 +355,7 @@ CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -347,6 +372,7 @@ CPPARCH				:=
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -363,6 +389,7 @@ CPPARCH				:=
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
@@ -392,7 +419,6 @@ PROJECTXX_SO		:=	lib$(PROJECT)xx.so
 PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
-UTILITIES			:=	
 GENERATED			:=	vintage setup
 ALIASES				:=	hex oct ntohs htons ntohl htonl
 
@@ -422,8 +448,9 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 TARGETLIBRARIES		:=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	:=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
-TARGETDEFAULT		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETMODULES) $(TARGETPROGRAMS)
-TARGETPACKAGE		:=	$(TARGETDEFAULT) $(TARGETDRIVERS)
+TARGETDEFAULT		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
+TARGETMOST			:=	$(TARGETDEFAULT) $(TARGETMODULES)
+TARGETALL			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 PACKAGEMANIFEST		:=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
 
@@ -440,7 +467,7 @@ STRIP				:=	$(CROSS_COMPILE)strip
 
 CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
-ARFLAGS				:=	crsPv
+ARFLAGS				:=	crsv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CFLAGS				:=	$(CARCH) -g
@@ -451,6 +478,10 @@ CPFLAGS				:=	-i
 MVFLAGS				:=	-i
 LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
 LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
+MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
+MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
+SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
+SOXXFLAGS			:=	$(SOARCH) $(LDXXLIBRARIES)
 
 BROWSER				:=	firefox
 
@@ -460,7 +491,9 @@ BROWSER				:=	firefox
 
 default:	$(TARGETDEFAULT)
 
-all:	$(UTILITIES) $(TARGETPACKAGE)
+most:	$(TARGETMOST)
+
+all:	$(TARGETALL)
 
 dist:	distribution
 
@@ -515,7 +548,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH) $(LDLIBRARIES)
+	$(CC) $(CFLAGS) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -535,7 +568,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CXX) $(CXXARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(SOARCH) $(LDXXLIBRARIES)
+	$(CXX) $(CXXFLAGS) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOXXFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -662,7 +695,11 @@ LDWHOLEARCHIVES=# These archives will be linked into the shared object in their 
 
 $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -shared $< $(LDFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
+	$(CC) $(CPPFLAGS) $(CFLAGS) -shared -o $@ $< $(MOFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
+
+$(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
+	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $< $(MOXXFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 ########## Kernel-Space Loadable Modules
 
