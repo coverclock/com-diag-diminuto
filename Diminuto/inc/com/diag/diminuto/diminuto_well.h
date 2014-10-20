@@ -522,19 +522,18 @@ public:
 	 * Declares the new and delete operators for use inside a class declaration.
 	 */
 #	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_) \
-		static void * operator new(std::size_t size, const std::nothrow_t& nothrow) throw(); \
-		static void operator delete(void * pointer) throw(); \
-		static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw();
+		static void * operator new(std::size_t size, const std::nothrow_t& nothrow); \
+		static void operator delete(void * pointer); \
+		static void operator delete(void * pointer, const std::nothrow_t& nothrow);
 
 	/**
 	 * @def COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS
 	 * Defines the new and delete operators for use inside a class declaration.
 	 */
 #	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_) \
-		void * _TYPE_::operator new(std::size_t size, const std::nothrow_t& nothrow) throw() { return com_diag_diminuto_well.alloc(); } \
-		void _TYPE_::operator delete(void * pointer) throw() { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); } \
-		void _TYPE_::operator delete(void * pointer, const std::nothrow_t& nothrow) throw() { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); }
-
+		void * _TYPE_::operator new(std::size_t size, const std::nothrow_t& nothrow) { return com_diag_diminuto_well.alloc(); } \
+		void _TYPE_::operator delete(void * pointer) { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); } \
+		void _TYPE_::operator delete(void * pointer, const std::nothrow_t& nothrow) { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); }
 
 #endif
 

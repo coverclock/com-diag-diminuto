@@ -85,6 +85,8 @@ CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
@@ -99,6 +101,8 @@ CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
@@ -113,6 +117,8 @@ CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
@@ -128,6 +134,8 @@ CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
@@ -143,6 +151,8 @@ CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
@@ -158,6 +168,8 @@ CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),bionic)# Build for CyanogenMod 10.2 on the Nexus-7 with bionic.
@@ -268,9 +280,6 @@ LDARCH				+=	-Wl,--whole-archive
 LDARCH				+=	-Wl,--no-whole-archive
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-LDARCH				+=	-ldl
-LDARCH				+=	-lc
-LDARCH				+=	-lm
 LDARCH				+=	-Wl,-z,noexecstack
 LDARCH				+=	-Wl,-z,relro
 LDARCH				+=	-Wl,-z,now
@@ -288,8 +297,6 @@ SOARCH				+=	-Wl,-shared,-Bsymbolic
 SOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-SOARCH				+=	-ldl
-SOARCH				+=	-lc
 SOARCH				+=	-Wl,-z,noexecstack
 SOARCH				+=	-Wl,-z,relro
 SOARCH				+=	-Wl,-z,now
@@ -300,7 +307,15 @@ SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
 SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-# export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
+LDLIBRARIES			:=
+LDLIBRARIES			+=	-ldl
+LDLIBRARIES			+=	-lc
+LDLIBRARIES			+=	-lm
+LDXXLIBRARIES		:=
+LDXXLIBRARIES		+=	-ldl
+LDXXLIBRARIES		+=	-lc
+LDXXLIBRARIES		+=	-lstdc++
+LDXXLIBRARIES		+=	-lm
 endif
 
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
@@ -317,6 +332,8 @@ CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
@@ -331,6 +348,8 @@ CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
@@ -345,6 +364,8 @@ CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ########## Variables
@@ -428,8 +449,8 @@ CXXFLAGS			:=	$(CXXARCH) -g
 #CXXFLAGS			:=	$(CXXARCH) -O3
 CPFLAGS				:=	-i
 MVFLAGS				:=	-i
-LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl -lm
-LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) -lpthread -lrt -ldl -lm
+LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
+LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 
 BROWSER				:=	firefox
 
@@ -494,7 +515,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH)
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH) $(LDLIBRARIES)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -514,7 +535,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CXX) $(CXXARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(SOARCH)
+	$(CXX) $(CXXARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(SOARCH) $(LDXXLIBRARIES)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
