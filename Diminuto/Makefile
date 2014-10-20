@@ -160,21 +160,51 @@ PLATFORM			:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
 CROSS_COMPILE		:=	$(TOOLCHAIN)-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
-CYANOGENMODDEVICE	:=	flo
-CYANOGENMODVENDOR	:=	google
-CYANOGENMODCHIP		:=	msm
-CYANOGENMODMAKER	:=	asus
+CYANOGENMODPRODUCT	:=	flo
+CYANOGENMODKERNEL	:=	google
+CYANOGENMODPROCESSOR:=	msm
+CYANOGENMODDEVICE	:=	asus
 CYANOGENMOD_DIR		:=	$(HOME)/src/cm-10.2
-KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODVENDOR)/$(CYANOGENMODCPU)
+KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODKERNEL)/$(CYANOGENMODPROCESSOR)
 CPPARCH				:=
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/device/$(CYANOGENMODMAKER)/$(CYANOGENMODDEVICE)/kernel-headers
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/arch-arm/include
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/include
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libstdc++/include
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/common
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libc/kernel/arch-arm
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include
-CPPARCH				+=	-isystem ${CYANOGENMOD_DIR}/bionic/libm/include/arm
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/arch-arm/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libstdc++/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/common
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/arch-arm
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include/arm
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libthread_db/include
+CPPARCH				+=	-include $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/AndroidConfig.h
+CPPARCH				+=	-I $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/
+CPPARCH				+=	-DANDROID
+CPPARCH				+=	-D_FORTIFY_SOURCE=1
+CPPARCH				+=	-DNDEBUG
+CPPARCH				+=	-UDEBUG
+CPPARCH				+=	-DHAVE_UNISTD_H
+CPPARCH				+=	-DHAVE_ERRNO_H
+CPPARCH				+=	-DHAVE_NETINET_IN_H
+CPPARCH				+=	-DHAVE_SYS_IOCTL_H
+CPPARCH				+=	-DHAVE_SYS_MMAN_H
+CPPARCH				+=	-DHAVE_SYS_MOUNT_H
+CPPARCH				+=	-DHAVE_SYS_PRCTL_H
+CPPARCH				+=	-DHAVE_SYS_RESOURCE_H
+CPPARCH				+=	-DHAVE_SYS_SELECT_H
+CPPARCH				+=	-DHAVE_SYS_STAT_H
+CPPARCH				+=	-DHAVE_SYS_TYPES_H
+CPPARCH				+=	-DHAVE_STDLIB_H
+CPPARCH				+=	-DHAVE_STRDUP
+CPPARCH				+=	-DHAVE_MMAP
+CPPARCH				+=	-DHAVE_UTIME_H
+CPPARCH				+=	-DHAVE_GETPAGESIZE
+CPPARCH				+=	-DHAVE_LSEEK64
+CPPARCH				+=	-DHAVE_LSEEK64_PROTOTYPE
+CPPARCH				+=	-DHAVE_EXT2_IOCTLS
+CPPARCH				+=	-DHAVE_LINUX_FD_H
+CPPARCH				+=	-DHAVE_TYPE_SSIZE_T
+CPPARCH				+=	-DHAVE_SYS_TIME_H
+CPPARCH				+=	-DHAVE_SYS_PARAM_H
+CPPARCH				+=	-DHAVE_SYSCONF
 CARCH				:=
 CARCH				+=	-fno-exceptions
 CARCH				+=	-Wno-multichar
@@ -211,8 +241,11 @@ CARCH				+=	-fgcse-after-reload
 CARCH				+=	-frerun-cse-after-loop
 CARCH				+=	-frename-registers
 CARCH				+=	-mthumb
+CARCH				+=	-Os
 CARCH				+=	-fomit-frame-pointer
 CARCH				+=	-fno-strict-aliasing
+CARCH				+=	-W
+CARCH				+=	-Wall
 LDARCH				:=
 LDARCH				+=	-nostdlib
 LDARCH				+=	-Bdynamic
@@ -221,12 +254,12 @@ LDARCH				+=	-pie
 LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 LDARCH				+=	-Wl,--gc-sections
 LDARCH				+=	-Wl,-z,nocopyreloc
-LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
-#LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtbegin_dynamic.o
+LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+#LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
 LDARCH				+=	-Wl,--whole-archive
 LDARCH				+=	-Wl,--no-whole-archive
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 LDARCH				+=	-ldl
 LDARCH				+=	-lc
@@ -240,25 +273,16 @@ LDARCH				+=	-Wl,--icf=safe
 LDARCH				+=	-Wl,--fix-cortex-a8
 LDARCH				+=	-Wl,--no-undefined
 LDARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtend_android.o
+LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_android.o
 SOARCH				:=
 SOARCH				+=	-nostdlib
-SOARCH				+=	-Bdynamic
-SOARCH				+=	-fPIE
-SOARCH				+=	-pie
-SOARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 SOARCH				+=	-Wl,--gc-sections
-SOARCH				+=	-Wl,-z,nocopyreloc
-SOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
-SOARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
-#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtbegin_dynamic.o
-SOARCH				+=	-Wl,--whole-archive
-SOARCH				+=	-Wl,--no-whole-archive
-#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-SOARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				+=	-Wl,-shared,-Bsymbolic
+SOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
+SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 SOARCH				+=	-ldl
 SOARCH				+=	-lc
-SOARCH				+=	-lm
 SOARCH				+=	-Wl,-z,noexecstack
 SOARCH				+=	-Wl,-z,relro
 SOARCH				+=	-Wl,-z,now
@@ -267,8 +291,11 @@ SOARCH				+=	-Wl,--fatal-warnings
 SOARCH				+=	-Wl,--icf=safe
 SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
-#SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-#SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtend_android.o
+SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
+
+
+
 # export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
@@ -385,7 +412,7 @@ STRIP				:=	$(CROSS_COMPILE)strip
 
 CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
-ARFLAGS				:=	rcv
+ARFLAGS				:=	crsPv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CXXFLAGS			:=	$(CARCH) -g
@@ -480,7 +507,7 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -527,7 +554,7 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # The major.minor.build is emitted to standard output, a bunch more
 # metadata to standard error. Hence, they can be redirected to separate
 # files. The metadata file is intended to parsable as a standard properties
-# file (although I have not tried it).
+# file (although I have not tested it).
 $(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -571,6 +598,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo "static const char * DIMINUTO_RELEASE_VALUE = &DIMINUTO_RELEASE_KEYWORD[sizeof(\"DIMINUTO_RELEASE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
+# For embedding in the library archive and shared object.
 $(OUT)/$(SRC_DIR)/diminuto_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 
 # For embedding in an application where it can be interrogated or displayed.
@@ -583,8 +611,10 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo "static const char * DIMINUTO_VINTAGE_VALUE = &DIMINUTO_VINTAGE_KEYWORD[sizeof(\"DIMINUTO_VINTAGE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
+# For embedding in the library archive and shared object.
 $(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 
+# For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)

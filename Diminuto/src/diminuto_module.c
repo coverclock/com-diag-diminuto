@@ -59,7 +59,7 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 	void * resolved;
 	const char * label;
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC) || defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 	label = "dlsym";
 	resolved = dlsym(handle, symbol);
 #else
