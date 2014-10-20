@@ -55,14 +55,14 @@ HOME_DIR			:=	$(HOME)/Projects
 
 ########## Directories
 
-ARC_DIR				:=	arc# Archive files
-BIN_DIR				:=	bin# Stripped executable binaries
+ARC_DIR				:=	arc# Archive files for static linking
+BIN_DIR				:=	bin# Utility source files or stripped executable binaries
 DOC_DIR				:=	doc# Documentation
 DRV_DIR				:=	drv# Loadable kernel modules
 ETC_DIR				:=	etc# Miscellaneous files
-GEN_DIR				:=	gen# Generated files
+GEN_DIR				:=	gen# Generated source files
 INC_DIR				:=	inc# Header files
-LIB_DIR				:=	lib# Shared objects
+LIB_DIR				:=	lib# Shared objects for dynamic linking
 MOD_DIR				:=	mod# Loadable user modules
 OUT_DIR				:=	out# Build artifacts
 SRC_DIR				:=	src# Library source files
@@ -222,7 +222,7 @@ LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 LDARCH				+=	-Wl,--gc-sections
 LDARCH				+=	-Wl,-z,nocopyreloc
 LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
-LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
+#LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODDEVICE)/obj/lib/crtbegin_dynamic.o
 LDARCH				+=	-Wl,--whole-archive
 LDARCH				+=	-Wl,--no-whole-archive
@@ -387,7 +387,7 @@ CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
 ARFLAGS				:=	rcv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
-CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) $(CPPARCH)
+CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CXXFLAGS			:=	$(CARCH) -g
 CFLAGS				:=	$(CARCH) -g
 #CXXFLAGS			:=	$(CARCH) -O3
@@ -523,14 +523,12 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ########## Generated
 
-.PHONY:	$(OUT)/$(GEN_DIR)/vintage.c $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
-
 # For embedding in a system where it can be executed from a shell.
 # The major.minor.build is emitted to standard output, a bunch more
 # metadata to standard error. Hence, they can be redirected to separate
 # files. The metadata file is intended to parsable as a standard properties
 # file (although I have not tried it).
-$(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
+$(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -563,14 +561,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 	echo '    return 0;' >> $@
 	echo '}' >> $@
 
-# Why do we generate the release and vintage header files into a source code
-# directory? Because a common thing to do is to build the library, then
-# copy the include directory and the library or shared object to some public
-# location. We want the generated header files to be in the public include
-# directory with all of the other header files.
-
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
+$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
@@ -580,7 +572,7 @@ $(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:
 	echo '#endif' >> $@
 
 # For embedding in an application where it can be interrogated or displayed.
-$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:
+$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
@@ -727,19 +719,23 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 depend:
 	cp /dev/null dependencies.mk
-	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR); do \
-		for F in $$S/*.c; do \
-			D=`dirname $$F`; \
-			echo -n "$(OUT)/$$D/" >> dependencies.mk; \
-			$(CC) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
-		done; \
+	for S in $(SRC_DIR) $(MOD_DIR) $(DRV_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR); do \
+		if [ -d $$S ]; then \
+			for F in $$S/*.c; do \
+				D=`dirname $$F`; \
+				echo -n "$(OUT)/$$D/" >> dependencies.mk; \
+				$(CC) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+			done; \
+		fi; \
 	done
 	for S in $(SRC_DIR) $(TST_DIR); do \
-		for F in $$S/*.cpp; do \
-			D=`dirname $$F`; \
-			echo -n "$(OUT)/$$D/" >> dependencies.mk; \
-			$(CXX) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
-		done; \
+		if [ -d $$S ]; then \
+			for F in $$S/*.cpp; do \
+				D=`dirname $$F`; \
+				echo -n "$(OUT)/$$D/" >> dependencies.mk; \
+				$(CXX) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+			done; \
+		fi; \
 	done
 
 -include dependencies.mk
