@@ -367,8 +367,8 @@ PLATFORM			:=	linux
 TOOLCHAIN			:=
 CROSS_COMPILE		:=
 KERNEL_REV			:=	3.2.0-51
-KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-CPPARCH				:=
+KERNEL_DIR			:=
+CPPARCH				:= -I/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
@@ -384,8 +384,8 @@ PLATFORM			:=	linux
 TOOLCHAIN			:=
 CROSS_COMPILE		:=
 KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
-CPPARCH				:=
+KERNEL_DIR			:=
+CPPARCH				:=	-I/usr/src/linux-headers-$(KERNEL_REV)
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
@@ -583,7 +583,7 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(P
 
 $(OUT)/$(SYM_DIR)/%:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CPPFLAGS) -I $(KERNEL_DIR)/include $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 ########## Target Aliases
 
