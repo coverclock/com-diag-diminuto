@@ -95,12 +95,13 @@
 #include <malloc.h>
 #include <time.h>
 #include <errno.h>
+#include <stdio.h>
 
-static const char DEVICE[] = "/dev/null";
-static const size_t BLOCKSIZE = 4096UL;
-static const uint64_t MODULO = 100000000ULL;
-static const size_t PAGESIZE = 4096UL;
-static const size_t SECTORSIZE = 512UL;
+static const char DEFAULT_DEVICE[] = "/dev/null";
+static const size_t DEFAULT_BLOCKSIZE = 4096UL;
+static const uint64_t DEFAULT_MODULO = 100000000ULL;
+static const size_t DEFAULT_PAGESIZE = 4096UL;
+static const size_t DEFAULT_SECTORSIZE = 512UL;
 static const uint64_t A1 = 4294967311ULL;
 static const uint64_t A0 = 17ULL;
 
@@ -132,11 +133,11 @@ int main(int argc, char ** argv)
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    device = DEVICE;
-    blocksize = BLOCKSIZE;
-    modulo = MODULO;
-    pagesize = PAGESIZE;
-    sectorsize = SECTORSIZE;
+    device = DEFAULT_DEVICE;
+    blocksize = DEFAULT_BLOCKSIZE;
+    modulo = DEFAULT_MODULO;
+    pagesize = DEFAULT_PAGESIZE;
+    sectorsize = DEFAULT_SECTORSIZE;
 
     do {
 

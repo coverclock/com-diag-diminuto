@@ -90,4 +90,6 @@ int main(void)
     diminuto_pool_fini(&pool);
 
     ASSERT(count == 0);
+
+    EXIT();
 }

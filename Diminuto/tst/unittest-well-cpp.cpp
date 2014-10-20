@@ -82,6 +82,7 @@ int main(int argc, char ** argv) {
 			ASSERT(framistat[ii]->discombobulate() == ii);
 		}
 
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 		for (ii = 0; ii < LIMIT; ++ii) {
 			try {
 				fail = new Framistat(countof(framistat));
@@ -92,6 +93,7 @@ int main(int argc, char ** argv) {
 				ASSERT(false);
 			}
 		}
+#endif
 
 		for (ii = 0; ii < LIMIT; ++ii) {
 			fail = new(std::nothrow) Framistat(countof(framistat));

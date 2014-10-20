@@ -24,21 +24,27 @@ int main(void)
 
 	ASSERT(pthread_mutex_trylock(&mutex) == 0);
 	pthread_mutex_unlock(&mutex);
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &state);
 	ASSERT(state == PTHREAD_CANCEL_ENABLE);
+#endif
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
 		ASSERT(pthread_mutex_trylock(&mutex) == EBUSY);
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &state);
 		ASSERT(state == PTHREAD_CANCEL_DISABLE);
+#endif
 
 	DIMINUTO_CRITICAL_SECTION_END;
 
 	ASSERT(pthread_mutex_trylock(&mutex) == 0);
 	pthread_mutex_unlock(&mutex);
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &state);
 	ASSERT(state == PTHREAD_CANCEL_ENABLE);
+#endif
 
     return 0;
 }

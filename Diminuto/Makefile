@@ -827,7 +827,7 @@ depend:
 			done; \
 		fi; \
 	done
-	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR) $(MOD_DIR) $(DRV_DIR); do \
+	for S in $(TST_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \

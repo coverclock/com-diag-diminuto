@@ -14,7 +14,7 @@
 
 static uint64_t data = 0;
 
-static void * myalloc(size_t size)
+static void * myalloc(size_t size /* UNUSED */)
 {
     return &data;
 }
@@ -30,7 +30,6 @@ int main(void)
     void * p1;
     void * p2;
     void * p3;
-    void * p4;
 
     p1 = diminuto_heap_malloc(sizeof(int));
     ASSERT(p1 != (void *)0);
@@ -63,4 +62,6 @@ int main(void)
     data = 0;
     diminuto_heap_free(p1);
     ASSERT(data == 0);
+
+    EXIT();
 }
