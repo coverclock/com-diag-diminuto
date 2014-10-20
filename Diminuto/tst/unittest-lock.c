@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-static const char * file = "/tmp/unittest-lock.pid";
+static const char * file = "unittest-lock.pid";
 
 int main(int argc, char ** argv)
 {

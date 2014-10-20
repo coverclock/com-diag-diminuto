@@ -516,9 +516,9 @@ distribution:
 
 .PHONY:	package
 
-package $(PROJECT)-$(TARGET).tgz:
+package $(OUT)/$(ART_DIR)/$(PROJECT)-$(TARGET).tgz:
 	( cd ..; mkdir -p $(PACKAGEMANIFEST) )
-	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(PROJECT)-$(TARGET).tgz
+	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(OUT)/$(ART_DIR)/$(PROJECT)-$(TARGET).tgz
 
 .PHONY: commit dcommit push origin init
 
@@ -703,7 +703,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 
 ########## User-Space Loadable Modules
 
-LDWHOLEARCHIVES=# These archives will be linked into the shared object in their entirety.
+LDWHOLEARCHIVES := # These archives will be linked into the shared object in their entirety.
 
 $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
@@ -717,7 +717,7 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
 
 .PHONY:	drivers drivers-clean
 
-OBJ_M =	$(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
+OBJ_M := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
 $(OUT)/$(SYS_DIR)/Makefile:	Makefile
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
@@ -828,15 +828,18 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 .PHONY:	depend
 
+DEPENDENCIES := $(OUT)/$(ART_DIR)/dependencies.mk
+
 depend:
-	cp /dev/null dependencies-$(TARGET).mk
+	M=`dirname $(DEPENDENCIES)`; test -d $$M || mkdir -p $$M
+	cp /dev/null $(DEPENDENCIES)
 	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(GEN_DIR) $(MOD_DIR) $(DRV_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
 				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
 				echo -n "$(OUT)/$$D/" > $$T; \
-				$(CC) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> dependencies-$(TARGET).mk; \
+				$(CC) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
 				rm -f $$T; \
 			done; \
 		fi; \
@@ -847,10 +850,10 @@ depend:
 				D=`dirname $$F`; \
 				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
 				echo -n "$(OUT)/$$D/" > $$T; \
-				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> dependencies-$(TARGET).mk; \
+				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
 				rm -f $$T; \
 			done; \
 		fi; \
 	done
 
--include dependencies-$(TARGET).mk
+-include $(DEPENDENCIES)
