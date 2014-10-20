@@ -17,6 +17,8 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_path.h"
 
+static const char PATH[] = "/usr/sbin:/usr/bin:/sbin:/bin:/system/bin:/system/xbin";
+
 int main(int argc, char ** argv)
 {
 	char * result;
@@ -26,24 +28,24 @@ int main(int argc, char ** argv)
 	 * so that this could be run on the target.
 	 */
 
-	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", "ls");
+	result = diminuto_path_scan(PATH, "ls");
 	ASSERT(result != (char *)0);
-	EXPECT(strcmp(result, "/bin/ls") == 0);
+	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "ls");
 	ASSERT(result != (char *)0);
-	EXPECT(strcmp(result, "/bin/ls") == 0);
+	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "rm");
 	ASSERT(result != (char *)0);
-	EXPECT(strcmp(result, "/bin/rm") == 0);
+	EXPECT((strcmp(result, "/bin/rm") == 0) || (strcmp(result, "/system/bin/rm") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "head");
 	ASSERT(result != (char *)0);
-	EXPECT(strcmp(result, "/usr/bin/head") == 0);
+	EXPECT((strcmp(result, "/usr/bin/head") == 0) || (strcmp(result, "/system/xbin/head") == 0));
 	free(result);
 
 	/*
@@ -60,13 +62,13 @@ int main(int argc, char ** argv)
 	 * And of course some should fail.
 	 */
 
-	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", "COM_DIAG_DIMINUTO_NOTFOUND");
+	result = diminuto_path_scan(PATH, "COM_DIAG_DIMINUTO_NOTFOUND");
 	ASSERT(result == (char *)0);
 
 	result = diminuto_path_scan((const char *)0, "ls");
 	ASSERT(result == (char *)0);
 
-	result = diminuto_path_scan("/usr/sbin:/usr/bin:/sbin:/bin", (const char *)0);
+	result = diminuto_path_scan(PATH, (const char *)0);
 	ASSERT(result == (char *)0);
 
 	result = diminuto_path_scan("/COM_DIAG_DIMINUTO_NOTFOUND/sbin:/COM_DIAG_DIMINUTO_NOTFOUND/bin", "ls");

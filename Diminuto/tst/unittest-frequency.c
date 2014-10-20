@@ -54,14 +54,14 @@ int main(int argc, char ** argv)
 	EXPECT(diminuto_frequency_seconds2ticks(2, diminuto_frequency() - 1, diminuto_frequency()) == ((diminuto_frequency() * 3) - 1));
 
 	EXPECT(diminuto_frequency_rounddown(0LL, 1LL) == 0LL);
-	EXPECT(diminuto_frequency_rounddown(1234567890LL, 1LL) == 123456789LL);
-	EXPECT(diminuto_frequency_rounddown(1234567890LL, 1000LL) == 123456000LL);
-	EXPECT(diminuto_frequency_rounddown(1234567890LL, 10000LL) == 123450000LL);
+	EXPECT(diminuto_frequency_rounddown(1234567890LL, 1LL) == 1234567890LL);
+	EXPECT(diminuto_frequency_rounddown(1234567890LL, 1000LL) == 1234567000LL);
+	EXPECT(diminuto_frequency_rounddown(1234567890LL, 10000LL) == 1234560000LL);
 
 	EXPECT(diminuto_frequency_roundup(0LL, 1LL) == 0LL);
-	EXPECT(diminuto_frequency_roundup(1234567890LL, 1LL) == 123456789LL);
-	EXPECT(diminuto_frequency_roundup(1234567890LL, 1000LL) == 123457000LL);
-	EXPECT(diminuto_frequency_roundup(1234567890LL, 10000LL) == 123460000LL);
+	EXPECT(diminuto_frequency_roundup(1234567890LL, 1LL) == 1234567890LL);
+	EXPECT(diminuto_frequency_roundup(1234567890LL, 1000LL) == 1234568000LL);
+	EXPECT(diminuto_frequency_roundup(1234567890LL, 10000LL) == 1234570000LL);
 
 	/*
 	 * If we ever change the duration of a tick, these tests will have to be

@@ -419,7 +419,7 @@ PROJECTXX_SO		:=	lib$(PROJECT)xx.so
 PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
-GENERATED			:=	vintage setup
+GENERATED			:=	vintage setup generate
 ALIASES				:=	hex oct ntohs htons ntohl htonl
 
 TARGETOBJECTS		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
@@ -688,6 +688,18 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
 	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
 	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
+	chmod 666 $@
+
+# For generating a setup script for a bash shell (for example, "bash generate > setup").
+# (Because the Android bash doesn't seem to implement BASH_ARGV.)
+$(OUT)/$(BIN_DIR)/generate:	Makefile
+	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
+	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
+	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
+	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
+	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
+	chmod 777 $@
 
 ########## User-Space Loadable Modules
 
@@ -817,13 +829,15 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 .PHONY:	depend
 
 depend:
-	cp /dev/null dependencies.mk
-	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(SRC_DIR) $(MOD_DIR) $(DRV_DIR); do \
+	cp /dev/null dependencies-$(TARGET).mk
+	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(GEN_DIR) $(MOD_DIR) $(DRV_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
-				echo -n "$(OUT)/$$D/" >> dependencies.mk; \
-				$(CC) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+				echo -n "$(OUT)/$$D/" > $$T; \
+				$(CC) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> dependencies-$(TARGET).mk; \
+				rm -f $$T; \
 			done; \
 		fi; \
 	done
@@ -831,10 +845,12 @@ depend:
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
-				echo -n "$(OUT)/$$D/" >> dependencies.mk; \
-				$(CXX) $(CPPFLAGS) -MM -MG $$F >> dependencies.mk; \
+				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+				echo -n "$(OUT)/$$D/" > $$T; \
+				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> dependencies-$(TARGET).mk; \
+				rm -f $$T; \
 			done; \
 		fi; \
 	done
 
--include dependencies.mk
+-include dependencies-$(TARGET).mk

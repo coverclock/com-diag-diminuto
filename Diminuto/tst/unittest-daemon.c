@@ -20,7 +20,11 @@
 #include <sys/types.h>
 
 static const char LOGNAME[] = "unittest-daemon";
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 static const char LOCKFILE[] = "/tmp/unittest-daemon.pid";
+#else
+static const char LOCKFILE[] = "/data/local/tmp/unittest-daemon.pid";
+#endif
 
 int main(int argc, char ** argv)
 {
