@@ -82,6 +82,7 @@ KERNEL_REV			:=	2.6.25.10
 KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 endif
@@ -95,6 +96,7 @@ KERNEL_REV			:=	2.6.26.3
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 endif
@@ -108,6 +110,7 @@ KERNEL_REV			:=	2.6.32.7
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 endif
@@ -121,6 +124,7 @@ KERNEL_REV			:=	2.6.32
 KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
 CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
+CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -135,6 +139,7 @@ KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
+CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -149,6 +154,7 @@ KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
+CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -246,6 +252,7 @@ CARCH				+=	-fomit-frame-pointer
 CARCH				+=	-fno-strict-aliasing
 CARCH				+=	-W
 CARCH				+=	-Wall
+CXXARCH				:=	$(CARCH)
 LDARCH				:=
 LDARCH				+=	-nostdlib
 LDARCH				+=	-Bdynamic
@@ -293,9 +300,6 @@ SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
 SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-
-
-
 # export PATH=${HOME}/src/cm-10.2/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin:${PATH}
 endif
 
@@ -309,6 +313,7 @@ KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 #CARCH				:=
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
+CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -323,6 +328,7 @@ KERNEL_REV			:=	3.2.0-51
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CPPARCH				:=
 CARCH				:=	-fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 endif
@@ -336,6 +342,7 @@ KERNEL_REV			:=	3.13.0-24
 KERNEL_DIR			:=	/usr/src/linux-headers-$(KERNEL_REV)
 CPPARCH				:=
 CARCH				:=	-rdynamic -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
 endif
@@ -415,10 +422,10 @@ CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 ARFLAGS				:=	crsPv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
-CXXFLAGS			:=	$(CARCH) -g
 CFLAGS				:=	$(CARCH) -g
-#CXXFLAGS			:=	$(CARCH) -O3
 #CFLAGS				:=	$(CARCH) -O3
+CXXFLAGS			:=	$(CXXARCH) -g
+#CXXFLAGS			:=	$(CXXARCH) -O3
 CPFLAGS				:=	-i
 MVFLAGS				:=	-i
 LDFLAGS				:=	$(LDARCH) -l$(PROJECT) -lpthread -lrt -ldl -lm
@@ -505,9 +512,9 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
-	$(CC) $(CARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(SOARCH)
+	$(CXX) $(CXXARCH) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) $(SOARCH)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
