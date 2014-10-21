@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_alarm.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -29,12 +30,7 @@ static const size_t LIMIT = 256;
 static const diminuto_port_t PORT = 0xfff0;
 static const diminuto_port_t PORT1 = 65535;
 static const diminuto_port_t PORT2 = 65534;
-#if defined(__arm__)
 static const size_t TOTAL = 1024 * 1024 * 100;
-#else
-static const size_t TOTAL = 1024 * 1024 * 100;
-#endif
-static const int DEBUG = 0;
 
 int main(void)
 {
@@ -305,7 +301,7 @@ int main(void)
         EXPECT((diminuto_ipc_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
         after = diminuto_time_elapsed();
         EXPECT(diminuto_alarm_check());
-        EXPECT((after - before) >= 2000000ULL);
+        EXPECT((after - before) >= 2000000LL);
         EXPECT(errno == EINTR);
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
@@ -328,23 +324,23 @@ int main(void)
             int status;
 
             address = 0;
-            port = -1;
+            port = (diminuto_port_t)-1;
             EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
             EXPECT(address == LOCALHOST);
-            EXPECT(port != -1);
+            EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
             address = 0;
-            port = -1;
+            port = -(diminuto_port_t)1;
             EXPECT(diminuto_ipc_nearend(producer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port == PORT);
 
             address = 0;
-            port = -1;
+            port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc_farend(producer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
-            EXPECT(port != -1);
+            EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
             diminuto_delay(hertz / 1000, !0);
@@ -416,16 +412,16 @@ int main(void)
             EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
 
             address = 0;
-            port = -1;
+            port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc_farend(consumer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port == PORT);
 
             address = 0;
-            port = -1;
+            port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc_nearend(consumer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
-            EXPECT(port != -1);
+            EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
     		EXPECT(diminuto_ipc_close(consumer) >= 0);

@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_module.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 
 const char KEYWORD[] = "LD_MODULE_PATH";
@@ -23,6 +24,7 @@ const char NAME[] = "unittest-module-example.so";
 int main(int argc, char ** argv)
 {
 	char * file;
+	const char * paths;
 	diminuto_module_handle_t module;
 	diminuto_module_handle_t check;
 	void * functionp;
@@ -36,7 +38,8 @@ int main(int argc, char ** argv)
 
     file = diminuto_path_find(KEYWORD, NAME);
     if (file == (const char *)0) {
-    	DIMINUTO_LOG_ERROR("%s not found amongst %s!\n", NAME, KEYWORD);
+    	paths = getenv(KEYWORD);
+    	DIMINUTO_LOG_ERROR("\"%s\" not found in \"%s\" amongst \"%s\"!\n", NAME, KEYWORD, (paths != (const char *)0) ? paths : "");
     }
     ASSERT(file != (const char *)0);
 
@@ -51,18 +54,12 @@ int main(int argc, char ** argv)
     ASSERT(module != (diminuto_module_handle_t)0);
 
     /*
-     * N.B: On i386, check will equal module.
-     *      On ARM, check will be NULL.
+     * Not all platforms implement the underlying RTLD_NOLOAD option on which
+     * this feature depends. Hence, you're mileage may vary.
      */
-#if defined(__arm__)
-#	warning Suppressing module handle check.
-#elif 1
     check = diminuto_module_handle(file);
-    EXPECT(check != (diminuto_module_handle_t)0);
-    EXPECT(check == module);
-#else
-#	warning Suppressing module handle check.
-#endif
+    ADVISE(check != (diminuto_module_handle_t)0);
+    ADVISE(check == module);
 
     module = diminuto_module_unload(module, !0);
     ASSERT(module == (diminuto_module_handle_t)0);

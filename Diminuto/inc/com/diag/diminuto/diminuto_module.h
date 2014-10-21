@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -20,7 +20,8 @@
 typedef void * diminuto_module_handle_t;
 
 /**
- * Check to see if a module is already loaded.
+ * Check to see if a module is already loaded. The underlying functionality is
+ * not implemented on all platforms.
  * @param filename is the path to the module.
  * @return a handle if the module is loaded, NULL otherwise.
  */
@@ -34,7 +35,9 @@ extern diminuto_module_handle_t diminuto_module_handle(const char * filename);
 extern diminuto_module_handle_t diminuto_module_load(const char * filename);
 
 /**
- * Resolve an external symbol inside a loaded module.
+ * Resolve an external symbol inside a loaded module. The underlying version
+ * capability is not implemented on all platforms, in which case the version
+ * parameter is ignored.
  * @param handle identifies a specific loaded module.
  * @param symbol is the (possibly mangled) name of the symbol.
  * @param version is an optional version string or NULL if version doesn't matter.

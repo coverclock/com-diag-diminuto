@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -41,6 +41,7 @@ diminuto_module_handle_t diminuto_module_handle(const char * filename)
 #if defined(RTLD_NOLOAD)
 	return diminuto_module_load_generic(filename, RTLD_NOLOAD);
 #else
+#	warning RTLD_NOLOAD not defined!
 	return diminuto_module_load_generic(filename, 0);
 #endif
 }
@@ -59,7 +60,12 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 	void * resolved;
 	const char * label;
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC) || defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+#	warning dlvsym(3) not implemented in uClibc!
+	label = "dlsym";
+	resolved = dlsym(handle, symbol);
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+#	warning dlvsym(3) not implemented in Bionic!
 	label = "dlsym";
 	resolved = dlsym(handle, symbol);
 #else

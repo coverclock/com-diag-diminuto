@@ -61,6 +61,17 @@ static int diminuto_unittest_errors = 0;
 	} while (0)
 
 /**
+ * @def ADVISE(_COND_)
+ * Log a notice message if the specified condition @a _COND_ is not true.
+ */
+#define ADVISE(_COND_) \
+    do { \
+        if (!(_COND_)) { \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "!ADVISE(" #_COND_ ")!\n", __FILE__, __LINE__); \
+        } \
+    } while (0)
+
+/**
  * @def EXPECT(_COND_)
  * Log a warning message if the specified condition @a _COND_ is not true
  * and increment the error counter.
@@ -72,7 +83,6 @@ static int diminuto_unittest_errors = 0;
             ++diminuto_unittest_errors; \
         } \
     } while (0)
-
 
 /**
  * @def ASSERT(_COND_)
