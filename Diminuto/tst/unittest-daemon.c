@@ -6,6 +6,10 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * Be aware that a bunch of the possibly diagnostic output goes into the
+ * system log. Where this is exactly and what it is called will differ from
+ * system to system. On my Ubunth 14.04 system it is "/var/log/syslog".
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -20,7 +24,7 @@
 #include <sys/types.h>
 
 static const char LOGNAME[] = "unittest-daemon";
-static const char LOCKFILE[] = "unittest-daemon.pid";
+static const char LOCKFILE[] = COM_DIAG_DIMINUTO_LOCK_ROOT "unittest-daemon.pid";
 
 int main(int argc, char ** argv)
 {

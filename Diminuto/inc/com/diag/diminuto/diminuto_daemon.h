@@ -23,7 +23,7 @@
  * child, are however unconditionally logged to the system log. This function
  * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
  * @param name is the name used for the system log.
- * @param file if non-null is the path and name of a lock/pid file to be used.
+ * @param file if non-null is the absolute path to a lock/pid file to be used.
  * @param timeout is the number of seconds to wait for the child to respond.
  * @param fail if true forces the child to fail (useful for testing).
  * @return 0 to the child upon success, -1 to the parent otherwise.
@@ -42,7 +42,7 @@ extern int diminuto_daemon_generic(const char * name, const char * file, unsigne
  * child, are however unconditionally logged to the system log. This function
  * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
  * @param name is the name used for the system log and the lock file.
- * @param file if non-null is the path and name of a lock/pid file to be used.
+ * @param file if non-null is the absolute path to a lock/pid file to be used.
  * @return 0 to the child upon success, -1 to the parent otherwise.
  */
 extern int diminuto_daemon(const char * name, const char * file);

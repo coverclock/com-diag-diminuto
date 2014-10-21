@@ -132,8 +132,13 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 
         /* Flush output before we mess with it. */
 
-        (void)fflush(stdout);
-        (void)fflush(stderr);
+        if (fflush(stdout) == EOF) {
+        	diminuto_serror("diminuto_daemon: fflush(stdout)");
+        }
+
+        if (fflush(stderr) == EOF) {
+        	diminuto_serror("diminuto_daemon: fflush(stderr)");
+        }
 
         /* Fork off the daemon child. */
 
@@ -154,18 +159,18 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 	 *      signaled us, but there is no reliable way to be sure.
 	 */
 
-	/* Wait for the daemon child to signal us. */
+	/* Wait for the daemon child to signal us so our handler exits us. */
 
-	if (pid != 0) {
-		if (pid > 0) {
-			if (!alarmed) {
-				alarm(timeout);
-				while (!alarmed) {
-					pause();
-				}
-			}
-		}
-		return -1;
+    if (pid != 0) {
+        if (pid > 0) {
+            if (!alarmed) {
+                alarm(timeout);
+                while (!alarmed) {
+                    pause();
+                }
+            }
+        }
+        return -1;
 	}
 
     /*
@@ -250,8 +255,9 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
          * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
          * /dev/null, and then we make sure that stdin, stdout, and stderr are
          * also redirected to /dev/null. And then we close everything else.
-         * We have to be careful not to close the file descriptor associated
-         * with sending stuff to syslog.
+         * We have to be careful not to leave the file descriptor associated
+         * with sending stuff to syslog closed; sure wish there was an API call
+         * to tell what that file descriptor was.
          */
 
         /* Redirect the big three descriptors to /dev/null. */
@@ -350,8 +356,10 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
         		/* Do nothing. */
         	} else if (fd == fileno(stderr)) {
         		/* Do nothing. */
+        	} else if (close(fd) < 0) {
+        		/* Do nothing. */
         	} else {
-        		(void)close(fd);
+        		/* Do nothing. */
         	}
         }
 
@@ -377,6 +385,8 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
         } else {
             /* Do nothing. */
         }
+
+        /* Set signal number to indicate success. */
 
         signum = SIGUSR1;
 
