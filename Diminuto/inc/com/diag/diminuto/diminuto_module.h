@@ -9,6 +9,9 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * Some of the underlying functionality used by this feature is not implemented
+ * in uClibc, and implemented with different semantics in bionic (Android).
  */
 
 /**
@@ -20,8 +23,9 @@
 typedef void * diminuto_module_handle_t;
 
 /**
- * Check to see if a module is already loaded. The underlying functionality is
- * not implemented on all platforms.
+ * Check to see if a module is already loaded. N.B. the underlying functionality
+ * is not implemented on all platforms. For example, in bionic used by Android,
+ * this always appears to load the module.
  * @param filename is the path to the module.
  * @return a handle if the module is loaded, NULL otherwise.
  */
@@ -49,7 +53,11 @@ extern void * diminuto_module_symbol(diminuto_module_handle_t handle, const char
  * Unload a loaded module. The module is not actually unloaded unless the
  * number of unloads matches the number of loads, reducing the reference count
  * to zero. The only time this function appears to return an error is if the
- * module is already actually unloaded.
+ * module is already actually unloaded. This implementation was inspired by
+ * the loadable module manager in Asterisk. N.B. The bionic library used by
+ * Android appears to have different semantics: the unload always succeeds, even
+ * if the module was not loaded. This makes it impossible to use the force
+ * option, and indeed, to even tell if the module was actually ever unloaded.
  * @param handle identifies a specific loaded module.
  * @param force if true iterates on the unload until the reference count is zero.
  * @return NULL is the unload was successful, the value of handle otherwise.

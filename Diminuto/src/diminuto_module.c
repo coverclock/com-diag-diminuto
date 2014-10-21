@@ -89,6 +89,15 @@ diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle,
 {
 	int rc;
 
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+	/*
+	 * The dlclose(3) in Android's bionic library appears to always succeed,
+	 * placing this code in an infinite loop.
+	 */
+
+	force = 0;
+#endif
+
 	/*
 	 * Forcing a dlclose() causes this code to iterate to reduce the reference
 	 * count until the dlclose() returns an error, indicating that it failed

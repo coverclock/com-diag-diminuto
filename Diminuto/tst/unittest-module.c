@@ -6,6 +6,10 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * uClibc doesn't implement all of the underlying mechanisms used by this
+ * feature. Worse, bionic (Android) seems to implement quite different
+ * semantics.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -14,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_path.h"
 #include "com/diag/diminuto/diminuto_module.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -36,36 +41,75 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
+    paths = getenv(KEYWORD);
     file = diminuto_path_find(KEYWORD, NAME);
-    if (file == (const char *)0) {
-    	paths = getenv(KEYWORD);
-    	DIMINUTO_LOG_ERROR("\"%s\" not found in \"%s\" amongst \"%s\"!\n", NAME, KEYWORD, (paths != (const char *)0) ? paths : "");
-    }
+	CHECKPOINT("name=\"%s\" keyword=\"%s\" paths=\"%s\" file=\"%s\"\n", NAME, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "");
     ASSERT(file != (const char *)0);
 
     /*
-     * Test basic load and unload.
+     * Make sure the module is unloaded, possibly from a prior unit test.
      */
 
-    check = diminuto_module_handle(file);
-    ASSERT(check == (diminuto_module_handle_t)0);
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+
+    if ((module = diminuto_module_handle(file)) != (diminuto_module_handle_t)0) {
+        check = diminuto_module_unload(module, !0);
+        ASSERT(check == (diminuto_module_handle_t)0);
+    }
+
+#endif
+
+    /*
+     * Test module reference counting.
+     */
 
     module = diminuto_module_load(file);
     ASSERT(module != (diminuto_module_handle_t)0);
 
-    /*
-     * Not all platforms implement the underlying RTLD_NOLOAD option on which
-     * this feature depends. Hence, you're mileage may vary.
-     */
-    check = diminuto_module_handle(file);
+        check = diminuto_module_load(file);
+        ASSERT(check != (diminuto_module_handle_t)0);
+        ASSERT(check == module);
+
+        check = diminuto_module_unload(module, 0);
+        ASSERT(check == (diminuto_module_handle_t)0);
+
+    check = diminuto_module_unload(module, 0);
+    ASSERT(check == (diminuto_module_handle_t)0);
+
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+
+    check = diminuto_module_unload(module, 0);
     ADVISE(check != (diminuto_module_handle_t)0);
     ADVISE(check == module);
 
-    module = diminuto_module_unload(module, !0);
-    ASSERT(module == (diminuto_module_handle_t)0);
+#endif
 
-    check = diminuto_module_handle(file);
+    /*
+     * Test forced unload.
+     */
+
+    module = diminuto_module_load(file);
+    ASSERT(module != (diminuto_module_handle_t)0);
+
+        check = diminuto_module_load(file);
+        ASSERT(check != (diminuto_module_handle_t)0);
+        ASSERT(check == module);
+
+        check = diminuto_module_unload(module, !0);
+        ASSERT(check == (diminuto_module_handle_t)0);
+
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+
+    check = diminuto_module_unload(module, 0);
     ASSERT(check == (diminuto_module_handle_t)0);
+
+#else
+
+    check = diminuto_module_unload(module, 0);
+    ASSERT(check != (diminuto_module_handle_t)0);
+    ASSERT(check == module);
+
+#endif
 
     /*
      * Test function and variable access.
@@ -78,17 +122,17 @@ int main(int argc, char ** argv)
     ASSERT(functionp != (void *)0);
 
     rc = (*(int (*)(int))functionp)(value);
-    DIMINUTO_LOG_DEBUG("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
+    CHECKPOINT("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
     ASSERT(rc == ~value);
 
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
     ASSERT(variablep != (void *)0);
 
-    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    CHECKPOINT("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xc0edbabe);
 
     *(int *)variablep = 0xdeadbeef;
-    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    CHECKPOINT("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xdeadbeef);
 
     functionp = diminuto_module_symbol(module, "diminuto_module_example_function_notfound", (const char *)0);
@@ -97,8 +141,8 @@ int main(int argc, char ** argv)
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable_notfound", (const char *)0);
     ASSERT(variablep == (void *)0);
 
-	module = diminuto_module_unload(module, !0);
-	ASSERT(module == (diminuto_module_handle_t)0);
+    check = diminuto_module_unload(module, 0);
+    ASSERT(check == (diminuto_module_handle_t)0);
 
    /*
     * Test reinitialization of static variables upon reload.
@@ -108,38 +152,11 @@ int main(int argc, char ** argv)
     ASSERT(module != (diminuto_module_handle_t)0);
 
     variablep = diminuto_module_symbol(module, "diminuto_module_example_variable", (const char *)0);
-    DIMINUTO_LOG_DEBUG("*%p=0x%8.8x\n", variablep, *(int *)variablep);
+    CHECKPOINT("*%p=0x%8.8x\n", variablep, *(int *)variablep);
     ASSERT(*(int *)variablep == 0xc0edbabe);
 
-    module = diminuto_module_unload(module, !0);
-    ASSERT(module == (diminuto_module_handle_t)0);
-
-    /*
-     * Test module reference counting.
-     */
-
-    module = diminuto_module_load(file);
-    ASSERT(module != (diminuto_module_handle_t)0);
-
-    check = diminuto_module_load(file);
-    ASSERT(check != (diminuto_module_handle_t)0);
-
-    check = diminuto_module_unload(check, 0);
+    check = diminuto_module_unload(module, 0);
     ASSERT(check == (diminuto_module_handle_t)0);
-
-    check = module;
-    ASSERT(check != (diminuto_module_handle_t)0);
-
-    module = diminuto_module_unload(module, 0);
-    ASSERT(module == (diminuto_module_handle_t)0);
-
-    module = diminuto_module_unload(check, 0);
-    ASSERT(module == check);
-
-    check = diminuto_module_handle(file);
-    ASSERT(check == (diminuto_module_handle_t)0);
-
-    free(file);
 
     /*
      * Test non-existent and other error legs.
@@ -148,20 +165,26 @@ int main(int argc, char ** argv)
     check = diminuto_module_handle("COM-DIAG-DIMINUTO-MODULE-NO-SUCH-FILE-OR-DIRECTORY");
     ASSERT(check == (diminuto_module_handle_t)0);
 
-    module = diminuto_module_load("COM-DIAG-DIMINUTO-MODULE-NO-SUCH-FILE-OR-DIRECTORY");
-    ASSERT(module == (diminuto_module_handle_t)0);
+    check = diminuto_module_load("COM-DIAG-DIMINUTO-MODULE-NO-SUCH-FILE-OR-DIRECTORY");
+    ASSERT(check == (diminuto_module_handle_t)0);
 
     check = diminuto_module_handle("/dev/null");
     ASSERT(check == (diminuto_module_handle_t)0);
 
-    module = diminuto_module_load("/dev/null");
-    ASSERT(module == (diminuto_module_handle_t)0);
+    check = diminuto_module_load("/dev/null");
+    ASSERT(check == (diminuto_module_handle_t)0);
 
     check = diminuto_module_handle("/dev/zero");
     ASSERT(check == (diminuto_module_handle_t)0);
 
-    module = diminuto_module_load("/dev/zero");
-    ASSERT(module == (diminuto_module_handle_t)0);
+    check = diminuto_module_load("/dev/zero");
+    ASSERT(check == (diminuto_module_handle_t)0);
+
+    /*
+     * Free dynamically allocated file name.
+     */
+
+    free(file);
 
     EXIT();
 }
