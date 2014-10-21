@@ -23,8 +23,8 @@ TARGET				:=	host
 #TARGET				:=	bionic
 
 MAJOR				:=	25# API changes that may require that applications be modified.
-MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	3# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -55,9 +55,9 @@ HOME_DIR			:=	$(HOME)/Projects
 
 ########## Directories
 
-ART_DIR				:=	art# Temporary build artifacts
 ARC_DIR				:=	arc# Archive files for static linking
 BIN_DIR				:=	bin# Utility source files or stripped executable binaries
+DEP_DIR				:=	dep# Generated dependencies and other make files
 DOC_DIR				:=	doc# Documentation
 DRV_DIR				:=	drv# Loadable kernel modules
 ETC_DIR				:=	etc# Miscellaneous files
@@ -69,7 +69,7 @@ OUT_DIR				:=	out# Build artifacts
 SRC_DIR				:=	src# Library source files
 SYM_DIR				:=	sym# Unstripped executable binaries
 SYS_DIR				:=	sys# Kernel module build directory
-TMP_DIR				:=	tmp# Temporary files
+TGZ_DIR				:=	tgz# Compressed tarballs
 TST_DIR				:=	tst# Unit tests
 
 ########## Configurations
@@ -77,8 +77,8 @@ TST_DIR				:=	tst# Unit tests
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.25.10
 KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
@@ -94,8 +94,8 @@ endif
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.26.3
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
@@ -111,8 +111,8 @@ endif
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.32.7
 KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
@@ -128,8 +128,8 @@ endif
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.32
 KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
 CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
@@ -146,8 +146,8 @@ endif
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
@@ -164,8 +164,8 @@ endif
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
@@ -182,8 +182,8 @@ endif
 ifeq ($(TARGET),bionic)# Build for CyanogenMod 10.2 on the Nexus-7 with bionic.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi-
+KERNELCHAIN			:=	$(ARCH)-eabi-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
 CYANOGENMODPRODUCT	:=	flo
 CYANOGENMODKERNEL	:=	google
@@ -200,6 +200,7 @@ CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/arch-arm
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include/arm
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libthread_db/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/KERNEL_OBJ/include#generated/autoconf.h
 CPPARCH				+=	-include $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/AndroidConfig.h
 CPPARCH				+=	-I $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/
 CPPARCH				+=	-DANDROID
@@ -230,6 +231,7 @@ CPPARCH				+=	-DHAVE_TYPE_SSIZE_T
 CPPARCH				+=	-DHAVE_SYS_TIME_H
 CPPARCH				+=	-DHAVE_SYS_PARAM_H
 CPPARCH				+=	-DHAVE_SYSCONF
+CPPARCH				+=	-DPREEMPT_ACTIVE=0x40000000#kernel/google/msm/arch/arm/include/asm/thread_info.h
 CARCH				:=
 CARCH				+=	-fno-exceptions
 CARCH				+=	-Wno-multichar
@@ -345,15 +347,13 @@ endif
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				:=	arm
 PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf
-CROSS_COMPILE		:=	$(TOOLCHAIN)-
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
+KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	3.10.24-jetson
 KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
-#CARCH				:=
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -361,14 +361,14 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),host1)# Build for an Intel build server with Ubuntu 12.04.
+ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
 TOOLCHAIN			:=
-CROSS_COMPILE		:=
+KERNELCHAIN			:=
 KERNEL_REV			:=	3.2.0-51
 KERNEL_DIR			:=
-CPPARCH				:= -I/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+CPPARCH				:=	-I/usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
@@ -382,7 +382,7 @@ ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
 ARCH				:=	i386
 PLATFORM			:=	linux
 TOOLCHAIN			:=
-CROSS_COMPILE		:=
+KERNELCHAIN			:=
 KERNEL_REV			:=	3.13.0-24
 KERNEL_DIR			:=
 CPPARCH				:=	-I/usr/src/linux-headers-$(KERNEL_REV)
@@ -459,6 +459,8 @@ BUILDARTIFACTS		:=	doxygen-local.cf dependencies.mk
 COMMAND				:=	dummy
 SCRIPT				:=	dummy
 
+CROSS_COMPILE		:=	$(TOOLCHAIN)
+
 CC					:=	$(CROSS_COMPILE)gcc
 CXX					:=	$(CROSS_COMPILE)g++
 AR					:=	$(CROSS_COMPILE)ar
@@ -508,17 +510,32 @@ pristine:	clean
 
 .PHONY:	distribution
 
-distribution:
-	rm -rf $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	svn export $(SVNURL) $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-	( cd $(TEMP_DIR); tar cvzf - $(PROJECT)-$(MAJOR).$(MINOR).$(BUILD) ) > $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD).tgz
-	( cd $(TEMP_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD); make TARGET=host; ./out/host/bin/vintage )
+DISTRIBUTION := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+
+distribution $(DISTRIBUTION).tgz:
+	D=`dirname $(DISTRIBUTION)`; test -d $$D || mkdir -p $$D
+	rm -rf $(DISTRIBUTION)
+	svn export $(SVNURL) $(DISTRIBUTION)
+	( cd $(DISTRIBUTION)/..; B=`basename $(DISTRIBUTION)`; tar cvzf - $$B ) > $(DISTRIBUTION).tgz
+	( cd $(DISTRIBUTION); make TARGET=host; ./out/host/bin/vintage )
 
 .PHONY:	package
 
-package $(OUT)/$(ART_DIR)/$(PROJECT)-$(TARGET).tgz:
+PACKAGE := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
+
+package $(PACKAGE).tgz:
+	D=`dirname $(PACKAGE)`; test -d $$D || mkdir -p $$D
 	( cd ..; mkdir -p $(PACKAGEMANIFEST) )
-	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(OUT)/$(ART_DIR)/$(PROJECT)-$(TARGET).tgz
+	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(PACKAGE).tgz
+	
+ifeq ($(TARGET),bionic)
+
+.PHONY:	adb
+
+adb:	$(PACKAGE).tgz
+	adb $(ADBFLAGS) push $(PACKAGE).tgz /data/local/tmp
+
+endif
 
 .PHONY: commit dcommit push origin init
 
@@ -609,7 +626,7 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; test -d $$D || mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
-########## Generated
+########## Generated Source Files
 
 # For embedding in a system where it can be executed from a shell.
 # The major.minor.build is emitted to standard output, a bunch more
@@ -734,12 +751,12 @@ $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
 	cp $< $@
 
 $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) modules
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) modules
 
 drivers:	$(OUT)/$(DRV_DIR)/diminuto_mmdriver.ko $(OUT)/$(DRV_DIR)/diminuto_utmodule.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_map.ko
 
 drivers-clean:
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(CROSS_COMPILE) ARCH=$(ARCH) clean
+	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) clean
 	rm -f $(OUT)/$(SYS_DIR)/Makefile
 
 ########## Helpers
@@ -828,12 +845,12 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 .PHONY:	depend
 
-DEPENDENCIES := $(OUT)/$(ART_DIR)/dependencies.mk
+DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 
 depend:
 	M=`dirname $(DEPENDENCIES)`; test -d $$M || mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(SRC_DIR) $(TST_DIR) $(OUT)/$(GEN_DIR) $(MOD_DIR) $(DRV_DIR); do \
+	for S in $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
@@ -844,7 +861,7 @@ depend:
 			done; \
 		fi; \
 	done
-	for S in $(TST_DIR); do \
+	for S in $(SRC_DIR) $(TST_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
