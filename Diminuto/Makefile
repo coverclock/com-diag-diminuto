@@ -30,7 +30,7 @@ TARGET				:=	host
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -134,6 +134,24 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
+ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
+ARCH				:=	x86
+PLATFORM			:=	linux
+TOOLCHAIN			:=
+KERNELCHAIN			:=
+KERNEL_REV			:=	3.2.0-51
+KERNEL_DIR			:=	$(HOME)/src/linux-source-3.2.0
+CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic-pae
+CARCH				:=	-fPIC
+CXXARCH				:=	$(CARCH)
+LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
+KERNELARCH			:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
+endif
+
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				:=	arm
 PLATFORM			:=	linux
@@ -183,6 +201,42 @@ CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
+KERNELARCH			:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
+endif
+
+ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
+ARCH				:=	x86
+PLATFORM			:=	linux
+TOOLCHAIN			:=
+KERNELCHAIN			:=
+KERNEL_REV			:=	3.13.0-24
+KERNEL_DIR			:=	$(HOME)/src/linux-source-3.13.0
+CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
+CARCH				:=	-rdynamic -fPIC
+CXXARCH				:=	$(CARCH)
+LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+SOARCH				:=
+KERNELARCH			:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
+endif
+
+ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
+ARCH				:=	arm
+PLATFORM			:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
+KERNELCHAIN			:=	$(TOOLCHAIN)
+KERNEL_REV			:=	3.10.24-jetson
+KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
+CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
+CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
@@ -345,7 +399,7 @@ SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
 SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-KERNELARCH			:=
+KERNELARCH			:=	O=${CYANOGENMOD_DIR}/out/target/product/flo/obj/KERNEL_OBJ
 LDLIBRARIES			:=
 LDLIBRARIES			+=	-ldl
 LDLIBRARIES			+=	-lc
@@ -355,60 +409,6 @@ LDXXLIBRARIES		+=	-ldl
 LDXXLIBRARIES		+=	-lc
 LDXXLIBRARIES		+=	-lstdc++
 LDXXLIBRARIES		+=	-lm
-endif
-
-ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
-ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	3.10.24-jetson
-KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
-CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
-ARCH				:=	x86
-PLATFORM			:=	linux
-TOOLCHAIN			:=
-KERNELCHAIN			:=
-KERNEL_REV			:=	3.2.0-51
-KERNEL_DIR			:=
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-CARCH				:=	-fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
-ARCH				:=	x86
-PLATFORM			:=	linux
-TOOLCHAIN			:=
-KERNELCHAIN			:=
-KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=	$(HOME)/src/linux-source-3.13.0
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
-CARCH				:=	-rdynamic -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ########## Variables
@@ -748,7 +748,7 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
 
 ########## Kernel-Space Loadable Modules
 
-.PHONY:	drivers drivers-clean
+.PHONY:	drivers drivers-clean drivers-make
 
 OBJ_M := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
@@ -766,6 +766,7 @@ $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
 	D=`dirname $@`; test -d $$D || mkdir -p $$D	
 	cp $< $@
 
+# Was your kernel built with CONFIG_MODULES=y? Especially problematic in Android kernels.
 $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) $(KERNELARCH) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) modules
 
@@ -773,7 +774,13 @@ drivers:	$(OUT)/$(DRV_DIR)/diminuto_mmdriver.ko $(OUT)/$(DRV_DIR)/diminuto_utmod
 
 drivers-clean:
 	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) clean
-	rm -f $(OUT)/$(SYS_DIR)/Makefile
+	rm -rf $(OUT)/$(SYS_DIR)
+
+# e.g. DRIVERS=modules_prepare or DRIVERS=mrproper or DRIVERS=menuconfig
+drivers-make:
+	make -C $(KERNEL_DIR) $(KERNELARCH) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) $(DRIVERS)
+
+# echo 8 > /proc/sys/kernel/printk
 
 ########## Helpers
 
