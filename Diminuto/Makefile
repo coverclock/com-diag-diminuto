@@ -5,6 +5,12 @@
 # http://www.diag.com/navigation/downloads/Diminuto.html
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
+#
+#	make default TARGET=<target>	# Build libraries, unit tests, programs.
+#	make most TARGET=<target>		# Build default plus user-space loadable modules.
+#	make all TARGET=<target>		# Build most plus kernel-space loadable modules.
+
+########## Project
 
 PROJECT				:=	diminuto
 TITLE				:=	Diminuto
@@ -87,6 +93,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -104,6 +111,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -121,6 +129,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -139,6 +148,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -157,6 +167,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -175,6 +186,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -333,6 +345,7 @@ SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
 SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
+KERNELARCH			:=
 LDLIBRARIES			:=
 LDLIBRARIES			+=	-ldl
 LDLIBRARIES			+=	-lc
@@ -357,12 +370,13 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
-ARCH				:=	i386
+ARCH				:=	x86
 PLATFORM			:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
@@ -374,23 +388,25 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
-ARCH				:=	i386
+ARCH				:=	x86
 PLATFORM			:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=
+KERNEL_DIR			:=	$(HOME)/src/linux-source-3.13.0
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
 SOARCH				:=
+KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
@@ -751,7 +767,7 @@ $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
 	cp $< $@
 
 $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
-	make -C $(KERNEL_DIR) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) modules
+	make -C $(KERNEL_DIR) $(KERNELARCH) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) modules
 
 drivers:	$(OUT)/$(DRV_DIR)/diminuto_mmdriver.ko $(OUT)/$(DRV_DIR)/diminuto_utmodule.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_datum.ko $(OUT)/$(DRV_DIR)/diminuto_kernel_map.ko
 
