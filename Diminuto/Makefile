@@ -825,11 +825,17 @@ isystems:
 
 .PHONY:	documentation browse refman manpages
 
+DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
+
 documentation:
 	mkdir -p $(OUT)/$(DOC_DIR)/pdf
-	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > $(OUT)/$(DOC_DIR)/doxygen-local.cf
+	cat doxygen.cf | \
+		sed -e "s/\\\$$PROJECT_NUMBER\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" | \
+		sed -e "s/\\\$$OUTPUT_DIRECTORY\\\$$/$(DOCCOOKED)/" | \
+		cat > $(OUT)/$(DOC_DIR)/doxygen-local.cf
 	doxygen $(OUT)/$(DOC_DIR)/doxygen-local.cf
-	( cd $(OUT)/$(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
+	$(MAKE) -C $(OUT)/$(DOC_DIR)/latex refman.pdf
+	cp $(OUT)/$(DOC_DIR)/latex/refman.pdf $(OUT)/$(DOC_DIR)/pdf
 	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps
 	ps2pdf $(OUT)/$(DOC_DIR)/pdf/manpages.ps $(OUT)/$(DOC_DIR)/pdf/manpages.pdf
 

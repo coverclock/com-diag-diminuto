@@ -67,7 +67,7 @@
  * I use these commands to reinitialize a wiped USB thumb drive.
  *
  * sudo fdisk /dev/sdj
- * n p 1 8192 <default>
+ * n p 1 8192 CTRL-r
  * t c
  * w
  * sudo mkfs.vfat /dev/sdj1
