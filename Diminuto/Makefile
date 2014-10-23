@@ -30,7 +30,7 @@ TARGET				:=	host
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	5# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -78,6 +78,38 @@ SYS_DIR				:=	sys# Kernel module build directory
 TGZ_DIR				:=	tgz# Compressed tarballs
 TST_DIR				:=	tst# Unit tests
 
+########## Variables
+
+HERE				:=	$(shell pwd)
+
+OUT					:=	$(OUT_DIR)/$(TARGET)
+
+TEMP_DIR			:=	/tmp
+ROOT_DIR			:=	$(HOME_DIR)/$(PROJECT)
+
+TIMESTAMP			:=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
+DATESTAMP			:=	$(shell date +%Y%m%d)
+
+SVNREPO				:=	svn://graphite/$(PROJECT)
+SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
+GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
+
+PROJECT_A			:=	lib$(PROJECT).a
+PROJECTXX_A			:=	lib$(PROJECT)xx.a
+PROJECT_SO			:=	lib$(PROJECT).so
+PROJECTXX_SO		:=	lib$(PROJECT)xx.so
+
+PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
+
+GENERATED			:=	vintage setup generate
+ALIASES				:=	hex oct ntohs htons ntohl htonl
+
+BUILDARTIFACTS		:=	doxygen-local.cf dependencies.mk
+
+COMMAND				:=	dummy
+SCRIPT				:=	dummy
+
 ########## Configurations
 
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
@@ -90,8 +122,8 @@ KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -108,8 +140,8 @@ KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -126,8 +158,8 @@ KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -144,8 +176,8 @@ KERNEL_DIR			:=	$(HOME)/src/linux-source-3.2.0
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -163,8 +195,8 @@ CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -182,8 +214,8 @@ CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -200,9 +232,9 @@ KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static -L$(OUT_DIR)/$(TARGET)/$(ARC_DIR)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -219,8 +251,8 @@ KERNEL_DIR			:=	$(HOME)/src/linux-source-3.13.0
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -237,8 +269,8 @@ KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
@@ -349,11 +381,11 @@ LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 LDARCH				+=	-Wl,--gc-sections
 LDARCH				+=	-Wl,-z,nocopyreloc
 LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				+=	-L$(OUT)/$(LIB_DIR)
 LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
 LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-LDARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+LDARCH				+=	-L$(OUT)/$(LIB_DIR)
 LDARCH				+=	-Wl,-z,noexecstack
 LDARCH				+=	-Wl,-z,relro
 LDARCH				+=	-Wl,-z,now
@@ -371,7 +403,7 @@ MOARCH				+=	-Wl,-shared,-Bsymbolic
 MOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
 MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
 MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-MOARCH				+=	-L$(OUT_DIR)/$(TARGET)/$(LIB_DIR)
+MOARCH				+=	-L$(OUT)/$(LIB_DIR)
 MOARCH				+=	-Wl,-z,noexecstack
 MOARCH				+=	-Wl,-z,relro
 MOARCH				+=	-Wl,-z,now
@@ -411,32 +443,37 @@ LDXXLIBRARIES		+=	-lstdc++
 LDXXLIBRARIES		+=	-lm
 endif
 
-########## Variables
+########## Commands and Option Flags
 
-HERE				:=	$(shell pwd)
+CROSS_COMPILE		:=	$(TOOLCHAIN)
 
-OUT					:=	$(OUT_DIR)/$(TARGET)
+CC					:=	$(CROSS_COMPILE)gcc
+CXX					:=	$(CROSS_COMPILE)g++
+AR					:=	$(CROSS_COMPILE)ar
+RANLIB				:=	$(CROSS_COMPILE)ranlib
+STRIP				:=	$(CROSS_COMPILE)strip
 
-TEMP_DIR			:=	/var/tmp
-ROOT_DIR			:=	$(HOME_DIR)/$(PROJECT)
+CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
 
-TIMESTAMP			:=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
-DATESTAMP			:=	$(shell date +%Y%m%d)
+ARFLAGS				:=	crsv
+#CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
+CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
+CFLAGS				:=	$(CARCH) -g
+#CFLAGS				:=	$(CARCH) -O3
+CXXFLAGS			:=	$(CXXARCH) -g
+#CXXFLAGS			:=	$(CXXARCH) -O3
+CPFLAGS				:=	-i
+MVFLAGS				:=	-i
+LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
+LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
+MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
+MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
+SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
+SOXXFLAGS			:=	$(SOARCH) $(LDXXLIBRARIES)
 
-SVNREPO				:=	svn://graphite/$(PROJECT)
-SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
-GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
+BROWSER				:=	firefox
 
-PROJECT_A			:=	lib$(PROJECT).a
-PROJECTXX_A			:=	lib$(PROJECT)xx.a
-PROJECT_SO			:=	lib$(PROJECT).so
-PROJECTXX_SO		:=	lib$(PROJECT)xx.so
-
-PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
-PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
-
-GENERATED			:=	vintage setup generate
-ALIASES				:=	hex oct ntohs htons ntohl htonl
+########## Build Artifacts
 
 TARGETOBJECTS		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
@@ -468,41 +505,6 @@ TARGETDEFAULT		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETMOST			:=	$(TARGETDEFAULT) $(TARGETMODULES)
 TARGETALL			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
-PACKAGEMANIFEST		:=	./$(TITLE)/$(OUT)/$(BIN_DIR) ./$(TITLE)/$(OUT)/$(DRV_DIR) ./$(TITLE)/$(OUT)/$(LIB_DIR) ./$(TITLE)/$(OUT)/$(MOD_DIR) ./$(TITLE)/$(OUT)/$(TST_DIR)
-
-BUILDARTIFACTS		:=	doxygen-local.cf dependencies.mk
-
-COMMAND				:=	dummy
-SCRIPT				:=	dummy
-
-CROSS_COMPILE		:=	$(TOOLCHAIN)
-
-CC					:=	$(CROSS_COMPILE)gcc
-CXX					:=	$(CROSS_COMPILE)g++
-AR					:=	$(CROSS_COMPILE)ar
-RANLIB				:=	$(CROSS_COMPILE)ranlib
-STRIP				:=	$(CROSS_COMPILE)strip
-
-CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
-
-ARFLAGS				:=	crsv
-#CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
-CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
-CFLAGS				:=	$(CARCH) -g
-#CFLAGS				:=	$(CARCH) -O3
-CXXFLAGS			:=	$(CXXARCH) -g
-#CXXFLAGS			:=	$(CXXARCH) -O3
-CPFLAGS				:=	-i
-MVFLAGS				:=	-i
-LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
-LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
-MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
-MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
-SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
-SOXXFLAGS			:=	$(SOARCH) $(LDXXLIBRARIES)
-
-BROWSER				:=	firefox
-
 ########## Main Entry Points
 
 .PHONY:	default all dist clean pristine
@@ -517,33 +519,27 @@ dist:	distribution
 
 clean:
 	rm -rf $(OUT) $(UTILITIES) $(BUILDARTIFACTS)
-	rm -rf $(DOC_DIR)
 
 pristine:	clean
 	rm -rf $(OUT_DIR)
 
-########## Distribution
-
-.PHONY:	distribution
-
-DISTRIBUTION := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-
-distribution $(DISTRIBUTION).tgz:
-	D=`dirname $(DISTRIBUTION)`; test -d $$D || mkdir -p $$D
-	rm -rf $(DISTRIBUTION)
-	svn export $(SVNURL) $(DISTRIBUTION)
-	( cd $(DISTRIBUTION)/..; B=`basename $(DISTRIBUTION)`; tar cvzf - $$B ) > $(DISTRIBUTION).tgz
-	( cd $(DISTRIBUTION); make TARGET=host; ./out/host/bin/vintage )
+########## Packaging and Distribution
 
 .PHONY:	package
 
 PACKAGE := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
 
+MANIFEST := $(BIN_DIR) $(DRV_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
+
 package $(PACKAGE).tgz:
-	D=`dirname $(PACKAGE)`; test -d $$D || mkdir -p $$D
-	( cd ..; mkdir -p $(PACKAGEMANIFEST) )
-	tar -C .. -cvzf - $(PACKAGEMANIFEST) > $(PACKAGE).tgz
-	
+	D=`dirname $(PACKAGE)`; mkdir -p $$D; \
+	for M in $(MANIFEST); do mkdir -p $(OUT)/$$M; done; \
+	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+	B=`basename $(PACKAGE)`; mkdir -p $$T/$$B; \
+	tar -C $(OUT) --exclude-vcs -cvf - $(MANIFEST) | tar -C $$T/$$B -xvf -; \
+	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
+	rm -rf $$T
+
 ifeq ($(TARGET),bionic)
 
 .PHONY:	adb
@@ -552,6 +548,23 @@ adb:	$(PACKAGE).tgz
 	adb $(ADBFLAGS) push $(PACKAGE).tgz /data/local/tmp
 
 endif
+
+.PHONY:	distribution
+
+DISTRIBUTION := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
+
+distribution $(DISTRIBUTION).tgz:
+	D=`dirname $(DISTRIBUTION)`; mkdir -p $$D; \
+	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+	B=`basename $(DISTRIBUTION)`; \
+	( cd $$T; svn export $(SVNURL) $$B; ); \
+	tar -C $$T --exclude-vcs -cvzf - $$B > $(DISTRIBUTION).tgz; \
+	rm -rf $$T/$$B; \
+	tar -C $$T -xvzf - < $(DISTRIBUTION).tgz; \
+	( cd $$T/$$B; make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
+	rm -rf $$T
+
+########## Source Code Control
 
 .PHONY: commit dcommit push origin init
 
@@ -575,12 +588,12 @@ init:
 ########## Target C Libraries
 
 $(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CFLAGS) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
@@ -595,12 +608,12 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PRO
 ########## Target C++ Libraries
 
 $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOXXFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
@@ -615,7 +628,7 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(P
 ########## Target Unstripped Binaries
 
 $(OUT)/$(SYM_DIR)/%:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 ########## Target Aliases
@@ -635,11 +648,11 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 #
 
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
 ########## Generated Source Files
@@ -650,7 +663,7 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # files. The metadata file is intended to parsable as a standard properties
 # file (although I have not tested it).
 $(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -684,7 +697,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_re
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
@@ -697,7 +710,7 @@ $(OUT)/$(SRC_DIR)/diminuto_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PR
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
@@ -710,12 +723,12 @@ $(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PR
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # For sourcing into a bash shell (for example, ". setup").
 $(OUT)/$(BIN_DIR)/setup:	Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -726,7 +739,7 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
 # (Because the Android bash doesn't seem to implement BASH_ARGV.)
 $(OUT)/$(BIN_DIR)/generate:	Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -739,11 +752,11 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 LDWHOLEARCHIVES := # These archives will be linked into the shared object in their entirety.
 
 $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -shared -o $@ $< $(MOFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $< $(MOXXFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
 ########## Kernel-Space Loadable Modules
@@ -753,20 +766,21 @@ $(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
 OBJ_M := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
 $(OUT)/$(SYS_DIR)/Makefile:	Makefile
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
 
 $(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	cp $< $@
 
 $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
-	D=`dirname $@`; test -d $$D || mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D	
 	cp $< $@
 
-# Was your kernel built with CONFIG_MODULES=y? Especially problematic in Android kernels.
+# Was your kernel built with CONFIG_MODULES=y?
+# Especially problematic in Android kernels.
 $(OUT)/$(SYS_DIR)/diminuto_mmdriver.ko $(OUT)/$(SYS_DIR)/diminuto_utmodule.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.ko $(OUT)/$(SYS_DIR)/diminuto_kernel_map.ko:	$(OUT)/$(SYS_DIR)/Makefile $(OUT)/$(SYS_DIR)/diminuto_mmdriver.c $(OUT)/$(SYS_DIR)/diminuto_utmodule.c $(OUT)/$(SYS_DIR)/diminuto_kernel_datum.c $(OUT)/$(SYS_DIR)/diminuto_kernel_map.c
 	make -C $(KERNEL_DIR) $(KERNELARCH) M=$(shell cd $(OUT)/$(SYS_DIR); pwd) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) modules
 
@@ -784,7 +798,7 @@ drivers-make:
 
 ########## Helpers
 
-.PHONY:	backup implicit includes
+.PHONY:	backup gccversion implicit defines iquotes isystems
 
 backup:	../$(PROJECT).bak.tgz
 	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
@@ -812,23 +826,23 @@ isystems:
 .PHONY:	documentation browse refman manpages
 
 documentation:
-	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > doxygen-local.cf
-	doxygen doxygen-local.cf
-	test -d $(DOC_DIR)/pdf || mkdir -p $(DOC_DIR)/pdf
-	( cd $(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
-	cat $(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(DOC_DIR)/pdf/manpages.ps
-	ps2pdf $(DOC_DIR)/pdf/manpages.ps $(DOC_DIR)/pdf/manpages.pdf
+	mkdir -p $(OUT)/$(DOC_DIR)/pdf
+	sed -e "s/\\\$$Name.*\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" < doxygen.cf > $(OUT)/$(DOC_DIR)/doxygen-local.cf
+	doxygen $(OUT)/$(DOC_DIR)/doxygen-local.cf
+	( cd $(OUT)/$(DOC_DIR)/latex; $(MAKE) refman.pdf; cp refman.pdf ../pdf )
+	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps
+	ps2pdf $(OUT)/$(DOC_DIR)/pdf/manpages.ps $(OUT)/$(DOC_DIR)/pdf/manpages.pdf
 
 browse:
-	$(BROWSER) file:doc/html/index.html
+	$(BROWSER) file:$(OUT)/$(DOC_DIR)/html/index.html
 
 refman:
-	$(BROWSER) file:doc/pdf/refman.pdf
+	$(BROWSER) file:$(OUT)/$(DOC_DIR)/pdf/refman.pdf
 
 manpages:
-	$(BROWSER) file:doc/pdf/manpages.pdf
+	$(BROWSER) file:$(OUT)/$(DOC_DIR)/pdf/manpages.pdf
 
-########## Submakes
+########## Diffs and Patches
 
 .PHONY:	patch
 
@@ -838,30 +852,30 @@ patch:	$(OLD) $(NEW)
 ########## Rules
 
 $(OUT)/%.txt:	%.cpp
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
 $(OUT)/%.o:	%.cpp
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 $(OUT)/%.txt:	%.c
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
 $(OUT)/%.o:	%.c
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(OUT)/%:	%.sh
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	cp $< $@
 	chmod 755 $@
 	
 .SECONDARY:
 
 $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
-	D=`dirname $@`; test -d $$D || mkdir -p $$D
+	D=`dirname $@`; mkdir -p $$D
 	$(STRIP) -o $@ $<
 
 ########## Dependencies
@@ -870,10 +884,14 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 
+CDEPENDENCIES := $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR)
+
+CXXDEPENDENCIES := $(SRC_DIR) $(TST_DIR)
+
 depend:
-	M=`dirname $(DEPENDENCIES)`; test -d $$M || mkdir -p $$M
+	M=`dirname $(DEPENDENCIES)`; mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR); do \
+	for S in $(CDEPENDENCIES); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
@@ -884,7 +902,7 @@ depend:
 			done; \
 		fi; \
 	done
-	for S in $(SRC_DIR) $(TST_DIR); do \
+	for S in $(CXXDEPENDENCIES); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
