@@ -39,11 +39,24 @@
  *  DATA STRUCTURES
  ******************************************************************************/
 
+/**
+ * This structure is used to pass parameters through the ioctl(2) interface from
+ * the application in user-space to the Memory Mapped Driver in kernel-space.
+ */
 typedef struct DiminutoMmDriverOp {
-    uintptr_t offset;               /* Offset from beginning of driver space */
-    diminuto_datum_width_t width;		/* Datum width */
-    diminuto_datum_value_t datum;		/* Datum value */
-    diminuto_datum_value_t mask;		/* Mask value */
+
+    /** Offset from beginning of driver space. */
+    uintptr_t offset;
+
+    /** Datum width. */
+    diminuto_datum_width_t width;
+
+    /** Datum value. */
+    diminuto_datum_value_t datum;
+
+    /** Mask value. */
+    diminuto_datum_value_t mask;
+
 } diminuto_mmdriver_op_t;
 
 /*******************************************************************************

@@ -30,7 +30,7 @@ TARGET				:=	host
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	5# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	6# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -105,10 +105,8 @@ PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 GENERATED			:=	vintage setup generate
 ALIASES				:=	hex oct ntohs htons ntohl htonl
 
-BUILDARTIFACTS		:=	doxygen-local.cf dependencies.mk
-
-COMMAND				:=	dummy
-SCRIPT				:=	dummy
+NEW					:=	dummy
+OLD					:=	dummy
 
 ########## Configurations
 
@@ -518,7 +516,7 @@ all:	$(TARGETALL)
 dist:	distribution
 
 clean:
-	rm -rf $(OUT) $(UTILITIES) $(BUILDARTIFACTS)
+	rm -rf $(OUT)
 
 pristine:	clean
 	rm -rf $(OUT_DIR)
@@ -827,13 +825,16 @@ isystems:
 
 DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
 
-documentation:
+documentation $(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf:
 	mkdir -p $(OUT)/$(DOC_DIR)/pdf
 	cat doxygen.cf | \
 		sed -e "s/\\\$$PROJECT_NUMBER\\\$$/$(MAJOR).$(MINOR).$(BUILD)/" | \
 		sed -e "s/\\\$$OUTPUT_DIRECTORY\\\$$/$(DOCCOOKED)/" | \
 		cat > $(OUT)/$(DOC_DIR)/doxygen-local.cf
 	doxygen $(OUT)/$(DOC_DIR)/doxygen-local.cf
+
+# This appears to be broken in Doxygen 1.8.6. in Ubuntu 14.04. Used to work.
+documentation-ancillary:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
 	$(MAKE) -C $(OUT)/$(DOC_DIR)/latex refman.pdf
 	cp $(OUT)/$(DOC_DIR)/latex/refman.pdf $(OUT)/$(DOC_DIR)/pdf
 	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps

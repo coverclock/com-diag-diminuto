@@ -22,6 +22,10 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
+/**
+ * This union can contain any value that is supported by the kernel-space Datum
+ * loadable module.
+ */
 typedef union DiminutoDatumValue {
     uint8_t  value8;
     uint16_t value16;
@@ -29,6 +33,10 @@ typedef union DiminutoDatumValue {
     uint64_t value64;
 } diminuto_datum_value_t;
 
+/**
+ * This enumerates all of the data types supported by the kernel-space Datum
+ * loadable module.
+ */
 typedef enum DiminutoDatumWidth {
     WIDTH8  = sizeof(uint8_t),
     WIDTH16 = sizeof(uint16_t),
