@@ -1,6 +1,6 @@
-# Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA
+# Copyright 2008-2014 Digital Aggregates Corporation
 # Licensed under the terms in README.h
-# Chip Overclock
+# author:Chip Overclock
 # mailto:coverclock@diag.com
 # http://www.diag.com/navigation/downloads/Diminuto.html
 # "Chip Overclock" is a registered trademark.
@@ -30,7 +30,7 @@ TARGET				:=	host
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	6# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	7# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -49,7 +49,7 @@ BUILD				:=	6# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2014 Digital Aggregates Corporation, Colorado, USA.
+COPYRIGHT			:=	2008-2014 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
@@ -103,6 +103,8 @@ PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
 PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
 GENERATED			:=	vintage setup generate
+SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h
+
 ALIASES				:=	hex oct ntohs htons ntohl htonl
 
 NEW					:=	dummy
@@ -112,12 +114,12 @@ OLD					:=	dummy
 
 ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(OS)-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.25.10
-KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(PLATFORM)-$(KERNEL_REV)/include
+KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(OS)-$(KERNEL_REV)
+CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(OS)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
@@ -130,11 +132,11 @@ endif
 
 ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.26.3
-KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(OS)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
@@ -148,11 +150,11 @@ endif
 
 ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.32.7
-KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(PLATFORM)-$(KERNEL_REV)
+KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(OS)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
@@ -166,7 +168,7 @@ endif
 
 ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
 ARCH				:=	x86
-PLATFORM			:=	linux
+OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	3.2.0-51
@@ -184,8 +186,8 @@ endif
 
 ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(PLATFORM)-gnueabi-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.32
 KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
@@ -203,8 +205,8 @@ endif
 
 ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
@@ -222,8 +224,8 @@ endif
 
 ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(PLATFORM)-uclibcgnueabihf-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabihf-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	rpi-3.6.y
 KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
@@ -241,7 +243,7 @@ endif
 
 ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
 ARCH				:=	x86
-PLATFORM			:=	linux
+OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	3.13.0-24
@@ -259,8 +261,8 @@ endif
 
 ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-gnueabihf-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	3.10.24-jetson
 KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
@@ -277,8 +279,8 @@ endif
 
 ifeq ($(TARGET),bionic)# Build for CyanogenMod 10.2 on the Nexus-7 with bionic.
 ARCH				:=	arm
-PLATFORM			:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(PLATFORM)-androideabi-
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-$(OS)-androideabi-
 KERNELCHAIN			:=	$(ARCH)-eabi-
 KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
 CYANOGENMODPRODUCT	:=	flo
@@ -296,6 +298,7 @@ CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/arch-arm
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include/arm
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libthread_db/include
+CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/system/core/include
 CPPARCH				+=	-include $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/AndroidConfig.h
 CPPARCH				+=	-I $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/KERNEL_OBJ/include#/generated/autoconf.h
@@ -431,10 +434,12 @@ SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideab
 SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
 KERNELARCH			:=	O=${CYANOGENMOD_DIR}/out/target/product/flo/obj/KERNEL_OBJ
 LDLIBRARIES			:=
+LDLIBRARIES			+=	-llog
 LDLIBRARIES			+=	-ldl
 LDLIBRARIES			+=	-lc
 LDLIBRARIES			+=	-lm
 LDXXLIBRARIES		:=
+LDXXLIBRARIES		+=	-llog
 LDXXLIBRARIES		+=	-ldl
 LDXXLIBRARIES		+=	-lc
 LDXXLIBRARIES		+=	-lstdc++
@@ -451,7 +456,7 @@ AR					:=	$(CROSS_COMPILE)ar
 RANLIB				:=	$(CROSS_COMPILE)ranlib
 STRIP				:=	$(CROSS_COMPILE)strip
 
-CDEFINES			:=	-DCOM_DIAG_$(SYMBOL)_VINTAGE=\"$(VINTAGE)\"
+CDEFINES			:=
 
 ARFLAGS				:=	crsv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
@@ -480,6 +485,8 @@ TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MO
 TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
 TARGETBINARIES		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
+TARGETSYNTHESIZED	:=	$(addprefix $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/,$(SYNTHESIZED))
+
 TARGETALIASES		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
 TARGETUNITTESTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
@@ -540,9 +547,9 @@ package $(PACKAGE).tgz:
 
 ifeq ($(TARGET),bionic)
 
-.PHONY:	adb
+.PHONY:	deploy
 
-adb:	$(PACKAGE).tgz
+deploy:	$(PACKAGE).tgz
 	adb $(ADBFLAGS) push $(PACKAGE).tgz /data/local/tmp
 
 endif
@@ -638,12 +645,33 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 
 # Generally if the unit tests work they exit with an exit code of zero;
 # otherwise they exit with something else (or core dump). But left to their
-# own devices, then unit tests aren't very chatty. If you want to see more log
+# own devices, the unit tests aren't very chatty. If you want to see more log
 # output from them, you can tune the logging using the environmental variable
-# DIMINUTO_LOG_MASK. For example, this bash command turns on everything.
+# "DIMINUTO_LOG_MASK". For example, this bash command turns on everything.
 #
 #	export DIMINUTO_LOG_MASK=0xffff
 #
+# The Diminuto logging system sends log messages to the system log (syslog)
+# when the emitter is a kernel-space module or the emitting process is a child
+# of process 1 (that is, the emitting process is a daemon). Unfortunately
+# different GNU/Linux distributions write syslog messages to different places.
+# My current Ubuntu server uses "/var/log/syslog". Your mileage may vary.
+#
+# Some platforms may route syslog messages from processes to the kernel log
+# buffer in memory by writing them to "/dev/kmesg". You can adjust the level of
+# logging used by the kernel. Level 8 means "everything".
+#
+#	echo 8 > /proc/sys/kernel/printk
+#
+# The kernel log memory buffer can be displayed by using the "dmesg" utility.
+#
+# Even though the Android bionic library supports the openlog(3) and syslog(3)
+# functions, syslog appears to be broken in the CyanogenMod 10.2 that I use.
+# The library expects to send the log message as a datagram to a UNIX domain
+# socket at "/dev/kmsg". But since that's a character device driver as described
+# above, any attempt to connect(2) to it results in the connection being refused
+# (you can use strace(1) to see this). This smells like a BSD (bionic) versus
+# Linux (kernel) incompatibility.
 
 $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
@@ -660,13 +688,15 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # metadata to standard error. Hence, they can be redirected to separate
 # files. The metadata file is intended to parsable as a standard properties
 # file (although I have not tested it).
-$(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h Makefile
+$(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include <stdio.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
 	echo "    \"Title = $(TITLE)\\\\n\"" >> $@
@@ -680,15 +710,19 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_re
 	echo "    \"Directory = $(shell pwd)\\\\n\"" >> $@
 	echo "    \"Arch = $(ARCH)\\\\n\"" >> $@
 	echo "    \"Target = $(TARGET)\\\\n\"" >> $@
-	echo "    \"Platform = $(PLATFORM)\\\\n\"" >> $@
+	echo "    \"Os = $(OS)\\\\n\"" >> $@
 	echo "    \"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
 	echo ';' >> $@
+	echo "extern const char COM_DIAG_DIMINUTO_PLATFORM_KEYWORD[];" >> $@
+	echo "extern const char * COM_DIAG_DIMINUTO_PLATFORM_VALUE;" >> $@
 	echo 'int main(void) {' >> $@
 	echo '    fputs(METADATA, stderr);' >> $@
-	echo '    fprintf(stderr, "RELEASE_KEYWORD = %s\\n", DIMINUTO_RELEASE_KEYWORD);' >> $@
-	echo '    fprintf(stderr, "RELEASE_VALUE = %s\\n", DIMINUTO_RELEASE_VALUE);' >> $@
-	echo '    fprintf(stderr, "VINTAGE_KEYWORD = %s\\n", DIMINUTO_VINTAGE_KEYWORD);' >> $@
-	echo '    fprintf(stderr, "VINTAGE_VALUE = %s\\n", DIMINUTO_VINTAGE_VALUE);' >> $@
+	echo '    fprintf(stderr, "RELEASE_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_RELEASE_KEYWORD);' >> $@
+	echo '    fprintf(stderr, "RELEASE_VALUE = %s\\n", COM_DIAG_DIMINUTO_RELEASE_VALUE);' >> $@
+	echo '    fprintf(stderr, "VINTAGE_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_VINTAGE_KEYWORD);' >> $@
+	echo '    fprintf(stderr, "VINTAGE_VALUE = %s\\n", COM_DIAG_DIMINUTO_VINTAGE_VALUE);' >> $@
+	echo '    fprintf(stderr, "PLATFORM_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_PLATFORM_KEYWORD);' >> $@
+	echo '    fprintf(stderr, "PLATFORM_VALUE = %s\\n", COM_DIAG_DIMINUTO_PLATFORM_VALUE);' >> $@
 	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout);' >> $@
 	echo '    return 0;' >> $@
 	echo '}' >> $@
@@ -699,12 +733,12 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
-	echo "static const char DIMINUTO_RELEASE_KEYWORD[] = \"DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
-	echo "static const char * DIMINUTO_RELEASE_VALUE = &DIMINUTO_RELEASE_KEYWORD[sizeof(\"DIMINUTO_RELEASE=\") - 1];" >> $@
+	echo "static const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[] = \"COM_DIAG_DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo "static const char * COM_DIAG_DIMINUTO_RELEASE_VALUE = &COM_DIAG_DIMINUTO_RELEASE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_RELEASE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/diminuto_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
+$(OUT)/$(SRC_DIR)/diminuto_release.o:	$(TARGETSYNTHESIZED)
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
@@ -712,12 +746,12 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
-	echo "static const char DIMINUTO_VINTAGE_KEYWORD[] = \"DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
-	echo "static const char * DIMINUTO_VINTAGE_VALUE = &DIMINUTO_VINTAGE_KEYWORD[sizeof(\"DIMINUTO_VINTAGE=\") - 1];" >> $@
+	echo "static const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[] = \"COM_DIAG_DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
+	echo "static const char * COM_DIAG_DIMINUTO_VINTAGE_VALUE = &COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_VINTAGE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
+$(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(TARGETSYNTHESIZED)
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
@@ -791,8 +825,6 @@ drivers-clean:
 # e.g. DRIVERS=modules_prepare or DRIVERS=mrproper or DRIVERS=menuconfig
 drivers-make:
 	make -C $(KERNEL_DIR) $(KERNELARCH) CROSS_COMPILE=$(KERNELCHAIN) ARCH=$(ARCH) $(DRIVERS)
-
-# echo 8 > /proc/sys/kernel/printk
 
 ########## Helpers
 
@@ -891,14 +923,14 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 
-CDEPENDENCIES := $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR)
+DEPENDENCIESC := $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR)
 
-CXXDEPENDENCIES := $(SRC_DIR) $(TST_DIR)
+DEPENDENCIESCXX := $(SRC_DIR) $(TST_DIR)
 
-depend:
+depend:	$(TARGETSYNTHESIZED)
 	M=`dirname $(DEPENDENCIES)`; mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(CDEPENDENCIES); do \
+	for S in $(DEPENDENCIESC); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
@@ -909,7 +941,7 @@ depend:
 			done; \
 		fi; \
 	done
-	for S in $(CXXDEPENDENCIES); do \
+	for S in $(DEPENDENCIESCXX); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \

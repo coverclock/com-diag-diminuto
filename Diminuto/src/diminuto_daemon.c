@@ -338,7 +338,7 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 
         /* Close the system log socket. */
 
-        closelog();
+        diminuto_log_close();
 
         /* Close all unused file descriptors. */
 
@@ -365,7 +365,7 @@ int diminuto_daemon_generic(const char * name, const char * file, unsigned int t
 
         /* Open a new system log socket. */
 
-        openlog((name != (const char *)0) ? name : "(diminuto_daemon)", LOG_CONS | LOG_PID, LOG_USER);
+        diminuto_log_open((name != (const char *)0) ? name : "diminuto_daemon");
 
         /* If forced to fail, fail now. */
 

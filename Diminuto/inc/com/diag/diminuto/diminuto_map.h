@@ -5,15 +5,16 @@
 /**
  * @file
  *
- * Copyright 2008-2011 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 
-#if defined(__KERNEL__) || defined(MODULE)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 
 #include <linux/kernel.h>
 #include <linux/io.h>

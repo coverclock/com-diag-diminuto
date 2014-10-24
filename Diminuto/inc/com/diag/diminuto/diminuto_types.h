@@ -5,13 +5,15 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#if defined(__KERNEL__) || defined(MODULE)
+#include "com/diag/diminuto/diminuto_platform.h"
+
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 #	include <linux/types.h>
 #	if 0
 		typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */

@@ -10,31 +10,61 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <sys/types.h>
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
-char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
+const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
 int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
 int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
 int diminuto_log_stream = DIMINUTO_LOG_STREAM_DEFAULT;
 
 static const char levels[] = "01234567";
-
 static int initialized = 0;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void diminuto_log_open(const char * name)
+{
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        if (name != (const char *)0) {
+            diminuto_log_ident = name;
+        }
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+        if (!initialized) {
+            openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
+            initialized = !0;
+        }
+#endif
+    DIMINUTO_CRITICAL_SECTION_END;
+}
+
+void diminuto_log_close(void)
+{
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        if (initialized) {
+            closelog();
+            initialized = 0;
+        }
+    DIMINUTO_CRITICAL_SECTION_END;
+#endif
+}
 
 void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 {
-    if (!initialized) {
-        openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
-        initialized = !0;
-    }
+    diminuto_log_open((const char *)0);
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
     vsyslog(priority, format, ap);
+#else
+    __android_log_vprint(priority, diminuto_log_ident, format, ap);
+#endif
 }
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)

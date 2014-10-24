@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -21,6 +21,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 
 /**
  * This union can contain any value that is supported by the kernel-space Datum
@@ -49,7 +50,7 @@ typedef enum DiminutoDatumWidth {
 #define DIMINUTO_DATUM_TYPE(_WIDTH_) uint ## _WIDTH_ ## _t
 #define DIMINUTO_DATUM_VALUE(_WIDTH_) value ## _WIDTH_
 
-#if defined(__KERNEL__) || defined(MODULE)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 
 /**
  * Gets a datum of a specified width from a virtual address.

@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 
 static void maybe(void)
 {
@@ -65,8 +66,8 @@ static void none(void)
    DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
 }
 
-static diminuto_log_mask_t diminuto_log_subsystem[1] = { DIMINUTO_LOG_MASK_NONE };
-#if defined(__KERNEL__) || defined(MODULE)
+static diminuto_log_mask_t diminuto_log_subsystem[] = { DIMINUTO_LOG_MASK_NONE };
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 EXPORT_SYMBOL(diminuto_log_subsystem);
 #endif
 

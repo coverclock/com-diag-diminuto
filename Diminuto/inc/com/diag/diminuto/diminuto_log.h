@@ -35,6 +35,9 @@
  * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_platform.h"
+
 /******************************************************************************/
 
 /*
@@ -48,8 +51,6 @@
  * kernel or device driver modules. (Making it anything else except an int
  * will result in a compile-time error unless code elsewhere is changed.)
  */
-
-#include "com/diag/diminuto/diminuto_types.h"
 
 typedef int diminuto_log_mask_t;
 
@@ -68,7 +69,7 @@ typedef int diminuto_log_mask_t;
 
 /******************************************************************************/
 
-#if defined(__KERNEL__) || defined(MODULE)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 
 /*
  * Logging can be done from the kernel or a device driver, in which case
@@ -92,6 +93,8 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #else
 
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+
 /*
  * Logging can be done from an application or a daemon, in the former
  * case it prints to standard error, and in the latter it logs to the
@@ -101,8 +104,6 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
  */
 
 #include <syslog.h>
-#include <stdarg.h>
-#include <unistd.h>
 
 #define DIMINUTO_LOG_PRIORITY_EMERGENCY      LOG_EMERG
 #define DIMINUTO_LOG_PRIORITY_ALERT          LOG_ALERT
@@ -116,15 +117,61 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
 #define DIMINUTO_LOG_OPTION_DEFAULT          LOG_CONS
 #define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
+
+#else
+
+/*
+ * Logging can be done from an application or a daemon, in the former
+ * case it prints to standard error, and in the latter it logs to the
+ * Android log. Each translation unit either defines its own subsystem
+ * log mask (which may be local or external) or uses the global default
+ * subsystem log mask.
+ */
+
+#include <android/log.h>
+
+#define DIMINUTO_LOG_PRIORITY_EMERGENCY      ANDROID_LOG_FATAL
+#define DIMINUTO_LOG_PRIORITY_ALERT          ANDROID_LOG_FATAL
+#define DIMINUTO_LOG_PRIORITY_CRITICAL       ANDROID_LOG_FATAL
+#define DIMINUTO_LOG_PRIORITY_ERROR          ANDROID_LOG_ERROR
+#define DIMINUTO_LOG_PRIORITY_WARNING        ANDROID_LOG_WARN
+#define DIMINUTO_LOG_PRIORITY_NOTICE         ANDROID_LOG_INFO
+#define DIMINUTO_LOG_PRIORITY_INFORMATION    ANDROID_LOG_DEBUG
+#define DIMINUTO_LOG_PRIORITY_DEBUG          ANDROID_LOG_VERBOSE
+
+#define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
+#define DIMINUTO_LOG_OPTION_DEFAULT          0
+#define DIMINUTO_LOG_FACILITY_DEFAULT        0
+
+#endif
+
+#include <stdarg.h>
+#include <unistd.h>
+
 #define DIMINUTO_LOG_STREAM_DEFAULT          STDERR_FILENO
 
 #define DIMINUTO_LOG_BUFFER_MAXIMUM          (1024)
 
-extern char * diminuto_log_ident;
+extern const char * diminuto_log_ident;
 extern int diminuto_log_option;
 extern int diminuto_log_facility;
 extern int diminuto_log_stream;
+
 extern diminuto_log_mask_t diminuto_log_mask;
+
+/**
+ * Open the underlying system log communication channel (whatever that is)
+ * if it is not already open, and (if possible) provide it with an identifying
+ * name.
+ * @param name points to a identifying name string.
+ */
+extern void diminuto_log_open(const char * name);
+
+/**
+ * Close the underlying system log communication channel (whatever that is)
+ * if it is not already closed.
+ */
+extern void diminuto_log_close(void);
 
 /**
  * Format and log the argument list to syslog.
@@ -189,11 +236,11 @@ extern void diminuto_log_emit(const char * format, ...);
 
 /******************************************************************************/
 
-#define DIMINUTO_LOG_PRIORITY_DEFAULT       DIMINUTO_LOG_PRIORITY_NOTICE
+#define DIMINUTO_LOG_PRIORITY_DEFAULT DIMINUTO_LOG_PRIORITY_NOTICE
 
 #include "com/diag/diminuto/diminuto_token.h"
 
-#define DIMINUTO_LOG_HERE                   __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": "
+#define DIMINUTO_LOG_HERE __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": "
 
 #endif
 
