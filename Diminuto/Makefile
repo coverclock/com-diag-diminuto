@@ -10,27 +10,24 @@
 #	make most TARGET=<target>		# Build default plus user-space loadable modules.
 #	make all TARGET=<target>		# Build most plus kernel-space loadable modules.
 
-########## Project
-
-PROJECT				:=	diminuto
-TITLE				:=	Diminuto
-SYMBOL				:=	DIMINUTO
-
 ########## Customizations
 
-TARGET				:=	host
-#TARGET				:=	diminuto
-#TARGET				:=	arroyo
-#TARGET				:=	cascada
-#TARGET				:=	contraption
-#TARGET				:=	cobbler
-#TARGET				:=	uclibc
-#TARGET				:=	stampede
-#TARGET				:=	bionic
+TITLE				:=	Diminuto
+
+TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
+#TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
+#TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
+#TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
+#TARGET				:=	host1204# Build for an x86 running Ubuntu 12.04.
+#TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
+#TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
+#TARGET				:=	uclibc# Build for the Raspberry Pi Version B running uClibc.
+#TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
+#TARGET				:=	bionic# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	7# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	8# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -80,6 +77,9 @@ TST_DIR				:=	tst# Unit tests
 
 ########## Variables
 
+PROJECT				:=	$(shell echo $(TITLE) | tr '[A-Z]' '[a-z]')
+SYMBOL				:=	$(shell echo $(TITLE) | tr '[a-z]' '[A-Z]')
+
 HERE				:=	$(shell pwd)
 
 OUT					:=	$(OUT_DIR)/$(TARGET)
@@ -112,7 +112,7 @@ OLD					:=	dummy
 
 ########## Configurations
 
-ifeq ($(TARGET),diminuto)# Build for the AT91RM9200-EK with the BuildRoot system.
+ifeq ($(TARGET),diminuto)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-
@@ -130,7 +130,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),arroyo)# Build for the AT91RM9200-EK with the Arroyo custom system.
+ifeq ($(TARGET),arroyo)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
@@ -148,7 +148,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),cascada)# Build for the BeagleBoard C4 with the Angstrom system.
+ifeq ($(TARGET),cascada)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
@@ -166,7 +166,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),host1204)# Build for an Intel build server with Ubuntu 12.04.
+ifeq ($(TARGET),host1204)
 ARCH				:=	x86
 OS					:=	linux
 TOOLCHAIN			:=
@@ -184,7 +184,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),contraption)# Build for the BeagleBoard C4 with the FroYo Android 2.2 system.
+ifeq ($(TARGET),contraption)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
@@ -203,7 +203,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),cobbler)# Build for the Raspberry Pi version B with the Raspbian system.
+ifeq ($(TARGET),cobbler)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
@@ -222,7 +222,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),uclibc)# Build for the Raspberry Pi Version B with uClibc.
+ifeq ($(TARGET),uclibc)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabihf-
@@ -241,7 +241,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),host)# Build for an Intel build server with Ubuntu 14.04.
+ifeq ($(TARGET),host)
 ARCH				:=	x86
 OS					:=	linux
 TOOLCHAIN			:=
@@ -259,7 +259,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),stampede)# Build for the Nvidia Jetson TK1 with Ubuntu 14.04.
+ifeq ($(TARGET),stampede)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
@@ -277,7 +277,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),bionic)# Build for CyanogenMod 10.2 on the Nexus-7 with bionic.
+ifeq ($(TARGET),bionic)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-androideabi-
