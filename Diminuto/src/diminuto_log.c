@@ -9,15 +9,14 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <sys/types.h>
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
@@ -27,33 +26,32 @@ int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
 int diminuto_log_stream = DIMINUTO_LOG_STREAM_DEFAULT;
 
 static const char levels[] = "01234567";
-static int initialized = 0;
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static uint8_t initialized = 0;
+
+/*******************************************************************************
+ * Base Functions
+ *****************************************************************************/
 
 void diminuto_log_open(const char * name)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        if (name != (const char *)0) {
-            diminuto_log_ident = name;
-        }
+    if (name != (const char *)0) {
+        diminuto_log_ident = name;
+    }
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-        if (!initialized) {
-            openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
-            initialized = !0;
-        }
+    if (!initialized) {
+        openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
+        initialized = !0;
+    }
 #endif
-    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void diminuto_log_close(void)
 {
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        if (initialized) {
-            closelog();
-            initialized = 0;
-        }
-    DIMINUTO_CRITICAL_SECTION_END;
+    if (initialized) {
+        closelog();
+        initialized = 0;
+    }
 #endif
 }
 
@@ -67,49 +65,94 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 #endif
 }
 
-void diminuto_log_vlog(int priority, const char * format, va_list ap)
+void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 {
-    if (getppid() != 1) {
-        int year, month, day, hour, minute, second, nanosecond;
-        char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
-        int rc;
-        char * pointer = buffer;
-        size_t space = sizeof(buffer);
-        size_t total = 0;
-        diminuto_time_zulu(diminuto_time_clock(), &year, &month, &day, &hour, &minute, &second, &nanosecond);
-        rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, levels[priority & 0x7], getpid());
-        if (rc < 0) { rc = 0; }
-        else if (rc >= space) { rc = space - 1; }
-        else { /* Do nothing. */ }
-        pointer += rc;
-        space -= rc;
-        total += rc;
-        rc = vsnprintf(pointer, space, format, ap);
-        if (rc < 0) { rc = 0; }
-        else if (rc >= space) { rc = space - 1; }
-        else { /* Do nothing. */ }
-        pointer += rc;
-        space -= rc;
-        total += rc;
-        if (space <= 1) {
-        	buffer[total - 1] = '\n';
-        } else if (buffer[total - 1] != '\n') {
-        	buffer[total++] = '\n';
-        	buffer[total] = '\0';
-        } else {
-        	/* Do nothing. */
-        }
-        (void)write(diminuto_log_stream, buffer, total);
+    diminuto_ticks_t now;
+    int year, month, day, hour, minute, second, nanosecond;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    int rc;
+    char * pointer = buffer;
+    size_t space = sizeof(buffer);
+    size_t total = 0;
+
+    now = diminuto_time_clock();
+    diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
+
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, levels[priority & 0x7], getpid());
+    if (rc < 0) {
+        rc = 0;
+    } else if (rc >= space) {
+        rc = space - 1;
     } else {
-        diminuto_log_vsyslog(priority, format, ap);
+        /* Do nothing. */
+    }
+    pointer += rc;
+    space -= rc;
+    total += rc;
+
+    rc = vsnprintf(pointer, space, format, ap);
+    if (rc < 0) {
+        rc = 0;
+    } else if (rc >= space) {
+        rc = space - 1;
+    } else {
+        /* Do nothing. */
+    }
+    pointer += rc;
+    space -= rc;
+    total += rc;
+
+    if (space <= 1) {
+    	buffer[total - 1] = '\n';
+    } else if (buffer[total - 1] != '\n') {
+    	buffer[total++] = '\n';
+    	buffer[total] = '\0';
+    } else {
+    	/* Do nothing. */
+    }
+
+    rc = write(fd, buffer, total);
+    if (rc < 0) {
+        /* Do nothing: what are we doing to do, log an error message? */
+    } else if (rc == 0) {
+        /* Do nothing: far end closed, which is the caller's problem. */
+    } else if (rc < total) {
+        /* Do nothing: accept partial write and proceed. */
+    } else {
+        /* Do nothing: nominal. */
     }
 }
+
+/*******************************************************************************
+ * Routing Functions
+ *****************************************************************************/
+
+void diminuto_log_vlog(int priority, const char * format, va_list ap)
+{
+    if (getppid() == 1) {
+        diminuto_log_vsyslog(priority, format, ap);
+    } else {
+        diminuto_log_vwrite(diminuto_log_stream, priority, format, ap);
+    }
+}
+
+/*******************************************************************************
+ * Variadic Functions
+ *****************************************************************************/
 
 void diminuto_log_syslog(int priority, const char * format, ...)
 {
     va_list ap;
     va_start(ap, format);
     diminuto_log_vsyslog(priority, format, ap);
+    va_end(ap);
+}
+
+void diminuto_log_write(int fd, int priority, const char * format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    diminuto_log_vwrite(fd, priority, format, ap);
     va_end(ap);
 }
 
@@ -128,6 +171,10 @@ void diminuto_log_emit(const char * format, ...)
     diminuto_log_vlog(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
     va_end(ap);
 }
+
+/*******************************************************************************
+ * Error Number Functions
+ *****************************************************************************/
 
 void diminuto_serror(const char * s)
 {

@@ -182,11 +182,56 @@ extern void diminuto_log_close(void);
 extern void diminuto_log_vsyslog(int priority, const char * format, va_list ap);
 
 /**
- * Format and log the argument list to syslog.
+ * Format and log to syslog.
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
 extern void diminuto_log_syslog(int priority, const char * format, ...);
+
+/**
+ * Format and log the argument list to a file descriptor.
+ * @param fd is the file descriptor.
+ * @param priority is the log priority level.
+ * @param format points to a printf-style format string.
+ * @param ap is a variable length argument list.
+ */
+extern void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap);
+
+/**
+ * Format and print to a file descriptor.
+ * the argument list to
+ * @param fd is the file descriptor.
+ * @param priority is the log priority level.
+ * @param format points to a printf-style format string.
+ */
+extern void diminuto_log_write(int fd, int priority, const char * format, ...);
+
+/**
+ * If the parent PID of the calling process is not 1, format and print
+ * the argument list to stderr; if it is, format and log the argument
+ * list to syslog. This behavior is useful when unit testing daemons.
+ * @param priority is the log priority level.
+ * @param format points to a printf-style format string.
+ * @param ap is a variable length argument list.
+ */
+extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
+
+/**
+ * If the parent PID of the calling process is not 1, format and print
+ * to stderr; if it is, format and log to syslog. This behavior is useful when
+ * unit testing daemons.
+ * @param priority is the log priority level.
+ * @param format points to a printf-style format string.
+ */
+extern void diminuto_log_log(int priority, const char * format, ...);
+
+/**
+ * If the parent PID of the calling process is not 1, format and print
+ * the argument list to stderr; if it is, format and log the argument
+ * list to syslog. The message is logged at the default priority.
+ * @param format points to a printf-style format string.
+ */
+extern void diminuto_log_emit(const char * format, ...);
 
 /**
  * Emulate perror() but instead of writing the prefixed error string to
@@ -204,33 +249,6 @@ extern void diminuto_serror(const char * s);
  * @see perror(3).
  */
 extern void diminuto_perror(const char * s);
-
-/**
- * If the parent PID of the calling process is not 1, format and print
- * the argument list to stderr; if it is, format and log the argument
- * list to syslog. This behavior is useful when unit testing daemons.
- * @param priority is the log priority level.
- * @param format points to a printf-style format string.
- * @param ap is a variable length argument list.
- */
-extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
-
-/**
- * If the parent PID of the calling process is not 1, format and print
- * the argument list to stderr; if it is, format and log the argument
- * list to syslog. This behavior is useful when unit testing daemons.
- * @param priority is the log priority level.
- * @param format points to a printf-style format string.
- */
-extern void diminuto_log_log(int priority, const char * format, ...);
-
-/**
- * If the parent PID of the calling process is not 1, format and print
- * the argument list to stderr; if it is, format and log the argument
- * list to syslog. The message is logged at the default priority.
- * @param format points to a printf-style format string.
- */
-extern void diminuto_log_emit(const char * format, ...);
 
 #endif
 
