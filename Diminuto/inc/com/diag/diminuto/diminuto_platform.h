@@ -19,7 +19,9 @@
 
 #if defined(__KERNEL__) || defined(MODULE)
 
-#   define COM_DIAG_DIMINUTO_PLATFORM_KERNEL (!0)
+#	include <linux/version.h>
+
+#   define COM_DIAG_DIMINUTO_PLATFORM_KERNEL (LINUX_VERSION_CODE)
 #   define COM_DIAG_DIMINUTO_PLATFORM "KERNEL"
 
 #else

@@ -55,8 +55,8 @@
 
 #include "com/diag/diminuto/diminuto_mmdriver.h"
 #include "com/diag/diminuto/diminuto_map.h"
-#include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+#include "com/diag/diminuto/diminuto_platform.h"
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(2, 6, 33))
 #	include <linux/autoconf.h>
 #else
 #	include <generated/autoconf.h>
@@ -70,7 +70,7 @@
 #include <linux/proc_fs.h>
 #include <linux/semaphore.h>
 #include <linux/miscdevice.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL >= KERNEL_VERSION(3, 10, 0))
 #	include <linux/seq_file.h>
 #endif
 #include <asm/uaccess.h>
@@ -136,7 +136,7 @@ static int closes = 0;
 static int ioctls = 0;
 static int procs = 0;
 static int errors = 0;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38)
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(2, 6, 38))
 static DECLARE_MUTEX(semaphore);
 #else
 static DEFINE_SEMAPHORE(semaphore);
@@ -259,7 +259,7 @@ mmdriver_release(
     return 0;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(2, 6, 36))
 static int
 mmdriver_ioctl(
     struct inode * inode,
@@ -344,7 +344,7 @@ mmdriver_unlocked_ioctl(
  ******************************************************************************/
 
 #if defined(CONFIG_PROC_FS)
-#	if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+#	if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(3, 10, 0))
 static int
 mmdriver_proc_read(
     char * bufferp,
@@ -486,7 +486,7 @@ static struct file_operations pops = {
 
 static struct file_operations fops = {
     .owner      	= THIS_MODULE,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(2, 6, 36))
     .ioctl      	= mmdriver_ioctl,
 #else
     .unlocked_ioctl	= mmdriver_unlocked_ioctl,
@@ -537,7 +537,7 @@ __init mmdriver_init(
         strncat(proc, name, sizeof(name));
 
 #if defined(CONFIG_PROC_FS)
-#	if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+#	if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL < KERNEL_VERSION(3, 10, 0))
         if (!create_proc_read_entry(proc, 0, NULL, mmdriver_proc_read, NULL)) {
             pr_err("mmdriver_init: create_proc_read_entry failed!\n");
             unregister_chrdev(major, name);

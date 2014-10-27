@@ -923,14 +923,10 @@ $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
 
 DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 
-DEPENDENCIESC := $(SRC_DIR) $(TST_DIR) $(MOD_DIR) $(DRV_DIR)
-
-DEPENDENCIESCXX := $(SRC_DIR) $(TST_DIR)
-
 depend:	$(TARGETSYNTHESIZED)
 	M=`dirname $(DEPENDENCIES)`; mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(DEPENDENCIESC); do \
+	for S in $(SRC_DIR) $(TST_DIR) $(MOD_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
@@ -941,7 +937,18 @@ depend:	$(TARGETSYNTHESIZED)
 			done; \
 		fi; \
 	done
-	for S in $(DEPENDENCIESCXX); do \
+	for S in $(DRV_DIR); do \
+		if [ -d $$S ]; then \
+			for F in $$S/*.c; do \
+				D=`dirname $$F`; \
+				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+				echo -n "$(OUT)/$$D/" > $$T; \
+				$(CC) $(CPPFLAGS) -DMODULE -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
+				rm -f $$T; \
+			done; \
+		fi; \
+	done
+	for S in $(SRC_DIR) $(TST_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
