@@ -28,7 +28,7 @@ TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	8# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	9# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -215,27 +215,6 @@ CPPARCH				:=	-isystem $(ROOT_DIR)/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),dumpling)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabi-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-BUILDROOT_REV		:=	2014.08
-BUILDROOT_DIR		:=	$(HOME_DIR)/$(TARGET)/buildroot-$(BUILDROOT_REV)
-KERNEL_REV			:=	3.12.26
-KERNEL_DIR			:=	$(BUILDROOT_DIR)/output/build/linux-353043394c99ed37a4075da228af64468fdf6c06
-CPPARCH				:=	-isystem $(BUILDROOT_DIR)/output/build/linux-headers-$(KERNEL_REV)/usr/include
-CARCH				:=	-fPIC
-CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
 LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
@@ -447,6 +426,27 @@ LDXXLIBRARIES		+=	-ldl
 LDXXLIBRARIES		+=	-lc
 LDXXLIBRARIES		+=	-lstdc++
 LDXXLIBRARIES		+=	-lm
+endif
+
+ifeq ($(TARGET),dumpling)
+ARCH				:=	arm
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabi-
+KERNELCHAIN			:=	$(TOOLCHAIN)
+BUILDROOT_REV		:=	2014.08
+BUILDROOT_DIR		:=	$(HOME_DIR)/$(TARGET)/buildroot-$(BUILDROOT_REV)
+KERNEL_REV			:=	3.12.26
+KERNEL_DIR			:=	$(BUILDROOT_DIR)/output/build/linux-353043394c99ed37a4075da228af64468fdf6c06
+CPPARCH				:=	-isystem $(BUILDROOT_DIR)/output/build/linux-headers-$(KERNEL_REV)/usr/include
+CARCH				:=	-fPIC
+CXXARCH				:=	$(CARCH)
+#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
+SOARCH				:=
+KERNELARCH			:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ########## Commands and Option Flags

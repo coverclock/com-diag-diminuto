@@ -49,6 +49,11 @@
 #       define COM_DIAG_DIMINUTO_PLATFORM_GLIBC (((__GLIBC__) << 16) + __GLIBC_MINOR__)
 #       define COM_DIAG_DIMINUTO_PLATFORM "GLIBC"
 
+#   elif defined(__GLIBC__)
+
+#       define COM_DIAG_DIMINUTO_PLATFORM_GLIBC (!0)
+#       define COM_DIAG_DIMINUTO_PLATFORM "GLIBC"
+
 #   else
 
 #       warning Cannot implicitly determine platform!
