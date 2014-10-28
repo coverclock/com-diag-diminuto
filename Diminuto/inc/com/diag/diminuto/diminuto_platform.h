@@ -29,18 +29,31 @@
 #   include <features.h>
 #   include <sys/cdefs.h>
 
-#   if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
-#       define COM_DIAG_DIMINUTO_PLATFORM_GLIBC (((__GLIBC__) << 16) + __GLIBC_MINOR__)
-#       define COM_DIAG_DIMINUTO_PLATFORM "GLIBC"
-#   elif defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__) && defined(__UCLIBC_SUBLEVEL__)
+#   if defined(__UCLIBC_MAJOR__) && defined(__UCLIBC_MINOR__) && defined(__UCLIBC_SUBLEVEL__)
+
 #       define COM_DIAG_DIMINUTO_PLATFORM_UCLIBC (1000000 + ((__UCLIBC_MAJOR__) * 10000) + ((__UCLIBC_MINOR__) * 100) + (__UCLIBC_SUBLEVEL__))
 #       define COM_DIAG_DIMINUTO_PLATFORM "UCLIBC"
+
+#   elif defined(__UCLIBC__)
+
+#       define COM_DIAG_DIMINUTO_PLATFORM_UCLIBC (!0)
+#       define COM_DIAG_DIMINUTO_PLATFORM "UCLIBC"
+
 #   elif defined(__BIONIC__)
+
 #       define COM_DIAG_DIMINUTO_PLATFORM_BIONIC (!0)
 #       define COM_DIAG_DIMINUTO_PLATFORM "BIONIC"
+
+#   elif defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+
+#       define COM_DIAG_DIMINUTO_PLATFORM_GLIBC (((__GLIBC__) << 16) + __GLIBC_MINOR__)
+#       define COM_DIAG_DIMINUTO_PLATFORM "GLIBC"
+
 #   else
+
 #       warning Cannot implicitly determine platform!
 #       define COM_DIAG_DIMINUTO_PLATFORM "UNKNOWN"
+
 #   endif
 
 #endif

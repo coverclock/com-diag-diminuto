@@ -1,5 +1,5 @@
 # Copyright 2008-2014 Digital Aggregates Corporation
-# Licensed under the terms in README.h
+# Licensed under the terms in README.hz
 # author:Chip Overclock
 # mailto:coverclock@diag.com
 # http://www.diag.com/navigation/downloads/Diminuto.html
@@ -21,9 +21,10 @@ TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
 #TARGET				:=	host1204# Build for an x86 running Ubuntu 12.04.
 #TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
-#TARGET				:=	uclibc# Build for the Raspberry Pi Version B running uClibc.
+#TARGET				:=	dumpling# Build for the Raspberry Pi Version B running uClibc.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
-#TARGET				:=	bionic# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
+#TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
+#TARGET				:=	petticoat# Build for Chrome OS for the x86 processor.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
@@ -85,7 +86,7 @@ HERE				:=	$(shell pwd)
 OUT					:=	$(OUT_DIR)/$(TARGET)
 
 TEMP_DIR			:=	/tmp
-ROOT_DIR			:=	$(HOME_DIR)/$(PROJECT)
+ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
 
 TIMESTAMP			:=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
 DATESTAMP			:=	$(shell date +%Y%m%d)
@@ -118,7 +119,7 @@ OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.25.10
-KERNEL_DIR			:=	$(HOME_DIR)/$(PROJECT)/$(OS)-$(KERNEL_REV)
+KERNEL_DIR			:=	$(ROOT_DIR)/$(OS)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(OS)-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
@@ -136,7 +137,7 @@ OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.26.3
-KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(OS)-$(KERNEL_REV)
+KERNEL_DIR			:=	$(ROOT_DIR)/$(OS)-$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv4t -fPIC
 CXXARCH				:=	$(CARCH)
@@ -172,7 +173,7 @@ OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	3.2.0-51
-KERNEL_DIR			:=	$(HOME)/src/linux-source-3.2.0
+KERNEL_DIR			:=	$(ROOT_DIR)/linux-source-3.2.0
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic-pae
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
@@ -190,8 +191,8 @@ OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	2.6.32
-KERNEL_DIR			:=	$(HOME_DIR)/contraption/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-CPPARCH				:=	-isystem $(HOME_DIR)/contraption/include-$(KERNEL_REV)/include
+KERNEL_DIR			:=	$(ROOT_DIR)/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
+CPPARCH				:=	-isystem $(ROOT_DIR)/include-$(KERNEL_REV)/include
 CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
@@ -209,8 +210,8 @@ OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	rpi-3.6.y
-KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+KERNEL_DIR			:=	$(ROOT_DIR)/linux-$(KERNEL_REV)
+CPPARCH				:=	-isystem $(ROOT_DIR)/include-$(KERNEL_REV)/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static
@@ -222,14 +223,16 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),uclibc)
+ifeq ($(TARGET),dumpling)
 ARCH				:=	arm
 OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabihf-
+TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabi-
 KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	rpi-3.6.y
-KERNEL_DIR			:=	$(HOME_DIR)/cobbler/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/cobbler/include-$(KERNEL_REV)/include
+BUILDROOT_REV		:=	2014.08
+BUILDROOT_DIR		:=	$(HOME_DIR)/$(TARGET)/buildroot-$(BUILDROOT_REV)
+KERNEL_REV			:=	3.12.26
+KERNEL_DIR			:=	$(BUILDROOT_DIR)/output/build/linux-353043394c99ed37a4075da228af64468fdf6c06
+CPPARCH				:=	-isystem $(BUILDROOT_DIR)/output/build/linux-headers-$(KERNEL_REV)/usr/include
 CARCH				:=	-fPIC
 CXXARCH				:=	$(CARCH)
 #LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
@@ -247,7 +250,7 @@ OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=	$(HOME)/src/linux-source-3.13.0
+KERNEL_DIR			:=	$(HOME_DIR)/host/linux-source-3.13.0
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
@@ -265,8 +268,8 @@ OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
 KERNELCHAIN			:=	$(TOOLCHAIN)
 KERNEL_REV			:=	3.10.24-jetson
-KERNEL_DIR			:=	$(HOME_DIR)/stampede/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/stampede/linux-headers-$(KERNEL_REV)/include
+KERNEL_DIR			:=	$(ROOT_DIR)/linux-$(KERNEL_REV)
+CPPARCH				:=	-isystem $(ROOT_DIR)/linux-headers-$(KERNEL_REV)/include
 CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
@@ -277,7 +280,7 @@ LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
-ifeq ($(TARGET),bionic)
+ifeq ($(TARGET),corset)
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-androideabi-
@@ -287,7 +290,7 @@ CYANOGENMODPRODUCT	:=	flo
 CYANOGENMODKERNEL	:=	google
 CYANOGENMODPROCESSOR:=	msm
 CYANOGENMODDEVICE	:=	asus
-CYANOGENMOD_DIR		:=	$(HOME)/src/cm-10.2
+CYANOGENMOD_DIR		:=	$(ROOT_DIR)/cm-10.2
 KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODKERNEL)/$(CYANOGENMODPROCESSOR)
 CPPARCH				:=
 CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/arch-arm/include
@@ -512,7 +515,7 @@ TARGETALL			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 ########## Main Entry Points
 
-.PHONY:	default all dist clean pristine
+.PHONY:	default all dist clean pristine clobber
 
 default:	$(TARGETDEFAULT)
 
@@ -525,7 +528,7 @@ dist:	distribution
 clean:
 	rm -rf $(OUT)
 
-pristine:	clean
+pristine clobber:	clean
 	rm -rf $(OUT_DIR)
 
 ########## Packaging and Distribution
@@ -545,7 +548,7 @@ package $(PACKAGE).tgz:
 	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
 	rm -rf $$T
 
-ifeq ($(TARGET),bionic)
+ifeq ($(TARGET),corset)
 
 .PHONY:	deploy
 

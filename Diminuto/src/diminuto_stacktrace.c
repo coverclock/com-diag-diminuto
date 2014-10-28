@@ -14,9 +14,41 @@
 #include <errno.h>
 #include <unistd.h>
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC) || defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+#if 0
 
 #	warning backtrace(3) not implemented on this platform!
+
+int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
+{
+	errno = EPERM;
+    return -1;
+}
+
+int diminuto_stacktrace()
+{
+	errno = EPERM;
+    return -1;
+}
+
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+
+#	warning backtrace(3) not implemented in uClibc!
+
+int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
+{
+	errno = EPERM;
+    return -1;
+}
+
+int diminuto_stacktrace()
+{
+	errno = EPERM;
+    return -1;
+}
+
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+
+#	warning backtrace(3) not implemented in Bionic!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {

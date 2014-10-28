@@ -60,7 +60,11 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 	void * resolved;
 	const char * label;
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+#if 0
+#	warning dlvsym(3) not implemented on this platform!
+	label = "dlsym";
+	resolved = dlsym(handle, symbol);
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
 #	warning dlvsym(3) not implemented in uClibc!
 	label = "dlsym";
 	resolved = dlsym(handle, symbol);
