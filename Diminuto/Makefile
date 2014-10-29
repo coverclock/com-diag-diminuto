@@ -25,7 +25,7 @@ TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
 #TARGET				:=	dumpling# Build for the Raspberry Pi Version B running uClibc.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
-#TARGET				:=	petticoat# Build for Chrome OS for the x86 processor.
+#TARGET				:=	petticoat# Build for Chromium OS.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
@@ -225,7 +225,7 @@ LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
 
 ifeq ($(TARGET),host)
-ARCH				:=	x86
+ARCH				:=	x86_64
 OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
@@ -364,11 +364,11 @@ LDARCH				+=	-pie
 LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
 LDARCH				+=	-Wl,--gc-sections
 LDARCH				+=	-Wl,-z,nocopyreloc
-LDARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+LDARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
 LDARCH				+=	-L$(OUT)/$(LIB_DIR)
-LDARCH				+=	-Wl,-rpath-link=${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+LDARCH				+=	-Wl,-rpath-link=$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
+LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 LDARCH				+=	-L$(OUT)/$(LIB_DIR)
 LDARCH				+=	-Wl,-z,noexecstack
 LDARCH				+=	-Wl,-z,relro
@@ -378,15 +378,15 @@ LDARCH				+=	-Wl,--fatal-warnings
 LDARCH				+=	-Wl,--icf=safe
 LDARCH				+=	-Wl,--fix-cortex-a8
 LDARCH				+=	-Wl,--no-undefined
-LDARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-LDARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_android.o
+LDARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_android.o
 MOARCH				:=
 MOARCH				+=	-nostdlib
 MOARCH				+=	-Wl,--gc-sections
 MOARCH				+=	-Wl,-shared,-Bsymbolic
-MOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
-MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+MOARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
+MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 MOARCH				+=	-L$(OUT)/$(LIB_DIR)
 MOARCH				+=	-Wl,-z,noexecstack
 MOARCH				+=	-Wl,-z,relro
@@ -396,15 +396,15 @@ MOARCH				+=	-Wl,--fatal-warnings
 MOARCH				+=	-Wl,--icf=safe
 MOARCH				+=	-Wl,--fix-cortex-a8
 MOARCH				+=	-Wl,--no-undefined
-MOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-MOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
+MOARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
 SOARCH				:=
 SOARCH				+=	-nostdlib
 SOARCH				+=	-Wl,--gc-sections
 SOARCH				+=	-Wl,-shared,-Bsymbolic
-SOARCH				+=	-L${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
-SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
+SOARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
+SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
+SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
 SOARCH				+=	-Wl,-z,noexecstack
 SOARCH				+=	-Wl,-z,relro
 SOARCH				+=	-Wl,-z,now
@@ -413,9 +413,9 @@ SOARCH				+=	-Wl,--fatal-warnings
 SOARCH				+=	-Wl,--icf=safe
 SOARCH				+=	-Wl,--fix-cortex-a8
 SOARCH				+=	-Wl,--no-undefined
-SOARCH				+=	${CYANOGENMOD_DIR}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-SOARCH				+=	${CYANOGENMOD_DIR}/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-KERNELARCH			:=	O=${CYANOGENMOD_DIR}/out/target/product/flo/obj/KERNEL_OBJ
+SOARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
+SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
+KERNELARCH			:=	O=$(CYANOGENMOD_DIR)/out/target/product/flo/obj/KERNEL_OBJ
 LDLIBRARIES			:=
 LDLIBRARIES			+=	-llog
 LDLIBRARIES			+=	-ldl
@@ -446,6 +446,24 @@ LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=
+LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
+LDXXLIBRARIES		:=	$(LDLIBRARIES)
+endif
+
+ifeq ($(TARGET),petticoat)
+ARCH				:=	x86_64
+OS					:=	linux
+TOOLCHAIN			:=	$(ARCH)-cros-$(OS)-gnu-
+KERNELCHAIN			:=
+KERNEL_REV			:=	3.14
+KERNEL_DIR			:=	$(HOME)/trunk/src/third_party/kernel/$(KERNEL_REV)
+CPPARCH				:=	-isystem $(HOME)/trunk/chroot/build/x86-generic/usr/include
+CARCH				:=	-rdynamic -fPIC
+CXXARCH				:=	$(CARCH)
+LDARCH				:=	-L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-L$(OUT)/$(LIB_DIR)
+SOARCH				:=
+KERNELARCH			:=	O=$(HOME)/trunk/chroot/build/x86-generic/var/cache/portage/sys-kernel/chromeos-kernel-3_14
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)
 endif
