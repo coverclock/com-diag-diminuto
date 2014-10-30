@@ -669,9 +669,10 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 # otherwise they exit with something else (or core dump). But left to their
 # own devices, the unit tests aren't very chatty. If you want to see more log
 # output from them, you can tune the logging using the environmental variable
-# "DIMINUTO_LOG_MASK". For example, this bash command turns on everything.
+# COM_DIAG_DIMINUTO_LOG_MASK. For example, this bash command turns on
+# everything.
 #
-#	export DIMINUTO_LOG_MASK=0xffff
+#	export COM_DIAG_DIMINUTO_LOG_MASK=0xffff
 #
 # The Diminuto logging system sends log messages to the system log (syslog)
 # when the emitter is a kernel-space module or the emitting process is a child
@@ -712,7 +713,8 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # file (although I have not tested it). Some of the information in this binary
 # executable may be sensitive, for example, the Directory or the User. That's
 # why it's in a form that doesn't have to be distributed with the product,
-# unlike the shared objects.
+# unlike the shared objects. This program also serves as a unit test, so be
+# careful about removing stuff from it that looks reduntant or unused.
 $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -723,28 +725,51 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include <stdio.h>' >> $@
+	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo "    \"Title = $(TITLE)\\\\n\"" >> $@
-	echo "    \"Copyright = $(COPYRIGHT)\\\\n\"" >> $@
-	echo "    \"Contact = $(CONTACT)\\\\n\"" >> $@
-	echo "    \"License = $(LICENSE)\\\\n\"" >> $@
-	echo "    \"Homepage = $(HOMEPAGE)\\\\n\"" >> $@
-	echo "    \"Release = \" COM_DIAG_DIMINUTO_RELEASE \"\\\\n\"" >> $@
-	echo "    \"Vintage = \" COM_DIAG_DIMINUTO_VINTAGE \"\\\\n\"" >> $@
-	echo "    \"Host = $(shell hostname)\\\\n\"" >> $@
-	echo "    \"Directory = $(shell pwd)\\\\n\"" >> $@
-	echo "    \"Arch = $(ARCH)\\\\n\"" >> $@
-	echo "    \"Target = $(TARGET)\\\\n\"" >> $@
-	echo "    \"Os = $(OS)\\\\n\"" >> $@
-	echo "    \"Platform = \" COM_DIAG_DIMINUTO_PLATFORM \"\\\\n\"" >> $@
-	echo "    \"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
-	echo "    \"User = $(USER)\\\\n\"" >> $@
+	echo '    "Title = $(TITLE)\\n"' >> $@
+	echo '    "Copyright = $(COPYRIGHT)\\n"' >> $@
+	echo '    "Contact = $(CONTACT)\\n"' >> $@
+	echo '    "License = $(LICENSE)\\n"' >> $@
+	echo '    "Homepage = $(HOMEPAGE)\\n"' >> $@
+	echo '    "Release = " COM_DIAG_DIMINUTO_RELEASE "\\n"' >> $@
+	echo '    "Vintage = " COM_DIAG_DIMINUTO_VINTAGE "\\n"' >> $@
+	echo '    "Host = $(shell hostname)\\n"' >> $@
+	echo '    "Directory = $(shell pwd)\\n"' >> $@
+	echo '    "Arch = $(ARCH)\\n"' >> $@
+	echo '    "Target = $(TARGET)\\n"' >> $@
+	echo '    "Os = $(OS)\\n"' >> $@
+	echo '    "Platform = " COM_DIAG_DIMINUTO_PLATFORM "\\n"' >> $@
+	echo '    "Toolchain = $(TOOLCHAIN)\\n"' >> $@
+	echo '    "User = $(USER)\\n"' >> $@
 	echo ';' >> $@
-	echo "extern const char COM_DIAG_DIMINUTO_PLATFORM_KEYWORD[];" >> $@
-	echo "extern const char * COM_DIAG_DIMINUTO_PLATFORM_VALUE;" >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_RELEASE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_VINTAGE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_PLATFORM_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_PLATFORM_VALUE;' >> $@
 	echo 'int main(void) {' >> $@
+	echo '    const char * release_keyword = (const char *)0;' >> $@
+	echo '    const char * release_value = (const char *)0;' >> $@
+	echo '    const char * vintage_keyword = (const char *)0;' >> $@
+	echo '    const char * vintage_value = (const char *)0;' >> $@
+	echo '    const char * platform_keyword = (const char *)0;' >> $@
+	echo '    const char * platform_value = (const char *)0;' >> $@
 	echo '    fputs(METADATA, stderr);' >> $@
 	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout);' >> $@
+	echo '    release_keyword = COM_DIAG_DIMINUTO_RELEASE_KEYWORD;' >> $@
+	echo '    release_value = COM_DIAG_DIMINUTO_RELEASE_VALUE;' >> $@
+	echo '    vintage_keyword = COM_DIAG_DIMINUTO_VINTAGE_KEYWORD;' >> $@
+	echo '    vintage_value = COM_DIAG_DIMINUTO_VINTAGE_VALUE;' >> $@
+	echo '    platform_keyword = COM_DIAG_DIMINUTO_PLATFORM_KEYWORD;' >> $@
+	echo '    platform_value = COM_DIAG_DIMINUTO_PLATFORM_VALUE;' >> $@
+	echo '    assert(release_keyword != (const char *)0);' >> $@
+	echo '    assert(release_value != (const char *)0);' >> $@
+	echo '    assert(vintage_keyword != (const char *)0);' >> $@
+	echo '    assert(vintage_value != (const char *)0);' >> $@
+	echo '    assert(platform_keyword != (const char *)0);' >> $@
+	echo '    assert(platform_value != (const char *)0);' >> $@
 	echo '    return 0;' >> $@
 	echo '}' >> $@
 
@@ -754,12 +779,10 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
-	echo "#define COM_DIAG_DIMINUTO_RELEASE_MAJOR $(MAJOR)" >> $@
-	echo "#define COM_DIAG_DIMINUTO_RELEASE_MINOR $(MINOR)" >> $@
-	echo "#define COM_DIAG_DIMINUTO_RELEASE_BUILD $(BUILD)" >> $@
-	echo "#define COM_DIAG_DIMINUTO_RELEASE \"$(MAJOR).$(MINOR).$(BUILD)\"" >> $@
-	echo "static const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[] = \"COM_DIAG_DIMINUTO_RELEASE=\" COM_DIAG_DIMINUTO_RELEASE;" >> $@
-	echo "static const char * COM_DIAG_DIMINUTO_RELEASE_VALUE = &COM_DIAG_DIMINUTO_RELEASE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_RELEASE=\") - 1];" >> $@
+	echo '#define COM_DIAG_DIMINUTO_RELEASE_MAJOR $(MAJOR)' >> $@
+	echo '#define COM_DIAG_DIMINUTO_RELEASE_MINOR $(MINOR)' >> $@
+	echo '#define COM_DIAG_DIMINUTO_RELEASE_BUILD $(BUILD)' >> $@
+	echo '#define COM_DIAG_DIMINUTO_RELEASE "$(MAJOR).$(MINOR).$(BUILD)"' >> $@
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
@@ -771,9 +794,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
-	echo "#define COM_DIAG_DIMINUTO_VINTAGE \"$(VINTAGE)\"" >> $@
-	echo "static const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[] = \"COM_DIAG_DIMINUTO_VINTAGE=\" COM_DIAG_DIMINUTO_VINTAGE;" >> $@
-	echo "static const char * COM_DIAG_DIMINUTO_VINTAGE_VALUE = &COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_VINTAGE=\") - 1];" >> $@
+	echo '#define COM_DIAG_DIMINUTO_VINTAGE "$(VINTAGE)"' >> $@
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
@@ -792,8 +813,8 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
 	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
 	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
-	echo 'export DIMINUTO_LOG_MASK=0xffff' >> $@
-	chmod 444 $@
+	echo 'export COM_DIAG_DIMINUTO_LOG_MASK=0xffff' >> $@
+	chmod 644 $@
 
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
 # (Because the Android bash doesn't seem to implement BASH_ARGV.)
@@ -804,8 +825,8 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
 	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
-	echo 'export DIMINUTO_LOG_MASK=0xffff' >> $@
-	chmod 555 $@
+	echo 'echo export COM_DIAG_DIMINUTO_LOG_MASK=0xffff' >> $@
+	chmod 755 $@
 
 ########## User-Space Loadable Modules
 

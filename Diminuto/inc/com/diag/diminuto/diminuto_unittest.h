@@ -35,7 +35,7 @@ static int diminuto_unittest_errors = 0;
 #define SETLOGMASK() \
 	do { \
 		const char * diminuto_unittest_log_mask; \
-		if ((diminuto_unittest_log_mask = getenv("DIMINUTO_LOG_MASK")) != (const char *)0) { \
+		if ((diminuto_unittest_log_mask = getenv("COM_DIAG_DIMINUTO_LOG_MASK")) != (const char *)0) { \
 			DIMINUTO_LOG_MASK = strtoul(diminuto_unittest_log_mask, (char **)0, 0); \
 		} \
 	} while (0)
