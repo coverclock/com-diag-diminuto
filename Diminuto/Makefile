@@ -28,8 +28,8 @@ TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
 #TARGET				:=	petticoat# Build for Chromium OS.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
-MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	9# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	4# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -709,7 +709,10 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # The major.minor.build is emitted to standard output, a bunch more
 # metadata to standard error. Hence, they can be redirected to separate
 # files. The metadata file is intended to parsable as a standard properties
-# file (although I have not tested it).
+# file (although I have not tested it). Some of the information in this binary
+# executable may be sensitive, for example, the Directory or the User. That's
+# why it's in a form that doesn't have to be distributed with the product,
+# unlike the shared objects.
 $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -726,25 +729,21 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	echo "    \"Contact = $(CONTACT)\\\\n\"" >> $@
 	echo "    \"License = $(LICENSE)\\\\n\"" >> $@
 	echo "    \"Homepage = $(HOMEPAGE)\\\\n\"" >> $@
-	echo "    \"Release = $(MAJOR).$(MINOR).$(BUILD)\\\\n\"" >> $@
-	echo "    \"Vintage = $(VINTAGE)\\\\n\"" >> $@
+	echo "    \"Release = \" COM_DIAG_DIMINUTO_RELEASE \"\\\\n\"" >> $@
+	echo "    \"Vintage = \" COM_DIAG_DIMINUTO_VINTAGE \"\\\\n\"" >> $@
 	echo "    \"Host = $(shell hostname)\\\\n\"" >> $@
 	echo "    \"Directory = $(shell pwd)\\\\n\"" >> $@
 	echo "    \"Arch = $(ARCH)\\\\n\"" >> $@
 	echo "    \"Target = $(TARGET)\\\\n\"" >> $@
 	echo "    \"Os = $(OS)\\\\n\"" >> $@
+	echo "    \"Platform = \" COM_DIAG_DIMINUTO_PLATFORM \"\\\\n\"" >> $@
 	echo "    \"Toolchain = $(TOOLCHAIN)\\\\n\"" >> $@
+	echo "    \"User = $(USER)\\\\n\"" >> $@
 	echo ';' >> $@
 	echo "extern const char COM_DIAG_DIMINUTO_PLATFORM_KEYWORD[];" >> $@
 	echo "extern const char * COM_DIAG_DIMINUTO_PLATFORM_VALUE;" >> $@
 	echo 'int main(void) {' >> $@
 	echo '    fputs(METADATA, stderr);' >> $@
-	echo '    fprintf(stderr, "RELEASE_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_RELEASE_KEYWORD);' >> $@
-	echo '    fprintf(stderr, "RELEASE_VALUE = %s\\n", COM_DIAG_DIMINUTO_RELEASE_VALUE);' >> $@
-	echo '    fprintf(stderr, "VINTAGE_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_VINTAGE_KEYWORD);' >> $@
-	echo '    fprintf(stderr, "VINTAGE_VALUE = %s\\n", COM_DIAG_DIMINUTO_VINTAGE_VALUE);' >> $@
-	echo '    fprintf(stderr, "PLATFORM_KEYWORD = %s\\n", COM_DIAG_DIMINUTO_PLATFORM_KEYWORD);' >> $@
-	echo '    fprintf(stderr, "PLATFORM_VALUE = %s\\n", COM_DIAG_DIMINUTO_PLATFORM_VALUE);' >> $@
 	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout);' >> $@
 	echo '    return 0;' >> $@
 	echo '}' >> $@
@@ -755,7 +754,11 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
-	echo "static const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[] = \"COM_DIAG_DIMINUTO_RELEASE=$(MAJOR).$(MINOR).$(BUILD)\";" >> $@
+	echo "#define COM_DIAG_DIMINUTO_RELEASE_MAJOR $(MAJOR)" >> $@
+	echo "#define COM_DIAG_DIMINUTO_RELEASE_MINOR $(MINOR)" >> $@
+	echo "#define COM_DIAG_DIMINUTO_RELEASE_BUILD $(BUILD)" >> $@
+	echo "#define COM_DIAG_DIMINUTO_RELEASE \"$(MAJOR).$(MINOR).$(BUILD)\"" >> $@
+	echo "static const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[] = \"COM_DIAG_DIMINUTO_RELEASE=\" COM_DIAG_DIMINUTO_RELEASE;" >> $@
 	echo "static const char * COM_DIAG_DIMINUTO_RELEASE_VALUE = &COM_DIAG_DIMINUTO_RELEASE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_RELEASE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
@@ -768,7 +771,8 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
-	echo "static const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[] = \"COM_DIAG_DIMINUTO_VINTAGE=$(VINTAGE)\";" >> $@
+	echo "#define COM_DIAG_DIMINUTO_VINTAGE \"$(VINTAGE)\"" >> $@
+	echo "static const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[] = \"COM_DIAG_DIMINUTO_VINTAGE=\" COM_DIAG_DIMINUTO_VINTAGE;" >> $@
 	echo "static const char * COM_DIAG_DIMINUTO_VINTAGE_VALUE = &COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[sizeof(\"COM_DIAG_DIMINUTO_VINTAGE=\") - 1];" >> $@
 	echo '#endif' >> $@
 
@@ -788,7 +792,8 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
 	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
 	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
-	chmod 666 $@
+	echo 'export DIMINUTO_LOG_MASK=0xffff' >> $@
+	chmod 444 $@
 
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
 # (Because the Android bash doesn't seem to implement BASH_ARGV.)
@@ -799,7 +804,8 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
 	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../lib' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../mod' >> $@
-	chmod 777 $@
+	echo 'export DIMINUTO_LOG_MASK=0xffff' >> $@
+	chmod 555 $@
 
 ########## User-Space Loadable Modules
 
