@@ -15,17 +15,17 @@
 
 TITLE				:=	Diminuto
 
-TARGET				:=	host# Build for an x86 running Ubuntu 14.04.
+TARGET				:=	host# Build for an x86 running Ubuntu 14.04 LTS.
 #TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
-#TARGET				:=	host1204# Build for an x86 running Ubuntu 12.04.
+#TARGET				:=	host1204# Build for an x86 running Ubuntu 12.04 LTS.
 #TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
 #TARGET				:=	dumpling# Build for the Raspberry Pi Version B running uClibc.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
-#TARGET				:=	petticoat# Build for Chromium OS.
+#TARGET				:=	petticoat# Build inside cros_sdk chroot for Chromium OS on x86_64 architecture.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	4# Only functionality or features added with no legacy API changes.
@@ -460,8 +460,8 @@ KERNEL_DIR			:=	$(HOME)/trunk/src/third_party/kernel/$(KERNEL_REV)
 CPPARCH				:=	-isystem $(HOME)/trunk/chroot/build/x86-generic/usr/include
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
+LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
+MOARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 SOARCH				:=
 KERNELARCH			:=	O=$(HOME)/trunk/chroot/build/x86-generic/var/cache/portage/sys-kernel/chromeos-kernel-3_14
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
