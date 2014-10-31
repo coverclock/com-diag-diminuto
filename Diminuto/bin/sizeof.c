@@ -18,6 +18,8 @@
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
+typedef void (function_t)(void);
+
 int main(void)
 {
     printsizeof(char);
@@ -39,6 +41,7 @@ int main(void)
     printsizeof(double);
     printsizeof(void);
     printsizeof(enum_t);
+    printsizeof(function_t);
     printsizeof(int8_t);
     printsizeof(uint8_t);
     printsizeof(int16_t);
