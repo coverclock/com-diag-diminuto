@@ -7,7 +7,12 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * There's a lot of duplication here, but I'm paranoid that way.
+ * There's a lot of duplication here, but I'm paranoid that way. Remarkably,
+ * I once worked on an embedded project using a proprietary non-GNU C compiler
+ * in which the sizeof of signed type was not the same as the sizeof of the
+ * unsigned of the same type. I was a little astounded by that. Also, note
+ * that you can take the sizeof a void and of a function type (as opposed to a
+ * void or function pointer). It's good to know these things.
  */
 
 #include <stdio.h>

@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 #
-#	make default TARGET=<target>	# Build libraries, unit tests, programs.
+#	make default TARGET=<target>	# Build libraries, unit tests, executable programs.
 #	make most TARGET=<target>		# Build default plus user-space loadable modules.
 #	make all TARGET=<target>		# Build most plus kernel-space loadable modules.
 #
@@ -15,21 +15,21 @@
 
 TITLE				:=	Diminuto
 
-TARGET				:=	host# Build for an x86 running Ubuntu 14.04 LTS.
+TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
-#TARGET				:=	host1204# Build for an x86 running Ubuntu 12.04 LTS.
+#TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
 #TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
-#TARGET				:=	dumpling# Build for the Raspberry Pi Version B running uClibc.
+#TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
-#TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running bionic.
-#TARGET				:=	petticoat# Build inside cros_sdk chroot for Chromium OS on x86_64 architecture.
+#TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
+#TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
-MINOR				:=	4# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	5# Only functionality or features added with no legacy API changes.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -62,6 +62,7 @@ HOME_DIR			:=	$(HOME)/Projects
 
 ARC_DIR				:=	arc# Archive files for static linking
 BIN_DIR				:=	bin# Utility source files or stripped executable binaries
+CFG_DIR				:=	cfg# Build configuration files
 DEP_DIR				:=	dep# Generated dependencies and other make files
 DOC_DIR				:=	doc# Documentation
 DRV_DIR				:=	drv# Loadable kernel modules
@@ -77,7 +78,7 @@ SYS_DIR				:=	sys# Kernel module build directory
 TGZ_DIR				:=	tgz# Compressed tarballs
 TST_DIR				:=	tst# Unit tests
 
-########## Variables
+########## Configuration
 
 PROJECT				:=	$(shell echo $(TITLE) | tr '[A-Z]' '[a-z]')
 SYMBOL				:=	$(shell echo $(TITLE) | tr '[a-z]' '[A-Z]')
@@ -112,361 +113,13 @@ ALIASES				:=	hex oct ntohs htons ntohl htonl
 NEW					:=	dummy
 OLD					:=	dummy
 
-########## Configurations
+PACKAGE				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
 
-ifeq ($(TARGET),diminuto)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(OS)-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	2.6.25.10
-KERNEL_DIR			:=	$(ROOT_DIR)/$(OS)-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/$(PROJECT)/builtroot/project_build_arm/$(PROJECT)/$(OS)-$(KERNEL_REV)/include
-CARCH				:=	-march=armv4t -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
+MANIFEST			:=	$(BIN_DIR) $(DRV_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
 
-ifeq ($(TARGET),arroyo)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	2.6.26.3
-KERNEL_DIR			:=	$(ROOT_DIR)/$(OS)-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
-CARCH				:=	-march=armv4t -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
+DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
-ifeq ($(TARGET),cascada)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	2.6.32.7
-KERNEL_DIR			:=	$(HOME_DIR)/arroyo/$(OS)-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME_DIR)/arroyo/include-$(KERNEL_REV)/include
-CARCH				:=	-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),host1204)
-ARCH				:=	x86
-OS					:=	linux
-TOOLCHAIN			:=
-KERNELCHAIN			:=
-KERNEL_REV			:=	3.2.0-51
-KERNEL_DIR			:=	$(ROOT_DIR)/linux-source-3.2.0
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic-pae
-CARCH				:=	-fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),contraption)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-none-$(OS)-gnueabi-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	2.6.32
-KERNEL_DIR			:=	$(ROOT_DIR)/TI_Android_FroYo_DevKit-V2/Sources/Android_Linux_Kernel_2_6_32
-CPPARCH				:=	-isystem $(ROOT_DIR)/include-$(KERNEL_REV)/include
-CARCH				:=	-march=armv7-a -mfpu=neon -mfloat-abi=softfp -fPIC
-CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),cobbler)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	rpi-3.6.y
-KERNEL_DIR			:=	$(ROOT_DIR)/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(ROOT_DIR)/include-$(KERNEL_REV)/include
-CARCH				:=	-fPIC
-CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),host)
-ARCH				:=	x86_64
-OS					:=	linux
-TOOLCHAIN			:=
-KERNELCHAIN			:=
-KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=	$(HOME_DIR)/host/linux-source-3.13.0
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
-CARCH				:=	-rdynamic -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),stampede)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-KERNEL_REV			:=	3.10.24-jetson
-KERNEL_DIR			:=	$(ROOT_DIR)/linux-$(KERNEL_REV)
-CPPARCH				:=	-isystem $(ROOT_DIR)/linux-headers-$(KERNEL_REV)/include
-CARCH				:=	-rdynamic -fno-omit-frame-pointer -funwind-tables -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),corset)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-$(OS)-androideabi-
-KERNELCHAIN			:=	$(ARCH)-eabi-
-KERNEL_REV			:=	3.4.0-cyanogenmod-g7182995
-CYANOGENMODPRODUCT	:=	flo
-CYANOGENMODKERNEL	:=	google
-CYANOGENMODPROCESSOR:=	msm
-CYANOGENMODDEVICE	:=	asus
-CYANOGENMOD_DIR		:=	$(ROOT_DIR)/cm-10.2
-KERNEL_DIR			:=	$(CYANOGENMOD_DIR)/kernel/$(CYANOGENMODKERNEL)/$(CYANOGENMODPROCESSOR)
-CPPARCH				:=
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/arch-arm/include
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/include
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libstdc++/include
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/common
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libc/kernel/arch-arm
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libm/include/arm
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/bionic/libthread_db/include
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/system/core/include
-CPPARCH				+=	-include $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/AndroidConfig.h
-CPPARCH				+=	-I $(CYANOGENMOD_DIR)/build/core/combo/include/arch/linux-arm/
-CPPARCH				+=	-isystem $(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/KERNEL_OBJ/include#/generated/autoconf.h
-CPPARCH				+=	-DANDROID
-CPPARCH				+=	-D_FORTIFY_SOURCE=1
-CPPARCH				+=	-DNDEBUG
-CPPARCH				+=	-UDEBUG
-CPPARCH				+=	-DHAVE_UNISTD_H
-CPPARCH				+=	-DHAVE_ERRNO_H
-CPPARCH				+=	-DHAVE_NETINET_IN_H
-CPPARCH				+=	-DHAVE_SYS_IOCTL_H
-CPPARCH				+=	-DHAVE_SYS_MMAN_H
-CPPARCH				+=	-DHAVE_SYS_MOUNT_H
-CPPARCH				+=	-DHAVE_SYS_PRCTL_H
-CPPARCH				+=	-DHAVE_SYS_RESOURCE_H
-CPPARCH				+=	-DHAVE_SYS_SELECT_H
-CPPARCH				+=	-DHAVE_SYS_STAT_H
-CPPARCH				+=	-DHAVE_SYS_TYPES_H
-CPPARCH				+=	-DHAVE_STDLIB_H
-CPPARCH				+=	-DHAVE_STRDUP
-CPPARCH				+=	-DHAVE_MMAP
-CPPARCH				+=	-DHAVE_UTIME_H
-CPPARCH				+=	-DHAVE_GETPAGESIZE
-CPPARCH				+=	-DHAVE_LSEEK64
-CPPARCH				+=	-DHAVE_LSEEK64_PROTOTYPE
-CPPARCH				+=	-DHAVE_EXT2_IOCTLS
-CPPARCH				+=	-DHAVE_LINUX_FD_H
-CPPARCH				+=	-DHAVE_TYPE_SSIZE_T
-CPPARCH				+=	-DHAVE_SYS_TIME_H
-CPPARCH				+=	-DHAVE_SYS_PARAM_H
-CPPARCH				+=	-DHAVE_SYSCONF
-CPPARCH				+=	-DPREEMPT_ACTIVE=0x40000000#kernel/google/msm/arch/arm/include/asm/thread_info.h
-CARCH				:=
-CARCH				+=	-fno-exceptions
-CARCH				+=	-Wno-multichar
-CARCH				+=	-msoft-float
-CARCH				+=	-fpic
-CARCH				+=	-fPIE
-CARCH				+=	-ffunction-sections
-CARCH				+=	-fdata-sections
-CARCH				+=	-funwind-tables
-CARCH				+=	-fstack-protector
-CARCH				+=	-Wa,--noexecstack
-CARCH				+=	-Werror=format-security
-CARCH				+=	-fno-short-enums
-CARCH				+=	-mcpu=cortex-a9
-CARCH				+=	-mfloat-abi=softfp
-CARCH				+=	-mfpu=neon
-CARCH				+=	-Wno-unused-but-set-variable
-CARCH				+=	-fno-builtin-sin
-CARCH				+=	-fno-strict-volatile-bitfields
-CARCH				+=	-Wno-psabi
-CARCH				+=	-mthumb-interwork
-CARCH				+=	-fmessage-length=0
-CARCH				+=	-W
-CARCH				+=	-Wall
-CARCH				+=	-Wno-unused
-CARCH				+=	-Winit-self
-CARCH				+=	-Wpointer-arith
-CARCH				+=	-Werror=return-type
-CARCH				+=	-Werror=non-virtual-dtor
-CARCH				+=	-Werror=address
-CARCH				+=	-Werror=sequence-point
-CARCH				+=	-Wstrict-aliasing=2
-CARCH				+=	-fgcse-after-reload
-CARCH				+=	-frerun-cse-after-loop
-CARCH				+=	-frename-registers
-CARCH				+=	-mthumb
-CARCH				+=	-Os
-CARCH				+=	-fomit-frame-pointer
-CARCH				+=	-fno-strict-aliasing
-CARCH				+=	-W
-CARCH				+=	-Wall
-CXXARCH				:=	$(CARCH)
-LDARCH				:=
-LDARCH				+=	-nostdlib
-LDARCH				+=	-Bdynamic
-LDARCH				+=	-fPIE
-LDARCH				+=	-pie
-LDARCH				+=	-Wl,-dynamic-linker,/system/bin/linker
-LDARCH				+=	-Wl,--gc-sections
-LDARCH				+=	-Wl,-z,nocopyreloc
-LDARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-LDARCH				+=	-L$(OUT)/$(LIB_DIR)
-LDARCH				+=	-Wl,-rpath-link=$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_dynamic.o
-LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-LDARCH				+=	-L$(OUT)/$(LIB_DIR)
-LDARCH				+=	-Wl,-z,noexecstack
-LDARCH				+=	-Wl,-z,relro
-LDARCH				+=	-Wl,-z,now
-LDARCH				+=	-Wl,--warn-shared-textrel
-LDARCH				+=	-Wl,--fatal-warnings
-LDARCH				+=	-Wl,--icf=safe
-LDARCH				+=	-Wl,--fix-cortex-a8
-LDARCH				+=	-Wl,--no-undefined
-LDARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-LDARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_android.o
-MOARCH				:=
-MOARCH				+=	-nostdlib
-MOARCH				+=	-Wl,--gc-sections
-MOARCH				+=	-Wl,-shared,-Bsymbolic
-MOARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
-MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-MOARCH				+=	-L$(OUT)/$(LIB_DIR)
-MOARCH				+=	-Wl,-z,noexecstack
-MOARCH				+=	-Wl,-z,relro
-MOARCH				+=	-Wl,-z,now
-MOARCH				+=	-Wl,--warn-shared-textrel
-MOARCH				+=	-Wl,--fatal-warnings
-MOARCH				+=	-Wl,--icf=safe
-MOARCH				+=	-Wl,--fix-cortex-a8
-MOARCH				+=	-Wl,--no-undefined
-MOARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-MOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-SOARCH				:=
-SOARCH				+=	-nostdlib
-SOARCH				+=	-Wl,--gc-sections
-SOARCH				+=	-Wl,-shared,-Bsymbolic
-SOARCH				+=	-L$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib
-SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtbegin_so.o
-SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/STATIC_LIBRARIES/libcompiler_rt-extras_intermediates/libcompiler_rt-extras.a
-SOARCH				+=	-Wl,-z,noexecstack
-SOARCH				+=	-Wl,-z,relro
-SOARCH				+=	-Wl,-z,now
-SOARCH				+=	-Wl,--warn-shared-textrel
-SOARCH				+=	-Wl,--fatal-warnings
-SOARCH				+=	-Wl,--icf=safe
-SOARCH				+=	-Wl,--fix-cortex-a8
-SOARCH				+=	-Wl,--no-undefined
-SOARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
-SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
-KERNELARCH			:=	O=$(CYANOGENMOD_DIR)/out/target/product/flo/obj/KERNEL_OBJ
-LDLIBRARIES			:=
-LDLIBRARIES			+=	-llog
-LDLIBRARIES			+=	-ldl
-LDLIBRARIES			+=	-lc
-LDLIBRARIES			+=	-lm
-LDXXLIBRARIES		:=
-LDXXLIBRARIES		+=	-llog
-LDXXLIBRARIES		+=	-ldl
-LDXXLIBRARIES		+=	-lc
-LDXXLIBRARIES		+=	-lstdc++
-LDXXLIBRARIES		+=	-lm
-endif
-
-ifeq ($(TARGET),dumpling)
-ARCH				:=	arm
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabi-
-KERNELCHAIN			:=	$(TOOLCHAIN)
-BUILDROOT_REV		:=	2014.08
-BUILDROOT_DIR		:=	$(HOME_DIR)/$(TARGET)/buildroot-$(BUILDROOT_REV)
-KERNEL_REV			:=	3.12.26
-KERNEL_DIR			:=	$(BUILDROOT_DIR)/output/build/linux-353043394c99ed37a4075da228af64468fdf6c06
-CPPARCH				:=	-isystem $(BUILDROOT_DIR)/output/build/linux-headers-$(KERNEL_REV)/usr/include
-CARCH				:=	-fPIC
-CXXARCH				:=	$(CARCH)
-#LDARCH				:=	-static -L$(OUT)/$(ARC_DIR)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
-
-ifeq ($(TARGET),petticoat)
-ARCH				:=	x86_64
-OS					:=	linux
-TOOLCHAIN			:=	$(ARCH)-cros-$(OS)-gnu-
-KERNELCHAIN			:=
-KERNEL_REV			:=	3.14
-KERNEL_DIR			:=	$(HOME)/trunk/src/third_party/kernel/$(KERNEL_REV)
-CPPARCH				:=	-isystem $(HOME)/trunk/chroot/build/x86-generic/usr/include
-CARCH				:=	-rdynamic -fPIC
-CXXARCH				:=	$(CARCH)
-LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-MOARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
-SOARCH				:=
-KERNELARCH			:=	O=$(HOME)/trunk/chroot/build/x86-generic/var/cache/portage/sys-kernel/chromeos-kernel-3_14
-LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
-endif
+include $(CFG_DIR)/$(TARGET).mk
 
 ########## Commands and Option Flags
 
@@ -554,10 +207,6 @@ pristine clobber:	clean
 
 .PHONY:	package
 
-PACKAGE := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
-
-MANIFEST := $(BIN_DIR) $(DRV_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
-
 package $(PACKAGE).tgz:
 	D=`dirname $(PACKAGE)`; mkdir -p $$D; \
 	for M in $(MANIFEST); do mkdir -p $(OUT)/$$M; done; \
@@ -567,18 +216,7 @@ package $(PACKAGE).tgz:
 	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
 	rm -rf $$T
 
-ifeq ($(TARGET),corset)
-
-.PHONY:	deploy
-
-deploy:	$(PACKAGE).tgz
-	adb $(ADBFLAGS) push $(PACKAGE).tgz /data/local/tmp
-
-endif
-
 .PHONY:	distribution
-
-DISTRIBUTION := $(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
 distribution $(DISTRIBUTION).tgz:
 	D=`dirname $(DISTRIBUTION)`; mkdir -p $$D; \
@@ -631,7 +269,7 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
-	
+
 ########## Target C++ Libraries
 
 $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
@@ -657,12 +295,12 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(P
 $(OUT)/$(SYM_DIR)/%:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
+
 ########## Target Aliases
 
 $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN_DIR)/htons $(OUT)/$(BIN_DIR)/ntohl $(OUT)/$(BIN_DIR)/htonl:	$(OUT)/$(BIN_DIR)/dec
 	ln -f $< $@
-	
+
 ########## Unit Tests
 
 # Generally if the unit tests work they exit with an exit code of zero;
