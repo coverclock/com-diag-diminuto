@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# contraption
+# contraption: BeagleBoard C4 running Android 2.2 but with a glibc overlay.
 
 ARCH				:=	arm
 OS					:=	linux

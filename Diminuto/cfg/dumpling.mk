@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# dumpling
+# dumpling: Raspberry Pi Version B running buildroot with uClibc.
 
 ARCH				:=	arm
 OS					:=	linux

@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# host1204
+# host1204: Dell Inspiron 530 x86 running Ubuntu 12.04 LTS.
 
 ARCH				:=	x86
 OS					:=	linux

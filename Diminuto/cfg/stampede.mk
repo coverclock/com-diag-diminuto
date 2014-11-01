@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# stampede
+# stampede: Nvidia Jetson TK1 running Ubuntu 14.04.
 
 ARCH				:=	arm
 OS					:=	linux

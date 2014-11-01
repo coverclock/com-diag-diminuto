@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# cobbler
+# cobbler: Raspberry Pi version B running Raspbian.
 
 ARCH				:=	arm
 OS					:=	linux

@@ -6,7 +6,19 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# petticoat
+# petticoat: Acer C720 running ChrUbuntu using ChromiumOS R37 toolchain.
+#
+# This project really didn't have a completely satisfactory conclusion. I
+# wanted to build this library for an Acer C720-3404 ChromeBook, an X86_64
+# device that runs ChromeOS 37.0.2062.120 on platform 5978.98.1 and the
+# 3.8.11 Linux kernel on the "peppy" motherboard. I tried building the
+# ChromiumOS release-R37-5978.B branch but was never able to get it to build
+# completely. However, it did build enough that I could at least build the
+# user space portions of Diminuto. But I was never able to get them to execute
+# under the ChromeOS shell; that appears to be a restriction in the shell itself
+# (a security thing). But I was able to run the user space unit tests under
+# ChrUbuntu, which runs Ubuntu under a chroot on the Acer. That was sufficient
+# for my needs, but not the more general solution I would have hoped for.
 
 ARCH				:=	x86_64
 OS					:=	linux

@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# cascada
+# cascada: BeagleBoard C4 running Angstrom.
 
 ARCH				:=	arm
 OS					:=	linux

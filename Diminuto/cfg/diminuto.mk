@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# diminuto
+# diminuto: AT91RM9200-EK running BuildRoot with uClibc.
 
 ARCH				:=	arm
 OS					:=	linux

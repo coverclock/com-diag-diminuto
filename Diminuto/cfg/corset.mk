@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# corset
+# corset: CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
 
 ARCH				:=	arm
 OS					:=	linux

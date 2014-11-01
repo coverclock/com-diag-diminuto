@@ -6,7 +6,7 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# arroyo
+# arroyo: AT91RM9200-EK running a roll-your-own Linux-based system.
 
 ARCH				:=	arm
 OS					:=	linux

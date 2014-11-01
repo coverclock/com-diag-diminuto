@@ -28,8 +28,8 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
-MINOR				:=	5# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	6# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -353,7 +353,11 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # executable may be sensitive, for example, the Directory or the User. That's
 # why it's in a form that doesn't have to be distributed with the product,
 # unlike the shared objects. This program also serves as a unit test, so be
-# careful about removing stuff from it that looks reduntant or unused.
+# careful about removing stuff from it that looks redundant or unused.
+# NOTE: in the generated C code below, whether you should have \\n or \n in the
+# echo statements seems to depend on whether you are running make 3.81 or prior
+# versus make 3.82 or after. Since my build host runs Ubuntu 14.04 UTS with
+# make 3.81, that's what I'm sticking with. Nothing is ever simple.
 $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
