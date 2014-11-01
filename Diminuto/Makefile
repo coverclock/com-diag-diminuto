@@ -115,7 +115,7 @@ OLD					:=	dummy
 
 PACKAGE				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
 
-MANIFEST			:=	$(BIN_DIR) $(DRV_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
+MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
 
 DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
@@ -213,6 +213,7 @@ package $(PACKAGE).tgz:
 	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
 	B=`basename $(PACKAGE)`; mkdir -p $$T/$$B; \
 	tar -C $(OUT) --exclude-vcs -cvf - $(MANIFEST) | tar -C $$T/$$B -xvf -; \
+	tar --exclude-vcs -cvf - $(INC_DIR) | tar -C $$T/$$B -xvf -; \
 	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
 	rm -rf $$T
 
