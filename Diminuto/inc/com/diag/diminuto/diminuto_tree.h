@@ -13,6 +13,8 @@
  * Implements a Red-Black Tree. I looked at all of the references below, but
  * the one I found the most useful was the one from the U-Boot boot loader,
  * which is a simplified version of the implementation in the Linux kernel.
+ * Much of this code is derived at least indirectly (even though it may look
+ * nothing like it) from the U-Boot code.
  *
  * REFERENCES
  *
@@ -96,11 +98,13 @@ typedef struct DiminutoTree {
  * MUTATORS
  ******************************************************************************/
 
-extern diminuto_tree_t * diminuto_tree_insert(diminuto_tree_t * nodep);
+extern diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp);
+
+extern diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp);
 
 extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
-extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * wasp, diminuto_tree_t * nowp);
+extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
  * TRAVERSERS
@@ -115,7 +119,7 @@ extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t * nodep);
 extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t * nodep);
 
 /*******************************************************************************
- * SETTORS
+ * INITIALIZERS
  ******************************************************************************/
 
 static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)

@@ -8,7 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "diminuto_tree.h"
+#include "com/diag/diminuto/diminuto_tree.h"
 
 /*******************************************************************************
  * PRIVATE MUTATORS
@@ -68,7 +68,7 @@ static void diminuto_tree_rotate_right(diminuto_tree_t * nodep, diminuto_tree_t 
     nodep->parent = leftp;
 }
 
-static void diminuto_tree_insert_color(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
+static void diminuto_tree_insert_rebalance(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * parentp;
     diminuto_tree_t * grandp;
@@ -127,7 +127,7 @@ static void diminuto_tree_insert_color(diminuto_tree_t * nodep, diminuto_tree_t 
 
         } else {
 
-            /* Do nothing: should never happen. */
+            /* Error: should never happen! */
 
         }
     }
@@ -135,7 +135,7 @@ static void diminuto_tree_insert_color(diminuto_tree_t * nodep, diminuto_tree_t 
     (*rootp)->color = DIMINUTO_TREE_COLOR_BLACK;
 }
 
-static void diminuto_tree_remove_color(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
+static void diminuto_tree_remove_rebalance(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * siblingp;
 
@@ -165,7 +165,7 @@ static void diminuto_tree_remove_color(diminuto_tree_t * nodep, diminuto_tree_t 
                 if ((siblingp->right == DIMINUTO_TREE_NULL) || (siblingp->right->color == DIMINUTO_TREE_COLOR_RED)) {
 
                     if (siblingp->left != DIMINUTO_TREE_NULL) {
-                    	siblingp->left->color = DIMINUTO_TREE_COLOR_BLACK;
+                        siblingp->left->color = DIMINUTO_TREE_COLOR_BLACK;
                     }
 
                     siblingp->color = DIMINUTO_TREE_COLOR_RED;
@@ -235,7 +235,7 @@ static void diminuto_tree_remove_color(diminuto_tree_t * nodep, diminuto_tree_t 
 
         } else {
 
-            /* Do nothing: should never happen. */
+            /* Error: should never happen! */
 
         }
     }
@@ -245,23 +245,178 @@ static void diminuto_tree_remove_color(diminuto_tree_t * nodep, diminuto_tree_t 
     }
 }
 
+static inline void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** linkp)
+{
+    nodep->color = DIMINUTO_TREE_COLOR_RED;
+    nodep->parent = parentp;
+    nodep->left = DIMINUTO_TREE_NULL;
+    nodep->right = DIMINUTO_TREE_NULL;
+    nodep->root = parentp->root;
+    *linkp = nodep;
+}
+
 /*******************************************************************************
  * PUBLIC MUTATORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_insert(diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
 {
+    if (nodep->root != DIMINUTO_TREE_ORPHAN) {
+        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
+    } else if (parentp->left != DIMINUTO_TREE_NULL) {
+        nodep = DIMINUTO_TREE_NULL; /* Error: parent already occupied! */
+    } else {
+        diminuto_tree_link(nodep, parentp, &(parentp->left));
+        diminuto_tree_insert_rebalance(nodep, nodep->root);
+    }
+
+    return nodep;
+}
+
+diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+{
+    if (nodep->root != DIMINUTO_TREE_ORPHAN) {
+        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
+    } else if (parentp->right != DIMINUTO_TREE_NULL) {
+        nodep = DIMINUTO_TREE_NULL; /* Error: parent already occupied! */
+    } else {
+        diminuto_tree_link(nodep, parentp, &(parentp->right));
+        diminuto_tree_insert_rebalance(nodep, nodep->root);
+    }
+
     return nodep;
 }
 
 diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
 {
+    diminuto_tree_t * childp;
+    diminuto_tree_t * parentp;
+    diminuto_tree_t ** rootp;
+    int color;
+
+    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+        nodep = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
+    } else {
+
+        rootp = nodep->root;
+
+        do {
+
+            if (nodep->left == DIMINUTO_TREE_NULL) {
+                childp = nodep->right;
+            } else if (nodep->right == DIMINUTO_TREE_NULL) {
+                childp = nodep->left;
+            } else {
+                diminuto_tree_t * oldp;
+                diminuto_tree_t * leftp;
+
+                oldp = nodep;
+
+                nodep = nodep->right;
+                while ((leftp = nodep->left) != DIMINUTO_TREE_NULL) {
+                    nodep = leftp;
+                }
+                childp = nodep->right;
+                parentp = nodep->parent;
+                color = nodep->color;
+
+                if (childp != DIMINUTO_TREE_NULL) {
+                    childp->parent = parentp;
+                }
+                if (parentp == oldp) {
+                    parentp->right = childp;
+                    parentp = nodep;
+                } else {
+                    parentp->left = childp;
+                }
+
+                nodep->color = oldp->color;
+                nodep->parent = oldp->parent;
+                nodep->left = oldp->left;
+                nodep->right = oldp->right;
+                /* Presumably root is already set appropriately. */
+
+                if (oldp->parent == DIMINUTO_TREE_NULL) {
+                    *rootp = nodep;
+                } else if (oldp->parent->left == oldp) {
+                    oldp->parent->left = nodep;
+                } else if (oldp->parent->left == oldp) {
+                    oldp->parent->right = nodep;
+                } else {
+                    /* Error: should never happen! */
+                }
+
+                oldp->left->parent = nodep;
+                if (oldp->right != DIMINUTO_TREE_NULL) {
+                    oldp->right->parent = nodep;
+                }
+
+                break;
+            }
+
+            parentp = nodep->parent;
+            color = nodep->color;
+
+            if (childp != DIMINUTO_TREE_NULL) {
+                childp->parent = parentp;
+            }
+
+            if (parentp == DIMINUTO_TREE_NULL) {
+                *rootp = childp;
+            } else if (parentp->left == nodep) {
+                parentp->left = childp;
+            } else if (parentp->right == nodep) {
+                parentp->right = childp;
+            } else {
+                /* Error: should never happen! */
+            }
+
+        } while (0);
+
+        if (color == DIMINUTO_TREE_COLOR_BLACK) {
+            diminuto_tree_remove_rebalance(childp, parentp, rootp);
+        }
+
+        nodep->root = DIMINUTO_TREE_ORPHAN;
+
+    }
+
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * wasp, diminuto_tree_t * nowp)
-{
-    return nowp;
+diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp) {
+    if (oldp->root == DIMINUTO_TREE_ORPHAN) {
+        newp = DIMINUTO_TREE_NULL; /* Error: old node not on a tree! */
+    } else if (newp->root != DIMINUTO_TREE_ORPHAN) {
+        newp = DIMINUTO_TREE_NULL; /* Error: new node already on a tree! */
+    } else {
+        diminuto_tree_t * parentp;
+
+        parentp = oldp->parent;
+        if (parentp == DIMINUTO_TREE_NULL) {
+            *(oldp->root) = newp;
+        } else if (oldp == parentp->left) {
+            parentp->left = newp;
+        } else if (oldp == parentp->right) {
+            parentp->right = newp;
+        } else {
+            /* Error: should never happen! */
+        }
+
+        if (oldp->left != DIMINUTO_TREE_NULL) {
+            oldp->left->parent = newp;
+        }
+        if (oldp->right != DIMINUTO_TREE_NULL) {
+            oldp->right->parent = newp;
+        }
+
+        *newp = *oldp; /* Structure copy. */
+
+        oldp->root = DIMINUTO_TREE_ORPHAN;
+
+    }
+
+    return newp;
 }
 
 /*******************************************************************************
