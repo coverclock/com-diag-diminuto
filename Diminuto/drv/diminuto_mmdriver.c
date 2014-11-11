@@ -181,10 +181,10 @@ mmdriver_operation_set(
             break;
         }
 
-        if      (opp->width == WIDTH8)  MMDRIVER_OPERATION_SET(8);
-        else if (opp->width == WIDTH16) MMDRIVER_OPERATION_SET(16);
-        else if (opp->width == WIDTH32) MMDRIVER_OPERATION_SET(32);
-        else if (opp->width == WIDTH64) MMDRIVER_OPERATION_SET(64);
+        if      (opp->width == DIMINUTO_DATUM_WIDTH8)  MMDRIVER_OPERATION_SET(8);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH16) MMDRIVER_OPERATION_SET(16);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH32) MMDRIVER_OPERATION_SET(32);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH64) MMDRIVER_OPERATION_SET(64);
         else {
             rc = -EINVAL;
             break;
@@ -217,10 +217,10 @@ mmdriver_operation_clear(
             break;
         }
 
-        if      (opp->width == WIDTH8)  MMDRIVER_OPERATION_CLEAR(8);
-        else if (opp->width == WIDTH16) MMDRIVER_OPERATION_CLEAR(16);
-        else if (opp->width == WIDTH32) MMDRIVER_OPERATION_CLEAR(32);
-        else if (opp->width == WIDTH64) MMDRIVER_OPERATION_CLEAR(64);
+        if      (opp->width == DIMINUTO_DATUM_WIDTH8)  MMDRIVER_OPERATION_CLEAR(8);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH16) MMDRIVER_OPERATION_CLEAR(16);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH32) MMDRIVER_OPERATION_CLEAR(32);
+        else if (opp->width == DIMINUTO_DATUM_WIDTH64) MMDRIVER_OPERATION_CLEAR(64);
         else {
             rc = -EINVAL;
             break;

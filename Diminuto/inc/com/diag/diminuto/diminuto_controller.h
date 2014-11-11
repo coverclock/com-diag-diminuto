@@ -14,11 +14,14 @@
  * ABSTRACT
  *
  * Implement a generic Proportional-Integral-Differential (PID) controller.
- * This implementation goes to great lengths NOT to use floating point.
+ * This implementation goes to great lengths NOT to use floating point. It
+ * does however use integer multiply and divide, unlike the similar feature
+ * from which it was ported in the Telegraph library of features intended for
+ * smaller microcontrollers.
  *
  * REFERENCES
  *
- * T. Wescott, "PID without a PhD", EETimes-India, 2000-10
+ * T. Wescott, "PID without a PhD", Embedded Systems Programming, 2000-10-01
  *
  * B. Beauregard, "Improving the Beginner's PID", Project Blog, 2011-04
  *
@@ -220,6 +223,8 @@ void diminuto_controller_init(
  * Advance the controller by one time step, recalculating the new output based
  * on the the target, the latest input, and the previous output. The
  * controller assumes that each time step is equal and monotonically increasing.
+ * So the algorithm assumes each call has the same sample time or dT, and that
+ * dT is scaled to unity.
  * @param sp points to the static parameters structure.
  * @param dp points to the dynamic state structure.
  * @param target is the desired input value.

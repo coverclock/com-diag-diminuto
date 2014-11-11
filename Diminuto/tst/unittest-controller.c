@@ -176,8 +176,12 @@ int main(int argc, char ** argv)
         diminuto_controller_init(&parameters, &state);
         parameters.minimum = 0;
         parameters.lower = 0;
+        parameters.kp.numerator = 1;
+        parameters.kp.denominator = 1;
         parameters.ki.numerator = 1;
-	parameters.ki.denominator = 2;
+        parameters.ki.denominator = 2;
+        parameters.kd.numerator = 1;
+        parameters.kd.denominator = 1;
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
     }
 

@@ -39,14 +39,14 @@ typedef union DiminutoDatumValue {
  * loadable module.
  */
 typedef enum DiminutoDatumWidth {
-    WIDTH8  = sizeof(uint8_t),
-    WIDTH16 = sizeof(uint16_t),
-    WIDTH32 = sizeof(uint32_t),
-    WIDTH64 = sizeof(uint64_t)
+    DIMINUTO_DATUM_WIDTH8  = sizeof(uint8_t),
+    DIMINUTO_DATUM_WIDTH16 = sizeof(uint16_t),
+    DIMINUTO_DATUM_WIDTH32 = sizeof(uint32_t),
+    DIMINUTO_DATUM_WIDTH64 = sizeof(uint64_t)
 } diminuto_datum_width_t;
 
 #define DIMINUTO_DATUM_ALIGNMENT(_WIDTH_) (((_WIDTH_) / 8 ) - 1)
-#define DIMINUTO_DATUM_WIDTH(_WIDTH_) WIDTH ## _WIDTH_
+#define DIMINUTO_DATUM_WIDTH(_WIDTH_) DIMINUTO_DATUM_WIDTH ## _WIDTH_
 #define DIMINUTO_DATUM_TYPE(_WIDTH_) uint ## _WIDTH_ ## _t
 #define DIMINUTO_DATUM_VALUE(_WIDTH_) value ## _WIDTH_
 

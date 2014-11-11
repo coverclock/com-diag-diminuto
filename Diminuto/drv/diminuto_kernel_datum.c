@@ -49,11 +49,11 @@ diminuto_kernel_get(
     diminuto_barrier();
 
     switch (width) {
-    case WIDTH8:	DIMINUTO_KERNEL_GET(8);		break;
-    case WIDTH16:	DIMINUTO_KERNEL_GET(16);	break;
-    case WIDTH32:	DIMINUTO_KERNEL_GET(32);	break;
-    case WIDTH64:	DIMINUTO_KERNEL_GET(64);	break;
-    default:		rc = -EINVAL;				break;
+    case DIMINUTO_DATUM_WIDTH8:		DIMINUTO_KERNEL_GET(8);		break;
+    case DIMINUTO_DATUM_WIDTH16:	DIMINUTO_KERNEL_GET(16);	break;
+    case DIMINUTO_DATUM_WIDTH32:	DIMINUTO_KERNEL_GET(32);	break;
+    case DIMINUTO_DATUM_WIDTH64:	DIMINUTO_KERNEL_GET(64);	break;
+    default:						rc = -EINVAL;				break;
     }
 
     return rc;
@@ -69,11 +69,11 @@ diminuto_kernel_put(
     int rc = 0;
 
     switch (width) {
-    case WIDTH8:	DIMINUTO_KERNEL_PUT(8);		break;
-    case WIDTH16:	DIMINUTO_KERNEL_PUT(16);	break;
-    case WIDTH32:	DIMINUTO_KERNEL_PUT(32);	break;
-    case WIDTH64:	DIMINUTO_KERNEL_PUT(64);	break;
-    default:		rc = -EINVAL;				break;
+    case DIMINUTO_DATUM_WIDTH8:		DIMINUTO_KERNEL_PUT(8);		break;
+    case DIMINUTO_DATUM_WIDTH16:	DIMINUTO_KERNEL_PUT(16);	break;
+    case DIMINUTO_DATUM_WIDTH32:	DIMINUTO_KERNEL_PUT(32);	break;
+    case DIMINUTO_DATUM_WIDTH64:	DIMINUTO_KERNEL_PUT(64);	break;
+    default:						rc = -EINVAL;				break;
     }
 
     if (rc == 0) { diminuto_barrier(); }
