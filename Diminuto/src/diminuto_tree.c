@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * See the header file for references and acknowledgements.
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
@@ -245,7 +247,7 @@ static void diminuto_tree_remove_rebalance(diminuto_tree_t * nodep, diminuto_tre
     }
 }
 
-static inline void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** linkp)
+static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** linkp)
 {
     nodep->color = DIMINUTO_TREE_COLOR_RED;
     nodep->parent = parentp;
@@ -264,7 +266,7 @@ diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tr
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (parentp->left != DIMINUTO_TREE_NULL) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: parent already occupied! */
+        nodep = DIMINUTO_TREE_NULL; /* Error: left already occupied! */
     } else {
         diminuto_tree_link(nodep, parentp, &(parentp->left));
         diminuto_tree_insert_rebalance(nodep, nodep->root);
@@ -278,7 +280,7 @@ diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_t
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (parentp->right != DIMINUTO_TREE_NULL) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: parent already occupied! */
+        nodep = DIMINUTO_TREE_NULL; /* Error: right already occupied! */
     } else {
         diminuto_tree_link(nodep, parentp, &(parentp->right));
         diminuto_tree_insert_rebalance(nodep, nodep->root);
@@ -420,26 +422,74 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
 }
 
 /*******************************************************************************
- * PUBLIC TRAVERSERS
+ * PUBLIC ACCESSORS
  ******************************************************************************/
 
 diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep)
 {
-    return 0;
+	diminuto_tree_t * parentp;
+
+    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+        parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
+    } else if (nodep->right != DIMINUTO_TREE_NULL) {
+        nodep = nodep->right;
+        while (nodep->left != DIMINUTO_TREE_NULL) {
+            nodep = nodep->left;
+        }
+        parentp = (diminuto_tree_t *)nodep;
+    } else {
+        while (((parentp = nodep->parent) != DIMINUTO_TREE_NULL) && (nodep == parentp->right)) {
+            nodep = parentp;
+        }
+    }
+
+    return parentp;
 }
 
 diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep)
 {
-    return 0;
+    diminuto_tree_t * parentp;
+
+    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+        parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
+    } else if (nodep->left != DIMINUTO_TREE_NULL) {
+        nodep = nodep->left;
+        while (nodep->right != DIMINUTO_TREE_NULL) {
+            nodep = nodep->right;
+        }
+        parentp = (diminuto_tree_t *)nodep;
+    } else {
+        while (((parentp = nodep->parent) != DIMINUTO_TREE_NULL) && (nodep == parentp->left)) {
+            nodep = parentp;
+        }
+    }
+
+    return parentp;
 }
 
-diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp)
 {
-    return 0;
+    diminuto_tree_t * nodep;
+
+    if ((nodep = (diminuto_tree_t *)*rootp) != DIMINUTO_TREE_NULL) {
+        while (nodep->left != DIMINUTO_TREE_NULL) {
+            nodep = nodep->left;
+        }
+    }
+
+    return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t ** rootp)
 {
-    return 0;
+    diminuto_tree_t * nodep;
+
+    if ((nodep = (diminuto_tree_t *)*rootp) != DIMINUTO_TREE_NULL) {
+        while (nodep->right != DIMINUTO_TREE_NULL) {
+            nodep = nodep->right;
+        }
+    }
+
+    return nodep;
 }
 

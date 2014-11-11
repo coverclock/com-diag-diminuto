@@ -107,16 +107,16 @@ extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
- * TRAVERSERS
+ * ACCESSORS
  ******************************************************************************/
 
 extern diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep);
 
 extern diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep);
 
-extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t * nodep);
+extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp);
 
-extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t * nodep);
+extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t ** rootp);
 
 /*******************************************************************************
  * INITIALIZERS
