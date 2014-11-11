@@ -169,7 +169,6 @@ int main(int argc, char ** argv)
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
     }
 
-#if 0
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
@@ -177,13 +176,10 @@ int main(int argc, char ** argv)
         diminuto_controller_init(&parameters, &state);
         parameters.minimum = 0;
         parameters.lower = 0;
-        parameters.kp = 0;
-        parameters.ki = -1;
-        parameters.kd = 0;
-        parameters.filter = !0;
+        parameters.ki.numerator = 1;
+	parameters.ki.denominator = 2;
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
     }
-#endif
 
     return 0;
 }
