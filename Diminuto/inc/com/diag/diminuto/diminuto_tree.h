@@ -9,6 +9,7 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * WORK IN PROGRESS!
  *
  * Implements a Red-Black Tree. I looked at all of the references below, but
  * the one I found the most useful was the one from the U-Boot boot loader,
@@ -84,23 +85,23 @@ typedef struct DiminutoTree {
  * Generate a storage initializer for the node @a _NODEP_ and data pointer
  * @a _DATAP_.
  */
-#define DIMINUTO_TREE_DATAINIT(_NODEP_, _DATAP_) \
+#define DIMINUTO_TREE_DATAINIT(_DATAP_) \
     { DIMINUTO_TREE_COLOR_RED, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), }
 
 /**
  * @def DIMINUTO_LIST_NULLINIT
  * Generate a storage initializer for the node @a _NODEP_.
  */
-#define DIMINUTO_TREE_NULLINIT(_NODEP_) \
-    DIMINUTO_TREE_DATAINIT(_NODEP_, (void *)0)
+#define DIMINUTO_TREE_NULLINIT() \
+    DIMINUTO_TREE_DATAINIT((void *)0)
 
 /*******************************************************************************
  * MUTATORS
  ******************************************************************************/
 
-extern diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp);
+extern diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
-extern diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp);
+extern diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
 extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
@@ -119,6 +120,40 @@ extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp);
 extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t ** rootp);
 
 /*******************************************************************************
+ * SETTORS
+ ******************************************************************************/
+
+static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, void * datap)
+{
+    nodep->data = datap;
+    return nodep;
+}
+
+/*******************************************************************************
+ * GETTORS
+ ******************************************************************************/
+
+static inline diminuto_tree_t * diminuto_tree_parent(const diminuto_tree_t * nodep) {
+	return nodep->parent;
+}
+
+static inline diminuto_tree_t * diminuto_tree_left(const diminuto_tree_t * nodep) {
+	return nodep->left;
+}
+
+static inline diminuto_tree_t * diminuto_tree_right(const diminuto_tree_t * nodep) {
+	return nodep->right;
+}
+
+static inline diminuto_tree_t ** diminuto_tree_root(const diminuto_tree_t * nodep) {
+	return nodep->root;
+}
+
+static inline void * diminuto_tree_data(const diminuto_tree_t * nodep) {
+	return nodep->data;
+}
+
+/*******************************************************************************
  * INITIALIZERS
  ******************************************************************************/
 
@@ -129,13 +164,7 @@ static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)
     nodep->left = DIMINUTO_TREE_NULL;
     nodep->right = DIMINUTO_TREE_NULL;
     nodep->root = DIMINUTO_TREE_ORPHAN;
-    nodep->data = (void *)0;
-    return nodep;
-}
-
-static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, void * datap)
-{
-    nodep->data = datap;
+    /* We don't initialize the data field because it doesn't belong to us. */
     return nodep;
 }
 
@@ -147,18 +176,6 @@ static inline diminuto_tree_t * diminuto_tree_datainit(diminuto_tree_t * nodep, 
 static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
 {
     return diminuto_tree_datainit(nodep, (void *)0);
-}
-
-/*******************************************************************************
- * GETTORS
- ******************************************************************************/
-
-static inline diminuto_tree_t ** diminuto_tree_root(const diminuto_tree_t * nodep) {
-	return nodep->root;
-}
-
-static inline void * diminuto_tree_data(const diminuto_tree_t * nodep) {
-	return nodep->data;
 }
 
 #endif

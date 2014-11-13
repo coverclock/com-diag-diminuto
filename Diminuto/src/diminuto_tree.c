@@ -6,6 +6,7 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * WORK IN PROGRESS!
  *
  * See the header file for references and acknowledgements.
  */
@@ -70,7 +71,7 @@ static void diminuto_tree_rotate_right(diminuto_tree_t * nodep, diminuto_tree_t 
     nodep->parent = leftp;
 }
 
-static void diminuto_tree_insert_rebalance(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
+static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * parentp;
     diminuto_tree_t * grandp;
@@ -137,7 +138,7 @@ static void diminuto_tree_insert_rebalance(diminuto_tree_t * nodep, diminuto_tre
     (*rootp)->color = DIMINUTO_TREE_COLOR_BLACK;
 }
 
-static void diminuto_tree_remove_rebalance(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
+static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * siblingp;
 
@@ -247,13 +248,13 @@ static void diminuto_tree_remove_rebalance(diminuto_tree_t * nodep, diminuto_tre
     }
 }
 
-static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** linkp)
+static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp, diminuto_tree_t ** linkp)
 {
     nodep->color = DIMINUTO_TREE_COLOR_RED;
     nodep->parent = parentp;
     nodep->left = DIMINUTO_TREE_NULL;
     nodep->right = DIMINUTO_TREE_NULL;
-    nodep->root = parentp->root;
+    nodep->root = rootp;
     *linkp = nodep;
 }
 
@@ -261,29 +262,35 @@ static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parent
  * PUBLIC MUTATORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
+       nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
+    } else if (parentp == DIMINUTO_TREE_NULL) {
+        diminuto_tree_link(nodep, parentp, rootp, rootp);
+        diminuto_tree_insert(nodep, rootp);
     } else if (parentp->left != DIMINUTO_TREE_NULL) {
         nodep = DIMINUTO_TREE_NULL; /* Error: left already occupied! */
     } else {
-        diminuto_tree_link(nodep, parentp, &(parentp->left));
-        diminuto_tree_insert_rebalance(nodep, nodep->root);
+        diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->left));
+        diminuto_tree_insert(nodep, nodep->root);
     }
 
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
+    } else if (parentp == DIMINUTO_TREE_NULL) {
+        diminuto_tree_link(nodep, parentp, rootp, rootp);
+        diminuto_tree_insert(nodep, rootp);
     } else if (parentp->right != DIMINUTO_TREE_NULL) {
         nodep = DIMINUTO_TREE_NULL; /* Error: right already occupied! */
     } else {
-        diminuto_tree_link(nodep, parentp, &(parentp->right));
-        diminuto_tree_insert_rebalance(nodep, nodep->root);
+        diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->right));
+        diminuto_tree_insert(nodep, nodep->root);
     }
 
     return nodep;
@@ -376,7 +383,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
         } while (0);
 
         if (color == DIMINUTO_TREE_COLOR_BLACK) {
-            diminuto_tree_remove_rebalance(childp, parentp, rootp);
+            diminuto_tree_remove_fixup(childp, parentp, rootp);
         }
 
         nodep->root = DIMINUTO_TREE_ORPHAN;
