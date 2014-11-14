@@ -243,7 +243,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
         }
     }
 
-    if (nodep != DIMINUTO_TREE_NULL) {
+    if (!diminuto_tree_isleaf(nodep)) {
         nodep->color = DIMINUTO_TREE_COLOR_BLACK;
     }
 }
@@ -264,10 +264,10 @@ static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parent
 
 diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
-    if (nodep->root != DIMINUTO_TREE_ORPHAN) {
+    if (!diminuto_tree_isorphan(nodep)) {
        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (diminuto_tree_isleaf(parentp)) {
-        if (*rootp != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isempty(rootp)) {
             nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
         } else {
             diminuto_tree_link(nodep, parentp, rootp, rootp);
@@ -287,10 +287,10 @@ diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, dim
 
 diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
-    if (nodep->root != DIMINUTO_TREE_ORPHAN) {
+    if (!diminuto_tree_isorphan(nodep)) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (diminuto_tree_isleaf(parentp)) {
-        if (*rootp != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isempty(rootp)) {
             nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
         } else {
             diminuto_tree_link(nodep, parentp, rootp, rootp);
@@ -315,7 +315,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
     diminuto_tree_t ** rootp;
     int color;
 
-    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+    if (diminuto_tree_isorphan(nodep)) {
         nodep = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
     } else {
 
@@ -406,9 +406,9 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
 }
 
 diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp) {
-    if (oldp->root == DIMINUTO_TREE_ORPHAN) {
+    if (diminuto_tree_isorphan(oldp)) {
         oldp = DIMINUTO_TREE_NULL; /* Error: old node not on a tree! */
-    } else if (newp->root != DIMINUTO_TREE_ORPHAN) {
+    } else if (!diminuto_tree_isorphan(newp)) {
         oldp = DIMINUTO_TREE_NULL; /* Error: new node already on a tree! */
     } else {
         diminuto_tree_t * parentp;
@@ -459,7 +459,7 @@ diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
 {
     diminuto_tree_t * parentp;
 
-    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+    if (diminuto_tree_isorphan(nodep)) {
         parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
     } else if (!diminuto_tree_isleaf(nodep->right)) {
         nodep = nodep->right;
@@ -480,7 +480,7 @@ diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep)
 {
     diminuto_tree_t * parentp;
 
-    if (nodep->root == DIMINUTO_TREE_ORPHAN) {
+    if (diminuto_tree_isorphan(nodep)) {
         parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
     } else if (!diminuto_tree_isleaf(nodep->left)) {
         nodep = nodep->left;
@@ -501,7 +501,7 @@ diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 
-    if (!diminuto_tree_isleaf(nodep = (diminuto_tree_t *)*rootp)) {
+    if (!diminuto_tree_isleaf(nodep = *rootp)) {
         while (!diminuto_tree_isleaf(nodep->left)) {
             nodep = nodep->left;
         }
@@ -514,7 +514,7 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 
-    if (!diminuto_tree_isleaf(nodep = (diminuto_tree_t *)*rootp)) {
+    if (!diminuto_tree_isleaf(nodep = *rootp)) {
         while (!diminuto_tree_isleaf(nodep->right)) {
             nodep = nodep->right;
         }
