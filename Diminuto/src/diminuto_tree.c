@@ -262,7 +262,7 @@ static void diminuto_tree_link(diminuto_tree_t * nodep, diminuto_tree_t * parent
  * PUBLIC MUTATORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
+diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
@@ -279,7 +279,7 @@ diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tr
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
+diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
@@ -432,9 +432,9 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
  * PUBLIC ACCESSORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
 {
-	diminuto_tree_t * parentp;
+    diminuto_tree_t * parentp;
 
     if (nodep->root == DIMINUTO_TREE_ORPHAN) {
         parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
@@ -453,7 +453,7 @@ diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep)
     return parentp;
 }
 
-diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep)
 {
     diminuto_tree_t * parentp;
 
@@ -474,7 +474,7 @@ diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep)
     return parentp;
 }
 
-diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp)
+diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 
@@ -487,7 +487,7 @@ diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp)
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t ** rootp)
+diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 

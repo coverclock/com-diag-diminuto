@@ -43,18 +43,18 @@ typedef enum DiminutoTreeColor {
     DIMINUTO_TREE_COLOR_BLACK = 1
 } diminuto_tree_color_t;
 
+/*
+ * This structure has a lot of wasted space. The Linux implementation (from
+ * which U-Boot borrows) uses a trick I've used myself in the past: hide
+ * the color bit in the otherwise unused lowest order bit of one of the
+ * pointers. The down side is that you now have an invalid pointer value
+ * that you have to deal with. I chose not to do that for this code since my
+ * goal here is to understand Red-Black trees. But if I were porting this
+ * implementation to a commercial system, I might maybe change it to be more
+ * space efficient.
+ */
 typedef struct DiminutoTree {
-    int                    color : 1;
-    /*
-     * Insert a lot of wasted space here. The Linux kernel implementation (from
-     * which U-Boot borrows) uses a trick I've used myself in the past: hide
-     * the color bit in the otherwise unused lowest order bit of one of the
-     * pointers. The down side is that you now have an invalid pointer value
-     * that you have to deal with. I chose not to do that for this code since my
-     * goal here is to understand Red-Black trees. But if I were porting this
-     * implementation to a commercial system, I'd probably change it to be more
-     * space efficient.
-     */
+    unsigned int           color : 1; /* Wasted space here. */
     struct DiminutoTree *  parent;
     struct DiminutoTree *  left;
     struct DiminutoTree *  right;
@@ -92,32 +92,56 @@ typedef struct DiminutoTree {
  * @def DIMINUTO_LIST_NULLINIT
  * Generate a storage initializer for the node @a _NODEP_.
  */
-#define DIMINUTO_TREE_NULLINIT() \
+#define DIMINUTO_TREE_NULLINIT \
     DIMINUTO_TREE_DATAINIT((void *)0)
+
+/*******************************************************************************
+ * ACCESSORS
+ ******************************************************************************/
+
+extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);
+
+extern diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp);
+
+extern diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep);
+
+extern diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep);
 
 /*******************************************************************************
  * MUTATORS
  ******************************************************************************/
 
-extern diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
+extern diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
-extern diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
+extern diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
 extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
- * ACCESSORS
+ * GETTORS
  ******************************************************************************/
 
-extern diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep);
+static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep) {
+    return nodep->parent;
+}
 
-extern diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep);
+static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep) {
+    return nodep->left;
+}
 
-extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_t ** rootp);
+static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep) {
+    return nodep->right;
+}
 
-extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_t ** rootp);
+static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep) {
+    return nodep->root;
+}
+
+static inline void * diminuto_tree_data(diminuto_tree_t * nodep) {
+    return nodep->data;
+}
 
 /*******************************************************************************
  * SETTORS
@@ -127,30 +151,6 @@ static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, v
 {
     nodep->data = datap;
     return nodep;
-}
-
-/*******************************************************************************
- * GETTORS
- ******************************************************************************/
-
-static inline diminuto_tree_t * diminuto_tree_parent(const diminuto_tree_t * nodep) {
-	return nodep->parent;
-}
-
-static inline diminuto_tree_t * diminuto_tree_left(const diminuto_tree_t * nodep) {
-	return nodep->left;
-}
-
-static inline diminuto_tree_t * diminuto_tree_right(const diminuto_tree_t * nodep) {
-	return nodep->right;
-}
-
-static inline diminuto_tree_t ** diminuto_tree_root(const diminuto_tree_t * nodep) {
-	return nodep->root;
-}
-
-static inline void * diminuto_tree_data(const diminuto_tree_t * nodep) {
-	return nodep->data;
 }
 
 /*******************************************************************************
@@ -176,6 +176,25 @@ static inline diminuto_tree_t * diminuto_tree_datainit(diminuto_tree_t * nodep, 
 static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
 {
     return diminuto_tree_datainit(nodep, (void *)0);
+}
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_t **rootp)
+{
+    return diminuto_tree_insert_left_or_root(nodep, DIMINUTO_TREE_NULL, rootp);
+}
+
+static inline diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+{
+    return diminuto_tree_insert_left_or_root(nodep, parentp, diminuto_tree_root(parentp));
+}
+
+static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+{
+    return diminuto_tree_insert_right_or_root(nodep, parentp, diminuto_tree_root(parentp));
 }
 
 #endif
