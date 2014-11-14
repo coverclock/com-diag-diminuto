@@ -76,7 +76,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
     diminuto_tree_t * parentp;
     diminuto_tree_t * grandp;
 
-    while ((!diminuto_tree_isleaf(parentp = nodep->parent)) && (parentp->color == DIMINUTO_TREE_COLOR_RED)) {
+    while ((!diminuto_tree_isleaf(parentp = nodep->parent)) && diminuto_tree_isred(parentp)) {
 
         grandp = parentp->parent;
 
@@ -84,7 +84,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
             diminuto_tree_t * unclep;
 
             unclep = grandp->right;
-            if ((!diminuto_tree_isleaf(unclep)) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
+            if ((!diminuto_tree_isleaf(unclep)) && diminuto_tree_isred(unclep)) {
                 unclep->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
                 grandp->color = DIMINUTO_TREE_COLOR_RED;
@@ -108,7 +108,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
             diminuto_tree_t * unclep;
 
             unclep = grandp->left;
-            if ((!diminuto_tree_isleaf(unclep)) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
+            if ((!diminuto_tree_isleaf(unclep)) && diminuto_tree_isred(unclep)) {
                 unclep->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
                 grandp->color = DIMINUTO_TREE_COLOR_RED;
@@ -142,13 +142,13 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 {
     diminuto_tree_t * siblingp;
 
-    while ((diminuto_tree_isleaf(nodep) || (nodep->color == DIMINUTO_TREE_COLOR_BLACK)) && (nodep != *rootp)) {
+    while ((diminuto_tree_isleaf(nodep) || diminuto_tree_isblack(nodep)) && (nodep != *rootp)) {
 
         if (parentp->left == nodep) {
 
             siblingp = parentp->right;
 
-            if (siblingp->color == DIMINUTO_TREE_COLOR_RED) {
+            if (diminuto_tree_isred(siblingp)) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_RED;
@@ -157,7 +157,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             }
 
-            if ((diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
+            if ((diminuto_tree_isleaf(siblingp->left) || diminuto_tree_isblack(siblingp->left)) && (diminuto_tree_isleaf(siblingp->right) || diminuto_tree_isblack(siblingp->right))) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_RED;
                 nodep = parentp;
@@ -165,7 +165,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             } else {
 
-                if (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_RED)) {
+                if (diminuto_tree_isleaf(siblingp->right) || diminuto_tree_isred(siblingp->right)) {
 
                     if (!diminuto_tree_isleaf(siblingp->left)) {
                         siblingp->left->color = DIMINUTO_TREE_COLOR_BLACK;
@@ -194,7 +194,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             siblingp = parentp->left;
 
-            if (siblingp->color == DIMINUTO_TREE_COLOR_RED) {
+            if (diminuto_tree_isred(siblingp)) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_RED;
@@ -203,7 +203,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             }
 
-            if ((diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
+            if ((diminuto_tree_isleaf(siblingp->left) || diminuto_tree_isblack(siblingp->left)) && (diminuto_tree_isleaf(siblingp->right) || diminuto_tree_isblack(siblingp->right))) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_RED;
                 nodep = parentp;
@@ -211,7 +211,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             } else {
 
-                if (diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) {
+                if (diminuto_tree_isleaf(siblingp->left) || diminuto_tree_isblack(siblingp->left)) {
 
                     if (!diminuto_tree_isleaf(siblingp->right)) {
                         siblingp->right->color = DIMINUTO_TREE_COLOR_BLACK;

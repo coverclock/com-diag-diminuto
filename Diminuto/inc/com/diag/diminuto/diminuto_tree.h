@@ -138,6 +138,14 @@ static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
 	return (nodep->root == DIMINUTO_TREE_ORPHAN);
 }
 
+static inline int diminuto_tree_isred(diminuto_tree_t * nodep) {
+    return (nodep->color == DIMINUTO_TREE_COLOR_RED); /* Exposed for unit testing. */
+}
+
+static inline int diminuto_tree_isblack(diminuto_tree_t * nodep) {
+    return (nodep->color == DIMINUTO_TREE_COLOR_BLACK); /* Exposed for unit testing. */
+}
+
 /*******************************************************************************
  * GETTORS
  ******************************************************************************/
