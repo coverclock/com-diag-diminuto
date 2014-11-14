@@ -530,7 +530,7 @@ int main(void)
         }
     }
 
-#if 1
+#if 0
     {
         diminuto_tree_t * root = DIMINUTO_TREE_NULL;
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
