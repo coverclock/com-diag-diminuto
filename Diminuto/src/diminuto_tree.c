@@ -267,13 +267,19 @@ diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, dim
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (parentp == DIMINUTO_TREE_NULL) {
-        diminuto_tree_link(nodep, parentp, rootp, rootp);
-        diminuto_tree_insert(nodep, rootp);
-    } else if (parentp->left != DIMINUTO_TREE_NULL) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: left already occupied! */
+        if (*rootp != DIMINUTO_TREE_NULL) {
+            nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
+        } else {
+            diminuto_tree_link(nodep, parentp, rootp, rootp);
+            diminuto_tree_insert(nodep, rootp);
+        }
     } else {
-        diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->left));
-        diminuto_tree_insert(nodep, nodep->root);
+        if (parentp->left != DIMINUTO_TREE_NULL) {
+            nodep = DIMINUTO_TREE_NULL; /* Error: left already occupied! */
+        } else {
+            diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->left));
+            diminuto_tree_insert(nodep, nodep->root);
+        }
     }
 
     return nodep;
@@ -284,13 +290,19 @@ diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, di
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
     } else if (parentp == DIMINUTO_TREE_NULL) {
-        diminuto_tree_link(nodep, parentp, rootp, rootp);
-        diminuto_tree_insert(nodep, rootp);
-    } else if (parentp->right != DIMINUTO_TREE_NULL) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: right already occupied! */
+        if (*rootp != DIMINUTO_TREE_NULL) {
+            nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
+        } else {
+            diminuto_tree_link(nodep, parentp, rootp, rootp);
+            diminuto_tree_insert(nodep, rootp);
+        }
     } else {
-        diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->right));
-        diminuto_tree_insert(nodep, nodep->root);
+        if (parentp->right != DIMINUTO_TREE_NULL) {
+            nodep = DIMINUTO_TREE_NULL; /* Error: right already occupied! */
+        } else {
+            diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->right));
+            diminuto_tree_insert(nodep, nodep->root);
+        }
     }
 
     return nodep;
@@ -395,9 +407,9 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
 
 diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp) {
     if (oldp->root == DIMINUTO_TREE_ORPHAN) {
-        newp = DIMINUTO_TREE_NULL; /* Error: old node not on a tree! */
+        oldp = DIMINUTO_TREE_NULL; /* Error: old node not on a tree! */
     } else if (newp->root != DIMINUTO_TREE_ORPHAN) {
-        newp = DIMINUTO_TREE_NULL; /* Error: new node already on a tree! */
+        oldp = DIMINUTO_TREE_NULL; /* Error: new node already on a tree! */
     } else {
         diminuto_tree_t * parentp;
 
@@ -419,13 +431,24 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
             oldp->right->parent = newp;
         }
 
-        *newp = *oldp; /* Structure copy. */
+        /*
+         * We can't do a structure copy here because that would copy the
+         * data pointer that pointers to the payload. We can't just swap the
+         * data pointers because the structure may itself be embedded inside
+         * the payload or otherwise owned by the caller.
+         */
+
+        newp->color = oldp->color;
+        newp->parent = oldp->parent;
+        newp->left = oldp->left;
+        newp->right = oldp->right;
+        newp->root = oldp->root;
 
         oldp->root = DIMINUTO_TREE_ORPHAN;
 
     }
 
-    return newp;
+    return oldp;
 }
 
 /*******************************************************************************

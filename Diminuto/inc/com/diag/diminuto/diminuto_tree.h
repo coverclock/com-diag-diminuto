@@ -120,22 +120,45 @@ extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
+ * CONDITIONALS
+ ******************************************************************************/
+
+static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
+{
+    return (*rootp == DIMINUTO_TREE_NULL);
+}
+
+static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
+{
+    return (nodep == DIMINUTO_TREE_NULL);
+}
+
+static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
+{
+	return (nodep->root == DIMINUTO_TREE_ORPHAN);
+}
+
+/*******************************************************************************
  * GETTORS
  ******************************************************************************/
 
-static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep) {
+static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep)
+{
     return nodep->parent;
 }
 
-static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep) {
+static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep)
+{
     return nodep->left;
 }
 
-static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep) {
+static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep)
+{
     return nodep->right;
 }
 
-static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep) {
+static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
+{
     return nodep->root;
 }
 
