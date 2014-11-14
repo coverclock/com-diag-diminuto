@@ -26,14 +26,14 @@ static void diminuto_tree_rotate_left(diminuto_tree_t * nodep, diminuto_tree_t *
     parentp = nodep->parent;
 
     nodep->right = rightp->left;
-    if (nodep->right != DIMINUTO_TREE_NULL) {
+    if (!diminuto_tree_isleaf(nodep->right)) {
         rightp->left->parent = nodep;
     }
 
     rightp->left = nodep;
     rightp->parent = parentp;
 
-    if (parentp == DIMINUTO_TREE_NULL) {
+    if (diminuto_tree_isleaf(parentp)) {
         *rootp = rightp;
     } else if (nodep == parentp->left) {
         parentp->left = rightp;
@@ -53,14 +53,14 @@ static void diminuto_tree_rotate_right(diminuto_tree_t * nodep, diminuto_tree_t 
     parentp = nodep->parent;
 
     nodep->left = leftp->right;
-    if (nodep->left != DIMINUTO_TREE_NULL) {
+    if (!diminuto_tree_isleaf(nodep->left)) {
         leftp->right->parent = nodep;
     }
 
     leftp->right = nodep;
     leftp->parent = parentp;
 
-    if (parentp == DIMINUTO_TREE_NULL) {
+    if (diminuto_tree_isleaf(parentp)) {
         *rootp = leftp;
     } else if (nodep == parentp->right) {
         parentp->right = leftp;
@@ -76,7 +76,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
     diminuto_tree_t * parentp;
     diminuto_tree_t * grandp;
 
-    while (((parentp = nodep->parent) != DIMINUTO_TREE_NULL) && (parentp->color == DIMINUTO_TREE_COLOR_RED)) {
+    while ((!diminuto_tree_isleaf(parentp = nodep->parent)) && (parentp->color == DIMINUTO_TREE_COLOR_RED)) {
 
         grandp = parentp->parent;
 
@@ -84,7 +84,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
             diminuto_tree_t * unclep;
 
             unclep = grandp->right;
-            if ((unclep != DIMINUTO_TREE_NULL) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
+            if ((!diminuto_tree_isleaf(unclep)) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
                 unclep->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
                 grandp->color = DIMINUTO_TREE_COLOR_RED;
@@ -108,7 +108,7 @@ static void diminuto_tree_insert(diminuto_tree_t * nodep, diminuto_tree_t ** roo
             diminuto_tree_t * unclep;
 
             unclep = grandp->left;
-            if ((unclep != DIMINUTO_TREE_NULL) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
+            if ((!diminuto_tree_isleaf(unclep)) && (unclep->color == DIMINUTO_TREE_COLOR_RED)) {
                 unclep->color = DIMINUTO_TREE_COLOR_BLACK;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
                 grandp->color = DIMINUTO_TREE_COLOR_RED;
@@ -142,7 +142,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 {
     diminuto_tree_t * siblingp;
 
-    while (((nodep == DIMINUTO_TREE_NULL) || (nodep->color == DIMINUTO_TREE_COLOR_BLACK)) && (nodep != *rootp)) {
+    while ((diminuto_tree_isleaf(nodep) || (nodep->color == DIMINUTO_TREE_COLOR_BLACK)) && (nodep != *rootp)) {
 
         if (parentp->left == nodep) {
 
@@ -157,7 +157,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             }
 
-            if (((siblingp->left == DIMINUTO_TREE_NULL) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && ((siblingp->right == DIMINUTO_TREE_NULL) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
+            if ((diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_RED;
                 nodep = parentp;
@@ -165,9 +165,9 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             } else {
 
-                if ((siblingp->right == DIMINUTO_TREE_NULL) || (siblingp->right->color == DIMINUTO_TREE_COLOR_RED)) {
+                if (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_RED)) {
 
-                    if (siblingp->left != DIMINUTO_TREE_NULL) {
+                    if (!diminuto_tree_isleaf(siblingp->left)) {
                         siblingp->left->color = DIMINUTO_TREE_COLOR_BLACK;
                     }
 
@@ -180,7 +180,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
                 siblingp->color = parentp->color;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
 
-                if (siblingp->right != DIMINUTO_TREE_NULL) {
+                if (!diminuto_tree_isleaf(siblingp->right)) {
                     siblingp->right->color = DIMINUTO_TREE_COLOR_BLACK;
                 }
 
@@ -203,7 +203,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             }
 
-            if (((siblingp->left == DIMINUTO_TREE_NULL) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && ((siblingp->right == DIMINUTO_TREE_NULL) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
+            if ((diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) && (diminuto_tree_isleaf(siblingp->right) || (siblingp->right->color == DIMINUTO_TREE_COLOR_BLACK))) {
 
                 siblingp->color = DIMINUTO_TREE_COLOR_RED;
                 nodep = parentp;
@@ -211,9 +211,9 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
 
             } else {
 
-                if ((siblingp->left == DIMINUTO_TREE_NULL) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) {
+                if (diminuto_tree_isleaf(siblingp->left) || (siblingp->left->color == DIMINUTO_TREE_COLOR_BLACK)) {
 
-                    if (siblingp->right != DIMINUTO_TREE_NULL) {
+                    if (!diminuto_tree_isleaf(siblingp->right)) {
                         siblingp->right->color = DIMINUTO_TREE_COLOR_BLACK;
                     }
 
@@ -226,7 +226,7 @@ static void diminuto_tree_remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t 
                 siblingp->color = parentp->color;
                 parentp->color = DIMINUTO_TREE_COLOR_BLACK;
 
-                if (siblingp->left != DIMINUTO_TREE_NULL) {
+                if (!diminuto_tree_isleaf(siblingp->left)) {
                     siblingp->left->color = DIMINUTO_TREE_COLOR_BLACK;
                 }
 
@@ -266,7 +266,7 @@ diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, dim
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
        nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
-    } else if (parentp == DIMINUTO_TREE_NULL) {
+    } else if (diminuto_tree_isleaf(parentp)) {
         if (*rootp != DIMINUTO_TREE_NULL) {
             nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
         } else {
@@ -274,7 +274,7 @@ diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, dim
             diminuto_tree_insert(nodep, rootp);
         }
     } else {
-        if (parentp->left != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isleaf(parentp->left)) {
             nodep = DIMINUTO_TREE_NULL; /* Error: left already occupied! */
         } else {
             diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->left));
@@ -289,7 +289,7 @@ diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, di
 {
     if (nodep->root != DIMINUTO_TREE_ORPHAN) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
-    } else if (parentp == DIMINUTO_TREE_NULL) {
+    } else if (diminuto_tree_isleaf(parentp)) {
         if (*rootp != DIMINUTO_TREE_NULL) {
             nodep = DIMINUTO_TREE_NULL; /* Error: root already occupied! */
         } else {
@@ -297,7 +297,7 @@ diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, di
             diminuto_tree_insert(nodep, rootp);
         }
     } else {
-        if (parentp->right != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isleaf(parentp->right)) {
             nodep = DIMINUTO_TREE_NULL; /* Error: right already occupied! */
         } else {
             diminuto_tree_link(nodep, parentp, parentp->root, &(parentp->right));
@@ -323,9 +323,9 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
 
         do {
 
-            if (nodep->left == DIMINUTO_TREE_NULL) {
+            if (diminuto_tree_isleaf(nodep->left)) {
                 childp = nodep->right;
-            } else if (nodep->right == DIMINUTO_TREE_NULL) {
+            } else if (diminuto_tree_isleaf(nodep->right)) {
                 childp = nodep->left;
             } else {
                 diminuto_tree_t * oldp;
@@ -334,14 +334,14 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
                 oldp = nodep;
 
                 nodep = nodep->right;
-                while ((leftp = nodep->left) != DIMINUTO_TREE_NULL) {
+                while (!diminuto_tree_isleaf(leftp = nodep->left)) {
                     nodep = leftp;
                 }
                 childp = nodep->right;
                 parentp = nodep->parent;
                 color = nodep->color;
 
-                if (childp != DIMINUTO_TREE_NULL) {
+                if (!diminuto_tree_isleaf(childp)) {
                     childp->parent = parentp;
                 }
                 if (parentp == oldp) {
@@ -357,7 +357,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
                 nodep->right = oldp->right;
                 /* Presumably root is already set appropriately. */
 
-                if (oldp->parent == DIMINUTO_TREE_NULL) {
+                if (diminuto_tree_isleaf(oldp->parent)) {
                     *rootp = nodep;
                 } else if (oldp->parent->left == oldp) {
                     oldp->parent->left = nodep;
@@ -368,7 +368,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
                 }
 
                 oldp->left->parent = nodep;
-                if (oldp->right != DIMINUTO_TREE_NULL) {
+                if (!diminuto_tree_isleaf(oldp->right)) {
                     oldp->right->parent = nodep;
                 }
 
@@ -378,11 +378,11 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
             parentp = nodep->parent;
             color = nodep->color;
 
-            if (childp != DIMINUTO_TREE_NULL) {
+            if (!diminuto_tree_isleaf(childp)) {
                 childp->parent = parentp;
             }
 
-            if (parentp == DIMINUTO_TREE_NULL) {
+            if (diminuto_tree_isleaf(parentp)) {
                 *rootp = childp;
             } else if (parentp->left == nodep) {
                 parentp->left = childp;
@@ -414,7 +414,7 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
         diminuto_tree_t * parentp;
 
         parentp = oldp->parent;
-        if (parentp == DIMINUTO_TREE_NULL) {
+        if (diminuto_tree_isleaf(parentp)) {
             *(oldp->root) = newp;
         } else if (oldp == parentp->left) {
             parentp->left = newp;
@@ -424,10 +424,10 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
             /* Error: should never happen! */
         }
 
-        if (oldp->left != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isleaf(oldp->left)) {
             oldp->left->parent = newp;
         }
-        if (oldp->right != DIMINUTO_TREE_NULL) {
+        if (!diminuto_tree_isleaf(oldp->right)) {
             oldp->right->parent = newp;
         }
 
@@ -461,14 +461,14 @@ diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
 
     if (nodep->root == DIMINUTO_TREE_ORPHAN) {
         parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
-    } else if (nodep->right != DIMINUTO_TREE_NULL) {
+    } else if (!diminuto_tree_isleaf(nodep->right)) {
         nodep = nodep->right;
-        while (nodep->left != DIMINUTO_TREE_NULL) {
+        while (!diminuto_tree_isleaf(nodep->left)) {
             nodep = nodep->left;
         }
         parentp = (diminuto_tree_t *)nodep;
     } else {
-        while (((parentp = nodep->parent) != DIMINUTO_TREE_NULL) && (nodep == parentp->right)) {
+        while ((!diminuto_tree_isleaf(parentp = nodep->parent)) && (nodep == parentp->right)) {
             nodep = parentp;
         }
     }
@@ -482,14 +482,14 @@ diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep)
 
     if (nodep->root == DIMINUTO_TREE_ORPHAN) {
         parentp = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
-    } else if (nodep->left != DIMINUTO_TREE_NULL) {
+    } else if (!diminuto_tree_isleaf(nodep->left)) {
         nodep = nodep->left;
-        while (nodep->right != DIMINUTO_TREE_NULL) {
+        while (!diminuto_tree_isleaf(nodep->right)) {
             nodep = nodep->right;
         }
         parentp = (diminuto_tree_t *)nodep;
     } else {
-        while (((parentp = nodep->parent) != DIMINUTO_TREE_NULL) && (nodep == parentp->left)) {
+        while ((!diminuto_tree_isleaf(parentp = nodep->parent)) && (nodep == parentp->left)) {
             nodep = parentp;
         }
     }
@@ -501,8 +501,8 @@ diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 
-    if ((nodep = (diminuto_tree_t *)*rootp) != DIMINUTO_TREE_NULL) {
-        while (nodep->left != DIMINUTO_TREE_NULL) {
+    if (!diminuto_tree_isleaf(nodep = (diminuto_tree_t *)*rootp)) {
+        while (!diminuto_tree_isleaf(nodep->left)) {
             nodep = nodep->left;
         }
     }
@@ -514,8 +514,8 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
 {
     diminuto_tree_t * nodep;
 
-    if ((nodep = (diminuto_tree_t *)*rootp) != DIMINUTO_TREE_NULL) {
-        while (nodep->right != DIMINUTO_TREE_NULL) {
+    if (!diminuto_tree_isleaf(nodep = (diminuto_tree_t *)*rootp)) {
+        while (!diminuto_tree_isleaf(nodep->right)) {
             nodep = nodep->right;
         }
     }
