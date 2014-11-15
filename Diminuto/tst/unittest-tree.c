@@ -38,15 +38,15 @@ static void dumpn(diminuto_tree_t * nodep, dumpf_t * dumpfp)
     (*dumpfp)(nodep);
 }
 
-static void dumpr(int level, diminuto_tree_t * nodep, dumpf_t * dumpfp)
+static void dumpr(int depth, diminuto_tree_t * nodep, dumpf_t * dumpfp)
 {
-    printf("dump: %s", &(SPACES[(level < sizeof(SPACES)) ? (sizeof(SPACES) - 1 - level) : 0]));
+    printf("dump: %sdepth=%d ", &(SPACES[(depth < sizeof(SPACES)) ? (sizeof(SPACES) - 1 - depth) : 0]), depth);
     dumpn(nodep, dumpfp);
     if (!diminuto_tree_isleaf(nodep->left)) {
-        dumpr(level + 1, nodep->left, dumpfp);
+        dumpr(depth + 1, nodep->left, dumpfp);
     }
     if (!diminuto_tree_isleaf(nodep->right)) {
-        dumpr(level + 1, nodep->right, dumpfp);
+        dumpr(depth + 1, nodep->right, dumpfp);
     }
 }
 
@@ -581,14 +581,15 @@ int main(void)
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
         diminuto_tree_t * nodep;
         diminuto_tree_t * nextp;
+        diminuto_tree_t * firstp;
         ssize_t ii;
         list(&root, dumps);
         dump(&root, dumps);
         ASSERT(audit(&root) == 0);
-        for (ii = countof(ALPHABET) - 1; ii >= 0; --ii) {
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[ii]);
             diminuto_tree_init(nodep);
-            diminuto_tree_insert_left_or_root(nodep, parentp, &root);
+            diminuto_tree_insert_right_or_root(nodep, parentp, &root);
             parentp = nodep;
         }
         list(&root, dumps);
@@ -629,9 +630,11 @@ int main(void)
         ASSERT(nextp != DIMINUTO_TREE_NULL);
         EXPECT(nodep == nextp);
 /**/
-        for (ii = 0; ii < countof(ALPHABET); --ii) {
-            nodep = diminuto_tree_remove(diminuto_tree_first(&root));
-            nodep = diminuto_tree_replace(diminuto_tree_last(&root), nodep);
+        printf("MIRROR\n");
+        nodep = diminuto_tree_remove(diminuto_tree_first(&root));
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
+            nextp = diminuto_tree_replace(diminuto_tree_last(&root), nodep);
+            nodep = diminuto_tree_replace(diminuto_tree_first(&root), nextp);
         }
 /**/
         list(&root, dumps);
