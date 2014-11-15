@@ -115,8 +115,6 @@ extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
-extern diminuto_tree_t * diminuto_tree_swap(diminuto_tree_t * thisp, diminuto_tree_t * thatp);
-
 /*******************************************************************************
  * GETTORS
  ******************************************************************************/

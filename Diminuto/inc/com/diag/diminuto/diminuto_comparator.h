@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-typedef int (diminuto_comparator)(const void *, const void *);
+typedef int (diminuto_comparator_t)(const void *, const void *);
 
 extern int diminuto_compare_strings(const void *, const void *);
 
