@@ -35,6 +35,16 @@
  */
 
 /*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+#define DIMINUTO_TREE_NULL ((diminuto_tree_t *)0)
+
+#define DIMINUTO_TREE_EMPTY DIMINUTO_TREE_NULL
+
+#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
+
+/*******************************************************************************
  * TYPES
  ******************************************************************************/
 
@@ -63,20 +73,6 @@ typedef struct DiminutoTree {
 } diminuto_tree_t;
 
 /*******************************************************************************
- * CONSTANTS
- ******************************************************************************/
-
-/**
- * @def DIMINUTO_TREE_NULL
- * Defines the null pointer value used for those operations which may return it.
- * (If this were C++ I would have used a static const. But that turns out to
- * have remarkably inconvenient implications in C regarding const correctness.)
- */
-#define DIMINUTO_TREE_NULL ((diminuto_tree_t *)0)
-
-#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
-
-/*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
@@ -96,7 +92,7 @@ typedef struct DiminutoTree {
     DIMINUTO_TREE_DATAINIT((void *)0)
 
 /*******************************************************************************
- * ACCESSORS
+ * SELECTORS
  ******************************************************************************/
 
 extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);
@@ -119,32 +115,7 @@ extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
-/*******************************************************************************
- * CONDITIONALS
- ******************************************************************************/
-
-static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
-{
-    return (*rootp == DIMINUTO_TREE_NULL);
-}
-
-static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
-{
-    return (nodep == DIMINUTO_TREE_NULL);
-}
-
-static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
-{
-	return (nodep->root == DIMINUTO_TREE_ORPHAN);
-}
-
-static inline int diminuto_tree_isred(diminuto_tree_t * nodep) {
-    return (nodep->color == DIMINUTO_TREE_COLOR_RED); /* Exposed for unit testing. */
-}
-
-static inline int diminuto_tree_isblack(diminuto_tree_t * nodep) {
-    return (nodep->color == DIMINUTO_TREE_COLOR_BLACK); /* Exposed for unit testing. */
-}
+extern diminuto_tree_t * diminuto_tree_swap(diminuto_tree_t * thisp, diminuto_tree_t * thatp);
 
 /*******************************************************************************
  * GETTORS
@@ -172,6 +143,35 @@ static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
 
 static inline void * diminuto_tree_data(diminuto_tree_t * nodep) {
     return nodep->data;
+}
+
+/*******************************************************************************
+ * CONDITIONALS
+ ******************************************************************************/
+
+static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
+{
+    return (*rootp == DIMINUTO_TREE_EMPTY);
+}
+
+static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
+{
+    return (nodep == DIMINUTO_TREE_NULL);
+}
+
+static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
+{
+	return (diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
+}
+
+static inline int diminuto_tree_isred(diminuto_tree_t * nodep)
+{
+    return (nodep->color == DIMINUTO_TREE_COLOR_RED); /* Exposed for unit testing. */
+}
+
+static inline int diminuto_tree_isblack(diminuto_tree_t * nodep)
+{
+    return (nodep->color == DIMINUTO_TREE_COLOR_BLACK); /* Exposed for unit testing. */
 }
 
 /*******************************************************************************

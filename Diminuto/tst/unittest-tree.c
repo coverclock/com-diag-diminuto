@@ -50,18 +50,18 @@ static void dumpr(int depth, diminuto_tree_t * nodep, dumpf_t * dumpfp)
     }
 }
 
-static void dump(diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static void dump(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
-    printf("dump: root=%p\n", rootp);
+    printf("dump: line=%d root=%p\n", line, rootp);
     if (!diminuto_tree_isempty(rootp)) {
         dumpr(1, *rootp, dumpfp);
     }
 }
 
-static void list(diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
-    printf("list: root=%p\n", rootp);
+    printf("list: line=%d root=%p\n", line, rootp);
     for (nodep = diminuto_tree_first(rootp); nodep != DIMINUTO_TREE_NULL; nodep = diminuto_tree_next(nodep)) {
         printf("list: ");
         dumpn(nodep, dumpfp);
@@ -276,8 +276,17 @@ int main(void)
      }
 
     {
-        diminuto_tree_t * root = DIMINUTO_TREE_NULL;
-        diminuto_tree_t node[3] = { DIMINUTO_TREE_DATAINIT((void *)0),  DIMINUTO_TREE_DATAINIT((void *)1),  DIMINUTO_TREE_DATAINIT((void *)2), };
+        diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
+        diminuto_tree_t * spare = DIMINUTO_TREE_EMPTY;
+        /*
+         * Using ((void*)0) as a data value yields "(nil)" for the %p format
+         * which confuses me.
+         */
+        diminuto_tree_t node[3] = { DIMINUTO_TREE_DATAINIT((void *)1),  DIMINUTO_TREE_DATAINIT((void *)2),  DIMINUTO_TREE_DATAINIT((void *)3), };
+        diminuto_tree_t dummy =  DIMINUTO_TREE_DATAINIT((void *)4);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_isleaf(DIMINUTO_TREE_NULL));
         ASSERT(!diminuto_tree_isleaf(&(node[0])));
@@ -290,17 +299,17 @@ int main(void)
         ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[0])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[0])) == (void *)0);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
         ASSERT(diminuto_tree_parent(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[1])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
         ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[2])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[2])) == (void *)2);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
         ASSERT(diminuto_tree_first(&root) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_last(&root) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_remove(&(node[0])) == DIMINUTO_TREE_NULL);
@@ -308,7 +317,9 @@ int main(void)
         ASSERT(diminuto_tree_remove(&(node[2])) == DIMINUTO_TREE_NULL);
         /**/
         ASSERT(diminuto_tree_insert_root(&(node[1]), &root) == &(node[1]));
-        dump(&root, dumpp);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_isorphan(&(node[0])));
         ASSERT(!diminuto_tree_isorphan(&(node[1])));
@@ -317,23 +328,25 @@ int main(void)
         ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[0])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[0])) == (void *)0);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
         ASSERT(diminuto_tree_parent(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[1])) == &root);
-        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
         ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[2])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[2])) == (void *)2);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
         ASSERT(diminuto_tree_first(&root) == &(node[1]));
         ASSERT(diminuto_tree_last(&root) == &(node[1]));
         ASSERT(diminuto_tree_next(&(node[1])) == DIMINUTO_TREE_NULL);
         /**/
         ASSERT(diminuto_tree_insert_left(&(node[0]), &(node[1])) == &(node[0]));
-        dump(&root, dumpp);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(!diminuto_tree_isorphan(&(node[0])));
         ASSERT(!diminuto_tree_isorphan(&(node[1])));
@@ -342,24 +355,26 @@ int main(void)
         ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[0])) == &root);
-        ASSERT(diminuto_tree_data(&(node[0])) == (void *)0);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
         ASSERT(diminuto_tree_parent(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[1])) == &(node[0]));
         ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[1])) == &root);
-        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
         ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[2])) == DIMINUTO_TREE_ORPHAN);
-        ASSERT(diminuto_tree_data(&(node[2])) == (void *)2);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
         ASSERT(diminuto_tree_first(&root) == &(node[0]));
         ASSERT(diminuto_tree_last(&root) == &(node[1]));
         ASSERT(diminuto_tree_next(&(node[0])) == &(node[1]));
         ASSERT(diminuto_tree_next(&(node[1])) == DIMINUTO_TREE_NULL);
         /**/
         ASSERT(diminuto_tree_insert_right(&(node[2]), &(node[1])) == &(node[2]));
-        dump(&root, dumpp);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(!diminuto_tree_isorphan(&(node[0])));
         ASSERT(!diminuto_tree_isorphan(&(node[1])));
@@ -368,17 +383,17 @@ int main(void)
         ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[0])) == &root);
-        ASSERT(diminuto_tree_data(&(node[0])) == (void *)0);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
         ASSERT(diminuto_tree_parent(&(node[1])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&(node[1])) == &(node[0]));
         ASSERT(diminuto_tree_right(&(node[1])) == &(node[2]));
         ASSERT(diminuto_tree_root(&(node[1])) == &root);
-        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
         ASSERT(diminuto_tree_parent(&(node[2])) == &(node[1]));
         ASSERT(diminuto_tree_left(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[2])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[2])) == &root);
-        ASSERT(diminuto_tree_data(&(node[2])) == (void *)2);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
         ASSERT(diminuto_tree_first(&root) == &(node[0]));
         ASSERT(diminuto_tree_next(&(node[0])) == &(node[1]));
         ASSERT(diminuto_tree_next(&(node[1])) == &(node[2]));
@@ -386,19 +401,26 @@ int main(void)
         ASSERT(diminuto_tree_last(&root) == &(node[2]));
         /**/
         ASSERT(diminuto_tree_remove(&(node[0])) == &(node[0]));
-        dump(&root, dumpp);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_root(&(node[0])) == DIMINUTO_TREE_ORPHAN);
         ASSERT(diminuto_tree_replace(&node[0], &node[0]) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_replace(&node[2], &node[2]) == DIMINUTO_TREE_NULL);
         /**/
         ASSERT(diminuto_tree_replace(&node[2], &node[0]) == &(node[2]));
-        dump(&root, dumpp);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_root(&(node[2])) == DIMINUTO_TREE_ORPHAN);
         ASSERT(diminuto_tree_root(&(node[0])) == &root);
         /**/
         ASSERT(diminuto_tree_replace(&(node[1]), &(node[2])) == &(node[1]));
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(diminuto_tree_root(&(node[1])) == DIMINUTO_TREE_ORPHAN);
         ASSERT(diminuto_tree_root(&(node[2])) == &root);
         ASSERT(diminuto_tree_insert_root(&(node[1]), &root) == DIMINUTO_TREE_NULL);
@@ -406,27 +428,89 @@ int main(void)
         ASSERT(diminuto_tree_insert_left(&(node[0]), &(node[2])) == DIMINUTO_TREE_NULL);
         /**/
         ASSERT(diminuto_tree_insert_left(&(node[1]), &(node[2])) == &(node[1]));
-        dump(&root, dumpp);
-        ASSERT(diminuto_tree_parent(&(node[1])) == &(node[2]));
-        ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
-        ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
-        ASSERT(diminuto_tree_root(&(node[1])) == &root);
-        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
-        ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
-        ASSERT(diminuto_tree_left(&(node[2])) == &(node[1]));
-        ASSERT(diminuto_tree_right(&(node[2])) == &(node[0]));
-        ASSERT(diminuto_tree_root(&(node[2])) == &root);
-        ASSERT(diminuto_tree_data(&(node[2])) == (void *)2);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
         ASSERT(diminuto_tree_parent(&(node[0])) == &(node[2]));
         ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_root(&(node[0])) == &root);
-        ASSERT(diminuto_tree_data(&(node[0])) == (void *)0);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
+        ASSERT(diminuto_tree_parent(&(node[1])) == &(node[2]));
+        ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&(node[1])) == &root);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
+        ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_left(&(node[2])) == &(node[1]));
+        ASSERT(diminuto_tree_right(&(node[2])) == &(node[0]));
+        ASSERT(diminuto_tree_root(&(node[2])) == &root);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
         ASSERT(diminuto_tree_first(&root) == &(node[1]));
         ASSERT(diminuto_tree_next(&(node[1])) == &(node[2]));
         ASSERT(diminuto_tree_next(&(node[2])) == &(node[0]));
         ASSERT(diminuto_tree_next(&(node[0])) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_last(&root) == &(node[0]));
+        /**/
+        ASSERT(diminuto_tree_swap(&(node[1]), &(node[0])) == &(node[1]));
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
+        ASSERT(diminuto_tree_parent(&(node[0])) == &(node[2]));
+        ASSERT(diminuto_tree_left(&(node[0])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_right(&(node[0])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&(node[0])) == &root);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)1);
+        ASSERT(diminuto_tree_parent(&(node[1])) == &(node[2]));
+        ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&(node[1])) == &root);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
+        ASSERT(diminuto_tree_parent(&(node[2])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_left(&(node[2])) == &(node[0]));
+        ASSERT(diminuto_tree_right(&(node[2])) == &(node[1]));
+        ASSERT(diminuto_tree_root(&(node[2])) == &root);
+        ASSERT(diminuto_tree_data(&(node[2])) == (void *)3);
+        ASSERT(diminuto_tree_first(&root) == &(node[0]));
+        ASSERT(diminuto_tree_next(&(node[0])) == &(node[2]));
+        ASSERT(diminuto_tree_next(&(node[2])) == &(node[1]));
+        ASSERT(diminuto_tree_next(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_last(&root) == &(node[1]));
+        /**/
+#if 0
+        ASSERT(diminuto_tree_swap(&(node[0]), &(node[2])) == &(node[0]));
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
+        ASSERT(diminuto_tree_parent(&(node[0])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_left(&(node[0])) == &(node[2]));
+        ASSERT(diminuto_tree_right(&(node[0])) == &(node[1]));
+        ASSERT(diminuto_tree_root(&(node[0])) == &root);
+        ASSERT(diminuto_tree_data(&(node[0])) == (void *)3);
+        ASSERT(diminuto_tree_parent(&(node[1])) == &(node[0]));
+        ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&(node[1])) == &root);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)2);
+        ASSERT(diminuto_tree_parent(&(node[1])) == &(node[0]));
+        ASSERT(diminuto_tree_left(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_right(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&(node[1])) == &root);
+        ASSERT(diminuto_tree_data(&(node[1])) == (void *)1);
+        ASSERT(diminuto_tree_first(&root) == &(node[2]));
+        ASSERT(diminuto_tree_next(&(node[2])) == &(node[0]));
+        ASSERT(diminuto_tree_next(&(node[0])) == &(node[1]));
+        ASSERT(diminuto_tree_next(&(node[1])) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_last(&root) == &(node[1]));
+#endif
+        /**/
+        ASSERT(diminuto_tree_swap(&(node[0]), &dummy) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_swap(&dummy, &dummy) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_insert_root(&dummy, &spare) == &dummy);
+        ASSERT(diminuto_tree_swap(&(node[0]), &dummy) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_swap(&dummy, &dummy) == &dummy);
+        /**/
+        ASSERT(root != DIMINUTO_TREE_EMPTY);
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_remove(&(node[0])) == &(node[0]));
         ASSERT(!diminuto_tree_isempty(&root));
@@ -434,6 +518,10 @@ int main(void)
         ASSERT(!diminuto_tree_isempty(&root));
         ASSERT(diminuto_tree_remove(&(node[2])) == &(node[2]));
         ASSERT(diminuto_tree_isempty(&root));
+        ASSERT(root == DIMINUTO_TREE_EMPTY);
+        list(__LINE__, &root, dumpp);
+        dump(__LINE__, &root, dumpp);
+        ASSERT(audit(&root) == 0);
     }
 
     {
@@ -448,13 +536,13 @@ int main(void)
     }
 
     {
-        diminuto_tree_t * root = DIMINUTO_TREE_NULL;
+        diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
         diminuto_tree_t * nodep;
         diminuto_tree_t * nextp;
         size_t ii;
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[ii]);
@@ -462,8 +550,8 @@ int main(void)
             diminuto_tree_insert_right_or_root(nodep, parentp, &root);
             parentp = nodep;
         }
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         nodep = diminuto_tree_first(&root);
         ASSERT(nodep != DIMINUTO_TREE_NULL);
@@ -512,13 +600,13 @@ int main(void)
     }
 
     {
-        diminuto_tree_t * root = DIMINUTO_TREE_NULL;
+        diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
         diminuto_tree_t * nodep;
         diminuto_tree_t * nextp;
         ssize_t ii;
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         for (ii = countof(ALPHABET) - 1; ii >= 0; --ii) {
             nodep = &(ALPHABET[ii]);
@@ -526,8 +614,8 @@ int main(void)
             diminuto_tree_insert_left_or_root(nodep, parentp, &root);
             parentp = nodep;
         }
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         nodep = diminuto_tree_first(&root);
         ASSERT(nodep != DIMINUTO_TREE_NULL);
@@ -566,8 +654,8 @@ int main(void)
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             diminuto_tree_remove(&(ALPHABET[ii]));
         }
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             ASSERT(diminuto_tree_root(&(ALPHABET[ii])) == DIMINUTO_TREE_ORPHAN);
@@ -577,14 +665,15 @@ int main(void)
 
 #if 0
     {
-        diminuto_tree_t * root = DIMINUTO_TREE_NULL;
+        diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
         diminuto_tree_t * nodep;
+        diminuto_tree_t * otherp;
         diminuto_tree_t * nextp;
-        diminuto_tree_t * firstp;
+        diminuto_tree_t * prevp;
         ssize_t ii;
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[ii]);
@@ -592,8 +681,8 @@ int main(void)
             diminuto_tree_insert_right_or_root(nodep, parentp, &root);
             parentp = nodep;
         }
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         nodep = diminuto_tree_first(&root);
         ASSERT(nodep != DIMINUTO_TREE_NULL);
@@ -630,15 +719,18 @@ int main(void)
         ASSERT(nextp != DIMINUTO_TREE_NULL);
         EXPECT(nodep == nextp);
 /**/
-        printf("MIRROR\n");
-        nodep = diminuto_tree_remove(diminuto_tree_first(&root));
-        for (ii = 0; ii < countof(ALPHABET); ++ii) {
-            nextp = diminuto_tree_replace(diminuto_tree_last(&root), nodep);
-            nodep = diminuto_tree_replace(diminuto_tree_first(&root), nextp);
+        nodep = diminuto_tree_first(&root);
+        otherp = diminuto_tree_last(&root);
+        while (nodep != otherp) {
+            nextp = diminuto_tree_next(nodep);
+            prevp = diminuto_tree_prev(otherp);
+            diminuto_tree_swap(nodep, otherp);
+            nodep = nextp;
+            otherp = prevp;
         }
 /**/
-        list(&root, dumps);
-        dump(&root, dumps);
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
         ASSERT(audit(&root) == 0);
         nodep = diminuto_tree_first(&root);
         ASSERT(nodep != DIMINUTO_TREE_NULL);

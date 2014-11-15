@@ -12,6 +12,12 @@
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
+#include <stdio.h>
+
+static inline void diminuto_tree_print(int line, diminuto_tree_t * nodep, FILE * fp)
+{
+    fprintf(fp, "diminuto_tree_node@%p[%d]: { color=%u parent=%p left=%p right=%p root=%p data=%p }\n", nodep, line, nodep->color, nodep->parent, nodep->left, nodep->right, nodep->root, nodep->data);
+}
 
 /*******************************************************************************
  * PRIVATE MUTATORS
@@ -398,7 +404,14 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
             diminuto_tree_remove_fixup(childp, parentp, rootp);
         }
 
-        nodep->root = DIMINUTO_TREE_ORPHAN;
+        /*
+         * It's important to reinitialize the node we just removed so that
+         * we don't leave any dangling pointers. If the caller performs a
+         * next() or parent() gettor against the removed node, we don't want
+         * it to lead to the tree from which it was removed.
+         */
+
+        diminuto_tree_init(nodep);
 
     }
 
@@ -444,11 +457,111 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
         newp->right = oldp->right;
         newp->root = oldp->root;
 
-        oldp->root = DIMINUTO_TREE_ORPHAN;
+        /*
+         * It's important to reinitialize the node we just replaced so that
+         * we don't leave any dangling pointers. If the caller performs a
+         * next() or parent() gettor against the removed node, we don't want
+         * it to lead to the tree from which it was removed.
+         */
+
+        diminuto_tree_init(oldp);
 
     }
 
     return oldp;
+}
+
+#include <stdio.h>
+
+diminuto_tree_t * diminuto_tree_swap(diminuto_tree_t * thisp, diminuto_tree_t * thatp) {
+    if (diminuto_tree_isorphan(thisp)) {
+        thisp = DIMINUTO_TREE_NULL; /* Error: this node not on a tree! */
+    } else if (diminuto_tree_isorphan(thatp)) {
+        thisp = DIMINUTO_TREE_NULL; /* Error: that node not on a tree! */
+    } else if (diminuto_tree_root(thisp) != diminuto_tree_root(thatp)) {
+        thisp = DIMINUTO_TREE_NULL; /* Error: this and that not on the same tree! */
+    } else if (thisp == thatp) {
+        /* Do nothing: it's okay to swap a node with itself. */
+    } else {
+        diminuto_tree_t clone;
+
+        diminuto_tree_print(__LINE__, thisp->parent, stderr);
+        diminuto_tree_print(__LINE__, thisp, stderr);
+        diminuto_tree_print(__LINE__, thatp->parent, stderr);
+        diminuto_tree_print(__LINE__, thatp, stderr);
+
+        /*
+         * We make a copy of one of the nodes parent because the two nodes
+         * could have the same parent, in which case we want to make decisions
+         * based on what the values in the parent _were_, not what they become.
+         */
+
+        if (!diminuto_tree_isleaf(thisp->parent)) {
+            clone = *(thatp->parent);
+        }
+
+        if (diminuto_tree_isleaf(thisp->parent)) {
+            *(thisp->root) = thatp;
+        } else if (thisp == thisp->parent->left) {
+            thisp->parent->left = thatp;
+        } else if (thisp == thisp->parent->right) {
+            thisp->parent->right = thatp;
+        } else {
+            /* Error: should never happen! */
+        }
+
+        if (!diminuto_tree_isleaf(thisp->left)) {
+            thisp->left->parent = thatp;
+        }
+        if (!diminuto_tree_isleaf(thisp->right)) {
+            thisp->right->parent = thatp;
+        }
+
+        if (diminuto_tree_isleaf(thatp->parent)) {
+            *(thatp->root) = thisp;
+        } else if (thatp == clone.left) {
+        	thatp->parent->left = thisp;
+        } else if (thatp == clone.right) {
+        	thatp->parent->right = thisp;
+        } else {
+            /* Error: should never happen! */
+        }
+
+        if (!diminuto_tree_isleaf(thatp->left)) {
+            thatp->left->parent = thisp;
+        }
+        if (!diminuto_tree_isleaf(thatp->right)) {
+            thatp->right->parent = thisp;
+        }
+
+        /*
+         * We can't just swap the data pointers: we don't own the node
+         * structures, and they may be embedded inside the payload to which the
+         * data pointer points. So we have to swap everything but the data
+         * pointers, and the root pointers, because they must already be the
+         * same.
+         */
+
+        clone = *(thisp);
+
+        thisp->color = thatp->color;
+        thisp->parent = thatp->parent;
+        thisp->left = thatp->left;
+        thisp->right = thatp->right;
+
+        thatp->color = clone.color;
+        thatp->parent = clone.parent;
+        thatp->left = clone.left;
+        thatp->right = clone.right;
+
+        diminuto_tree_print(__LINE__, thisp->parent, stderr);
+        diminuto_tree_print(__LINE__, thisp, stderr);
+        diminuto_tree_print(__LINE__, thatp->parent, stderr);
+        diminuto_tree_print(__LINE__, thatp, stderr);
+
+    }
+
+    return thisp;
 }
 
 /*******************************************************************************
