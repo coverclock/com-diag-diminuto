@@ -664,8 +664,19 @@ int main(void)
         diminuto_tree_t * parentp = DIMINUTO_TREE_NULL;
         diminuto_tree_t * nodep;
         ssize_t ii;
+        ASSERT(audit(&root) == 0);
         ASSERT((nodep = find(&root, "ALFA", diminuto_compare_strings)) == DIMINUTO_TREE_NULL);
         ASSERT((nodep = find(&root, "FRAMISTAT", diminuto_compare_strings)) == DIMINUTO_TREE_NULL);
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
+            nodep = &(ALPHABET[ii]);
+            diminuto_tree_init(nodep);
+            diminuto_tree_insert_right_or_root(nodep, parentp, &root);
+            ASSERT(audit(&root) == 0);
+            parentp = nodep;
+        }
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
+        ASSERT(audit(&root) == 0);
         ASSERT((nodep = find(&root, "ALFA", diminuto_compare_strings)) == &(ALPHABET[0]));
         ASSERT((nodep = find(&root, "BRAVO", diminuto_compare_strings)) == &(ALPHABET[1]));
         ASSERT((nodep = find(&root, "CHARLIE", diminuto_compare_strings)) == &(ALPHABET[2]));
