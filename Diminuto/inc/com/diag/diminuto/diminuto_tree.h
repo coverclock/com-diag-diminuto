@@ -226,4 +226,10 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
     return diminuto_tree_insert_right_or_root(nodep, parentp, diminuto_tree_root(parentp));
 }
 
+/*******************************************************************************
+ * AUDITS
+ ******************************************************************************/
+
+extern diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp);
+
 #endif

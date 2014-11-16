@@ -12,12 +12,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
-#include <stdio.h>
-
-static inline void diminuto_tree_print(int line, diminuto_tree_t * nodep, FILE * fp)
-{
-    fprintf(fp, "diminuto_tree_node@%p[%d]: { color=%u parent=%p left=%p right=%p root=%p data=%p }\n", nodep, line, nodep->color, nodep->parent, nodep->left, nodep->right, nodep->root, nodep->data);
-}
+#include "com/diag/diminuto/diminuto_log.h"
 
 /*******************************************************************************
  * PRIVATE MUTATORS
@@ -541,5 +536,61 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
     }
 
     return nodep;
+}
+
+/*******************************************************************************
+ * AUDIT
+ ******************************************************************************/
+
+static diminuto_tree_t * diminuto_tree_auditr(int errors, diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp, intptr_t height, intptr_t * heightp)
+{
+    if (!diminuto_tree_isleaf(nodep)) {
+        if (diminuto_tree_root(nodep) != rootp) {
+            DIMINUTO_LOG_DEBUG("audit: node=%p parentp=%p rootp=%p root=%p FAILED!\n", nodep, parentp, rootp, diminuto_tree_root(nodep));
+            return nodep;
+        }
+        if (diminuto_tree_parent(nodep) != parentp) {
+        	DIMINUTO_LOG_DEBUG("audit: node=%p parentp=%p rootp=%p parent=%p FAILED!\n", nodep, parentp, rootp, diminuto_tree_parent(nodep));
+            return nodep;
+        }
+        if (!diminuto_tree_isleaf(diminuto_tree_left(nodep))) {
+            if (diminuto_tree_isred(nodep)) {
+                if (!diminuto_tree_isblack(diminuto_tree_left(nodep))) {
+                    DIMINUTO_LOG_DEBUG("audit: node=%p parentp=%p rootp=%p left=%p FAILED!\n", nodep, parentp, rootp, diminuto_tree_left(nodep));
+                    return nodep;
+                }
+            }
+            diminuto_tree_auditr(errors, diminuto_tree_left(nodep), nodep, rootp, height, heightp);
+        }
+        if (!diminuto_tree_isleaf(diminuto_tree_right(nodep))) {
+            if (diminuto_tree_isred(nodep)) {
+                if (!diminuto_tree_isblack(diminuto_tree_right(nodep))) {
+                	DIMINUTO_LOG_DEBUG("audit: node=%p parentp=%p rootp=%p right=%p FAILED!\n", nodep, parentp, rootp, diminuto_tree_right(nodep));
+                    return nodep;
+                }
+            }
+            diminuto_tree_auditr(errors, diminuto_tree_left(nodep), nodep, rootp, height, heightp);
+        }
+        if (diminuto_tree_isblack(nodep)) {
+            ++height;
+        }
+        if ((!diminuto_tree_isleaf(diminuto_tree_left(nodep))) || (!diminuto_tree_isleaf(diminuto_tree_right(nodep)))) {
+            /* Do nothing: not leaf. */
+        } else if (*heightp < 0) {
+            *heightp = height;
+        } else if (*heightp == height) {
+            /* Do nothing: nominal. */
+        } else {
+            DIMINUTO_LOG_DEBUG("audit: node=%p parentp=%p rootp=%p height=%ld FAILED!\n", nodep, parentp, rootp, height);
+            return nodep;
+        }
+    }
+    return DIMINUTO_TREE_NULL;
+}
+
+diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp)
+{
+    intptr_t height = -1;
+    return diminuto_tree_auditr(0, *rootp, DIMINUTO_TREE_NULL, rootp, 0, &height);
 }
 
