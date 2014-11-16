@@ -14,11 +14,17 @@
 #include "com/diag/diminuto/diminuto_tree.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 
 static const char SPACES[] = "                                                                                ";
+
+static void dumph(diminuto_tree_t * nodep)
+{
+    printf("data=%ld\n", (intptr_t)nodep->data);
+}
 
 static void dumpp(diminuto_tree_t * nodep)
 {
@@ -68,6 +74,28 @@ static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
+static int blackheightr(int errors, diminuto_tree_t * nodep, intptr_t height, intptr_t * heightp)
+{
+    if (!diminuto_tree_isleaf(nodep)) {
+        if (diminuto_tree_isblack(nodep)) {
+            ++height;
+        }
+        errors += blackheightr(errors, diminuto_tree_left(nodep), height, heightp);
+        errors += blackheightr(errors, diminuto_tree_right(nodep), height, heightp);
+        if (diminuto_tree_isleaf(diminuto_tree_left(nodep)) && diminuto_tree_isleaf(diminuto_tree_right(nodep))) {
+            if (*heightp < 0) {
+                *heightp = height;
+            } else if (*heightp != height) {
+                printf("blackheight: node=%p height=%ld expected=%ld line=%d FAILED!\n", nodep, height, *heightp, __LINE__);
+                ++errors;
+            } else {
+                /* Do nothing: nominal. */
+            }
+        }
+    }
+    return errors;
+}
+
 static int auditr(int errors, diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
 {
     if (!diminuto_tree_isleaf(nodep)) {
@@ -103,8 +131,12 @@ static int auditr(int errors, diminuto_tree_t * nodep, diminuto_tree_t * parentp
 
 static int audit(diminuto_tree_t ** rootp)
 {
+    int errors;
+    intptr_t height = -1;
     printf("audit: root=%p\n", rootp);
-    return diminuto_tree_isempty(rootp) ? 0 : auditr(0, *rootp, DIMINUTO_TREE_NULL, rootp);
+    errors = auditr(0, *rootp, DIMINUTO_TREE_NULL, rootp) + blackheightr(0, *rootp, 0, &height);
+    printf("audit: root=%p blackheight=%ld\n", rootp, height);
+    return errors;
 }
 
 static diminuto_tree_t * findr(diminuto_tree_t * nodep, void * key, diminuto_comparator_t * comparefp)
