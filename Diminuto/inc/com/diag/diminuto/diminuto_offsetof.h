@@ -13,7 +13,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-#define desperado_offsetof(_STRUCT_, _MEMBER_) ((size_t)(((char *)&(((_STRUCT_ *)0)->_MEMBER_)) - ((char *)((_STRUCT_ *)0))))
+#define diminuto_offsetof(_STRUCT_, _MEMBER_) ((size_t)(((char *)&(((_STRUCT_ *)0)->_MEMBER_)) - ((char *)((_STRUCT_ *)0))))
 
 #ifndef offsetof
 #   define offsetof(_STRUCT_, _MEMBER_) diminuto_offsetof(_STRUCT_, _MEMBER_)
