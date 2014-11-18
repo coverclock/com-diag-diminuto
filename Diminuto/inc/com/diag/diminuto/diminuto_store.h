@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_tree.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
+#include <stdio.h>
 
 /*******************************************************************************
  * TYPES
@@ -35,6 +36,15 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
 #define DIMINUTO_STORE_NULL ((diminuto_store_t *)0)
 
 /*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+static inline int diminuto_store_isnull(diminuto_store_t * nodep)
+{
+    return (nodep == DIMINUTO_STORE_NULL);
+}
+
+/*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
@@ -44,7 +54,7 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
  * @a _DATAP_.
  */
 #define DIMINUTO_STORE_KEYVALUEINIT(_KEYP_, _VALUEP_) \
-    { DIMINUTO_TREE_NULLINIT, (_KEYP_), (_VALUEP_), }
+    { DIMINUTO_TREE_NULLINIT, (void *)(_KEYP_), (void *)(_VALUEP_), }
 
 /**
  * @def DIMINUTO_STORE_NULLINIT
@@ -69,9 +79,9 @@ extern diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto
  * MUTATORS
  ******************************************************************************/
 
-extern diminuto_store_t * diminuto_store_find_and_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
-extern diminuto_store_t * diminuto_store_find_and_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 /*******************************************************************************
  * ITERATORS
@@ -79,22 +89,30 @@ extern diminuto_store_t * diminuto_store_find_and_replace(diminuto_tree_t ** roo
 
 static inline diminuto_store_t * diminuto_store_first(diminuto_tree_t ** rootp)
 {
-    return diminuto_containerof(diminuto_store_t, tree, diminuto_tree_first(rootp));
+    diminuto_tree_t * treep;
+    treep = diminuto_tree_first(rootp);
+    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
 }
 
 static inline diminuto_store_t * diminuto_store_last(diminuto_tree_t ** rootp)
 {
-    return diminuto_containerof(diminuto_store_t, tree, diminuto_tree_last(rootp));
+    diminuto_tree_t * treep;
+    treep = diminuto_tree_last(rootp);
+    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
 }
 
 static inline diminuto_store_t * diminuto_store_next(diminuto_store_t * nodep)
 {
-    return diminuto_containerof(diminuto_store_t, tree, diminuto_tree_next(&(nodep->tree)));
+    diminuto_tree_t * treep;
+    treep = diminuto_tree_next(&(nodep->tree));
+    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
 }
 
 static inline diminuto_store_t * diminuto_store_prev(diminuto_store_t * nodep)
 {
-    return diminuto_containerof(diminuto_store_t, tree, diminuto_tree_prev(&(nodep->tree)));
+    diminuto_tree_t * treep;
+    treep = diminuto_tree_prev(&(nodep->tree));
+    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
 }
 
 /*******************************************************************************
@@ -140,5 +158,11 @@ static inline diminuto_store_t * diminuto_store_nullinit(diminuto_store_t * node
 {
     return diminuto_store_datainit(nodep, (void *)0, (void *)0);
 }
+
+/*******************************************************************************
+ * AUDITS
+ ******************************************************************************/
+
+extern void diminuto_store_print(FILE * fp, diminuto_store_t * nodep);
 
 #endif

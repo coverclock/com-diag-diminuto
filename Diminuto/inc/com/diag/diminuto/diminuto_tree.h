@@ -34,6 +34,8 @@
  * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/Red–black_tree
  */
 
+#include <stdio.h>
+
 /*******************************************************************************
  * TYPES
  ******************************************************************************/
@@ -229,6 +231,8 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
 /*******************************************************************************
  * AUDITS
  ******************************************************************************/
+
+extern void diminuto_tree_print(FILE * fp, diminuto_tree_t * nodep);
 
 extern diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp);
 

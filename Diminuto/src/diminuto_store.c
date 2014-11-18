@@ -25,56 +25,55 @@ int diminuto_store_compare_strings(const diminuto_store_t * thisp, const diminut
  * PRIVATE HELPERS
  ******************************************************************************/
 
-static diminuto_store_t * diminuto_store_find_close(diminuto_store_t * candidatep, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int * rcp)
+static diminuto_store_t * find_close(diminuto_store_t * candidatep, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp, int * rcp)
 {
-    *rcp = (*comparefp)(candidatep, nodep);
+    *rcp = (*comparefp)(candidatep, targetp);
     if (*rcp < 0) {
-        if (diminuto_tree_isleaf(candidatep->tree.left)) {
-            return candidatep;
-        } else {
-            return diminuto_store_find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.left), nodep, comparefp, rcp);
-        }
-    } else if (*rcp > 0) {
         if (diminuto_tree_isleaf(candidatep->tree.right)) {
             return candidatep;
         } else {
-            return diminuto_store_find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.right), nodep, comparefp, rcp);
+            return find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.right), targetp, comparefp, rcp);
+        }
+    } else if (*rcp > 0) {
+        if (diminuto_tree_isleaf(candidatep->tree.left)) {
+            return candidatep;
+        } else {
+            return find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.left), targetp, comparefp, rcp);
         }
     } else {
         return candidatep;
     }
 }
 
-static diminuto_store_t * diminuto_store_find_and_insert_or_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
+static diminuto_store_t * insert_or_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
 {
-    diminuto_store_t * resultp = DIMINUTO_STORE_NULL;
-    diminuto_store_t * candidatep;
+	diminuto_store_t * storep;
+    diminuto_tree_t * treep;
     int rc;
 
     if (diminuto_tree_isempty(rootp)) {
-        diminuto_tree_insert_root(&(nodep->tree), rootp);
+        treep = diminuto_tree_insert_root(&(nodep->tree), rootp);
     } else {
-        candidatep = diminuto_store_find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), nodep, comparefp, &rc);
+        storep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), nodep, comparefp, &rc);
         if (rc < 0) {
-            diminuto_tree_insert_right(&(nodep->tree), &(candidatep->tree));
+            treep = diminuto_tree_insert_right(&(nodep->tree), &(storep->tree));
         } else if (rc > 0) {
-            diminuto_tree_insert_left(&(nodep->tree), &(candidatep->tree));
+            treep = diminuto_tree_insert_left(&(nodep->tree), &(storep->tree));
+        } else if (replace) {
+            treep = diminuto_tree_replace(&(storep->tree), &(nodep->tree));
         } else {
-            if (replace) {
-                diminuto_tree_replace(&(candidatep->tree), &(nodep->tree));
-            }
-            resultp = candidatep;
+            treep = DIMINUTO_TREE_NULL;
         }
     }
 
-    return resultp;
+    return diminuto_tree_isleaf(treep) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, treep);
 }
 
 /*******************************************************************************
  * PUBLIC ACCESSORS
  ******************************************************************************/
 
-diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp)
 {
     diminuto_store_t * candidatep;
     int rc;
@@ -82,7 +81,7 @@ diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_
     if (diminuto_tree_isempty(rootp)) {
         return DIMINUTO_STORE_NULL;
     } else {
-    	candidatep = diminuto_store_find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), nodep, comparefp, &rc);
+    	candidatep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), targetp, comparefp, &rc);
         if (rc != 0) {
             return DIMINUTO_STORE_NULL;
         } else {
@@ -95,12 +94,26 @@ diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_
  * PUBLIC MUTATORS
  ******************************************************************************/
 
-diminuto_store_t * diminuto_store_find_and_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
 {
-    return diminuto_store_find_and_insert_or_replace(rootp, nodep, comparefp, 0);
+    return insert_or_replace(rootp, nodep, comparefp, 0);
 }
 
-diminuto_store_t * diminuto_store_find_and_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
 {
-    return diminuto_store_find_and_insert_or_replace(rootp, nodep, comparefp, !0);
+    return insert_or_replace(rootp, nodep, comparefp, !0);
+}
+
+/*******************************************************************************
+ * AUDITS
+ ******************************************************************************/
+
+void diminuto_store_print(FILE * fp, diminuto_store_t * nodep)
+{
+    if (nodep) {
+        diminuto_tree_print(fp, &(nodep->tree));
+        fprintf(fp, "diminuto_store%p: { key=%p value=%p }\n", nodep, nodep->key, nodep->value);
+    } else {
+        fprintf(fp, "diminuto_store@%p\n", nodep);
+    }
 }

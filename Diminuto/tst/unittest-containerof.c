@@ -35,14 +35,10 @@ int main(void)
 	listp = &(alpha.list);
     ASSERT(diminuto_containerof(struct Alpha, list, listp) == &alpha);
     ASSERT(containerof(struct Alpha, list, listp) == &alpha);
-    listp = (diminuto_list_t *)0;
-    ASSERT(containerof(struct Alpha, list, listp) == (struct Alpha *)0);
     /**/
     treep = &(beta.tree);
     ASSERT(diminuto_containerof(struct Beta, tree, treep) == &beta);
     ASSERT(containerof(struct Beta, tree, treep) == &beta);
-    treep = (diminuto_tree_t *)0;
-    ASSERT(containerof(struct Beta, tree, treep) == (struct Beta *)0);
     /**/
     EXIT();
 }
