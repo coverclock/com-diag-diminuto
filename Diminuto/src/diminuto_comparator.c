@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -12,12 +12,12 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <string.h>
 
-int diminuto_compare_strings(const void * a, const void * b)
+int diminuto_compare_strings(const void * thisp, const void * thatp)
 {
-    return strcmp(a, b);
+    return strcmp(thisp, thatp);
 }
 
-int diminuto_compare_pointers(const void * a, const void * b)
+int diminuto_compare_pointers(const void * thisp, const void * thatp)
 {
-    return ((intptr_t)a) - ((intptr_t)b);
+    return ((intptr_t)thisp) - ((intptr_t)thatp);
 }

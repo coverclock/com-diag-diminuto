@@ -14,8 +14,8 @@
  * Implements a Red-Black Tree. I looked at all of the references below, but
  * the one I found the most useful was the one from the U-Boot boot loader,
  * which is a simplified version of the implementation in the Linux kernel.
- * Much of this code is derived at least indirectly (even though it may look
- * nothing like it) from the U-Boot code.
+ * Much of this code is derived indirectly (even though it may look nothing
+ * like it) from the U-Boot code.
  *
  * REFERENCES
  *
@@ -33,16 +33,6 @@
  *
  * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/Red–black_tree
  */
-
-/*******************************************************************************
- * CONSTANTS
- ******************************************************************************/
-
-#define DIMINUTO_TREE_NULL ((diminuto_tree_t *)0)
-
-#define DIMINUTO_TREE_EMPTY DIMINUTO_TREE_NULL
-
-#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
 
 /*******************************************************************************
  * TYPES
@@ -73,26 +63,36 @@ typedef struct DiminutoTree {
 } diminuto_tree_t;
 
 /*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+#define DIMINUTO_TREE_NULL ((diminuto_tree_t *)0)
+
+#define DIMINUTO_TREE_EMPTY DIMINUTO_TREE_NULL
+
+#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
+
+/*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
 /**
- * @def DIMINUTO_LIST_DATAINIT
- * Generate a storage initializer for the node @a _NODEP_ and data pointer
+ * @def DIMINUTO_TREE_DATAINIT
+ * Generate a storage initializer for a node and its data pointer
  * @a _DATAP_.
  */
 #define DIMINUTO_TREE_DATAINIT(_DATAP_) \
     { DIMINUTO_TREE_COLOR_RED, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), }
 
 /**
- * @def DIMINUTO_LIST_NULLINIT
- * Generate a storage initializer for the node @a _NODEP_.
+ * @def DIMINUTO_TREE_NULLINIT
+ * Generate a storage initializer for a node.
  */
 #define DIMINUTO_TREE_NULLINIT \
     DIMINUTO_TREE_DATAINIT((void *)0)
 
 /*******************************************************************************
- * SELECTORS
+ * ITERATORS
  ******************************************************************************/
 
 extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);

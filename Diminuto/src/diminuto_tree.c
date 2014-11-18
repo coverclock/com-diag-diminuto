@@ -467,7 +467,7 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
 }
 
 /*******************************************************************************
- * PUBLIC ACCESSORS
+ * PUBLIC ITERATORS
  ******************************************************************************/
 
 diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)

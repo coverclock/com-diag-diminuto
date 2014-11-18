@@ -13,7 +13,7 @@
 
 #include "com/diag/diminuto/diminuto_offsetof.h"
 
-#define diminuto_containerof(_STRUCT_, _MEMBER_, _POINTER_)  ((_STRUCT_ *)(((char *)(_POINTER_)) - diminuto_offsetof(_STRUCT_, _MEMBER_)))
+#define diminuto_containerof(_STRUCT_, _MEMBER_, _POINTER_)  ((_STRUCT_ *)((_POINTER_) ? (((char *)(_POINTER_)) - diminuto_offsetof(_STRUCT_, _MEMBER_)) : 0))
 
 #ifndef containerof
 #   define containerof(_STRUCT_, _MEMBER_, _POINTER_) diminuto_containerof(_STRUCT_, _MEMBER_, _POINTER_)
