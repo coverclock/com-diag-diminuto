@@ -9,7 +9,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_list.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
@@ -26,7 +25,7 @@ static void dump(const char * prefix, diminuto_list_t * nodep) {
 	diminuto_list_t * nextp = nodep;
 	int ii = 0;
 	do {
-		DIMINUTO_LOG_DEBUG("%s[%d] %p: next=%p prev=%p root=%p data=%p\n", prefix, ii++, nextp, nextp->next, nextp->prev, nextp->root, nextp->data);
+		diminuto_list_log(nextp);
 		nextp = nextp->next;
 	} while (nextp != nodep);
 }
@@ -89,7 +88,7 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
 
     /* Audit */
 
-    ASSERT(diminuto_list_audit(rootp) == (diminuto_list_t *)0);
+    ASSERT(diminuto_list_audit(rootp) == DIMINUTO_LIST_NULL);
 }
 
 /*

@@ -15,7 +15,6 @@
 #include "com/diag/diminuto/diminuto_tree.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
-#include <stdio.h>
 
 /*******************************************************************************
  * TYPES
@@ -36,12 +35,17 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
 #define DIMINUTO_STORE_NULL ((diminuto_store_t *)0)
 
 /*******************************************************************************
- * CONSTANTS
+ * CONDITIONALS
  ******************************************************************************/
 
 static inline int diminuto_store_isnull(diminuto_store_t * nodep)
 {
     return (nodep == DIMINUTO_STORE_NULL);
+}
+
+static inline int diminuto_store_isempty(diminuto_tree_t ** rootp)
+{
+	return diminuto_tree_isempty(rootp);
 }
 
 /*******************************************************************************
@@ -82,6 +86,8 @@ extern diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto
 extern diminuto_store_t * diminuto_store_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 extern diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+
+extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
 
 /*******************************************************************************
  * ITERATORS
@@ -160,9 +166,9 @@ static inline diminuto_store_t * diminuto_store_nullinit(diminuto_store_t * node
 }
 
 /*******************************************************************************
- * AUDITS
+ * AUDITORS
  ******************************************************************************/
 
-extern void diminuto_store_print(FILE * fp, diminuto_store_t * nodep);
+extern void diminuto_store_log(diminuto_store_t * nodep);
 
 #endif

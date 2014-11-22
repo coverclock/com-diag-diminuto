@@ -14,16 +14,17 @@
  * Implements a Red-Black Tree. I looked at all of the references below, but
  * the one I found the most useful was the one from the U-Boot boot loader,
  * which is a simplified version of the implementation in the Linux kernel.
- * Much of this code is derived indirectly (even though it may look nothing
- * like it) from the U-Boot code.
+ * This implementation is inspired by the U-Boot code, even though it looks
+ * nothing like it.
  *
  * REFERENCES
  *
- * Andrea Arcangeli et al., Linux kernel, <linux/rbtree.h> and <lib/rbtree.c>
+ * Andrea Arcangeli et al., U-Boot, include/linux/rbtree.h and lib/rbtree.c
  *
- * Andrea Arcangeli et al., U-Boot, <linux/rbtree.h> and <lib/rbtree.c>
+ * Andrea Arcangeli et al., Linux kernel, include/linux/rbtree.h and
+ * lib/rbtree.c
  *
- * Free Software Foundation et al., Standard Template Library, <bits/stl_tree.h>
+ * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/Red–black_tree
  *
  * Thomas H. Cormen et al., Introduction to Algorithms, MIT Press, 1992,
  * pp. 263-280
@@ -31,7 +32,8 @@
  * Julienne Walker, "Red Black Trees",
  * http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
  *
- * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/Red–black_tree
+ * Free Software Foundation et al., Standard Template Library,
+ * include/bits/stl_tree.h
  */
 
 #include <stdio.h>
@@ -141,7 +143,8 @@ static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
     return nodep->root;
 }
 
-static inline void * diminuto_tree_data(diminuto_tree_t * nodep) {
+static inline void * diminuto_tree_data(diminuto_tree_t * nodep)
+{
     return nodep->data;
 }
 
@@ -229,10 +232,10 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
 }
 
 /*******************************************************************************
- * AUDITS
+ * AUDITORS
  ******************************************************************************/
 
-extern void diminuto_tree_print(FILE * fp, diminuto_tree_t * nodep);
+extern void diminuto_tree_log(diminuto_tree_t * nodep);
 
 extern diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp);
 

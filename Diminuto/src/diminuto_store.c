@@ -10,6 +10,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_store.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 
 /*******************************************************************************
@@ -104,16 +105,23 @@ diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_sto
     return insert_or_replace(rootp, nodep, comparefp, !0);
 }
 
+diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep)
+{
+    diminuto_tree_t * treep;
+    treep = diminuto_tree_remove(&(nodep->tree));
+    return diminuto_tree_isleaf(treep) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, treep);
+}
+
 /*******************************************************************************
  * AUDITS
  ******************************************************************************/
 
-void diminuto_store_print(FILE * fp, diminuto_store_t * nodep)
+void diminuto_store_log(diminuto_store_t * nodep)
 {
     if (nodep) {
-        diminuto_tree_print(fp, &(nodep->tree));
-        fprintf(fp, "diminuto_store%p: { key=%p value=%p }\n", nodep, nodep->key, nodep->value);
+        diminuto_tree_log(&(nodep->tree));
+        DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]: { key=%p value=%p }\n", nodep, sizeof(*nodep), nodep->key, nodep->value);
     } else {
-        fprintf(fp, "diminuto_store@%p\n", nodep);
+    	DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }
 }

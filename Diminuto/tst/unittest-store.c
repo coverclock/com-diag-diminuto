@@ -93,23 +93,38 @@ int main(void)
     {
         diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
         diminuto_store_t * nodep;
-        diminuto_store_t * resultp;
         diminuto_store_t target;
         ssize_t ii;
         list(&root);
-        ASSERT(diminuto_tree_isempty(&root));
+        ASSERT(diminuto_tree_audit(&root) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_last(&root) == DIMINUTO_STORE_NULL);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[ii]);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
-            EXPECT((resultp = diminuto_store_insert(&root, nodep, diminuto_store_compare_strings)) == nodep);
+            ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
         }
         list(&root);
+        ASSERT(diminuto_tree_audit(&root) == DIMINUTO_TREE_NULL);
+        ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
+            nodep = &(ALPHABET[ii]);
+            target.key = nodep->key;
+            ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
+            ASSERT(diminuto_store_remove(nodep) == nodep);
+            ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
+        }
+        list(&root);
+        ASSERT(diminuto_tree_audit(&root) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_store_isempty(&root));
+        ASSERT(diminuto_tree_isempty(&root));
+        ASSERT(diminuto_store_first(&root) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_last(&root) == DIMINUTO_STORE_NULL);
     }
 
     EXIT();

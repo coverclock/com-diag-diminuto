@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_list.h"
+#include "com/diag/diminuto/diminuto_log.h"
 
 /**
  * This is a private internal general reroot operator that reroots a range of
@@ -142,6 +143,16 @@ diminuto_list_t * diminuto_list_apply(
     return nodep;
 }
 
+void diminuto_list_log(
+	diminuto_list_t * nodep
+) {
+	if (nodep) {
+		DIMINUTO_LOG_DEBUG("diminuto_list_t@%p[%zu]: { next=%p prev=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->next, nodep->prev, nodep->root, nodep->data);
+	} else {
+		DIMINUTO_LOG_DEBUG("diminuto_list_t@%p[%zu]\n", nodep, sizeof(*nodep));
+	}
+}
+
 diminuto_list_t * diminuto_list_audit(
 	diminuto_list_t * nodep
 ) {
@@ -150,9 +161,13 @@ diminuto_list_t * diminuto_list_audit(
 	diminuto_list_t * prevp = nodep;
 	while (!0) {
 		if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
+			DIMINUTO_LOG_DEBUG("%s@%d: diminuto_list_audit FAILED!\n", __FILE__, __LINE__);
+			diminuto_list_log(nextp);
 			nodep = nextp;
 			break;
 		} else if ((prevp->root != rootp) || (prevp->prev->next != prevp) || (prevp->next->prev != prevp)) {
+			DIMINUTO_LOG_DEBUG("%s@%d: diminuto_list_audit FAILED!\n", __FILE__, __LINE__);
+			diminuto_list_log(prevp);
 			nodep = prevp;
 			break;
 		} else if ((nextp = nextp->next) == (prevp = prevp->prev)) {

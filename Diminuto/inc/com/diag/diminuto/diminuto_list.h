@@ -129,7 +129,7 @@ typedef int (diminuto_list_functor_t)(
 #define DIMINUTO_LIST_NULL ((diminuto_list_t *)0)
 
 /*******************************************************************************
- * CODE GENERATORS
+ * GENERATORS
  ******************************************************************************/
 
 /**
@@ -148,7 +148,7 @@ typedef int (diminuto_list_functor_t)(
     DIMINUTO_LIST_DATAINIT(_NODEP_, (void *)0)
 
 /*******************************************************************************
- * PRIMITIVE OPERATIONS
+ * MUTATORS
  ******************************************************************************/
 
 /**
@@ -248,6 +248,18 @@ extern diminuto_list_t * diminuto_list_apply(
     diminuto_list_functor_t * funcp,
     diminuto_list_t * nodep,
     void * contextp
+);
+
+/*******************************************************************************
+ * AUDITORS
+ ******************************************************************************/
+
+/**
+ * Log details about a list node.
+ * @param nodep points to a node.
+ */
+extern void diminuto_list_log(
+    diminuto_list_t * nodep
 );
 
 /**
@@ -369,7 +381,7 @@ static inline void * diminuto_list_data(
 }
 
 /*******************************************************************************
- * QUERIES
+ * CONDITIONALS
  ******************************************************************************/
 
 /**

@@ -54,11 +54,12 @@ static int diminuto_unittest_errors = 0;
  * or a non-zero exit code if there are.
  */
 #define EXIT() \
-	do { \
-		fflush(stdout); \
-		fflush(stderr); \
-		exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
-	} while (0)
+    do { \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "EXIT(): errors=%d %s\n", __FILE__, __LINE__, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        fflush(stdout); \
+        fflush(stderr); \
+        exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
+    } while (0)
 
 /**
  * @def ADVISE(_COND_)
