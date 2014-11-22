@@ -16,49 +16,65 @@
 
 #if 0
 
-#	warning backtrace(3) not implemented on this platform!
+#   warning backtrace(3) not implemented on this platform!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
-	errno = EPERM;
+    errno = EPERM;
     return -1;
 }
 
 int diminuto_stacktrace()
 {
-	errno = EPERM;
+    errno = EPERM;
     return -1;
 }
 
 #elif defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
 
-#	warning backtrace(3) not implemented in uClibc!
+#   warning backtrace(3) not implemented in uClibc!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
-	errno = EPERM;
+    errno = EPERM;
     return -1;
 }
 
 int diminuto_stacktrace()
 {
-	errno = EPERM;
+    errno = EPERM;
     return -1;
 }
 
 #elif defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
-#	warning backtrace(3) not implemented in Bionic!
+#   warning backtrace(3) not implemented in Bionic!
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
-	errno = EPERM;
+    errno = EPERM;
     return -1;
 }
 
 int diminuto_stacktrace()
 {
-	errno = EPERM;
+    errno = EPERM;
+    return -1;
+}
+
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
+
+#   warning backtrace(3) not implemented in Cygwin!
+
+int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
+{
+    errno = EPERM;
+    return -1;
+}
+
+int diminuto_stacktrace()
+{
+    errno = EPERM;
     return -1;
 }
 
@@ -70,7 +86,7 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     int rc;
     backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
-	return rc;
+return rc;
 }
 
 int diminuto_stacktrace()

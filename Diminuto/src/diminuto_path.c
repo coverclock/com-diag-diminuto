@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
+#include <sys/param.h>
 
 char * diminuto_path_scan(const char * string, const char * file)
 {

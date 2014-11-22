@@ -17,7 +17,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <linux/limits.h>
+#include <sys/param.h>
 
 static const char TMP[] = "/tmp";
 

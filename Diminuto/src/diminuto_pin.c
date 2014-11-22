@@ -15,7 +15,7 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
-#include <linux/limits.h>
+#include <sys/param.h>
 
 static const char ROOT[] = "/sys";
 

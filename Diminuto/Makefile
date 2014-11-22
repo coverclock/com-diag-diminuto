@@ -26,6 +26,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
+#TARGET				:=	schoolmarm# Windows 8.1 Pro running Ubuntu Cygwin 2.850.
 
 MAJOR				:=	25# API changes that may require that applications be modified.
 MINOR				:=	6# Only functionality or features added with no legacy API changes.

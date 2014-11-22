@@ -11,18 +11,27 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#undef COM_DIAG_DIMINUTO_PLATFORM
 #undef COM_DIAG_DIMINUTO_PLATFORM_KERNEL
 #undef COM_DIAG_DIMINUTO_PLATFORM_GLIBC
 #undef COM_DIAG_DIMINUTO_PLATFORM_UCLIBC
 #undef COM_DIAG_DIMINUTO_PLATFORM_BIONIC
+#undef COM_DIAG_DIMINUTO_PLATFORM_CYGWIN
 
-#if defined(__KERNEL__) || defined(MODULE)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM)
 
-#	include <linux/version.h>
+    /* COM_DIAG_DIMINUTO_PLATFORM explicitly defined. */
+
+#elif defined(__KERNEL__) || defined(MODULE)
+
+#   include <linux/version.h>
 
 #   define COM_DIAG_DIMINUTO_PLATFORM_KERNEL (LINUX_VERSION_CODE)
 #   define COM_DIAG_DIMINUTO_PLATFORM "kernel"
+
+#elif defined(__CYGWIN__)
+
+#   define COM_DIAG_DIMINUTO_PLATFORM_CYGWIN (!0)
+#   define COM_DIAG_DIMINUTO_PLATFORM "cygwin"
 
 #else
 

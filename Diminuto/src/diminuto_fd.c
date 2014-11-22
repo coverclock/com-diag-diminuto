@@ -11,16 +11,22 @@
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <asm/termios.h>
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
+#   include <asm/socket.h> /* FIONREAD */
+#   include <sys/ioctl.h> /* TIOCINQ */
+#else
+#   include <sys/ioctl.h> /* FIONREAD, TIOCINQ, which are the same ioctl. */
+#endif
 #if !defined(__USE_GNU)
-#	define __USE_GNU
-#	define UNDEF__USE_GNU
+#   define __USE_GNU
+#   define UNDEF__USE_GNU
 #endif
 #include <fcntl.h>
 #if defined(UNDEF__USE_GNU)
-#	undef __USE_GNU
+#   undef __USE_GNU
 #endif
 #include <unistd.h>
 #include <stdlib.h>
@@ -124,43 +130,50 @@ ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
 
 ssize_t diminuto_fd_readable(int fd)
 {
-	ssize_t result = -1;
-	int count;
+    ssize_t result = -1;
+    int request;
+    int count;
 
-	if (ioctl(fd, FIONREAD, &count) >= 0) {
-		result = count;
-	} else {
+    /*
+     * On some platforms, TIOCINQ and FIONREAD are the same ioctl. Others, not.
+     */
+
+    request = isatty(fd) ? TIOCINQ : FIONREAD;
+
+    if (ioctl(fd, request, &count) >= 0) {
+        result = count;
+    } else {
         diminuto_perror("diminuto_fd_readable: ioctl");
-	}
+    }
 
-	return result;
+    return result;
 }
 
 size_t diminuto_fd_count(void)
 {
-	long count;
+    long count;
 
-	count = sysconf(_SC_OPEN_MAX);
+    count = sysconf(_SC_OPEN_MAX);
 
-	return (count >= 0) ? count : 0;
+    return (count >= 0) ? count : 0;
 }
 
 diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
 {
-	diminuto_fd_map_t * mapp;
-	size_t size;
+    diminuto_fd_map_t * mapp;
+    size_t size;
 
-	size = count * sizeof(mapp->data);
-	mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) - sizeof(mapp->data) + size);
-	mapp->count = count;
-	memset(&mapp->data, 0, size);
+    size = count * sizeof(mapp->data);
+    mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) - sizeof(mapp->data) + size);
+    mapp->count = count;
+    memset(&mapp->data, 0, size);
 
-	return mapp;
+    return mapp;
 }
 
 void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd)
 {
-	return ((0 <= fd) && (fd < mapp->count)) ? &mapp->data[fd] : (void **)0;
+    return ((0 <= fd) && (fd < mapp->count)) ? &mapp->data[fd] : (void **)0;
 }
 
 void * diminuto_fd_direct_alloc(size_t size)
