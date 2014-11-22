@@ -56,6 +56,35 @@ static diminuto_store_t ALPHABET[] = {
     DIMINUTO_STORE_KEYVALUEINIT("ZULU", "26"),
 };
 
+static diminuto_store_t ALFABIT[] = {
+	    DIMINUTO_STORE_KEYVALUEINIT("ALFA", "1"),
+	    DIMINUTO_STORE_KEYVALUEINIT("BRAVO", "2"),
+	    DIMINUTO_STORE_KEYVALUEINIT("CHARLIE", "3"),
+	    DIMINUTO_STORE_KEYVALUEINIT("DELTA", "4"),
+	    DIMINUTO_STORE_KEYVALUEINIT("ECHO", "5"),
+	    DIMINUTO_STORE_KEYVALUEINIT("FOXTROT", "6"),
+	    DIMINUTO_STORE_KEYVALUEINIT("GOLF", "7"),
+	    DIMINUTO_STORE_KEYVALUEINIT("HOTEL", "8"),
+	    DIMINUTO_STORE_KEYVALUEINIT("INDIA", "9"),
+	    DIMINUTO_STORE_KEYVALUEINIT("JULIETT", "10"),
+	    DIMINUTO_STORE_KEYVALUEINIT("KILO", "11"),
+	    DIMINUTO_STORE_KEYVALUEINIT("LIMO", "12"),
+	    DIMINUTO_STORE_KEYVALUEINIT("MIKE", "13"),
+	    DIMINUTO_STORE_KEYVALUEINIT("NOVEMBER", "14"),
+	    DIMINUTO_STORE_KEYVALUEINIT("OSCAR", "15"),
+	    DIMINUTO_STORE_KEYVALUEINIT("PAPA", "16"),
+	    DIMINUTO_STORE_KEYVALUEINIT("QUEBEC", "17"),
+	    DIMINUTO_STORE_KEYVALUEINIT("ROMEO", "18"),
+	    DIMINUTO_STORE_KEYVALUEINIT("SIERRA", "19"),
+	    DIMINUTO_STORE_KEYVALUEINIT("TANGO", "20"),
+	    DIMINUTO_STORE_KEYVALUEINIT("UNIFORM", "21"),
+	    DIMINUTO_STORE_KEYVALUEINIT("VICTOR", "22"),
+	    DIMINUTO_STORE_KEYVALUEINIT("WHISKEY", "23"),
+	    DIMINUTO_STORE_KEYVALUEINIT("XRAY", "24"),
+	    DIMINUTO_STORE_KEYVALUEINIT("YANKEE", "25"),
+	    DIMINUTO_STORE_KEYVALUEINIT("ZULU", "26"),
+};
+
 int main(void)
 {
 	SETLOGMASK();
@@ -105,6 +134,18 @@ int main(void)
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == nodep);
+            ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
+        }
+        list(&root);
+        ASSERT(diminuto_tree_audit(&root) == DIMINUTO_TREE_NULL);
+        ASSERT(!diminuto_store_isempty(&root));
+        ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
+        ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
+            nodep = &(ALPHABET[ii]);
+            target.key = nodep->key;
+            ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
+            ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
         }
         list(&root);
