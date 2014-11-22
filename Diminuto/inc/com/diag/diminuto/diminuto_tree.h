@@ -9,13 +9,14 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- * WORK IN PROGRESS!
  *
  * Implements a Red-Black Tree. I looked at all of the references below, but
  * the one I found the most useful was the one from the U-Boot boot loader,
  * which is a simplified version of the implementation in the Linux kernel.
  * This implementation is inspired by the U-Boot code, even though it looks
- * nothing like it.
+ * nothing like it. Since I wanted this to be a kind of reference implementation
+ * for my own use, I didn't make it as time or space efficient as the the
+ * implementations in U-Boot or the Linux Kernel.
  *
  * REFERENCES
  *

@@ -55,7 +55,7 @@ static int diminuto_unittest_errors = 0;
  */
 #define EXIT() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "EXIT(): errors=%d %s\n", __FILE__, __LINE__, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "EXIT(): errors=%d %s\n", diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
         exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
@@ -68,7 +68,7 @@ static int diminuto_unittest_errors = 0;
 #define ADVISE(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "!ADVISE(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "!ADVISE(" #_COND_ ")!\n"); \
         } \
     } while (0)
 
@@ -80,7 +80,7 @@ static int diminuto_unittest_errors = 0;
 #define EXPECT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "!EXPECT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "!EXPECT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
         } \
     } while (0)
@@ -93,7 +93,7 @@ static int diminuto_unittest_errors = 0;
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "!ASSERT(" #_COND_ ")!\n", __FILE__, __LINE__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "!ASSERT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
             EXIT(); \
         } \
