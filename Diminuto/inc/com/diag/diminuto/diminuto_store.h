@@ -18,6 +18,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
+#include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
 
 /*******************************************************************************
@@ -44,7 +45,7 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
  * CONDITIONALS
  ******************************************************************************/
 
-static inline int diminuto_store_isnull(diminuto_store_t * nodep)
+static inline int diminuto_store_ismissing(diminuto_store_t * nodep)
 {
     return (nodep == DIMINUTO_STORE_NULL);
 }
@@ -52,6 +53,20 @@ static inline int diminuto_store_isnull(diminuto_store_t * nodep)
 static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
 {
 	return diminuto_tree_isempty((diminuto_tree_t **)rootp);
+}
+
+/*******************************************************************************
+ * CASTS (PRIVATE)
+ ******************************************************************************/
+
+static inline diminuto_tree_t * diminuto_store_upcast(diminuto_store_t * pointer)
+{
+    return diminuto_store_ismissing(pointer) ? DIMINUTO_TREE_NULL : &(pointer->tree);
+}
+
+static inline diminuto_store_t * diminuto_store_downcast(diminuto_tree_t * pointer)
+{
+    return diminuto_tree_isleaf(pointer) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, pointer);
 }
 
 /*******************************************************************************
@@ -111,12 +126,12 @@ static inline diminuto_store_t * diminuto_store_last(diminuto_store_t ** rootp)
 
 static inline diminuto_store_t * diminuto_store_next(diminuto_store_t * nodep)
 {
-    return (diminuto_store_t *)diminuto_tree_next(&(nodep->tree));
+    return (diminuto_store_t *)diminuto_tree_next(diminuto_store_upcast(nodep));
 }
 
 static inline diminuto_store_t * diminuto_store_prev(diminuto_store_t * nodep)
 {
-    return (diminuto_store_t *)diminuto_tree_prev(&(nodep->tree));
+    return (diminuto_store_t *)diminuto_tree_prev(diminuto_store_upcast(nodep));
 }
 
 /*******************************************************************************
@@ -146,7 +161,7 @@ static inline diminuto_store_t * diminuto_store_keyvalueset(diminuto_store_t * n
 
 static inline diminuto_store_t * diminuto_store_init(diminuto_store_t * nodep)
 {
-    diminuto_tree_datainit(&(nodep->tree), nodep);
+    diminuto_tree_datainit(diminuto_store_upcast(nodep), nodep);
     /* We don't initialize the key and value fields because they doesn't belong to us. */
     return nodep;
 }

@@ -8,6 +8,10 @@
 
 # host: Windows 8.1 Pro running Ubuntu Cygwin 2.850.
 
+# To run the unit tests I had to copy the DLLs from the library directory
+# to the current directory, otherwise the shell couldn't find them. Still
+# trying to figure that one out. LD_LIBRARY_PATH seemed to have no effect.
+
 ARCH				:=	x86_64
 OS					:=	cygwin
 TOOLCHAIN			:=

@@ -9,7 +9,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_store.h"
-#include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 
@@ -33,13 +32,13 @@ static diminuto_store_t * find_close(diminuto_store_t * candidatep, diminuto_sto
         if (diminuto_tree_isleaf(candidatep->tree.right)) {
             return candidatep;
         } else {
-            return find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.right), targetp, comparefp, rcp);
+            return find_close(diminuto_store_downcast(candidatep->tree.right), targetp, comparefp, rcp);
         }
     } else if (*rcp > 0) {
         if (diminuto_tree_isleaf(candidatep->tree.left)) {
             return candidatep;
         } else {
-            return find_close(diminuto_containerof(diminuto_store_t, tree, candidatep->tree.left), targetp, comparefp, rcp);
+            return find_close(diminuto_store_downcast(candidatep->tree.left), targetp, comparefp, rcp);
         }
     } else {
         return candidatep;
@@ -53,13 +52,13 @@ static diminuto_store_t * insert_or_replace(diminuto_store_t ** rootp, diminuto_
     int rc;
 
     if (diminuto_store_isempty(rootp)) {
-        treep = diminuto_tree_insert_root(&(nodep->tree), (diminuto_tree_t **)rootp);
+        treep = diminuto_tree_insert_root(diminuto_store_upcast(nodep), (diminuto_tree_t **)rootp);
     } else {
-        storep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), nodep, comparefp, &rc);
+        storep = find_close(*rootp, nodep, comparefp, &rc);
         if (rc < 0) {
-            treep = diminuto_tree_insert_right(&(nodep->tree), &(storep->tree));
+            treep = diminuto_tree_insert_right(diminuto_store_upcast(nodep), diminuto_store_upcast(storep));
         } else if (rc > 0) {
-            treep = diminuto_tree_insert_left(&(nodep->tree), &(storep->tree));
+            treep = diminuto_tree_insert_left(diminuto_store_upcast(nodep), diminuto_store_upcast(storep));
         } else if (replace) {
             treep = diminuto_tree_replace(&(storep->tree), &(nodep->tree));
         } else {
@@ -67,7 +66,7 @@ static diminuto_store_t * insert_or_replace(diminuto_store_t ** rootp, diminuto_
         }
     }
 
-    return diminuto_tree_isleaf(treep) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, treep);
+    return diminuto_store_downcast(treep);
 }
 
 /*******************************************************************************
@@ -82,13 +81,10 @@ diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store
     if (diminuto_store_isempty(rootp)) {
         return DIMINUTO_STORE_NULL;
     } else {
-    	candidatep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), targetp, comparefp, &rc);
-        if (rc != 0) {
-            return DIMINUTO_STORE_NULL;
-        } else {
-        	return candidatep;
-        }
+        candidatep = find_close(diminuto_store_downcast(*rootp), targetp, comparefp, &rc);
+        return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
     }
+
 }
 
 /*******************************************************************************
@@ -107,9 +103,7 @@ diminuto_store_t * diminuto_store_replace(diminuto_store_t ** rootp, diminuto_st
 
 diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep)
 {
-    diminuto_tree_t * treep;
-    treep = diminuto_tree_remove(&(nodep->tree));
-    return diminuto_tree_isleaf(treep) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, treep);
+    return diminuto_store_downcast(diminuto_tree_remove(diminuto_store_upcast(nodep)));
 }
 
 /*******************************************************************************
@@ -119,7 +113,7 @@ diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep)
 void diminuto_store_log(diminuto_store_t * nodep)
 {
     if (nodep) {
-        diminuto_tree_log(&(nodep->tree));
+        diminuto_tree_log(diminuto_store_upcast(nodep));
         DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]: { key=%p value=%p }\n", nodep, sizeof(*nodep), nodep->key, nodep->value);
     } else {
     	DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]\n", nodep, sizeof(*nodep));
