@@ -9,18 +9,23 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * Uses a Red-Black tree, a kind of self-balancing binary tree, to implement
+ * a key-value store in memory, a kind of associative memory. The key and value
+ * can be anything that can be stored in, pointed to by, or mapped from a void
+ * pointer. The unit test uses character strings for both, which is a typical
+ * application.
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
-#include "com/diag/diminuto/diminuto_containerof.h"
 
 /*******************************************************************************
  * TYPES
  ******************************************************************************/
 
 typedef struct DiminutoStore {
-    diminuto_tree_t tree;
+    diminuto_tree_t tree;       /* This is effectively the base class so must be first. */
     void *          key;
     void *          value;
 } diminuto_store_t;
@@ -33,6 +38,8 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
 
 #define DIMINUTO_STORE_NULL ((diminuto_store_t *)0)
 
+#define DIMINUTO_STORE_EMPTY DIMINUTO_STORE_NULL
+
 /*******************************************************************************
  * CONDITIONALS
  ******************************************************************************/
@@ -42,9 +49,9 @@ static inline int diminuto_store_isnull(diminuto_store_t * nodep)
     return (nodep == DIMINUTO_STORE_NULL);
 }
 
-static inline int diminuto_store_isempty(diminuto_tree_t ** rootp)
+static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
 {
-	return diminuto_tree_isempty(rootp);
+	return diminuto_tree_isempty((diminuto_tree_t **)rootp);
 }
 
 /*******************************************************************************
@@ -76,15 +83,15 @@ extern int diminuto_store_compare_strings(const diminuto_store_t * thisp, const 
  * ACCESSORS
  ******************************************************************************/
 
-extern diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 /*******************************************************************************
  * MUTATORS
  ******************************************************************************/
 
-extern diminuto_store_t * diminuto_store_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_insert(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
-extern diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_replace(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
 
@@ -92,32 +99,24 @@ extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
  * ITERATORS
  ******************************************************************************/
 
-static inline diminuto_store_t * diminuto_store_first(diminuto_tree_t ** rootp)
+static inline diminuto_store_t * diminuto_store_first(diminuto_store_t ** rootp)
 {
-    diminuto_tree_t * treep;
-    treep = diminuto_tree_first(rootp);
-    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
+    return (diminuto_store_t *)diminuto_tree_first((diminuto_tree_t **)rootp);
 }
 
-static inline diminuto_store_t * diminuto_store_last(diminuto_tree_t ** rootp)
+static inline diminuto_store_t * diminuto_store_last(diminuto_store_t ** rootp)
 {
-    diminuto_tree_t * treep;
-    treep = diminuto_tree_last(rootp);
-    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
+    return (diminuto_store_t *)diminuto_tree_last((diminuto_tree_t **)rootp);
 }
 
 static inline diminuto_store_t * diminuto_store_next(diminuto_store_t * nodep)
 {
-    diminuto_tree_t * treep;
-    treep = diminuto_tree_next(&(nodep->tree));
-    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
+    return (diminuto_store_t *)diminuto_tree_next(&(nodep->tree));
 }
 
 static inline diminuto_store_t * diminuto_store_prev(diminuto_store_t * nodep)
 {
-    diminuto_tree_t * treep;
-    treep = diminuto_tree_prev(&(nodep->tree));
-    return (treep != DIMINUTO_TREE_NULL) ? diminuto_containerof(diminuto_store_t, tree, treep) : DIMINUTO_STORE_NULL;
+    return (diminuto_store_t *)diminuto_tree_prev(&(nodep->tree));
 }
 
 /*******************************************************************************
@@ -138,9 +137,7 @@ static inline diminuto_store_t * diminuto_store_valueset(diminuto_store_t * node
 
 static inline diminuto_store_t * diminuto_store_keyvalueset(diminuto_store_t * nodep, void * key, void * value)
 {
-    nodep->key = key;
-    nodep->value = value;
-    return nodep;
+    return diminuto_store_valueset(diminuto_store_keyset(nodep, key), value);
 }
 
 /*******************************************************************************
@@ -169,5 +166,10 @@ static inline diminuto_store_t * diminuto_store_nullinit(diminuto_store_t * node
  ******************************************************************************/
 
 extern void diminuto_store_log(diminuto_store_t * nodep);
+
+static inline diminuto_store_t *  diminuto_store_audit(diminuto_store_t ** rootp)
+{
+    return (diminuto_store_t *)diminuto_tree_audit((diminuto_tree_t **)rootp);
+}
 
 #endif

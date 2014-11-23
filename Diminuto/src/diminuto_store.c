@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_store.h"
+#include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 
@@ -45,14 +46,14 @@ static diminuto_store_t * find_close(diminuto_store_t * candidatep, diminuto_sto
     }
 }
 
-static diminuto_store_t * insert_or_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
+static diminuto_store_t * insert_or_replace(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
 {
 	diminuto_store_t * storep;
     diminuto_tree_t * treep;
     int rc;
 
-    if (diminuto_tree_isempty(rootp)) {
-        treep = diminuto_tree_insert_root(&(nodep->tree), rootp);
+    if (diminuto_store_isempty(rootp)) {
+        treep = diminuto_tree_insert_root(&(nodep->tree), (diminuto_tree_t **)rootp);
     } else {
         storep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), nodep, comparefp, &rc);
         if (rc < 0) {
@@ -73,12 +74,12 @@ static diminuto_store_t * insert_or_replace(diminuto_tree_t ** rootp, diminuto_s
  * PUBLIC ACCESSORS
  ******************************************************************************/
 
-diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp)
 {
     diminuto_store_t * candidatep;
     int rc;
 
-    if (diminuto_tree_isempty(rootp)) {
+    if (diminuto_store_isempty(rootp)) {
         return DIMINUTO_STORE_NULL;
     } else {
     	candidatep = find_close(diminuto_containerof(diminuto_store_t, tree, *rootp), targetp, comparefp, &rc);
@@ -94,12 +95,12 @@ diminuto_store_t * diminuto_store_find(diminuto_tree_t ** rootp, diminuto_store_
  * PUBLIC MUTATORS
  ******************************************************************************/
 
-diminuto_store_t * diminuto_store_insert(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_insert(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
 {
     return insert_or_replace(rootp, nodep, comparefp, 0);
 }
 
-diminuto_store_t * diminuto_store_replace(diminuto_tree_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+diminuto_store_t * diminuto_store_replace(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
 {
     return insert_or_replace(rootp, nodep, comparefp, !0);
 }
