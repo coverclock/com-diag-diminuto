@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -18,7 +18,7 @@
 #   include <asm/socket.h> /* FIONREAD */
 #   include <sys/ioctl.h> /* TIOCINQ */
 #else
-#   include <sys/ioctl.h> /* FIONREAD, TIOCINQ, which are the same ioctl. */
+#   include <sys/ioctl.h> /* FIONREAD, TIOCINQ */
 #endif
 #if !defined(__USE_GNU)
 #   define __USE_GNU

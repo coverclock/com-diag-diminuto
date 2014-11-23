@@ -26,10 +26,10 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
-#TARGET				:=	schoolmarm# Windows 8.1 Pro running Ubuntu Cygwin 2.850.
+#TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
 
-MAJOR				:=	25# API changes that may require that applications be modified.
-MINOR				:=	6# Only functionality or features added with no legacy API changes.
+MAJOR				:=	26# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
@@ -98,14 +98,6 @@ SVNREPO				:=	svn://graphite/$(PROJECT)
 SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
-PROJECT_A			:=	lib$(PROJECT).a
-PROJECTXX_A			:=	lib$(PROJECT)xx.a
-PROJECT_SO			:=	lib$(PROJECT).so
-PROJECTXX_SO		:=	lib$(PROJECT)xx.so
-
-PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
-PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
-
 GENERATED			:=	vintage setup generate
 SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h
 
@@ -120,7 +112,17 @@ MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) 
 
 DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
+SO					:= so
+
 include $(CFG_DIR)/$(TARGET).mk
+
+PROJECT_A			:=	lib$(PROJECT).a
+PROJECTXX_A			:=	lib$(PROJECT)xx.a
+PROJECT_SO			:=	lib$(PROJECT).$(SO)
+PROJECTXX_SO		:=	lib$(PROJECT)xx.$(SO)
+
+PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
+PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
 
 ########## Commands and Option Flags
 
@@ -157,7 +159,7 @@ BROWSER				:=	firefox
 TARGETOBJECTS		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
 TARGETOBJECTSXX		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
 TARGETDRIVERS		:=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
-TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .so,$(basename $(wildcard $(MOD_DIR)/*.c))))
+TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .$(SO),$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
 TARGETBINARIES		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED))
@@ -259,17 +261,17 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
 	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CFLAGS) -shared -Wl,-soname,lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CFLAGS) -shared -Wl,-soname,lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
 ########## Target C++ Libraries
@@ -279,17 +281,17 @@ $(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CXXFLAGS) -shared -Wl,-soname,lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOXXFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).so.$(MAJOR).$(MINOR).$(BUILD)
+	$(CXX) $(CXXFLAGS) -shared -Wl,-soname,lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOXXFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so:	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.so.$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
 
 ########## Target Unstripped Binaries
@@ -476,11 +478,11 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 
 LDWHOLEARCHIVES := # These archives will be linked into the shared object in their entirety.
 
-$(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.c
+$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.c
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -shared -o $@ $< $(MOFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
-$(OUT)/$(MOD_DIR)/%.so:	$(MOD_DIR)/%.cpp
+$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.cpp
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $< $(MOXXFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
@@ -619,7 +621,7 @@ DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 depend:	$(TARGETSYNTHESIZED)
 	M=`dirname $(DEPENDENCIES)`; mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(SRC_DIR) $(TST_DIR) $(MOD_DIR); do \
+	for S in $(BIN_DIR) $(MOD_DIR) $(SRC_DIR) $(TST_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \

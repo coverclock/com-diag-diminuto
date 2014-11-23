@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,7 +26,22 @@
  ******************************************************************************/
 
 #include "com/diag/diminuto/diminuto_datum.h"
-#include <asm/ioctl.h>
+#include "com/diag/diminuto/diminuto_platform.h"
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
+#   include <asm/ioctl.h>
+#else
+#   if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
+#      if !defined(__USE_LINUX_IOCTL_DEFS)
+#          define __USE_LINUX_IOCTL_DEFS
+#          define COM_DIAG_DIMINUTO_MMDRIVER_UNDEF__USE_LINUX_IOCTL_DEFS
+#      endif
+#   endif
+#   include <sys/ioctl.h>
+#   if defined(COM_DIAG_DIMINUTO_MMDRIVER_UNDEF__USE_LINUX_IOCTL_DEFS)
+#      undef __USE_LINUX_IOCTL_DEFS
+#      undef COM_DIAG_DIMINUTO_MMDRIVER_UNDEF__USE_LINUX_IOCTL_DEFS
+#   endif
+#endif
 
 /*******************************************************************************
  *  MANIFEST CONSTANTS
@@ -62,7 +77,7 @@ typedef struct DiminutoMmDriverOp {
 /*******************************************************************************
  *  I/O CONTROL COMMANDS
  ******************************************************************************/
-    
+
 /**
  * @def DIMINUTO_MMDRIVER_READ
  *
