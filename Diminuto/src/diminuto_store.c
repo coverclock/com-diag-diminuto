@@ -81,7 +81,7 @@ diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store
     if (diminuto_store_isempty(rootp)) {
         return DIMINUTO_STORE_NULL;
     } else {
-        candidatep = find_close(diminuto_store_downcast(*rootp), targetp, comparefp, &rc);
+        candidatep = find_close(*rootp, targetp, comparefp, &rc);
         return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
     }
 

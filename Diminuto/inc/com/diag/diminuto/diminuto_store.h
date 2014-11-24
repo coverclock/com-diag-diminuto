@@ -42,6 +42,15 @@ typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminu
 #define DIMINUTO_STORE_EMPTY DIMINUTO_STORE_NULL
 
 /*******************************************************************************
+ * CASTS (PRIVATE)
+ ******************************************************************************/
+
+static inline diminuto_tree_t ** diminuto_store_rootcast(diminuto_store_t ** pointer)
+{
+    return (diminuto_tree_t **)pointer;
+}
+
+/*******************************************************************************
  * CONDITIONALS
  ******************************************************************************/
 
@@ -52,11 +61,11 @@ static inline int diminuto_store_ismissing(diminuto_store_t * nodep)
 
 static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
 {
-	return diminuto_tree_isempty((diminuto_tree_t **)rootp);
+	return diminuto_tree_isempty(diminuto_store_rootcast(rootp));
 }
 
 /*******************************************************************************
- * CASTS (PRIVATE)
+ * MORE CASTS (PRIVATE)
  ******************************************************************************/
 
 static inline diminuto_tree_t * diminuto_store_upcast(diminuto_store_t * pointer)
@@ -116,22 +125,22 @@ extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
 
 static inline diminuto_store_t * diminuto_store_first(diminuto_store_t ** rootp)
 {
-    return (diminuto_store_t *)diminuto_tree_first((diminuto_tree_t **)rootp);
+    return diminuto_store_downcast(diminuto_tree_first(diminuto_store_rootcast(rootp)));
 }
 
 static inline diminuto_store_t * diminuto_store_last(diminuto_store_t ** rootp)
 {
-    return (diminuto_store_t *)diminuto_tree_last((diminuto_tree_t **)rootp);
+    return diminuto_store_downcast(diminuto_tree_last(diminuto_store_rootcast(rootp)));
 }
 
 static inline diminuto_store_t * diminuto_store_next(diminuto_store_t * nodep)
 {
-    return (diminuto_store_t *)diminuto_tree_next(diminuto_store_upcast(nodep));
+    return diminuto_store_downcast(diminuto_tree_next(diminuto_store_upcast(nodep)));
 }
 
 static inline diminuto_store_t * diminuto_store_prev(diminuto_store_t * nodep)
 {
-    return (diminuto_store_t *)diminuto_tree_prev(diminuto_store_upcast(nodep));
+    return diminuto_store_downcast(diminuto_tree_prev(diminuto_store_upcast(nodep)));
 }
 
 /*******************************************************************************
