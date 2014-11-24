@@ -91,6 +91,36 @@ int main(void)
 
     {
         ASSERT(DIMINUTO_STORE_NULL == (diminuto_store_t *)0);
+        ASSERT(DIMINUTO_STORE_EMPTY == (diminuto_store_t *)0);
+    }
+
+    {
+        diminuto_store_t first = DIMINUTO_STORE_NULLINIT;
+        char KEY[] = "key";
+        char VALUE[] = "value";
+        ASSERT(diminuto_store_keyget(&first) == (void *)0);
+        ASSERT(diminuto_store_valueget(&first) == (void *)0);
+        diminuto_store_keyvalueinit(&first, KEY, VALUE);
+        ASSERT(diminuto_store_keyget(&first) == KEY);
+        ASSERT(diminuto_store_valueget(&first) == VALUE);
+        diminuto_store_init(&first);
+        ASSERT(diminuto_store_keyget(&first) == KEY);
+        ASSERT(diminuto_store_valueget(&first) == VALUE);
+        diminuto_store_nullinit(&first);
+        ASSERT(diminuto_store_keyget(&first) == (void *)0);
+        ASSERT(diminuto_store_valueget(&first) == (void *)0);
+        diminuto_store_keyset(&first, KEY);
+        ASSERT(diminuto_store_keyget(&first) == KEY);
+        ASSERT(diminuto_store_valueget(&first) == (void *)0);
+        diminuto_store_valueset(&first, VALUE);
+        ASSERT(diminuto_store_keyget(&first) == KEY);
+        ASSERT(diminuto_store_valueget(&first) == VALUE);
+        diminuto_store_nullinit(&first);
+        ASSERT(diminuto_store_keyget(&first) == (void *)0);
+        ASSERT(diminuto_store_valueget(&first) == (void *)0);
+        diminuto_store_keyvalueset(&first, KEY, VALUE);
+        ASSERT(diminuto_store_keyget(&first) == KEY);
+        ASSERT(diminuto_store_valueget(&first) == VALUE);
     }
 
     {
