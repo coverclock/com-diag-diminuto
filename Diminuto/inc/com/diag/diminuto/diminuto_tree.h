@@ -12,7 +12,8 @@
  *
  * Implements a Red-Black Tree. This is intended to be used to build more
  * complex data structures, such as those have associative-memory-like
- * properties. See diminuto_store for a more complete solution.
+ * properties. See diminuto_store and its unit test for a more complete
+ * solution.
  *
  * I looked at all of the references below, but the one I found the most useful
  * was the one from the U-Boot boot loader, which is a simplified version of the
@@ -46,16 +47,26 @@
  * TYPES
  ******************************************************************************/
 
+/**
+ * This enumerates the two possible node colors: red or black. Every node is
+ * either red or black; every leaf (that is, a null pointer to a non-existent
+ * node) is black; and if a node is red, then both its children are black.
+ */
 typedef enum DiminutoTreeColor {
     DIMINUTO_TREE_COLOR_RED = 0,
     DIMINUTO_TREE_COLOR_BLACK = 1
 } diminuto_tree_color_t;
 
-/*
- * This structure has a lot of wasted space. The Linux implementation (from
- * which U-Boot borrows) uses a trick I've used myself in the past: hide
- * the color bit in the otherwise unused lowest order bit of one of the
- * pointers. The down side is that you now have an invalid pointer value
+/**
+ * This structure describes a node in the tree. Each node has a color (red or
+ * black), a parent, a left and a right pointer (which, if both are null, the
+ * node is a leaf), a pointer back to the root of the three (so two nodes in
+ * the same tree will always point to the same node), and a pointer to a
+ * payload (which may or may not be used, or may containing something other
+ * than a pointer). This structure has a lot of wasted space. The Linux
+ * implementation (from which U-Boot borrows) uses a trick I've used myself in
+ * the past: hide the color bit in the otherwise unused lowest order bit of one
+ * of the pointers. The down side is that you now have an invalid pointer value
  * that you have to deal with. I chose not to do that for this code since my
  * goal here is to understand Red-Black trees. But if I were porting this
  * implementation to a commercial system, I might maybe change it to be more
@@ -74,10 +85,22 @@ typedef struct DiminutoTree {
  * CONSTANTS
  ******************************************************************************/
 
+/**
+ * @def DIMINUTO_TREE_NULL
+ * This is what a null pointer in the node looks like.
+ */
 #define DIMINUTO_TREE_NULL ((diminuto_tree_t *)0)
 
+/**
+ * @def DIMINUTO_TREE_EMPTY
+ * If a tree is empty, this is the value its root will have.
+ */
 #define DIMINUTO_TREE_EMPTY DIMINUTO_TREE_NULL
 
+/**
+ * @def DIMINUTO_TREE_ORPHAN
+ * If a node is not on a tree, this is the value its root pointer will have.
+ */
 #define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
 
 /*******************************************************************************
@@ -103,88 +126,208 @@ typedef struct DiminutoTree {
  * ITERATORS
  ******************************************************************************/
 
+/**
+ * Return the pointer to the first node on the tree (in terms of a depth first
+ * left to right search), or null if the tree is empty.
+ * @param rootp is the pointer to the root pointer of the tree.
+ * @return a pointer to the first node on the tree or null if none.
+ */
 extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);
 
+/**
+ * Return the pointer to the last node on the tree (in terms of a depth first
+ * left to right search), or null if the tree is empty.
+ * @param rootp is the pointer to the root pointer of the tree.
+ * @return a pointer to the last node on the tree or null if none.
+ */
 extern diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp);
 
+/**
+ * Given a pointer to a node on the tree, return a pointer to the next node
+ * on the tree (in terms of a depth first left to right search), or null if
+ * the given node is the last node.
+ * @param nodep is a pointer to a node on the tree.
+ * @return a pointer to the next node on the tree or null if none.
+ */
 extern diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep);
 
+/**
+ * Given a pointer to a node on the tree, return a pointer to the previous node
+ * on the tree (in terms of a depth first left to right search), or null if
+ * the given node is the first node.
+ * @param nodep is a pointer to a node on the tree.
+ * @return a pointer to the previous node on the tree or null if none.
+ */
 extern diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep);
 
 /*******************************************************************************
  * MUTATORS
  ******************************************************************************/
 
+/**
+ * Insert an orphaned node either to the left of an existing node on the tree
+ * (which will become the parent of the orphaned node) or as the root of the
+ * tree if the tree is empty (in which case there is no parent node). There
+ * must be no node to the left of the parent if the parent exists.
+ * @param nodep is a pointer to the orphaned node to be inserted.
+ * @param parentp is a pointer to  the parent node on the tree or null if none.
+ * @param rootp is a pointer to the root pointer of the tree.
+ * @return a pointer to the newly inserted node or null if error.
+ */
 extern diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
+/**
+ * Insert an orphaned node either to the right of an existing node on the tree
+ * (which will become the parent of the orphaned node) or as the root of the
+ * tree if the tree is empty (in which case there is no parent node). There
+ * must be no node to the right of the parent if the parent exists.
+ * @param nodep is a pointer to the orphaned node to be inserted.
+ * @param parentp is a pointer to  the parent node on the tree or null if none.
+ * @param rootp is a pointer to the root pointer of the tree.
+ * @return a pointer to the newly inserted node or null if error.
+ */
 extern diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
 
+/**
+ * Remove a node from the tree.
+ * @param nodep is a pointer to the node to be removed.
+ * @return a pointer to the newly orphaned node or null if error.
+ */
 extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 
+/**
+ * Replacing an existing (old) node on the tree with a orphaned (new) node.
+ * @param oldp is a pointer to the existing node.
+ * @param newp is a pointer to the orphaned node.
+ * @return a pointer to the newly inserted (new) node or null if error.
+ */
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
  * GETTORS
  ******************************************************************************/
 
+/**
+ * Return a pointer to the parent of a node on the tree.
+ * @param nodep is a pointer to an existing node.
+ * @return a pointer to the parent of the existing node.
+ */
 static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep)
 {
     return nodep->parent;
 }
 
+/**
+ * Return a pointer to the left child of a node on the tree.
+ * @param nodep is a pointer to an existing node.
+ * @return a pointer to the left child of the existing node.
+ */
 static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep)
 {
     return nodep->left;
 }
 
+/**
+ * Return a pointer to the right child of a node on the tree.
+ * @param nodep is a pointer to an existing node.
+ * @return a pointer to the right child of the existing node.
+ */
 static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep)
 {
     return nodep->right;
 }
 
+/**
+ * Return a pointer to the root pointer of the tree on which an existing node
+ * resides.
+ * @param nodep is a pointer to an existing node.
+ * @return a pointer to the root pointer of the tree of the existing node.
+ */
 static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
 {
     return nodep->root;
 }
 
+/**
+ * Return a pointer to the data (payload) of a node on the tree.
+ * @param nodep is a pointer to an existing node.
+ * @return a pointer to the data (payload) of the existing node.
+ */
 static inline void * diminuto_tree_data(diminuto_tree_t * nodep)
 {
     return nodep->data;
 }
 
 /*******************************************************************************
- * CONDITIONALS
+ * PUBLIC CONDITIONALS
  ******************************************************************************/
 
+/**
+ * Return true of a tree is empty.
+ * @param rootp is a pointer to the root pointer of the tree.
+ * @return true if the tree is empty.
+ */
 static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
 {
     return (*rootp == DIMINUTO_TREE_EMPTY);
 }
 
+/**
+ * Return true of a node is a leaf (that is, its pointer is null).
+ * @param rootp is a pointer a node, which may be null.
+ * @return true if the node is a leaf.
+ */
 static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
 {
     return (nodep == DIMINUTO_TREE_NULL);
 }
 
+/**
+ * Return true if a node is an orphan (that is, not presently on a tree).
+ * @param nodep is a pointer to a node.
+ * @return true if the node is an orphan.
+ */
 static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
 {
 	return (diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
 }
 
+/*******************************************************************************
+ * PRIVATE CONDITIONALS
+ ******************************************************************************/
+
+/**
+ * Return true if a node is colored red. (This is not part of the public API
+ * and is only exposed for unit testing).
+ * @param nodep is a pointer to a node on the tree.
+ * @return true if the node is colored red.
+ */
 static inline int diminuto_tree_isred(diminuto_tree_t * nodep)
 {
-    return (nodep->color == DIMINUTO_TREE_COLOR_RED); /* Exposed for unit testing. */
+    return (nodep->color == DIMINUTO_TREE_COLOR_RED);
 }
 
+/**
+ * Return true if a node is colored black. (This is not part of the public API
+ * and is only exposed for unit testing).
+ * @param nodep is a pointer to a node on the tree.
+ * @return true if the node is colored red.
+ */
 static inline int diminuto_tree_isblack(diminuto_tree_t * nodep)
 {
-    return (nodep->color == DIMINUTO_TREE_COLOR_BLACK); /* Exposed for unit testing. */
+    return (nodep->color == DIMINUTO_TREE_COLOR_BLACK);
 }
 
 /*******************************************************************************
  * SETTORS
  ******************************************************************************/
 
+/**
+ * Set the data (payload) pointer in a node. The node may be on a tree or may
+ * be orphaned.
+ * @param nodep is a pointer to a node.
+ * @param datap is the payload to be stored in the node.
+ */
 static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, void * datap)
 {
     nodep->data = datap;
@@ -195,6 +338,13 @@ static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, v
  * INITIALIZERS
  ******************************************************************************/
 
+/**
+ * Initialize a node to its orphaned state. (If you do this to a node on the
+ * tree and then try to use the tree, wackiness will ensue.) The data (payload)
+ * field is not modified.
+ * @param nodep is a pointer to a node.
+ * @return a pointer to the same node.
+ */
 static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)
 {
     nodep->color = DIMINUTO_TREE_COLOR_RED;
@@ -206,11 +356,26 @@ static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)
     return nodep;
 }
 
+/**
+ * Initialize a node to its orphaned state and initialize its data (payload)
+ * pointer. (If you do this to a node on the tree and then try to use the tree,
+ * wackiness will ensue.)
+ * @param nodep is a pointer to a node.
+ * @param datap is the payload to be stored in the node.
+ * @return a pointer to the same node.
+ */
 static inline diminuto_tree_t * diminuto_tree_datainit(diminuto_tree_t * nodep, void * datap)
 {
     return diminuto_tree_dataset(diminuto_tree_init(nodep), datap);
 }
 
+/**
+ * Initialize a node to its orphaned state and initialize its data (payload)
+ * pointer to null. (If you do this to a node on the tree and then try to use
+ * the tree, wackiness will ensue.)
+ * @param nodep is a pointer to a node.
+ * @return a pointer to the same node.
+ */
 static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
 {
     return diminuto_tree_datainit(nodep, (void *)0);
@@ -220,16 +385,36 @@ static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
  * HELPERS
  ******************************************************************************/
 
+/**
+ * Insert an orphaned node onto the an empty tree.
+ * @param nodep is a pointer to an orphaned node.
+ * @param rootp is a pointer to the root pointer of the empty tree.
+ * @return a pointer to the newly inserted node or null if error.
+ */
 static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_t **rootp)
 {
     return diminuto_tree_insert_left_or_root(nodep, DIMINUTO_TREE_NULL, rootp);
 }
 
+/**
+ * Insert an orphaned node to the left of a parent node on the tree. The parent
+ * must have no child to its left.
+ * @param nodep is a pointer to an orphaned node.
+ * @param parentp is a pointer to the parent node on the tree.
+ * @return a pointer to the newly inserted node. or null if error
+ */
 static inline diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
 {
     return diminuto_tree_insert_left_or_root(nodep, parentp, diminuto_tree_root(parentp));
 }
 
+/**
+ * Insert an orphaned node to the right of a parent node on the tree. The parent
+ * must have no child to its right.
+ * @param nodep is a pointer to an orphaned node.
+ * @param parentp is a pointer to the parent node on the tree.
+ * @return a pointer to the newly inserted node. or null if error
+ */
 static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
 {
     return diminuto_tree_insert_right_or_root(nodep, parentp, diminuto_tree_root(parentp));
@@ -239,8 +424,20 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
  * AUDITORS
  ******************************************************************************/
 
+/**
+ * Display a node (which may or may not be on a tree or may be a leaf) to the
+ * log.
+ * @param nodep is a pointer to a node.
+ */
 extern void diminuto_tree_log(diminuto_tree_t * nodep);
 
+/**
+ * Audit a tree. The audit recursively walks the entire tree depth first, left
+ * to right, checking all of the pointers, all of the colors, and also checks
+ * the balance of the tree. It does not examine the data (payload) pointer.
+ * @param rootp is a pointer to a pointer to the root of the tree.
+ * @return a pointer to the first node at which an error was found or null.
+ */
 extern diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp);
 
 #endif
