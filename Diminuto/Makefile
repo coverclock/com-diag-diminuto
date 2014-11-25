@@ -15,7 +15,7 @@
 
 TITLE				:=	Diminuto
 
-# Disclaimer: the only target that I routinely build and test on is "host", my
+# Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
 # on all of these other targets at one time or another, the current version has
 # only been tested on whatever project I'm currently working on. The targets
@@ -37,7 +37,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 
 MAJOR				:=	26# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -53,6 +53,7 @@ BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 # images with subsequent builds of Diminuto. This string is embedded inside the
 # Diminuto "vintage" application. The default build time stamp is an ISO-8601
 # complaint string with the time specified in UTC with nanosecond resolution.
+
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
@@ -368,6 +369,7 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # echo statements seems to depend on whether you are running make 3.81 or prior
 # versus make 3.82 or after. Since my build host runs Ubuntu 14.04 UTS with
 # make 3.81, that's what I'm sticking with. Nothing is ever simple.
+
 $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
