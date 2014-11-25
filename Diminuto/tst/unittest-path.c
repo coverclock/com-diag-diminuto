@@ -16,31 +16,34 @@
 #include <stdlib.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_path.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 
 static const char PATH[] = "/usr/sbin:/usr/bin:/sbin:/bin:/system/bin:/system/xbin";
 
 int main(int argc, char ** argv)
 {
 	char * result;
+	char * alternative;
 
 	/*
 	 * I tried to pick stuff that an embedded Linux system was likely to have
-	 * so that this could be run on the target.
+	 * so that this could be run on the target. Platforms like Android and
+	 * Cygwin put these executables in different places from Ubuntu.
 	 */
 
 	result = diminuto_path_scan(PATH, "ls");
 	ASSERT(result != (char *)0);
-	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0));
+	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0) || (strcmp(result, "/usr/bin/ls") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "ls");
 	ASSERT(result != (char *)0);
-	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0));
+	EXPECT((strcmp(result, "/bin/ls") == 0) || (strcmp(result, "/system/bin/ls") == 0) || (strcmp(result, "/usr/bin/ls") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "rm");
 	ASSERT(result != (char *)0);
-	EXPECT((strcmp(result, "/bin/rm") == 0) || (strcmp(result, "/system/bin/rm") == 0));
+	EXPECT((strcmp(result, "/bin/rm") == 0) || (strcmp(result, "/system/bin/rm") == 0) || (strcmp(result, "/usr/bin/rm") == 0));
 	free(result);
 
 	result = diminuto_path_find("PATH", "head");
@@ -51,12 +54,15 @@ int main(int argc, char ** argv)
 	/*
 	 * This next one has the added benefit that it tests soft links. It has
 	 * the added deficit that we don't really know what the result should
-	 * be.
+	 * be. Cygwin calls its Shared Objects DLLs (for Dynamic Link Library) to
+	 * accomodate Windows.
 	 */
 
 	result = diminuto_path_find("LD_LIBRARY_PATH", "libdiminuto.so");
-	ASSERT(result != (char *)0);
+	alternative = diminuto_path_find("LD_LIBRARY_PATH", "libdiminuto.dll");
+	ASSERT((result != (char *)0) || (alternative != (char *)0));
 	free(result);
+	free(alternative);
 
 	/*
 	 * And of course some should fail.

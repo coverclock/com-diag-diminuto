@@ -270,7 +270,7 @@ int main(void)
         ASSERT(diminuto_tree_parent(&node) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_left(&node) == DIMINUTO_TREE_NULL);
         ASSERT(diminuto_tree_right(&node) == DIMINUTO_TREE_NULL);
-        ASSERT(diminuto_tree_root(&node) == DIMINUTO_TREE_NULL);
+        ASSERT(diminuto_tree_root(&node) == DIMINUTO_TREE_ORPHAN);
         node.color = DIMINUTO_TREE_COLOR_BLACK;
         node.parent = (diminuto_tree_t *)0x11111111;
         node.left = (diminuto_tree_t *)0x22222222;

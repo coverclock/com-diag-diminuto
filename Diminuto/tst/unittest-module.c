@@ -25,10 +25,12 @@
 
 const char KEYWORD[] = "LD_MODULE_PATH";
 const char NAME[] = "unittest-module-example.so";
+const char ALTERNATIVE[] = "unittest-module-example.dll";
 
 int main(int argc, char ** argv)
 {
 	char * file;
+	char * alternative;
 	const char * paths;
 	diminuto_module_handle_t module;
 	diminuto_module_handle_t check;
@@ -43,8 +45,12 @@ int main(int argc, char ** argv)
 
     paths = getenv(KEYWORD);
     file = diminuto_path_find(KEYWORD, NAME);
-	CHECKPOINT("name=\"%s\" keyword=\"%s\" paths=\"%s\" file=\"%s\"\n", NAME, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "");
-    ASSERT(file != (const char *)0);
+    alternative = diminuto_path_find(KEYWORD, ALTERNATIVE);
+	CHECKPOINT("NAME=\"%s\" ALTERNATIVE=\"%s\" KEYWORD=\"%s\" paths=\"%s\" file=\"%s\" alternative=\"%s\"\n", NAME, ALTERNATIVE, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "", (alternative != (const char *)0) ? alternative : "");
+    ASSERT((file != (char *)0) || (alternative != (char *)0));
+    if (file == (char *)0) {
+        file = alternative;
+    }
 
     /*
      * Make sure the module is unloaded, possibly from a prior unit test.
@@ -98,7 +104,7 @@ int main(int argc, char ** argv)
         check = diminuto_module_unload(module, !0);
         ASSERT(check == (diminuto_module_handle_t)0);
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC) || defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
 
     check = diminuto_module_unload(module, 0);
     ASSERT(check == (diminuto_module_handle_t)0);

@@ -41,7 +41,7 @@ diminuto_module_handle_t diminuto_module_handle(const char * filename)
 #if defined(RTLD_NOLOAD)
     return diminuto_module_load_generic(filename, RTLD_NOLOAD);
 #else
-#    warning RTLD_NOLOAD not defined!
+#   warning RTLD_NOLOAD not defined!
     return diminuto_module_load_generic(filename, 0);
 #endif
 }
@@ -60,20 +60,16 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
     void * resolved;
     const char * label;
 
-#if 0
-#    warning dlvsym(3) not implemented on this platform!
-    label = "dlsym";
-    resolved = dlsym(handle, symbol);
-#elif defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
-#    warning dlvsym(3) not implemented in uClibc!
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_UCLIBC)
+#   warning dlvsym(3) not implemented in uClibc!
     label = "dlsym";
     resolved = dlsym(handle, symbol);
 #elif defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-#    warning dlvsym(3) not implemented in Bionic!
+#   warning dlvsym(3) not implemented in Bionic!
     label = "dlsym";
     resolved = dlsym(handle, symbol);
 #elif defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
-#    warning dlvsym(3) not implemented in Cygwin!
+#   warning dlvsym(3) not implemented in Cygwin!
     label = "dlsym";
     resolved = dlsym(handle, symbol);
 #else
@@ -97,10 +93,12 @@ diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle,
 {
     int rc;
 
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC) || defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
     /*
      * The dlclose(3) in Android's bionic library appears to always succeed,
      * placing this code in an infinite loop.
+     *
+     * The same appears to be true of Cygwin's implementation.
      */
 
     force = 0;

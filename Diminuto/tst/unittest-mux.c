@@ -600,8 +600,8 @@ int main(int argc, char ** argv)
 			ASSERT(diminuto_mux_close(&mux, producer) == 0);
 			ASSERT(diminuto_ipc_close(rendezvous) >= 0);
 
-			EXPECT(timeouts > 0);
-			EXPECT(alarms > 0);
+			ADVISE(timeouts > 0);
+			ADVISE(alarms > 0);
 
 			EXPECT(waitpid(pid, &status, 0) == pid);
 			EXPECT(WIFEXITED(status));

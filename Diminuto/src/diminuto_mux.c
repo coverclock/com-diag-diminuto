@@ -64,7 +64,21 @@ static int diminuto_mux_set_unregister(diminuto_mux_t * that, diminuto_mux_set_t
 	int reads;
 	int writes;
 
-	rc = FD_ISSET(fd, &set->active);
+	/*
+	 * This code exposed an interesting bug in Cygwin: FD_ISSET(3) is supposed
+	 * to return an int but in Cygwin it returns a long. This works on platforms
+	 * on which int and long are the same. But in Cygwin for x86_64, int is four
+	 * bytes and long is eight bytes. And on Cygwin, FD_ISSET(3) returns not a
+	 * boolean (0 or !0) but a shifted bit and'ed out from the long file
+	 * descriptor mask. Demoting the long returned by FD_ISSET(3) to an int
+	 * turns returns for file descriptor values from 32 to 63 (or any multiple
+	 * of those) into a zero. I fixed this by the "!!" to reduce the long to a
+	 * boolean before it is assigned to the int. The register function already
+	 * effectively had this fix in it as a side effect of its "!", which was
+	 * more or less an accident of my coding style that it was there at all.
+	 */
+
+	rc = !!FD_ISSET(fd, &set->active);
 	if (rc) {
 		FD_CLR(fd, &set->active);
 		FD_CLR(fd, &set->ready);

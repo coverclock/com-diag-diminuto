@@ -15,6 +15,13 @@
 
 TITLE				:=	Diminuto
 
+# Disclaimer: the only target that I routinely build and test on is "host", my
+# X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
+# on all of these other targets at one time or another, the current version has
+# only been tested on whatever project I'm currently working on. The targets
+# listed below are more or less in chronological order, from earliest to latest.
+# The hardware for some of these targets isn't even available to me anymore.
+
 TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
@@ -137,7 +144,7 @@ STRIP				:=	$(CROSS_COMPILE)strip
 CDEFINES			:=
 
 ARFLAGS				:=	crsv
-#CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) $(CPPARCH)
+#CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) -I $(OUT)/$(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CFLAGS				:=	$(CARCH) -g
 #CFLAGS				:=	$(CARCH) -O3
