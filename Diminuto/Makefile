@@ -22,22 +22,23 @@ TITLE				:=	Diminuto
 # listed below are more or less in chronological order, from earliest to latest.
 # The hardware for some of these targets isn't even available to me anymore.
 
-TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
+#TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
 #TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
-#TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
 #TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
+TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
 #TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
+#TARGET				:=	orchard# Mac OS X 10.9.5 running on a Mac Mini "late 2012".
 
 MAJOR				:=	26# API changes that may require that applications be modified.
-MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	1# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -120,19 +121,21 @@ MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) 
 
 DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
-SO					:= so
+TARBALL				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)
+
+SO					:=	so
+
+A2SOARCH			:=	-shared -Wl,-soname,lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
+A2SOXXARCH			:=	-shared -Wl,-soname,lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD)
 
 include $(CFG_DIR)/$(TARGET).mk
+
+########## Commands and Option Flags
 
 PROJECT_A			:=	lib$(PROJECT).a
 PROJECTXX_A			:=	lib$(PROJECT)xx.a
 PROJECT_SO			:=	lib$(PROJECT).$(SO)
 PROJECTXX_SO		:=	lib$(PROJECT)xx.$(SO)
-
-PROJECT_LIB			:=	$(PROJECT_SO).$(MAJOR).$(MINOR).$(BUILD)
-PROJECTXX_LIB		:=	$(PROJECTXX_SO).$(MAJOR).$(MINOR).$(BUILD)
-
-########## Commands and Option Flags
 
 CROSS_COMPILE		:=	$(TOOLCHAIN)
 
@@ -241,6 +244,14 @@ distribution $(DISTRIBUTION).tgz:
 	( cd $$T/$$B; make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
 	rm -rf $$T
 
+.PHONY:	tarball
+
+tarball $(TARBALL).tgz:
+	D=`dirname $(TARBALL)`; mkdir -p $$D; \
+	T=`pwd`; \
+	B=`basename $$T`; \
+	( tar -C .. --exclude-vcs --exclude=$(OUT_DIR) --exclude=.??* -cvzf - $$B ) > $(TARBALL).tgz; \
+
 ########## Source Code Control
 
 .PHONY: commit dcommit push origin init
@@ -264,14 +275,16 @@ init:
 
 ########## Target C Libraries
 
-$(OUT)/$(ARC_DIR)/lib$(PROJECT).a:	$(TARGETOBJECTS)
+$(OUT)/$(ARC_DIR)/$(PROJECT_A):	$(TARGETOBJECTS)
 	D=`dirname $@`; mkdir -p $$D
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
+LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
+LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT).a
+$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
 	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CFLAGS) -shared -Wl,-soname,lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive
+	$(CC) $(CFLAGS) $(A2SOARCH) -o $@ $(SOFLAGS) $(TARGETOBJECTS)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO):	$(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 
@@ -284,14 +297,14 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib$(
 
 ########## Target C++ Libraries
 
-$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a:	$(TARGETOBJECTSXX)
+$(OUT)/$(ARC_DIR)/$(PROJECTXX_A):	$(TARGETOBJECTSXX)
 	D=`dirname $@`; mkdir -p $$D
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
-$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(OUT)/$(ARC_DIR)/lib$(PROJECT)xx.a $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
+$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTSXX) $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CXXFLAGS) -shared -Wl,-soname,lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD) -o $@ $(SOXXFLAGS) -Wl,--whole-archive $< -Wl,--no-whole-archive $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD)
+	$(CXX) $(CXXFLAGS) $(A2SOXXARCH) -o $@ $(SOXXFLAGS) $(TARGETOBJECTSXX)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO):	$(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR).$(BUILD)
 	D=`dirname $<`; F=`basename $<`; T=`basename $@`; ( cd $$D; ln -s -f $$F $$T ) 

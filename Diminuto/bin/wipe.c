@@ -92,10 +92,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <malloc.h>
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+
+#if !defined(O_DIRECT)
+#   warning O_DIRECT is not implemented on this platform!
+#   define O_DIRECT (0)
+#endif
 
 static const char DEFAULT_DEVICE[] = "/dev/null";
 static const size_t DEFAULT_BLOCKSIZE = 4096UL;
@@ -209,9 +213,8 @@ int main(int argc, char ** argv)
         modulo = ((modulo + blocksize - 1) / blocksize) * blocksize;
         printf("%s: modulo %llu bytes\n", program, modulo);
 
-        buffer = memalign(pagesize, blocksize);
-        if (buffer == 0) {
-            perror("memalign: ERROR");
+        if ((posix_memalign(&buffer, pagesize, blocksize) != 0) || (buffer == 0)) {
+            perror("posix_memalign: ERROR");
             ++errors;
             break;
         }

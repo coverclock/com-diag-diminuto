@@ -23,6 +23,7 @@
 
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_mmdriver.h"
 #include <stdlib.h>
 #include <stdio.h>

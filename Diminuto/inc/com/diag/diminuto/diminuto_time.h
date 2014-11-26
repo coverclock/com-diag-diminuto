@@ -22,6 +22,9 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <unistd.h> /* For _POSIX_TIMERS. */
+
+#if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
 
 /**
  * Return the resolution of the Diminuto time units in ticks per second (Hertz).
@@ -33,6 +36,21 @@
 static inline diminuto_ticks_t diminuto_time_frequency(void) {
 	return 1000000000LL;
 }
+
+#else
+
+/**
+ * Return the resolution of the Diminuto time units in ticks per second (Hertz).
+ * Although the underlying platform may be able to return time with this
+ * resolution, there is no guarantee that the system clock actually has this
+ * degree of accuracy.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_ticks_t diminuto_time_frequency(void) {
+	return 1000000LL;
+}
+
+#endif
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in

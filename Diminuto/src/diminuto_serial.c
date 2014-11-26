@@ -12,8 +12,8 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <errno.h>
+#include <termios.h>
 #include <unistd.h>
-#include <termio.h>
 
 int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol, int xonxoff, int rtscts)
 {

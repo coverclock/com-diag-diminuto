@@ -72,6 +72,10 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 #   warning dlvsym(3) not implemented in Cygwin!
     label = "dlsym";
     resolved = dlsym(handle, symbol);
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_DARWIN)
+#   warning dlvsym(3) not implemented in Darwin!
+    label = "dlsym";
+    resolved = dlsym(handle, symbol);
 #else
     if (version == (const char *)0) {
         label = "dlsym";

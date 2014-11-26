@@ -25,6 +25,7 @@ int main(void)
 	size_t power;
 	size_t allocated;
 	int method;
+	void * pointer;
 
 	SETLOGMASK();
 
@@ -83,6 +84,10 @@ int main(void)
 			ASSERT((allocated % power) == 0);
 		}
 	}
+
+	pointer = diminuto_memory_aligned(2, 3);
+	ASSERT(pointer != (void *)0);
+	free(pointer);
 
 	EXIT();
 }

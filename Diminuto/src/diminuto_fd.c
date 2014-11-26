@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_platform.h"
@@ -31,8 +32,20 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_DARWIN)
+#   include <malloc.h>
+#endif
 #include <errno.h>
+
+#if !defined(TIOCINQ)
+#   warning TIOCINQ not defined on this platform!
+#   define TIOCINQ FIONREAD
+#endif
+
+#if !defined(O_DIRECT)
+#   warning O_DIRECT not defined on this platform!
+#   define O_DIRECT 0
+#endif
 
 int diminuto_fd_acquire(int fd, const char * device, int flags, mode_t mode)
 {
@@ -135,7 +148,9 @@ ssize_t diminuto_fd_readable(int fd)
     int count;
 
     /*
-     * On some platforms, TIOCINQ and FIONREAD are the same ioctl. Others, not.
+     * On some platforms, TIOCINQ and FIONREAD are the same ioctl.
+     * Others, not.
+     * Some platforms don't define TIOCINQ at all.
      */
 
     request = isatty(fd) ? TIOCINQ : FIONREAD;
@@ -184,8 +199,8 @@ void * diminuto_fd_direct_alloc(size_t size)
     if ((alignment = getpagesize()) <= 0) {
         errno = EINVAL;
         diminuto_perror("diminuto_fd_direct_alloc: getpagesize");
-    } else if ((pointer = memalign(alignment, size)) == 0) {
-        diminuto_perror("diminuto_fd_direct_alloc: memalign");
+    } else if ((pointer = diminuto_memory_aligned(alignment, size)) == 0) {
+        /* Do nothing. */
     } else {
         /* Do nothing. */
     }

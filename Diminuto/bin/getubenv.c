@@ -154,9 +154,9 @@ int main(int argc, char * argv[])
     size_t size;
     crc32_t stored;
     crc32_t computed;
-    char * name;
-    char * keyword;
-    char * value;
+    unsigned char * name;
+    unsigned char * keyword;
+    unsigned char * value;
     int rc;
     int result;
 

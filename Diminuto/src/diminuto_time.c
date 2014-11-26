@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
+
+#if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
 
 static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 {
@@ -28,6 +30,33 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 
 	return ticks;
 }
+
+#else
+
+#   warning POSIX timers not available on this platform!
+#   define CLOCK_REALTIME (-1)
+#   define CLOCK_MONOTONIC (-1)
+#   define CLOCK_MONOTONIC_RAW (-1)
+#   define CLOCK_PROCESS_CPUTIME_ID (-1)
+#   define CLOCK_THREAD_CPUTIME_ID (-1)
+
+typedef int clockid_t;
+
+static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
+{
+	diminuto_ticks_t ticks = -1;
+	struct timeval elapsed;
+
+	if (gettimeofday(&elapsed, (void *)0) < 0) {
+		diminuto_perror("diminuto_time_generic: gettimeofday");
+	} else {
+		ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_usec, diminuto_time_frequency());
+	}
+
+	return ticks;
+}
+
+#endif
 
 diminuto_ticks_t diminuto_time_clock()
 {

@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 static const char * SYS_LINE_SIZE[] = {
 	"/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size",
@@ -147,8 +148,35 @@ int diminuto_memory_is_power(size_t value)
 	return (bits == 1);
 }
 
-size_t diminuto_memory_alignment(size_t size, size_t alignment)
+void * diminuto_memory_aligned(size_t alignment, size_t size)
 {
-	--alignment;
-	return (size + alignment) & (~alignment);
+	void * pointer = (void *)0;
+	int rc;
+
+	/*
+	 * POSIX requires that size be a multiple of alignment, and that alignment
+	 * be a power of two and a multiple of sizeof(void *). We ensure this.
+	 */
+
+	alignment = diminuto_memory_alignment(alignment, sizeof(void *));
+	size = diminuto_memory_alignment(size, alignment);
+
+	rc = posix_memalign(&pointer, alignment, size);
+	if (rc > 0) {
+		pointer = (void *)0;
+		errno = rc;
+	} else if (rc < 0) {
+		pointer = (void *)0;
+		errno = -rc;
+	} else if (pointer == (void *)0) {
+		errno = EFAULT;
+	} else {
+		/* Do nothing. */
+	}
+
+	if (pointer == (void *)0) {
+		diminuto_perror("diminuto_memory_aligned: posix_memalign");
+	}
+
+	return pointer;
 }

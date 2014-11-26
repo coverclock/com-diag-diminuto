@@ -21,7 +21,6 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 {
 	diminuto_well_t * wellp = (diminuto_well_t *)0;
 	diminuto_well_t * well;
-	int rc;
 	void * control = (void *)0;
 	void * data = (void *)0;
 	size_t ii;
@@ -32,10 +31,8 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 			pagesize = diminuto_memory_pagesize(0);
 		}
 
-		rc = posix_memalign(&control, pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
-		if (rc != 0) {
-			errno = rc;
-			diminuto_perror("posix_memalign(control)");
+		control = diminuto_memory_aligned(pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
+		if (control == (void *)0) {
 			break;
 		}
 
@@ -50,10 +47,8 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
 		alignment = diminuto_memory_power(alignment);
 		size = diminuto_memory_alignment(size, alignment);
 
-		rc = posix_memalign(&data, pagesize, size * count);
-		if (rc != 0) {
-			errno = rc;
-			diminuto_perror("posix_memalign(data)");
+		data = diminuto_memory_aligned(pagesize, size * count);
+		if (data == (void *)0) {
 			free(control);
 			break;
 		}

@@ -89,6 +89,21 @@ extern int diminuto_memory_is_power(size_t alignment);
  * @param alignment is the alignment of each object in the well; it MUST be
  * greater than zero AND a power of two (including one).
   */
-extern size_t diminuto_memory_alignment(size_t size, size_t alignment);
+static inline size_t diminuto_memory_alignment(size_t size, size_t alignment)
+{
+    --alignment;
+    return (size + alignment) & (~alignment);
+}
+
+/**
+ * Allocate memory with the specified alignment, if that facility is available
+ * on the underlying platform, or just any old memory, if not. Some platforms
+ * require that size be an even multiple of alignment, so it is best to stick
+ * to that.
+ * @param alignment is the desired alignment.
+ * @param size is the amount of memory to allocate in bytes.
+ * @return a pointer to memory that must be freed or null if an error occurred.
+ */
+extern void * diminuto_memory_aligned(size_t alignment, size_t size);
 
 #endif

@@ -39,7 +39,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <termio.h>
 
 static const int LENGTH = 80;
 static const char * program = "phex";
