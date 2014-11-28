@@ -10,11 +10,38 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include <stdio.h>
 #include <errno.h>
 
 int main(int argc, char ** argv)
 {
+	diminuto_ticks_t ticks;
+
+	ticks = diminuto_frequency();
+	EXPECT(ticks == diminuto_frequency()); /* Testing for truncation. */
+
+	EXPECT(diminuto_frequency() == COM_DIAG_DIMINUTO_FREQUENCY);
+	EXPECT(diminuto_time_frequency() == COM_DIAG_DIMINUTO_TIME_FREQUENCY);
+	EXPECT(diminuto_timer_frequency() == COM_DIAG_DIMINUTO_TIMER_FREQUENCY);
+	EXPECT(diminuto_delay_frequency() == COM_DIAG_DIMINUTO_DELAY_FREQUENCY);
+	EXPECT(diminuto_mux_frequency() == COM_DIAG_DIMINUTO_MUX_FREQUENCY);
+
+	EXPECT(diminuto_time_frequency() <= diminuto_frequency());
+	EXPECT(diminuto_timer_frequency() <= diminuto_frequency());
+	EXPECT(diminuto_delay_frequency() <= diminuto_frequency());
+	EXPECT(diminuto_mux_frequency() <= diminuto_frequency());
+
+	CHECKPOINT("f(ticks)=%lldHz T(ticks)=%lldticks\n", diminuto_frequency(), diminuto_frequency() / diminuto_frequency());
+	CHECKPOINT("f(time)=%lldHz T(time)=%lldticks\n", diminuto_time_frequency(), diminuto_frequency() / diminuto_time_frequency());
+	CHECKPOINT("f(timer)=%lldHz T(timer)=%lldticks\n", diminuto_timer_frequency(), diminuto_frequency() / diminuto_timer_frequency());
+	CHECKPOINT("f(delay)=%lldHz T(delay)=%lldticks\n", diminuto_delay_frequency(), diminuto_frequency() / diminuto_delay_frequency());
+	CHECKPOINT("f(mux)=%lldHz T(mux)=%lldticks\n", diminuto_mux_frequency(), diminuto_frequency() / diminuto_mux_frequency());
+
 	EXPECT(diminuto_frequency_ticks2units(0LL, 1LL) == 0LL);
 	EXPECT(diminuto_frequency_ticks2units(0LL, 1000LL) == 0LL);
 	EXPECT(diminuto_frequency_ticks2units(0LL, 1000000LL) == 0LL);
@@ -63,12 +90,9 @@ int main(int argc, char ** argv)
 	EXPECT(diminuto_frequency_roundup(1234567890LL, 1000LL) == 1234568000LL);
 	EXPECT(diminuto_frequency_roundup(1234567890LL, 10000LL) == 1234570000LL);
 
-	/*
-	 * If we ever change the duration of a tick, these tests will have to be
-	 * changed.
-	 */
-
-	EXPECT(diminuto_frequency() == 1000000000LL);
+#if (COM_DIAG_DIMINUTO_FREQUENCY != 1000000000LL)
+#   error Unit test must be updated to new resolution of ticks!
+#endif
 
 	EXPECT(diminuto_frequency_ticks2units(250LL, 10000000000LL) == 2500LL);
 	EXPECT(diminuto_frequency_ticks2units(250LL, 1000000000LL) == 250LL);
