@@ -26,19 +26,14 @@
 
 #if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
 
-/**
- * Return the resolution of the Diminuto time units in ticks per second (Hertz).
- * Although the underlying platform may be able to return time with this
- * resolution, there is no guarantee that the system clock actually has this
- * degree of accuracy.
- * @return the resolution in ticks per second.
- */
-static inline diminuto_ticks_t diminuto_time_frequency(void) {
-	return 1000000000LL;
-}
+#   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000000LL)
 
 #else
 
+#   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000LL)
+
+#endif
+
 /**
  * Return the resolution of the Diminuto time units in ticks per second (Hertz).
  * Although the underlying platform may be able to return time with this
@@ -47,10 +42,8 @@ static inline diminuto_ticks_t diminuto_time_frequency(void) {
  * @return the resolution in ticks per second.
  */
 static inline diminuto_ticks_t diminuto_time_frequency(void) {
-	return 1000000LL;
+	return COM_DIAG_DIMINUTO_TIME_FREQUENCY;
 }
-
-#endif
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in

@@ -9,18 +9,28 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * This header file tries to infer the underlying platform. It has been tested
+ * on Ubuntu 14.04 for both user-space builds ("glibc") and kernel module builds
+ * ("kernel"), uClibc ("uclibc"), Android ("bionic"), Cygwin ("cygwin"), and
+ * Mac OS X ("darwin"). It has also been used on ChrUbuntu, which is an Ubuntu
+ * environment running on top of ChromeOS, but this just looks like Ubuntu
+ * ("glibc").
  */
 
+#undef COM_DIAG_DIMINUTO_PLATFORM_EXPLICIT
 #undef COM_DIAG_DIMINUTO_PLATFORM_KERNEL
 #undef COM_DIAG_DIMINUTO_PLATFORM_GLIBC
 #undef COM_DIAG_DIMINUTO_PLATFORM_UCLIBC
 #undef COM_DIAG_DIMINUTO_PLATFORM_BIONIC
 #undef COM_DIAG_DIMINUTO_PLATFORM_CYGWIN
 #undef COM_DIAG_DIMINUTO_PLATFORM_DARWIN
+#undef COM_DIAG_DIMINUTO_PLATFORM_UNKNOWN
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM)
 
-    /* COM_DIAG_DIMINUTO_PLATFORM explicitly defined. */
+#   warning Explicitly defined platform?
+#   define COM_DIAG_DIMINUTO_PLATFORM_EXPLICIT (!0)
 
 #elif defined(__KERNEL__) || defined(MODULE)
 
@@ -72,6 +82,7 @@
 #   else
 
 #       warning Cannot implicitly determine platform!
+#       define COM_DIAG_DIMINUTO_PLATFORM_UNKNOWN (!0)
 #       define COM_DIAG_DIMINUTO_PLATFORM "unknown"
 
 #   endif

@@ -23,14 +23,34 @@
 #	include <sys/types.h>
 #endif
 
+/**
+ * This type describes the integer declaration of a variable containing ticks,
+ * which are the units of time used by Diminuto.
+ */
 typedef int64_t diminuto_ticks_t;
 
+/**
+ * This type describes the integer declaration of a variable containing a
+ * binary IPV4 address.
+ */
 typedef uint32_t diminuto_ipv4_t;
 
+/**
+ * This type describes the integer declaration of a variable containing a
+ * binary IP port number.
+ */
 typedef uint16_t diminuto_port_t;
 
+/**
+ * This type describes the integer declaration of a variable containing an
+ * unsigned integer returned by the diminuto_number_unsigned() function.
+ */
 typedef uint64_t diminuto_unsigned_t;
 
+/**
+ * This type describes the integer declaration of a variable containing a
+ * signed integer turned by the diminuto_number_signed() function.
+ */
 typedef int64_t diminuto_signed_t;
 
 #endif

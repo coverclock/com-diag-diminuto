@@ -13,6 +13,8 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
+#define COM_DIAG_DIMINUTO_TIMER_FREQUENCY (1000000LL)
+
 /**
  * Return the resolution of the Diminuto timer units in ticks per second
  * (Hertz). Timer intervals smaller than the equivalent period in ticks will
@@ -23,7 +25,7 @@
  */
 static inline diminuto_ticks_t diminuto_timer_frequency(void)
 {
-	return 1000000LL;
+	return COM_DIAG_DIMINUTO_TIMER_FREQUENCY;
 }
 
 /**

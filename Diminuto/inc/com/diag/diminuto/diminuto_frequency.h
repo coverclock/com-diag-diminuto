@@ -13,6 +13,8 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
+#define COM_DIAG_DIMINUTO_FREQUENCY (1000000000LL)
+
 /**
  * Return the fundamental Diminuto frequency in ticks per second (Hertz). The
  * inverse of this value is the duration of a Diminuto tick, the smallest
@@ -24,7 +26,7 @@
  */
 static inline diminuto_ticks_t diminuto_frequency(void)
 {
-	return 1000000000LL;
+	return COM_DIAG_DIMINUTO_FREQUENCY;
 }
 
 /**

@@ -13,6 +13,8 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
+#define COM_DIAG_DIMINUTO_DELAY_FREQUENCY (1000000000LL)
+
 /**
  * Return the resolution of the Diminuto delay units in ticks per second
  * (Hertz). Delay durations smaller than the equivalent period in ticks may
@@ -23,7 +25,7 @@
  */
 static inline diminuto_ticks_t diminuto_delay_frequency(void)
 {
-	return 1000000000LL;
+	return COM_DIAG_DIMINUTO_DELAY_FREQUENCY;
 }
 
 /**

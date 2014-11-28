@@ -16,6 +16,20 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <sys/select.h>
 
+#define COM_DIAG_DIMINUTO_MUX_FREQUENCY (1000000000LL)
+
+/**
+ * Return the resolution of the Diminuto multiplexer timeout units in ticks per
+ * second (Hertz). Timeout durations smaller than the equivalent period in ticks
+ * may not yield the expected results. In fact, there is no guarantee that the
+ * underlying software platform or hardware target can support timeout durations
+ * with even this resolution.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_ticks_t diminuto_mux_frequency(void) {
+	return COM_DIAG_DIMINUTO_MUX_FREQUENCY;
+}
+
 /**
  * This is the multiplexer read or a write set state.
  */
@@ -34,18 +48,6 @@ typedef struct DiminutoMux {
 	diminuto_mux_set_t write;
 	sigset_t mask;
 } diminuto_mux_t;
-
-/**
- * Return the resolution of the Diminuto multiplexer timeout units in ticks per
- * second (Hertz). Timeout durations smaller than the equivalent period in ticks
- * may not yield the expected results. In fact, there is no guarantee that the
- * underlying software platform or hardware target can support timeout durations
- * with even this resolution.
- * @return the resolution in ticks per second.
- */
-static inline diminuto_ticks_t diminuto_mux_frequency(void) {
-	return 1000000000LL;
-}
 
 /**
  * Initialize a multiplexer. Any prior state is lost, although this does not

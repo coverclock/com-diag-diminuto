@@ -11,6 +11,11 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+/**
+ * @def diminuto_countof
+ * Given an array named @a _ARRAY_ whose dimension is known at compile time,
+ * compute the number of elements in the array.
+ */
 #define diminuto_countof(_ARRAY_) (sizeof(_ARRAY_) / sizeof(_ARRAY_[0]))
 
 #ifndef countof

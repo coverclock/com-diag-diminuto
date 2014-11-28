@@ -15,8 +15,17 @@
  * symbol into a printable C-string at compile time.
  */
 
+/**
+ * @def DIMINUTO_TOKEN_STRING
+ * Stringify the preprocessor symbol (or really, any argument) @a _ARG_.
+ */
 #define DIMINUTO_TOKEN_STRING(_ARG_) #_ARG_
 
+/**
+ * @def DIMINUTO_TOKEN_TOKEN
+ * Stringify and then tokenize the preprocessor symbol (or really, any argument)
+ * @a _ARG_.
+ */
 #define DIMINUTO_TOKEN_TOKEN(_ARG_) DIMINUTO_TOKEN_STRING(_ARG_)
 
 #endif
