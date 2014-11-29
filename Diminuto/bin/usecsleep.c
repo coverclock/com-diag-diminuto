@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
 			break;
 		}
 
-		if (*diminuto_number_unsigned(argv[1], &delay) != '\0') {
+		if (*diminuto_number_signed(argv[1], &delay) != '\0') {
 			errno = EINVAL;
 			perror(argv[1]);
 			break;
@@ -80,7 +80,7 @@ int main(int argc, char ** argv)
 
 		if (argc == 3) {
 
-			if (*diminuto_number_unsigned(argv[2], &then) != '\0') {
+			if (*diminuto_number_signed(argv[2], &then) != '\0') {
 				errno = EINVAL;
 				perror(argv[2]);
 				break;

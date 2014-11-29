@@ -232,7 +232,7 @@ void diminuto_controller_init(
  * @param output is the output value that generated the input value.
  * @return the next output value.
  */
-diminuto_controller_output_t diminuto_controller_step(
+diminuto_controller_output_t diminuto_controller(
     const diminuto_controller_parameters_t * sp,
     diminuto_controller_state_t * dp,
     diminuto_controller_input_t target,

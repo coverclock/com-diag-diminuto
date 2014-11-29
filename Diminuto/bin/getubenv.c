@@ -154,9 +154,9 @@ int main(int argc, char * argv[])
     size_t size;
     crc32_t stored;
     crc32_t computed;
-    unsigned char * name;
-    unsigned char * keyword;
-    unsigned char * value;
+    char * name;
+    char * keyword;
+    char * value;
     int rc;
     int result;
 
@@ -201,8 +201,8 @@ int main(int argc, char * argv[])
 
     while (*data != '\0') {
 
-        keyword = data;
-        data = keyword + strlen(keyword) + 1;
+        keyword = (char *)data;
+        data = (uint8_t *)keyword + strlen(keyword) + 1;
         value = strchr(keyword, '=') + 1;
 
         if (name == NULL) {

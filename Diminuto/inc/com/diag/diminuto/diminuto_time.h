@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,10 +26,26 @@
 
 #if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
 
+    /**
+     * @def COM_DIAG_DIMINUTO_TIME_FREQUENCY
+     * This manifest constant is the frequency in Hertz at which this feature
+     * operates. The inverse of this value is the smallest unit of time in fractions
+     * of a second that this feature can express or use. This constant is provided
+     * for use in those cases where it is useful to have the value at compile time.
+     * However, you chould always prefer to use the inline function when possible.
+     */
 #   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000000LL)
 
 #else
 
+    /**
+     * @def COM_DIAG_DIMINUTO_TIME_FREQUENCY
+     * This manifest constant is the frequency in Hertz at which this feature
+     * operates. The inverse of this value is the smallest unit of time in fractions
+     * of a second that this feature can express or use. This constant is provided
+     * for use in those cases where it is useful to have the value at compile time.
+     * However, you chould always prefer to use the inline function when possible.
+     */
 #   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000LL)
 
 #endif
