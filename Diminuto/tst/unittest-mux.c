@@ -214,7 +214,10 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
 
 int main(int argc, char ** argv)
 {
+	extern int diminuto_alarm_debug;
+
 	SETLOGMASK();
+	diminuto_alarm_debug = 1;
 
 	{
 		diminuto_mux_t mux;

@@ -15,16 +15,17 @@
 #include <signal.h>
 #include <errno.h>
 
+int diminuto_alarm_debug = 0; /* Not part of the public API. */
+
 static int signaled = 0;
 
 static void diminuto_alarm_handler(int signum)
 {
-	if (signum == SIGALRM) {
+    if (signum == SIGALRM) {
         signaled = !0;
-        /*
-        diminuto_log_emit("SIGALRM!");
-        */
-	}
+    } else {
+        /* Do nothing. */
+    }
 }
 
 pid_t diminuto_alarm_signal(pid_t pid)
@@ -35,6 +36,8 @@ pid_t diminuto_alarm_signal(pid_t pid)
     } else if (kill(pid, SIGALRM) < 0) {
         diminuto_perror("diminuto_alarm_signal: kill");
         pid = -1;
+    } else if (diminuto_alarm_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_alarm_signal: SIGALRM");
     } else {
         /* Do nothing. */
     }
@@ -50,11 +53,16 @@ int diminuto_alarm_check(void)
 
         mysignaled = signaled;
         signaled = 0;
-        /*
-        if (mysignaled) diminuto_log_emit("SIGALRM.");
-        */
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+
+    if (!mysignaled) {
+        /* Do nothing. */
+    } else if (!diminuto_alarm_debug) {
+        /* Do nothing. */
+    } else {
+        DIMINUTO_LOG_DEBUG("diminuto_alarm_check: SIGALRM");
+    }
 
     return mysignaled;
 }
@@ -72,9 +80,9 @@ int diminuto_alarm_install(int restart)
         return -1;
     }
 
-    /*
-    diminuto_log_emit("SIGALRM?");
-    */
+    if (diminuto_alarm_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_alarm_install: SIGALRM");
+    }
 
     return 0;
 }
