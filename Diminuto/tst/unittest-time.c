@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -64,7 +65,7 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
 
     DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %41s %41s\n",
         "requested",
