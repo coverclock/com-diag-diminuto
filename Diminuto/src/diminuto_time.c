@@ -86,7 +86,6 @@ diminuto_ticks_t diminuto_time_thread()
 diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 {
 	diminuto_ticks_t timezone = -1;
-#ifdef __USE_BSD
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
@@ -94,14 +93,26 @@ diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timezone: localtime_r");
-	} else if (datetimep->tm_isdst) {
+	}
+	else if (datetimep->tm_isdst) {
+#if defined(__USE_BSD)
 		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
 	} else {
 		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
-	}
+#elif defined(__APPLE__)
+		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
+	} else {
+		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
+#elif defined(__TM_GMTOFF)
+		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF - 3600, 0, 1);
+	} else {
+		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF, 0, 1);
 #else
-
+		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff - 3600, 0, 1);
+	} else {
+		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff, 0, 1);
 #endif
+	}
 
 	return timezone;
 }
