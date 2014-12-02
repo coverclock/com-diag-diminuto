@@ -523,7 +523,6 @@ int main(int argc, char ** argv)
 			do {
 
 				while (!0) {
-					EXPECT(!diminuto_alarm_check());
 					if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() / 10)) > 0) {
 						break;
 					} else if (ready == 0) {

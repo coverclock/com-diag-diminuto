@@ -33,6 +33,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 SOARCH				:=
+SOXXARCH			:=	-L$(OUT)/$(LIB_DIR) -l$(PROJECT)
 KERNELARCH			:=	O=$(HOME)/trunk/chroot/build/x86-generic/var/cache/portage/sys-kernel/chromeos-kernel-3_14
 #KERNELARCH			:=	O=$(HOME)/trunk/chroot/build/x86-generic/var/cache/portage/sys-kernel/chromeos-kernel-3_8
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm

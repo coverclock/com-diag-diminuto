@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <time.h>
+#include <errno.h>
 #include <sys/time.h>
 
 #if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
@@ -85,6 +86,7 @@ diminuto_ticks_t diminuto_time_thread()
 diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 {
 	diminuto_ticks_t timezone = -1;
+#ifdef __USE_BSD
 	struct tm datetime;
 	struct tm * datetimep;
 	time_t juliet;
@@ -97,6 +99,9 @@ diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 	} else {
 		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
 	}
+#else
+
+#endif
 
 	return timezone;
 }

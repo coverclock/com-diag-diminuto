@@ -21,6 +21,7 @@ CXXARCH				:=	$(CARCH)
 LDARCH				:=	-Bdynamic -L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
+SOXXARCH			:=	-L$(OUT)/$(LIB_DIR) -l$(PROJECT)
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
 LDXXLIBRARIES		:=	$(LDLIBRARIES)

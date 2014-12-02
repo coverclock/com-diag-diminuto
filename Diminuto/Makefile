@@ -161,7 +161,7 @@ LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
 MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
-SOXXFLAGS			:=	$(SOARCH) $(LDXXLIBRARIES)
+SOXXFLAGS			:=	$(SOXXARCH) $(LDXXLIBRARIES)
 
 BROWSER				:=	firefox
 
@@ -219,6 +219,9 @@ pristine clobber:	clean
 
 ########## Packaging and Distribution
 
+# Useful for copying the executables over to another target for which they were
+# cross compiled.
+
 .PHONY:	package
 
 package $(PACKAGE).tgz:
@@ -230,6 +233,9 @@ package $(PACKAGE).tgz:
 	tar --exclude-vcs -cvf - $(INC_DIR) | tar -C $$T/$$B -xvf -; \
 	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
 	rm -rf $$T
+
+# Useful for given someone a tarball of the actual source distribution that
+# is guaranteed to at least build.
 
 .PHONY:	distribution
 
@@ -244,6 +250,9 @@ distribution $(DISTRIBUTION).tgz:
 	( cd $$T/$$B; make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
 	rm -rf $$T
 
+# Useful for copying a tarball of the current development source base to a
+# target for which there is no cross compiler toolchain.
+
 .PHONY:	tarball
 
 tarball $(TARBALL).tgz:
@@ -251,6 +260,16 @@ tarball $(TARBALL).tgz:
 	T=`pwd`; \
 	B=`basename $$T`; \
 	( tar -C .. --exclude-vcs --exclude=$(OUT_DIR) --exclude=.??* -cvzf - $$B ) > $(TARBALL).tgz; \
+
+# Useful for backing a complete backup before doing something that may turn
+# out to be profoundly stupid, like running a transformative script across all
+# the source files. Sure, your local and remote repos should save you, but what
+# if they didn't?
+
+.PHONY:	backup
+
+backup:
+	tar --exclude=$(OUT_DIR) -cvzf - . > ../$(PROJECT)-$(TIMESTAMP).tgz
 
 ########## Source Code Control
 
@@ -380,10 +399,73 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 # careful about removing stuff from it that looks redundant or unused.
 # NOTE: in the generated C code below, whether you should have \\n or \n in the
 # echo statements seems to depend on whether you are running make 3.81 or prior
-# versus make 3.82 or after. Since my build host runs Ubuntu 14.04 UTS with
-# make 3.81, that's what I'm sticking with. Nothing is ever simple.
+# versus make 3.82 or after. make 3.81 is what my Ubuntu 14.04 build server has.
+
+ifeq (3.82, $(firstword $(sort $(MAKE_VERSION) 3.82)))
 
 $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
+	@echo MAKE_VERSION=$(MAKE_VERSION)
+	D=`dirname $@`; mkdir -p $$D	
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
+	echo '#include <stdio.h>' >> $@
+	echo '#include <assert.h>' >> $@
+	echo 'static const char METADATA[] =' >> $@
+	echo '    "Title = $(TITLE)\n"' >> $@
+	echo '    "Copyright = $(COPYRIGHT)\n"' >> $@
+	echo '    "Contact = $(CONTACT)\n"' >> $@
+	echo '    "License = $(LICENSE)\n"' >> $@
+	echo '    "Homepage = $(HOMEPAGE)\n"' >> $@
+	echo '    "Release = " COM_DIAG_DIMINUTO_RELEASE "\n"' >> $@
+	echo '    "Vintage = " COM_DIAG_DIMINUTO_VINTAGE "\n"' >> $@
+	echo '    "Host = $(shell hostname)\n"' >> $@
+	echo '    "Directory = $(shell pwd)\n"' >> $@
+	echo '    "Arch = $(ARCH)\n"' >> $@
+	echo '    "Target = $(TARGET)\n"' >> $@
+	echo '    "Os = $(OS)\n"' >> $@
+	echo '    "Platform = " COM_DIAG_DIMINUTO_PLATFORM "\n"' >> $@
+	echo '    "Toolchain = $(TOOLCHAIN)\n"' >> $@
+	echo '    "User = $(USER)\n"' >> $@
+	echo ';' >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_RELEASE_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_RELEASE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_VINTAGE_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_VINTAGE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_DIMINUTO_PLATFORM_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_DIMINUTO_PLATFORM_VALUE;' >> $@
+	echo 'int main(void) {' >> $@
+	echo '    const char * release_keyword = (const char *)0;' >> $@
+	echo '    const char * release_value = (const char *)0;' >> $@
+	echo '    const char * vintage_keyword = (const char *)0;' >> $@
+	echo '    const char * vintage_value = (const char *)0;' >> $@
+	echo '    const char * platform_keyword = (const char *)0;' >> $@
+	echo '    const char * platform_value = (const char *)0;' >> $@
+	echo '    fputs(METADATA, stderr);' >> $@
+	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout);' >> $@
+	echo '    release_keyword = COM_DIAG_DIMINUTO_RELEASE_KEYWORD;' >> $@
+	echo '    release_value = COM_DIAG_DIMINUTO_RELEASE_VALUE;' >> $@
+	echo '    vintage_keyword = COM_DIAG_DIMINUTO_VINTAGE_KEYWORD;' >> $@
+	echo '    vintage_value = COM_DIAG_DIMINUTO_VINTAGE_VALUE;' >> $@
+	echo '    platform_keyword = COM_DIAG_DIMINUTO_PLATFORM_KEYWORD;' >> $@
+	echo '    platform_value = COM_DIAG_DIMINUTO_PLATFORM_VALUE;' >> $@
+	echo '    assert(release_keyword != (const char *)0);' >> $@
+	echo '    assert(release_value != (const char *)0);' >> $@
+	echo '    assert(vintage_keyword != (const char *)0);' >> $@
+	echo '    assert(vintage_value != (const char *)0);' >> $@
+	echo '    assert(platform_keyword != (const char *)0);' >> $@
+	echo '    assert(platform_value != (const char *)0);' >> $@
+	echo '    return 0;' >> $@
+	echo '}' >> $@
+
+else
+
+$(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
+	@echo MAKE_VERSION=$(MAKE_VERSION)
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -440,6 +522,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 	echo '    assert(platform_value != (const char *)0);' >> $@
 	echo '    return 0;' >> $@
 	echo '}' >> $@
+
+endif
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
@@ -545,13 +629,14 @@ drivers-make:
 
 ########## Helpers
 
-.PHONY:	backup gccversion implicit defines iquotes isystems
+.PHONY:	makeversion gccversion implicit defines iquotes isystems
 
-backup:	../$(PROJECT).bak.tgz
-	mv $(MVFLAGS) ../$(PROJECT).bak.tgz ../$(PROJECT).$(TIMESTAMP).tgz
-
-../$(PROJECT).bak.tgz:
-	tar cvzf - . > $@
+makeversion:
+	@echo $(MAKE_VERSION)
+	@echo $(sort 3.40 3.81)
+	@echo $(firstword $(sort 3.40 3.81))
+	@echo $(sort 3.90 3.81)
+	@echo $(firstword $(sort 3.90 3.81))
 
 gccversion:
 	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null

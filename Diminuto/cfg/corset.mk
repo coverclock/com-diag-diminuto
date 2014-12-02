@@ -163,6 +163,8 @@ SOARCH				+=	-Wl,--no-undefined
 SOARCH				+=	$(CYANOGENMOD_DIR)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.7/bin/../lib/gcc/arm-linux-androideabi/4.7/libgcc.a
 SOARCH				+=	$(CYANOGENMOD_DIR)/out/target/product/$(CYANOGENMODPRODUCT)/obj/lib/crtend_so.o
 KERNELARCH			:=	O=$(CYANOGENMOD_DIR)/out/target/product/flo/obj/KERNEL_OBJ
+SOXXARCH			:=	$(SOARCH)
+SOXXARCH			+=	-L$(OUT)/$(LIB_DIR) -l$(PROJECT)
 LDLIBRARIES			:=
 LDLIBRARIES			+=	-llog
 LDLIBRARIES			+=	-ldl
