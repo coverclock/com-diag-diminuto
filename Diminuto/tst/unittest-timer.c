@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <errno.h>
 
 int main(int argc, char ** argv)
@@ -50,7 +51,7 @@ int main(int argc, char ** argv)
     diminuto_core_enable();
     diminuto_alarm_install(0);
 
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
 
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
         "requested", "computed", "measured", "error");

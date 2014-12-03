@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <errno.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -69,7 +70,7 @@ static void epoch(diminuto_ticks_t now, int verbose)
     timezone = diminuto_time_timezone(now);
     daylightsaving = diminuto_time_daylightsaving(now);
     juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
     zh = (-timezone / hertz) / 3600;
     zm = (-timezone / hertz) % 3600;
     dh = (daylightsaving / hertz) / 3600;
@@ -132,7 +133,7 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
 
     /*
      * If the unit test gets through TEST 0 successfully, chances are

@@ -11,6 +11,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -119,7 +120,7 @@ int main(int argc, char * argv[])
 
     }
 
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
 
     fd = open("/dev/null", O_RDWR);
     ASSERT(fd >= 0);

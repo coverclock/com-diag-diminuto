@@ -635,7 +635,7 @@ int main(int argc, char ** argv)
 			totalsent = 0;
 			done = 0;
 
-			diminuto_delay(diminuto_time_frequency(), !0);
+			diminuto_delay(diminuto_frequency(), !0);
 
 			do {
 

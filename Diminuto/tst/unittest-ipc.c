@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -38,7 +39,7 @@ int main(void)
 
     SETLOGMASK();
 
-	hertz = diminuto_time_frequency();
+	hertz = diminuto_frequency();
 
 	{
         diminuto_ipv4_t address;

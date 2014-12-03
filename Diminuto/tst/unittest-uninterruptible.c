@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
 #include <stdio.h>
 #include <errno.h>
@@ -24,7 +25,7 @@ int main(int argc, char ** argv)
     int alarmed;
 
     diminuto_alarm_install(0);
-    hertz = diminuto_time_frequency();
+    hertz = diminuto_frequency();
 
     diminuto_timer_periodic(hertz / 20);
     remaining = diminuto_delay(hertz, !0);

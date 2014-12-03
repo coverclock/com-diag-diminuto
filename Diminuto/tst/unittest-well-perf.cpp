@@ -37,6 +37,7 @@ extern "C" {
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 }
 
 #include <stdio.h>
@@ -124,7 +125,7 @@ int main(int argc, char ** argv) {
 
 	mask = (argc < 2) ? ~0 : atoi(argv[1]);
 
-	frequency = diminuto_time_frequency();
+	frequency = diminuto_frequency();
 
 	/* No well. */
 

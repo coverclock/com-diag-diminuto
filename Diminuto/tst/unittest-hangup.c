@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -30,7 +31,7 @@ int main(int argc, char ** argv)
 
 	diminuto_core_enable();
 
-	hertz = diminuto_time_frequency();
+	hertz = diminuto_frequency();
 
 	if (argc > 1) {
 
