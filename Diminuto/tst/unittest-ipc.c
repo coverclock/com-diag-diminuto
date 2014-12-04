@@ -89,6 +89,30 @@ int main(void)
                 break;
             }
         }
+        /*
+         * "nslookup google.com" used to resolve as multiple addresses. But
+         * today it doesn't. So I added the "amazon.com" test below. So far
+         * Amazon.com still resolves as multiple addresses.
+         */
+        EXPECT(ii > 0);
+        EXPECT(ii < LIMIT);
+
+    	free(addresses);
+    }
+
+    {
+        diminuto_ipv4_t * addresses;
+        size_t ii;
+
+        addresses = diminuto_ipc_addresses("amazon.com");
+        ASSERT(addresses != (diminuto_ipv4_t *)0);
+
+        for (ii = 0; ii < LIMIT; ++ii) {
+            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "amazon.com", addresses[ii], 0UL);
+            if (addresses[ii] == 0UL) {
+                break;
+            }
+        }
         EXPECT(ii > 1);
         EXPECT(ii < LIMIT);
 
