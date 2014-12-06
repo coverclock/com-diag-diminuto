@@ -36,18 +36,21 @@ extern diminuto_log_mask_t diminuto_log_mask;
 #define DIMINUTO_LOG_OTHER            7
 
 /**
- * Generate a sixty-four bit debug mask using a @_LAYER_ value from zero to
- * seven and a @_PRIORITY_ value from zero to seven.
+ * @def DIMINUTO_LOG_MASK
+ * Generate a sixty-four bit debug mask using a @a _LAYER_ value from zero to
+ * seven and a @a _PRIORITY_ value from zero to seven.
  */
 #define DIMINUTO_LOG_MASK(_LAYER_, _PRIORITY_) (1ULL<<(((_LAYER_)<<3)|(_PRIORITY_))
 
 /**
- * Enable logging for @_MASK_.
+ * @def DIMINUTO_LOG_ENABLE
+ * Enable logging for @a _MASK_.
  */
 #define DIMINUTO_LOG_ENABLE(_MASK_) (diminuto_log_mask |= (_MASK_))
 
 /**
- * Disable logging for @_MASK_.
+ * @def DIMINUTO_LOG_DISABLE
+ * Disable logging for @a _MASK_.
  */
 #define DIMINUTO_LOG_DISABLE(_MASK_) (diminuto_log_mask &= ~(_MASK_))
 

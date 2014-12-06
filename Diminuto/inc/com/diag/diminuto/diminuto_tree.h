@@ -274,7 +274,7 @@ static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
 
 /**
  * Return true of a node is a leaf (that is, its pointer is null).
- * @param rootp is a pointer a node, which may be null.
+ * @param nodep is a pointer a node, which may be null.
  * @return true if the node is a leaf.
  */
 static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)

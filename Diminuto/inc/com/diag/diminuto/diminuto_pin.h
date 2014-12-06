@@ -72,7 +72,7 @@ typedef enum DiminutoPinEdge {
  * edge (1), falling edge (2), or both edges (3). This is only useful for pins
  * wired to produce an interrupt.
  * @param pin identifies the pin by number from the data sheet.
- * @param high if !0 configures the pin for active high, else active low.
+ * @param edge is 0 for none, 1 for rising, 2 for falling, or 3 for both.
  * @return >=0 for success, <0 for error.
  */
 extern int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge);

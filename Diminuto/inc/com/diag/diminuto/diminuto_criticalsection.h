@@ -35,7 +35,7 @@
 	 * @def DIMINUTO_CRITICAL_SECTION_END
 	 * End a code section that was serialized using the pthread mutex specified at
 	 * the beginning of the block by unlocking the mutex and returning the thread
-	 * cancellation state to its value at the beginning of the block..
+	 * cancellation state to its value at the beginning of the block.
 	 */
 #	define DIMINUTO_CRITICAL_SECTION_END \
 			} while (0); \
