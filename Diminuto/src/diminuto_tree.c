@@ -544,7 +544,7 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
 void diminuto_tree_log(diminuto_tree_t * nodep)
 {
     if (nodep) {
-        DIMINUTO_LOG_DEBUG("diminuto_tree_t%p[%zu]: { color=%d parent=%p left=%p right=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->color, nodep->parent, nodep->left, nodep->right, nodep->root, nodep->data);
+        DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]: { color=%d parent=%p left=%p right=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->color, nodep->parent, nodep->left, nodep->right, nodep->root, nodep->data);
     } else {
     	DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }

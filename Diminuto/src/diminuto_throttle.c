@@ -18,24 +18,11 @@ diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, dimi
 
     elapsed = (throttlep->now = now) - throttlep->then;
     if (throttlep->expected <= elapsed) {
-        /*
-         * The event occurred on or after the expected point on the time line.
-         */
         throttlep->actual = 0;
         throttlep->alarming = 0;
     } else if ((throttlep->actual = throttlep->expected - elapsed) <= throttlep->limit) {
-        /*
-         * The event occurred before the expected point on the time line but
-         * within the window of the limit.
-         */
         throttlep->alarming = 0;
     } else {
-        /*
-         * The event occurred before the expected point on the time line and
-         * outside of the window of the limit. If the event is committed, the
-         * event stream will be in violation of its traffic contract. We can
-         * compute the delay necessary to be within the contract.
-         */
         delay = throttlep->actual - throttlep->limit;
         throttlep->alarming = !0;
     }
