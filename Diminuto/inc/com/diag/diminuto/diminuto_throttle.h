@@ -9,7 +9,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- * WORK IN PROGRESS!
  *
  * Implement a Generic Cell Rate Algorithm (GCRA) using a virtual scheduler.
  *

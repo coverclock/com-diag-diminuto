@@ -160,6 +160,11 @@ int main(int argc, char ** argv)
         now += 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
+        /**/
+        now += ii - 2;
+        ASSERT(diminuto_throttle_request(tp, now) == 2);
+        now += 2;
+        ASSERT(!diminuto_throttle_admit(tp, now));
     }
 
     EXIT();
