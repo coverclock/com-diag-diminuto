@@ -13,18 +13,20 @@
 
 diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
-    diminuto_ticks_t delay = 0;
+    diminuto_ticks_t delay;
     diminuto_ticks_t elapsed;
 
     elapsed = (throttlep->now = now) - throttlep->then;
     if (throttlep->expected <= elapsed) {
         throttlep->actual = 0;
         throttlep->alarming = 0;
+        delay = 0;
     } else if ((throttlep->actual = throttlep->expected - elapsed) <= throttlep->limit) {
         throttlep->alarming = 0;
+        delay = 0;
     } else {
-        delay = throttlep->actual - throttlep->limit;
         throttlep->alarming = !0;
+        delay = throttlep->actual - throttlep->limit;
     }
 
     return delay;

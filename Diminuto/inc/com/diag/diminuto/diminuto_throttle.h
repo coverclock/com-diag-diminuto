@@ -30,6 +30,15 @@
  *
  * ATM Forum, Traffic Management Specification Version 4.1, af-tm-0121.000,
  * March 1999
+ *
+ * Chip Overclock, "Traffic Management", December 2006,
+ * http://coverclock.blogspot.com/2006/12/traffic-management.html
+ *
+ * Chip Overclock, "Rate Control Using Throttles", January 2007,
+ * http://coverclock.blogspot.com/2007/01/rate-control-and-throttles.html
+ *
+ * Chip Overclock, "Traffic Contracts", January 2007,
+ * http://coverclock.blogspot.com/2007/01/traffic-contracts.html
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
