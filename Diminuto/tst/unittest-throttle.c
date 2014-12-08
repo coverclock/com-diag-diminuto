@@ -14,11 +14,6 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 
-static void dump(diminuto_throttle_t * tp)
-{
-     fprintf(stderr, "diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d }\n", tp, sizeof(*tp), tp->now - tp->then, tp->increment, tp->limit, tp->expected, tp->actual, tp->alarmed, tp->alarming);
-}
-
 int main(int argc, char ** argv)
 {
     SETLOGMASK();

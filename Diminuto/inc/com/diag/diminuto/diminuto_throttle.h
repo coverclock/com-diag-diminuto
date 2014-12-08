@@ -164,4 +164,10 @@ static inline int diminuto_throttle_admit(diminuto_throttle_t * throttlep, dimin
     return diminuto_throttle_admitn(throttlep, now, 1);
 }
 
+/**
+ * Log the state of a throttle.
+ * @param throttlep is a pointer to the throttle.
+ */
+extern void diminuto_throttle_log(diminuto_throttle_t * throttlep);
+
 #endif

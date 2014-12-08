@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_throttle.h"
+#include "com/diag/diminuto/diminuto_log.h"
 
 diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
@@ -46,4 +47,13 @@ int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t n
     throttlep->alarming = 0;
     throttlep->alarmed = 0;
     return throttlep->alarmed;
+}
+
+void diminuto_throttle_log(diminuto_throttle_t * throttlep)
+{
+    if (throttlep != (diminuto_throttle_t *)0) {
+        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d }\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->alarmed, throttlep->alarming);
+    } else {
+        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]\n", throttlep, sizeof(*throttlep));
+    }
 }
