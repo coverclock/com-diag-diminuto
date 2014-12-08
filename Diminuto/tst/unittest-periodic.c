@@ -21,7 +21,7 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_ticks_t hertz;
+    diminuto_ticks_t hertz;
     diminuto_ticks_t then;
     diminuto_ticks_t now;
     int64_t measured;

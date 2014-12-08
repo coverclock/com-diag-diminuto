@@ -26,7 +26,7 @@ static inline diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shap
     return shaperp;
 }
 
-extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t peakrate, diminuto_ticks_t jittertolerance, size_t sustainablerate, size_t maximumburstsize, diminuto_ticks_t now);
+extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t peakrate, diminuto_ticks_t jittertolerance, size_t sustainedrate, size_t maximumburstsize, diminuto_ticks_t now);
 
 static inline diminuto_ticks_t diminuto_shaper_now(void)
 {
