@@ -44,15 +44,16 @@ int main(int argc, char ** argv)
         diminuto_ticks_t duration = 0;
         int64_t peak = 0;
         int64_t sustained;
-        sp = &shaper;
-        ASSERT(diminuto_shaper_init(sp, PEAK, TOLERANCE, SUSTAINED, BURST, now) == sp);
+        int64_t instantaneous;
+        sp = diminuto_shaper_init(&shaper, PEAK, TOLERANCE, SUSTAINED, BURST, now);
+        ASSERT(sp == &shaper);
         srand(diminuto_time_clock());
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
             if (delay >= diminuto_frequency()) {
-                sustained = size / (delay / diminuto_frequency());
-                if (sustained > peak) {
-                    peak = sustained;
+                instantaneous = size / (delay / diminuto_frequency());
+                if (instantaneous > peak) {
+                    peak = instantaneous;
                 }
             }
             now += delay;
