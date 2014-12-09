@@ -47,6 +47,7 @@ int main(int argc, char ** argv)
         int64_t instantaneous;
         sp = diminuto_shaper_init(&shaper, PEAK, TOLERANCE, SUSTAINED, BURST, now);
         ASSERT(sp == &shaper);
+        diminuto_shaper_log(sp);
         srand(diminuto_time_clock());
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);

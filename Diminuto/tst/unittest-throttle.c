@@ -490,6 +490,7 @@ int main(int argc, char ** argv)
         uint64_t measured;
         tp = diminuto_throttle_init(&throttle, diminuto_frequency() / BANDWIDTH, 0, now);
         ASSERT(tp == &throttle);
+        diminuto_throttle_log(tp);
         srand(diminuto_time_clock());
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_throttle_request(tp, now);
