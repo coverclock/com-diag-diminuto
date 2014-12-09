@@ -13,7 +13,7 @@
  * Use two throttles, a throttle being an implementation of the Generic Cell
  * Rate Algorithm (GCRA) using a Virtual Scheduler, to implement a traffic
  * shaper. The shaper can shape the emission of an event stream to a peak rate
- * with a jitter tolerance, and a sustainable rate with a maximum burst size.
+ * with a jitter tolerance, and a sustained rate with a maximum burst size.
  *
  * REFERENCES
  *
