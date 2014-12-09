@@ -15,9 +15,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static const size_t BLOCKSIZE = 32768;
+
 static inline size_t blocksize(void)
 {
-    return (rand() % 32768) + 1;
+    return (rand() % BLOCKSIZE) + 1;
 }
 
 int main(int argc, char ** argv)
@@ -497,16 +499,16 @@ int main(int argc, char ** argv)
             ASSERT(delay == 0);
             size = blocksize();
             ASSERT(size > 0);
-            ASSERT(size <= 32768);
+            ASSERT(size <= BLOCKSIZE);
             total += size;
             admissable = !diminuto_throttle_commitn(tp, size);
             ASSERT(admissable);
         }
         ASSERT(total > 0);
-        ASSERT(duration > 0);
+        ASSERT(duration > diminuto_frequency());
         measured = total / (duration / diminuto_frequency());
         DIMINUTO_LOG_DEBUG("operations=%zu total=%zubytes average=%zubytes duration=%lldseconds requested=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, measured);
-        ASSERT(measured == BANDWIDTH);
+        ASSERT(llabs(measured - BANDWIDTH) < (BANDWIDTH / 200));
      }
 
     EXIT();
