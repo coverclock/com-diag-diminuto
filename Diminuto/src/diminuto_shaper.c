@@ -6,11 +6,11 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- * WORK IN PROGRESS!
  */
 
 #include "com/diag/diminuto/diminuto_shaper.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
 
 diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t peakrate, diminuto_ticks_t jittertolerance, size_t sustainedrate, size_t maximumburstsize, diminuto_ticks_t now)
 {
@@ -36,4 +36,15 @@ diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t pea
     diminuto_throttle_init(&(shaperp->sustained), sustainedincrement, sustainedlimit, now);
 
     return shaperp;
+}
+
+void diminuto_shaper_log(diminuto_shaper_t * shaperp)
+{
+    if (shaperp != (diminuto_shaper_t *)0) {
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]:\n", shaperp, sizeof(*shaperp));
+        diminuto_throttle_log(&(shaperp->peak));
+        diminuto_throttle_log(&(shaperp->sustained));
+    } else {
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]\n", shaperp, sizeof(*shaperp));
+    }
 }

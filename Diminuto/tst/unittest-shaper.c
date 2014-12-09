@@ -6,7 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- * WORK IN PROGRESS!
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -31,13 +30,14 @@ int main(int argc, char ** argv)
         static const size_t PEAK = 2048;
         static const diminuto_ticks_t TOLERANCE = 0;
         static const size_t SUSTAINED = 1024;
-        static const size_t BURST = 32768;
+        static const size_t BURST = 512;
         static const size_t OPERATIONS = 1000000;
         diminuto_shaper_t shaper;
         diminuto_shaper_t * sp;
-        size_t size;
+        size_t size = 0;
         diminuto_ticks_t now = 0;
         diminuto_ticks_t delay;
+        diminuto_ticks_t delayprime;
         size_t iops;
         int admissable;
         uint64_t total = 0;
@@ -49,16 +49,22 @@ int main(int argc, char ** argv)
         srand(diminuto_time_clock());
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
+            if (delay >= diminuto_frequency()) {
+                sustained = size / (delay / diminuto_frequency());
+                if (sustained > peak) {
+                    peak = sustained;
+                }
+            }
             now += delay;
             duration += delay;
-            if (duration > diminuto_frequency()) {
+            if (duration >= diminuto_frequency()) {
                 sustained = total / (duration / diminuto_frequency());
                 if (sustained > peak) {
                     peak = sustained;
                 }
             }
-            delay = diminuto_shaper_request(sp, now);
-            ASSERT(delay == 0);
+            delayprime = diminuto_shaper_request(sp, now);
+            ASSERT(delayprime == 0);
             size = blocksize();
             ASSERT(size > 0);
             ASSERT(size <= BLOCKSIZE);
@@ -70,7 +76,7 @@ int main(int argc, char ** argv)
         ASSERT(duration > diminuto_frequency());
         sustained = total / (duration / diminuto_frequency());
         DIMINUTO_LOG_DEBUG("operations=%zu total=%zubytes average=%zubytes duration=%lldseconds peak=%zubytes/second measured=%lldbytes/second sustained=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
-        ASSERT(peak <= PEAK);
+        ASSERT(llabs(peak - PEAK) < (PEAK / 200));
         ASSERT(llabs(sustained - SUSTAINED) < (SUSTAINED / 200));
      }
 

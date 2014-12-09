@@ -9,7 +9,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- * WORK IN PROGRESS!
  *
  * Use two throttles, a throttle being an implementation of the Generic Cell
  * Rate Algorithm (GCRA) using a Virtual Scheduler, to implement a traffic
@@ -49,7 +48,7 @@ extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, siz
 
 static inline diminuto_ticks_t diminuto_shaper_now(void)
 {
-    return diminuto_shaper_now();
+    return diminuto_throttle_now();
 }
 
 static inline diminuto_ticks_t diminuto_shaper_request(diminuto_shaper_t * shaperp, diminuto_ticks_t now)
@@ -94,5 +93,7 @@ static inline int diminuto_shaper_admit(diminuto_shaper_t * shaperp, diminuto_ti
 {
     return diminuto_shaper_admitn(shaperp, now, 1);
 }
+
+extern void diminuto_shaper_log(diminuto_shaper_t * shaperp);
 
 #endif
