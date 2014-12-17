@@ -11,6 +11,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_platform.h"
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
@@ -93,8 +94,7 @@ diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
 	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
 		diminuto_perror("diminuto_time_timezone: localtime_r");
-	}
-	else if (datetimep->tm_isdst) {
+	} else if (datetimep->tm_isdst) {
 #if defined(__USE_BSD)
 		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
 	} else {
@@ -107,10 +107,14 @@ diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF - 3600, 0, 1);
 	} else {
 		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF, 0, 1);
-#else
+#elif defined(COM_DIAG_DIMINUTO_PLATFORM_GLIBC)
 		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff - 3600, 0, 1);
 	} else {
 		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff, 0, 1);
+#else
+		timezone = diminuto_frequency_seconds2ticks(-3600, 0, 1);
+	} else {
+		timezone = diminuto_frequency_seconds2ticks(0, 0, 1);
 #endif
 	}
 

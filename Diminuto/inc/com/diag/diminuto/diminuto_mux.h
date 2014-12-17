@@ -64,59 +64,59 @@ typedef struct DiminutoMux {
  * is initialized will continue to be blocked when the multiplexer is waiting.
  * Signals can be removed from this cached mask using the unblock multiplexer
  * function.
- * @param that points to a multiplexer structure.
+ * @param muxp points to a multiplexer structure.
  */
-extern void diminuto_mux_init(diminuto_mux_t * that);
+extern void diminuto_mux_init(diminuto_mux_t * muxp);
 
 /**
  * Register a file descriptor with the multiplexer for reading.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_register_read(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
 
 /**
  * Unregister a file descriptor from the multiplexer for reading.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param fd is an registered file descriptor.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_unregister_read(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
 
 /**
  * Register a file descriptor with the multiplexer for writing.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_register_write(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
 
 /**
  * Unregister a file descriptor from the multiplexer for writing.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param fd is a registered file descriptor.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_unregister_write(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
 
 /**
  * Add a signal to the mask of those to be atomically unblocked while the
  * multiplexer is waiting.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param signum is an unregistered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_register_signal(diminuto_mux_t * that, int signum);
+extern int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum);
 
 /**
  * Remove a signal from the mask of those to be atomically unblocked while the
  * multiplexer is waiting.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param signum is a registered blocked signal.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
+extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
 
 /**
  * Wait until one or more registered file descriptors are ready for either
@@ -124,33 +124,33 @@ extern int diminuto_mux_unregister_signal(diminuto_mux_t * that, int signum);
  * timeout of zero returns immediately, which is useful for polling. A timeout
  * that is negative causes the multiplexer to block indefinitely until either
  * a file descriptor is ready or one of the registered signals is caught.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param timeout is a timeout period in ticks, 0 for polling, <0 for none.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
-extern int diminuto_mux_wait(diminuto_mux_t * that, diminuto_ticks_t timeout);
+extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t timeout);
 
 /**
  * Return the next registered file descriptor that is ready for reading.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_ready_read(diminuto_mux_t * that);
+extern int diminuto_mux_ready_read(diminuto_mux_t * muxp);
 
 /**
  * Return the next registered file descriptor that is ready for writing.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_ready_write(diminuto_mux_t * that);
+extern int diminuto_mux_ready_write(diminuto_mux_t * muxp);
 
 /**
  * Unregister a registered file descriptor and close it. The file descriptor
  * is not closed if it is not registered.
- * @param that points to an initialized multiplexer structure.
+ * @param muxp points to an initialized multiplexer structure.
  * @param fd is a registered file descriptor.
  * @return 0 for success, <0 for error.
  */
-extern int diminuto_mux_close(diminuto_mux_t * that, int fd);
+extern int diminuto_mux_close(diminuto_mux_t * muxp, int fd);
 
 #endif

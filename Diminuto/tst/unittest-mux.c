@@ -36,9 +36,9 @@ static const size_t TOTAL = 1024 * 1024 * 100;
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
 
-static const char * diminuto_mux_set_name(diminuto_mux_t * that, diminuto_mux_set_t * set)
+static const char * diminuto_mux_set_name(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
 {
-	return (set == &that->read) ? "read" : (set == &that->write) ? "write" : "other";
+	return (setp == &muxp->read) ? "read" : (setp == &muxp->write) ? "write" : "other";
 }
 
 static void diminuto_mux_sigs_dump(sigset_t * sigs)
@@ -66,24 +66,24 @@ static void diminuto_mux_fds_dump(fd_set * fds)
 
 }
 
-static void diminuto_mux_set_dump(diminuto_mux_t * that, diminuto_mux_set_t * set)
+static void diminuto_mux_set_dump(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
 {
 	const char * name;
 
-	name = diminuto_mux_set_name(that, set);
-	DIMINUTO_LOG_DEBUG("mux@%p: %s.next=%d", that, name, set->next);
-	DIMINUTO_LOG_DEBUG("mux@%p: %s.active=<", that, name); diminuto_mux_fds_dump(&set->active); DIMINUTO_LOG_DEBUG(">");
-	DIMINUTO_LOG_DEBUG("mux@%p: %s.ready=<", that, name); diminuto_mux_fds_dump(&set->ready); DIMINUTO_LOG_DEBUG(">");
+	name = diminuto_mux_set_name(muxp, setp);
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.next=%d", muxp, name, setp->next);
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.active=<", muxp, name); diminuto_mux_fds_dump(&setp->active); DIMINUTO_LOG_DEBUG(">");
+	DIMINUTO_LOG_DEBUG("mux@%p: %s.ready=<", muxp, name); diminuto_mux_fds_dump(&setp->ready); DIMINUTO_LOG_DEBUG(">");
 }
 
-static void diminuto_mux_dump(diminuto_mux_t * that)
+static void diminuto_mux_dump(diminuto_mux_t * muxp)
 {
 	int signum;
 
-	DIMINUTO_LOG_DEBUG("mux@%p: maxfd=%d", that, that->maxfd);
-	diminuto_mux_set_dump(that, &that->read);
-	diminuto_mux_set_dump(that, &that->write);
-	DIMINUTO_LOG_DEBUG("mux@%p: mask=<", that); diminuto_mux_sigs_dump(&that->mask); DIMINUTO_LOG_DEBUG(">");
+	DIMINUTO_LOG_DEBUG("mux@%p: maxfd=%d", muxp, muxp->maxfd);
+	diminuto_mux_set_dump(muxp, &muxp->read);
+	diminuto_mux_set_dump(muxp, &muxp->write);
+	DIMINUTO_LOG_DEBUG("mux@%p: mask=<", muxp); diminuto_mux_sigs_dump(&muxp->mask); DIMINUTO_LOG_DEBUG(">");
 }
 
 static void diminuto_mux_test(diminuto_ticks_t timeout)
