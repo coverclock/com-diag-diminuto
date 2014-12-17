@@ -77,7 +77,7 @@ int main(int argc, char ** argv)
         ASSERT(total > 0);
         ASSERT(duration > diminuto_frequency());
         sustained = total / (duration / diminuto_frequency());
-        DIMINUTO_LOG_DEBUG("operations=%zu total=%zubytes average=%zubytes duration=%lldseconds peak=%zubytes/second measured=%lldbytes/second sustained=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
+        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lldbytes/second sustained=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
         ASSERT(llabs(peak - PEAK) < (PEAK / 200));
         ASSERT(llabs(sustained - SUSTAINED) < (SUSTAINED / 200));
      }

@@ -508,7 +508,7 @@ int main(int argc, char ** argv)
         ASSERT(total > 0);
         ASSERT(duration > diminuto_frequency());
         measured = total / (duration / diminuto_frequency());
-        DIMINUTO_LOG_DEBUG("operations=%zu total=%zubytes average=%zubytes duration=%lldseconds requested=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, measured);
+        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds requested=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, measured);
         ASSERT(llabs(measured - BANDWIDTH) < (BANDWIDTH / 200));
      }
 
