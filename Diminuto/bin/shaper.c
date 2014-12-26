@@ -6,6 +6,7 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * WORK IN PROGRESS
  *
  * USAGE
  *
@@ -43,6 +44,7 @@ static const size_t BLOCKSIZE = 32768;
 static const char * program = "shaper";
 static pid_t pid = 0;
 static double peak = 0.0;
+static double sustained = 0.0;
 static size_t total = 0;
 static size_t burst = 0;
 static diminuto_ticks_t frequency = 0;
@@ -51,19 +53,15 @@ static diminuto_ticks_t duration = 0;
 static void report(void)
 {
     double elapsed;
-    double sustained;
 
-    fprintf(stderr, "shaper[%d]: total=%zu\n", pid, total);
     elapsed = duration;
     elapsed /= frequency;
-    fprintf(stderr, "shaper[%d]: elapsed=%lf\n", pid, elapsed);
-    fprintf(stderr, "shaper[%d]: peak=%lf\n", pid, peak);
-    if (duration > 0) {
-        sustained = total;
-        sustained /= elapsed;
-        fprintf(stderr, "shaper[%d]: sustained=%lf\n", pid, sustained);
-    }
-    fprintf(stderr, "shaper[%d]: burst=%zu\n", pid, burst);
+
+    fprintf(stderr, "shaper[%d]: total=%zu bytes\n", pid, total);
+    fprintf(stderr, "shaper[%d]: elapsed=%lf seconds\n", pid, elapsed);
+    fprintf(stderr, "shaper[%d]: peak=%lf bytes per second\n", pid, peak);
+    fprintf(stderr, "shaper[%d]: sustained=%lf bytes per second\n", pid, sustained);
+    fprintf(stderr, "shaper[%d]: burst=%zu bytes\n", pid, burst);
 }
 
 static void handler(int signum)
@@ -90,6 +88,7 @@ int main(int argc, char * argv[])
     size_t size;
     double instantaneous;
     double elapsed;
+    double average;
     size_t blocksize;
     uint8_t * buffer;
     struct sigaction action;
@@ -102,35 +101,26 @@ int main(int argc, char * argv[])
     frequency = diminuto_frequency();
     blocksize = BLOCKSIZE;
 
-    while ((opt = getopt(argc, argv, "dp:j:s:m:")) >= 0) {
+    while ((opt = getopt(argc, argv, "b:dj:m:p:s:")) >= 0) {
 
         switch (opt) {
+
+        case 'b':
+            blocksize = strtoull(optarg, &end, 0);
+            if ((blocksize == 0) || (*end != '\0')) {
+                errno = EINVAL;
+                perror(optarg);
+                return 1;
+            }
+            break;
 
         case 'd':
             debug = !0;
             break;
 
-        case 'p':
-            peakrate = strtoull(optarg, &end, 0);
-            if ((peakrate == 0) || (*end != '\0')) {
-                errno = EINVAL;
-                perror(optarg);
-                return 1;
-            }
-            break;
-
         case 'j':
             jittertolerance = strtoull(optarg, &end, 0);
             if (*end != '\0') {
-                errno = EINVAL;
-                perror(optarg);
-                return 1;
-            }
-            break;
-
-        case 's':
-            sustainedrate = strtoull(optarg, &end, 0);
-            if ((sustainedrate == 0) || (*end != '\0')) {
                 errno = EINVAL;
                 perror(optarg);
                 return 1;
@@ -146,12 +136,31 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'p':
+            peakrate = strtoull(optarg, &end, 0);
+            if ((peakrate == 0) || (*end != '\0')) {
+                errno = EINVAL;
+                perror(optarg);
+                return 1;
+            }
+            break;
+
+        case 's':
+            sustainedrate = strtoull(optarg, &end, 0);
+            if ((sustainedrate == 0) || (*end != '\0')) {
+                errno = EINVAL;
+                perror(optarg);
+                return 1;
+            }
+            break;
+
         default:
-            fprintf(stderr, "usage: %s [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
-            fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate in bytes per second\n");
-            fprintf(stderr, "       -j USECONDS          Set the jitter tolerance in microseconds\n");
-            fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate in bytes per second\n");
-            fprintf(stderr, "       -m BYTES             Set the maximum burst size in bytes\n");
+            fprintf(stderr, "usage: %s [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
+            fprintf(stderr, "       -b BYTES             Use an I/O blocksize of BYTES instead of %zu bytes.\n", blocksize);
+            fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second\n");
+            fprintf(stderr, "       -j USECONDS          Set the jitter tolerance to USECONDS microseconds\n");
+            fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second\n");
+            fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes\n");
             return 1;
             break;
 
@@ -162,24 +171,19 @@ int main(int argc, char * argv[])
     if (sustainedrate == 0) {
         sustainedrate = peakrate;
         maximumburstsize = 0;
-    }
-
-    if (peakrate == 0) {
+    } else if (peakrate == 0) {
         peakrate = sustainedrate;
         maximumburstsize = 0;
-    }
-
-    if (maximumburstsize == 0) {
+    } else if (maximumburstsize == 0) {
         peakrate = sustainedrate;
-    }
-
-    if (sustainedrate > peakrate) {
+    } else if (sustainedrate > peakrate) {
         errno = EINVAL;
         perror("-s");
         return 1;
     }
 
     if (debug) {
+        fprintf(stderr, "shaper[%d]: -b %zu\n", pid, blocksize);
         fprintf(stderr, "shaper[%d]: -p %zu\n", pid, peakrate);
         fprintf(stderr, "shaper[%d]: -j %lld\n", pid, jittertolerance);
         fprintf(stderr, "shaper[%d]: -s %zu\n", pid, sustainedrate);
@@ -251,23 +255,27 @@ int main(int argc, char * argv[])
             }
             diminuto_shaper_commitn(&shaper, size);
         }
-        instantaneous = size;
         interval = now - then;
-        if (interval > 0) {
-            elapsed = interval;
-            elapsed /= frequency;
-            instantaneous = total;
-            instantaneous /= elapsed;
-            if (instantaneous > peak) {
-                peak = instantaneous;
-            }
-        }
+        duration += interval;
+        then = now;
         total += size;
         if (size > burst) {
             burst = size;
         }
-        duration += interval;
-        then = now;
+        if (total > size) {
+            elapsed = interval;
+            elapsed /= frequency;
+            instantaneous = size;
+            instantaneous /= elapsed;
+            if (instantaneous > peak) {
+                peak = instantaneous;
+            }
+            elapsed = duration;
+            elapsed /= frequency;
+            average = total;
+            average /= elapsed;
+            sustained = average;
+        }
         if ((size = fwrite(buffer, size, 1, stdout)) == size) {
             /* Do nothing. */
         } else if (feof(stdout)) {
