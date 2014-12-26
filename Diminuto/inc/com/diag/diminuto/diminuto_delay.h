@@ -53,6 +53,39 @@ static inline diminuto_ticks_t diminuto_delay_frequency(void)
 extern diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable);
 
 /**
+ * Delay the calling process for the specified number of ticks.
+ * Return if interrupted with errno set to EINTR. Return with errno set to
+ * something other then EINTR of an error occurs. The actual delay duration
+ * will be approximate depending on the granularity of the system clock and
+ * latency in the implementation. If a delay of zero ticks is specified, the
+ * behavior of the function is undefined and will depend on what the underlying
+ * platform does.
+ * @param ticks is the desired delay interval in ticks.
+ * @return the number of ticks remaining in the delay duration if
+ * the function returned prematurely.
+ */
+static inline diminuto_ticks_t diminuto_delay_interruptable(diminuto_ticks_t ticks)
+{
+    return diminuto_delay(ticks, !0);
+}
+
+/**
+ * Delay the calling process for the specified number of ticks. Ignore
+ * ignorable signals. Return with errno set to something other then EINTR of an
+ * error occurs. The actual delay duration will be approximate depending on the
+ * granularity of the system clock and latency in the implementation. If a
+ * delay of zero ticks is specified, the behavior of the function is undefined
+ * and will depend on what the underlying platform does.
+ * @param ticks is the desired delay interval in ticks.
+ * @return the number of ticks remaining in the delay duration if
+ * the function returned prematurely.
+ */
+static inline diminuto_ticks_t diminuto_delay_uninterruptable(diminuto_ticks_t ticks)
+{
+    return diminuto_delay(ticks, 0);
+}
+
+/**
  * Force a context switch without otherwise blocking.
  * @return 0 if successful, <0 with errno set otherwise.
  */
