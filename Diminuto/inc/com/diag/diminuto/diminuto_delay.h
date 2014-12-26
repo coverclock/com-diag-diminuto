@@ -38,7 +38,7 @@ static inline diminuto_ticks_t diminuto_delay_frequency(void)
 
 /**
  * Delay the calling process for the specified number of ticks.
- * If interruptable, return if interrupted with errno set to EINTR,
+ * If interruptible, return if interrupted with errno set to EINTR,
  * otherwise continue delaying. Return with errno set to something other
  * then EINTR of an error occurs. The actual delay duration will be approximate
  * depending on the granularity of the system clock and latency in the
@@ -46,11 +46,11 @@ static inline diminuto_ticks_t diminuto_delay_frequency(void)
  * of the function is undefined and will depend on what the underlying platform
  * does.
  * @param ticks is the desired delay interval in ticks.
- * @param interruptable is true if interruptable, false otherwise.
+ * @param interruptible is true if interruptible, false otherwise.
  * @return the number of ticks remaining in the delay duration if
  * the function returned prematurely.
  */
-extern diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable);
+extern diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptible);
 
 /**
  * Delay the calling process for the specified number of ticks.
@@ -64,7 +64,7 @@ extern diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable
  * @return the number of ticks remaining in the delay duration if
  * the function returned prematurely.
  */
-static inline diminuto_ticks_t diminuto_delay_interruptable(diminuto_ticks_t ticks)
+static inline diminuto_ticks_t diminuto_delay_interruptible(diminuto_ticks_t ticks)
 {
     return diminuto_delay(ticks, !0);
 }
@@ -80,7 +80,7 @@ static inline diminuto_ticks_t diminuto_delay_interruptable(diminuto_ticks_t tic
  * @return the number of ticks remaining in the delay duration if
  * the function returned prematurely.
  */
-static inline diminuto_ticks_t diminuto_delay_uninterruptable(diminuto_ticks_t ticks)
+static inline diminuto_ticks_t diminuto_delay_uninterruptible(diminuto_ticks_t ticks)
 {
     return diminuto_delay(ticks, 0);
 }

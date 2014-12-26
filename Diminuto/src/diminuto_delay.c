@@ -16,7 +16,7 @@
 /* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
-diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
+diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptible)
 {
     struct timespec delay;
     struct timespec remaining;
@@ -35,7 +35,7 @@ diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptable)
             diminuto_perror("diminuto_delay: nanosleep");
             result = remaining;
             break;
-        } else if (interruptable) {
+        } else if (interruptible) {
             result = remaining;
             break;
         } else {

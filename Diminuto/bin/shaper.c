@@ -188,7 +188,7 @@ int main(int argc, char * argv[])
 
     shaped = (peakrate > 0) && (sustainedrate > 0) && (sustainedrate <= peakrate);
 
-    minimum = diminuto_delay_frequency();
+    minimum = frequency / diminuto_delay_frequency();
 
     buffer = malloc(blocksize);
     if (buffer == (uint8_t *)0) {
@@ -219,6 +219,7 @@ int main(int argc, char * argv[])
     then = diminuto_time_elapsed();
     if (shaped) {
         diminuto_shaper_init(&shaper, peakrate, jittertolerance, sustainedrate, maximumburstsize, then);
+        diminuto_shaper_log(&shaper);
     }
 
     while (!0) {
@@ -239,12 +240,12 @@ int main(int argc, char * argv[])
         if (shaped) {
             while (!0) {
                 interval = diminuto_shaper_request(&shaper, now);
-                if (interval == 0) {
+                if (interval <= 0) {
                     break;
                 } else if (interval < minimum) {
                     diminuto_yield();
                 } else {
-                    diminuto_delay_uninterruptable(interval);
+                    diminuto_delay_uninterruptible(interval);
                 }
                 now = diminuto_time_elapsed();
             }
