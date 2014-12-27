@@ -288,18 +288,18 @@ int main(int argc, char * argv[])
         }
 
         if (total > size) {
-            if (interval > 0) {
-                elapsed = interval;
-                elapsed /= frequency;
+            elapsed = interval;
+            elapsed /= frequency;
+            if (elapsed > 0) {
                 rate = size;
                 rate /= elapsed;
                 if (rate > peak) {
                     peak = rate;
                 }
             }
-            if (duration > 0) {
-                elapsed = duration;
-                elapsed /= frequency;
+            elapsed = duration;
+            elapsed /= frequency;
+            if (elapsed > 0) {
                 rate = total;
                 rate /= elapsed;
                 sustained = rate;
