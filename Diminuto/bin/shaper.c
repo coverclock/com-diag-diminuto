@@ -44,6 +44,16 @@
  * peak rate, skewing the measured sustained rate. Particularly for fast traffic
  * sources and large I/O block sizes, the contracted sustained rate is a very
  * long term average.
+ *
+ * This filter uses the Diminuto shaper in its multiple event mode: the contract
+ * specifies the delay for the first byte of the next I/O block to be in
+ * conformance with the contract. But the entire I/O block is written at once
+ * and the shaper updated appropriately so that the first byte of the next I/O
+ * block is in conformance. The resulting traffic is extremely bursty, even
+ * though the long term peak and sustainable rates are correct. The alternative
+ * is to use a I/O block size of one byte, so that every single byte is in
+ * conformance. This causes as much I/O and system call overhead as you would
+ * expect, and isn't really practical.
  */
 
 #include "com/diag/diminuto/diminuto_shaper.h"
