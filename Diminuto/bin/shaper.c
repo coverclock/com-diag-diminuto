@@ -11,11 +11,15 @@
  *
  * shaper [ -d ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]
  *
+ * Consider letting the jitter tolerance ("-j") default to zero microseconds
+ * and setting the maximum burst size ("-m") to the same value in bytes as the
+ * I/O block size ("-b").
+ *
  * EXAMPLES
  *
  * source | shaper | sink
  *
- * source | shaper -b 4096 -p 2048 -j 1000 -s 1024 -m 4096 | sink
+ * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink
  *
  * ABSTRACT
  *
@@ -25,8 +29,21 @@
  * parameters are provided on the command line, traffic is shaped to the
  * specified contract.
  *
- * Consider letting the jitter tolerance ("-j") default to zero microseconds
- * and setting the maximum burst size ("-m") to the I/O block size ("-b").
+ * For traffic sources that generate data with an interarrival time smaller
+ * than the resolution of the system clock (which may be larger than that of
+ * either the Diminuto tick or the POSIX time system call), the peak rate
+ * cannot be calculated. This is because the interarrival time between
+ * successive data events is effectively zero (because it is too short to
+ * measure), so the peak rate is, arithmetically, infinite, even though it is
+ * not really the case. The sustained rate, however, can and is measured.
+ *
+ * For contracts that have maximum burst sizes greater than zero and for which
+ * the peak rate is greater than the sustained rate, the measured sustained rate
+ * may take a long time to reduce to the contracted rate. This is due to the big
+ * bulge at the beginning in which the maximum burst size is transmitted at the
+ * peak rate, skewing the measured sustained rate. Particularly for fast traffic
+ * sources and large I/O block sizes, the contracted sustained rate is a very
+ * long term average.
  */
 
 #include "com/diag/diminuto/diminuto_shaper.h"
@@ -51,8 +68,8 @@ static size_t burst = 0;
 static diminuto_ticks_t frequency = 0;
 static diminuto_ticks_t epoch = 0;
 static diminuto_ticks_t duration = 0;
-static uint64_t peak = 0;
-static uint64_t sustained = 0;
+static int64_t peak = -1;
+static int64_t sustained = 0;
 
 static void report(void)
 {
@@ -85,7 +102,7 @@ int main(int argc, char * argv[])
     diminuto_ticks_t interval;
     diminuto_ticks_t minimum;
     size_t size;
-    uint64_t rate;
+    int64_t rate;
     uint64_t elapsed;
     size_t blocksize;
     uint8_t * buffer;
