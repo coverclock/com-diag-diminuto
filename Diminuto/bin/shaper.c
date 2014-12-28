@@ -69,8 +69,16 @@
 #include <unistd.h>
 #include <signal.h>
 
+typedef enum IO {
+    BLOCK,
+    CHARACTER,
+    LINE,
+} io_t;
+
 static const size_t BLOCKSIZE = 32768;
 static const diminuto_ticks_t JITTERTOLERANCE = 0;
+
+static io_t io = BLOCK;
 static const char * program = (const char *)0;
 static pid_t pid = 0;
 static size_t total = 0;
@@ -79,7 +87,8 @@ static diminuto_ticks_t frequency = 0;
 static diminuto_ticks_t epoch = 0;
 static diminuto_ticks_t duration = 0;
 static int64_t peak = -1;
-static int64_t sustained = 0;
+static int64_t sustained = -1;
+static int debug = 0;
 
 static void report(void)
 {
@@ -98,9 +107,93 @@ static void handler(int signum)
     }
 }
 
+static ssize_t input(uint8_t * buffer, size_t size)
+{
+    ssize_t rc = 0;
+    int ch;
+
+    switch (io) {
+    case BLOCK:
+        rc = fread(buffer, 1, size, stdin);
+        break;
+    case CHARACTER:
+        if ((ch = fgetc(stdin)) != EOF) {
+            *buffer = ch;
+            rc = 1;
+        }
+        break;
+    case LINE:
+        if (fgets(buffer, size, stdin) != NULL) {
+            buffer[size - 1] = '\0';
+            rc = strlen(buffer);
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (rc > 0) {
+        /* Do nothing. */
+    } else if (feof(stdin)) {
+        rc = 0;
+    } else if (ferror(stdin)) {
+        errno = EIO;
+        perror("fread");
+        rc = -1;
+    } else {
+        errno = EINVAL;
+        perror("fread");
+        rc = -1;
+    }
+
+    return rc;
+}
+
+static ssize_t output(const uint8_t * buffer, size_t size)
+{
+    ssize_t rc = 0;
+    int ch;
+
+    switch (io) {
+    case BLOCK:
+        if ((rc = fwrite(buffer, size, 1, stdout)) == 1) {
+            rc = size;
+        }
+        break;
+    case CHARACTER:
+        ch = *buffer;
+        if (fputc(ch, stdout) != EOF) {
+            rc = 1;
+        }
+        break;
+    case LINE:
+        if (fputs(buffer, stdout) > 0) {
+            rc = size;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (rc > 0) {
+        /* Do nothing. */
+    } else if (feof(stdout)) {
+        rc = 0;
+    } else if (ferror(stdout)) {
+        errno = EIO;
+        perror("fwrite");
+        rc = -1;
+    } else {
+        errno = EINVAL;
+        perror("fwrite");
+        rc = -1;
+    }
+
+    return rc;
+}
+
 int main(int argc, char * argv[])
 {
-	int debug = 0;
     diminuto_shaper_t shaper;
     size_t peakrate = 0;
     diminuto_ticks_t jittertolerance = 0;
@@ -111,6 +204,7 @@ int main(int argc, char * argv[])
     diminuto_ticks_t then;
     diminuto_ticks_t interval;
     diminuto_ticks_t minimum;
+    ssize_t rc;
     size_t size;
     int64_t rate;
     uint64_t elapsed;
@@ -122,12 +216,15 @@ int main(int argc, char * argv[])
     char * end;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
     pid = getpid();
     frequency = diminuto_frequency();
+
+    io = BLOCK;
     blocksize = BLOCKSIZE;
     jittertolerance = JITTERTOLERANCE;
 
-    while ((opt = getopt(argc, argv, "b:dj:m:p:s:")) >= 0) {
+    while ((opt = getopt(argc, argv, "b:cdj:lm:p:s:")) >= 0) {
 
         switch (opt) {
 
@@ -138,6 +235,10 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 return 1;
             }
+            break;
+
+        case 'c':
+            io = CHARACTER;
             break;
 
         case 'd':
@@ -151,6 +252,10 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 return 1;
             }
+            break;
+
+        case 'l':
+            io = LINE;
             break;
 
         case 'm':
@@ -181,13 +286,15 @@ int main(int argc, char * argv[])
             break;
 
         default:
-            fprintf(stderr, "usage: %s [ -d ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -d ] [ -l | -c ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
+            fprintf(stderr, "       -b BYTES             Use an I/O buffer of size BYTES instead of %zu bytes.\n", blocksize);
+            fprintf(stderr, "       -c                   Do character I/O instead of block I/O.\n");
             fprintf(stderr, "       -d                   Enable debugging output.\n");
-            fprintf(stderr, "       -b BYTES             Use an I/O blocksize of BYTES instead of %zu bytes.\n", blocksize);
-            fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", jittertolerance);
-            fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second.\n");
+            fprintf(stderr, "       -l                   Do line I/O instead of block I/O.\n");
+            fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes.\n");
+            fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second.\n");
             return 1;
             break;
 
@@ -210,6 +317,18 @@ int main(int argc, char * argv[])
     }
 
     if (debug) {
+        switch (io) {
+        case BLOCK:
+            break;
+        case CHARACTER:
+            fprintf(stderr, "shaper[%d]: -c\n", pid);
+            break;
+        case LINE:
+            fprintf(stderr, "shaper[%d]: -l\n", pid);
+            break;
+        default:
+            break;
+        }
         fprintf(stderr, "shaper[%d]: -b %zu\n", pid, blocksize);
         fprintf(stderr, "shaper[%d]: -p %zu\n", pid, peakrate);
         fprintf(stderr, "shaper[%d]: -j %lld\n", pid, jittertolerance);
@@ -256,22 +375,17 @@ int main(int argc, char * argv[])
 
         /* INPUT */
 
-        if ((size = fread(buffer, 1, blocksize, stdin)) > 0) {
-            now = diminuto_time_elapsed();
-        } else if (feof(stdin)) {
+        if ((rc = input(buffer, blocksize)) > 0) {
+            size = rc;
+        } else if (rc == 0) {
             break;
-        } else if (ferror(stdin)) {
-            errno = EIO;
-            perror("fread");
-            return 3;
         } else {
-            errno = EINVAL;
-            perror("fread");
             return 3;
         }
 
         /* SHAPE */
 
+        now = diminuto_time_elapsed();
         if (shaped) {
             while (!0) {
                 interval = diminuto_shaper_request(&shaper, now);
@@ -289,17 +403,11 @@ int main(int argc, char * argv[])
 
         /* OUTPUT */
 
-        if (fwrite(buffer, size, 1, stdout) == 1) {
+        if ((rc = output(buffer, size)) > 0) {
             /* Do nothing. */
-        } else if (feof(stdout)) {
+        } else if (rc == 0) {
             break;
-        } else if (ferror(stdout)) {
-            errno = EIO;
-            perror("fwrite");
-            return 4;
         } else {
-            errno = EINVAL;
-            perror("fwrite");
             return 4;
         }
 
