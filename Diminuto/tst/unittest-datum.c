@@ -10,8 +10,8 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_datum.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 
 int main(void)

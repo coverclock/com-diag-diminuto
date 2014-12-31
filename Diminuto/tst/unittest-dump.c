@@ -9,8 +9,8 @@
  */
 
 #include "com/diag/diminuto/diminuto_dump.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
-#include <stdint.h>
 
 int main(void)
 {

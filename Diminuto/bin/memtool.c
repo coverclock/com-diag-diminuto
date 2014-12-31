@@ -29,9 +29,9 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_barrier.h"
 #include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>

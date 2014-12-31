@@ -20,7 +20,6 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
-#include <stdint.h>
 
 /**
  * Dumps a block of memory in hexadecimal along with printable characters.

@@ -14,13 +14,15 @@
 #include "com/diag/diminuto/diminuto_platform.h"
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
-#	include <linux/types.h>
-#	if 0
-		typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */
-#	endif
+#   include <linux/types.h>
+#   if 0
+       typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */
+#   endif
 #else
-#	include <stdint.h>
-#	include <sys/types.h>
+#   include <stddef.h>      /* size_t, ssize_t */
+#   include <stdint.h>      /* intptr_t, int64_t, etc. */
+#   include <stdbool.h>     /* bool */
+#   include <sys/types.h>   /* pid_t */
 #endif
 
 /**

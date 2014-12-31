@@ -43,8 +43,8 @@
  */
 
 #include "com/diag/diminuto/diminuto_map.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 

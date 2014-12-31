@@ -119,11 +119,9 @@ static inline int diminuto_well_isempty(const diminuto_well_t * wellp) {
 #if defined(__cplusplus)
 }
 
-#include <pthread.h>
-#include <stdint.h>
-#include <sys/types.h>
-
 #include "com/diag/diminuto/diminuto_platform.h"
+#include <pthread.h>
+#include <sys/types.h>
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 #	include <exception>

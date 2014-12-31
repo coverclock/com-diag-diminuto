@@ -25,9 +25,9 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_mmdriver.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>

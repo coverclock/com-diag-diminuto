@@ -34,7 +34,7 @@
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_phex.h"
-#include <stdint.h>
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

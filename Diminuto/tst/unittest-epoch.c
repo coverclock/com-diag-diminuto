@@ -17,10 +17,9 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <errno.h>
-#include <assert.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 static int zyear = -1;
 static int zmonth = -1;

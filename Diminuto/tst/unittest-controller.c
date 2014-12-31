@@ -13,11 +13,11 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include <stdint.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>

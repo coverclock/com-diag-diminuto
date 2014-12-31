@@ -31,10 +31,10 @@
  */
 
 #include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdint.h>
 #include <errno.h>
 #include <arpa/inet.h>
 
