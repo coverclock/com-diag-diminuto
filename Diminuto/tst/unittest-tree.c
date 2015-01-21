@@ -62,6 +62,26 @@ static void dump(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
+static void traverser(diminuto_tree_t * nodep, dumpf_t * dumpfp)
+{
+    if (!diminuto_tree_isleaf(nodep->left)) {
+        traverser(nodep->left, dumpfp);
+    }
+    printf("traverse: ");
+    dumpn(nodep, dumpfp);
+    if (!diminuto_tree_isleaf(nodep->right)) {
+        traverser(nodep->right, dumpfp);
+    }
+}
+
+static void traverse(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+{
+    printf("traverse: line=%d root=%p\n", line, rootp);
+    if (!diminuto_tree_isempty(rootp)) {
+        traverser(*rootp, dumpfp);
+    }
+}
+
 static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
@@ -537,6 +557,9 @@ int main(void)
             nextp = diminuto_tree_last(&root);
             ASSERT(nextp == nodep);
         }
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
+        traverse(__LINE__, &root, dumps);
         ASSERT(audit(__LINE__, &root, dumps) == DIMINUTO_TREE_NULL);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[ii]);
@@ -596,6 +619,7 @@ int main(void)
         }
         list(__LINE__, &root, dumps);
         dump(__LINE__, &root, dumps);
+        traverse(__LINE__, &root, dumps);
         ASSERT(audit(__LINE__, &root, dumps) == DIMINUTO_TREE_NULL);
         for (ii = countof(ALPHABET) - 1; ii >= 0; --ii) {
             nodep = &(ALPHABET[ii]);
