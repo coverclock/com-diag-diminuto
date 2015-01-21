@@ -435,6 +435,11 @@ extern void diminuto_tree_log(diminuto_tree_t * nodep);
  * Audit a tree. The audit recursively walks the entire tree depth first, left
  * to right, checking all of the pointers, all of the colors, and also checks
  * the balance of the tree. It does not examine the data (payload) pointer.
+ * It verifies the following five red-black properties as cited in
+ * [Cormen et al., 3rd ed., p. 308]: "1. Every node is either red or black.
+ * 2. The root is black. 3. Every leaf (NIL) is black. 4. If a node is red,
+ * then both it's children are black. 5. For each node, all simple paths from
+ * the node to descendant leaves contain the same number of black nodes."
  * @param rootp is a pointer to a pointer to the root of the tree.
  * @return a pointer to the first node at which an error was found or null.
  */
