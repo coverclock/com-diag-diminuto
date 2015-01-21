@@ -1,7 +1,7 @@
 com-diag-diminuto
 =================
 
-Copyright 2008-2014 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2015 by the Digital Aggregates Corporation, Colorado, USA.
 
 LICENSE
 
