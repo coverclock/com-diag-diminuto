@@ -37,8 +37,10 @@ static void rotate_left(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
         *rootp = rightp;
     } else if (nodep == parentp->left) {
         parentp->left = rightp;
-    } else {
+    } else if (nodep == parentp->right) {
         parentp->right = rightp;
+    } else {
+        nodep->error = !0; /* Error: node not child of parent! */
     }
 
     nodep->parent = rightp;
@@ -64,8 +66,10 @@ static void rotate_right(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
         *rootp = leftp;
     } else if (nodep == parentp->right) {
         parentp->right = leftp;
-    } else {
+    } else if (nodep == parentp->left) {
         parentp->left = leftp;
+    } else {
+        nodep->error = !0; /* Error: node not child of parent! */
     }
 
     nodep->parent = leftp;
@@ -130,7 +134,7 @@ static void insert_fixup(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
 
         } else {
 
-            /* Error: parent is not child of grandparent! */
+            nodep->error = !0; /* Error: parent is not child of grandparent! */
 
         }
     }
@@ -238,7 +242,7 @@ static void remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t * parentp, dim
 
         } else {
 
-            /* Error: node is not child of parent! */
+            nodep->error = !0; /* Error: node is not child of parent! */
 
         }
     }
@@ -344,6 +348,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
                 if (!diminuto_tree_isleaf(childp)) {
                     childp->parent = parentp;
                 }
+
                 if (parentp == oldp) {
                     parentp->right = childp;
                     parentp = nodep;
@@ -364,7 +369,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
                 } else if (oldp->parent->right == oldp) {
                     oldp->parent->right = nodep;
                 } else {
-                    /* Error: node is neither leaf nor parent! */
+                    nodep->error = !0; /* Error: node is neither leaf nor parent! */
                 }
 
                 oldp->left->parent = nodep;
@@ -389,7 +394,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
             } else if (parentp->right == nodep) {
                 parentp->right = childp;
             } else {
-                /* Error: node is neither leaf nor parent! */
+                nodep->error = !0; /* Error: node is neither leaf nor parent! */
             }
 
         } while (0);
@@ -429,7 +434,7 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
         } else if (oldp == parentp->right) {
             parentp->right = newp;
         } else {
-            /* Error: node is neither leaf nor parent! */
+            oldp->error = !0; /* Error: node is neither leaf nor parent! */
         }
 
         if (!diminuto_tree_isleaf(oldp->left)) {
@@ -545,7 +550,7 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
 void diminuto_tree_log(diminuto_tree_t * nodep)
 {
     if (nodep) {
-        DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]: { color=%s parent=%p left=%p right=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->color ? "black" : "red", nodep->parent, nodep->left, nodep->right, nodep->root, nodep->data);
+        DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]: { color=%s parent=%p left=%p right=%p root=%p data=%p error=%d }\n", nodep, sizeof(*nodep), diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", diminuto_tree_parent(nodep), diminuto_tree_left(nodep), diminuto_tree_right(nodep), diminuto_tree_root(nodep), diminuto_tree_data(nodep), diminuto_tree_error(nodep));
     } else {
     	DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }
@@ -595,6 +600,11 @@ static diminuto_tree_t * audit(diminuto_tree_t * nodep, diminuto_tree_t * parent
                     line = __LINE__;
                     break;
                 }
+            }
+            if (diminuto_tree_error(nodep)) {
+                result = nodep;
+                line = __LINE__;
+                break;
             }
             if (!diminuto_tree_isred(nodep)) {
                 if (!diminuto_tree_isblack(nodep)) {

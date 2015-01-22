@@ -59,9 +59,9 @@ typedef enum DiminutoTreeColor {
 
 /**
  * This structure describes a node in the tree. Each node has a color (red or
- * black), a parent, a left and a right pointer (which, if both are null, the
+ * black), a parent, a left and a right pointer (in which, if both are null, the
  * node is a leaf), a pointer back to the root of the three (so two nodes in
- * the same tree will always point to the same node), and a pointer to a
+ * the same tree will always point to the same root), and a pointer to a
  * payload (which may or may not be used, or may containing something other
  * than a pointer). This structure has a lot of wasted space. The Linux
  * implementation (from which U-Boot borrows) uses a trick I've used myself in
@@ -73,12 +73,13 @@ typedef enum DiminutoTreeColor {
  * space efficient.
  */
 typedef struct DiminutoTree {
-    unsigned int           color : 1; /* Wasted space here. */
     struct DiminutoTree *  parent;
     struct DiminutoTree *  left;
     struct DiminutoTree *  right;
     struct DiminutoTree ** root;
     void *                 data;
+    unsigned int           color : 1;
+    unsigned int           error : 1;
 } diminuto_tree_t;
 
 /*******************************************************************************
@@ -112,15 +113,13 @@ typedef struct DiminutoTree {
  * Generate a storage initializer for a node and its data pointer
  * @a _DATAP_.
  */
-#define DIMINUTO_TREE_DATAINIT(_DATAP_) \
-    { DIMINUTO_TREE_COLOR_RED, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), }
+#define DIMINUTO_TREE_DATAINIT(_DATAP_) { DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), DIMINUTO_TREE_COLOR_RED, !!0, }
 
 /**
  * @def DIMINUTO_TREE_NULLINIT
  * Generate a storage initializer for a node.
  */
-#define DIMINUTO_TREE_NULLINIT \
-    DIMINUTO_TREE_DATAINIT((void *)0)
+#define DIMINUTO_TREE_NULLINIT DIMINUTO_TREE_DATAINIT((void *)0)
 
 /*******************************************************************************
  * ITERATORS
@@ -204,7 +203,7 @@ extern diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep);
 extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp);
 
 /*******************************************************************************
- * GETTORS
+ * PUBLIC GETTORS
  ******************************************************************************/
 
 /**
@@ -256,6 +255,21 @@ static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
 static inline void * diminuto_tree_data(diminuto_tree_t * nodep)
 {
     return nodep->data;
+}
+
+/*******************************************************************************
+ * PRIVATE GETTORS
+ ******************************************************************************/
+
+/**
+ * Return the error bit for the node. (This is not part of the public API
+ * and is only exposed for unit testing).
+ * @param nodep is a pointer to an existing node.
+ * @return the error bit.
+ */
+static inline int diminuto_tree_error(diminuto_tree_t * nodep)
+{
+    return nodep->error;
 }
 
 /*******************************************************************************
@@ -319,7 +333,7 @@ static inline int diminuto_tree_isblack(diminuto_tree_t * nodep)
 }
 
 /*******************************************************************************
- * SETTORS
+ * PUBLIC SETTORS
  ******************************************************************************/
 
 /**
@@ -335,6 +349,38 @@ static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, v
 }
 
 /*******************************************************************************
+ * PRIVATE SETTORS
+ ******************************************************************************/
+
+/**
+ * Clear the error bit for the node. (This is not part of the public API
+ * and is only exposed for unit testing).
+ * @param nodep is a pointer to an existing node.
+ * @return the prior value of the error bit.
+ */
+static inline int diminuto_tree_clear(diminuto_tree_t * nodep)
+{
+    int result;
+    result = nodep->error;
+    nodep->error = 0;
+    return result;
+}
+
+/**
+ * Set the error bit for the node. (This is not part of the public API
+ * and is only exposed for unit testing).
+ * @param nodep is a pointer to an existing node.
+ * @return the prior value of the error bit.
+ */
+static inline int diminuto_tree_set(diminuto_tree_t * nodep)
+{
+    int result;
+    result = nodep->error;
+    nodep->error = !0;
+    return result;
+}
+
+/*******************************************************************************
  * INITIALIZERS
  ******************************************************************************/
 
@@ -347,12 +393,13 @@ static inline diminuto_tree_t * diminuto_tree_dataset(diminuto_tree_t * nodep, v
  */
 static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)
 {
-    nodep->color = DIMINUTO_TREE_COLOR_RED;
     nodep->parent = DIMINUTO_TREE_NULL;
     nodep->left = DIMINUTO_TREE_NULL;
     nodep->right = DIMINUTO_TREE_NULL;
     nodep->root = DIMINUTO_TREE_ORPHAN;
     /* We don't initialize the data field because it doesn't belong to us. */
+    nodep->color = DIMINUTO_TREE_COLOR_RED;
+    nodep->error = 0;
     return nodep;
 }
 
