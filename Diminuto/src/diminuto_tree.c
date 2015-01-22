@@ -314,15 +314,19 @@ diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, di
 
 diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
 {
+    diminuto_tree_t * gonep = DIMINUTO_TREE_NULL;
     diminuto_tree_t * childp;
     diminuto_tree_t * parentp;
     diminuto_tree_t ** rootp;
     int color;
 
-    if (diminuto_tree_isorphan(nodep)) {
-        nodep = DIMINUTO_TREE_NULL; /* Error: not on a tree! */
+    if (diminuto_tree_isleaf(nodep)) {
+        /* Error: is a leaf! */
+    } else if (diminuto_tree_isorphan(nodep)) {
+        /* Error: not on a tree! */
     } else {
 
+        gonep = nodep;
         rootp = nodep->root;
 
         do {
@@ -410,11 +414,11 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
          * it to lead to the tree from which it was removed.
          */
 
-        diminuto_tree_init(nodep);
+        diminuto_tree_init(gonep);
 
     }
 
-    return nodep;
+    return gonep;
 }
 
 diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t * newp)
