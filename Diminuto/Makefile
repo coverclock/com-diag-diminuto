@@ -22,23 +22,23 @@ TITLE				:=	Diminuto
 # listed below are more or less in chronological order, from earliest to latest.
 # The hardware for some of these targets isn't even available to me anymore.
 
-#TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
-#TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
-#TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
-TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
-#TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
-#TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
+#TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
 #TARGET				:=	corset# Build for CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
+#TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
+#TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
+#TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
+TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
+#TARGET				:=	orchard# Mac OS X 10.9.5 running on a Mac Mini "late 2012".
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
-#TARGET				:=	orchard# Mac OS X 10.9.5 running on a Mac Mini "late 2012".
+#TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 
 MAJOR				:=	26# API changes that may require that applications be modified.
 MINOR				:=	5# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
