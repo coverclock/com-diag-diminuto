@@ -158,7 +158,23 @@ int main(void)
     }
 
     {
-    	diminuto_store_t * root = DIMINUTO_STORE_EMPTY;
+        diminuto_store_t * root = DIMINUTO_STORE_EMPTY;
+        diminuto_store_t foo = DIMINUTO_STORE_KEYVALUEINIT("FOO", "0");
+        diminuto_store_t bar = DIMINUTO_STORE_KEYVALUEINIT("BAR", "0");
+        ASSERT(diminuto_store_remove(DIMINUTO_STORE_NULL) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_remove(diminuto_store_find(&root, DIMINUTO_STORE_NULL, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_insert(&root, &foo, diminuto_store_compare_strings) == &foo);
+        ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == &foo);
+        ASSERT(diminuto_store_remove(diminuto_store_find(&root, &bar, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == &foo);
+        ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
+        ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
+    }
+
+    {
+        diminuto_store_t * root = DIMINUTO_STORE_EMPTY;
         diminuto_store_t * nodep;
         diminuto_store_t * otherp;
         diminuto_store_t target;
