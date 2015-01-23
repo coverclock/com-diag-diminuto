@@ -93,10 +93,22 @@ static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
-static diminuto_tree_t * audit(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static diminuto_tree_t *audit(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
+    diminuto_tree_t * prevp;
     nodep = diminuto_tree_audit(rootp);
+    if (nodep == DIMINUTO_TREE_NULL) {
+        if (dumpfp == dumps) {
+            for (prevp = DIMINUTO_TREE_NULL, nodep = diminuto_tree_first(rootp); nodep != DIMINUTO_TREE_NULL; prevp = nodep, nodep = diminuto_tree_next(nodep)) {
+                if (prevp != DIMINUTO_TREE_NULL) {
+                    if (!(strcmp((const char *)prevp->data, (const char *)nodep->data) < 0)) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
     if (nodep != DIMINUTO_TREE_NULL) {
         list(line, rootp, dumpfp);
         dump(line, rootp, dumpfp);
