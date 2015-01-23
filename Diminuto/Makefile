@@ -58,7 +58,7 @@ BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2014 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2015 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
@@ -237,9 +237,9 @@ package $(PACKAGE).tgz:
 # Useful for given someone a tarball of the actual source distribution that
 # is guaranteed to at least build.
 
-.PHONY:	distribution
+.PHONY:	distribution distro
 
-distribution $(DISTRIBUTION).tgz:
+distribution distro $(DISTRIBUTION).tgz:
 	D=`dirname $(DISTRIBUTION)`; mkdir -p $$D; \
 	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
 	B=`basename $(DISTRIBUTION)`; \
