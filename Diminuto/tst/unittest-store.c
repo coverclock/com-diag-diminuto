@@ -161,6 +161,7 @@ int main(void)
         diminuto_store_t * root = DIMINUTO_STORE_EMPTY;
         diminuto_store_t foo = DIMINUTO_STORE_KEYVALUEINIT("FOO", "0");
         diminuto_store_t bar = DIMINUTO_STORE_KEYVALUEINIT("BAR", "0");
+        diminuto_store_t * nodep;
         ASSERT(diminuto_store_remove(DIMINUTO_STORE_NULL) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, DIMINUTO_STORE_NULL, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
@@ -168,7 +169,9 @@ int main(void)
         ASSERT(diminuto_store_insert(&root, &foo, diminuto_store_compare_strings) == &foo);
         ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == &foo);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, &bar, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
-        ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == &foo);
+        ASSERT(diminuto_store_remove(nodep = diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == &foo);
+        ASSERT(nodep == &foo);
+        ASSERT(diminuto_tree_isorphan(diminuto_store_upcast(nodep)));
         ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
     }
