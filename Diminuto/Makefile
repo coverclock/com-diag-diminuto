@@ -151,6 +151,7 @@ ARFLAGS				:=	crsv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) -I $(OUT)/$(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CFLAGS				:=	$(CARCH) -g
+#CFLAGS				:=	$(CARCH) -g -fprofile-arcs -ftest-coverage
 #CFLAGS				:=	$(CARCH) -O3
 CXXFLAGS			:=	$(CXXARCH) -g
 #CXXFLAGS			:=	$(CXXARCH) -O3

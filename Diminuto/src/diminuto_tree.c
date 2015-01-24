@@ -8,6 +8,14 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * See the header file for references and acknowledgements.
+ *
+ * This code is complicated enough that I used gcov(1) to profile it to
+ * insure that the unit test actually exercised all the nominal code paths.
+ * It does. The paths that were not executed were the "this can't happen"
+ * paths, those that return NULL (if it is likely to be an error in the
+ * caller's use of the API), or that set the error bit in the node (which
+ * would likely be a bug in my code). Note that the audit, that is called many
+ * times in the unit test, checks for the error bit when it walks the tree.
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"
