@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#define _GNU_SOURCE /* for strfry(3) */
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_store.h"
@@ -16,8 +17,14 @@
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include <stdio.h>
 #include <stdarg.h>
-#define _GNU_SOURCE /* for strfry(3) */
 #include <string.h>
+
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_GLIBC)
+#warning platform may not provide strfry(3)!
+static inline char * strfry(char *string) {
+    return string;
+}
+#endif
 
 static void list(diminuto_store_t ** rootp)
 {
