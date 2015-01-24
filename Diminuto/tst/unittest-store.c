@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include <stdio.h>
 #include <stdarg.h>
+#define _GNU_SOURCE /* for strfry(3) */
 #include <string.h>
 
 static void list(diminuto_store_t ** rootp)
@@ -177,6 +178,7 @@ int main(void)
     }
 
     {
+        char biasedindices[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         diminuto_store_t * root = DIMINUTO_STORE_EMPTY;
         diminuto_store_t * nodep;
         diminuto_store_t * otherp;
@@ -187,8 +189,9 @@ int main(void)
         ASSERT(diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_last(&root) == DIMINUTO_STORE_NULL);
+        strfry(biasedindices);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
-            nodep = &(ALPHABET[ii]);
+            nodep = &(ALPHABET[biasedindices[ii] - 'A']);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == nodep);
@@ -199,8 +202,9 @@ int main(void)
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
+        strfry(biasedindices);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
-            nodep = &(ALPHABET[ii]);
+            nodep = &(ALPHABET[biasedindices[ii] - 'A']);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
@@ -211,8 +215,9 @@ int main(void)
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
+        strfry(biasedindices);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
-            nodep = &(ALPHABET[ii]);
+            nodep = &(ALPHABET[biasedindices[ii] - 'A']);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
@@ -223,9 +228,10 @@ int main(void)
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
+        strfry(biasedindices);
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
-            nodep = &(ALPHABET[ii]);
-            otherp = &(ALFABIT[ii]);
+            nodep = &(ALPHABET[biasedindices[ii] - 'A']);
+            otherp = &(ALFABIT[biasedindices[ii] - 'A']);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_replace(&root, otherp, diminuto_store_compare_strings) == nodep);
@@ -237,8 +243,9 @@ int main(void)
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALFABIT[0]);
         ASSERT(diminuto_store_last(&root) == &ALFABIT[countof(ALFABIT) - 1]);
+        strfry(biasedindices);
         for (ii = 0; ii < countof(ALFABIT); ++ii) {
-            nodep = &(ALFABIT[ii]);
+            nodep = &(ALFABIT[biasedindices[ii] - 'A']);
             target.key = nodep->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_remove(nodep) == nodep);
