@@ -196,9 +196,9 @@ int main(void)
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
+            ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         }
         list(&root);
-        ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
@@ -209,9 +209,9 @@ int main(void)
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_insert(&root, nodep, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
+            ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         }
         list(&root);
-        ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALPHABET[0]);
         ASSERT(diminuto_store_last(&root) == &ALPHABET[countof(ALPHABET) - 1]);
@@ -237,9 +237,9 @@ int main(void)
             ASSERT(diminuto_store_replace(&root, otherp, diminuto_store_compare_strings) == nodep);
             target.key = otherp->key;
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == otherp);
+            ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         }
         list(&root);
-        ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         ASSERT(!diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == &ALFABIT[0]);
         ASSERT(diminuto_store_last(&root) == &ALFABIT[countof(ALFABIT) - 1]);
@@ -250,9 +250,9 @@ int main(void)
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == nodep);
             ASSERT(diminuto_store_remove(nodep) == nodep);
             ASSERT(diminuto_store_find(&root, &target, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
+            ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         }
         list(&root);
-        ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_isempty(&root));
         ASSERT(diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == DIMINUTO_STORE_NULL);
