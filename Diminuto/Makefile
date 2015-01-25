@@ -38,7 +38,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 
 MAJOR				:=	26# API changes that may require that applications be modified.
 MINOR				:=	5# Only functionality or features added with no legacy API changes.
-BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	5# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -154,6 +154,7 @@ CFLAGS				:=	$(CARCH) -g
 #CFLAGS				:=	$(CARCH) -g -fprofile-arcs -ftest-coverage
 #CFLAGS				:=	$(CARCH) -O3
 CXXFLAGS			:=	$(CXXARCH) -g
+#CXXFLAGS			:=	$(CXXARCH) -g -fprofile-arcs -ftest-coverage
 #CXXFLAGS			:=	$(CXXARCH) -O3
 CPFLAGS				:=	-i
 MVFLAGS				:=	-i
@@ -214,6 +215,7 @@ dist:	distribution
 
 clean:
 	rm -rf $(OUT)
+	rm -rf *.gcda *.gcno *.gcov
 
 pristine clobber:	clean
 	rm -rf $(OUT_DIR)
