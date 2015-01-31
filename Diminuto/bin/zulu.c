@@ -9,17 +9,15 @@
  *
  * USAGE
  *
- * zulu [ -n ]<BR>
+ * zulu<BR>
  *
  * EXAMPLES
  *
  * zulu<BR>
- * zulu -n<BR>
  *
  * ABSTRACT
  *
- * Prints on standard output the UTC time in either an ISO8601 timestamp or
- * as a number of ticks.
+ * Prints on standard output the UTC time in an ISO8601 timestamp.
  */
 
 #include <stdio.h>
@@ -29,7 +27,6 @@
 
 int main(int argc, char ** argv)
 {
-	int numeric = 0;
 	diminuto_ticks_t ticks;
 	int year;
 	int month;
@@ -39,26 +36,15 @@ int main(int argc, char ** argv)
 	int second;
 	int fraction;
 
-	if (argc <= 1) {
-		/* Do nothing. */
-	} else if (strcmp(argv[1], "-n") == 0) {
-		numeric = !0;
-	} else {
-		fprintf(stderr, "usage: %s [ -n ]\n", argv[0]);
-		return 1;
-	}
-
 	if ((ticks = diminuto_time_clock()) < 0) {
 		return 2;
 	}
 
-	if (numeric) {
-		printf("%lld\n", ticks);
-	} else if (diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
-		return 2;
-	} else {
-		printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9dZ\n", year, month, day, hour, minute, second, fraction);
+	if (diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
+		return 3;
 	}
+
+	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+00:00\n", year, month, day, hour, minute, second, fraction);
 
 	return 0;
 }

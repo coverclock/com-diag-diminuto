@@ -9,7 +9,7 @@
  *
  * USAGE
  *
- * juliet [ -n ]<BR>
+ * juliet<BR>
  *
  * EXAMPLES
  *
@@ -18,8 +18,7 @@
  *
  * ABSTRACT
  *
- * Prints on standard output the local time in either an ISO8601 timestamp or
- * as a number of ticks.
+ * Prints on standard output the local time as an ISO8601 timestamp.
  */
 
 #include <stdio.h>
@@ -27,15 +26,10 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 
-static char ZONES[] = "YXWVUTSRQPONZABCDEFGHIKLM";
-
 int main(int argc, char ** argv)
 {
-	int numeric = 0;
 	diminuto_ticks_t ticks;
 	diminuto_ticks_t offset;
-	int index;
-	char zone;
 	int year;
 	int month;
 	int day;
@@ -43,45 +37,24 @@ int main(int argc, char ** argv)
 	int minute;
 	int second;
 	int fraction;
-
-	if (argc <= 1) {
-		/* Do nothing. */
-	} else if (strcmp(argv[1], "-n") == 0) {
-		numeric = !0;
-	} else {
-		fprintf(stderr, "usage: %s [ -n ]\n", argv[0]);
-		return 1;
-	}
+	int offsethours;
+	int offsetseconds;
 
 	if ((ticks = diminuto_time_clock()) < 0) {
 		return 2;
 	}
 
-#if 0
-	for (fraction = -12; fraction <= 12; ++fraction) {
-		offset = fraction;
-		offset *= 3600;
-		offset *= 1000000000;
-		index = 12 - (diminuto_frequency_ticks2units(offset, 1) / 3600);
-		zone = ((0 <= index) && (index <= sizeof(ZONES))) ? ZONES[index] : 'J';
-		printf("%d %lld %d %c\n", -fraction, offset, index, zone);
-	}
-#endif
+	offset = diminuto_time_timezone(ticks) + diminuto_time_daylightsaving(ticks);
+	second = diminuto_frequency_ticks2wholeseconds(offset);
+	if (second < 0) { second = -second; }
+	offsethours = second / 3600;
+	offsetseconds = second % 3600;
 
-	if ((offset = diminuto_time_timezone(ticks)) < 0) {
-		return 2;
+	if (diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
+		return 3;
 	}
 
-	index = 12 - (diminuto_frequency_ticks2units(offset, 1) / 3600);
-	zone = ((0 <= index) && (index <= sizeof(ZONES))) ? ZONES[index] : 'J';
-
-	if (numeric) {
-		printf("%lld\n", ticks);
-	} else if (diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
-		return 2;
-	} else {
-		printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c %lld %d\n", year, month, day, hour, minute, second, fraction, zone, offset, index);
-	}
+	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
 
 	return 0;
 }

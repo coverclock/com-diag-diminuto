@@ -65,7 +65,7 @@ static inline diminuto_ticks_t diminuto_time_frequency(void) {
  * Return the system clock time in Coordinated Universal Time (UTC) in
  * ticks since the Epoch (shown here in ISO8601 format)
  * 1970-01-01T00:00:00+0000.
- * @return the number of ticks elapsed since the Epoch or ~0ULL with
+ * @return the number of ticks elapsed since the Epoch or <0 with
  * errno set if an error occurred.
  */
 extern diminuto_ticks_t diminuto_time_clock(void);
@@ -75,37 +75,38 @@ extern diminuto_ticks_t diminuto_time_clock(void);
  * clock. This value is immune to time adjustments in the system clock and
  * hence is usable to measure duration and elapsed time.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * ~0ULL with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_ticks_t diminuto_time_elapsed(void);
 
 /**
  * Return the CPU time in ticks for the calling process.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * ~0ULL with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_ticks_t diminuto_time_process(void);
 
 /**
  * Return the CPU time in ticks for the calling thread.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * ~0ULL with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_ticks_t diminuto_time_thread(void);
 
 /**
  * Return the number of ticks the local time zone is offset from Coordinated
  * Universal Time (UTC). For time zones west of UTC, this will be a negative
- * value (eariler), and for east of UTC, a positive value (later). This offset
- * does _not_ account for Daylight Saving Time (DST) if it is used and in
+ * value (earlier), and for east of UTC, a positive value (later). This offset
+ * does NOT account for Daylight Saving Time (DST) if it is used and in
  * effect. Note that one hundred and eighty degrees away from UTC is the
  * International Date Line (IDL), which splits its time zone in half. Clocks on
  * either side of the IDL in that time zone read the same clock time, but are
  * twenty-four hours apart. (Since the offset of the time zone doesn't shift
  * over the span of a year like Daylight Saving Time does, the argument to this
- * function can probably always be zero.)
+ * function can probably always be zero.) Note that this is an ISO-8601 sense
+ * of time zone offset, NOT the seconds west offset that is used by POSIX.
  * @param ticks is the number of ticks since the Epoch.
- * @return the number of ticks east of UTC.
+ * @return the number of ticks west of UTC.
  */
 extern diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks);
 

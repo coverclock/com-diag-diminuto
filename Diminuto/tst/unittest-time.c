@@ -35,6 +35,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t juliet;
     diminuto_ticks_t timezone;
     diminuto_ticks_t daylightsaving;
+    diminuto_ticks_t offset;
     diminuto_ticks_t hertz;
     int dday;
     int dhour;
@@ -50,8 +51,6 @@ int main(int argc, char ** argv)
     int ztick;
     int zh;
     int zm;
-    int dh;
-    int dm;
     int jyear;
     int jmonth;
     int jday;
@@ -67,7 +66,7 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_frequency();
 
-    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %41s %41s\n",
+    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n",
         "requested",
         "remaining",
         "claimed",
@@ -113,15 +112,14 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jsecond, (int *)0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jtick);
         timezone = diminuto_time_timezone(after);
-        zh = (-timezone / hertz) / 3600;
-        zm = (-timezone / hertz) % 3600;
         daylightsaving = diminuto_time_daylightsaving(after);
-        dh = (daylightsaving / hertz) / 3600;
-        dm = (daylightsaving / hertz) % 3600;
+        offset = timezone + daylightsaving;
+        zh = ((((offset < 0) ? -offset : offset)) / hertz) / 3600;
+        zm = ((((offset < 0) ? -offset : offset)) / hertz) % 3600;
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         process = diminuto_time_process();
         thread = diminuto_time_thread();
-        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d\n"
+        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n"
             , requested, remaining
             , claimed
             , measured, measured - requested
@@ -130,8 +128,8 @@ int main(int argc, char ** argv)
             , after - juliet
             , process, thread
             , ss, dday, dhour, dminute, dsecond, dtick
-            , zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0, 0, 0
-            , jyear, jmonth, jday, jhour, jminute, jsecond, jtick, zh, zm, dh, dm
+            , zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0
+            , jyear, jmonth, jday, jhour, jminute, jsecond, jtick, (offset < 0) ? '-' : '+', zh, zm
         );
         ASSERT(remaining == 0);
         ASSERT(after == zulu);

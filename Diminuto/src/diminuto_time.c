@@ -35,7 +35,8 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 
 #else
 
-#   warning POSIX timers not available on this platform!
+#   warning POSIX real-time clocks not available on this platform!
+
 #   define CLOCK_REALTIME (-1)
 #   define CLOCK_MONOTONIC (-1)
 #   define CLOCK_MONOTONIC_RAW (-1)
@@ -86,58 +87,53 @@ diminuto_ticks_t diminuto_time_thread()
 
 diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)
 {
-	diminuto_ticks_t timezone = -1;
-	struct tm datetime;
-	struct tm * datetimep;
-	time_t juliet;
+	diminuto_ticks_t west;
+	extern long timezone;
+	extern int daylight;
 
-	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
-	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
-		diminuto_perror("diminuto_time_timezone: localtime_r");
-	} else if (datetimep->tm_isdst) {
-#if defined(__USE_BSD)
-		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
-	} else {
-		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
-#elif defined(__APPLE__)
-		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff - 3600, 0, 1);
-	} else {
-		timezone = diminuto_frequency_seconds2ticks(datetimep->tm_gmtoff, 0, 1);
-#elif defined(__TM_GMTOFF)
-		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF - 3600, 0, 1);
-	} else {
-		timezone = diminuto_frequency_seconds2ticks(datetimep->__TM_GMTOFF, 0, 1);
-#elif defined(COM_DIAG_DIMINUTO_PLATFORM_GLIBC)
-		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff - 3600, 0, 1);
-	} else {
-		timezone = diminuto_frequency_seconds2ticks(datetimep->__tm_gmtoff, 0, 1);
-#else
-		timezone = diminuto_frequency_seconds2ticks(-3600, 0, 1);
-	} else {
-		timezone = diminuto_frequency_seconds2ticks(0, 0, 1);
-#endif
-	}
+	/*
+	 * tzset(3) is an expensive operation, but at least in glibc it looks like
+	 * it's protected with a lock and only does the expensive part once. So
+	 * we'll call it every time.
+	 */
+	tzset();
 
-	return timezone;
+	/*
+	 * POSIX specifies the number of seconds WEST of UTC, while this function
+	 * returns the ISO-8601 sense of seconds (or ticks) ahead (>0) or behind
+	 * (<0) UTC.
+	 */
+
+	west = -timezone;
+
+	return diminuto_frequency_seconds2ticks(west, 0, 1);
 }
 
 diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks)
 {
-	diminuto_ticks_t daylightsaving = -1;
+	diminuto_ticks_t dst = 0;
 	struct tm datetime;
-	struct tm * datetimep;
 	time_t juliet;
+	extern int daylight;
 
-	juliet = diminuto_frequency_ticks2wholeseconds(ticks);
-	if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
-		diminuto_perror("diminuto_time_daylightsaving: localtime_r");
-	} else if (datetimep->tm_isdst > 0) {
-		daylightsaving = diminuto_frequency_seconds2ticks(3600, 0, 1);
-	} else {
-		daylightsaving = 0;
+	/*
+	 * tzset(3) is an expensive operation, but at least in glibc it looks like
+	 * it's protected with a lock and only does the expensive part once. So
+	 * we'll call it every time.
+	 */
+	tzset();
+	if (daylight) {
+		juliet = diminuto_frequency_ticks2wholeseconds(ticks);
+		if (localtime_r(&juliet, &datetime) == (struct tm *)0) {
+			diminuto_perror("diminuto_time_daylightsaving: localtime_r");
+		} else if (datetime.tm_isdst) {
+			dst = 3600;
+		} else {
+			/* Do nothing. */
+		}
 	}
 
-	return daylightsaving;
+	return diminuto_frequency_seconds2ticks(dst, 0, 1);
 }
 
 diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_ticks_t timezone, diminuto_ticks_t daylightsaving)
