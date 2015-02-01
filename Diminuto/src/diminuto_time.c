@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -37,12 +37,6 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 
 #   warning POSIX real-time clocks not available on this platform!
 
-#   define CLOCK_REALTIME (-1)
-#   define CLOCK_MONOTONIC (-1)
-#   define CLOCK_MONOTONIC_RAW (-1)
-#   define CLOCK_PROCESS_CPUTIME_ID (-1)
-#   define CLOCK_THREAD_CPUTIME_ID (-1)
-
 typedef int clockid_t;
 
 static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
@@ -63,26 +57,44 @@ static diminuto_ticks_t diminuto_time_generic(clockid_t clock)
 
 diminuto_ticks_t diminuto_time_clock()
 {
-    return diminuto_time_generic(CLOCK_REALTIME);
+#if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
+	return diminuto_time_generic(CLOCK_REALTIME);
+#else
+	return diminuto_time_generic(0);
+#endif
 }
 
 diminuto_ticks_t diminuto_time_elapsed()
 {
-#if defined(CLOCK_MONOTONIC_RAW)
+#if defined(CLOCK_MONOTONIC_BOOTTIME)
+	return diminuto_time_generic(CLOCK_MONOTONIC_BOOTTIME); /* Since Linux 2.6.39 */
+#elif defined(CLOCK_MONOTONIC_RAW)
 	return diminuto_time_generic(CLOCK_MONOTONIC_RAW); /* Since Linux 2.6.28 */
-#else
+#elif (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
 	return diminuto_time_generic(CLOCK_MONOTONIC); /* Prior to Linux 2.6.28 */
+#else
+	return diminuto_time_generic(0);
 #endif
 }
 
 diminuto_ticks_t diminuto_time_process()
 {
+#if defined(CLOCK_PROCESS_CPUTIME_ID)
 	return diminuto_time_generic(CLOCK_PROCESS_CPUTIME_ID);
+#else
+	errno = ENOSYS;
+	return -1LL;
+#endif
 }
 
 diminuto_ticks_t diminuto_time_thread()
 {
+#if defined(CLOCK_THREAD_CPUTIME_ID)
 	return diminuto_time_generic(CLOCK_THREAD_CPUTIME_ID);
+#else
+	errno = ENOSYS;
+	return -1LL;
+#endif
 }
 
 diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks)

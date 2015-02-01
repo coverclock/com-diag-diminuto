@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -73,7 +73,9 @@ extern diminuto_ticks_t diminuto_time_clock(void);
 /**
  * Return the elapsed time in ticks of a monotonically increasing
  * clock. This value is immune to time adjustments in the system clock and
- * hence is usable to measure duration and elapsed time.
+ * hence is usable to measure duration and elapsed time. If the underlying
+ * platform does not support this feature, the standard clock time is returned;
+ * however this time may have discontinuities due to NTP or manual time changes.
  * @return the number of ticks elapsed since an arbitrary epoch or
  * <0 with errno set if an error occurred.
  */
