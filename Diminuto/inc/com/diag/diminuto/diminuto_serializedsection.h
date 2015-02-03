@@ -12,7 +12,7 @@
  * This is largely experimental.
  */
 
-typedef volatile int diminuto_serializedsection_spinlock_t;
+typedef volatile int diminuto_serialized_section_spinlock_t;
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)

@@ -31,8 +31,10 @@ static const char ROOT_CLASS_GPIO_UNEXPORT[] = "%s/class/gpio/unexport";
 const char * diminuto_pin_debug(const char * tmp)
 {
 	const char * prior;
+
 	prior = root;
-	root = (tmp != 0) ? tmp : ROOT;
+	root = (tmp != (const char *)0) ? tmp : ROOT;
+
 	return prior;
 }
 
