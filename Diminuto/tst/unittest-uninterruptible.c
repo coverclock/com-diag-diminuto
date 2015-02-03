@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
     EXPECT(remaining > 0);
     EXPECT(alarmed);
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
+    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM, SIGALRM, SIGCHLD);
 
         diminuto_timer_periodic(hertz / 20);
         remaining = diminuto_delay(hertz, !0);

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -46,5 +46,5 @@ int main(void)
 	ASSERT(state == PTHREAD_CANCEL_ENABLE);
 #endif
 
-    return 0;
+    EXIT();
 }

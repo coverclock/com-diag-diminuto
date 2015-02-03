@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -13,8 +13,8 @@
 
 int main(void)
 {
-    volatile int lock1 = 0;
-    volatile int lock2 = 0;
+	diminuto_serializedsection_spinlock_t lock1 = 0;
+	diminuto_serializedsection_spinlock_t lock2 = 0;
     ASSERT(lock1 == 0);
     ASSERT(lock2 == 0);
     DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock1);

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -29,7 +29,7 @@
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &_diminuto_critical_section_cancel_state_); \
 			pthread_mutex_lock(_diminuto_critical_section_mutexp_); \
 			do { \
-				do {} while (0)
+				(void)0
 
 	/**
 	 * @def DIMINUTO_CRITICAL_SECTION_END
@@ -56,7 +56,7 @@
 			pthread_mutex_t * _diminuto_critical_section_mutexp_ = (_MUTEXP_); \
 			pthread_mutex_lock(_diminuto_critical_section_mutexp_); \
 			do { \
-				do {} while (0)
+				(void)0
 
 	/**
 	 * @def DIMINUTO_CRITICAL_SECTION_END
