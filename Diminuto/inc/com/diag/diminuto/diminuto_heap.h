@@ -21,19 +21,19 @@
 #include "com/diag/diminuto/diminuto_proxy.h"
 #include <stdlib.h>
 
-COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, malloc, void *, (size_t size), return, (size))
-COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, free, void, (void * ptr), (void), (ptr))
-COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
-COM_DIAG_DIMINUTO_PROXY_POINTER_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
+DIMINUTO_PROXY_POINTER_H(heap, malloc, void *, (size_t size), return, (size))
+DIMINUTO_PROXY_POINTER_H(heap, free, void, (void * ptr), (void), (ptr))
+DIMINUTO_PROXY_POINTER_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+DIMINUTO_PROXY_POINTER_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
-COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, malloc, void *, (size_t size), return, (size))
-COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, free, void, (void * ptr), (void), (ptr))
-COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
-COM_DIAG_DIMINUTO_PROXY_SETTOR_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
+DIMINUTO_PROXY_SETTOR_H(heap, malloc, void *, (size_t size), return, (size))
+DIMINUTO_PROXY_SETTOR_H(heap, free, void, (void * ptr), (void), (ptr))
+DIMINUTO_PROXY_SETTOR_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+DIMINUTO_PROXY_SETTOR_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
-COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, malloc, void *, (size_t size), return, (size))
-COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, free, void, (void * ptr), (void), (ptr))
-COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
-COM_DIAG_DIMINUTO_PROXY_FUNCTION_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
+DIMINUTO_PROXY_FUNCTION_H(heap, malloc, void *, (size_t size), return, (size))
+DIMINUTO_PROXY_FUNCTION_H(heap, free, void, (void * ptr), (void), (ptr))
+DIMINUTO_PROXY_FUNCTION_H(heap, calloc, void *, (size_t nmemb, size_t size), return, (nmemb, size))
+DIMINUTO_PROXY_FUNCTION_H(heap, realloc, void *, (void * ptr, size_t size), return, (ptr, size))
 
 #endif

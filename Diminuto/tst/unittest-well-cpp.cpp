@@ -51,11 +51,11 @@ public:
 		return skoshification;
 	}
 
-	COM_DIAG_DIMINUTO_WELL_DECLARATION(Framistat);
+	DIMINUTO_WELL_DECLARATION(Framistat);
 
 };
 
-COM_DIAG_DIMINUTO_WELL_DEFINITION(Framistat, CARDINALITY);
+DIMINUTO_WELL_DEFINITION(Framistat, CARDINALITY);
 
 int main(int argc, char ** argv) {
 	Framistat * framistat[CARDINALITY];

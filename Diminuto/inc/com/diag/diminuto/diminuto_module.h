@@ -65,24 +65,24 @@ extern void * diminuto_module_symbol(diminuto_module_handle_t handle, const char
 extern diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle, int force);
 
 /**
- * @def COM_DIAG_DIMINUTO_MODULE_CTOR
+ * @def DIMINUTO_MODULE_CTOR
  * When used inside the translation unit for a loadable module, generates the
  * appropriate declaration for a function that will be automatically called
  * by the run-time library after that loadable module is loaded. @a __NAME__
  * is the name of the constructor function, which must be implemented inside th
  * loadable module.
  */
-#define COM_DIAG_DIMINUTO_MODULE_CTOR(__NAME__) int __NAME__ (void) __attribute__((constructor))
+#define DIMINUTO_MODULE_CTOR(__NAME__) int __NAME__ (void) __attribute__((constructor))
 
 /**
- * @def COM_DIAG_DIMINUTO_MODULE_DTOR
+ * @def DIMINUTO_MODULE_DTOR
  * When used inside the translation unit for a loadable module, generates the
  * appropriate declaration for a function that will be automatically called
  * by the run-time library before that loadable module is unloaded. @a __NAME__
  * is the name of the destructor function, which must be implemented inside the
  * loadable module.
  */
-#define COM_DIAG_DIMINUTO_MODULE_DTOR(__NAME__) int __NAME__ (void) __attribute__((destructor))
+#define DIMINUTO_MODULE_DTOR(__NAME__) int __NAME__ (void) __attribute__((destructor))
 
 
 #endif

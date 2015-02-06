@@ -494,20 +494,20 @@ public:
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
 	/**
-	 * @def COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS
+	 * @def DIMINUTO_WELL_OPERATOR_DECLARATIONS
 	 * Declares the new and delete operators for use inside a class declaration.
 	 */
-#	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_) \
+#	define DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_) \
 		static void * operator new(std::size_t size) throw (std::bad_alloc); \
 		static void * operator new(std::size_t size, const std::nothrow_t& nothrow) throw(); \
 		static void operator delete(void * pointer) throw(); \
 		static void operator delete(void * pointer, const std::nothrow_t& nothrow) throw();
 
 	/**
-	 * @def COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS
+	 * @def DIMINUTO_WELL_OPERATOR_DEFINITIONS
 	 * Defines the new and delete operators for use inside a class declaration.
 	 */
-#	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_) \
+#	define DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_) \
 		void * _TYPE_::operator new(std::size_t size) throw (std::bad_alloc) { _TYPE_ * pointer = com_diag_diminuto_well.alloc(); if (pointer == static_cast<_TYPE_ *>(0)) { std::bad_alloc oom; throw oom; } return pointer; } \
 		void * _TYPE_::operator new(std::size_t size, const std::nothrow_t& nothrow) throw() { return com_diag_diminuto_well.alloc(); } \
 		void _TYPE_::operator delete(void * pointer) throw() { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); } \
@@ -516,20 +516,20 @@ public:
 #else
 
 	/**
-	 * @def COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS
+	 * @def DIMINUTO_WELL_OPERATOR_DECLARATIONS
 	 * Declares the new and delete operators for use inside a class declaration.
 	 */
-#	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_) \
+#	define DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_) \
 		static void * operator new(std::size_t size); \
 		static void * operator new(std::size_t size, const std::nothrow_t& nothrow); \
 		static void operator delete(void * pointer); \
 		static void operator delete(void * pointer, const std::nothrow_t& nothrow);
 
 	/**
-	 * @def COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS
+	 * @def DIMINUTO_WELL_OPERATOR_DEFINITIONS
 	 * Defines the new and delete operators for use inside a class declaration.
 	 */
-#	define COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_) \
+#	define DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_) \
 		void * _TYPE_::operator new(std::size_t size) { return com_diag_diminuto_well.alloc(); } \
 		void * _TYPE_::operator new(std::size_t size, const std::nothrow_t& nothrow) { return com_diag_diminuto_well.alloc(); } \
 		void _TYPE_::operator delete(void * pointer) { com_diag_diminuto_well.free(static_cast<_TYPE_ *>(pointer)); } \
@@ -538,7 +538,7 @@ public:
 #endif
 
 /**
- * @def COM_DIAG_DIMINUTO_WELL_DECLARACTION
+ * @def DIMINUTO_WELL_DECLARACTION
  * Intended to be used inside the class declaration for the class @a _TYPE_.
  * Declares a static well and the static new() and delete() operators used
  * to allocate and free objects of type _CLASS_. You can also just declare
@@ -547,24 +547,24 @@ public:
  * if the new(nothrow) operator fails to allocate an object of type _TYPE_ from
  * the well, a null pointer is returned. This form of well is NOT thread-safe.
  */
-#define COM_DIAG_DIMINUTO_WELL_DECLARATION(_TYPE_) \
+#define DIMINUTO_WELL_DECLARATION(_TYPE_) \
 	static com::diag::diminuto::Well<_TYPE_> com_diag_diminuto_well; \
-	COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_)
+	DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_)
 
  /**
-  * @def COM_DIAG_DIMINUTO_WELL_DEFINITION
+  * @def DIMINUTO_WELL_DEFINITION
   * Intended to be used in the translation unit that defines the class @a _TYPE_
   * and its well of @a _CARDINALITY_ objects of type _TYPE_. This defines the
   * objects in the well to have the default alignment. But you can define the
   * well yourself if you want and specify any alignment you choose. This form
   * of well is NOT thread-safe.
   */
- #define COM_DIAG_DIMINUTO_WELL_DEFINITION(_TYPE_, _CARDINALITY_) \
+ #define DIMINUTO_WELL_DEFINITION(_TYPE_, _CARDINALITY_) \
  	com::diag::diminuto::Well<_TYPE_> _TYPE_::com_diag_diminuto_well(_CARDINALITY_); \
- 	COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_)
+ 	DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_)
 
  /**
-  * @def COM_DIAG_DIMINUTO_SAFEWELL_DECLARACTION
+  * @def DIMINUTO_SAFEWELL_DECLARACTION
   * Intended to be used inside the class declaration for the class @a _TYPE_.
   * Declares a static well and the static new() and delete() operators used
   * to allocate and free objects of type _CLASS_. You can also just declare
@@ -573,21 +573,21 @@ public:
   * if the new(nothrow) operator fails to allocate an object of type _TYPE_ from
   * the well, a null pointer is returned. This form of well is thread-safe.
   */
- #define COM_DIAG_DIMINUTO_SAFEWELL_DECLARATION(_TYPE_) \
+ #define DIMINUTO_SAFEWELL_DECLARATION(_TYPE_) \
  	static com::diag::diminuto::SafeWell<_TYPE_> com_diag_diminuto_well; \
- 	COM_DIAG_DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_)
+ 	DIMINUTO_WELL_OPERATOR_DECLARATIONS(_TYPE_)
 
  /**
-  * @def COM_DIAG_DIMINUTO_SAFEWELL_DEFINITION
+  * @def DIMINUTO_SAFEWELL_DEFINITION
   * Intended to be used in the translation unit that defines the class @a _TYPE_
   * and its well of @a _CARDINALITY_ objects of type _TYPE_. This defines the
   * objects in the well to have the default alignment. But you can define the
   * well yourself if you want and specify any alignment you choose. This form
   * of well is thread-safe.
   */
- #define COM_DIAG_DIMINUTO_SAFEWELL_DEFINITION(_TYPE_, _CARDINALITY_) \
+ #define DIMINUTO_SAFEWELL_DEFINITION(_TYPE_, _CARDINALITY_) \
  	com::diag::diminuto::SafeWell<_TYPE_> _TYPE_::com_diag_diminuto_well(_CARDINALITY_); \
- 	COM_DIAG_DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_)
+ 	DIMINUTO_WELL_OPERATOR_DEFINITIONS(_TYPE_)
 
 #endif
 

@@ -11,8 +11,8 @@
 #include "com/diag/diminuto/diminuto_module.h"
 #include <stdio.h>
 
-COM_DIAG_DIMINUTO_MODULE_CTOR(diminuto_module_example_ctor);
-COM_DIAG_DIMINUTO_MODULE_DTOR(diminuto_module_example_dtor);
+DIMINUTO_MODULE_CTOR(diminuto_module_example_ctor);
+DIMINUTO_MODULE_DTOR(diminuto_module_example_dtor);
 
 int diminuto_module_example_ctor(void)
 {

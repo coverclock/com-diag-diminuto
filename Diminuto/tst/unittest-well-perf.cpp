@@ -84,11 +84,11 @@ public:
 
 	virtual ~Doohickey() {}
 
-	COM_DIAG_DIMINUTO_WELL_DECLARATION(Doohickey);
+	DIMINUTO_WELL_DECLARATION(Doohickey);
 
 };
 
-COM_DIAG_DIMINUTO_WELL_DEFINITION(Doohickey, CARDINALITY);
+DIMINUTO_WELL_DEFINITION(Doohickey, CARDINALITY);
 
 class Thingamajig : public Framistat {
 
@@ -104,11 +104,11 @@ public:
 
 	virtual ~Thingamajig() {}
 
-	COM_DIAG_DIMINUTO_SAFEWELL_DECLARATION(Thingamajig);
+	DIMINUTO_SAFEWELL_DECLARATION(Thingamajig);
 
 };
 
-COM_DIAG_DIMINUTO_SAFEWELL_DEFINITION(Thingamajig, CARDINALITY);
+DIMINUTO_SAFEWELL_DEFINITION(Thingamajig, CARDINALITY);
 
 int main(int argc, char ** argv) {
 	Framistat * framistat[CARDINALITY];
