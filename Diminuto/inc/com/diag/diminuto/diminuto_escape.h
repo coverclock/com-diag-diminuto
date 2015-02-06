@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -50,5 +50,16 @@ size_t diminuto_escape_collapse(char *to, const char *from, size_t tsize);
  * @return the length of the destination string including the terminating NUL.
  */
 size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t fsize, const char * special);
+
+/**
+ * Copy a source C string to a destination string trimming trailing blanks
+ * except when the last trailing blank is escaped.
+ * @param to points to the destination buffer.
+ * @param from points to the source string.
+ * @param tsize is the maximum size of the destination string include the
+ * terminating NUL character.
+ * @param fsize is the explicit length of the source string.
+ */
+size_t diminuto_escape_trim(char * to, const char * from, size_t tsize, size_t fsize);
 
 #endif

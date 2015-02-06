@@ -150,5 +150,41 @@ int main(void)
 		ASSERT(memcmp(one, three, sizeof(one)) == 0);
 	}
 
+	{
+		char out[64];
+		ASSERT(diminuto_escape_trim((char *)0, (const char *)0, 0, 0) == 0);
+		ASSERT(diminuto_escape_trim(out, (const char *)0, sizeof(out), 0) == 0);
+		ASSERT(diminuto_escape_trim(out, "", sizeof(out), 0) == 0);
+		ASSERT(strcmp(out, "") == 0);
+		ASSERT(diminuto_escape_trim(out, "", sizeof(out), 1) == 0);
+		ASSERT(strcmp(out, "") == 0);
+		ASSERT(diminuto_escape_trim(out, " ", sizeof(out), 0) == 0);
+		ASSERT(strcmp(out, "") == 0);
+		ASSERT(diminuto_escape_trim(out, " ", sizeof(out), 1) == 0);
+		ASSERT(strcmp(out, "") == 0);
+		ASSERT(diminuto_escape_trim(out, "123", sizeof(out), 3) == 3);
+		ASSERT(strcmp(out, "123") == 0);
+		ASSERT(diminuto_escape_trim(out, "123 ", sizeof(out), 6) == 3);
+		ASSERT(strcmp(out, "123") == 0);
+		ASSERT(diminuto_escape_trim(out, "123  ", sizeof(out), 6) == 3);
+		ASSERT(strcmp(out, "123") == 0);
+		ASSERT(diminuto_escape_trim(out, "123\\", sizeof(out), 4) == 4);
+		ASSERT(strcmp(out, "123\\") == 0);
+		ASSERT(diminuto_escape_trim(out, "123\\  ", sizeof(out), 6) == 5);
+		ASSERT(strcmp(out, "123\\ ") == 0);
+		ASSERT(diminuto_escape_trim(out, "123\\\\", sizeof(out), 5) == 5);
+		ASSERT(strcmp(out, "123\\\\") == 0);
+		ASSERT(diminuto_escape_trim(out, "123\\\\ ", sizeof(out), 5) == 5);
+		ASSERT(strcmp(out, "123\\\\") == 0);
+		ASSERT(diminuto_escape_trim(out, "  123  456  789  ", sizeof(out), 17) == 15);
+		ASSERT(strcmp(out, "  123  456  789") == 0);
+		ASSERT(diminuto_escape_trim(out, "123 \\   456 \\   789 \\   ", sizeof(out), 24) == 22);
+		ASSERT(strcmp(out, "123 \\   456 \\   789 \\ ") == 0);
+		ASSERT(diminuto_escape_trim(out, "123 \\   456 \\   789 \\   ", sizeof(out), 8) == 6);
+		ASSERT(strcmp(out, "123 \\ ") == 0);
+		ASSERT(diminuto_escape_trim(out, "123 \\   456 \\   789 \\   ", 7, 24) == 6);
+		ASSERT(strcmp(out, "123 \\ ") == 0);
+	}
+
     EXIT();
 }

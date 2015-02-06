@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -28,6 +28,9 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
                 ++ff;
                 break;
             case '\n':                  /* Escaped newline; skip over. */
+                ff += 2;
+                break;
+            case '\r':                  /* Escaped return; skip over. */
                 ff += 2;
                 break;
             case '\\':                  /* Escaped backslash. */
@@ -70,9 +73,9 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
                 *(tt++) = '\v';
                 --tsize;
                 break;
-            case 'x':                   /* Possible hexadecimal sequence. */
+            case 'x':                   /* Hexadecimal sequence. */
                 byte = 0;
-                /* ANSI hexadecimal sequences must have at least 1 digit. */
+                /* ANSI hexadecimal sequences 1 or 2 hexadecimal digits long. */
                 for (ii = 2; ; ++ii) {
                     if (('0' <= *(ff + ii)) && (*(ff + ii) <= '9')) {
                         byte <<= 4;
@@ -119,7 +122,7 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
                 break;
             default:
                 ff += 2;
-                *(tt++) = *(ff - 1);  /* Unknown escape sequence. */
+                *(tt++) = *(ff - 1);  /* Unknown escape sequence: copy. */
                 --tsize;
                 break;
             }
@@ -210,4 +213,48 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
     }
 
     return tt - to;
+}
+
+size_t diminuto_escape_trim(char * to, const char * from, size_t tsize, size_t fsize)
+{
+    const char * ff;
+    size_t size;
+
+    fsize = strnlen(from, fsize);
+    size = fsize;
+    ff = from + fsize - 1;
+
+    while ((0 < size) && (' ' == *ff)) {
+        --ff;
+        --size;
+    }
+
+    if (0 == size) {
+        /* Do nothing: zero length. */
+    } else if (fsize == size) {
+        /* Do nothing: no blanks. */
+    } else if ((*ff != '\\') || ((size > 1) && (*(ff - 1) == '\\'))) {
+        /* Do nothing: last blank not escaped. */
+    } else {
+        ++ff;
+        ++size;
+    }
+
+    if (tsize < size) {
+        size = tsize;
+    }
+
+    strncpy(to, from, size);
+
+    if (tsize == 0) {
+        /* Do nothing. */
+    } else if (tsize > size) {
+        to[size] = '\0';
+    } else if (tsize == size) {
+        to[--size] = '\0';
+    } else {
+        /* Do nothing. */
+    }
+
+    return size;
 }
