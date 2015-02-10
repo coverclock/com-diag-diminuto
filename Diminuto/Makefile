@@ -301,8 +301,6 @@ $(OUT)/$(ARC_DIR)/$(PROJECT_A):	$(TARGETOBJECTS)
 	D=`dirname $@`; mkdir -p $$D
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
-LDFLAGS				:=	$(LDARCH) -l$(PROJECT) $(LDLIBRARIES)
-LDXXFLAGS			:=	$(LDARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 
 $(OUT)/$(LIB_DIR)/lib$(PROJECT).$(SO).$(MAJOR).$(MINOR).$(BUILD):	$(TARGETOBJECTS)
 	D=`dirname $@`; mkdir -p $$D
@@ -541,7 +539,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/diminuto_release.o:	$(TARGETSYNTHESIZED)
+$(OUT)/$(SRC_DIR)/$(PROJECT)_release.o:	$(TARGETSYNTHESIZED)
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
@@ -553,7 +551,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/diminuto_vintage.o:	$(TARGETSYNTHESIZED)
+$(OUT)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(TARGETSYNTHESIZED)
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
