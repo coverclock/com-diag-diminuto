@@ -49,6 +49,7 @@ int main(int argc, char * argv[])
     size_t count;
     int bitspercharacter;
     int running = 0;
+    double bandwidth;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -180,7 +181,8 @@ int main(int argc, char * argv[])
     	}
 
     	elapsed = (now - then) / (double)hertz;
-    	CHECKPOINT("%lu characters in %.6lf seconds at %d bits per second and %d bits per character\n", count, elapsed, bitspersecond, bitspercharacter);
+	bandwidth = (count * bitspercharacter) / elapsed;
+    	CHECKPOINT("%luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
 
     }
 
