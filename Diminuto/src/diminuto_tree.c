@@ -22,7 +22,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 
 /*******************************************************************************
- * PRIVATE MUTATORS
+ * PRIVATE
  ******************************************************************************/
 
 static void rotate_left(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
@@ -271,7 +271,7 @@ static void link_together(diminuto_tree_t * nodep, diminuto_tree_t * parentp, di
 }
 
 /*******************************************************************************
- * PUBLIC MUTATORS
+ * MUTATORS
  ******************************************************************************/
 
 diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
@@ -484,7 +484,7 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
 }
 
 /*******************************************************************************
- * PUBLIC ITERATORS
+ * ITERATORS
  ******************************************************************************/
 
 diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
@@ -553,6 +553,55 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
     }
 
     return nodep;
+}
+
+/*******************************************************************************
+ * SEARCH
+ ******************************************************************************/
+
+diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp)
+{
+    if (diminuto_tree_isleaf(nodep)) {
+        /* Do nothing. */
+    } else {
+        *rcp = (*comparatorp)(nodep, targetp);
+        if (*rcp < 0) {
+            if (!diminuto_tree_isleaf(nodep->right)) {
+                nodep = diminuto_tree_search(nodep->right, targetp, comparatorp, rcp);
+            }
+        } else if (*rcp > 0) {
+            if (!diminuto_tree_isleaf(nodep->left)) {
+                nodep = diminuto_tree_search(nodep->left, targetp, comparatorp, rcp);
+            }
+        } else {
+            /* Do nothing. */
+        }
+    }
+
+    return nodep;
+}
+
+diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace)
+{
+    diminuto_tree_t * nodep;
+    diminuto_tree_t * parentp;
+    int rc;
+
+    parentp = diminuto_tree_search(*rootp, targetp, comparatorp, &rc);
+    if (parentp == DIMINUTO_TREE_NULL) {
+        nodep = diminuto_tree_insert_root(targetp, rootp);
+     } else if (rc < 0) {
+        nodep = diminuto_tree_insert_right(targetp, parentp);
+    } else if (rc > 0) {
+        nodep = diminuto_tree_insert_left(targetp, parentp);
+    } else if (replace) {
+        nodep = diminuto_tree_replace(parentp, targetp);
+    } else {
+    	nodep = DIMINUTO_TREE_NULL;
+    }
+
+    return nodep;
+
 }
 
 /*******************************************************************************
