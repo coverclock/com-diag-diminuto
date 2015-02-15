@@ -132,8 +132,9 @@ static int comparator(diminuto_tree_t * nodep, diminuto_tree_t * targetp)
 static diminuto_tree_t * find(diminuto_tree_t ** rootp, void * key)
 {
     diminuto_tree_t * nodep;
-    diminuto_tree_t target = DIMINUTO_TREE_DATAINIT(key);
+    diminuto_tree_t target = DIMINUTO_TREE_NULLINIT;
     int rc = 0;
+    target.data = key;
     nodep = diminuto_tree_search(*rootp, &target, &comparator, &rc);
     return (rc == 0) ? nodep : (diminuto_tree_t *)0;
 }
