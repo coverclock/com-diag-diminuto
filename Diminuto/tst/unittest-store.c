@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -20,11 +20,16 @@
 #include <string.h>
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_GLIBC)
-#warning platform may not provide strfry(3)!
+#   warning platform may not provide strfry(3)!
 static inline char * strfry(char *string) {
     return string;
 }
 #endif
+
+static int compare_strings(diminuto_store_t * thisp, diminuto_store_t * thatp)
+{
+    return diminuto_store_compare_strings(diminuto_store_upcast(thisp), diminuto_store_upcast(thatp));
+}
 
 static void list(diminuto_store_t ** rootp)
 {
@@ -138,18 +143,18 @@ int main(void)
         diminuto_store_t able = DIMINUTO_STORE_KEYVALUEINIT("Aa", 4);
         diminuto_store_t baker = DIMINUTO_STORE_KEYVALUEINIT("Bbb", 5);
         diminuto_store_t charlie = DIMINUTO_STORE_KEYVALUEINIT("Cccc", 6);
-        ASSERT(diminuto_store_compare_strings(&alpha, &beta) < 0);
-        ASSERT(diminuto_store_compare_strings(&beta, &gamma) < 0);
-        ASSERT(diminuto_store_compare_strings(&alpha, &gamma) < 0);
-        ASSERT(diminuto_store_compare_strings(&beta, &alpha) > 0);
-        ASSERT(diminuto_store_compare_strings(&gamma, &beta) > 0);
-        ASSERT(diminuto_store_compare_strings(&gamma, &alpha) > 0);
-        ASSERT(diminuto_store_compare_strings(&alpha, &alpha) == 0);
-        ASSERT(diminuto_store_compare_strings(&beta, &beta) == 0);
-        ASSERT(diminuto_store_compare_strings(&gamma, &gamma) == 0);
-        ASSERT(diminuto_store_compare_strings(&alpha, &able) == 0);
-        ASSERT(diminuto_store_compare_strings(&beta, &baker) == 0);
-        ASSERT(diminuto_store_compare_strings(&gamma, &charlie) == 0);
+        ASSERT(compare_strings(&alpha, &beta) < 0);
+        ASSERT(compare_strings(&beta, &gamma) < 0);
+        ASSERT(compare_strings(&alpha, &gamma) < 0);
+        ASSERT(compare_strings(&beta, &alpha) > 0);
+        ASSERT(compare_strings(&gamma, &beta) > 0);
+        ASSERT(compare_strings(&gamma, &alpha) > 0);
+        ASSERT(compare_strings(&alpha, &alpha) == 0);
+        ASSERT(compare_strings(&beta, &beta) == 0);
+        ASSERT(compare_strings(&gamma, &gamma) == 0);
+        ASSERT(compare_strings(&alpha, &able) == 0);
+        ASSERT(compare_strings(&beta, &baker) == 0);
+        ASSERT(compare_strings(&gamma, &charlie) == 0);
     }
 
     {

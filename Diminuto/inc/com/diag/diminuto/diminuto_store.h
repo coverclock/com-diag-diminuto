@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -41,37 +41,11 @@ typedef struct DiminutoStore {
 } diminuto_store_t;
 
 /**
- * The tree base class only provides the bare bones necessary for a derived
- * class to search the tree. The store derived class requires the application
- * to provide a function to compare two nodes on the tree so that it knows
- * whether to follow the left or right branches as it searches the tree. This
- * is the type of that comparator function. It is up to the comparator
- * function to figure out what comparing two nodes means, but most
- * implementations will be somehow comparing the key fields. The unit test
- * does a string comparison of the key fields, which is such a typical
- * application that an implementation of such a comparator function is provided.
  * Like the function strcmp(3), the comparator returns <0, 0, or >0 if the first
  * node is less than, equal to, or greater than, the second node (whatever that
  * means in the context of the application).
  */
-typedef int (diminuto_store_comparator_t)(const diminuto_store_t *, const diminuto_store_t *);
-
-/*******************************************************************************
- * COMPARATORS
- ******************************************************************************/
-
-/**
- * Compare two nodes by doing a string comparison of their key fields. This is
- * not implemented inline since its use requires that a pointer to this function
- * be passed into a search function. Having it inline would generate separate
- * code for every application. But the actual implementation is shown in the
- * comments as an illustrative example.
- * @param thisp is a pointer to the first of two nodes being compared.
- * @param thatp is a pointer to the second of two nodes being compared.
- * @return <0, 0, or >0 if the first node is less than, equal to, or greater
- * than the second.
- */
-extern int diminuto_store_compare_strings(const diminuto_store_t * thisp, const diminuto_store_t * thatp);
+typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
 
 /*******************************************************************************
  * CONSTANTS
@@ -88,7 +62,7 @@ extern int diminuto_store_compare_strings(const diminuto_store_t * thisp, const 
 #define DIMINUTO_STORE_EMPTY DIMINUTO_STORE_NULL
 
 /*******************************************************************************
- * CASTS (PRIVATE)
+ * CASTS
  ******************************************************************************/
 
 /**
@@ -127,7 +101,7 @@ static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
 }
 
 /*******************************************************************************
- * MORE CASTS (PRIVATE)
+ * MORE CASTS
  ******************************************************************************/
 
 /**
@@ -150,6 +124,27 @@ static inline diminuto_tree_t * diminuto_store_upcast(diminuto_store_t * pointer
 static inline diminuto_store_t * diminuto_store_downcast(diminuto_tree_t * pointer)
 {
     return diminuto_tree_isleaf(pointer) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, pointer);
+}
+
+/*******************************************************************************
+ * COMPARATORS
+ ******************************************************************************/
+
+
+/**
+ * Compare two nodes by doing a string comparison of their key fields. This is
+ * shown as an inline here as an illustrative example, but typically it should
+ * be implemented outline since an inline will require that the code for this
+ * function be generated in every application (as small as that code might
+ * be).
+ * @param thisp is a pointer to the first of two nodes being compared.
+ * @param thatp is a pointer to the second of two nodes being compared.
+ * @return <0, 0, or >0 if the first node is less than, equal to, or greater
+ * than the second.
+ */
+static inline int diminuto_store_compare_strings(diminuto_tree_t * thisp, diminuto_tree_t * thatp)
+{
+    return strcmp((const char *)(diminuto_store_downcast(thisp)->key), (const char *)(diminuto_store_downcast(thatp)->key));
 }
 
 /*******************************************************************************

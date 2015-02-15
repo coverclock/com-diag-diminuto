@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -13,60 +13,17 @@
 #include <string.h>
 
 /*******************************************************************************
- * COMPARATORS
- ******************************************************************************/
-
-int diminuto_store_compare_strings(const diminuto_store_t * thisp, const diminuto_store_t * thatp)
-{
-    return strcmp((const char *)(thisp->key), (const char *)(thatp->key));
-}
-
-/*******************************************************************************
  * PRIVATE HELPERS
  ******************************************************************************/
 
 static diminuto_store_t * find_close(diminuto_store_t * candidatep, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp, int * rcp)
 {
-    *rcp = (*comparefp)(candidatep, targetp);
-    if (*rcp < 0) {
-        if (diminuto_tree_isleaf(candidatep->tree.right)) {
-            return candidatep;
-        } else {
-            return find_close(diminuto_store_downcast(candidatep->tree.right), targetp, comparefp, rcp);
-        }
-    } else if (*rcp > 0) {
-        if (diminuto_tree_isleaf(candidatep->tree.left)) {
-            return candidatep;
-        } else {
-            return find_close(diminuto_store_downcast(candidatep->tree.left), targetp, comparefp, rcp);
-        }
-    } else {
-        return candidatep;
-    }
+    return diminuto_store_downcast(diminuto_tree_search(diminuto_store_upcast(candidatep), diminuto_store_upcast(targetp), comparefp, rcp));
 }
 
 static diminuto_store_t * insert_or_replace(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
 {
-	diminuto_store_t * storep;
-    diminuto_tree_t * treep;
-    int rc;
-
-    if (diminuto_store_isempty(rootp)) {
-        treep = diminuto_tree_insert_root(diminuto_store_upcast(nodep), (diminuto_tree_t **)rootp);
-    } else {
-        storep = find_close(*rootp, nodep, comparefp, &rc);
-        if (rc < 0) {
-            treep = diminuto_tree_insert_right(diminuto_store_upcast(nodep), diminuto_store_upcast(storep));
-        } else if (rc > 0) {
-            treep = diminuto_tree_insert_left(diminuto_store_upcast(nodep), diminuto_store_upcast(storep));
-        } else if (replace) {
-            treep = diminuto_tree_replace(&(storep->tree), &(nodep->tree));
-        } else {
-            treep = DIMINUTO_TREE_NULL;
-        }
-    }
-
-    return diminuto_store_downcast(treep);
+    return diminuto_store_downcast(diminuto_tree_search_insert_or_replace(diminuto_store_rootcast(rootp), diminuto_store_upcast(nodep), comparefp, replace));
 }
 
 /*******************************************************************************
@@ -76,15 +33,10 @@ static diminuto_store_t * insert_or_replace(diminuto_store_t ** rootp, diminuto_
 diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp)
 {
     diminuto_store_t * candidatep;
-    int rc;
+    int rc = 0;
 
-    if (diminuto_store_isempty(rootp)) {
-        return DIMINUTO_STORE_NULL;
-    } else {
-        candidatep = find_close(*rootp, targetp, comparefp, &rc);
-        return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
-    }
-
+    candidatep = find_close(*rootp, targetp, comparefp, &rc);
+    return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
 }
 
 /*******************************************************************************
