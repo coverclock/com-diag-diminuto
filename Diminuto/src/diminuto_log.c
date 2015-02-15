@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -19,17 +19,22 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
-const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
-int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
-int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
-int diminuto_log_stream = DIMINUTO_LOG_STREAM_DEFAULT;
-
 static const char levels[] = "01234567";
 static uint8_t initialized = 0;
 
 /*******************************************************************************
- * Base Functions
+ * GLOBALS
+ *****************************************************************************/
+
+diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
+int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
+int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
+int diminuto_log_descriptor = DIMINUTO_LOG_STREAM_DEFAULT;
+FILE * diminuto_log_file = (FILE *)0;
+
+/*******************************************************************************
+ * BASE FUNCTIONS
  *****************************************************************************/
 
 void diminuto_log_open(const char * name)
@@ -53,6 +58,21 @@ void diminuto_log_close(void)
         initialized = 0;
     }
 #endif
+}
+
+FILE * diminuto_log_stream(void)
+{
+    if (diminuto_log_file != (FILE *)0) {
+        /* Do nothing. */
+    } else if (diminuto_log_descriptor == STDOUT_FILENO) {
+        diminuto_log_file = stdout;
+    } else if (diminuto_log_descriptor == STDERR_FILENO) {
+        diminuto_log_file = stderr;
+    } else {
+        diminuto_log_file = fdopen(diminuto_log_descriptor, "a");
+    }
+
+    return diminuto_log_file;
 }
 
 void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
@@ -124,7 +144,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 }
 
 /*******************************************************************************
- * Routing Functions
+ * ROUTING FUNCTIONS
  *****************************************************************************/
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
@@ -132,12 +152,12 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
     if (getppid() == 1) {
         diminuto_log_vsyslog(priority, format, ap);
     } else {
-        diminuto_log_vwrite(diminuto_log_stream, priority, format, ap);
+        diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
     }
 }
 
 /*******************************************************************************
- * Variadic Functions
+ * VARIADIC FUNCTIONS
  *****************************************************************************/
 
 void diminuto_log_syslog(int priority, const char * format, ...)
@@ -173,7 +193,7 @@ void diminuto_log_emit(const char * format, ...)
 }
 
 /*******************************************************************************
- * Error Number Functions
+ * ERROR NUMBER FUNCTIONS
  *****************************************************************************/
 
 void diminuto_serror(const char * s)

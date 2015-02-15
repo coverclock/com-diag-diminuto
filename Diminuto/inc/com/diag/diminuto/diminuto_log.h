@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -35,6 +35,7 @@
  * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
  */
 
+#include <stdio.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 
@@ -54,14 +55,14 @@
 
 typedef int diminuto_log_mask_t;
 
-#define DIMINUTO_LOG_MASK_EMERGENCY     (1<<0)
-#define DIMINUTO_LOG_MASK_ALERT         (1<<1)
-#define DIMINUTO_LOG_MASK_CRITICAL      (1<<2)
-#define DIMINUTO_LOG_MASK_ERROR         (1<<3)
-#define DIMINUTO_LOG_MASK_WARNING       (1<<4)
-#define DIMINUTO_LOG_MASK_NOTICE        (1<<5)
-#define DIMINUTO_LOG_MASK_INFORMATION   (1<<6)
-#define DIMINUTO_LOG_MASK_DEBUG         (1<<7)
+#define DIMINUTO_LOG_MASK_EMERGENCY     (1<<7)
+#define DIMINUTO_LOG_MASK_ALERT         (1<<6)
+#define DIMINUTO_LOG_MASK_CRITICAL      (1<<5)
+#define DIMINUTO_LOG_MASK_ERROR         (1<<4)
+#define DIMINUTO_LOG_MASK_WARNING       (1<<3)
+#define DIMINUTO_LOG_MASK_NOTICE        (1<<2)
+#define DIMINUTO_LOG_MASK_INFORMATION   (1<<1)
+#define DIMINUTO_LOG_MASK_DEBUG         (1<<0)
 
 #define DIMINUTO_LOG_MASK_ALL           (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE | DIMINUTO_LOG_MASK_INFORMATION | DIMINUTO_LOG_MASK_DEBUG)
 #define DIMINUTO_LOG_MASK_NONE          (0)
@@ -155,8 +156,8 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 extern const char * diminuto_log_ident;
 extern int diminuto_log_option;
 extern int diminuto_log_facility;
-extern int diminuto_log_stream;
-
+extern int diminuto_log_descriptor;
+extern FILE * diminuto_log_file;
 extern diminuto_log_mask_t diminuto_log_mask;
 
 /**
@@ -172,6 +173,16 @@ extern void diminuto_log_open(const char * name);
  * if it is not already closed.
  */
 extern void diminuto_log_close(void);
+
+/**
+ * Return a pointer to a buffered FILE object corresponding to the file
+ * descriptor to which log messages are written when they are not written to
+ * the system log (as, when the caller is not a daemon). This is useful for
+ * logging output of diminuto_log_dump() from non-daemon applications, not so
+ * useful for use in daemons.
+ * @return a FILE pointer.
+ */
+extern FILE * diminuto_log_stream(void);
 
 /**
  * Format and log the argument list to syslog.

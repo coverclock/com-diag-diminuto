@@ -521,7 +521,7 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
  * @oaran comparatorp points to a comparator function.
  * @return a pointer to the target node, or null if an error.
  */
-extern diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
 {
     return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, 0);
 }
@@ -537,7 +537,7 @@ extern diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, d
  * @oaran comparatorp points to a comparator function.
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
-extern diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+static inline diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
 {
     return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, !0);
 }
