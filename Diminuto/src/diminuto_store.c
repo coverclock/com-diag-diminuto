@@ -36,6 +36,7 @@ diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store
     int rc = 0;
 
     candidatep = find_close(*rootp, targetp, comparefp, &rc);
+
     return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
 }
 
