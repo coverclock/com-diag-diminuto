@@ -733,7 +733,7 @@ int main(void)
             ASSERT(diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
             ASSERT(diminuto_tree_data(nodep) != (void *)0);
             ASSERT(find(&root, nodep->data) == DIMINUTO_TREE_NULL);
-            gonep = diminuto_tree_search_insert_or_replace(&root, nodep, comparator, 0);
+            gonep = diminuto_tree_search_insert(&root, nodep, comparator);
             ASSERT(gonep == nodep);
             ASSERT(find(&root, nodep->data) == nodep);
             ASSERT(!diminuto_tree_isempty(&root));
@@ -748,7 +748,7 @@ int main(void)
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             nodep = &(ALPHABET[biasedindices[ii] - 'A']);
             nextp = &(ALFABIT[biasedindices[ii] - 'A']);
-            gonep = diminuto_tree_search_insert_or_replace(&root, nextp, comparator, !0);
+            gonep = diminuto_tree_search_replace(&root, nextp, comparator);
             ASSERT(gonep == nodep);
             ASSERT(find(&root, nextp->data) == nextp);
             ASSERT(diminuto_tree_parent(gonep) == DIMINUTO_TREE_NULL);
@@ -756,6 +756,20 @@ int main(void)
             ASSERT(diminuto_tree_right(gonep) == DIMINUTO_TREE_NULL);
             ASSERT(diminuto_tree_root(gonep) == DIMINUTO_TREE_ORPHAN);
             ASSERT(diminuto_tree_data(gonep) != (void *)0);
+            ASSERT(audit(__LINE__, &root, dumps) == DIMINUTO_TREE_NULL);
+        }
+        list(__LINE__, &root, dumps);
+        dump(__LINE__, &root, dumps);
+        traverse(__LINE__, &root, dumps);
+        ASSERT(audit(__LINE__, &root, dumps) == DIMINUTO_TREE_NULL);
+        strfry(biasedindices);
+        printf("biasedindices[%zu]=\"%s\"\n", sizeof(biasedindices), biasedindices);
+        for (ii = 0; ii < countof(ALPHABET); ++ii) {
+            nodep = &(ALFABIT[biasedindices[ii] - 'A']);
+            nextp = &(ALPHABET[biasedindices[ii] - 'A']);
+            gonep = diminuto_tree_search_insert(&root, nextp, comparator);
+            ASSERT(gonep == (diminuto_tree_t *)0);
+            ASSERT(find(&root, nodep->data) == nodep);
             ASSERT(audit(__LINE__, &root, dumps) == DIMINUTO_TREE_NULL);
         }
         list(__LINE__, &root, dumps);

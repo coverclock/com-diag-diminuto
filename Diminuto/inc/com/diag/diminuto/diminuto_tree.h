@@ -429,45 +429,6 @@ static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
 }
 
 /*******************************************************************************
- * HELPERS
- ******************************************************************************/
-
-/**
- * Insert an orphaned node onto the an empty tree.
- * @param nodep points to an orphaned node.
- * @param rootp points to the root pointer of the empty tree.
- * @return a pointer to the newly inserted node or null if error.
- */
-static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_t **rootp)
-{
-    return diminuto_tree_insert_left_or_root(nodep, DIMINUTO_TREE_NULL, rootp);
-}
-
-/**
- * Insert an orphaned node to the left of a parent node on the tree. The parent
- * must have no child to its left.
- * @param nodep points to an orphaned node.
- * @param parentp points to the parent node on the tree.
- * @return a pointer to the newly inserted node. or null if error
- */
-static inline diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
-{
-    return diminuto_tree_insert_left_or_root(nodep, parentp, diminuto_tree_root(parentp));
-}
-
-/**
- * Insert an orphaned node to the right of a parent node on the tree. The parent
- * must have no child to its right.
- * @param nodep points to an orphaned node.
- * @param parentp points to the parent node on the tree.
- * @return a pointer to the newly inserted node. or null if error
- */
-static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
-{
-    return diminuto_tree_insert_right_or_root(nodep, parentp, diminuto_tree_root(parentp));
-}
-
-/*******************************************************************************
  * SEARCH
  ******************************************************************************/
 
@@ -509,6 +470,77 @@ extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
 extern diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace);
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+/**
+ * Insert an orphaned node onto the an empty tree.
+ * @param nodep points to an orphaned node.
+ * @param rootp points to the root pointer of the empty tree.
+ * @return a pointer to the newly inserted node or null if error.
+ */
+static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_t **rootp)
+{
+    return diminuto_tree_insert_left_or_root(nodep, DIMINUTO_TREE_NULL, rootp);
+}
+
+/**
+ * Insert an orphaned node to the left of a parent node on the tree. The parent
+ * must have no child to its left.
+ * @param nodep points to an orphaned node.
+ * @param parentp points to the parent node on the tree.
+ * @return a pointer to the newly inserted node. or null if error
+ */
+static inline diminuto_tree_t * diminuto_tree_insert_left(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+{
+    return diminuto_tree_insert_left_or_root(nodep, parentp, diminuto_tree_root(parentp));
+}
+
+/**
+ * Insert an orphaned node to the right of a parent node on the tree. The parent
+ * must have no child to its right.
+ * @param nodep points to an orphaned node.
+ * @param parentp points to the parent node on the tree.
+ * @return a pointer to the newly inserted node. or null if error
+ */
+static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nodep, diminuto_tree_t * parentp)
+{
+    return diminuto_tree_insert_right_or_root(nodep, parentp, diminuto_tree_root(parentp));
+}
+
+/**
+ * Search the tree starting at the root for a target node that is not on
+ * the three. The caller provides a comparison function which the search uses to
+ * compare a node on the tree it is currently examining with the target node;
+ * what this function actually compares is up to the application. The target
+ * node is inserted provided an exact match is not found.
+ * @param rootp points to the root pointer of the tree.
+ * @param targetp points to the target node to be inserted.
+ * @oaran comparatorp points to a comparator function.
+ * @return a pointer to the target node, or null if an error.
+ */
+extern diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+{
+    return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, 0);
+}
+
+/**
+ * Search the tree starting at the root for a target node that is not on
+ * the three. The caller provides a comparison function which the search uses to
+ * compare a node on the tree it is currently examining with the target node;
+ * what this function actually compares is up to the application. The target
+ * node is inserted, or replaces an existing node if an exact match is found.
+ * @param rootp points to the root pointer of the tree.
+ * @param targetp points to the target node to be inserted or replacing.
+ * @oaran comparatorp points to a comparator function.
+ * @return a pointer to the target node, the replaced node, or null if an error.
+ */
+extern diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+{
+    return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, !0);
+}
 
 /*******************************************************************************
  * AUDITORS
