@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+/*******************************************************************************
+ * LOCALS
+ *****************************************************************************/
+
 static const char levels[] = "01234567";
 static uint8_t initialized = 0;
 
@@ -30,12 +34,22 @@ diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
 int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
 int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
-int diminuto_log_descriptor = DIMINUTO_LOG_STREAM_DEFAULT;
-FILE * diminuto_log_file = (FILE *)0;
+int diminuto_log_descriptor = DIMINUTO_LOG_DESCRIPTOR_DEFAULT;
+FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
+const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
 /*******************************************************************************
  * BASE FUNCTIONS
  *****************************************************************************/
+
+void diminuto_log_setmask(void)
+{
+    const char * mask;
+
+    if ((mask = getenv(diminuto_log_mask_name)) != (const char *)0) {
+        DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
+    }
+}
 
 void diminuto_log_open(const char * name)
 {

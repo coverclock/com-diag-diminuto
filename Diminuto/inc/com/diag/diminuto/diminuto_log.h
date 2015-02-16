@@ -55,14 +55,14 @@
 
 typedef int diminuto_log_mask_t;
 
-#define DIMINUTO_LOG_MASK_EMERGENCY     (1<<7)
-#define DIMINUTO_LOG_MASK_ALERT         (1<<6)
-#define DIMINUTO_LOG_MASK_CRITICAL      (1<<5)
-#define DIMINUTO_LOG_MASK_ERROR         (1<<4)
-#define DIMINUTO_LOG_MASK_WARNING       (1<<3)
-#define DIMINUTO_LOG_MASK_NOTICE        (1<<2)
-#define DIMINUTO_LOG_MASK_INFORMATION   (1<<1)
-#define DIMINUTO_LOG_MASK_DEBUG         (1<<0)
+#define DIMINUTO_LOG_MASK_EMERGENCY     (1 << (7 - 0))
+#define DIMINUTO_LOG_MASK_ALERT         (1 << (7 - 1))
+#define DIMINUTO_LOG_MASK_CRITICAL      (1 << (7 - 2))
+#define DIMINUTO_LOG_MASK_ERROR         (1 << (7 - 3))
+#define DIMINUTO_LOG_MASK_WARNING       (1 << (7 - 4))
+#define DIMINUTO_LOG_MASK_NOTICE        (1 << (7 - 5))
+#define DIMINUTO_LOG_MASK_INFORMATION   (1 << (7 - 6))
+#define DIMINUTO_LOG_MASK_DEBUG         (1 << (7 - 7))
 
 #define DIMINUTO_LOG_MASK_ALL           (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE | DIMINUTO_LOG_MASK_INFORMATION | DIMINUTO_LOG_MASK_DEBUG)
 #define DIMINUTO_LOG_MASK_NONE          (0)
@@ -94,32 +94,7 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #else
 
-#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-
-/*
- * Logging can be done from an application or a daemon, in the former
- * case it prints to standard error, and in the latter it logs to the
- * system log. Each translation unit either defines its own subsystem
- * log mask (which may be local or external) or uses the global default
- * subsystem log mask.
- */
-
-#include <syslog.h>
-
-#define DIMINUTO_LOG_PRIORITY_EMERGENCY      LOG_EMERG
-#define DIMINUTO_LOG_PRIORITY_ALERT          LOG_ALERT
-#define DIMINUTO_LOG_PRIORITY_CRITICAL       LOG_CRIT
-#define DIMINUTO_LOG_PRIORITY_ERROR          LOG_ERR
-#define DIMINUTO_LOG_PRIORITY_WARNING        LOG_WARNING
-#define DIMINUTO_LOG_PRIORITY_NOTICE         LOG_NOTICE
-#define DIMINUTO_LOG_PRIORITY_INFORMATION    LOG_INFO
-#define DIMINUTO_LOG_PRIORITY_DEBUG          LOG_DEBUG
-
-#define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
-#define DIMINUTO_LOG_OPTION_DEFAULT          LOG_CONS
-#define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
-
-#else
+#   if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
 /*
  * Logging can be done from an application or a daemon, in the former
@@ -144,12 +119,39 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_OPTION_DEFAULT          0
 #define DIMINUTO_LOG_FACILITY_DEFAULT        0
 
-#endif
+#   else
+
+/*
+ * Logging can be done from an application or a daemon, in the former
+ * case it prints to standard error, and in the latter it logs to the
+ * system log. Each translation unit either defines its own subsystem
+ * log mask (which may be local or external) or uses the global default
+ * subsystem log mask.
+ */
+
+#include <syslog.h>
+
+#define DIMINUTO_LOG_PRIORITY_EMERGENCY      LOG_EMERG
+#define DIMINUTO_LOG_PRIORITY_ALERT          LOG_ALERT
+#define DIMINUTO_LOG_PRIORITY_CRITICAL       LOG_CRIT
+#define DIMINUTO_LOG_PRIORITY_ERROR          LOG_ERR
+#define DIMINUTO_LOG_PRIORITY_WARNING        LOG_WARNING
+#define DIMINUTO_LOG_PRIORITY_NOTICE         LOG_NOTICE
+#define DIMINUTO_LOG_PRIORITY_INFORMATION    LOG_INFO
+#define DIMINUTO_LOG_PRIORITY_DEBUG          LOG_DEBUG
+
+#define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
+#define DIMINUTO_LOG_OPTION_DEFAULT          LOG_CONS
+#define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
+
+#   endif
 
 #include <stdarg.h>
 #include <unistd.h>
 
-#define DIMINUTO_LOG_STREAM_DEFAULT          STDERR_FILENO
+#define DIMINUTO_LOG_DESCRIPTOR_DEFAULT      STDERR_FILENO
+#define DIMINUTO_LOG_STREAM_DEFAULT          ((FILE *)0)
+#define DIMINUTO_LOG_MASK_NAME_DEFAULT       "COM_DIAG_DIMINUTO_LOG_MASK"
 
 #define DIMINUTO_LOG_BUFFER_MAXIMUM          (1024)
 
@@ -158,7 +160,16 @@ extern int diminuto_log_option;
 extern int diminuto_log_facility;
 extern int diminuto_log_descriptor;
 extern FILE * diminuto_log_file;
+extern const char * diminuto_log_mask_name;
 extern diminuto_log_mask_t diminuto_log_mask;
+
+/**
+ * Set the global default log mask from the environment. By default, the name
+ * of the log mask environmental variable is "COM_DIAG_DIMINUTO_LOG_MASK" and
+ * its value is a string number in decimal, octal, or hexadecimal format as
+ * understood by strtoul(3), e.g. 255, 0x377, 0xff, 0xFF.
+ */
+extern void diminuto_log_setmask(void);
 
 /**
  * Open the underlying system log communication channel (whatever that is)
