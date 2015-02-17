@@ -186,5 +186,16 @@ int main(void)
 		ASSERT(strcmp(out, "123 \\ ") == 0);
 	}
 
+	{
+		unsigned char string[2] = "";
+		int ii;
+		int printable;
+		for (ii = 0; ii < 256; ++ii) {
+			string[0] = ii;
+			printable = diminuto_escape_printable(string);
+			ASSERT((((string[0] == '\0') || ((' ' <= string[0]) && (string[0] <= '~'))) && printable) || ((!((string[0] == '\0') || ((' ' <= string[0]) && (string[0] <= '~')))) && (!printable)));
+		}
+	}
+
     EXIT();
 }

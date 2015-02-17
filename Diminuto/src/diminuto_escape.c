@@ -10,6 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_escape.h"
 #include <string.h>
+#include <ctype.h>
 
 size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
 {
@@ -257,4 +258,18 @@ size_t diminuto_escape_trim(char * to, const char * from, size_t tsize, size_t f
     }
 
     return size;
+}
+
+int diminuto_escape_printable(const char * from)
+{
+    int printable = !0;
+
+    while (*from != '\0') {
+        if (!isprint(*(from++))) {
+            printable = 0;
+            break;
+        }
+    }
+
+    return printable;
 }

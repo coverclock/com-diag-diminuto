@@ -30,7 +30,7 @@
  * terminating NUL character.
  * @return the length of the destination string including the terminating NUL.
  */
-size_t diminuto_escape_collapse(char *to, const char *from, size_t tsize);
+extern size_t diminuto_escape_collapse(char *to, const char *from, size_t tsize);
 
 /**
  * Expand a source string into a destination string containing C-style escape
@@ -49,7 +49,7 @@ size_t diminuto_escape_collapse(char *to, const char *from, size_t tsize);
  * to be escaped.
  * @return the length of the destination string including the terminating NUL.
  */
-size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t fsize, const char * special);
+extern size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t fsize, const char * special);
 
 /**
  * Copy a source C string to a destination string trimming trailing blanks
@@ -60,6 +60,14 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
  * terminating NUL character.
  * @param fsize is the explicit length of the source string.
  */
-size_t diminuto_escape_trim(char * to, const char * from, size_t tsize, size_t fsize);
+extern size_t diminuto_escape_trim(char * to, const char * from, size_t tsize, size_t fsize);
+
+/**
+ * Return true if the source C string contains only printable characters,
+ * false otherwise. Printability is defined in an isprint(3) sense.
+ * @param from points to the source string.
+ * @return true if printable, false otherwise.
+ */
+extern int diminuto_escape_printable(const char * from);
 
 #endif
