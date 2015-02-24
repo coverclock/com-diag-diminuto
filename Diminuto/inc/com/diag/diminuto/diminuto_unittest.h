@@ -57,6 +57,17 @@ static int diminuto_unittest_errors = 0;
     } while (0)
 
 /**
+ * @def STATUS()
+ * Report errors so far.
+ */
+#define STATUS() \
+    do { \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "STATUS(): errors=%d %s\n", diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        fflush(stdout); \
+        fflush(stderr); \
+    } while (0)
+
+/**
  * @def ADVISE(_COND_)
  * Log a notice message if the specified condition @a _COND_ is not true.
  */
