@@ -160,16 +160,16 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
 
     while (0 < fsize) {
         if (tsize <= (ss = 1)) {
-        	break;
+            break;
         } else if ((((const char *)0 == special) || ((const char *)0 == (ee = strchr(special, *ff)))) && (((' ' <= *ff) && (*ff <= '[')) || ((']' <= *ff) && (*ff <= '~')))) {
-    		*(tt++) = *ff;              /* Unescaped character. */
+            *(tt++) = *ff;              /* Unescaped character. */
         } else if (tsize <= (ss = 2)) {
-        	break;
+            break;
         } else if ('\\' == *ff) {
             *(tt++) = '\\';             /* Backslash. */
             *(tt++) = '\\';
         } else if ('\0' == *ff) {
-           *(tt++) = '\\';             /* Zero a.k.a. NUL. */
+           *(tt++) = '\\';              /* Zero a.k.a. NUL. */
             *(tt++) = '0';
         } else if ('\a' == *ff) {
             *(tt++) = '\\';             /* Alarm a.k.a. BEL. */
@@ -196,7 +196,7 @@ size_t diminuto_escape_expand(char * to, const char * from, size_t tsize, size_t
             *(tt++) = '\\';             /* Special character. */
             *(tt++) = *ff;
         } else if (tsize <= (ss = 4)) {
-        	break;
+            break;
         } else {
             *(tt++) = '\\';             /* Hexadecimal sequence. */
             *(tt++) = 'x';
