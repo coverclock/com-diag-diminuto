@@ -451,7 +451,7 @@ static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
  * @param rcp points to an variable into which the return code is stored.
  * @return a pointer to the nearest node or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparep, int * rcp);
+extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp);
 
 /**
  * Search the tree starting at the root for a target node that is not on
@@ -465,7 +465,7 @@ extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_
  * inserted, or a pointer to an orphaned node if it was replaced.
  * @param rootp points to the root pointer of the tree.
  * @param targetp points to the target node to be inserted.
- * @oaran comparatorp points to a comparator function.
+ * @param comparatorp points to a comparator function.
  * @param replace if true causes a matching node (if any) to be replaced.
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
@@ -518,7 +518,7 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
  * node is inserted provided an exact match is not found.
  * @param rootp points to the root pointer of the tree.
  * @param targetp points to the target node to be inserted.
- * @oaran comparatorp points to a comparator function.
+ * @param comparatorp points to a comparator function.
  * @return a pointer to the target node, or null if an error.
  */
 static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
@@ -534,7 +534,7 @@ static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** r
  * node is inserted, or replaces an existing node if an exact match is found.
  * @param rootp points to the root pointer of the tree.
  * @param targetp points to the target node to be inserted or replacing.
- * @oaran comparatorp points to a comparator function.
+ * @param comparatorp points to a comparator function.
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
 static inline diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)

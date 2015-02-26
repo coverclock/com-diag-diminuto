@@ -35,7 +35,6 @@
  * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
  */
 
-#include <stdio.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 
@@ -146,6 +145,7 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #   endif
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
 
