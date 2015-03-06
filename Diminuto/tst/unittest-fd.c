@@ -24,7 +24,7 @@
 #define DIMINUTO_FD_TYPE(_FD_, _EXPECTED_) \
     do { \
         diminuto_fd_type_t type; \
-        fprintf(stderr, "unittest-fd: %s=%d type=%d expected=%d\n", #_FD_, _FD_, type = diminuto_fd_type(_FD_), _EXPECTED_); \
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s=%d type=%d expected=%d\n", #_FD_, _FD_, type = diminuto_fd_type(_FD_), _EXPECTED_); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
 
