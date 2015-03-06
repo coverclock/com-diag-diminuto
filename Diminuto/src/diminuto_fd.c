@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_platform.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
 #   include <asm/socket.h> /* FIONREAD */
 #   include <sys/ioctl.h> /* TIOCINQ */
@@ -211,4 +212,39 @@ void * diminuto_fd_direct_alloc(size_t size)
 int diminuto_fd_direct_acquire(int fd, const char * device, int flags, mode_t mode)
 {
     return diminuto_fd_acquire(fd, device, flags | O_DIRECT | O_SYNC, mode);
+}
+
+diminuto_fd_type_t diminuto_fd_type(int fd)
+{
+    diminuto_fd_type_t type = DIMINUTO_FD_TYPE_UNKNOWN;
+    struct stat status;
+
+    if (isatty(fd)) {
+        type = DIMINUTO_FD_TYPE_TTY;
+    } else if (fstat(fd, &status) < 0) {
+        diminuto_perror("diminuto_fd_type: fstat");
+    } else if (S_ISREG(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_FILE;
+    } else if (S_ISDIR(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_DIRECTORY;
+    } else if (S_ISCHR(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_CHARACTERDEV;
+    } else if (S_ISBLK(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_BLOCKDEV;
+    } else if (S_ISFIFO(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_FIFO;
+#if defined(S_ISLNK)
+    } else if (S_ISLNK(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_SYMLINK; /* fstat(2) will never actually return this. */
+#endif
+#if defined(S_ISSOCK)
+    } else if (S_ISSOCK(status.st_mode)) {
+        type = DIMINUTO_FD_TYPE_SOCKET;
+#endif
+    } else {
+        errno = EINVAL;
+        diminuto_perror("diminuto_fd_type: stat.st_mode");
+    }
+
+    return type;
 }

@@ -107,4 +107,30 @@ extern diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count);
  */
 extern void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd);
 
+/**
+ * This type defines an enumeration that is an abstraction of some bits in the
+ * st_mode field returned in the stat structure by the fstat(2) system call.
+ */
+typedef enum DiminutoFdType {
+    DIMINUTO_FD_TYPE_UNKNOWN        = 0,
+    DIMINUTO_FD_TYPE_TTY            = 1,
+    DIMINUTO_FD_TYPE_SOCKET         = 2,
+    DIMINUTO_FD_TYPE_SYMLINK        = 3,
+    DIMINUTO_FD_TYPE_FILE           = 4,
+    DIMINUTO_FD_TYPE_BLOCKDEV       = 5,
+    DIMINUTO_FD_TYPE_DIRECTORY      = 6,
+    DIMINUTO_FD_TYPE_CHARACTERDEV   = 7,
+    DIMINUTO_FD_TYPE_FIFO           = 8,
+} diminuto_fd_type_t;
+
+/**
+ * Determine an enumeration that indicates the type of object the specified
+ * file descriptor represents. Note that the fstat(2) call under Linux will
+ * never return the type of symbolic link; it will always return the type of
+ * object to which the symbolic link points.
+ * @param fd is an open file descriptor.
+ * @return the type of object the file descriptor represents.
+ */
+extern diminuto_fd_type_t diminuto_fd_type(int fd);
+
 #endif
