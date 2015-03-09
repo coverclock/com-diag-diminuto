@@ -25,3 +25,12 @@ char * diminuto_string_copy(char * dest, const char * src, size_t n)
 
     return result;
 }
+
+DIMINUTO_PROXY_POINTER_C(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_POINTER_C(string, strndup, char *, (const char * s, size_t n), return, (s, n))
+
+DIMINUTO_PROXY_SETTOR_C(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_SETTOR_C(string, strndup, char *, (const char * s, size_t n), return, (s, n))
+
+DIMINUTO_PROXY_FUNCTION_C(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_FUNCTION_C(string, strndup, char *, (const char * s, size_t n), return, (s, n))

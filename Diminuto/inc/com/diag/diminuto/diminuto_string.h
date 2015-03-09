@@ -5,13 +5,14 @@
 /**
  * @file
  *
- * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_proxy.h"
 #include <string.h>
 
 /**
@@ -42,5 +43,14 @@ static inline const char * diminuto_string_basename(const char * argvzero) {
 	const char * basename;
 	return ((basename = strrchr(argvzero, '/')) == (char *)0) ? argvzero : basename + 1;
 }
+
+DIMINUTO_PROXY_POINTER_H(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_POINTER_H(string, strndup, char *, (const char * s, size_t n), return, (s, n))
+
+DIMINUTO_PROXY_SETTOR_H(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_SETTOR_H(string, strndup, char *, (const char * s, size_t n), return, (s, n))
+
+DIMINUTO_PROXY_FUNCTION_H(string, strdup, char *, (const char * s), return, (s))
+DIMINUTO_PROXY_FUNCTION_H(string, strndup, char *, (const char * s, size_t n), return, (s, n))
 
 #endif
