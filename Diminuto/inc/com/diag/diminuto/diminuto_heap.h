@@ -16,6 +16,12 @@
  * functions that track memory usage. (But go get the valgrind tool off
  * the web if you don't already have it. It's the best thing since sliced
  * bread.)
+ *
+ * IMPORTANT SAFETY TIP: depending on the implementation, any alternative
+ * implementations of malloc(3) et al. may be incompatible. So if, for example,
+ * you allocate some memory, then install an alternative free(3), then free
+ * that memory (or vice versa), wackiness may ensue. Best to install
+ * alternatives during start up and initialization, and stick with them.
  */
 
 #include "com/diag/diminuto/diminuto_proxy.h"

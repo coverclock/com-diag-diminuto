@@ -9,6 +9,12 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * IMPORTANT SAFETY TIP: depending on the implementation, any alternative
+ * implementations of malloc(3) et al. used by this strdup may be incompatible.
+ * So if, for example, you install allocate some memory, then install an
+ * alternative free(3), then free that memory (or vice versa), wackiness will
+ * likely ensue.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
