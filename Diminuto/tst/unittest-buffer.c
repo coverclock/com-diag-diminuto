@@ -8,22 +8,23 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include <string.h>
+#include <errno.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 
-/*
- * [0]: 2^3  =    8 + 8 =   16
- * [1]: 2^4  =   16 + 8 =   24
- * [2]: 2^5  =   32 + 8 =   40
- * [3]: 2^6  =   64 + 8 =   72
- * [4]: 2^7  =  128 + 8 =  136
- * [5]: 2^8  =  256 + 8 =  264
- * [6]: 2^9  =  512 + 8 =  520
- * [7]: 2^10 = 1024 + 8 = 1032
- * [8]: 2^11 = 2048 + 8 = 2056
- * [9]: 2^12 = 4096 + 8 = 4104
- */
+static int memverify(void * s, int c, size_t n)
+{
+    unsigned char * p;
+    unsigned char ch;
+    for (p = (char *)s, ch = c; n > 0; --n, ++p) {
+        if (*p != ch) {
+            return 0;
+        }
+    }
+    return !0;
+}
 
 int main(void)
 {
@@ -34,78 +35,153 @@ int main(void)
         size_t actual;
         size_t expected;
         size_t effective;
-        unsigned int index;
-        unsigned int hash;
+        size_t item;
+        size_t hash;
+        static const size_t HEADER = 8; /* Header size is not exposed in the public API. */
         for (requested = 0; requested <= 8192; ++requested) {
             if (requested <= (expected = 8)) {
-                index = 0;
+                item = 0;
             } else if (requested <= (expected = 16)) {
-                index = 1;
+                item = 1;
             } else if (requested <= (expected = 32)) {
-                index = 2;
+                item = 2;
             } else if (requested <= (expected = 64)) {
-                index = 3;
+                item = 3;
             } else if (requested <= (expected = 128)) {
-                index = 4;
+                item = 4;
             } else if (requested <= (expected = 256)) {
-                index = 5;
+                item = 5;
             } else if (requested <= (expected = 512)) {
-                index = 6;
+                item = 6;
             } else if (requested <= (expected = 1024)) {
-                index = 7;
+                item = 7;
             } else if (requested <= (expected = 2048)) {
-                index = 8;
+                item = 8;
             } else if (requested <= (expected = 4096)) {
-                index = 9;
+                item = 9;
             } else {
                 expected = requested;
-                index = requested + 8;
+                item = 10;
             }
-            expected += 8;
-            effective = diminuto_buffer_effective(index);
+            expected += HEADER;
             hash = diminuto_buffer_hash(requested, &actual);
-#if 1
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %d %d\n", requested, actual, effective, expected, index, hash);
+            effective = diminuto_buffer_effective((item < 10) ? item : expected);
+#if 0
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %d %d\n", requested, actual, effective, expected, item, hash);
 #endif
-            EXPECT((index > 9) || (hash == index));
-            EXPECT(actual == expected);
-            EXPECT(effective == expected);
+            ASSERT(hash == item);
+            ASSERT(actual == expected);
+            ASSERT(effective == expected);
         }
         STATUS();
     }
 
     {
-        diminuto_buffer_fini();
+        diminuto_buffer_init();
         diminuto_buffer_log();
         diminuto_buffer_fini();
         STATUS();
     }
 
     {
-        int index;
+        void * one;
+        void * two;
+        void * three;
+        void * four;
+        void * five;
+        ASSERT(!diminuto_buffer_debug(!0));
+        diminuto_buffer_init();
+        diminuto_buffer_log();
+        /**/
+        one = diminuto_buffer_malloc(0);
+        EXPECT(one == (void *)0);
+        EXPECT(errno == 0);
+        one = diminuto_buffer_realloc((void *)0, 0);
+        EXPECT(one == (void *)0);
+        EXPECT(errno == 0);
+        one = diminuto_buffer_calloc(0, 1);
+        EXPECT(one == (void *)0);
+        EXPECT(errno == 0);
+        one = diminuto_buffer_calloc(1, 0);
+        EXPECT(one == (void *)0);
+        EXPECT(errno == 0);
+        one = diminuto_buffer_calloc(0, 0);
+        EXPECT(one == (void *)0);
+        EXPECT(errno == 0);
+        /**/
+        one = diminuto_buffer_malloc(1);
+        ASSERT(one != (void *)0);
+        memset(one, 0xa5, 1);
+        two = diminuto_buffer_realloc(one, 2);
+        ASSERT(two != (void *)0);
+        EXPECT(one == two); /* Optimization. */
+        EXPECT(memverify(two, 0xa5, 1));
+        memset(two, 0x5a, 2); /* For valgrind(1). */
+        /**/
+        one = diminuto_buffer_malloc(3);
+        ASSERT(one != (void *)0);
+        memset(one, 0xa5, 3);
+        three = diminuto_buffer_realloc(one, 9);
+        ASSERT(three != (void *)0);
+        EXPECT(three != one);
+        EXPECT(memverify(three, 0xa5, 3));
+        memset(three, 0x5a, 9); /* For valgrind(1). */
+        /**/
+        one = diminuto_buffer_calloc(3, 5);
+        ASSERT(one != (void *)0);
+        EXPECT(memverify(one, 0, 15));
+        memset(one, 0xa5, 3 * 5);
+        four = diminuto_buffer_realloc(one, 4097);
+        ASSERT(four != (void *)0);
+        EXPECT(four != one);
+        EXPECT(memverify(four, 0xa5, 15));
+        memset(four, 0x5a, 4097); /* For valgrind(1). */
+        /**/
+        one = diminuto_buffer_malloc(7);
+        ASSERT(one != (void *)0);
+        memset(one, 0xa5, 7);
+        five = diminuto_buffer_realloc(one, 0);
+        EXPECT(five == (void *)0);
+        /**/
+        one = diminuto_buffer_realloc((void *)0, 11);
+        ASSERT(one != (void *)0);
+        memset(one, 0x5a, 11); /* For valgrind(1). */
+        /**/
+        diminuto_buffer_log();
+        /**/
+        diminuto_buffer_free(four);
+        diminuto_buffer_free(three);
+        diminuto_buffer_free(two);
+        diminuto_buffer_free(one);
+        diminuto_buffer_free((void *)0);
+        /**/
+        diminuto_buffer_log();
+        diminuto_buffer_fini();
+        ASSERT(diminuto_buffer_debug(0));
+        STATUS();
+    }
+
+    {
+        int ii;
         size_t requested;
-        void * buffer[15][2] = { (void *)0 };
+        void * buffer[14][2] = { (void *)0 };
+        diminuto_buffer_init();
         diminuto_buffer_log();
-        for (index = 0, requested = 0; requested <= (1 << 13); ++index, requested = (requested == 0) ? 1 : (requested << 1)) {
-            buffer[index][0] = diminuto_buffer_malloc(requested);
-            EXPECT(buffer[index] != (void *)0);
-            buffer[index][1] = diminuto_buffer_malloc(requested);
-            EXPECT(buffer[index] != (void *)0);
-#if 0
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%d %zu %p %p\n", index, requested, buffer[index][0], buffer[index][1]);
-#endif
+        for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
+            buffer[ii][0] = diminuto_buffer_malloc(requested);
+            ASSERT(buffer[ii][0] != (void *)0);
+            memset(buffer[ii][0], 0xa5, requested); /* For valgrind(1). */
+            buffer[ii][1] = diminuto_buffer_malloc(requested);
+            ASSERT(buffer[ii][1] != (void *)0);
+            memset(buffer[ii][1], 0x5a, requested); /* For valgrind(1). */
         }
         diminuto_buffer_log();
-        for (--index; index >= 0; --index) {
-#if 0
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%d %p %p\n", index, buffer[index][0], buffer[index][1]);
-#endif
-            diminuto_buffer_free(buffer[index][0]);
-            diminuto_buffer_free(buffer[index][1]);
+        for (--ii; ii >= 0; --ii) {
+            diminuto_buffer_free(buffer[ii][1]);
+            diminuto_buffer_free(buffer[ii][0]);
         }
         diminuto_buffer_log();
         diminuto_buffer_fini();
-        diminuto_buffer_log();
         STATUS();
     }
 

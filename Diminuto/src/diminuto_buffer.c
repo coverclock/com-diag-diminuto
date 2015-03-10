@@ -20,21 +20,26 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
-/******************************************************************************/
+/*******************************************************************************
+ * INFRASTRUCTURE
+ ******************************************************************************/
 
 typedef struct DiminutoBuffer {
     union {
         struct DiminutoBuffer * next;
-        size_t index;
+        size_t item;
         char bytes[8]; /* Guarantees header size and payload alignment. */
     } header;
     char payload[0];
 } diminuto_buffer_t;
+
+static int debug = 0;
 
 /*
  * These are the sizes I chose for each quanta in the buffer pool, but you
@@ -59,92 +64,145 @@ static diminuto_buffer_t * pool[countof(POOL)] = { (diminuto_buffer_t *)0 };
 
 static inline unsigned int hash(size_t requested, size_t * actualp)
 {
-    size_t index;
+    size_t item;
     size_t actual;
 
-    for (index = 0; (index < countof(POOL)) && (POOL[index] < requested); ++index) {
+    for (item = 0; (item < countof(POOL)) && (POOL[item] < requested); ++item) {
         continue;
     }
 
-    actual = (index < countof(POOL)) ? POOL[index] : requested;
+    actual = (item < countof(POOL)) ? POOL[item] : requested;
 
     *actualp = actual + sizeof(diminuto_buffer_t);
 
-    return index;
+    return item;
 }
 
-static inline size_t effective(size_t index)
+static inline size_t effective(size_t item)
 {
-    return (index < countof(POOL)) ? POOL[index] + sizeof(diminuto_buffer_t) : index;
+    return (item < countof(POOL)) ? POOL[item] + sizeof(diminuto_buffer_t) : item;
 }
 
-/******************************************************************************/
+/*******************************************************************************
+ * <stdlib.h>-LIKE FUNCTIONS
+ ******************************************************************************/
 
 void * diminuto_buffer_malloc(size_t size)
 {
-    size_t index;
-    size_t actual;
-    diminuto_buffer_t * here;
+    void * ptr;
 
-    index = hash(size, &actual);
-    if (index >= countof(POOL)) {
-        here = (diminuto_buffer_t *)malloc(actual);
-        here->header.index = actual;
-    } else if (pool[index] == (diminuto_buffer_t *)0) {
-        here = (diminuto_buffer_t *)malloc(actual);
-        here->header.index = index;
-    }  else {
-        here = pool[index];
-        pool[index] = here->header.next;
-        here->header.index = index;
+    if (size == 0) {
+        errno = 0;
+        ptr = (void *)0;
+    } else {
+        size_t item;
+        size_t actual;
+        diminuto_buffer_t * here;
+
+        item = hash(size, &actual);
+        if (item >= countof(POOL)) {
+            here = (diminuto_buffer_t *)malloc(actual);
+        } else if (pool[item] == (diminuto_buffer_t *)0) {
+            here = (diminuto_buffer_t *)malloc(actual);
+        }  else {
+            here = pool[item];
+            pool[item] = here->header.next;
+        }
+        if (here == (diminuto_buffer_t *)0) {
+            errno = ENOMEM;
+            ptr = (void *)0;
+        } else {
+            here->header.item = (item < countof(POOL)) ? item : actual;
+            ptr = here->payload;
+        }
     }
-    /* Consider clearing payload here for security purposes. */
 
-    return here->payload;
+    if (debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
+    }
+
+    return ptr;
 }
 
 void diminuto_buffer_free(void * ptr)
 {
+    if (debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_free: ptr=%p\n", ptr);
+    }
+
     if (ptr != (void *)0) {
-        size_t index;
+        size_t item;
         diminuto_buffer_t * here;
 
         here = containerof(diminuto_buffer_t, payload, ptr);
-        index = here->header.index;
-        if (index >= countof(POOL)) {
+        item = here->header.item;
+        if (item >= countof(POOL)) {
             free(here);
         } else {
-            here->header.next = pool[index];
-            pool[index] = here;
+            here->header.next = pool[item];
+            pool[item] = here;
         }
     }
 }
 
-/******************************************************************************/
-
 void * diminuto_buffer_realloc(void * ptr, size_t size)
 {
-    diminuto_buffer_t * here;
-    diminuto_buffer_t * there;
-    size_t index;
-    size_t length;
+    void * rtp;
 
-    here = containerof(diminuto_buffer_t, payload, ptr);
-    index = here->header.index;
-    there = diminuto_buffer_malloc(size);
-    size += sizeof(diminuto_buffer_t);
-    length = effective(index);
-    if (length > size) { length = size; }
-    memcpy(there, here, length);
-    diminuto_buffer_free(here);
+    if (ptr == (void *)0) {
+        rtp = diminuto_buffer_malloc(size);
+    } else if (size == 0) {
+        diminuto_buffer_free(ptr);
+        errno = 0;
+        rtp = (void *)0;
+    } else {
+        diminuto_buffer_t * here;
+        diminuto_buffer_t * there;
+        size_t actual;
+        size_t length;
 
-    return there->payload;
+        here = containerof(diminuto_buffer_t, payload, ptr);
+        actual = effective(here->header.item);
+        length = actual - sizeof(diminuto_buffer_t);
+        if (size <= length) {
+            rtp = ptr;
+        } else {
+            rtp = diminuto_buffer_malloc(size);
+            if (rtp != (void *)0) {
+                memcpy(rtp, ptr, length);
+            }
+            diminuto_buffer_free(ptr);
+        }
+    }
+
+    if (debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_realloc: ptr=%p size=%zu rtp=%p\n", ptr, size, rtp);
+    }
+
+    return rtp;
 }
 
 void * diminuto_buffer_calloc(size_t nmemb, size_t size)
 {
-    return diminuto_buffer_malloc(nmemb * size);
+    void * ptr;
+    size_t length;
+
+    length = nmemb * size;
+    ptr = diminuto_buffer_malloc(length);
+    if (ptr != (void *)0) {
+        memset(ptr, 0, length);
+    }
+
+    if (debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_calloc: nmemb=%zu size=%zu ptr=%p\n", nmemb, size, ptr);
+    }
+
+    return ptr;
 }
+
+/*******************************************************************************
+ * <string.h>-LIKE FUNCTIONS
+ ******************************************************************************/
 
 char * diminuto_buffer_strdup(const char * s)
 {
@@ -156,53 +214,73 @@ char * diminuto_buffer_strndup(const char * s, size_t n)
     return (char *)0;
 }
 
-/******************************************************************************/
+/*******************************************************************************
+ * ANCILLARY FUNCTIONS
+ ******************************************************************************/
 
 unsigned int diminuto_buffer_hash(size_t requested, size_t * actualp)
 {
     return hash(requested, actualp);
 }
 
-size_t diminuto_buffer_effective(unsigned int index)
+size_t diminuto_buffer_effective(unsigned int item)
 {
-    return effective(index);
-}
-
-void diminuto_buffer_log(void)
-{
-    unsigned int index;
-    unsigned int count;
-    size_t size;
-    size_t total;
-    diminuto_buffer_t * here;
-    diminuto_buffer_t * there;
-
-    total = 0;
-    for (index = 0; index < countof(POOL); ++index) {
-        count = 0;
-        for (here = pool[index]; here != (diminuto_buffer_t *)0; here = here->header.next) {
-            ++count;
-        }
-        if (count > 0) {
-            DIMINUTO_LOG_DEBUG("diminuto_buffer_log: index=%u count=%u size=%zubytes\n", index, count, size = effective(index));
-            total += size * count;
-        }
-    }
-
-    DIMINUTO_LOG_DEBUG("diminuto_buffer_log: total=%zubytes\n", total);
+    return effective(item);
 }
 
 void diminuto_buffer_fini(void)
 {
-    int index;
+    int item;
     diminuto_buffer_t * here;
     diminuto_buffer_t * there;
 
-    for (index = 0; index < countof(POOL); ++index) {
-        for (here = pool[index]; here != (diminuto_buffer_t *)0; here = there) {
+    for (item = 0; item < countof(POOL); ++item) {
+        for (here = pool[item]; here != (diminuto_buffer_t *)0; here = there) {
             there = here->header.next; /* To make valgrind(1) happy. */
             free(here);
         }
-        pool[index] = (diminuto_buffer_t *)0;
+        pool[item] = (diminuto_buffer_t *)0;
     }
+}
+
+void diminuto_buffer_init(void)
+{
+    diminuto_buffer_fini();
+}
+
+int diminuto_buffer_debug(int after)
+{
+    int before;
+
+    before = debug;
+    debug = after;
+
+    return before;
+}
+
+void diminuto_buffer_log(void)
+{
+    size_t total;
+    size_t item;
+    size_t count;
+    size_t length;
+    size_t size;
+    diminuto_buffer_t * here;
+    diminuto_buffer_t * there;
+
+    total = 0;
+    for (item = 0; item < countof(POOL); ++item) {
+        count = 0;
+        for (here = pool[item]; here != (diminuto_buffer_t *)0; here = here->header.next) {
+            ++count;
+        }
+        if (count > 0) {
+            length = POOL[item];
+            size = length + sizeof(diminuto_buffer_t);
+            DIMINUTO_LOG_DEBUG("diminuto_buffer_log: length=%zubytes size=%zubytes count=%u\n", length, size, count);
+            total += count * size;
+        }
+    }
+
+    DIMINUTO_LOG_DEBUG("diminuto_buffer_log: total=%zubytes\n", total);
 }
