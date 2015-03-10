@@ -31,6 +31,8 @@ int main(void)
     SETLOGMASK();
 
     {
+        extern unsigned int diminuto_buffer_hash(size_t requested, size_t * actualp); /* Not part of the public API. */
+        extern size_t diminuto_buffer_effective(unsigned int index); /* Not part of the public API. */
         size_t requested;
         size_t actual;
         size_t expected;
@@ -77,7 +79,6 @@ int main(void)
     }
 
     {
-        diminuto_buffer_init();
         diminuto_buffer_log();
         diminuto_buffer_fini();
         STATUS();
@@ -90,7 +91,6 @@ int main(void)
         void * four;
         void * five;
         ASSERT(!diminuto_buffer_debug(!0));
-        diminuto_buffer_init();
         diminuto_buffer_log();
         /**/
         one = diminuto_buffer_malloc(0);
@@ -165,7 +165,6 @@ int main(void)
         int ii;
         size_t requested;
         void * buffer[14][2] = { (void *)0 };
-        diminuto_buffer_init();
         diminuto_buffer_log();
         for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
             buffer[ii][0] = diminuto_buffer_malloc(requested);
@@ -188,7 +187,6 @@ int main(void)
     {
         static char STRING[] = "England expects each man to do his duty.";
         char * string;
-        diminuto_buffer_init();
         diminuto_buffer_log();
         /**/
         string = diminuto_buffer_strdup("");
@@ -231,7 +229,6 @@ int main(void)
         void * pointer;
         diminuto_buffer_fail = !0;
         ASSERT(!diminuto_buffer_debug(!0));
-        diminuto_buffer_init();
         diminuto_buffer_log();
         /**/
         pointer = diminuto_buffer_malloc(0);

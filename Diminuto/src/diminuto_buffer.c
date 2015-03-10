@@ -277,11 +277,6 @@ void diminuto_buffer_fini(void)
     }
 }
 
-void diminuto_buffer_init(void)
-{
-    diminuto_buffer_fini();
-}
-
 int diminuto_buffer_debug(int after)
 {
     int before;
