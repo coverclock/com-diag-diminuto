@@ -14,6 +14,18 @@
 #include <stddef.h>
 
 /*******************************************************************************
+ * MANAGEMENT FUNCTIONS
+ ******************************************************************************/
+
+extern void diminuto_buffer_init(void);
+
+extern void diminuto_buffer_fini(void);
+
+extern int diminuto_buffer_debug(int debug);
+
+extern void diminuto_buffer_log(void);
+
+/*******************************************************************************
  * <stdlib.h>-LIKE FUNCTIONS
  ******************************************************************************/
 
@@ -36,14 +48,6 @@ extern char * diminuto_buffer_strndup(const char * s, size_t n);
 /*******************************************************************************
  * ANCILLARY FUNCTIONS
  ******************************************************************************/
-
-extern void diminuto_buffer_init(void);
-
-extern void diminuto_buffer_fini(void);
-
-extern int diminuto_buffer_debug(int debug);
-
-extern void diminuto_buffer_log(void);
 
 extern unsigned int diminuto_buffer_hash(size_t requested, size_t * actualp);
 

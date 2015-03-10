@@ -185,5 +185,45 @@ int main(void)
         STATUS();
     }
 
+    {
+        static char STRING[] = "England expects each man to do his duty.";
+        char * string;
+        diminuto_buffer_init();
+        diminuto_buffer_log();
+        /**/
+        string = diminuto_buffer_strdup("");
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, "") == 0);
+        diminuto_buffer_free(string);
+        /**/
+        string = diminuto_buffer_strdup(STRING);
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, STRING) == 0);
+        diminuto_buffer_free(string);
+        /**/
+        string = diminuto_buffer_strndup("", ~(size_t)0);
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, "") == 0);
+        diminuto_buffer_free(string);
+        /**/
+        string = diminuto_buffer_strndup(STRING, 0);
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, "") == 0);
+        diminuto_buffer_free(string);
+        /**/
+        string = diminuto_buffer_strndup(STRING, strlen("England"));
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, "England") == 0);
+        diminuto_buffer_free(string);
+        /**/
+        string = diminuto_buffer_strndup(STRING, ~(size_t)0);
+        ASSERT(string != (char *)0);
+        ASSERT(strcmp(string, STRING) == 0);
+        diminuto_buffer_free(string);
+        /**/
+        diminuto_buffer_log();
+        diminuto_buffer_fini();
+    }
+
     EXIT();
 }
