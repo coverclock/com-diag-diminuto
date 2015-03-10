@@ -59,17 +59,17 @@ int main(void)
                 index = 9;
             } else {
                 expected = requested;
-                index = 10;
+                index = requested + 8;
             }
             expected += 8;
             effective = diminuto_buffer_effective(index);
             hash = diminuto_buffer_hash(requested, &actual);
-#if 0
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %d %d\n", requested, actual, expected, index, hash);
+#if 1
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %d %d\n", requested, actual, effective, expected, index, hash);
 #endif
             EXPECT((index > 9) || (hash == index));
             EXPECT(actual == expected);
-            EXPECT((index > 9) || (effective == expected));
+            EXPECT(effective == expected);
         }
         STATUS();
     }

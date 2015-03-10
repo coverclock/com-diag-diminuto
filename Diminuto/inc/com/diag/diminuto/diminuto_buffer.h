@@ -29,9 +29,9 @@ extern void * diminuto_buffer_calloc(size_t nmemb, size_t size);
  * <string.h>-LIKE FUNCTIONS
  ******************************************************************************/
 
-extern char * diminuto_buffer_strdup(const char *s);
+extern char * diminuto_buffer_strdup(const char * s);
 
-extern char * diminuto_buffer_strndup(const char *s, size_t n);
+extern char * diminuto_buffer_strndup(const char * s, size_t n);
 
 /*******************************************************************************
  * ANCILLARY FUNCTIONS
