@@ -41,6 +41,8 @@ typedef struct DiminutoBuffer {
 
 static int debug = 0;
 
+int diminuto_buffer_fail = 0; /* Not part of the public API. */
+
 /*
  * These are the sizes I chose for each quanta in the buffer pool, but you
  * should be able to put any monotonically increasing sizes here and it should
@@ -87,6 +89,20 @@ static inline size_t effective(size_t item)
  * <stdlib.h>-LIKE FUNCTIONS
  ******************************************************************************/
 
+static inline void * buffer_malloc(size_t size)
+{
+    void * pointer;
+
+    if (!diminuto_buffer_fail) {
+        pointer = (diminuto_buffer_t *)malloc(size);
+    } else {
+        pointer = (diminuto_buffer_t *)0;
+        errno = ENOMEM;
+    }
+
+    return pointer;
+}
+
 void * diminuto_buffer_malloc(size_t size)
 {
     void * pointer;
@@ -101,15 +117,14 @@ void * diminuto_buffer_malloc(size_t size)
 
         item = hash(size, &actual);
         if (item >= countof(POOL)) {
-            here = (diminuto_buffer_t *)malloc(actual);
+            here = (diminuto_buffer_t *)buffer_malloc(actual);
         } else if (pool[item] == (diminuto_buffer_t *)0) {
-            here = (diminuto_buffer_t *)malloc(actual);
+            here = (diminuto_buffer_t *)buffer_malloc(actual);
         }  else {
             here = pool[item];
             pool[item] = here->header.next;
         }
         if (here == (diminuto_buffer_t *)0) {
-            errno = ENOMEM;
             pointer = (void *)0;
         } else {
             here->header.item = (item < countof(POOL)) ? item : actual;
