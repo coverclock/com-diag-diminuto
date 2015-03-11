@@ -105,6 +105,7 @@ extern char * diminuto_buffer_strdup(const char * s);
  * specified number of characters from the string to the buffer and terminate
  * the new buffer with a nul.
  * @param s points to the string.
+ * @param n is the maximum number of characters to copy from the string.
  * @return a buffer containing a copy of the string.
  */
 extern char * diminuto_buffer_strndup(const char * s, size_t n);
@@ -144,7 +145,7 @@ extern int diminuto_buffer_debug(int debug);
  * Allocations for which no buffers of the suitable size are available will
  * return null. This is used for unit testing, but can also be used to block the
  * dynamic allocation of additional memory after buffers have been preallocated.
- * @param fail is true causes subsequent use of malloc(3) to instead fail.
+ * @param nomalloc is true causes subsequent use of malloc(3) to instead fail.
  * @return the prior fail state.
  */
 extern int diminuto_buffer_nomalloc(int nomalloc);
