@@ -140,14 +140,14 @@ extern int diminuto_buffer_debug(int debug);
 
 /**
  * Enable or disable the forced failure of allocation of new buffers from the
- * heap (using malloc(3)). Once this is enabled, no new buffers can be created.
+ * heap using malloc(3). Once this is enabled, no new buffers can be created.
  * Allocations for which no buffers of the suitable size are available will
  * return null. This is used for unit testing, but can also be used to block the
  * dynamic allocation of additional memory after buffers have been preallocated.
  * @param fail is true causes subsequent use of malloc(3) to instead fail.
  * @return the prior fail state.
  */
-extern int diminuto_buffer_fail(int fail);
+extern int diminuto_buffer_nomalloc(int nomalloc);
 
 /**
  * Write internal state information about this feature to the debug log.

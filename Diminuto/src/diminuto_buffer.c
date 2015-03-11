@@ -310,7 +310,7 @@ int diminuto_buffer_debug(int after)
     return before;
 }
 
-int diminuto_buffer_fail(int after)
+int diminuto_buffer_nomalloc(int after)
 {
     int before;
 

@@ -229,7 +229,7 @@ int main(void)
         ASSERT(!diminuto_buffer_debug(!0));
         diminuto_buffer_log();
         /**/
-        ASSERT(!diminuto_buffer_fail(!0));
+        ASSERT(!diminuto_buffer_nomalloc(!0));
         /**/
         ASSERT(diminuto_buffer_malloc(0) == (void *)0);
         ASSERT(errno == 0);
@@ -244,7 +244,7 @@ int main(void)
         ASSERT(diminuto_buffer_prealloc(1, 1) == 0);
         ASSERT(errno == ENOMEM);
         /**/
-        ASSERT(diminuto_buffer_fail(0));
+        ASSERT(diminuto_buffer_nomalloc(0));
         /**/
         diminuto_buffer_log();
         diminuto_buffer_fini();
@@ -266,7 +266,7 @@ int main(void)
         ASSERT(diminuto_buffer_prealloc(1, 1) > 0);
         ASSERT(diminuto_buffer_prealloc(2, 1 << 12) > 0);
         /**/
-        ASSERT(!diminuto_buffer_fail(!0));
+        ASSERT(!diminuto_buffer_nomalloc(!0));
         diminuto_buffer_log();
         /**/
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
@@ -282,7 +282,7 @@ int main(void)
         diminuto_buffer_free(one);
         /**/
         diminuto_buffer_fini();
-        ASSERT(diminuto_buffer_fail(0));
+        ASSERT(diminuto_buffer_nomalloc(0));
     }
 
     EXIT();
