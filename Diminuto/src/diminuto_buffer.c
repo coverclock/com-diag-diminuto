@@ -6,15 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * This was inspired by the buffer feature in the NCAR libtools package,
- * although it is a completely different implementation.
- *
- * REFERENCES
- *
- * J. L. Sloan, "Parcels with TAGS", NCAR TECHNICAL NOTE, NCAR/TN-377+IA,
- * National Center for Atmospheric Research, 1992-10, section 4, "Storage
- * Management", p. 10, http://www.diag.com/ftp/NCAR_Sloan_Parcels.pdf
  */
 
 #include <stdint.h>
@@ -32,16 +23,16 @@
 
 typedef struct DiminutoBuffer {
     union {
-        struct DiminutoBuffer * next;
+        uint64_t bits; /* Header is at least eight bytes. */
         size_t item;
-        char bytes[8]; /* Guarantees header size and payload alignment. */
+        struct DiminutoBuffer * next;
     } header;
     char payload[0];
 } diminuto_buffer_t;
 
 static int debug = 0;
 
-int diminuto_buffer_fail = 0; /* Not part of the public API. */
+static int fail = 0;
 
 /*
  * These are the sizes I chose for each quanta in the buffer pool, but you
@@ -93,7 +84,7 @@ static inline void * buffer_malloc(size_t size)
 {
     void * pointer;
 
-    if (!diminuto_buffer_fail) {
+    if (!fail) {
         pointer = (diminuto_buffer_t *)malloc(size);
     } else {
         pointer = (diminuto_buffer_t *)0;
@@ -101,6 +92,12 @@ static inline void * buffer_malloc(size_t size)
     }
 
     return pointer;
+}
+
+static inline void buffer_free(diminuto_buffer_t * buffer, size_t item)
+{
+    buffer->header.next = pool[item];
+    pool[item] = buffer;
 }
 
 void * diminuto_buffer_malloc(size_t size)
@@ -154,8 +151,7 @@ void diminuto_buffer_free(void * ptr)
         if (item >= countof(POOL)) {
             free(here);
         } else {
-            here->header.next = pool[item];
-            pool[item] = here;
+            buffer_free(here, item);
         }
     }
 }
@@ -277,6 +273,33 @@ void diminuto_buffer_fini(void)
     }
 }
 
+size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
+{
+    size_t total = 0;
+    size_t item;
+    size_t actual;
+    diminuto_buffer_t * here;
+
+    if (size == 0) {
+        /* Do nothing. */
+    } else if (nmemb == 0) {
+        /* Do nothing. */
+    } else if ((item = hash(size, &actual)) >= countof(POOL)) {
+        /* Do nothing. */
+    } else {
+        while ((nmemb--) > 0) {
+            here = (diminuto_buffer_t *)buffer_malloc(actual);
+            if (here == (diminuto_buffer_t *)0) {
+                break;
+            }
+            buffer_free(here, item);
+            total += actual;
+        }
+    }
+
+    return total;
+}
+
 int diminuto_buffer_debug(int after)
 {
     int before;
@@ -287,9 +310,20 @@ int diminuto_buffer_debug(int after)
     return before;
 }
 
+int diminuto_buffer_fail(int after)
+{
+    int before;
+
+    before = fail;
+    fail = after;
+
+    return before;
+}
+
 void diminuto_buffer_log(void)
 {
     size_t total;
+    size_t subtotal;
     size_t item;
     size_t count;
     size_t length;
@@ -306,8 +340,9 @@ void diminuto_buffer_log(void)
         if (count > 0) {
             length = POOL[item];
             size = length + sizeof(diminuto_buffer_t);
-            DIMINUTO_LOG_DEBUG("diminuto_buffer_log: length=%zubytes size=%zubytes count=%u\n", length, size, count);
-            total += count * size;
+            subtotal = count * size;
+            total += subtotal;
+            DIMINUTO_LOG_DEBUG("diminuto_buffer_log: length=%zubytes size=%zubytes count=%u subtotal=%zubytes\n", length, size, count, subtotal);
         }
     }
 

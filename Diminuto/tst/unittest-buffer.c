@@ -225,29 +225,64 @@ int main(void)
     }
 
     {
-        extern int diminuto_buffer_fail; /* Not part of the public API. */
         void * pointer;
-        diminuto_buffer_fail = !0;
         ASSERT(!diminuto_buffer_debug(!0));
         diminuto_buffer_log();
         /**/
-        pointer = diminuto_buffer_malloc(0);
-        ASSERT(pointer == (void *)0);
+        ASSERT(!diminuto_buffer_fail(!0));
+        /**/
+        ASSERT(diminuto_buffer_malloc(0) == (void *)0);
         ASSERT(errno == 0);
-        /**/
-        pointer = diminuto_buffer_malloc(1);
-        ASSERT(pointer == (void *)0);
+        ASSERT(diminuto_buffer_malloc(1) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        ASSERT(diminuto_buffer_malloc(~(size_t)0) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        ASSERT(diminuto_buffer_calloc(1, 1) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        ASSERT(diminuto_buffer_realloc((void *)0, 1) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        ASSERT(diminuto_buffer_prealloc(1, 1) == 0);
         ASSERT(errno == ENOMEM);
         /**/
-        pointer = diminuto_buffer_malloc(~(size_t)0);
-        ASSERT(pointer == (void *)0);
-        ASSERT(errno == ENOMEM);
+        ASSERT(diminuto_buffer_fail(0));
         /**/
         diminuto_buffer_log();
         diminuto_buffer_fini();
         ASSERT(diminuto_buffer_debug(0));
-        diminuto_buffer_fail = 0;
         STATUS();
+    }
+
+    {
+        void * one;
+        void * two;
+        void * three;
+        void * four;
+        /**/
+        ASSERT(diminuto_buffer_prealloc(0, 0) == 0);
+        ASSERT(diminuto_buffer_prealloc(1, 0) == 0);
+        ASSERT(diminuto_buffer_prealloc(0, 1) == 0);
+        ASSERT(diminuto_buffer_prealloc(1, (1 << 12) + 1) == 0);
+        ASSERT(diminuto_buffer_prealloc(1, ~(size_t)0) == 0);
+        ASSERT(diminuto_buffer_prealloc(1, 1) > 0);
+        ASSERT(diminuto_buffer_prealloc(2, 1 << 12) > 0);
+        /**/
+        ASSERT(!diminuto_buffer_fail(!0));
+        diminuto_buffer_log();
+        /**/
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        ASSERT((two = diminuto_buffer_malloc(1 << 12)) != (void *)0);
+        ASSERT((three = diminuto_buffer_malloc(1 << 12)) != (void *)0);
+        ASSERT((four = diminuto_buffer_malloc(1)) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        ASSERT((four = diminuto_buffer_malloc(1 << 12)) == (void *)0);
+        ASSERT(errno == ENOMEM);
+        /**/
+        diminuto_buffer_free(three);
+        diminuto_buffer_free(two);
+        diminuto_buffer_free(one);
+        /**/
+        diminuto_buffer_fini();
+        ASSERT(diminuto_buffer_fail(0));
     }
 
     EXIT();
