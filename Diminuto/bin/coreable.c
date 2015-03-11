@@ -17,7 +17,7 @@
  *
  * ABSTRACT
  *
- * Runs the specfied executable binary and enables a full core dump to be
+ * Runs the specified executable binary and enables a full core dump to be
  * generated in the event that it fails.
  */
 

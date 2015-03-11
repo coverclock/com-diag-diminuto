@@ -14,8 +14,8 @@
  * functions defined in <stdlib.h> and <string.h> that dynamically allocate
  * and free memory from the heap. Using these functions instead of the standard
  * ones allows memory to be allocated from and freed back to linked lists of
- * fixed sized buffers. This is typically faster than the standard functions,
- * does not fragment the heap, and allows buffers to be preallocated to the
+ * fixed sized buffers. This is typically faster[1] than the standard functions,
+ * does not fragment the heap[2], and allows buffers to be preallocated to the
  * applications which use this feature. These functions can be used as they are,
  * or they can be proxied to the Diminuto heap and string features so that an
  * application can be converted to using these functions instead of, for
@@ -35,6 +35,16 @@
  * This feature has its own suite of unit tests. But for an example of using it
  * with the proxy feature, see the unit tests for Assay, a separate library
  * built on top of Diminuto.
+ *
+ * [1] Benchmarking suggests that glibc heap management is much faster than
+ * what existed in the SunOS days in 1989, not at all to my surprise.
+ *
+ * [2] My experience working with large C++ code bases that routinely used
+ * new/delete to dynamically allocate memory in real-time in telecom protocol
+ * stacks running on PowerPC and ARM processors using Linux 2.6 and later
+ * suggests that heap fragmentation isn't really an issue.
+ *
+ * Your mileage may vary.
  *
  * REFERENCES
  *
