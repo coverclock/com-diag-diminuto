@@ -166,17 +166,29 @@ extern int diminuto_buffer_nomalloc(int nomalloc);
  */
 extern size_t diminuto_buffer_log(void);
 
+/*******************************************************************************
+ * DEPENDENCY INJECTION
+ ******************************************************************************/
+
 /**
- * Establish an external custom buffer pool (if all parameters are
- * non-zero/non-null), or return the feature to using its own internal buffer
- * pool, for all subsequent requests. To avoid exposing the internal buffer
- * header format, the array of linked list headers is an array of void pointers
- * (void *). This is yet another form of dependency injection.
- * @param count is the number of quanta in the custom buffer pool.
- * @param sizesp points to an array containing the payload size of each quanta.
- * @param poolp points to an array of linked list headers for each quanta.
+ * This type defines a structure used to inject a dependency on an external
+ * buffer pool.
+ */
+typedef struct DiminutoBufferPool {
+    size_t          count;  /**< Number of entries in each array. */
+    const size_t *  sizes;  /**< Array of sizes of each buffer quanta in bytes. */
+    void **         pool;   /**< Array of void pointers as linked list heads. */
+} diminuto_buffer_pool_t;
+
+/**
+ * Establish an external custom buffer pool (if the parameter is non-null),
+ * or return the feature to using its own internal buffer pool (if the parameter
+ * is null), for all subsequent requests. To avoid exposing the internal buffer
+ * header format, the array of linked list heads is an array of void pointers
+ * (void *) which this function will initialize.
+ * @param poolp points to the new pool structure, or null.
  * @return !0 if a custom buffer pool was established, 0 if the internal pool.
  */
-extern int diminuto_buffer_set(size_t count, size_t * sizesp, void ** poolp);
+extern int diminuto_buffer_set(diminuto_buffer_pool_t * poolp);
 
 #endif

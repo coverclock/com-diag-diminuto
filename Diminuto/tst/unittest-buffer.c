@@ -310,26 +310,15 @@ int main(void)
     }
 
     {
-        size_t MYPOOL[] = { 0 };
-        void * mypool[countof(MYPOOL)] = { (void *)0 };
         void * one;
-        /**/
-        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        EXPECT(diminuto_buffer_log() == 0);
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
         diminuto_buffer_free(one);
-        /**/
-        ASSERT(!diminuto_buffer_set(0, MYPOOL, mypool));
+        EXPECT(diminuto_buffer_log() > 0);
+        ASSERT(!diminuto_buffer_set((diminuto_buffer_pool_t *)0));
+        EXPECT(diminuto_buffer_log() > 0);
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
         diminuto_buffer_free(one);
-        /**/
-        ASSERT(!diminuto_buffer_set(countof(MYPOOL), (size_t *)0, mypool));
-        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
-        diminuto_buffer_free(one);
-        /**/
-        ASSERT(!diminuto_buffer_set(countof(MYPOOL), MYPOOL, (void **)0));
-        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
-        diminuto_buffer_free(one);
-        /**/
         EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
         EXPECT(diminuto_buffer_log() == 0);
@@ -337,8 +326,9 @@ int main(void)
     }
 
     {
-        size_t MYPOOL[] = { 0 };
+        size_t MYPOOL[] = { 0 }; /* Forces buffer to malloc(3) from heap. */
         void * mypool[countof(MYPOOL)] = { (void *)0 };
+        diminuto_buffer_pool_t mine = { countof(MYPOOL), MYPOOL, mypool };
         void * one;
         /**/
         EXPECT(diminuto_buffer_log() == 0);
@@ -346,7 +336,7 @@ int main(void)
         diminuto_buffer_free(one);
         EXPECT(diminuto_buffer_log() > 0);
         /**/
-        ASSERT(diminuto_buffer_set(countof(MYPOOL), MYPOOL, mypool));
+        ASSERT(diminuto_buffer_set(&mine));
         EXPECT(diminuto_buffer_log() == 0);
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
         diminuto_buffer_free(one);
@@ -354,7 +344,7 @@ int main(void)
         diminuto_buffer_fini();
         EXPECT(diminuto_buffer_log() == 0);
         /**/
-        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        ASSERT(!diminuto_buffer_set((diminuto_buffer_pool_t *)0));
         EXPECT(diminuto_buffer_log() > 0);
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
         diminuto_buffer_free(one);
@@ -367,8 +357,9 @@ int main(void)
     {
         size_t MYPOOL[] = { 10, 100, 1000 };
         void * mypool[countof(MYPOOL)] = { (void *)0 };
+        diminuto_buffer_pool_t mine = { countof(MYPOOL), MYPOOL, mypool };
         /**/
-        ASSERT(diminuto_buffer_set(countof(MYPOOL), MYPOOL, mypool));
+        ASSERT(diminuto_buffer_set(&mine));
         {
             int ii;
             size_t requested;
@@ -392,7 +383,7 @@ int main(void)
             EXPECT(diminuto_buffer_log() == 0);
         }
         /**/
-        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        ASSERT(!diminuto_buffer_set((diminuto_buffer_pool_t *)0));
         EXPECT(diminuto_buffer_log() == 0);
         diminuto_buffer_fini();
         EXPECT(diminuto_buffer_log() == 0);
