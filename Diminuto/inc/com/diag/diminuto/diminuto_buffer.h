@@ -162,7 +162,21 @@ extern int diminuto_buffer_nomalloc(int nomalloc);
 
 /**
  * Write internal state information about this feature to the debug log.
+ * @return the total number of bytes in the pool of unused buffers.
  */
-extern void diminuto_buffer_log(void);
+extern size_t diminuto_buffer_log(void);
+
+/**
+ * Establish an external custom buffer pool (if all parameters are
+ * non-zero/non-null), or return the feature to using its own internal buffer
+ * pool, for all subsequent requests. To avoid exposing the internal buffer
+ * header format, the array of linked list headers is an array of void pointers
+ * (void *). This is yet another form of dependency injection.
+ * @param count is the number of quanta in the custom buffer pool.
+ * @param sizesp points to an array containing the payload size of each quanta.
+ * @param poolp points to an array of linked list headers for each quanta.
+ * @return !0 if a custom buffer pool was established, 0 if the internal pool.
+ */
+extern int diminuto_buffer_set(size_t count, size_t * sizesp, void ** poolp);
 
 #endif

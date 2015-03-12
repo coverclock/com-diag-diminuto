@@ -6,13 +6,18 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * N.B. This unit test suite uses knowledge of the internal implementation.
+ * It is NOT a blackbox test.
  */
 
 #include <string.h>
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 
 static int memverify(void * s, int c, size_t n)
 {
@@ -31,15 +36,25 @@ int main(void)
     SETLOGMASK();
 
     {
-        extern unsigned int diminuto_buffer_hash(size_t requested, size_t * actualp); /* Not part of the public API. */
-        extern size_t diminuto_buffer_effective(unsigned int index); /* Not part of the public API. */
+        size_t ii;
+        ASSERT(diminuto_buffer_countof == 10);
+        for (ii = 0; ii < diminuto_buffer_countof; ++ii) {
+            ASSERT(DIMINUTO_BUFFER_POOL[ii] == (1 << (ii + 3)));
+        }
+        for (ii = 0; ii < diminuto_buffer_countof; ++ii) {
+            ASSERT(diminuto_buffer_pool[ii] == (diminuto_buffer_t *)0);
+        }
+        STATUS();
+    }
+
+    {
         size_t requested;
         size_t actual;
         size_t expected;
         size_t effective;
         size_t item;
         size_t hash;
-        static const size_t HEADER = 8; /* Header size is not exposed in the public API. */
+        size_t header;
         for (requested = 0; requested <= 8192; ++requested) {
             if (requested <= (expected = 8)) {
                 item = 0;
@@ -65,11 +80,12 @@ int main(void)
                 expected = requested;
                 item = 10;
             }
-            expected += HEADER;
+            expected += sizeof(diminuto_buffer_t);
             hash = diminuto_buffer_hash(requested, &actual);
-            effective = diminuto_buffer_effective((item < 10) ? item : expected);
+            header = (item < diminuto_buffer_countof) ? item : expected;
+            effective = diminuto_buffer_effective(header);
 #if 0
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %d %d\n", requested, actual, effective, expected, item, hash);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %zu %d %d\n", requested, actual, header, effective, expected, item, hash);
 #endif
             ASSERT(hash == item);
             ASSERT(actual == expected);
@@ -79,8 +95,9 @@ int main(void)
     }
 
     {
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         STATUS();
     }
 
@@ -91,7 +108,7 @@ int main(void)
         void * four;
         void * five;
         ASSERT(!diminuto_buffer_debug(!0));
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         /**/
         one = diminuto_buffer_malloc(0);
         EXPECT(one == (void *)0);
@@ -147,7 +164,7 @@ int main(void)
         ASSERT(one != (void *)0);
         memset(one, 0x5a, 11); /* For valgrind(1). */
         /**/
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() > 0);
         /**/
         diminuto_buffer_free(four);
         diminuto_buffer_free(three);
@@ -155,8 +172,9 @@ int main(void)
         diminuto_buffer_free(one);
         diminuto_buffer_free((void *)0);
         /**/
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         ASSERT(diminuto_buffer_debug(0));
         STATUS();
     }
@@ -165,7 +183,7 @@ int main(void)
         int ii;
         size_t requested;
         void * buffer[14][2] = { (void *)0 };
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
             buffer[ii][0] = diminuto_buffer_malloc(requested);
             ASSERT(buffer[ii][0] != (void *)0);
@@ -174,20 +192,21 @@ int main(void)
             ASSERT(buffer[ii][1] != (void *)0);
             memset(buffer[ii][1], 0x5a, requested); /* For valgrind(1). */
         }
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         for (--ii; ii >= 0; --ii) {
             diminuto_buffer_free(buffer[ii][1]);
             diminuto_buffer_free(buffer[ii][0]);
         }
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         STATUS();
     }
 
     {
         static char STRING[] = "England expects each man to do his duty.";
         char * string;
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         /**/
         string = diminuto_buffer_strdup("");
         ASSERT(string != (char *)0);
@@ -219,15 +238,16 @@ int main(void)
         ASSERT(strcmp(string, STRING) == 0);
         diminuto_buffer_free(string);
         /**/
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         STATUS();
     }
 
     {
         void * pointer;
         ASSERT(!diminuto_buffer_debug(!0));
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         /**/
         ASSERT(!diminuto_buffer_nomalloc(!0));
         /**/
@@ -246,8 +266,9 @@ int main(void)
         /**/
         ASSERT(diminuto_buffer_nomalloc(0));
         /**/
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() == 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         ASSERT(diminuto_buffer_debug(0));
         STATUS();
     }
@@ -258,6 +279,7 @@ int main(void)
         void * three;
         void * four;
         /**/
+        EXPECT(diminuto_buffer_log() == 0);
         ASSERT(diminuto_buffer_prealloc(0, 0) == 0);
         ASSERT(diminuto_buffer_prealloc(1, 0) == 0);
         ASSERT(diminuto_buffer_prealloc(0, 1) == 0);
@@ -265,9 +287,8 @@ int main(void)
         ASSERT(diminuto_buffer_prealloc(1, ~(size_t)0) == 0);
         ASSERT(diminuto_buffer_prealloc(1, 1) > 0);
         ASSERT(diminuto_buffer_prealloc(2, 1 << 12) > 0);
-        /**/
         ASSERT(!diminuto_buffer_nomalloc(!0));
-        diminuto_buffer_log();
+        EXPECT(diminuto_buffer_log() > 0);
         /**/
         ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
         ASSERT((two = diminuto_buffer_malloc(1 << 12)) != (void *)0);
@@ -281,8 +302,101 @@ int main(void)
         diminuto_buffer_free(two);
         diminuto_buffer_free(one);
         /**/
+        EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
         ASSERT(diminuto_buffer_nomalloc(0));
+        STATUS();
+    }
+
+    {
+        size_t MYPOOL[] = { 0 };
+        void * mypool[countof(MYPOOL)] = { (void *)0 };
+        void * one;
+        /**/
+        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        /**/
+        ASSERT(!diminuto_buffer_set(0, MYPOOL, mypool));
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        /**/
+        ASSERT(!diminuto_buffer_set(countof(MYPOOL), (size_t *)0, mypool));
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        /**/
+        ASSERT(!diminuto_buffer_set(countof(MYPOOL), MYPOOL, (void **)0));
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        /**/
+        EXPECT(diminuto_buffer_log() > 0);
+        diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
+        STATUS();
+    }
+
+    {
+        size_t MYPOOL[] = { 0 };
+        void * mypool[countof(MYPOOL)] = { (void *)0 };
+        void * one;
+        /**/
+        EXPECT(diminuto_buffer_log() == 0);
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        EXPECT(diminuto_buffer_log() > 0);
+        /**/
+        ASSERT(diminuto_buffer_set(countof(MYPOOL), MYPOOL, mypool));
+        EXPECT(diminuto_buffer_log() == 0);
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        EXPECT(diminuto_buffer_log() == 0);
+        diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
+        /**/
+        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        EXPECT(diminuto_buffer_log() > 0);
+        ASSERT((one = diminuto_buffer_malloc(1)) != (void *)0);
+        diminuto_buffer_free(one);
+        EXPECT(diminuto_buffer_log() > 0);
+        diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
+        STATUS();
+    }
+
+    {
+        size_t MYPOOL[] = { 10, 100, 1000 };
+        void * mypool[countof(MYPOOL)] = { (void *)0 };
+        /**/
+        ASSERT(diminuto_buffer_set(countof(MYPOOL), MYPOOL, mypool));
+        {
+            int ii;
+            size_t requested;
+            void * buffer[14][2] = { (void *)0 };
+            EXPECT(diminuto_buffer_log() == 0);
+            for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
+                buffer[ii][0] = diminuto_buffer_malloc(requested);
+                ASSERT(buffer[ii][0] != (void *)0);
+                memset(buffer[ii][0], 0xa5, requested); /* For valgrind(1). */
+                buffer[ii][1] = diminuto_buffer_malloc(requested);
+                ASSERT(buffer[ii][1] != (void *)0);
+                memset(buffer[ii][1], 0x5a, requested); /* For valgrind(1). */
+            }
+            EXPECT(diminuto_buffer_log() == 0);
+            for (--ii; ii >= 0; --ii) {
+                diminuto_buffer_free(buffer[ii][1]);
+                diminuto_buffer_free(buffer[ii][0]);
+            }
+            EXPECT(diminuto_buffer_log() > 0);
+            diminuto_buffer_fini();
+            EXPECT(diminuto_buffer_log() == 0);
+        }
+        /**/
+        ASSERT(!diminuto_buffer_set(0, (size_t *)0, (void **)0));
+        EXPECT(diminuto_buffer_log() == 0);
+        diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
+        STATUS();
     }
 
     EXIT();
