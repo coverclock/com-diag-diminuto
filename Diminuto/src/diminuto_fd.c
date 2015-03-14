@@ -179,8 +179,8 @@ diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
     diminuto_fd_map_t * mapp;
     size_t size;
 
-    size = count * sizeof(mapp->data);
-    mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) - sizeof(mapp->data) + size);
+    size = count * sizeof(mapp->data[0]);
+    mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) + size);
     mapp->count = count;
     memset(&mapp->data, 0, size);
 

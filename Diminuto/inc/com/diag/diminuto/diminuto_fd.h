@@ -81,8 +81,8 @@ extern size_t diminuto_fd_count(void);
  * by using the fd as an index.
  */
 typedef struct DiminutoFdMap {
-	size_t count;
-	void * data[1];
+    size_t count;
+    void * data[0];
 } diminuto_fd_map_t;
 
 /**

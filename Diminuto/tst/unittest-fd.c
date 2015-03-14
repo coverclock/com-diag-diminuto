@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -24,14 +25,53 @@
 #define DIMINUTO_FD_TYPE(_FD_, _EXPECTED_) \
     do { \
         diminuto_fd_type_t type; \
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s=%d type=%d expected=%d\n", #_FD_, _FD_, type = diminuto_fd_type(_FD_), _EXPECTED_); \
+        const char * name; \
+        const char * expected; \
+        type = diminuto_fd_type(_FD_); \
+        name = type2name(type); \
+        expected = type2name((diminuto_fd_type_t)_EXPECTED_); \
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
+
+static const char * type2name(diminuto_fd_type_t type)
+{
+    const char * name = "ERROR";
+
+    switch (type) {
+    case -1:                            name = "N/A";       break;
+    case DIMINUTO_FD_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
+    case DIMINUTO_FD_TYPE_TTY:          name = "TTY";       break;
+    case DIMINUTO_FD_TYPE_SOCKET:       name = "SOCK";      break;
+    case DIMINUTO_FD_TYPE_SYMLINK:      name = "SYMLINK";   break;
+    case DIMINUTO_FD_TYPE_FILE:         name = "FILE";      break;
+    case DIMINUTO_FD_TYPE_BLOCKDEV:     name = "BLOCKDEV";  break;
+    case DIMINUTO_FD_TYPE_DIRECTORY:    name = "DIR";       break;
+    case DIMINUTO_FD_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
+    case DIMINUTO_FD_TYPE_FIFO:         name = "FIFO";      break;
+    }
+
+    return name;
+}
 
 int main(void)
 {
 
     SETLOGMASK();
+
+    {
+        size_t count;
+        diminuto_fd_map_t * map;
+        int ii;
+        count = diminuto_fd_count();
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zufds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
+        map = diminuto_fd_map_alloc(count);
+        ASSERT(map->count == count);
+        for (ii = 0; ii < count; ++ii) {
+            ASSERT(map->data[ii] == (void *)0);
+        }
+        free(map);
+    }
 
     {
         {

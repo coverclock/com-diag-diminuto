@@ -13,11 +13,13 @@
 
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_heap.h"
 
 static int memverify(void * s, int c, size_t n)
 {
@@ -377,6 +379,48 @@ int main(void)
             for (--ii; ii >= 0; --ii) {
                 diminuto_buffer_free(buffer[ii][1]);
                 diminuto_buffer_free(buffer[ii][0]);
+            }
+            EXPECT(diminuto_buffer_log() > 0);
+            diminuto_buffer_fini();
+            EXPECT(diminuto_buffer_log() == 0);
+        }
+        /**/
+        ASSERT(!diminuto_buffer_set((diminuto_buffer_pool_t *)0));
+        EXPECT(diminuto_buffer_log() == 0);
+        diminuto_buffer_fini();
+        EXPECT(diminuto_buffer_log() == 0);
+        STATUS();
+    }
+
+    {
+        size_t MYPOOL[] = { 10, 100, 1000, 10000 };
+        void * mypool[countof(MYPOOL)] = { (void *)0 };
+        diminuto_buffer_pool_t mine = { countof(MYPOOL), MYPOOL, mypool };
+        /**/
+        ASSERT(diminuto_buffer_set(&mine));
+        ASSERT(diminuto_buffer_prealloc(10, 10) > 0);
+        ASSERT(diminuto_buffer_prealloc(10, 100) > 0);
+        ASSERT(diminuto_buffer_prealloc(10, 1000) > 0);
+        ASSERT(diminuto_buffer_prealloc(10, 10000) > 0);
+        ASSERT(!diminuto_buffer_nomalloc(!0));
+        ASSERT(diminuto_heap_malloc_set(diminuto_buffer_malloc) == malloc);
+        ASSERT(diminuto_heap_free_set(diminuto_buffer_free) == free);
+        EXPECT(diminuto_buffer_log() > 0);
+        {
+            int ii;
+            size_t requested;
+            void * buffer[14][2] = { (void *)0 };
+            for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
+                buffer[ii][0] = diminuto_heap_malloc(requested);
+                ASSERT(buffer[ii][0] != (void *)0);
+                memset(buffer[ii][0], 0xa5, requested); /* For valgrind(1). */
+                buffer[ii][1] = diminuto_heap_malloc(requested);
+                ASSERT(buffer[ii][1] != (void *)0);
+                memset(buffer[ii][1], 0x5a, requested); /* For valgrind(1). */
+            }
+            for (--ii; ii >= 0; --ii) {
+                diminuto_heap_free(buffer[ii][1]);
+                diminuto_heap_free(buffer[ii][0]);
             }
             EXPECT(diminuto_buffer_log() > 0);
             diminuto_buffer_fini();
