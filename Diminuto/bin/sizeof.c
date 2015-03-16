@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 #include <pthread.h>
+#include <stdint.h>
+#include <stddef.h>
 #include "com/diag/diminuto/diminuto_types.h"
 
 #define printsizeof(_TYPE_) printf("sizeof(%s)=%zu\nsizeof(%s*)=%zu\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*))
