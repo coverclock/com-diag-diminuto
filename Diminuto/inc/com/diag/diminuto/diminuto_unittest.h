@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static int diminuto_unittest_tests = 0;
 static int diminuto_unittest_errors = 0;
 
 /**
@@ -34,6 +35,13 @@ static int diminuto_unittest_errors = 0;
  */
 #define SETLOGMASK() \
     diminuto_log_setmask()
+
+/**
+ * @def TEST()
+ * Emit a notice message identifying the current unit test.
+ */
+#define TEST() \
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests)
 
 /**
  * @def CHECKPOINT(...)
@@ -50,7 +58,7 @@ static int diminuto_unittest_errors = 0;
  */
 #define EXIT() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "EXIT(): errors=%d %s\n", diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
         exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
@@ -62,7 +70,7 @@ static int diminuto_unittest_errors = 0;
  */
 #define STATUS() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "STATUS(): errors=%d %s\n", diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d %s\n", diminuto_unittest_tests++, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
     } while (0)

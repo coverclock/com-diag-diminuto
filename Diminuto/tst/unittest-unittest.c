@@ -16,8 +16,9 @@
 
 int main(int argc, char ** argv)
 {
-	SETLOGMASK();
-	CHECKPOINT("%s", argv[0]);
+    SETLOGMASK();
+    TEST();
+    CHECKPOINT("%s", argv[0]);
     EXPECT(!0);
     ASSERT(!0);
     if (fork() == 0) {
@@ -34,6 +35,7 @@ int main(int argc, char ** argv)
         exit(12);
     }
     diminuto_delay(diminuto_frequency(), 0);
+    STATUS();
     EXIT();
 }
 
