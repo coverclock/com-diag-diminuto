@@ -51,24 +51,40 @@ static inline size_t effective(size_t item)
     return (item < diminuto_buffer_countof) ? DIMINUTO_BUFFER_POOL[item] + sizeof(diminuto_buffer_t) : item;
 }
 
-static inline void * buffer_malloc(size_t size)
+static inline diminuto_buffer_t * buffer_malloc(size_t size)
 {
-    void * pointer;
+	diminuto_buffer_t * buffer;
 
     if (!fail) {
-        pointer = (diminuto_buffer_t *)malloc(size);
+        buffer = (diminuto_buffer_t *)malloc(size);
     } else {
-        pointer = (diminuto_buffer_t *)0;
+        buffer = (diminuto_buffer_t *)0;
         errno = ENOMEM;
     }
 
-    return pointer;
+    return buffer;
 }
 
-static inline void buffer_free(diminuto_buffer_t * buffer, size_t item)
+static inline diminuto_buffer_t * buffer_get(size_t item)
+{
+    diminuto_buffer_t * buffer;
+
+    buffer = diminuto_buffer_pool[item];
+    diminuto_buffer_pool[item] = buffer->header.next;
+
+    return buffer;
+}
+
+static inline void buffer_put(diminuto_buffer_t * buffer, size_t item)
 {
     buffer->header.next = diminuto_buffer_pool[item];
     diminuto_buffer_pool[item] = buffer;
+}
+
+static inline void * buffer_init(diminuto_buffer_t * buffer, size_t item, size_t actual)
+{
+    buffer->header.item = (item < diminuto_buffer_countof) ? item : actual;
+    return buffer->payload;
 }
 
 /*******************************************************************************
@@ -77,38 +93,36 @@ static inline void buffer_free(diminuto_buffer_t * buffer, size_t item)
 
 void * diminuto_buffer_malloc(size_t size)
 {
-    void * pointer;
+    void * ptr;
 
     if (size == 0) {
         errno = 0;
-        pointer = (void *)0;
+        ptr = (void *)0;
     } else {
         size_t item;
         size_t actual;
-        diminuto_buffer_t * here;
+        diminuto_buffer_t * buffer;
 
         item = hash(size, &actual);
         if (item >= diminuto_buffer_countof) {
-            here = (diminuto_buffer_t *)buffer_malloc(actual);
+            buffer = buffer_malloc(actual);
         } else if (diminuto_buffer_pool[item] == (diminuto_buffer_t *)0) {
-            here = (diminuto_buffer_t *)buffer_malloc(actual);
+            buffer = buffer_malloc(actual);
         }  else {
-            here = diminuto_buffer_pool[item];
-            diminuto_buffer_pool[item] = here->header.next;
+            buffer = buffer_get(item);
         }
-        if (here == (diminuto_buffer_t *)0) {
-            pointer = (void *)0;
+        if (buffer == (diminuto_buffer_t *)0) {
+            ptr = (void *)0;
         } else {
-            here->header.item = (item < diminuto_buffer_countof) ? item : actual;
-            pointer = here->payload;
+            ptr = buffer_init(buffer, item, actual);
         }
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu pointer=%p\n", size, pointer);
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu pointer=%p\n", size, ptr);
     }
 
-    return pointer;
+    return ptr;
 }
 
 void diminuto_buffer_free(void * ptr)
@@ -119,71 +133,73 @@ void diminuto_buffer_free(void * ptr)
 
     if (ptr != (void *)0) {
         size_t item;
-        diminuto_buffer_t * here;
+        diminuto_buffer_t * buffer;
 
-        here = containerof(diminuto_buffer_t, payload, ptr);
-        item = here->header.item;
+        buffer = containerof(diminuto_buffer_t, payload, ptr);
+        item = buffer->header.item;
         if (item >= diminuto_buffer_countof) {
-            free(here);
+            free(buffer);
         } else {
-            buffer_free(here, item);
+            buffer_put(buffer, item);
         }
     }
 }
 
 void * diminuto_buffer_realloc(void * ptr, size_t size)
 {
-    void * pointer;
+    void * ptrprime;
 
     if (ptr == (void *)0) {
-        pointer = diminuto_buffer_malloc(size);
+        ptrprime = diminuto_buffer_malloc(size);
     } else if (size == 0) {
         diminuto_buffer_free(ptr);
         errno = 0;
-        pointer = (void *)0;
+        ptrprime = (void *)0;
     } else {
-        diminuto_buffer_t * here;
-        diminuto_buffer_t * there;
+        diminuto_buffer_t * buffer;
         size_t actual;
-        size_t length;
+        size_t requested;
 
-        here = containerof(diminuto_buffer_t, payload, ptr);
-        actual = effective(here->header.item);
-        length = actual - sizeof(diminuto_buffer_t);
-        if (size <= length) {
-            pointer = ptr;
+        buffer = containerof(diminuto_buffer_t, payload, ptr);
+        actual = effective(buffer->header.item);
+        (void)hash(size, &requested);
+        if (actual == requested) {
+            ptrprime = ptr;
         } else {
-            pointer = diminuto_buffer_malloc(size);
-            if (pointer != (void *)0) {
-                memcpy(pointer, ptr, length);
+            ptrprime = diminuto_buffer_malloc(size);
+            if (ptrprime != (void *)0) {
+                size_t length;
+
+                length = actual - sizeof(diminuto_buffer_t);
+                memcpy(ptrprime, ptr, size < length ? size : length);
             }
             diminuto_buffer_free(ptr);
         }
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_realloc: ptr=%p size=%zu pointer=%p\n", ptr, size, pointer);
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_realloc: ptr=%p size=%zu pointer=%p\n", ptr, size, ptrprime);
     }
 
-    return pointer;
+    return ptrprime;
 }
 
 void * diminuto_buffer_calloc(size_t nmemb, size_t size)
 {
-    void * pointer;
+    void * ptr;
     size_t length;
 
     length = nmemb * size;
-    pointer = diminuto_buffer_malloc(length);
-    if (pointer != (void *)0) {
-        memset(pointer, 0, length);
+    ptr = diminuto_buffer_malloc(length);
+    if (ptr != (void *)0) {
+        memset(ptr, 0, length);
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_calloc: nmemb=%zu size=%zu ptr=%p\n", nmemb, size, pointer);
+        DIMINUTO_LOG_DEBUG("diminuto_buffer_calloc: nmemb=%zu size=%zu ptr=%p\n", nmemb, size, ptr);
     }
 
-    return pointer;
+    return ptr;
 }
 
 /*******************************************************************************
@@ -192,31 +208,31 @@ void * diminuto_buffer_calloc(size_t nmemb, size_t size)
 
 char * diminuto_buffer_strdup(const char * s)
 {
-    char * pointer;
+    char * ptr;
     size_t length;
 
     length = strlen(s);
-    pointer = (char *)diminuto_buffer_malloc(length + 1);
-    if (pointer != (char *)0) {
-        strcpy(pointer, s);
+    ptr = (char *)diminuto_buffer_malloc(length + 1);
+    if (ptr != (char *)0) {
+        strcpy(ptr, s);
     }
 
-    return pointer;
+    return ptr;
 }
 
 char * diminuto_buffer_strndup(const char * s, size_t n)
 {
-    char * pointer;
+    char * ptr;
     size_t length;
 
     length = strnlen(s, n);
-    pointer = (char *)diminuto_buffer_malloc(length + 1);
-    if (pointer != (char *)0) {
-        strncpy(pointer, s, length);
-        pointer[length] = '\0';
+    ptr = (char *)diminuto_buffer_malloc(length + 1);
+    if (ptr != (char *)0) {
+        strncpy(ptr, s, length);
+        ptr[length] = '\0';
     }
 
-    return pointer;
+    return ptr;
 }
 
 /*******************************************************************************
@@ -226,13 +242,13 @@ char * diminuto_buffer_strndup(const char * s, size_t n)
 void diminuto_buffer_fini(void)
 {
     int item;
-    diminuto_buffer_t * here;
-    diminuto_buffer_t * there;
+    diminuto_buffer_t * buffer;
+    diminuto_buffer_t * next;
 
     for (item = 0; item < diminuto_buffer_countof; ++item) {
-        for (here = diminuto_buffer_pool[item]; here != (diminuto_buffer_t *)0; here = there) {
-            there = here->header.next; /* To make valgrind(1) happy. */
-            free(here);
+        for (buffer = diminuto_buffer_pool[item]; buffer != (diminuto_buffer_t *)0; buffer = next) {
+            next = buffer->header.next; /* To make valgrind(1) happy. */
+            free(buffer);
         }
         diminuto_buffer_pool[item] = (diminuto_buffer_t *)0;
     }
@@ -243,7 +259,7 @@ size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
     size_t total = 0;
     size_t item;
     size_t actual;
-    diminuto_buffer_t * here;
+    diminuto_buffer_t * buffer;
 
     if (size == 0) {
         /* Do nothing. */
@@ -253,11 +269,11 @@ size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
         /* Do nothing. */
     } else {
         while ((nmemb--) > 0) {
-            here = (diminuto_buffer_t *)buffer_malloc(actual);
-            if (here == (diminuto_buffer_t *)0) {
+            buffer = (diminuto_buffer_t *)buffer_malloc(actual);
+            if (buffer == (diminuto_buffer_t *)0) {
                 break;
             }
-            buffer_free(here, item);
+            buffer_put(buffer, item);
             total += actual;
         }
     }
@@ -293,13 +309,12 @@ size_t diminuto_buffer_log(void)
     size_t count;
     size_t length;
     size_t size;
-    diminuto_buffer_t * here;
-    diminuto_buffer_t * there;
+    diminuto_buffer_t * buffer;
 
     total = 0;
     for (item = 0; item < diminuto_buffer_countof; ++item) {
         count = 0;
-        for (here = diminuto_buffer_pool[item]; here != (diminuto_buffer_t *)0; here = here->header.next) {
+        for (buffer = diminuto_buffer_pool[item]; buffer != (diminuto_buffer_t *)0; buffer = buffer->header.next) {
             ++count;
         }
         if (count > 0) {

@@ -37,8 +37,8 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 
 MAJOR				:=	29# API changes that may require that applications be modified.
-MINOR				:=	8# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	9# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -81,6 +81,8 @@ GEN_DIR				:=	gen# Generated source files
 INC_DIR				:=	inc# Header files
 LIB_DIR				:=	lib# Shared objects for dynamic linking
 MOD_DIR				:=	mod# Loadable user modules
+OBC_DIR				:=	obc# C object modules
+OBP_DIR				:=	obp# C++ object modules
 OUT_DIR				:=	out# Build artifacts
 SRC_DIR				:=	src# Library source files
 SYM_DIR				:=	sym# Unstripped executable binaries
@@ -169,8 +171,8 @@ BROWSER				:=	firefox
 
 ########## Build Artifacts
 
-TARGETOBJECTS		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
-TARGETOBJECTSXX		:=	$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
+TARGETOBJECTS		:=	$(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
+TARGETOBJECTSXX		:=	$(addprefix $(OUT)/$(OBP_DIR)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
 TARGETDRIVERS		:=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
 TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .$(SO),$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
@@ -379,11 +381,11 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 # (you can use strace(1) to see this). This smells like a BSD (bionic) versus
 # Linux (kernel) incompatibility.
 
-$(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.c $(TARGETLIBRARIES)
+$(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBC_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-$(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+$(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
@@ -404,7 +406,7 @@ $(OUT)/$(TST_DIR)/%:	$(TST_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 
 ifeq (3.82, $(firstword $(sort $(MAKE_VERSION) 3.82)))
 
-$(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
+$(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	@echo MAKE_VERSION=$(MAKE_VERSION)
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -465,7 +467,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
 
 else
 
-$(OUT)/$(GEN_DIR)/vintage.c:	$(TARGETSYNTHESIZED) Makefile
+$(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	@echo MAKE_VERSION=$(MAKE_VERSION)
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
@@ -539,7 +541,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/$(PROJECT)_release.o:	$(TARGETSYNTHESIZED)
+$(OUT)/$(SRC_DIR)/$(PROJECT)_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
@@ -551,7 +553,7 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	echo '#endif' >> $@
 
 # For embedding in the library archive and shared object.
-$(OUT)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(TARGETSYNTHESIZED)
+$(OUT)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
@@ -709,19 +711,19 @@ patch:	$(OLD) $(NEW)
 
 ########## Rules
 
-$(OUT)/%.txt:	%.cpp
+$(OUT)/$(OBP_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT)/%.o:	%.cpp
+$(OUT)/$(OBP_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
-$(OUT)/%.txt:	%.c
+$(OUT)/$(OBC_DIR)/%.txt:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT)/%.o:	%.c
+$(OUT)/$(OBC_DIR)/%.o:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
@@ -750,7 +752,7 @@ depend:	$(TARGETSYNTHESIZED)
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \
 				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-				echo -n "$(OUT)/$$D/" > $$T; \
+				echo -n "$(OUT)/$(OBC_DIR)/$$D/" > $$T; \
 				$(CC) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
 				rm -f $$T; \
 			done; \
@@ -772,7 +774,7 @@ depend:	$(TARGETSYNTHESIZED)
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
 				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-				echo -n "$(OUT)/$$D/" > $$T; \
+				echo -n "$(OUT)/$(OBP_DIR)/$$D/" > $$T; \
 				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
 				rm -f $$T; \
 			done; \
