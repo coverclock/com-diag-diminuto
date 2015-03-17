@@ -29,7 +29,7 @@
  * (just as they share the heap).
  *
  * This feature was inspired by the similar buffer feature in the NCAR libtools
- * package, although it is a completely different, and much improved,
+ * package, although it is a completely different, and a much improved,
  * implementation.
  *
  * This feature has its own suite of unit tests. But for an example of using it
@@ -175,9 +175,9 @@ extern size_t diminuto_buffer_log(void);
  * buffer pool.
  */
 typedef struct DiminutoBufferPool {
-    size_t          count;  /**< Number of entries in each array. */
-    const size_t *  sizes;  /**< Array of sizes of each buffer quanta in bytes. */
-    void **         pool;   /**< Array of void pointers as linked list heads. */
+    size_t count; /**< Number of entries in each array. */
+    const size_t * sizes; /**< Array of sizes of each buffer quanta in bytes. */
+    void ** pool; /**< Array of void pointers as linked list heads. */
 } diminuto_buffer_pool_t;
 
 /**
@@ -185,7 +185,11 @@ typedef struct DiminutoBufferPool {
  * or return the feature to using its own internal buffer pool (if the parameter
  * is null), for all subsequent requests. To avoid exposing the internal buffer
  * header format, the array of linked list heads is an array of void pointers
- * (void *) which this function will initialize.
+ * (void *) which the caller must have initialized (typically to null). A
+ * shallow copy is made of the contents of the structure. When freed, buffers
+ * are always returned to the currently active pool, which is not necessarily
+ * the one from which they were allocated; hence wackiness may ensue if the two
+ * pools are not the same.
  * @param poolp points to the new pool structure, or null.
  * @return !0 if a custom buffer pool was established, 0 if the internal pool.
  */

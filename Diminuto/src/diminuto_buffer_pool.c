@@ -9,7 +9,6 @@
  */
 
 #include "diminuto_buffer.h"
-#include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 
 /******************************************************************************/
@@ -38,32 +37,23 @@ static diminuto_buffer_t * pool[countof(POOL)] = { (diminuto_buffer_t *)0 };
 
 /******************************************************************************/
 
-size_t diminuto_buffer_countof = countof(POOL);
-
-const size_t * DIMINUTO_BUFFER_POOL = POOL;
-
-diminuto_buffer_t ** diminuto_buffer_pool = pool;
+diminuto_buffer_meta_t diminuto_buffer_pool = { countof(POOL), POOL, pool };
 
 /******************************************************************************/
 
 int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 {
     int rc;
-    size_t ii;
 
-    if (poolp != (diminuto_buffer_pool_t *)0) {
-        diminuto_buffer_countof = poolp->count;
-        DIMINUTO_BUFFER_POOL = poolp->sizes;
-        diminuto_buffer_pool = (diminuto_buffer_t **)(poolp->pool);
-        for (ii = 0; ii < diminuto_buffer_countof; ++ii) {
-            diminuto_buffer_pool[ii] = (diminuto_buffer_t *)0;
-        }
-        rc = !0;
+    rc = (poolp != (diminuto_buffer_pool_t *)0);
+    if (rc) {
+        diminuto_buffer_pool.count = poolp->count;
+        diminuto_buffer_pool.sizes = poolp->sizes;
+        diminuto_buffer_pool.pool = (diminuto_buffer_t **)(poolp->pool);
     } else {
-        diminuto_buffer_countof = countof(POOL);
-        DIMINUTO_BUFFER_POOL = POOL;
-        diminuto_buffer_pool = pool;
-        rc = 0;
+        diminuto_buffer_pool.count = countof(POOL);
+        diminuto_buffer_pool.sizes = POOL;
+        diminuto_buffer_pool.pool = pool;
     }
 
     return rc;

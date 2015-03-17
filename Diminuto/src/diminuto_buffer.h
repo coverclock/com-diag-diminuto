@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "com/diag/diminuto/diminuto_buffer.h"
 
 /**
  * This type defines the structure of the header that prepends every buffer
@@ -36,21 +37,21 @@ typedef struct DiminutoBuffer {
 } diminuto_buffer_t;
 
 /**
- * This is the number of linked lists in the pool. Another way of thinking of
- * it is that it is the number of quanta into which buffer sizes must fit.
+ * This type defines the metadata we need to know about a buffer pool: the
+ * number of quanta it has, the size of each quanta in bytes, and the linked
+ * lists containing the buffers for each quanta.
  */
-extern size_t diminuto_buffer_countof;
+typedef struct DiminutoBufferMeta {
+    size_t count;
+    const size_t * sizes;
+    diminuto_buffer_t ** pool;
+} diminuto_buffer_meta_t;
 
 /**
- * This is a fixed list of the maximum payload sizes (not including the header
- * overhead) that a buffer from each linked list in the pool can accomodate.
+ * This contains the metadata for the currently active pool, either the internal
+ * default pool, or the one established by the caller.
  */
-extern const size_t * DIMINUTO_BUFFER_POOL;
-
-/**
- * This is a list of the linked lists that make up the pool.
- */
-extern diminuto_buffer_t ** diminuto_buffer_pool;
+extern diminuto_buffer_meta_t diminuto_buffer_pool;
 
 /**
  * Given a payload size request in bytes (not including header overhead),

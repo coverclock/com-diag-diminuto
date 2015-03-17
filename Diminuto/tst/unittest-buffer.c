@@ -17,7 +17,6 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "diminuto_buffer.h"
-#include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_heap.h"
 
@@ -39,12 +38,12 @@ int main(void)
 
     {
         size_t ii;
-        ASSERT(diminuto_buffer_countof == 10);
-        for (ii = 0; ii < diminuto_buffer_countof; ++ii) {
-            ASSERT(DIMINUTO_BUFFER_POOL[ii] == (1 << (ii + 3)));
+        ASSERT(diminuto_buffer_pool.count == 10);
+        for (ii = 0; ii < diminuto_buffer_pool.count; ++ii) {
+            ASSERT(diminuto_buffer_pool.sizes[ii] == (1 << (ii + 3)));
         }
-        for (ii = 0; ii < diminuto_buffer_countof; ++ii) {
-            ASSERT(diminuto_buffer_pool[ii] == (diminuto_buffer_t *)0);
+        for (ii = 0; ii < diminuto_buffer_pool.count; ++ii) {
+            ASSERT(diminuto_buffer_pool.pool[ii] == (diminuto_buffer_t *)0);
         }
         STATUS();
     }
@@ -84,7 +83,7 @@ int main(void)
             }
             expected += sizeof(diminuto_buffer_t);
             hash = diminuto_buffer_hash(requested, &actual);
-            header = (item < diminuto_buffer_countof) ? item : expected;
+            header = (item < diminuto_buffer_pool.count) ? item : expected;
             effective = diminuto_buffer_effective(header);
 #if 0
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %zu %d %d\n", requested, actual, header, effective, expected, item, hash);

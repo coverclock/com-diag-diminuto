@@ -13,7 +13,6 @@
 #include <string.h>
 #include <errno.h>
 #include "diminuto_buffer.h"
-#include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -35,11 +34,11 @@ static inline unsigned int hash(size_t requested, size_t * actualp)
     size_t item;
     size_t actual;
 
-    for (item = 0; (item < diminuto_buffer_countof) && (DIMINUTO_BUFFER_POOL[item] < requested); ++item) {
+    for (item = 0; (item < diminuto_buffer_pool.count) && (diminuto_buffer_pool.sizes[item] < requested); ++item) {
         continue;
     }
 
-    actual = (item < diminuto_buffer_countof) ? DIMINUTO_BUFFER_POOL[item] : requested;
+    actual = (item < diminuto_buffer_pool.count) ? diminuto_buffer_pool.sizes[item] : requested;
 
     *actualp = actual + sizeof(diminuto_buffer_t);
 
@@ -48,7 +47,7 @@ static inline unsigned int hash(size_t requested, size_t * actualp)
 
 static inline size_t effective(size_t item)
 {
-    return (item < diminuto_buffer_countof) ? DIMINUTO_BUFFER_POOL[item] + sizeof(diminuto_buffer_t) : item;
+    return (item < diminuto_buffer_pool.count) ? diminuto_buffer_pool.sizes[item] + sizeof(diminuto_buffer_t) : item;
 }
 
 static inline diminuto_buffer_t * buffer_malloc(size_t size)
@@ -69,21 +68,21 @@ static inline diminuto_buffer_t * buffer_get(size_t item)
 {
     diminuto_buffer_t * buffer;
 
-    buffer = diminuto_buffer_pool[item];
-    diminuto_buffer_pool[item] = buffer->header.next;
+    buffer = diminuto_buffer_pool.pool[item];
+    diminuto_buffer_pool.pool[item] = buffer->header.next;
 
     return buffer;
 }
 
 static inline void buffer_put(diminuto_buffer_t * buffer, size_t item)
 {
-    buffer->header.next = diminuto_buffer_pool[item];
-    diminuto_buffer_pool[item] = buffer;
+    buffer->header.next = diminuto_buffer_pool.pool[item];
+    diminuto_buffer_pool.pool[item] = buffer;
 }
 
 static inline void * buffer_init(diminuto_buffer_t * buffer, size_t item, size_t actual)
 {
-    buffer->header.item = (item < diminuto_buffer_countof) ? item : actual;
+    buffer->header.item = (item < diminuto_buffer_pool.count) ? item : actual;
     return buffer->payload;
 }
 
@@ -104,9 +103,9 @@ void * diminuto_buffer_malloc(size_t size)
         diminuto_buffer_t * buffer;
 
         item = hash(size, &actual);
-        if (item >= diminuto_buffer_countof) {
+        if (item >= diminuto_buffer_pool.count) {
             buffer = buffer_malloc(actual);
-        } else if (diminuto_buffer_pool[item] == (diminuto_buffer_t *)0) {
+        } else if (diminuto_buffer_pool.pool[item] == (diminuto_buffer_t *)0) {
             buffer = buffer_malloc(actual);
         }  else {
             buffer = buffer_get(item);
@@ -137,7 +136,7 @@ void diminuto_buffer_free(void * ptr)
 
         buffer = containerof(diminuto_buffer_t, payload, ptr);
         item = buffer->header.item;
-        if (item >= diminuto_buffer_countof) {
+        if (item >= diminuto_buffer_pool.count) {
             free(buffer);
         } else {
             buffer_put(buffer, item);
@@ -245,12 +244,12 @@ void diminuto_buffer_fini(void)
     diminuto_buffer_t * buffer;
     diminuto_buffer_t * next;
 
-    for (item = 0; item < diminuto_buffer_countof; ++item) {
-        for (buffer = diminuto_buffer_pool[item]; buffer != (diminuto_buffer_t *)0; buffer = next) {
+    for (item = 0; item < diminuto_buffer_pool.count; ++item) {
+        for (buffer = diminuto_buffer_pool.pool[item]; buffer != (diminuto_buffer_t *)0; buffer = next) {
             next = buffer->header.next; /* To make valgrind(1) happy. */
             free(buffer);
         }
-        diminuto_buffer_pool[item] = (diminuto_buffer_t *)0;
+        diminuto_buffer_pool.pool[item] = (diminuto_buffer_t *)0;
     }
 }
 
@@ -265,7 +264,7 @@ size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
         /* Do nothing. */
     } else if (nmemb == 0) {
         /* Do nothing. */
-    } else if ((item = hash(size, &actual)) >= diminuto_buffer_countof) {
+    } else if ((item = hash(size, &actual)) >= diminuto_buffer_pool.count) {
         /* Do nothing. */
     } else {
         while ((nmemb--) > 0) {
@@ -312,13 +311,13 @@ size_t diminuto_buffer_log(void)
     diminuto_buffer_t * buffer;
 
     total = 0;
-    for (item = 0; item < diminuto_buffer_countof; ++item) {
+    for (item = 0; item < diminuto_buffer_pool.count; ++item) {
         count = 0;
-        for (buffer = diminuto_buffer_pool[item]; buffer != (diminuto_buffer_t *)0; buffer = buffer->header.next) {
+        for (buffer = diminuto_buffer_pool.pool[item]; buffer != (diminuto_buffer_t *)0; buffer = buffer->header.next) {
             ++count;
         }
         if (count > 0) {
-            length = DIMINUTO_BUFFER_POOL[item];
+            length = diminuto_buffer_pool.sizes[item];
             size = length + sizeof(diminuto_buffer_t);
             subtotal = count * size;
             total += subtotal;
