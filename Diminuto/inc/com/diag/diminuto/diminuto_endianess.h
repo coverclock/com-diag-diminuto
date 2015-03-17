@@ -5,26 +5,27 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
-
-/*
+/**
  * I use a union now instead of the older trick of casting an integer pointer
- * to a character pointer because it works reliably without regard to pointer
- * aliasing assumptions made by compiler optimizers.
+ * to a character pointer (borrowed X11) because it works reliably without
+ * regard to pointer aliasing assumptions made by compiler optimizers.
  */
-static union { uint32_t word; uint8_t bytes[sizeof(uint32_t)]; } diminuto_endian = { 1 };
+typedef union DiminutoEndianess { int word; char bytes[sizeof(int)]; } diminuto_endianess_t;
 
 /**
  * Return true if the process on which this runs is little endian. I expect
  * the compiler to trivially inline this.
  * @return !0 if little endian, 0 if big endian.
  */
-static inline int diminuto_littleendian(void) { return diminuto_endian.bytes[0]; }
+static inline int diminuto_littleendian(void) {
+    static const diminuto_endianess_t endianess = { !0 };
+    return endianess.bytes[0];
+}
 
 #endif
