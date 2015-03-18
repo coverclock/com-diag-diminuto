@@ -7,8 +7,8 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * N.B. This unit test suite uses knowledge of the internal implementation.
- * It is NOT a blackbox test.
+ * N.B. Some unit tests in this suite use knowledge of the internal
+ * implementation; those tests are NOT a blackbox tests!
  */
 
 #include <string.h>
@@ -37,6 +37,7 @@ int main(void)
     SETLOGMASK();
 
     {
+        extern diminuto_buffer_meta_t diminuto_buffer_pool;
         size_t ii;
         ASSERT(diminuto_buffer_pool.count == 10);
         for (ii = 0; ii < diminuto_buffer_pool.count; ++ii) {
@@ -49,6 +50,7 @@ int main(void)
     }
 
     {
+        extern diminuto_buffer_meta_t diminuto_buffer_pool;
         size_t requested;
         size_t actual;
         size_t expected;
@@ -249,7 +251,6 @@ int main(void)
         void * pointer;
         ASSERT(!diminuto_buffer_debug(!0));
         EXPECT(diminuto_buffer_log() == 0);
-        /**/
         ASSERT(!diminuto_buffer_nomalloc(!0));
         /**/
         ASSERT(diminuto_buffer_malloc(0) == (void *)0);
@@ -262,14 +263,14 @@ int main(void)
         ASSERT(errno == ENOMEM);
         ASSERT(diminuto_buffer_realloc((void *)0, 1) == (void *)0);
         ASSERT(errno == ENOMEM);
-        ASSERT(diminuto_buffer_prealloc(1, 1) == 0);
-        ASSERT(errno == ENOMEM);
-        /**/
-        ASSERT(diminuto_buffer_nomalloc(0));
         /**/
         EXPECT(diminuto_buffer_log() == 0);
+        ASSERT(diminuto_buffer_prealloc(1, 1) != 0);
+        EXPECT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
         EXPECT(diminuto_buffer_log() == 0);
+        /**/
+        ASSERT(diminuto_buffer_nomalloc(0));
         ASSERT(diminuto_buffer_debug(0));
         STATUS();
     }

@@ -48,12 +48,6 @@ typedef struct DiminutoBufferMeta {
 } diminuto_buffer_meta_t;
 
 /**
- * This contains the metadata for the currently active pool, either the internal
- * default pool, or the one established by the caller.
- */
-extern diminuto_buffer_meta_t diminuto_buffer_pool;
-
-/**
  * Given a payload size request in bytes (not including header overhead),
  * determine the index for the linked list in the pool that can accomodate
  * a request of that size, and return the actual size in bytes (including
@@ -66,7 +60,7 @@ extern diminuto_buffer_meta_t diminuto_buffer_pool;
  * be returned.
  * @return an index into the pool.
  */
-extern unsigned int diminuto_buffer_hash(size_t requested, size_t * actualp);
+extern size_t diminuto_buffer_hash(size_t requested, size_t * actualp);
 
 /**
  * Given an index from the header in an allocated buffer (the value of which

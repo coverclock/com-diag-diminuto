@@ -57,6 +57,7 @@
  */
 
 #include <stddef.h>
+#include "com/diag/diminuto/diminuto_buffer_pool.h"
 
 /*******************************************************************************
  * <stdlib.h>-LIKE FUNCTIONS
@@ -169,16 +170,6 @@ extern size_t diminuto_buffer_log(void);
 /*******************************************************************************
  * DEPENDENCY INJECTION
  ******************************************************************************/
-
-/**
- * This type defines a structure used to inject a dependency on an external
- * buffer pool.
- */
-typedef struct DiminutoBufferPool {
-    size_t count; /**< Number of entries in each array. */
-    const size_t * sizes; /**< Array of sizes of each buffer quanta in bytes. */
-    void ** pool; /**< Array of void pointers as linked list heads. */
-} diminuto_buffer_pool_t;
 
 /**
  * Establish an external custom buffer pool (if the parameter is non-null),
