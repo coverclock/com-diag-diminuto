@@ -51,7 +51,7 @@ static const size_t POOL[] = {
 
 static diminuto_buffer_t * pool[countof(POOL)] = { (diminuto_buffer_t *)0 };
 
-diminuto_buffer_meta_t diminuto_buffer_pool = { countof(POOL), POOL, pool };
+static diminuto_buffer_meta_t meta = { countof(POOL), POOL, pool };
 
 /*******************************************************************************
  * <stdlib.h>-LIKE FUNCTIONS
@@ -61,7 +61,7 @@ void * diminuto_buffer_malloc(size_t size)
 {
     void * ptr;
 
-    ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&diminuto_buffer_pool, size, fail);
+    ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
 
     if (debug) {
         DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
@@ -76,7 +76,7 @@ void diminuto_buffer_free(void * ptr)
         DIMINUTO_LOG_DEBUG("diminuto_buffer_free: ptr=%p\n", ptr);
     }
 
-    diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&diminuto_buffer_pool, ptr);
+    diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
 }
 
 void * diminuto_buffer_realloc(void * ptr, size_t size)
@@ -95,8 +95,8 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
         size_t requested;
 
         buffer = containerof(diminuto_buffer_t, payload, ptr);
-        actual = buffer_pool_effective((diminuto_buffer_pool_t *)&diminuto_buffer_pool, buffer->header.item);
-        (void)buffer_pool_hash((diminuto_buffer_pool_t *)&diminuto_buffer_pool, size, &requested);
+        actual = buffer_pool_effective((diminuto_buffer_pool_t *)&meta, buffer->header.item);
+        (void)buffer_pool_hash((diminuto_buffer_pool_t *)&meta, size, &requested);
         if (actual == requested) {
             ptrprime = ptr;
         } else {
@@ -175,17 +175,17 @@ char * diminuto_buffer_strndup(const char * s, size_t n)
 
 void diminuto_buffer_fini(void)
 {
-    diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&diminuto_buffer_pool);
+    diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
 }
 
 size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 {
-    return diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&diminuto_buffer_pool, nmemb, size);
+    return diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&meta, nmemb, size);
 }
 
 size_t diminuto_buffer_log(void)
 {
-    return diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&diminuto_buffer_pool);
+    return diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&meta);
 }
 
 int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
@@ -194,13 +194,13 @@ int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 
     rc = (poolp != (diminuto_buffer_pool_t *)0);
     if (rc) {
-        diminuto_buffer_pool.count = poolp->count;
-        diminuto_buffer_pool.sizes = poolp->sizes;
-        diminuto_buffer_pool.pool = (diminuto_buffer_t **)(poolp->pool);
+        meta.count = poolp->count;
+        meta.sizes = poolp->sizes;
+        meta.pool = (diminuto_buffer_t **)(poolp->pool);
     } else {
-        diminuto_buffer_pool.count = countof(POOL);
-        diminuto_buffer_pool.sizes = POOL;
-        diminuto_buffer_pool.pool = pool;
+        meta.count = countof(POOL);
+        meta.sizes = POOL;
+        meta.pool = pool;
     }
 
     return rc;
@@ -227,15 +227,30 @@ int diminuto_buffer_nomalloc(int after)
 }
 
 /*******************************************************************************
- * PRIVATE FUNCTIONS
+ * PRIVATE FUNCTIONS EXPOSED FOR UNIT TESTING
  ******************************************************************************/
 
 size_t diminuto_buffer_hash(size_t requested, size_t * actualp)
 {
-    return buffer_pool_hash((diminuto_buffer_pool_t *)&diminuto_buffer_pool, requested, actualp);
+    return buffer_pool_hash((diminuto_buffer_pool_t *)&meta, requested, actualp);
 }
 
-size_t diminuto_buffer_effective(unsigned int item)
+size_t diminuto_buffer_effective(size_t item)
 {
-    return buffer_pool_effective((diminuto_buffer_pool_t *)&diminuto_buffer_pool, item);
+    return buffer_pool_effective((diminuto_buffer_pool_t *)&meta, item);
+}
+
+size_t diminuto_buffer_count(void)
+{
+    return buffer_pool_count((diminuto_buffer_pool_t *)&meta);
+}
+
+size_t diminuto_buffer_size(size_t item)
+{
+    return buffer_pool_size((diminuto_buffer_pool_t *)&meta, item);
+}
+
+size_t diminuto_buffer_isempty(size_t item)
+{
+    return (buffer_pool_isexternal((diminuto_buffer_pool_t *)&meta, item) || (buffer_pool_first((diminuto_buffer_pool_t *)&meta, item) == (diminuto_buffer_t *)0));
 }

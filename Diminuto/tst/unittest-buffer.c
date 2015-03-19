@@ -6,9 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * N.B. Some unit tests in this suite use knowledge of the internal
- * implementation; those tests are NOT a blackbox tests!
  */
 
 #include <string.h>
@@ -16,7 +13,7 @@
 #include <stdlib.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "diminuto_buffer.h"
+#include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_heap.h"
 
@@ -32,25 +29,30 @@ static int memverify(void * s, int c, size_t n)
     return !0;
 }
 
-int main(void)
+int main(int argc, char * argv[])
 {
+    int debug;
+
     SETLOGMASK();
 
+    debug = (argc > 1);
+
     {
-        extern diminuto_buffer_meta_t diminuto_buffer_pool;
-        size_t ii;
-        ASSERT(diminuto_buffer_pool.count == 10);
-        for (ii = 0; ii < diminuto_buffer_pool.count; ++ii) {
-            ASSERT(diminuto_buffer_pool.sizes[ii] == (1 << (ii + 3)));
+        size_t count;
+        size_t item;
+        ASSERT((count = diminuto_buffer_count()) == 10);
+        for (item = 0; item < count; ++item) {
+            ASSERT(diminuto_buffer_size(item) == (1 << (item + 3)));
         }
-        for (ii = 0; ii < diminuto_buffer_pool.count; ++ii) {
-            ASSERT(diminuto_buffer_pool.pool[ii] == (diminuto_buffer_t *)0);
+        for (item = 0; item < count; ++item) {
+            ASSERT(diminuto_buffer_isempty(item));
         }
         STATUS();
     }
 
     {
-        extern diminuto_buffer_meta_t diminuto_buffer_pool;
+        size_t count;
+        ssize_t overhead;
         size_t requested;
         size_t actual;
         size_t expected;
@@ -58,6 +60,9 @@ int main(void)
         size_t item;
         size_t hash;
         size_t header;
+        ASSERT((count = diminuto_buffer_count()) > 0);
+        /* Here's how you can figure out the size of the buffer header. */
+        ASSERT((overhead = diminuto_buffer_effective(0) - diminuto_buffer_size(0)) > 0);
         for (requested = 0; requested <= 8192; ++requested) {
             if (requested <= (expected = 8)) {
                 item = 0;
@@ -83,13 +88,13 @@ int main(void)
                 expected = requested;
                 item = 10;
             }
-            expected += sizeof(diminuto_buffer_t);
+            expected += overhead;
             hash = diminuto_buffer_hash(requested, &actual);
-            header = (item < diminuto_buffer_pool.count) ? item : expected;
+            header = (item < count) ? item : expected;
             effective = diminuto_buffer_effective(header);
-#if 0
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %zu %d %d\n", requested, actual, header, effective, expected, item, hash);
-#endif
+            if (debug) {
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%zu %zu %zu %zu %zu %zu %zu %zu %zu\n", overhead, requested, actual, header, effective, expected, count, item, hash);
+            }
             ASSERT(hash == item);
             ASSERT(actual == expected);
             ASSERT(effective == expected);

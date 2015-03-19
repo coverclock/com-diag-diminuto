@@ -18,6 +18,16 @@
 #include "diminuto_buffer.h"
 
 /**
+ * Return the number of quanta in the pool.
+ * @param poolp points to the buffer pool structure.
+ * @return the number of quanta in the pool.
+ */
+static inline size_t buffer_pool_count(diminuto_buffer_meta_t * poolp)
+{
+    return poolp->count;
+}
+
+/**
  * Given a payload size request in bytes (not including header overhead),
  * determine the index for the linked list in the pool that can accomodate
  * a request of that size, and return the actual size in bytes (including
@@ -61,6 +71,18 @@ static inline size_t buffer_pool_effective(diminuto_buffer_meta_t * poolp, size_
 }
 
 /**
+ * Return the payload size in bytes of buffers in the pool with the specified
+ * index. The index is not checked to see if it is too large.
+ * @param poolp points to the buffer pool structure.
+ * @param item is the pool index.
+ * @return the payload size of buffers in the pool with that index.
+ */
+static inline size_t buffer_pool_size(diminuto_buffer_meta_t * poolp, size_t item)
+{
+    return (item < poolp->count) ? poolp->sizes[item] : item - sizeof(diminuto_buffer_t);
+}
+
+/**
  * If fail is false (such that heap allocation is enabled), allocate a buffer
  * of the specified total size (including header overhead) from the heap.
  * @param poolp points to the buffer pool structure.
@@ -83,7 +105,8 @@ static inline diminuto_buffer_t * buffer_pool_malloc(diminuto_buffer_meta_t * po
 }
 
 /**
- * Get a buffer from the pool with the specified index.
+ * Get a buffer from the pool with the specified index. The index is not checked
+ * for validity.
  * @param poolp points to the buffer pool structure.
  * @param item is the pool index.
  * @return a pointer to the buffer or null if the pool was empty.
@@ -100,8 +123,8 @@ static inline diminuto_buffer_t * buffer_pool_get(diminuto_buffer_meta_t * poolp
 }
 
 /**
- * Put a buffer back into the pool with the specified index. The index is _not_
- * checked against the pool index in the buffer header.
+ * Put a buffer back into the pool with the specified index. The index is not
+ * checked for validity.
  * @param poolp points to the buffer pool structure.
  * @param buffer points to the buffer.
  * @param item is the pool index.
@@ -137,34 +160,21 @@ static inline void * buffer_pool_init(diminuto_buffer_meta_t * poolp, diminuto_b
  * @param item is the pool index.
  * @return true if it is a heap buffer, false if it is a pool buffer.
  */
-static inline int buffer_pool_isexternal(diminuto_buffer_meta_t * poolp, int item)
+static inline int buffer_pool_isexternal(diminuto_buffer_meta_t * poolp, size_t item)
 {
     return (item >= poolp->count);
 }
 
 /**
  * Return a pointer to the first buffer on the pool with the specified index or
- * null if that pool is empty. The index is not checked to see if it is too
- * large.
+ * null if that pool is empty. The index is not checked for validity.
  * @param poolp points to the buffer pool structure.
  * @param item is the pool index.
  * @return a pointer to a buffer or null.
  */
-static inline diminuto_buffer_t * buffer_pool_first(diminuto_buffer_meta_t * poolp, int item)
+static inline diminuto_buffer_t * buffer_pool_first(diminuto_buffer_meta_t * poolp, size_t item)
 {
     return poolp->pool[item];
-}
-
-/**
- * Return the payload size in bytes of buffers in the pool with the specified
- * index. The index is not checked to see if it is too large.
- * @param poolp points to the buffer pool structure.
- * @param item is the pool index.
- * @return the payload size of buffers in the pool with that index.
- */
-static inline size_t buffer_pool_size(diminuto_buffer_meta_t * poolp, int item)
-{
-    return poolp->sizes[item];
 }
 
 #endif
