@@ -19,6 +19,7 @@
  * intimately familiar, at least in retrospect.
  */
 
+#include <stdio.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_dump.h"

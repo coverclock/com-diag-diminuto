@@ -38,7 +38,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 
 MAJOR				:=	29# API changes that may require that applications be modified.
 MINOR				:=	10# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
@@ -339,9 +339,13 @@ $(OUT)/$(LIB_DIR)/lib$(PROJECT)xx.$(SO).$(MAJOR).$(MINOR):	$(OUT)/$(LIB_DIR)/lib
 
 ########## Target Unstripped Binaries
 
-$(OUT)/$(SYM_DIR)/%:	$(BIN_DIR)/%.c $(TARGETLIBRARIES)
+$(OUT)/$(SYM_DIR)/%:	$(OUT)/$(OBC_DIR)/$(BIN_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+$(OUT)/$(SYM_DIR)/%:	$(OUT)/$(OBP_DIR)/$(BIN_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
 ########## Target Aliases
 
@@ -383,11 +387,11 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 
 $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBC_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
 ########## Generated Source Files
 

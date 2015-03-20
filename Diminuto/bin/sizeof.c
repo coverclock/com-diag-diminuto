@@ -20,12 +20,19 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_offsetof.h"
 
 #define printsizeof(_TYPE_) printf("sizeof(%s)=%zu\nsizeof(%s*)=%zu\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*))
+
+#define printoffsetof(_STRUCT_, _MEMBER_) printf("offsetof(%s.%s)=%zu\n", #_STRUCT_, #_MEMBER_, offsetof(_STRUCT_, _MEMBER_))
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
 typedef void (function_t)(void);
+
+struct Zero {
+    char array[0];
+};
 
 int main(void)
 {
@@ -71,5 +78,6 @@ int main(void)
     printsizeof(diminuto_port_t);
     printsizeof(diminuto_unsigned_t);
     printsizeof(diminuto_signed_t);
+    printsizeof(struct Zero);
     return 0;
 }

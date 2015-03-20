@@ -13,7 +13,7 @@
 
 /**
  * I use a union now instead of the older trick of casting an integer pointer
- * to a character pointer (borrowed X11) because it works reliably without
+ * to a character pointer (borrowed from X11) because it works reliably without
  * regard to pointer aliasing assumptions made by compiler optimizers.
  */
 typedef union DiminutoEndianess { int word; char bytes[sizeof(int)]; } diminuto_endianess_t;
