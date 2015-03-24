@@ -28,7 +28,23 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 
-int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
+static inline void ntoh6(diminuto_ipv6_t * addressp) {
+    size_t ii;
+
+    for (ii = 0; ii < countof(addressp->u16); ++ii) {
+        addressp->u16[ii] = ntohs(addressp->u16[ii]);
+    }
+}
+
+static inline void hton6(diminuto_ipv6_t * addressp) {
+    size_t ii;
+
+    for (ii = 0; ii < countof(addressp->u16); ++ii) {
+        addressp->u16[ii] = htons(addressp->u16[ii]);
+    }
+}
+
+static int ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
 {
     int result = 0;
 
@@ -48,16 +64,30 @@ int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
         result = !0;
         if (addressp != (diminuto_ipv4_t *)0) {
             memcpy(addressp, &(address.u16[6]), sizeof(*addressp));
-            *addressp = ntohl(*addressp);
         }
     }
 
     return result;
 }
 
-void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
+int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
 {
-    address = htonl(address);
+    int result;
+
+    hton6(&address);
+    if (!(result = ipv62ipv4(address, addressp))) {
+        /* Do nothing. */
+    } else if (addressp == (diminuto_ipv4_t *)0) {
+        /* Do nothing. */
+    } else {
+        *addressp = ntohl(*addressp);
+    }
+
+    return result;
+}
+
+static void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
+{
     addressp->u16[0] = 0x0000;
     addressp->u16[1] = 0x0000;
     addressp->u16[2] = 0x0000;
@@ -65,6 +95,12 @@ void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp
     addressp->u16[4] = 0x0000;
     addressp->u16[5] = 0xffff;
     memcpy(&(addressp->u16[6]), &address, sizeof(address));
+}
+
+void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
+{
+    ipv42ipv6(htonl(address), addressp);
+    ntoh6(addressp);
 }
 
 static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp) {
@@ -75,9 +111,8 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         result = 0;
         sa4p = (struct sockaddr_in *)sap;
         if (addressp != (diminuto_ipv6_t *)0) {
-            diminuto_ipv4_t address;
-            address = ntohl(sa4p->sin_addr.s_addr);
-            diminuto_ipc6_ipv42ipv6(address, addressp);
+            ipv42ipv6(sa4p->sin_addr.s_addr, addressp);
+            ntoh6(addressp);
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(sa4p->sin_port);
@@ -88,6 +123,7 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         sa6p = (struct sockaddr_in6 *)sap;
         if (addressp != (diminuto_ipv6_t *)0) {
             memcpy(addressp->u16, sa6p->sin6_addr.s6_addr, sizeof(addressp->u16));
+            ntoh6(addressp);
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(sa6p->sin6_port);
@@ -112,10 +148,12 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
     if (inet_pton(AF_INET6, hostname, &in6) == 1) {
         addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * 2);
         memcpy(addresses[0].u16, in6.s6_addr, sizeof(addresses[0].u16));
+        ntoh6(&(addresses[0]));
         memset(addresses[1].u16, 0, sizeof(addresses[1].u16));
     } else if (inet_pton(AF_INET, hostname, &in4) == 1) {
         addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * 2);
-        diminuto_ipc6_ipv42ipv6(ntohl(in4.s_addr), &(addresses[0]));
+        ipv42ipv6(in4.s_addr, &(addresses[0]));
+        ntoh6(&(addresses[0]));
         memset(addresses[1].u16, 0, sizeof(addresses[1].u16));
     } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
         /* Do nothing: no host entry. */
@@ -128,6 +166,7 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
             for (index = 0; index < limit; ++index) {
                 memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
                 memcpy(addresses[index].u16, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(addresses[index].u16)) ? hostp->h_length : sizeof(addresses[index].u16));
+                ntoh6(&(addresses[index]));
             }
             memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
         }
@@ -140,7 +179,8 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
             for (index = 0; index < limit; ++index) {
                 memset(&in4, 0, sizeof(in4));
                 memcpy(&in4, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
-                diminuto_ipc6_ipv42ipv6(ntohl(in4.s_addr), &(addresses[index]));
+                ipv42ipv6(in4.s_addr, &(addresses[index]));
+                ntoh6(&(addresses[index]));
             }
             memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
         }
@@ -157,22 +197,27 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
     struct  hostent * hostp;
     struct in_addr in4;
     struct in6_addr in6;
+    int ntoh = !0;
 
     if (inet_pton(AF_INET6, hostname, &in6) == 1) {
         memcpy(address.u16, in6.s6_addr, sizeof(address.u16));
     } else if (inet_pton(AF_INET, hostname, &in4) == 1) {
-        diminuto_ipc6_ipv42ipv6(ntohl(in4.s_addr), &address);
+        ipv42ipv6(in4.s_addr, &address);
     } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
-        /* Do nothing: no host entry. */
+        ntoh = 0;
     } else if (hostp->h_addrtype == AF_INET6) {
         memset(&address, 0, sizeof(in6));
         memcpy(address.u16, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(address.u16)) ? hostp->h_length : sizeof(address.u16));
     } else if (hostp->h_addrtype == AF_INET) {
         memset(&in4, 0, sizeof(in4));
         memcpy(&in4, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
-        diminuto_ipc6_ipv42ipv6(ntohl(in4.s_addr), &address);
+        ipv42ipv6(in4.s_addr, &address);
     } else {
-        /* Do nothing. */
+        ntoh = 0;
+    }
+
+    if (ntoh) {
+        ntoh6(&address);
     }
 
     return address;
@@ -184,6 +229,7 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
         struct in6_addr in6;
         char temporary[INET6_ADDRSTRLEN];
 
+        hton6(&address);
         memcpy(in6.s6_addr, address.u16, sizeof(in6.s6_addr));
         inet_ntop(AF_INET6, &in6, temporary, sizeof(temporary));
 
@@ -225,6 +271,7 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
     length = sizeof(sa);
     memset(&sa, 0, length);
     sa.sin6_family = AF_INET6;
+    hton6(&address);
     memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
     sa.sin6_port = htons(port);
 
@@ -275,6 +322,7 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
     length = sizeof(sa);
     memset(&sa, 0, length);
     sa.sin6_family = AF_INET6;
+    hton6(&address);
     memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
     sa.sin6_port = htons(port);
 

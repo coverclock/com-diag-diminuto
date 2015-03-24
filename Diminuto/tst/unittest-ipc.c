@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -45,6 +45,8 @@ int main(void)
         diminuto_ipv4_t address;
         char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
 
+        TEST();
+
         address = diminuto_ipc_address("127.0.0.1");
         DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "127.0.0.1", address, LOCALHOST);
         EXPECT(address == LOCALHOST);
@@ -52,10 +54,14 @@ int main(void)
         EXPECT(diminuto_ipc_dotnotation(address, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, "127.0.0.1");
         EXPECT(strcmp(buffer, "127.0.0.1") == 0);
+
+        STATUS();
 	}
 
     {
         diminuto_ipv4_t address;
+
+        TEST();
 
         address = diminuto_ipc_address("localhost");
         DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", address, LOCALHOST);
@@ -74,11 +80,15 @@ int main(void)
          * a.k.a. "search5.comcast.com". That's not helpful!
          */
         ADVISE(address == 0UL);
+
+        STATUS();
     }
 
     {
         diminuto_ipv4_t * addresses;
         size_t ii;
+
+        TEST();
 
         addresses = diminuto_ipc_addresses("google.com");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
@@ -98,11 +108,15 @@ int main(void)
         EXPECT(ii < LIMIT);
 
     	free(addresses);
+
+        STATUS();
     }
 
     {
         diminuto_ipv4_t * addresses;
         size_t ii;
+
+        TEST();
 
         addresses = diminuto_ipc_addresses("amazon.com");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
@@ -117,11 +131,15 @@ int main(void)
         EXPECT(ii < LIMIT);
 
     	free(addresses);
+
+        STATUS();
     }
 
     {
         diminuto_ipv4_t * addresses;
         size_t ii;
+
+        TEST();
 
         addresses = diminuto_ipc_addresses("www.diag.com");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
@@ -135,10 +153,14 @@ int main(void)
         EXPECT(ii == 1);
 
     	free(addresses);
+
+        STATUS();
     }
 
     {
         diminuto_port_t port;
+
+        TEST();
 
         port = diminuto_ipc_port("80", NULL);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "(null)", port, 80);
@@ -200,34 +222,49 @@ int main(void)
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "udp", port, 0);
         EXPECT(port == 0);
 
+        STATUS();
     }
 
     {
         int fd;
+
+        TEST();
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
         int fd;
+
+        TEST();
 
         EXPECT((fd = diminuto_ipc_stream_consumer(diminuto_ipc_address("www.diag.com"), diminuto_ipc_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
 
         EXPECT((fd = diminuto_ipc_stream_consumer(diminuto_ipc_address("www.amazon.com"), diminuto_ipc_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
         int fd;
-    
+
+        TEST();
+
         EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
         int fd;
+
+        TEST();
 
         EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
 
@@ -249,6 +286,8 @@ int main(void)
         EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
 
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
@@ -259,6 +298,8 @@ int main(void)
         char buffer[64];
         diminuto_ipv4_t address = 0;
         diminuto_port_t port = 0;
+
+        TEST();
 
         EXPECT((fd1 = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT((fd2 = diminuto_ipc_datagram_peer(PORT2)) >= 0);
@@ -279,6 +320,8 @@ int main(void)
 
         EXPECT(diminuto_ipc_close(fd1) >= 0);
         EXPECT(diminuto_ipc_close(fd2) >= 0);
+
+        STATUS();
     }
 
     {
@@ -286,6 +329,8 @@ int main(void)
         char buffer[1];
         diminuto_ipv4_t address = 0x12345678;
         diminuto_port_t port = 0x9abc;
+
+        TEST();
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
@@ -294,6 +339,8 @@ int main(void)
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
@@ -302,12 +349,16 @@ int main(void)
         diminuto_ipv4_t address = 0x12345678;
         diminuto_port_t port = 0x9abc;
 
+        TEST();
+
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT((diminuto_ipc_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
@@ -317,6 +368,8 @@ int main(void)
         diminuto_port_t port = 0x9abc;
         diminuto_ticks_t before;
         diminuto_ticks_t after;
+
+        TEST();
 
         EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);
@@ -330,6 +383,8 @@ int main(void)
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
         EXPECT(diminuto_ipc_close(fd) >= 0);
+
+        STATUS();
     }
 
     {
@@ -399,6 +454,8 @@ int main(void)
             exit(0);
 
         }
+
+        STATUS();
     }
 
     {
@@ -406,6 +463,8 @@ int main(void)
         diminuto_port_t port;
         int rendezvous;
         pid_t pid;
+
+        TEST();
 
         EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
 
@@ -460,6 +519,8 @@ int main(void)
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
         }
+
+        STATUS();
     }
 
     /*
@@ -480,6 +541,8 @@ int main(void)
         diminuto_port_t port;
         int rendezvous;
         pid_t pid;
+
+        TEST();
 
         ASSERT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
 
@@ -626,6 +689,8 @@ int main(void)
 
     		exit(0);
         }
+
+        STATUS();
     }
 
     EXIT();
