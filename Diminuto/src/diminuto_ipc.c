@@ -239,8 +239,8 @@ int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlog)
 
     length = sizeof(sa);
     memset(&sa, 0, length);
-    sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -297,8 +297,8 @@ int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
 
     length = sizeof(sa);
     memset(&sa, 0, length);
-    sa.sin_addr.s_addr = htonl(address);
     sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(address);
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -320,8 +320,8 @@ int diminuto_ipc_datagram_peer(diminuto_port_t port)
 
     length = sizeof(sa);
     memset(&sa, 0, length);
-    sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -382,8 +382,8 @@ ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t siz
     bp = (char *) buffer;
 
     memset(&sa, 0, sizeof(sa));
-    sa.sin_addr.s_addr = htonl(address);
     sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(address);
     sa.sin_port = htons(port);
 
     if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sa, sizeof(sa))) == 0) {

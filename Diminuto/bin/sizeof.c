@@ -31,7 +31,7 @@ typedef enum Enum { ENUM = 0 } enum_t;
 typedef void (function_t)(void);
 
 struct Zero {
-    char array[0];
+    char field[0];
 };
 
 int main(void)
@@ -75,6 +75,7 @@ int main(void)
     printsizeof(pthread_cond_t);
     printsizeof(diminuto_ticks_t);
     printsizeof(diminuto_ipv4_t);
+    printsizeof(diminuto_ipv6_t);
     printsizeof(diminuto_port_t);
     printsizeof(diminuto_unsigned_t);
     printsizeof(diminuto_signed_t);

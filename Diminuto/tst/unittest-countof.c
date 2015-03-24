@@ -40,6 +40,7 @@ int main(void)
     SETLOGMASK();
 
     {
+        TEST();
         ASSERT(diminuto_countof(array1) == 16);
         ASSERT(diminuto_countof(array2) == 8);
         ASSERT(diminuto_countof(array3) == 4);
@@ -51,18 +52,22 @@ int main(void)
         ASSERT(countof(array5) == 2);
         ASSERT(countof(array5[0]) == 3);
         ASSERT(countof(array5[0][0]) == 5);
+        STATUS();
     }
 
     {
+        TEST();
         diminuto_dump_bytes(stdout, array5, sizeof(array5));
         /*
          * 00602060: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f |................|
          * 00602070: 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d       |..............  |
          */
+        STATUS();
     }
 
     {
         int ii, jj, kk;
+        TEST();
         for (ii = 0; ii < countof(array5); ++ii) {
             for (jj = 0; jj < countof(array5[0]); ++jj) {
                 for (kk = 0; kk < countof(array5[0][0]); ++kk) {
@@ -70,20 +75,24 @@ int main(void)
                 }
             }
         }
+        STATUS();
     }
 
     {
         int ll;
         char * pp;
+        TEST();
         pp = (char *)array5;
         for (ll = 0; ll < sizeof(array5); ++ll) {
             ASSERT(pp[ll] == ll);
         }
+        STATUS();
     }
 
     {
         char (*qq)[2][3][5];
         int ii, jj, kk;
+        TEST();
         qq = &array5;
         for (ii = 0; ii < countof(array5); ++ii) {
             for (jj = 0; jj < countof(array5[0]); ++jj) {
@@ -92,6 +101,7 @@ int main(void)
                 }
             }
         }
+        STATUS();
     }
 
     EXIT();
