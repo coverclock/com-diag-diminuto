@@ -218,7 +218,7 @@ static inline int diminuto_ipc6_set_reuseaddress(int fd, int enable) {
  * @return 0 for success or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_set_keepalive(int fd, int enable) {
-    return diminuto_ipc6_set_keepalive(fd, enable);
+    return diminuto_ipc_set_keepalive(fd, enable);
 }
 
 /**

@@ -301,68 +301,68 @@ int main(void)
         STATUS();
     }
 
+    {
+        int fd;
+
+        TEST();
+
+        EXPECT((fd = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
+
+        STATUS();
+    }
+
+    {
+        int fd;
+
+        TEST();
+
+        EXPECT((fd = diminuto_ipc6_stream_provider(PORT)) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
+
+        STATUS();
+    }
+
+    {
+        int fd;
+
+        TEST();
+
+        EXPECT((fd = diminuto_ipc6_stream_provider(PORT)) >= 0);
+
+        EXPECT(diminuto_ipc6_set_nonblocking(fd, !0) >= 0);
+        EXPECT(diminuto_ipc6_set_nonblocking(fd, 0) >= 0);
+
+        EXPECT(diminuto_ipc6_set_reuseaddress(fd, 0) >= 0);
+        EXPECT(diminuto_ipc6_set_reuseaddress(fd, !0) >= 0);
+
+        EXPECT(diminuto_ipc6_set_keepalive(fd, !0) >= 0);
+        EXPECT(diminuto_ipc6_set_keepalive(fd, 0) >= 0);
+
+        if (geteuid() == 0) {
+            EXPECT(diminuto_ipc6_set_debug(fd, !0) >= 0);
+            EXPECT(diminuto_ipc6_set_debug(fd, 0) >= 0);
+        }
+
+        EXPECT(diminuto_ipc6_set_linger(fd, hertz) >= 0);
+        EXPECT(diminuto_ipc6_set_linger(fd, 0) >= 0);
+
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
+
+        STATUS();
+    }
+
 #if 0
     {
         int fd;
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipc_stream_consumer(diminuto_ipc_address("www.diag.com"), diminuto_ipc_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
-
-        EXPECT((fd = diminuto_ipc_stream_consumer(diminuto_ipc_address("www.amazon.com"), diminuto_ipc_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipc_stream_provider(PORT)) >= 0);
-
-        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
-        EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
-
-        EXPECT(diminuto_ipc_set_reuseaddress(fd, 0) >= 0);
-        EXPECT(diminuto_ipc_set_reuseaddress(fd, !0) >= 0);
-
-        EXPECT(diminuto_ipc_set_keepalive(fd, !0) >= 0);
-        EXPECT(diminuto_ipc_set_keepalive(fd, 0) >= 0);
-
-        if (geteuid() == 0) {
-            EXPECT(diminuto_ipc_set_debug(fd, !0) >= 0);
-            EXPECT(diminuto_ipc_set_debug(fd, 0) >= 0);
-        }
-
-        EXPECT(diminuto_ipc_set_linger(fd, hertz) >= 0);
-        EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
-
-        EXPECT(diminuto_ipc_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
@@ -373,30 +373,34 @@ int main(void)
         const char MSG1[] = "Chip Overclock";
         const char MSG2[] = "Digital Aggregates Corporation";
         char buffer[64];
-        diminuto_ipv4_t address = 0;
+        diminuto_ipv6_t address = { 0 };
         diminuto_port_t port = 0;
+        diminuto_ipv6_t address2 = { 0 };
 
         TEST();
 
-        EXPECT((fd1 = diminuto_ipc_datagram_peer(PORT1)) >= 0);
-        EXPECT((fd2 = diminuto_ipc_datagram_peer(PORT2)) >= 0);
+        address2 = diminuto_ipc6_address("localhost");
+        ASSERT(memcmp(&address2, &UNSPECIFIED6, sizeof(address2)) != 0);
+
+        EXPECT((fd1 = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
+        EXPECT((fd2 = diminuto_ipc6_datagram_peer(PORT2)) >= 0);
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipc_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc_address("localhost"), PORT2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipc_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
-        EXPECT(address == diminuto_ipc_address("localhost"));
+        EXPECT((diminuto_ipc6_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc6_address("localhost"), PORT2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc6_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
+        EXPECT(memcmp(&address, &address2, sizeof(address)) == 0);
         EXPECT(port == PORT1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT((diminuto_ipc_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc_address("localhost"), PORT1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipc_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
-        EXPECT(address == diminuto_ipc_address("localhost"));
+        EXPECT((diminuto_ipc6_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc6_address("localhost"), PORT1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc6_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
+        EXPECT(memcmp(&address, &address2, sizeof(address)) == 0);
         EXPECT(port == PORT2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
-        EXPECT(diminuto_ipc_close(fd1) >= 0);
-        EXPECT(diminuto_ipc_close(fd2) >= 0);
+        EXPECT(diminuto_ipc6_close(fd1) >= 0);
+        EXPECT(diminuto_ipc6_close(fd2) >= 0);
 
         STATUS();
     }
