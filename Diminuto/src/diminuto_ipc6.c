@@ -24,6 +24,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#if !0
+#   include "com/diag/diminuto/diminuto_log.h"
+#   include <stdio.h>
+#endif
 
 static inline void ntoh6(diminuto_ipv6_t * addressp) {
     size_t ii;
@@ -100,7 +104,8 @@ void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp
     ntoh6(addressp);
 }
 
-static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp) {
+static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+{
     int result = -1;
 
     if (sap->sa_family == AF_INET) {
@@ -133,56 +138,102 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
     return result;
 }
 
-diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
-{
-	diminuto_ipv6_t * addresses = (diminuto_ipv6_t *)0;
-    struct  hostent * hostp;
-    struct in_addr in4;
-    struct in6_addr in6;
-    size_t index;
-    size_t limit;
 
-    if (inet_pton(AF_INET6, hostname, &in6) == 1) {
-        addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * 2);
-        memcpy(addresses[0].u16, in6.s6_addr, sizeof(addresses[0].u16));
-        ntoh6(&(addresses[0]));
-        memset(addresses[1].u16, 0, sizeof(addresses[1].u16));
-    } else if (inet_pton(AF_INET, hostname, &in4) == 1) {
-        addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * 2);
-        ipv42ipv6(in4.s_addr, &(addresses[0]));
-        ntoh6(&(addresses[0]));
-        memset(addresses[1].u16, 0, sizeof(addresses[1].u16));
-    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
-        /* Do nothing: no host entry. */
-    } else if (hostp->h_addrtype == AF_INET6) {
-        for (limit = 0; hostp->h_addr_list[limit] != 0; ++limit) {
-            continue;
-        }
-        if (limit > 0) {
-            addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * (limit + 1));
-            for (index = 0; index < limit; ++index) {
-                memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
-                memcpy(addresses[index].u16, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(addresses[index].u16)) ? hostp->h_length : sizeof(addresses[index].u16));
-                ntoh6(&(addresses[index]));
-            }
-            memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
-        }
-    } else if (hostp->h_addrtype == AF_INET) {
-        for (limit = 0; hostp->h_addr_list[limit] != 0; ++limit) {
-            continue;
-        }
-        if (limit > 0) {
-            addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * (limit + 1));
-            for (index = 0; index < limit; ++index) {
-                memset(&in4, 0, sizeof(in4));
-                memcpy(&in4, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
-                ipv42ipv6(in4.s_addr, &(addresses[index]));
-                ntoh6(&(addresses[index]));
-            }
-            memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
-        }
+/*
+ * getaddrinfo(3) will return multiple entries with the same address but
+ * which differ in other respects that we don't care about in this
+ * feature. So we try to filter those out under the assumption that such
+ * entries with the same address are grouped consecutively. That's been
+ * my experience so far. The function still works if they aren't so grouped,
+ * but redundant addresses just won't be filtered out. The alternative I've
+ * considered would have O(n^2) performance, so for now I'm sticking with
+ * this.
+ */
+static int redundant(struct addrinfo * prevp, struct addrinfo * nextp)
+{
+    int result = 0;
+
+    if (nextp->ai_addr == (struct sockaddr *)0) {
+        result = !0;
+    } else if ((nextp->ai_addr->sa_family != AF_INET6) && (nextp->ai_addr->sa_family != AF_INET)) {
+        result = !0;
+    } else if (prevp == (struct addrinfo *)0) {
+        /* Do nothing. */
+    } else if (prevp->ai_addr == (struct sockaddr *)0) {
+        /* Do nothing. */
+    } else if (prevp->ai_addr->sa_family != nextp->ai_addr->sa_family) {
+        /* Do nothing. */
+    } else if ((nextp->ai_addr->sa_family == AF_INET6) && (memcmp(&(((struct sockaddr_in6 *)(nextp->ai_addr))->sin6_addr), &(((struct sockaddr_in6 *)(prevp->ai_addr))->sin6_addr), sizeof(struct sockaddr_in6)) == 0)) {
+        result = !0;
+    } else if ((nextp->ai_addr->sa_family == AF_INET) && (memcmp(&(((struct sockaddr_in *)(nextp->ai_addr))->sin_addr), &(((struct sockaddr_in *)(prevp->ai_addr))->sin_addr), sizeof(struct sockaddr_in)) == 0)) {
+        result = !0;
     } else {
         /* Do nothing. */
+    }
+
+    return result;
+}
+
+diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
+{
+    diminuto_ipv6_t * addresses = (diminuto_ipv6_t *)0;
+    struct addrinfo hints = { 0 };
+    struct addrinfo * infop;
+    struct addrinfo * nextp;
+    struct addrinfo * prevp;
+    size_t index;
+
+    /*
+     * The ipc6 feature prefers IPv6 addresses if they are available. So we
+     * specify those first, then we settle for IPv4, than as a last ditch
+     * we try unspecified, which aren't likely to be useful.
+     */
+
+    hints.ai_family = AF_INET6;
+    infop = (struct addrinfo *)0;
+    if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+    } else {
+        if (infop != (struct addrinfo *)0) {
+            freeaddrinfo(infop);
+            infop = (struct addrinfo *)0;
+        }
+        hints.ai_family = AF_INET;
+        if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+            /* Do nothing. */
+        } else {
+            if (infop != (struct addrinfo *)0) {
+                freeaddrinfo(infop);
+                infop = (struct addrinfo *)0;
+            }
+            hints.ai_family = AF_UNSPEC;
+            if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+                /* Do nothing. */
+            } else {
+                if (infop != (struct addrinfo *)0) {
+                    freeaddrinfo(infop);
+                    infop = (struct addrinfo *)0;
+                }
+            }
+        }
+    }
+
+    if (infop != (struct addrinfo *)0) {
+        index = 0;
+        for (nextp = infop, prevp = (struct addrinfo *)0; nextp != (struct addrinfo *)0; prevp = nextp, nextp = prevp->ai_next) {
+            if (!redundant(prevp, nextp)) {
+                ++index;
+            }
+        }
+        addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * (index + 1));
+        index = 0;
+        for (nextp = infop, prevp = (struct addrinfo *)0; nextp != (struct addrinfo *)0; prevp = nextp, nextp = prevp->ai_next) {
+            if (!redundant(prevp, nextp)) {
+                identify(nextp->ai_addr, &(addresses[index]), (diminuto_port_t *)0);
+                ++index;
+            }
+        }
+        memset(&(addresses[index]), 0, sizeof(addresses[index]));
+        freeaddrinfo(infop);
     }
 
     return addresses;
@@ -190,10 +241,8 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
 
 diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
 {
-    diminuto_ipv6_t address6 = { 0 };
+    diminuto_ipv6_t address = { 0 };
     struct addrinfo hints = { 0 };
-    struct in6_addr * in6p;
-    struct in_addr * in4p;
     struct addrinfo * infop = (struct addrinfo *)0;
 
     /*
@@ -220,11 +269,11 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
     }
 
     if (infop != (struct addrinfo *)0) {
-        identify(infop->ai_addr, &address6, (diminuto_port_t *)0);
+        identify(infop->ai_addr, &address, (diminuto_port_t *)0);
         freeaddrinfo(infop);
     }
 
-    return address6;
+    return address;
 }
 
 const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length)

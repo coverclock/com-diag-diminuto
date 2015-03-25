@@ -118,24 +118,24 @@ int main(void)
         TEST();
 
         address6 = diminuto_ipc6_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "localhost", LOCALHOST6.u16[0], LOCALHOST6.u16[1], LOCALHOST6.u16[2], LOCALHOST6.u16[3], LOCALHOST6.u16[4], LOCALHOST6.u16[5], LOCALHOST6.u16[6], LOCALHOST6.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
-         * This next test depends on how the local host is adminstered with an
-         * IPv6 local host address (mine is), or whether we get back a IPv4
-         * address encapsulated in an IPv6 address.
+         * This next test depends on how the local host is administered with an
+         * IPv6 local host address, or whether we get back a IPv4 local host
+         * address encapsulated in an IPv6 address. Either is okay.
          */
         EXPECT((memcmp(&address6, &LOCALHOST6, sizeof(address6)) == 0) || (memcmp(&address6, &LOCALHOST64, sizeof(address6)) == 0));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
 
         address6 = diminuto_ipc6_address("www.diag.com");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", UNSPECIFIED6.u16[0], UNSPECIFIED6.u16[1], UNSPECIFIED6.u16[2], UNSPECIFIED6.u16[3], UNSPECIFIED6.u16[4], UNSPECIFIED6.u16[5], UNSPECIFIED6.u16[6], UNSPECIFIED6.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(memcmp(&address6, &UNSPECIFIED6, sizeof(address6)) != 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "www.diag.com", buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "invalid.domain", UNSPECIFIED6.u16[0], UNSPECIFIED6.u16[1], UNSPECIFIED6.u16[2], UNSPECIFIED6.u16[3], UNSPECIFIED6.u16[4], UNSPECIFIED6.u16[5], UNSPECIFIED6.u16[6], UNSPECIFIED6.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * Damned internet service providers map invalid domains to a "help"
          * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
@@ -159,7 +159,7 @@ int main(void)
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "google.com", UNSPECIFIED6.u16[0], UNSPECIFIED6.u16[1], UNSPECIFIED6.u16[2], UNSPECIFIED6.u16[3], UNSPECIFIED6.u16[4], UNSPECIFIED6.u16[5], UNSPECIFIED6.u16[6], UNSPECIFIED6.u16[7], addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (memcmp(&addresses[ii], &UNSPECIFIED6, sizeof(addresses[ii])) == 0) {
                 break;
             }
@@ -190,7 +190,7 @@ int main(void)
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "amazon.com", UNSPECIFIED6.u16[0], UNSPECIFIED6.u16[1], UNSPECIFIED6.u16[2], UNSPECIFIED6.u16[3], UNSPECIFIED6.u16[4], UNSPECIFIED6.u16[5], UNSPECIFIED6.u16[6], UNSPECIFIED6.u16[7], addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (memcmp(&addresses[ii], &UNSPECIFIED6, sizeof(addresses[ii])) == 0) {
                 break;
             }
@@ -216,7 +216,7 @@ int main(void)
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "diag.com", UNSPECIFIED6.u16[0], UNSPECIFIED6.u16[1], UNSPECIFIED6.u16[2], UNSPECIFIED6.u16[3], UNSPECIFIED6.u16[4], UNSPECIFIED6.u16[5], UNSPECIFIED6.u16[6], UNSPECIFIED6.u16[7], addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "diag.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (memcmp(&addresses[ii], &UNSPECIFIED6, sizeof(addresses[ii])) == 0) {
                 break;
             }
