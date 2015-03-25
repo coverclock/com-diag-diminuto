@@ -169,7 +169,9 @@ int main(void)
         /*
          * "nslookup google.com" used to resolve as multiple addresses. But
          * today it doesn't. So I added the "amazon.com" test below. So far
-         * Amazon.com still resolves as multiple addresses.
+         * "amazon.com" still resolves as multiple addresses. HOWEVER,
+         * "google.com" DOES respond with an IPv6 address,, while "amazon.com"
+         * responds with IPv4 addresses. It's all good.
          */
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
