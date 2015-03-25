@@ -162,7 +162,7 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
             addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * (limit + 1));
             for (index = 0; index < limit; ++index) {
                 memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
-                memcpy(addresses[index].u16, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(addresses[index].u16)) ? hostp->h_length : sizeof(addresses[index].u16));
+                memcpy(addresses[index].u16, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(addresses[index].u16)) ? hostp->h_length : sizeof(addresses[index].u16));
                 ntoh6(&(addresses[index]));
             }
             memset(addresses[index].u16, 0, sizeof(addresses[index].u16));
@@ -175,7 +175,7 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
             addresses = (diminuto_ipv6_t *)malloc(sizeof(diminuto_ipv6_t) * (limit + 1));
             for (index = 0; index < limit; ++index) {
                 memset(&in4, 0, sizeof(in4));
-                memcpy(&in4, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
+                memcpy(&in4, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
                 ipv42ipv6(in4.s_addr, &(addresses[index]));
                 ntoh6(&(addresses[index]));
             }
@@ -190,34 +190,41 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
 
 diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
 {
-    diminuto_ipv6_t address = { 0 };
-    struct  hostent * hostp;
-    struct in_addr in4;
-    struct in6_addr in6;
-    int ntoh = !0;
+    diminuto_ipv6_t address6 = { 0 };
+    struct addrinfo hints = { 0 };
+    struct in6_addr * in6p;
+    struct in_addr * in4p;
+    struct addrinfo * infop = (struct addrinfo *)0;
 
-    if (inet_pton(AF_INET6, hostname, &in6) == 1) {
-        memcpy(address.u16, in6.s6_addr, sizeof(address.u16));
-    } else if (inet_pton(AF_INET, hostname, &in4) == 1) {
-        ipv42ipv6(in4.s_addr, &address);
-    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
-        ntoh = 0;
-    } else if (hostp->h_addrtype == AF_INET6) {
-        memset(&address, 0, sizeof(in6));
-        memcpy(address.u16, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(address.u16)) ? hostp->h_length : sizeof(address.u16));
-    } else if (hostp->h_addrtype == AF_INET) {
-        memset(&in4, 0, sizeof(in4));
-        memcpy(&in4, hostp->h_addr_list[0], (hostp->h_length < (int)sizeof(in4)) ? hostp->h_length : sizeof(in4));
-        ipv42ipv6(in4.s_addr, &address);
+    /*
+     * The ipc6 feature prefers IPv6 addresses if they are available. So we
+     * specify those first, then we settle for IPv4, than as a last ditch
+     * we try any, which aren't likely to be useful.
+     */
+
+    hints.ai_family = AF_INET6;
+    if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+        /* Do nothing. */
     } else {
-        ntoh = 0;
+        hints.ai_family = AF_INET;
+        if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+            /* Do nothing. */
+        } else {
+            hints.ai_family = AF_UNSPEC;
+            if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) == 0) {
+                /* Do nothing. */
+            } else {
+                infop = (struct addrinfo *)0;
+            }
+        }
     }
 
-    if (ntoh) {
-        ntoh6(&address);
+    if (infop != (struct addrinfo *)0) {
+        identify(infop->ai_addr, &address6, (diminuto_port_t *)0);
+        freeaddrinfo(infop);
     }
 
-    return address;
+    return address6;
 }
 
 const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length)
