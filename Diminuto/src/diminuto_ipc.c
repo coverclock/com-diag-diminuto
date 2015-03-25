@@ -25,8 +25,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <stdio.h>
-
 static int identify(struct sockaddr_in * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp) {
     int result = 0;
 

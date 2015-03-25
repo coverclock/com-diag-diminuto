@@ -12,10 +12,8 @@
 
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-#include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -26,7 +24,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
 
 static inline void ntoh6(diminuto_ipv6_t * addressp) {
     size_t ii;

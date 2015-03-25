@@ -16,7 +16,8 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /**
- * If an IPv6 address encapsulates an IPv4 address, extract the IPv4 address.
+ * If an IPv6 address in host byte order encapsulates an IPv4 address, extract
+ * the IPv4 address in host byte order.
  * @param address is the IPv6 address.
  * @param addressp points to an IPv4 address variable or null for no extraction.
  * @return !0 if the address was an IPv4 address, 0 otherwise.
@@ -24,7 +25,8 @@
 extern int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp);
 
 /**
- * Encapsulate an IPv4 address into an IPv6 address.
+ * Encapsulate an IPv4 address in host byte order into an IPv6 address in host
+ * byte order.
  * @param address is the IPv4 address.
  * @param addressp points to an IPv6 address variable.
  */
@@ -32,7 +34,7 @@ extern void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * a
 
 /**
  * Convert a hostname or an IPV6 address string in dot notation into one
- * or more IPv6 addresses. Since a single host can map to
+ * or more IPv6 addresses in host byte order. Since a single host can map to
  * multiple addresses, this returns a list of addresses in dynamically acquired
  * memory. The last entry will be all zeros. The list must be freed by the
  * application. IMPORTANT SAFETY TIP: the underlying glibc gethostbyname()
@@ -77,31 +79,29 @@ extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * 
 /**
  * Return the address and port of the near end of the socket if it can be
  * determined. If it cannot be determined, the address and port variables
- * will remain unchanged.
+ * will remain unchanged. The address and port will be returned in host byte
+ * order.
  * @param fd is a socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
+ * @param addressp if non-NULL points to where the address will be stored.
+ * @param portp if non-NULL points to where the port will be stored.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc6_nearend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
- * Return the address and port of the far end of the socket if it can be
- * determined. If it cannot be determined, the address and port variables
- * will remain unchanged.
+ * Return the address and port of the far end of the socket in host byte order
+ * if it can be determined. If it cannot be determined, the address and port
+ * variables will remain unchanged.
  * @param fd is a socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
+ * @param addressp if non-NULL points to where the address will be stored.
+ * @param portp if non-NULL points to where the port will be stored.
  * @return 0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
  * Create a provider-side stream socket with a specified connection backlog.
+ * The port is in host byte order.
  * @param port is the port number at which connection requests will rendezvous.
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
@@ -113,8 +113,8 @@ static inline int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, in
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
- * @param port is the port number at which connection requests will rendezvous
- * in host byte order.
+ * The port is in host byte order.
+ * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_provider(diminuto_port_t port) {
@@ -123,27 +123,27 @@ static inline int diminuto_ipc6_stream_provider(diminuto_port_t port) {
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket. Optionally return the address and port of the requestor.
+ * stream socket. Optionally return the address and port in host byte order of
+ * the requestor.
  * @param fd is the provider-side stream socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
+ * @param addressp if non-NULL points to where the address will be stored.
+ * @param portp if non-NULL points to where the port will be stored.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
 extern int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
- * Request a consumer-side stream socket to a provider.
- * @param address is the provider's IPv4 address.
- * @param port is the provider's port in host byte order.
+ * Request a consumer-side stream socket to a provider. The address and port
+ * are in host byte oder.
+ * @param address is the provider's IPv6 address.
+ * @param port is the provider's port.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 extern int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port);
 
 /**
- * Request a peer datagram socket.
- * @param port is the port number in host byte order.
+ * Request a peer datagram socket. The port is in host byte order.
+ * @param port is the port number.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port) {
@@ -278,14 +278,12 @@ static inline ssize_t diminuto_ipc6_stream_write(int fd, const void * buffer, si
 
 /**
  * Receive a datagram from a datagram socket using the specified flags.
- * Optionally return the address and port of the sender.
+ * Optionally return the address and port in host byte order of the sender.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
+ * @param addressp if non-NULL points to where the address will be stored.
+ * @param portp if non-NULL points to where the port will be stored.
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
@@ -293,7 +291,7 @@ extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_
 
 /**
  * Receive a datagram from a datagram socket using no flags.
- * Optionally return the address and port of the sender.
+ * Optionally return the address and port in host byte order of the sender.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
@@ -306,7 +304,8 @@ extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_
 extern ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
- * Send a datagram to a datagram socket using the specified flags.
+ * Send a datagram to a datagram socket using the specified flags. The address
+ * and port are in host byte order.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
@@ -318,7 +317,8 @@ extern ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size
 extern ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags);
 
 /**
- * Send a datagram to a datagram socket using no flags.
+ * Send a datagram to a datagram socket using no flags. The address and port are
+ * in host byte order.
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
