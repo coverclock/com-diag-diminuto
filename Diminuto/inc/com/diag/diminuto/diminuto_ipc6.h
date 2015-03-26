@@ -16,6 +16,16 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /**
+ * This is the Diminuto binary IPv6 address in host byte order for "::".
+ */
+extern const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED;
+
+/**
+ * This is the Diminuto binary IPv6 address in host byte order for "::1".
+ */
+extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK;
+
+/**
  * If an IPv6 address in host byte order encapsulates an IPv4 address, extract
  * the IPv4 address in host byte order.
  * @param address is the IPv6 address.
@@ -301,7 +311,9 @@ extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_
  * in host byte order.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp) {
+    return diminuto_ipc6_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
+}
 
 /**
  * Send a datagram to a datagram socket using the specified flags. The address
@@ -326,6 +338,8 @@ extern ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, si
  * @param port is the receiver's port.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port);
+static inline ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port) {
+    return diminuto_ipc6_datagram_send_flags(fd, buffer, size, address, port, 0);
+}
 
 #endif

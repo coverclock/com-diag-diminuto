@@ -15,6 +15,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 
 /**
  * Convert a hostname or an IPv4 address string in dot notation into one
@@ -216,7 +217,10 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
  * @param max is the maximum number of bytes to be read.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max);
+static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max)
+{
+    return diminuto_fd_read(fd, buffer, min, max);
+}
 
 /**
  * Write bytes to a stream socketfrom a buffer until at least a minimum
@@ -230,7 +234,10 @@ extern ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_
  * @param max is the maximum number of bytes to be written.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max);
+static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max)
+{
+    return diminuto_fd_write(fd, buffer, min, max);
+}
 
 /**
  * Receive a datagram from a datagram socket using the specified flags.
@@ -259,7 +266,10 @@ extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t
  * in host byte order.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+static inline ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    return diminuto_ipc_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
+}
 
 /**
  * Send a datagram to a datagram socket using the specified flags.
@@ -282,6 +292,9 @@ extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, siz
  * @param port is the receiver's port.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port);
+static inline ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port)
+{
+    return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
+}
 
 #endif
