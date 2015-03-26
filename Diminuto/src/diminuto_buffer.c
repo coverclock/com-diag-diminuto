@@ -95,8 +95,8 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
         size_t requested;
 
         buffer = containerof(diminuto_buffer_t, payload, ptr);
-        actual = buffer_pool_effective((diminuto_buffer_pool_t *)&meta, buffer->header.item);
-        (void)buffer_pool_hash((diminuto_buffer_pool_t *)&meta, size, &requested);
+        actual = buffer_pool_effective(&meta, buffer->header.item);
+        (void)buffer_pool_hash(&meta, size, &requested);
         if (actual == requested) {
             ptrprime = ptr;
         } else {
@@ -232,25 +232,25 @@ int diminuto_buffer_nomalloc(int after)
 
 size_t diminuto_buffer_hash(size_t requested, size_t * actualp)
 {
-    return buffer_pool_hash((diminuto_buffer_pool_t *)&meta, requested, actualp);
+    return buffer_pool_hash(&meta, requested, actualp);
 }
 
 size_t diminuto_buffer_effective(size_t item)
 {
-    return buffer_pool_effective((diminuto_buffer_pool_t *)&meta, item);
+    return buffer_pool_effective(&meta, item);
 }
 
 size_t diminuto_buffer_count(void)
 {
-    return buffer_pool_count((diminuto_buffer_pool_t *)&meta);
+    return buffer_pool_count(&meta);
 }
 
 size_t diminuto_buffer_size(size_t item)
 {
-    return buffer_pool_size((diminuto_buffer_pool_t *)&meta, item);
+    return buffer_pool_size(&meta, item);
 }
 
 size_t diminuto_buffer_isempty(size_t item)
 {
-    return (buffer_pool_isexternal((diminuto_buffer_pool_t *)&meta, item) || (buffer_pool_first((diminuto_buffer_pool_t *)&meta, item) == (diminuto_buffer_t *)0));
+    return (buffer_pool_isexternal(&meta, item) || (buffer_pool_first(&meta, item) == (diminuto_buffer_t *)0));
 }
