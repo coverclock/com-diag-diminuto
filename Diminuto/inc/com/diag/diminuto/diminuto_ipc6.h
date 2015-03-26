@@ -10,7 +10,11 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * WORK IN PROGRESS!
+ * This provides a slightly more abstract interface to stream and datagram
+ * IPv6 sockets. It was derived from the IPv4-based ipc feature.
+ *
+ * Note that ALL uses of IPv6 addresses and ports are in HOST BYTE ORDER.
+ * This simplifies their use in unit tests and applications.
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
@@ -136,7 +140,8 @@ extern int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_por
 
 /**
  * Create a provider-side stream socket with a specified connection backlog.
- * The port is in host byte order.
+ * The port is in host byte order. If the port is zero, an unused ephemeral
+ * port is allocated; its value can be determined using the nearend function.
  * @param port is the port number at which connection requests will rendezvous.
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
@@ -146,7 +151,8 @@ extern int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backl
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
- * The port is in host byte order.
+ * The port is in host byte order. If the port is zero, an unused ephemeral
+ * port is allocated; its value can be determined using the nearend function.
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
@@ -174,7 +180,8 @@ extern int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_
 
 /**
  * Request a peer datagram socket. The port is in host byte order.
- * @param port is the port number.
+ * @param port is the port number. If the port is zero, an unused ephemeral
+ * port is allocated; its value can be determined using the nearend function.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 extern int diminuto_ipc6_datagram_peer(diminuto_port_t port);

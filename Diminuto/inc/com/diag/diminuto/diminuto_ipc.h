@@ -5,13 +5,16 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * This provides a slightly more abstract interface to stream and datagram
- * IPV4 sockets. It was ported from the Desperado library.
+ * IPv4 sockets. It was ported from the Desperado library.
+ *
+ * Note that ALL uses of IPv4 addresses and ports are in HOST BYTE ORDER.
+ * This simplifies their use in unit tests and applications.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -87,6 +90,8 @@ extern int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port
 
 /**
  * Create a provider-side stream socket with a specified connection backlog.
+ * The port is in host byte order. If the port is zero, an unused ephemeral
+ * port is allocated; its value can be determined using the nearend function.
  * @param port is the port number at which connection requests will rendezvous.
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
@@ -96,8 +101,9 @@ extern int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlo
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
- * @param port is the port number at which connection requests will rendezvous
- * in host byte order.
+ * The port is in host byte order. If the port is zero, an unused ephemeral port
+ * is allocated; its value can be determined using the nearend function.
+ * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 extern int diminuto_ipc_stream_provider(diminuto_port_t port);
@@ -123,8 +129,10 @@ extern int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminu
 extern int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port);
 
 /**
- * Request a peer datagram socket.
- * @param port is the port number in host byte order.
+ * Request a peer datagram socket. The port is in host byte order. If the port
+ * is zero, an unused ephemeral port is allocated; its value can be determined
+ * using the nearend function.
+ * @param port is the port number.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 extern int diminuto_ipc_datagram_peer(diminuto_port_t port);

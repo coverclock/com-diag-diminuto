@@ -11,7 +11,6 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
-#include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -37,9 +36,6 @@ static const diminuto_ipv4_t LOCALHOST4 = ((((((127 << 8) + 0) << 8) + 0) << 8) 
 static const diminuto_ipv6_t TEST6 = TEST_INIT;
 
 static const size_t LIMIT = 256;
-static const diminuto_port_t PORT = 0xfff0;
-static const diminuto_port_t PORT1 = 65535;
-static const diminuto_port_t PORT2 = 65534;
 static const size_t TOTAL = 1024 * 1024 * 100;
 
 int main(void)
@@ -478,6 +474,9 @@ int main(void)
         EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
+
         STATUS();
     }
 
@@ -508,7 +507,7 @@ int main(void)
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT((diminuto_ipc6_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
@@ -528,7 +527,7 @@ int main(void)
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);
         diminuto_timer_oneshot(2000000ULL);
         before = diminuto_time_elapsed();
@@ -544,16 +543,18 @@ int main(void)
         STATUS();
     }
 
-#if 0
     {
         diminuto_ipv6_t address;
         diminuto_port_t port;
-        int rendezvous;
+        diminuto_port_t rendezvous = TEST_PORT;
+        int service;
         pid_t pid;
 
         TEST();
 
-        EXPECT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
+        EXPECT((service = diminuto_ipc6_stream_provider(0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        EXPECT(rendezvous != TEST_PORT);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -562,36 +563,37 @@ int main(void)
             int producer;
             int status;
 
-            address = 0;
-            port = (diminuto_port_t)-1;
-            EXPECT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
-            EXPECT(address == LOCALHOST);
-            EXPECT(port != (diminuto_port_t)-1);
-            EXPECT(port != PORT);
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT((producer = diminuto_ipc6_stream_accept(service, &address, &port)) >= 0);
+            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
 
-            address = 0;
-            port = -(diminuto_port_t)1;
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
             EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
-            EXPECT(port == PORT);
+            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port == rendezvous);
 
-            address = 0;
-            port = (diminuto_port_t)-1;
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
             EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
-            EXPECT(port != (diminuto_port_t)-1);
-            EXPECT(port != PORT);
+            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
 
             diminuto_delay(hertz / 1000, !0);
 
-    		EXPECT(diminuto_ipc6_close(producer) >= 0);
-    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
+            EXPECT(diminuto_ipc6_close(producer) >= 0);
+            EXPECT(diminuto_ipc6_close(service) >= 0);
 
-    		/*
-    		 * If you don't wait for the child to exit, it may not yet have
-    		 * closed its end of the socket thereby releasing the bound IP
-    		 * address by the time the next unit test begins.
-    		 */
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
             EXPECT(WIFEXITED(status));
@@ -601,83 +603,14 @@ int main(void)
 
             int consumer;
 
-    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
-
+            EXPECT(diminuto_ipc6_close(service) >= 0);
             diminuto_delay(hertz / 1000, !0);
-
-            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
-
+            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
             diminuto_delay(hertz / 1000, !0);
-
-    		EXPECT(diminuto_ipc6_close(consumer) >= 0);
+            EXPECT(diminuto_ipc6_close(consumer) >= 0);
 
             exit(0);
 
-        }
-
-        STATUS();
-    }
-
-    {
-        diminuto_ipv6_t address;
-        diminuto_port_t port;
-        int rendezvous;
-        pid_t pid;
-
-        TEST();
-
-        EXPECT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
-
-        EXPECT((pid = fork()) >= 0);
-
-        if (pid == 0) {
-
-            int producer;
-
-            EXPECT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
-
-            diminuto_delay(hertz / 1000, !0);
-
-    		EXPECT(diminuto_ipc6_close(producer) >= 0);
-    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
-
-            exit(0);
-
-        } else {
-
-            int consumer;
-            int status;
-
-    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
-
-            diminuto_delay(hertz / 1000, !0);
-
-            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
-
-            address = 0;
-            port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipc6_farend(consumer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
-            EXPECT(port == PORT);
-
-            address = 0;
-            port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipc6_nearend(consumer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
-            EXPECT(port != (diminuto_port_t)-1);
-            EXPECT(port != PORT);
-
-    		EXPECT(diminuto_ipc6_close(consumer) >= 0);
-
-    		/*
-    		 * If you don't wait for the child to exit, it may not yet have
-    		 * closed its end of the socket thereby releasing the bound IP
-    		 * address by the time the next unit test begins.
-    		 */
-
-            EXPECT(waitpid(pid, &status, 0) == pid);
-            EXPECT(WIFEXITED(status));
-            EXPECT(WEXITSTATUS(status) == 0);
         }
 
         STATUS();
@@ -693,18 +626,20 @@ int main(void)
      * world can be. Real world applications should use select(2) or its
      * equivalent to determine if output buffer space is available in the
      * kernel. See diminuto_mux.c and its unit test unittest-mux.c which
-     * uses select(2) to multiplex the diminuto_ipc feature in just this way.
+     * uses select(2) to multiplex the diminuto_ipc6 feature in just this way.
      */
 
     {
         diminuto_ipv6_t address;
         diminuto_port_t port;
-        int rendezvous;
+        diminuto_port_t rendezvous;
+        int service;
         pid_t pid;
 
         TEST();
 
-        ASSERT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
+        ASSERT((service = diminuto_ipc6_stream_provider(0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -725,7 +660,7 @@ int main(void)
             size_t totalreceived;
             int status;
 
-            ASSERT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc6_stream_accept(service, &address, &port)) >= 0);
 
             here = output;
             used = sizeof(output);
@@ -740,64 +675,64 @@ int main(void)
 
             datum = 0;
             do {
-            	output[datum] = datum;
+                output[datum] = datum;
             } while ((++datum) > 0);
 
-			memset(input, 0, sizeof(input));
+            memset(input, 0, sizeof(input));
 
             do {
 
-            	if (totalsent < TOTAL) {
+                if (totalsent < TOTAL) {
 
-            		if (used > (TOTAL - totalsent)) {
-            			used = TOTAL - totalsent;
-            		}
+                    if (used > (TOTAL - totalsent)) {
+                        used = TOTAL - totalsent;
+                    }
 
-					ASSERT((sent = diminuto_ipc6_stream_write(producer, here, 1, used)) > 0);
-					ASSERT(sent <= used);
+                    ASSERT((sent = diminuto_ipc6_stream_write(producer, here, 1, used)) > 0);
+                    ASSERT(sent <= used);
 
-		            totalsent += sent;
-		            DIMINUTO_LOG_DEBUG("producer sent %d %u\n", sent, totalsent);
+                    totalsent += sent;
+                    DIMINUTO_LOG_DEBUG("producer sent %d %u\n", sent, totalsent);
 
-					here += sent;
-					used -= sent;
+                    here += sent;
+                    used -= sent;
 
-					if (used == 0) {
-						here = output;
-						used = sizeof(output);
-					}
+                    if (used == 0) {
+                        here = output;
+                        used = sizeof(output);
+                    }
 
-            	}
+                }
 
-            	current = there;
+                current = there;
 
-            	if (available > (TOTAL - totalreceived)) {
-            		available = TOTAL - totalreceived;
-            	}
+                if (available > (TOTAL - totalreceived)) {
+                    available = TOTAL - totalreceived;
+                }
 
-				ASSERT((received = diminuto_ipc6_stream_read(producer, there, 1, available)) > 0);
-				ASSERT(received <= available);
+                ASSERT((received = diminuto_ipc6_stream_read(producer, there, 1, available)) > 0);
+                ASSERT(received <= available);
 
-				totalreceived += received;
-				DIMINUTO_LOG_DEBUG("producer received %d %u\n", received, totalreceived);
+                totalreceived += received;
+                DIMINUTO_LOG_DEBUG("producer received %d %u\n", received, totalreceived);
 
-				there += received;
-				available -= received;
+                there += received;
+                available -= received;
 
-				while (current < there) {
-					ASSERT(*(current++) == (datum++));
-				}
+                while (current < there) {
+                    ASSERT(*(current++) == (datum++));
+                }
 
-				if (available == 0) {
-					there = input;
-					available = sizeof(input);
-					memset(input, 0, sizeof(input));
-				}
+                if (available == 0) {
+                    there = input;
+                    available = sizeof(input);
+                    memset(input, 0, sizeof(input));
+                }
 
             } while (totalreceived < TOTAL);
 
-    		ASSERT(diminuto_ipc6_close(producer) >= 0);
-    		ASSERT(diminuto_ipc6_close(rendezvous) >= 0);
+            ASSERT(diminuto_ipc6_close(producer) >= 0);
+            ASSERT(diminuto_ipc6_close(service) >= 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
             EXPECT(WIFEXITED(status));
@@ -812,47 +747,46 @@ int main(void)
             size_t totalsent;
             size_t totalreceived;
 
-    		ASSERT(diminuto_ipc6_close(rendezvous) >= 0);
+            ASSERT(diminuto_ipc6_close(service) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
 
             totalreceived = 0;
             totalsent = 0;
 
             while (!0) {
 
-				ASSERT((received = diminuto_ipc6_stream_read(consumer, buffer, 1, sizeof(buffer))) >= 0);
-				ASSERT(received <= sizeof(buffer));
+                ASSERT((received = diminuto_ipc6_stream_read(consumer, buffer, 1, sizeof(buffer))) >= 0);
+                ASSERT(received <= sizeof(buffer));
 
-				totalreceived += received;
-				DIMINUTO_LOG_DEBUG("consumer received %d %u\n", received, totalreceived);
+                totalreceived += received;
+                DIMINUTO_LOG_DEBUG("consumer received %d %u\n", received, totalreceived);
 
-				if (received == 0) {
-					break;
-				}
+                if (received == 0) {
+                    break;
+                }
 
-				sent = 0;
-				while (sent < received) {
-					ASSERT((sent = diminuto_ipc6_stream_write(consumer,  buffer + sent, 1, received - sent)) > 0);
-					ASSERT(sent <= received);
+                sent = 0;
+                while (sent < received) {
+                    ASSERT((sent = diminuto_ipc6_stream_write(consumer,  buffer + sent, 1, received - sent)) > 0);
+                    ASSERT(sent <= received);
 
-					totalsent += sent;
-					DIMINUTO_LOG_DEBUG("consumer sent %d %u\n", sent, totalsent);
+                    totalsent += sent;
+                    DIMINUTO_LOG_DEBUG("consumer sent %d %u\n", sent, totalsent);
 
-					received -= sent;
-				}
-			}
+                    received -= sent;
+                }
+            }
 
-    		ASSERT(diminuto_ipc6_close(consumer) >= 0);
+            ASSERT(diminuto_ipc6_close(consumer) >= 0);
 
-    		exit(0);
+            exit(0);
         }
 
         STATUS();
     }
-#endif
 
     EXIT();
 }

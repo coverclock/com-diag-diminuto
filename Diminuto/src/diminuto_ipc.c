@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -23,10 +23,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#if 0
-#   include "com/diag/diminuto/diminuto_dump.h"
-#   include "com/diag/diminuto/diminuto_log.h"
-#endif
 
 /*******************************************************************************
  * HELPERS

@@ -6,8 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * WORK IN PROGRESS!
  */
 
 #include "com/diag/diminuto/diminuto_ipc6.h"
@@ -24,10 +22,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#if 0
-#   include "com/diag/diminuto/diminuto_dump.h"
-#   include "com/diag/diminuto/diminuto_log.h"
-#endif
 
 /*******************************************************************************
  * GLOBALS
