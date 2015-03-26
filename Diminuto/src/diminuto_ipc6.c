@@ -24,29 +24,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#if !0
+#if 0
 #   include "com/diag/diminuto/diminuto_dump.h"
 #   include "com/diag/diminuto/diminuto_log.h"
 #endif
-
-/*******************************************************************************
- * TYPES
- ******************************************************************************/
-
-/*
- * Remarkably, the standard sockaddr structure doesn't reserve enough space to
- * actually hold an entire IPv6 in6_addr field; it's only fourteen bytes, where
- * as an IPv6 address is 16 bytes (and even that's not enough, since there are
- * other fields in the sockaddr_in6 structure). So we use a larger one of our
- * own devising, carefully mimicing the legacy structure's format. Other than
- * the initial family field that indicates what kind of address family structure
- * this really is (IPv6, IPv4, UNIX, etc.), the rest of this structure is just
- * just buffer space.
- */
-typedef struct DiminutoIpc6SocketAddress {
-    unsigned short int sa_family; /* POSIX requires an unsigned short int. */
-    char sa_data[256 - sizeof(unsigned short int)];
-} diminuto_ipc6_sockaddr_t;
 
 /*******************************************************************************
  * GLOBALS
@@ -55,6 +36,8 @@ typedef struct DiminutoIpc6SocketAddress {
 const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK = { 0, 0, 0, 0, 0, 0, 0, 1 };
+
+const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1) };
 
 /*******************************************************************************
  * HELPERS
@@ -314,6 +297,42 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
  * STREAM SOCKETS
  ******************************************************************************/
 
+int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog)
+{
+    struct sockaddr_in6 sa = { 0 };
+    socklen_t length = sizeof(sa);
+    int fd;
+
+    if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
+
+    sa.sin6_family = AF_INET6;
+    memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    sa.sin6_port = htons(port);
+
+    if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc6_provider_backlog: socket");
+    } else if (diminuto_ipc6_set_reuseaddress(fd, !0) != fd) {
+        diminuto_perror("diminuto_ipc6_provider_backlog: diminuto_ipc6_set_reuseadddress");
+        diminuto_ipc6_close(fd);
+        fd = -2;
+    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc6_provider_backlog: bind");
+        diminuto_ipc6_close(fd);
+        fd = -3;
+    } else if (listen(fd, backlog) < 0) {
+        diminuto_perror("diminuto_ipc6_provider_backlog: listen");
+        diminuto_ipc6_close(fd);
+        fd = -4;
+    }
+
+    return fd;
+}
+
+int diminuto_ipc6_stream_provider(diminuto_port_t port)
+{
+    return diminuto_ipc6_stream_provider_backlog(port, SOMAXCONN);
+}
+
 int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     diminuto_ipc6_sockaddr_t sa = { 0 };
@@ -342,7 +361,7 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
     memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
     sin6.sin6_port = htons(port);
 
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc6_consumer: socket");
     } else if ((rc = connect(fd, (struct sockaddr *)&sin6, length)) < 0) {
         diminuto_perror("diminuto_ipc6_consumer: connect");
@@ -356,6 +375,31 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
 /*******************************************************************************
  * DATAGRAM SOCKETS
  ******************************************************************************/
+
+int diminuto_ipc6_datagram_peer(diminuto_port_t port)
+{
+    struct sockaddr_in6 sa = { 0 };
+    socklen_t length = sizeof(sa);
+    int fd;
+
+    sa.sin6_family = AF_INET6;
+    memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    sa.sin6_port = htons(port);
+
+    if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc6_peer: socket");
+    } else if (diminuto_ipc6_set_reuseaddress(fd, !0) != fd) {
+        diminuto_perror("diminuto_ipc6_peer: diminuto_ipc6_set_reuseaddress");
+        diminuto_ipc6_close(fd);
+        fd = -2;
+    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc6_peer: bind");
+        diminuto_ipc6_close(fd);
+        fd = -3;
+    }
+
+    return fd;
+}
 
 ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags)
 {
@@ -386,8 +430,6 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
     hton6(&address);
     memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
     sin6.sin6_port = htons(port);
-diminuto_dump(stderr, sin6.sin6_addr.s6_addr, sizeof(sin6.sin6_addr.s6_addr));
-diminuto_dump(stderr, &sin6.sin6_port, sizeof(sin6.sin6_port));
 
     if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sin6, sizeof(sin6))) == 0) {
         /* Do nothing: "orderly shutdown" (not sure what that means in this context). */

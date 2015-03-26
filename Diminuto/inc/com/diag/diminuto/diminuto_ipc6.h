@@ -16,14 +16,39 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /**
- * This is the Diminuto binary IPv6 address in host byte order for "::".
+ * Remarkably, the standard sockaddr structure doesn't reserve enough space to
+ * actually hold an entire IPv6 in6_addr field; it's only fourteen bytes, where
+ * as an IPv6 address is 16 bytes (and even that's not enough, since there are
+ * other fields in the sockaddr_in6 structure). So we use a larger one of our
+ * own devising, carefully mimicing the legacy structure's format. Other than
+ * the initial family field that indicates what kind of address family structure
+ * this really is (IPv6, IPv4, UNIX, etc.), the rest of this structure is just
+ * just buffer space. This isn't really intended to be part of the public API,
+ * and in fact isn't used externally, but is exposed for unit testing.
+ */
+typedef struct DiminutoIpc6SocketAddress {
+    unsigned short int sa_family; /* POSIX requires an unsigned short int. */
+    char sa_data[256 - sizeof(unsigned short int)]; /* glibc assumes short alignment. */
+} diminuto_ipc6_sockaddr_t;
+
+/**
+ * This is the Diminuto binary IPv6 address in host byte order for "::", the
+ * IPv6 address of all zeros.
  */
 extern const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED;
 
 /**
- * This is the Diminuto binary IPv6 address in host byte order for "::1".
+ * This is the Diminuto binary IPv6 address in host byte order for "::1", the
+ * IPv6 loopback address.
  */
 extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK;
+
+/**
+ * This is the Diminuto binary IPv6 address in host byte order for
+ * "::ffff:127.0.0.1", which is the IPv4 loopback address encapsulated in an
+ * IPv6 address.
+ */
+extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
 
 /**
  * If an IPv6 address in host byte order encapsulates an IPv4 address, extract
@@ -116,9 +141,7 @@ extern int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_por
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog) {
-    return diminuto_ipc_stream_provider_backlog(port, backlog);
-}
+extern int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog);
 
 
 /**
@@ -127,9 +150,7 @@ static inline int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, in
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_stream_provider(diminuto_port_t port) {
-    return diminuto_ipc_stream_provider(port);
-}
+extern int diminuto_ipc6_stream_provider(diminuto_port_t port);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -156,9 +177,7 @@ extern int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_
  * @param port is the port number.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port) {
-    return diminuto_ipc_datagram_peer(port);
-}
+extern int diminuto_ipc6_datagram_peer(diminuto_port_t port);
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.

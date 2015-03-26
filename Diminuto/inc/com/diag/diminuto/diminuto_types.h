@@ -32,12 +32,6 @@
 typedef int64_t diminuto_ticks_t;
 
 /**
- * This type describes the integer declaration of a variable containing a
- * binary IP port number.
- */
-typedef uint16_t diminuto_port_t;
-
-/**
  * This type describes the integer declaration of a variable containing an
  * unsigned integer returned by the diminuto_number_unsigned() function.
  */
@@ -83,5 +77,11 @@ typedef uint16_t diminuto_ipv6_base_t;
  * functions.
  */
 typedef struct { diminuto_ipv6_base_t u16[128 / 8 / sizeof(diminuto_ipv6_base_t)]; } diminuto_ipv6_t;
+
+/**
+ * This type describes the integer declaration of a variable containing a
+ * binary IP port number.
+ */
+typedef uint16_t diminuto_port_t;
 
 #endif

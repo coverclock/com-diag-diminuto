@@ -27,10 +27,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define TEST_PORT 0xDEAD
+#define TEST_WORD 0xDEADC0DE
+#define TEST_INIT { 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD }
+
 static const diminuto_ipv6_t SERVER64 = { 0, 0, 0, 0, 0, 0xffff, ((192 << 8) + 168), ((1 << 8) + 222) };
 static const diminuto_ipv4_t SERVER4 = ((((((192 << 8) + 168) << 8) + 1) << 8) + 222);
 static const diminuto_ipv4_t LOCALHOST4 = ((((((127 << 8) + 0) << 8) + 0) << 8) + 1);
-static const diminuto_ipv6_t LOCALHOST64 = { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1) };
+static const diminuto_ipv6_t TEST6 = TEST_INIT;
+
 static const size_t LIMIT = 256;
 static const diminuto_port_t PORT = 0xfff0;
 static const diminuto_port_t PORT1 = 65535;
@@ -46,29 +51,39 @@ int main(void)
     hertz = diminuto_frequency();
 
     {
+        diminuto_ipc6_sockaddr_t sa;
+
+        ASSERT(sizeof(sa) == 256);
+        ASSERT(sizeof(sa.sa_family) == sizeof(unsigned short int));
+        ASSERT(sizeof(sa.sa_data) == (sizeof(sa) - sizeof(unsigned short int)));
+    }
+
+    {
         diminuto_ipv4_t address4;
 
         TEST();
 
-        address4 = 0xa5a5a5a5;
+        address4 = TEST_WORD;
         ASSERT(!diminuto_ipc6_ipv62ipv4(DIMINUTO_IPC6_LOOPBACK, &address4));
-        ASSERT(address4 == 0xa5a5a5a5);
+        ASSERT(address4 == TEST_WORD);
+
+        address4 = TEST_WORD;
+        ASSERT(diminuto_ipc6_ipv62ipv4(DIMINUTO_IPC6_LOOPBACK4, &address4));
+        ASSERT(address4 == LOCALHOST4);
 
         STATUS();
     }
 
     {
-        diminuto_ipv6_t address6;
-        diminuto_ipv4_t address4;
+        diminuto_ipv6_t address6 = TEST_INIT;
+        diminuto_ipv4_t address4 = TEST_WORD;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
-        memset(&address6, 0x5a, sizeof(address6));
         diminuto_ipc6_ipv42ipv6(SERVER4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
 
-        address4 = 0xa5a5a5a5;
         ASSERT(diminuto_ipc6_ipv62ipv4(address6, &address4));
         ASSERT(address4 == SERVER4);
 
@@ -76,16 +91,14 @@ int main(void)
     }
 
     {
-        diminuto_ipv4_t address4;
-        diminuto_ipv6_t address6;
+        diminuto_ipv4_t address4 = TEST_WORD;
+        diminuto_ipv6_t address6 = TEST_INIT;
 
         TEST();
 
-        address4 = 0xa5a5a5a5;
         ASSERT(diminuto_ipc6_ipv62ipv4(SERVER64, &address4));
         ASSERT(address4 == SERVER4);
 
-        memset(&address6, 0x5a, sizeof(address6));
         diminuto_ipc6_ipv42ipv6(address4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
 
@@ -122,7 +135,7 @@ int main(void)
          * IPv6 local host address, or whether we get back a IPv4 local host
          * address encapsulated in an IPv6 address. Either is okay.
          */
-        EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &LOCALHOST64, sizeof(address6)) == 0));
+        EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK4, sizeof(address6)) == 0));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
 
@@ -301,38 +314,39 @@ int main(void)
 
     {
         int fd;
-        diminuto_ipv6_t address6 = { 0 };
-        diminuto_port_t port = 0;
+        diminuto_ipv6_t address6 = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
-        EXPECT(memcmp(&address6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address6)) != 0);
-        EXPECT(port != 0);
+        EXPECT(memcmp(&address6, &TEST6, sizeof(address6)) != 0);
+        EXPECT(port != TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\"\n", DIMINUTO_LOG_HERE, buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %u\n", DIMINUTO_LOG_HERE, buffer, port);
 
         STATUS();
     }
 
     {
         int fd;
-        diminuto_ipv6_t address6 = { 0 };
-        diminuto_port_t port = 0;
+        diminuto_ipv6_t address6 = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
         EXPECT((fd = diminuto_ipc6_stream_provider(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
-        EXPECT(memcmp(&address6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address6)) != 0);
+        EXPECT(memcmp(&address6, &TEST6, sizeof(address6)) != 0);
+        EXPECT(port != TEST_PORT);
         EXPECT(port != 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\"\n", DIMINUTO_LOG_HERE, buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %u\n", DIMINUTO_LOG_HERE, buffer, port);
 
         STATUS();
     }
@@ -366,45 +380,48 @@ int main(void)
         STATUS();
     }
 
-#if 0
     {
         int fd;
+        const char MSG[] = "Chip Overclock";
+        char buffer[sizeof(MSG) * 2];
+        diminuto_ipv6_t server;
+        diminuto_port_t rendezvous = TEST_PORT;
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), diminuto_ipc6_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
+        server = diminuto_ipc6_address("localhost");
+        EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
+        EXPECT(rendezvous != TEST_PORT);
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::1"), diminuto_ipc6_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
+        /* This only works because the kernel buffers socket data. */
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
+        EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
+        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
+        EXPECT(strcmp(buffer, MSG) == 0);
+        ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
+        EXPECT(port == rendezvous);
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
-
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.google.com"), diminuto_ipc6_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
-#endif
 
     {
         int fd;
         const char MSG[] = "Chip Overclock";
         char buffer[sizeof(MSG) * 2];
-        diminuto_ipv6_t server = { 0 };
-        diminuto_port_t rendezvous = 0;
-        diminuto_ipv6_t address = { 0 };
-        diminuto_port_t port = 0;
+        diminuto_ipv6_t server;
+        diminuto_port_t rendezvous = TEST_PORT;
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
 
         TEST();
 
-        server = diminuto_ipc6_address("localhost");
-        //server = diminuto_ipc6_address("::1");
-        //server = diminuto_ipc6_address("::ffff:127.0.0.1");
+        server = diminuto_ipc6_address("::1");
         EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
@@ -415,7 +432,6 @@ int main(void)
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
         EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
-        EXPECT(memcmp(&address, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address)) != 0);
         ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
         EXPECT(port == rendezvous);
 
@@ -424,60 +440,43 @@ int main(void)
         STATUS();
     }
 
-#if 0
     {
-        int fd1;
-        int fd2;
-        const char MSG1[] = "Chip Overclock";
-        const char MSG2[] = "Digital Aggregates Corporation";
-        char buffer[64];
-        diminuto_ipv6_t address = { 0 };
-        diminuto_port_t port = 0;
-        diminuto_ipv6_t address2 = { 0 };
+        int fd;
+        const char MSG[] = "Chip Overclock";
+        char buffer[sizeof(MSG) * 2];
+        diminuto_ipv6_t server;
+        diminuto_port_t rendezvous = TEST_PORT;
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
 
         TEST();
 
-        address2 = diminuto_ipc6_address("::1");
-        ASSERT(memcmp(&address2, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address2)) != 0);
-
-        EXPECT((fd1 = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
-        EXPECT((fd2 = diminuto_ipc6_datagram_peer(PORT2)) >= 0);
+        server = diminuto_ipc6_address("::ffff:127.0.0.1");
+        EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
+        EXPECT(rendezvous != 0);
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipc6_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc6_address("localhost"), PORT2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipc6_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
-        EXPECT(memcmp(&address, &address2, sizeof(address)) == 0);
-        EXPECT(port == PORT1);
-        EXPECT(strcmp(buffer, MSG1) == 0);
+        EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
+        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
+        EXPECT(strcmp(buffer, MSG) == 0);
+        ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
+        EXPECT(port == rendezvous);
 
-        EXPECT((diminuto_ipc6_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc6_address("localhost"), PORT1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipc6_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
-        EXPECT(memcmp(&address, &address2, sizeof(address)) == 0);
-        EXPECT(port == PORT2);
-        EXPECT(strcmp(buffer, MSG2) == 0);
-
-        EXPECT(diminuto_ipc6_close(fd1) >= 0);
-        EXPECT(diminuto_ipc6_close(fd2) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
 
     {
         int fd;
-        char buffer[1];
-        diminuto_ipv4_t address = 0x12345678;
-        diminuto_port_t port = 0x9abc;
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
-        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
-        EXPECT((diminuto_ipc_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
-        EXPECT(errno == EAGAIN);
-        EXPECT(address == 0x12345678);
-        EXPECT(port == 0x9abc);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
@@ -485,17 +484,18 @@ int main(void)
     {
         int fd;
         char buffer[1];
-        diminuto_ipv4_t address = 0x12345678;
-        diminuto_port_t port = 0x9abc;
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
-        EXPECT((diminuto_ipc_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc6_set_nonblocking(fd, !0) >= 0);
+        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
         EXPECT(errno == EAGAIN);
-        EXPECT(address == 0x12345678);
-        EXPECT(port == 0x9abc);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
+        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(port == TEST_PORT);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
@@ -503,36 +503,57 @@ int main(void)
     {
         int fd;
         char buffer[1];
-        diminuto_ipv4_t address = 0x12345678;
-        diminuto_port_t port = 0x9abc;
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
+
+        TEST();
+
+        EXPECT((fd = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
+        EXPECT((diminuto_ipc6_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
+        EXPECT(errno == EAGAIN);
+        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(port == TEST_PORT);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
+
+        STATUS();
+    }
+
+    {
+        int fd;
+        char buffer[1];
+        diminuto_ipv6_t address = TEST_INIT;
+        diminuto_port_t port = TEST_PORT;
         diminuto_ticks_t before;
         diminuto_ticks_t after;
 
-        EXPECT((fd = diminuto_ipc_datagram_peer(PORT1)) >= 0);
+        TEST();
+
+        EXPECT((fd = diminuto_ipc6_datagram_peer(PORT1)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);
         diminuto_timer_oneshot(2000000ULL);
         before = diminuto_time_elapsed();
-        EXPECT((diminuto_ipc_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
         after = diminuto_time_elapsed();
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
         EXPECT(errno == EINTR);
-        EXPECT(address == 0x12345678);
-        EXPECT(port == 0x9abc);
-        EXPECT(diminuto_ipc_close(fd) >= 0);
+        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(port == TEST_PORT);
+        EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();
     }
 
+#if 0
     {
-        diminuto_ipv4_t address;
+        diminuto_ipv6_t address;
         diminuto_port_t port;
         int rendezvous;
         pid_t pid;
 
         TEST();
 
-        EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+        EXPECT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -543,28 +564,28 @@ int main(void)
 
             address = 0;
             port = (diminuto_port_t)-1;
-            EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
             address = 0;
             port = -(diminuto_port_t)1;
-            EXPECT(diminuto_ipc_nearend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port == PORT);
 
             address = 0;
             port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipc_farend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
             diminuto_delay(hertz / 1000, !0);
 
-    		EXPECT(diminuto_ipc_close(producer) >= 0);
-    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+    		EXPECT(diminuto_ipc6_close(producer) >= 0);
+    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
 
     		/*
     		 * If you don't wait for the child to exit, it may not yet have
@@ -580,15 +601,15 @@ int main(void)
 
             int consumer;
 
-    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-            EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-    		EXPECT(diminuto_ipc_close(consumer) >= 0);
+    		EXPECT(diminuto_ipc6_close(consumer) >= 0);
 
             exit(0);
 
@@ -598,14 +619,14 @@ int main(void)
     }
 
     {
-        diminuto_ipv4_t address;
+        diminuto_ipv6_t address;
         diminuto_port_t port;
         int rendezvous;
         pid_t pid;
 
         TEST();
 
-        EXPECT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+        EXPECT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -613,12 +634,12 @@ int main(void)
 
             int producer;
 
-            EXPECT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-    		EXPECT(diminuto_ipc_close(producer) >= 0);
-    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+    		EXPECT(diminuto_ipc6_close(producer) >= 0);
+    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
 
             exit(0);
 
@@ -627,26 +648,26 @@ int main(void)
             int consumer;
             int status;
 
-    		EXPECT(diminuto_ipc_close(rendezvous) >= 0);
+    		EXPECT(diminuto_ipc6_close(rendezvous) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-            EXPECT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
 
             address = 0;
             port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipc_farend(consumer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_farend(consumer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port == PORT);
 
             address = 0;
             port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipc_nearend(consumer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_nearend(consumer, &address, &port) >= 0);
             EXPECT(address == LOCALHOST);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != PORT);
 
-    		EXPECT(diminuto_ipc_close(consumer) >= 0);
+    		EXPECT(diminuto_ipc6_close(consumer) >= 0);
 
     		/*
     		 * If you don't wait for the child to exit, it may not yet have
@@ -676,14 +697,14 @@ int main(void)
      */
 
     {
-        diminuto_ipv4_t address;
+        diminuto_ipv6_t address;
         diminuto_port_t port;
         int rendezvous;
         pid_t pid;
 
         TEST();
 
-        ASSERT((rendezvous = diminuto_ipc_stream_provider(PORT)) >= 0);
+        ASSERT((rendezvous = diminuto_ipc6_stream_provider(PORT)) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -704,7 +725,7 @@ int main(void)
             size_t totalreceived;
             int status;
 
-            ASSERT((producer = diminuto_ipc_stream_accept(rendezvous, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc6_stream_accept(rendezvous, &address, &port)) >= 0);
 
             here = output;
             used = sizeof(output);
@@ -732,7 +753,7 @@ int main(void)
             			used = TOTAL - totalsent;
             		}
 
-					ASSERT((sent = diminuto_ipc_stream_write(producer, here, 1, used)) > 0);
+					ASSERT((sent = diminuto_ipc6_stream_write(producer, here, 1, used)) > 0);
 					ASSERT(sent <= used);
 
 		            totalsent += sent;
@@ -754,7 +775,7 @@ int main(void)
             		available = TOTAL - totalreceived;
             	}
 
-				ASSERT((received = diminuto_ipc_stream_read(producer, there, 1, available)) > 0);
+				ASSERT((received = diminuto_ipc6_stream_read(producer, there, 1, available)) > 0);
 				ASSERT(received <= available);
 
 				totalreceived += received;
@@ -775,8 +796,8 @@ int main(void)
 
             } while (totalreceived < TOTAL);
 
-    		ASSERT(diminuto_ipc_close(producer) >= 0);
-    		ASSERT(diminuto_ipc_close(rendezvous) >= 0);
+    		ASSERT(diminuto_ipc6_close(producer) >= 0);
+    		ASSERT(diminuto_ipc6_close(rendezvous) >= 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
             EXPECT(WIFEXITED(status));
@@ -791,18 +812,18 @@ int main(void)
             size_t totalsent;
             size_t totalreceived;
 
-    		ASSERT(diminuto_ipc_close(rendezvous) >= 0);
+    		ASSERT(diminuto_ipc6_close(rendezvous) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
-            ASSERT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), PORT)) >= 0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), PORT)) >= 0);
 
             totalreceived = 0;
             totalsent = 0;
 
             while (!0) {
 
-				ASSERT((received = diminuto_ipc_stream_read(consumer, buffer, 1, sizeof(buffer))) >= 0);
+				ASSERT((received = diminuto_ipc6_stream_read(consumer, buffer, 1, sizeof(buffer))) >= 0);
 				ASSERT(received <= sizeof(buffer));
 
 				totalreceived += received;
@@ -814,7 +835,7 @@ int main(void)
 
 				sent = 0;
 				while (sent < received) {
-					ASSERT((sent = diminuto_ipc_stream_write(consumer,  buffer + sent, 1, received - sent)) > 0);
+					ASSERT((sent = diminuto_ipc6_stream_write(consumer,  buffer + sent, 1, received - sent)) > 0);
 					ASSERT(sent <= received);
 
 					totalsent += sent;
@@ -824,7 +845,7 @@ int main(void)
 				}
 			}
 
-    		ASSERT(diminuto_ipc_close(consumer) >= 0);
+    		ASSERT(diminuto_ipc6_close(consumer) >= 0);
 
     		exit(0);
         }
@@ -832,5 +853,6 @@ int main(void)
         STATUS();
     }
 #endif
+
     EXIT();
 }
