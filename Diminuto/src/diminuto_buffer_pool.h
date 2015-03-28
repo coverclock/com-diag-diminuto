@@ -87,7 +87,7 @@ static inline size_t buffer_pool_size(diminuto_buffer_meta_t * poolp, size_t ite
  * of the specified total size (including header overhead) from the heap.
  * @param poolp points to the buffer pool structure.
  * @param size is the requested size (including overhead) in bytes.
- * @param fail cause the function to return null with errno set.
+ * @param nomalloc causes the function to return null with errno set.
  * @return a pointer to the new buffer.
  */
 static inline diminuto_buffer_t * buffer_pool_malloc(diminuto_buffer_meta_t * poolp, size_t size, int nomalloc)

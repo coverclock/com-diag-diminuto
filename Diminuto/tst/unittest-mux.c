@@ -213,6 +213,18 @@ static void diminuto_mux_test(diminuto_ticks_t timeout)
     free(mapp);
 }
 
+static uint16_t fletcher8(const void * buffer, size_t length, uint8_t * ap, uint8_t * bp)
+{
+    const uint8_t * pp;
+
+    for (pp = (const uint8_t *)buffer; length > 0; --length) {
+        *ap += *(pp++);
+        *bp += *ap;
+    }
+
+    return (*bp << 8) | *ap;
+}
+
 int main(int argc, char ** argv)
 {
     extern int diminuto_alarm_debug;
@@ -801,8 +813,8 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
-        ASSERT(diminuto_mux_close(&mux, STDIN_FILENO) == 0);
-        ASSERT(diminuto_mux_close(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
 
         STATUS();
     }
@@ -818,10 +830,15 @@ int main(int argc, char ** argv)
     }
 
     {
+        int listener;
         pid_t pid;
         diminuto_port_t rendezvous = 0;
 
         TEST();
+
+        ASSERT((listener = diminuto_ipc_stream_provider(0)) >= 0);
+        ASSERT(diminuto_ipc_nearend(listener, (diminuto_ipv4_t *)0, &rendezvous) == 0);
+        ASSERT(rendezvous > 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -829,7 +846,6 @@ int main(int argc, char ** argv)
 
             /* PRODUCER */
 
-            int listener;
             diminuto_ipv4_t address;
             diminuto_port_t port;
             diminuto_mux_t mux;
@@ -854,17 +870,23 @@ int main(int argc, char ** argv)
             sigset_t mask;
             ssize_t readable;
             double percentage;
+            uint8_t output_a;
+            uint8_t output_b;
+            uint16_t output_8;
+            uint8_t input_a;
+            uint8_t input_b;
+            uint16_t input_8;
+
+            ASSERT(sigemptyset(&mask) == 0);
+            ASSERT(sigaddset(&mask, SIGALRM) == 0);
+            ASSERT(sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0) == 0);
 
             diminuto_mux_init(&mux);
 
-            sigemptyset(&mask);
-            sigaddset(&mask, SIGALRM);
-            sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0);
-
-            ASSERT((listener = diminuto_ipc_stream_provider(0)) >= 0);
-            ASSERT(diminuto_ipc_nearend(listener, (diminuto_ipv4_t *)0, &rendezvous) == 0);
-            ASSERT(rendezvous > 0);
             ASSERT(diminuto_mux_register_accept(&mux, listener) == 0);
+            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
+
+            diminuto_mux_dump(&mux);
 
             while (!0) {
                 if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
@@ -884,11 +906,13 @@ int main(int argc, char ** argv)
 
             ASSERT((fd = diminuto_mux_ready_accept(&mux)) >= 0);
             ASSERT(fd == listener);
+
             ASSERT((producer = diminuto_ipc_stream_accept(fd, &address, &port)) >= 0);
 
             ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
             ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
-            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
+
+            diminuto_mux_dump(&mux);
 
             ASSERT(diminuto_alarm_install(0) == 0);
             ASSERT(diminuto_timer_oneshot(diminuto_frequency()) == 0);
@@ -914,6 +938,8 @@ int main(int argc, char ** argv)
 
             memset(input, 0, sizeof(input));
 
+            input_a = input_b = output_a = output_b = 0;
+
             do {
 
                 while (!0) {
@@ -934,6 +960,8 @@ int main(int argc, char ** argv)
 
                 while ((fd = diminuto_mux_ready_write(&mux)) >= 0) {
 
+                    ASSERT(fd == producer);
+
                     if (totalsent < TOTAL) {
 
                         if (used > (TOTAL - totalsent)) {
@@ -942,6 +970,7 @@ int main(int argc, char ** argv)
 
                         ASSERT((sent = diminuto_ipc_stream_write(fd, here, 1, used)) > 0);
                         ASSERT(sent <= used);
+                        output_8 = fletcher8(here, sent, &output_a, &output_b);
 
                         totalsent += sent;
                         percentage = totalsent;
@@ -969,9 +998,12 @@ int main(int argc, char ** argv)
 
                 while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 
+                    ASSERT(fd == producer);
+
                     ASSERT((readable = diminuto_fd_readable(fd)) > 0);
                     ASSERT((received = diminuto_ipc_stream_read(fd, there, 1, available)) > 0);
                     ASSERT(received <= available);
+                    input_8 = fletcher8(there, received, &input_a, &input_b);
 
                     totalreceived += received;
                     DIMINUTO_LOG_INFORMATION("producer received %10d %10d %10u\n", readable, received, totalreceived);
@@ -994,10 +1026,13 @@ int main(int argc, char ** argv)
             } while (totalreceived < TOTAL);
 
             ASSERT(diminuto_mux_close(&mux, producer) == 0);
-            ASSERT(diminuto_ipc_close(listener) >= 0);
+            ASSERT(diminuto_mux_close(&mux, listener) >= 0);
+
+            ASSERT(input_8 == output_8);
 
             ADVISE(timeouts > 0);
             ADVISE(alarms > 0);
+
 
             EXPECT(waitpid(pid, &status, 0) == pid);
             EXPECT(WIFEXITED(status));
@@ -1021,6 +1056,8 @@ int main(int argc, char ** argv)
             int done;
             ssize_t readable;
             double percentage;
+
+            ASSERT(diminuto_ipc_close(listener) >= 0);
 
             diminuto_mux_init(&mux);
 
@@ -1050,6 +1087,8 @@ int main(int argc, char ** argv)
                 }
 
                 while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
+
+                    ASSERT(fd == consumer);
 
                     ASSERT((readable = diminuto_fd_readable(fd)) >= 0);
                     ASSERT((received = diminuto_ipc_stream_read(fd, buffer, 1, sizeof(buffer))) >= 0);

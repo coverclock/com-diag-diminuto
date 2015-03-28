@@ -14,13 +14,14 @@
  * inspired by similar code I wrote eons ago for SunOS. It provides a registry
  * of sockets used for read(2) and/or write(2) (for data sockets), or accept(2)
  * (for listening sockets). The application calls the provided wait function,
- * then interrogates the registry for those sockets that are ready (that is,
+ * then interrogates the registry for those sockets that are "ready" (that is,
  * on which read(2), write(2), or accept(2) may be performed without blocking).
  * The algorithm round-robins on the ready sockets in each category to prevent
  * starvation.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <signal.h>
 #include <sys/select.h>
 
 /**
@@ -90,17 +91,6 @@ extern void diminuto_mux_init(diminuto_mux_t * muxp);
 extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
 
 /**
- * Unregister a file descriptor from the multiplexer for reading. It is an error
- * to unregister an unregistered file descriptor. Note that although it is
- * common for a socket to be registered for both read and write, registering a
- * socket for both read or write and accept is not supported.
- * @param muxp points to an initialized multiplexer structure.
- * @param fd is an registered file descriptor.
- * @return 0 for success, <0 for error.
- */
-extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
-
-/**
  * Register a file descriptor with the multiplexer for writing. It is an error
  * to register a registered file descriptor. Note that although it is common
  * for a socket to be registered for both read and write, registering a socket
@@ -112,15 +102,6 @@ extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
 
 /**
- * Unregister a file descriptor from the multiplexer for writing. It is an error
- * to unregister an unregistered file descriptor.
- * @param muxp points to an initialized multiplexer structure.
- * @param fd is a registered file descriptor.
- * @return 0 for success, <0 for error.
- */
-extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
-
-/**
  * Register a listening file descriptor with the multiplexer for accepting.
  * It is an error to register a registered file descriptor.
  * @param muxp points to an initialized multiplexer structure.
@@ -128,6 +109,26 @@ extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd);
+
+/**
+ * Unregister a file descriptor from the multiplexer for reading. It is an error
+ * to unregister an unregistered file descriptor. Note that although it is
+ * common for a socket to be registered for both read and write, registering a
+ * socket for both read or write and accept is not supported.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is an registered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
+
+/**
+ * Unregister a file descriptor from the multiplexer for writing. It is an error
+ * to unregister an unregistered file descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is a registered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
 
 /**
  * Unregister a listening file descriptor from the multiplexer for accepting.
@@ -157,8 +158,8 @@ extern int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum);
 extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
 
 /**
- * Wait until one or more registered file descriptors are ready for either
- * reading or writing, a timeout occurs, or a signal interrupt occurs. A
+ * Wait until one or more registered file descriptors are ready for reading,
+ * writing, or accepting, a timeout occurs, or a signal interrupt occurs. A
  * timeout of zero returns immediately, which is useful for polling. A timeout
  * that is negative causes the multiplexer to block indefinitely until either
  * a file descriptor is ready or one of the registered signals is caught.
@@ -171,21 +172,21 @@ extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t timeout);
 /**
  * Return the next registered file descriptor that is ready for reading.
  * @param muxp points to an initialized multiplexer structure.
- * @return 0 for success, <0 for error.
+ * @return a file descriptor ready for reading, or <0 if none.
  */
 extern int diminuto_mux_ready_read(diminuto_mux_t * muxp);
 
 /**
  * Return the next registered file descriptor that is ready for writing.
  * @param muxp points to an initialized multiplexer structure.
- * @return 0 for success, <0 for error.
+ * @return a file descriptor ready for writing, or <0 if none.
  */
 extern int diminuto_mux_ready_write(diminuto_mux_t * muxp);
 
 /**
  * Return the next registered file descriptor that is ready for accepting.
  * @param muxp points to an initialized multiplexer structure.
- * @return 0 for success, <0 for error.
+ * @return a file descriptor ready for accepting, or <0 if none.
  */
 extern int diminuto_mux_ready_accept(diminuto_mux_t * muxp);
 

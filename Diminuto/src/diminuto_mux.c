@@ -12,7 +12,6 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include <signal.h>
 #include <unistd.h>
 #include <errno.h>
 
