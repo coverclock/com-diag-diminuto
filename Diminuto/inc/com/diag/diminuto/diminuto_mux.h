@@ -5,12 +5,19 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * WORK IN PROGRESS
+ * This is a socket multiplexer based on the pselect(2) system call. It is
+ * inspired by similar code I wrote eons ago for SunOS. It provides a registry
+ * of sockets used for read(2) and/or write(2) (for data sockets), or accept(2)
+ * (for listening sockets). The application calls the provided wait function,
+ * then interrogates the registry for those sockets that are ready (that is,
+ * on which read(2), write(2), or accept(2) may be performed without blocking).
+ * The algorithm round-robins on the ready sockets in each category to prevent
+ * starvation.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -22,7 +29,7 @@
  * operates. The inverse of this value is the smallest unit of time in fractions
  * of a second that this feature can express or use. This constant is provided
  * for use in those cases where it is useful to have the value at compile time.
- * However, you chould always prefer to use the inline function when possible.
+ * However, you should always prefer to use the inline function when possible.
  */
 #define COM_DIAG_DIMINUTO_MUX_FREQUENCY (1000000000LL)
 
@@ -35,26 +42,29 @@
  * @return the resolution in ticks per second.
  */
 static inline diminuto_ticks_t diminuto_mux_frequency(void) {
-	return COM_DIAG_DIMINUTO_MUX_FREQUENCY;
+    return COM_DIAG_DIMINUTO_MUX_FREQUENCY;
 }
 
 /**
- * This is the multiplexer read or a write set state.
+ * This is the multiplexer set state.
  */
 typedef struct DiminutoMuxSet {
-	int next;
-	fd_set active;
-	fd_set ready;
+    int min;
+    int max;
+    int next;
+    fd_set active;
+    fd_set ready;
 } diminuto_mux_set_t;
 
 /**
  * This is the multiplexer state.
  */
 typedef struct DiminutoMux {
-	int maxfd;
-	diminuto_mux_set_t read;
-	diminuto_mux_set_t write;
-	sigset_t mask;
+    fd_set effective;
+    diminuto_mux_set_t read;
+    diminuto_mux_set_t write;
+    diminuto_mux_set_t accept;
+    sigset_t mask;
 } diminuto_mux_t;
 
 /**
@@ -69,7 +79,10 @@ typedef struct DiminutoMux {
 extern void diminuto_mux_init(diminuto_mux_t * muxp);
 
 /**
- * Register a file descriptor with the multiplexer for reading.
+ * Register a file descriptor with the multiplexer for reading. It is an error
+ * to register a registered file descriptor. Note that although it is common
+ * for a socket to be registered for both read and write, registering a socket
+ * for both read or write and accept is not supported.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
  * @return 0 for success, <0 for error.
@@ -77,7 +90,10 @@ extern void diminuto_mux_init(diminuto_mux_t * muxp);
 extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
 
 /**
- * Unregister a file descriptor from the multiplexer for reading.
+ * Unregister a file descriptor from the multiplexer for reading. It is an error
+ * to unregister an unregistered file descriptor. Note that although it is
+ * common for a socket to be registered for both read and write, registering a
+ * socket for both read or write and accept is not supported.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an registered file descriptor.
  * @return 0 for success, <0 for error.
@@ -85,7 +101,10 @@ extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
 
 /**
- * Register a file descriptor with the multiplexer for writing.
+ * Register a file descriptor with the multiplexer for writing. It is an error
+ * to register a registered file descriptor. Note that although it is common
+ * for a socket to be registered for both read and write, registering a socket
+ * for both read or write and accept is not supported.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
  * @return 0 for success, <0 for error.
@@ -93,12 +112,31 @@ extern int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
 
 /**
- * Unregister a file descriptor from the multiplexer for writing.
+ * Unregister a file descriptor from the multiplexer for writing. It is an error
+ * to unregister an unregistered file descriptor.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is a registered file descriptor.
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
+
+/**
+ * Register a listening file descriptor with the multiplexer for accepting.
+ * It is an error to register a registered file descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is an unregistered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd);
+
+/**
+ * Unregister a listening file descriptor from the multiplexer for accepting.
+ * It is an error to unregister an unregistered file descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is a registered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd);
 
 /**
  * Add a signal to the mask of those to be atomically unblocked while the
@@ -125,7 +163,7 @@ extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
  * that is negative causes the multiplexer to block indefinitely until either
  * a file descriptor is ready or one of the registered signals is caught.
  * @param muxp points to an initialized multiplexer structure.
- * @param timeout is a timeout period in ticks, 0 for polling, <0 for none.
+ * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
 extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t timeout);
@@ -143,6 +181,13 @@ extern int diminuto_mux_ready_read(diminuto_mux_t * muxp);
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_ready_write(diminuto_mux_t * muxp);
+
+/**
+ * Return the next registered file descriptor that is ready for accepting.
+ * @param muxp points to an initialized multiplexer structure.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_ready_accept(diminuto_mux_t * muxp);
 
 /**
  * Unregister a registered file descriptor and close it. The file descriptor
