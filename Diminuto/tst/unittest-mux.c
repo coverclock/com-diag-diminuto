@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
 static const int MIN_UNINIT = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
 static const int MAX_UNINIT = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. */
 static const int NXT_UNINIT = -1;
@@ -1026,13 +1025,12 @@ int main(int argc, char ** argv)
             } while (totalreceived < TOTAL);
 
             ASSERT(diminuto_mux_close(&mux, producer) == 0);
-            ASSERT(diminuto_mux_close(&mux, listener) >= 0);
+            ASSERT(diminuto_mux_close(&mux, listener) == 0);
 
             ASSERT(input_8 == output_8);
 
             ADVISE(timeouts > 0);
             ADVISE(alarms > 0);
-
 
             EXPECT(waitpid(pid, &status, 0) == pid);
             EXPECT(WIFEXITED(status));

@@ -10,7 +10,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * This is a socket multiplexer based on the pselect(2) system call. It is
+ * This is a socket multiplexer that uses the pselect(2) system call. It is
  * inspired by similar code I wrote eons ago for SunOS. It provides a registry
  * of sockets used for read(2) and/or write(2) (for data sockets), or accept(2)
  * (for listening sockets). The application calls the provided wait function,

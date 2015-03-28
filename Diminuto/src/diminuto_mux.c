@@ -15,15 +15,14 @@
 #include <unistd.h>
 #include <errno.h>
 
-static const int MIN_UNINIT = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
-static const int MAX_UNINIT = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. */
-static const int NXT_UNINIT = -1;
+static const int MOSTPOSITIVE = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
+static const int MOSTNEGATIVE = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. */
 
 static inline void mux_set_init(diminuto_mux_set_t * setp)
 {
     setp->next = -1;
-    setp->min = MIN_UNINIT;
-    setp->max = MAX_UNINIT;
+    setp->min = MOSTPOSITIVE;
+    setp->max = MOSTNEGATIVE;
     FD_ZERO(&setp->active);
     FD_ZERO(&setp->ready);
 }
@@ -98,8 +97,8 @@ static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
         if (effective) { FD_CLR(fd, &muxp->effective); }
-        min = MIN_UNINIT;
-        max = MAX_UNINIT;
+        min = MOSTPOSITIVE;
+        max = MOSTNEGATIVE;
         for (fd = setp->min; fd <= setp->max; ++fd) {
             if (FD_ISSET(fd, &setp->active)) {
                 if (fd < min) { min = fd; }
@@ -109,7 +108,7 @@ static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
         if (setp->next < 0) {
             /* Do nothing. */
         } else if (max < 0) {
-            setp->next = NXT_UNINIT; /* None. */
+            setp->next = -1; /* None. */
         } else if (setp->next < min) {
             setp->next = min; /* Skip. */
         } else if (setp->next > max) {
@@ -282,7 +281,7 @@ static int mux_set_ready(diminuto_mux_set_t * setp)
             setp->next = (setp->next < setp->max) ? (setp->next + 1) : setp->min;
         } while ((fd < 0) && (setp->next != wrapped));
         if (fd < 0) {
-            setp->next = NXT_UNINIT;
+            setp->next = -1;
         }
     }
 
