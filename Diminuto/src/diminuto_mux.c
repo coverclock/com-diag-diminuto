@@ -29,14 +29,15 @@ static inline void mux_set_init(diminuto_mux_set_t * setp)
 
 void diminuto_mux_init(diminuto_mux_t * muxp)
 {
-    FD_ZERO(&muxp->effective);
+    FD_ZERO(&muxp->read_or_accept);
     mux_set_init(&muxp->read);
     mux_set_init(&muxp->write);
     mux_set_init(&muxp->accept);
+    mux_set_init(&muxp->urgent);
     sigprocmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
 }
 
-static int mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int effective)
+static int mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
 {
     int rc = -1;
 
@@ -47,7 +48,7 @@ static int mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd
     } else {
         FD_SET(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
-        if (effective) { FD_SET(fd, &muxp->effective); }
+        if (read_or_accept) { FD_SET(fd, &muxp->read_or_accept); }
         if (fd < setp->min) { setp->min = fd; }
         if (fd > setp->max) { setp->max = fd; }
         rc = 0;
@@ -71,11 +72,47 @@ int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd)
     return mux_register(muxp, &muxp->accept, fd, !0);
 }
 
-static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int effective)
+int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd)
 {
-    int rc = -1;
+    return mux_register(muxp, &muxp->urgent, fd, !0);
+}
+
+static void mux_set_bound(diminuto_mux_set_t * setp)
+{
     int min;
     int max;
+    int fd;
+
+    min = MOSTPOSITIVE;
+    max = MOSTNEGATIVE;
+    for (fd = setp->min; fd <= setp->max; ++fd) {
+        if (FD_ISSET(fd, &setp->active)) {
+            if (fd < min) { min = fd; }
+            if (fd > max) { max = fd; }
+        }
+    }
+    setp->min = min;
+    setp->max = max;
+}
+
+static void mux_set_normalize(diminuto_mux_set_t * setp)
+{
+    if (setp->next < 0) {
+        /* Do nothing. */
+    } else if (setp->max < 0) {
+        setp->next = -1; /* None. */
+    } else if (setp->next < setp->min) {
+        setp->next = setp->min; /* Skip. */
+    } else if (setp->next > setp->max) {
+        setp->next = setp->min; /* Wrap. */
+    } else {
+        /* Do nothing. */
+    }
+}
+
+static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
+{
+    int rc = -1;
 
     /*
      * This code exposed an interesting bug in Cygwin: FD_ISSET(3) is supposed
@@ -96,28 +133,9 @@ static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
     } else {
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
-        if (effective) { FD_CLR(fd, &muxp->effective); }
-        min = MOSTPOSITIVE;
-        max = MOSTNEGATIVE;
-        for (fd = setp->min; fd <= setp->max; ++fd) {
-            if (FD_ISSET(fd, &setp->active)) {
-                if (fd < min) { min = fd; }
-                if (fd > max) { max = fd; }
-            }
-        }
-        if (setp->next < 0) {
-            /* Do nothing. */
-        } else if (max < 0) {
-            setp->next = -1; /* None. */
-        } else if (setp->next < min) {
-            setp->next = min; /* Skip. */
-        } else if (setp->next > max) {
-            setp->next = min; /* Wrap. */
-        } else {
-            /* Do nothing. */
-        }
-        setp->min = min;
-        setp->max = max;
+        if (read_or_accept) { FD_CLR(fd, &muxp->read_or_accept); }
+        mux_set_bound(setp);
+        mux_set_normalize(setp);
         rc = 0;
     }
 
@@ -137,6 +155,11 @@ int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd)
 int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd)
 {
     return mux_unregister(muxp, &muxp->accept, fd, !0);
+}
+
+int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd)
+{
+    return mux_unregister(muxp, &muxp->urgent, fd, !0);
 }
 
 int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
@@ -191,12 +214,13 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
     struct timespec * top = (struct timespec *)0;
     struct timespec timeout;
     int nfds = 0;
-    fd_set effective;
+    fd_set read_or_accept;
     int fd;
 
     mux_set_census(&muxp->read, &nfds);
     mux_set_census(&muxp->write, &nfds);
     mux_set_census(&muxp->accept, &nfds);
+    mux_set_census(&muxp->urgent, &nfds);
 
     /*
      * It's perfectly legal to call this function with no registered file
@@ -213,7 +237,7 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
         /*
          * Handling listen(2)-ing file descriptors that will want to do an
          * accept(2) is complicated by the fact that they are handled by
-         * pselect(2) as if they are reading. So the effective reading set
+         * pselect(2) as if they are reading. So the read_or_accept reading set
          * is the union of the read and accept sets. Then after the pselect(2)
          * returns, we have to figure out which of the ready read descriptors
          * are actually registered for read versus registered for accept.
@@ -221,8 +245,9 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
          * to see if a set were completely empty.
          */
 
-        effective = muxp->effective;
+        read_or_accept = muxp->read_or_accept;
         muxp->write.ready = muxp->write.active;
+        muxp->urgent.ready = muxp->urgent.active;
 
         if (ticks >= 0) {
             timeout.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
@@ -230,7 +255,7 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
             top = &timeout;
         }
 
-        rc = pselect(nfds, &effective, &muxp->write.ready, (fd_set *)0, top, &muxp->mask);
+        rc = pselect(nfds, &read_or_accept, &muxp->write.ready, &muxp->urgent.ready, top, &muxp->mask);
 
         /*
          * Can a file descriptor be both read(2)-ing and accept(2)-ing? In
@@ -241,11 +266,12 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
          */
 
         if (rc > 0) {
-            muxp->read.ready = effective;
-            muxp->accept.ready = effective;
+            muxp->read.ready = read_or_accept;
+            muxp->accept.ready = read_or_accept;
             mux_set_reset(&muxp->read);
             mux_set_reset(&muxp->write);
             mux_set_reset(&muxp->accept);
+            mux_set_reset(&muxp->urgent);
         } else if (rc == 0) {
             /* Do nothing. */
         } else if (errno == EINTR) {
@@ -301,6 +327,11 @@ int diminuto_mux_ready_write(diminuto_mux_t * muxp)
 int diminuto_mux_ready_accept(diminuto_mux_t * muxp)
 {
     return mux_set_ready(&muxp->accept);
+}
+
+int diminuto_mux_ready_urgent(diminuto_mux_t * muxp)
+{
+    return mux_set_ready(&muxp->urgent);
 }
 
 int diminuto_mux_close(diminuto_mux_t * muxp, int fd)

@@ -61,10 +61,11 @@ typedef struct DiminutoMuxSet {
  * This is the multiplexer state.
  */
 typedef struct DiminutoMux {
-    fd_set effective;
+    fd_set read_or_accept;
     diminuto_mux_set_t read;
     diminuto_mux_set_t write;
     diminuto_mux_set_t accept;
+    diminuto_mux_set_t urgent;
     sigset_t mask;
 } diminuto_mux_t;
 
@@ -111,6 +112,16 @@ extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd);
 
 /**
+ * Register a file descriptor with the multiplexer for exceptions (which
+ * typically means for urgent out-of-band one byte receives on a stream socket).
+ * It is an error to register a registered file descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is an unregistered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd);
+
+/**
  * Unregister a file descriptor from the multiplexer for reading. It is an error
  * to unregister an unregistered file descriptor. Note that although it is
  * common for a socket to be registered for both read and write, registering a
@@ -138,6 +149,16 @@ extern int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd);
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd);
+
+/**
+ * Unregister a file descriptor from the multiplexer for exceptions (which
+ * typically means for urgent out-of-band one byte receives on a stream socket).
+ * It is an error to unregister an unregistered file descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @param fd is a registered file descriptor.
+ * @return 0 for success, <0 for error.
+ */
+extern int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd);
 
 /**
  * Add a signal to the mask of those to be atomically unblocked while the
@@ -189,6 +210,15 @@ extern int diminuto_mux_ready_write(diminuto_mux_t * muxp);
  * @return a file descriptor ready for accepting, or <0 if none.
  */
 extern int diminuto_mux_ready_accept(diminuto_mux_t * muxp);
+
+/**
+ * Return the next registered file descriptor that is ready for exceptions.
+ * Typically this means there is urgent data available to be received
+ * out-of-band on the descriptor.
+ * @param muxp points to an initialized multiplexer structure.
+ * @return a file descriptor ready for accepting, or <0 if none.
+ */
+extern int diminuto_mux_ready_urgent(diminuto_mux_t * muxp);
 
 /**
  * Unregister a registered file descriptor and close it. The file descriptor

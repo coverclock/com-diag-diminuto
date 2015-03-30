@@ -29,6 +29,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
 
 #if defined(__arm__)
 static const size_t TOTAL = 1024 * 1024 * 100;
@@ -82,10 +83,11 @@ static void diminuto_mux_dump(diminuto_mux_t * muxp)
 {
     int signum;
 
-    DIMINUTO_LOG_DEBUG("mux@%p: effective=<", muxp); diminuto_mux_fds_dump(&muxp->effective); DIMINUTO_LOG_DEBUG(">");
+    DIMINUTO_LOG_DEBUG("mux@%p: read_or_accept=<", muxp); diminuto_mux_fds_dump(&muxp->read_or_accept); DIMINUTO_LOG_DEBUG(">");
     diminuto_mux_set_dump(muxp, &muxp->read);
     diminuto_mux_set_dump(muxp, &muxp->write);
     diminuto_mux_set_dump(muxp, &muxp->accept);
+    diminuto_mux_set_dump(muxp, &muxp->urgent);
     DIMINUTO_LOG_DEBUG("mux@%p: mask=<", muxp); diminuto_mux_sigs_dump(&muxp->mask); DIMINUTO_LOG_DEBUG(">");
 }
 
@@ -112,6 +114,7 @@ int main(int argc, char ** argv)
         int listener;
         pid_t pid;
         diminuto_port_t rendezvous = 0;
+        static const uint8_t ACK = '\006';
 
         TEST();
 
@@ -218,6 +221,9 @@ int main(int argc, char ** argv)
             memset(input, 0, sizeof(input));
 
             input_a = input_b = output_a = output_b = 0;
+
+            ASSERT((sent = diminuto_ipc6_datagram_send_flags(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
+            DIMINUTO_LOG_DEBUG("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
 
             do {
 
@@ -332,6 +338,7 @@ int main(int argc, char ** argv)
             int ready;
             int fd;
             int done;
+            int proceed;
             ssize_t readable;
             double percentage;
 
@@ -339,16 +346,13 @@ int main(int argc, char ** argv)
 
             diminuto_mux_init(&mux);
 
-            diminuto_delay(diminuto_delay_frequency(), !0);
-
             ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
             ASSERT(diminuto_mux_register_read(&mux, consumer) == 0);
+            ASSERT(diminuto_mux_register_urgent(&mux, consumer) == 0);
 
             totalreceived = 0;
             totalsent = 0;
             done = 0;
-
-            diminuto_delay(diminuto_delay_frequency(), !0);
 
             do {
 
@@ -358,9 +362,26 @@ int main(int argc, char ** argv)
                     } else if (ready == 0) {
                         diminuto_yield();
                     } else if (errno == EINTR) {
-                        DIMINUTO_LOG_INFORMATION("consumer interrupted\n");
+                        DIMINUTO_LOG_DEBUG("consumer interrupted\n");
                     } else {
                         FATAL("diminuto_mux_wait");
+                    }
+                }
+
+                if (!proceed) {
+                    while ((fd = diminuto_mux_ready_urgent(&mux)) >= 0) {
+                        ASSERT(fd == consumer);
+                        buffer[0] = '\0';
+                        ASSERT((received = diminuto_ipc6_datagram_receive_flags(fd, buffer, 1, (diminuto_ipv6_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
+                        DIMINUTO_LOG_DEBUG("consumer ACKed    %10d %10d %10u %7.3lf%%\n", 0, received, 0, 0.0);
+                        ASSERT(buffer[0] == ACK);
+                        if (buffer[0] == ACK) {
+                            proceed = !0;
+                            break;
+                        }
+                    }
+                    if (!proceed) {
+                        continue;
                     }
                 }
 

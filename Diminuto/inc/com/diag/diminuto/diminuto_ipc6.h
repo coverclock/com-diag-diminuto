@@ -315,6 +315,9 @@ static inline ssize_t diminuto_ipc6_stream_write(int fd, const void * buffer, si
 /**
  * Receive a datagram from a datagram socket using the specified flags.
  * Optionally return the address and port in host byte order of the sender.
+ * Flags may be specified for recvfrom(2) such as MSG_DONTWAIT, MSG_WAITALL,
+ * or MSG_OOB. (This function can legitimately be also used with a stream
+ * socket.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
@@ -328,6 +331,7 @@ extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_
 /**
  * Receive a datagram from a datagram socket using no flags.
  * Optionally return the address and port in host byte order of the sender.
+ * (This function can legitimately be also used with a stream socket.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
@@ -343,7 +347,10 @@ static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size
 
 /**
  * Send a datagram to a datagram socket using the specified flags. The address
- * and port are in host byte order.
+ * and port are in host byte order. Flags may be specified for sendto(2) such as
+ * MSG_DONTWAIT, MSG_WAITALL, or MSG_OOB. (This function can legitimately be
+ * also used with a stream socket by passing zero as the port number, in which
+ * case the address is ignored.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
@@ -356,7 +363,9 @@ extern ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, si
 
 /**
  * Send a datagram to a datagram socket using no flags. The address and port are
- * in host byte order.
+ * in host byte order. (This function can legitimately be also used with a
+ * stream socket by passing zero as the port number, in which case the address
+ * is ignored.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.

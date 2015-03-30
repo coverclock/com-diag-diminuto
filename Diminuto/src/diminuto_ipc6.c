@@ -94,6 +94,14 @@ static inline void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp
     memcpy(&(addressp->u16[6]), &address, sizeof(address));
 }
 
+/*
+ * If the socket is in the IPv6 family, we returned the IPv6 address as is. If
+ * it is in the IPv4 family, we return the IPv4 address encapsulated in an
+ * IPv6 address. If it is unspecified, which can legitimately occur when a
+ * datagram send or receive is performed against a stream socket (done typically
+ * to send an urgent data byte out of band), we return UNSPECIFIED. Anything
+ * else is an error.
+ */
 static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     int result = -1;
@@ -115,6 +123,14 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in *)sap)->sin_port);
+        }
+    } else if (sap->sa_family == AF_UNSPEC) {
+        result = 0;
+        if (addressp != (diminuto_ipv6_t *)0) {
+            *addressp = DIMINUTO_IPC6_UNSPECIFIED;
+        }
+        if (portp != (diminuto_port_t *)0) {
+            *portp = 0;
         }
     } else {
         errno = EINVAL;
@@ -418,14 +434,22 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
 {
     ssize_t total;
     struct sockaddr_in6 sin6 = { 0 };
-    socklen_t length = sizeof(sin6);
+    struct sockaddr * sap;
+    socklen_t length;
 
-    sin6.sin6_family = AF_INET6;
-    hton6(&address);
-    memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
-    sin6.sin6_port = htons(port);
+    if (port > 0) {
+        length = sizeof(sin6);
+        sin6.sin6_family = AF_INET6;
+        hton6(&address);
+        memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
+        sin6.sin6_port = htons(port);
+        sap = (struct sockaddr *)&sin6;
+    } else {
+        length = 0;
+        sap = (struct sockaddr *)0;
+    }
 
-    if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sin6, sizeof(sin6))) == 0) {
+    if ((total = sendto(fd, buffer, size, flags, sap, length)) == 0) {
         /* Do nothing: "orderly shutdown" (not sure what that means in this context). */
     } else if (total > 0) {
         /* Do nothing: nominal case. */

@@ -28,6 +28,12 @@
  * HELPERS
  ******************************************************************************/
 
+/*
+ * If the socket is in the IPv4 family, we return the IPv4 address as is. If it
+ * is unspecified, which can legitimately occur when a datagram send or receive
+ * is performed against a stream socket (done typically to send an urgent data
+ * byte out of band), we return zeros. Anything  else is an error.
+ */
 static int identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp) {
     int result = 0;
 
@@ -37,6 +43,14 @@ static int identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in *)sap)->sin_port);
+        }
+    } else if (sap->sa_family == AF_UNSPEC) {
+        result = 0;
+        if (addressp != (diminuto_ipv4_t *)0) {
+            *addressp = 0;
+        }
+        if (portp != (diminuto_port_t *)0) {
+            *portp = 0;
         }
     } else {
         result = -1;
@@ -244,14 +258,12 @@ diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
 
 int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlog)
 {
-    struct sockaddr_in sa;
-    socklen_t length;
+    struct sockaddr_in sa = { 0 };
+    socklen_t length = sizeof(sa);
     int fd;
 
     if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
 
-    length = sizeof(sa);
-    memset(&sa, 0, length);
     sa.sin_family = AF_INET;
     sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_port = htons(port);
@@ -282,11 +294,10 @@ int diminuto_ipc_stream_provider(diminuto_port_t port)
 
 int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
-    struct sockaddr sa;
-    socklen_t length;
+    struct sockaddr sa = { 0 };
+    socklen_t length = sizeof(sa);
     int newfd;
 
-    length = sizeof(sa);
     if ((newfd = accept(fd, &sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc_accept: accept");
         newfd = -1;
@@ -299,13 +310,11 @@ int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port
 
 int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
 {
-    struct sockaddr_in sa;
-    socklen_t length;
+    struct sockaddr_in sa = { 0 };
+    socklen_t length = sizeof(sa);
     int fd;
     int rc;
 
-    length = sizeof(sa);
-    memset(&sa, 0, length);
     sa.sin_family = AF_INET;
     sa.sin_addr.s_addr = htonl(address);
     sa.sin_port = htons(port);
@@ -327,12 +336,10 @@ int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
 
 int diminuto_ipc_datagram_peer(diminuto_port_t port)
 {
-    struct sockaddr_in sa;
-    socklen_t length;
+    struct sockaddr_in sa = { 0 };
+    socklen_t length = sizeof(sa);
     int fd;
 
-    length = sizeof(sa);
-    memset(&sa, 0, length);
     sa.sin_family = AF_INET;
     sa.sin_addr.s_addr = INADDR_ANY;
     sa.sin_port = htons(port);
@@ -355,11 +362,8 @@ int diminuto_ipc_datagram_peer(diminuto_port_t port)
 ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)
 {
     ssize_t total;
-    struct sockaddr sa;
-    socklen_t length;
-
-    length = sizeof(sa);
-    memset(&sa, 0, length);
+    struct sockaddr sa = { 0 };
+    socklen_t length = sizeof(sa);
 
     if ((total = recvfrom(fd, buffer, size, flags, &sa, &length)) == 0) {
         /* Do nothing: not sure what this means. */
@@ -378,13 +382,22 @@ ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t siz
 {
     ssize_t total;
     struct sockaddr_in sa;
+    struct sockaddr * sap;
+    socklen_t length;
 
-    memset(&sa, 0, sizeof(sa));
-    sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = htonl(address);
-    sa.sin_port = htons(port);
+    if (port > 0) {
+        length = sizeof(sa);
+        memset(&sa, 0, length);
+        sa.sin_family = AF_INET;
+        sa.sin_addr.s_addr = htonl(address);
+        sa.sin_port = htons(port);
+        sap = (struct sockaddr *)&sa;
+    } else {
+        length = 0;
+        sap = (struct sockaddr *)0;
+    }
 
-    if ((total = sendto(fd, buffer, size, flags, (struct sockaddr *)&sa, sizeof(sa))) == 0) {
+    if ((total = sendto(fd, buffer, size, flags, sap, length)) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
         /* Do nothing: nominal case. */
@@ -404,10 +417,9 @@ ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t siz
 int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     int rc;
-    struct sockaddr sa;
-    socklen_t length;
+    struct sockaddr sa = { 0 };
+    socklen_t length = sizeof(sa);
 
-    length = sizeof(sa);
     if ((rc = getsockname(fd, &sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc_nearend: getsockname");
     } else {
@@ -420,10 +432,9 @@ int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * p
 int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     int rc;
-    struct sockaddr sa;
-    socklen_t length;
+    struct sockaddr sa = { 0 };
+    socklen_t length = sizeof(sa);
 
-    length = sizeof(sa);
     if ((rc = getpeername(fd, &sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc_farend: getpeername");
     } else {
