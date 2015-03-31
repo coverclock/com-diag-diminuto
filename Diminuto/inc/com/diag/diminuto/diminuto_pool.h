@@ -28,7 +28,7 @@ extern diminuto_pool_t * diminuto_pool_init(diminuto_pool_t * poolp, size_t size
 
 /**
  * Release all of the objects stored in the pool, freeing their memory.
- * @param poolp points to a pool.
+ * @param poolp points to the pool.
  * @return a pointer to the pool.
  */
 extern diminuto_pool_t * diminuto_pool_fini(diminuto_pool_t * poolp);

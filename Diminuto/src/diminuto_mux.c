@@ -338,7 +338,7 @@ int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
 {
     int rc = -2;
 
-    if ((diminuto_mux_unregister_read(muxp, fd) < 0) && (diminuto_mux_unregister_write(muxp, fd) < 0) && (diminuto_mux_unregister_accept(muxp, fd) < 0)) {
+    if ((diminuto_mux_unregister_read(muxp, fd) < 0) && (diminuto_mux_unregister_write(muxp, fd) < 0) && (diminuto_mux_unregister_accept(muxp, fd) < 0) && (diminuto_mux_unregister_urgent(muxp, fd) < 0)) {
         /* Do nothing. */
     } else if ((rc = close(fd)) == 0) {
         /* Do nothing. */
