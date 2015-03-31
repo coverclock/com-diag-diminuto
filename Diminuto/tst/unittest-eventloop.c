@@ -162,7 +162,7 @@ static pid_t provider(diminuto_port_t * portp)
                     bufferp = containerof(buffer_t, link, nodep);
                     size = diminuto_fd_write(fd, bufferp->payload, 1, sizeof(bufferp->payload));
                     if (size > 0) {
-                    	diminuto_pool_free(bufferp);
+                        diminuto_pool_free(bufferp);
                     } else if (size == 0) {
                         diminuto_mux_close(&mux, fd);
                         diminuto_pool_free(bufferp);
