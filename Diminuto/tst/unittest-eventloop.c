@@ -316,7 +316,7 @@ static pid_t provider(diminuto_port_t * portp)
  * SERVICE CONSUMER
  ******************************************************************************/
 
-static pid_t consumer(diminuto_ipv4_t provideraddress, diminuto_port_t providerport, size_t connections, size_t messages)
+static pid_t consumer(diminuto_ipv4_t provideraddress, diminuto_port_t providerport, size_t connections, size_t messages, pid_t * client)
 {
     pid_t pid;
     int xc;
@@ -339,6 +339,8 @@ static pid_t consumer(diminuto_ipv4_t provideraddress, diminuto_port_t providerp
     }
     pid = getpid();
     xc = 0;
+
+    diminuto_heap_free(client); /* Just to make valgrind(1) happy. */
 
     connection = (int *)diminuto_heap_malloc(sizeof(int) * connections);
 
@@ -388,6 +390,7 @@ exiting:
         diminuto_ipc_close(connection[ii]);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d disconnected [%zu] %d %s:%u.\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
     }
+
     diminuto_heap_free(connection);
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d exiting %d.\n", pid, xc);
@@ -453,7 +456,7 @@ int main(int argc, char ** argv)
     for (jj = 0; jj < cycles; ++jj) {
 
         for (ii = 0; ii < clients; ++ii) {
-            client[ii] = consumer(address, port, connections, messages);
+            client[ii] = consumer(address, port, connections, messages, client /* Just to make valgrind(1) happy. */);
             ASSERT(client[ii] >= 0);
         }
 
