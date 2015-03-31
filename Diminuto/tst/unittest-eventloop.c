@@ -115,6 +115,15 @@ static pid_t provider(diminuto_port_t * portp)
     intptr_t pointer;
     diminuto_ipv4_t address;
     diminuto_port_t port;
+    int connects;
+    int reads;
+    int writes;
+    int urgents;
+    int disconnects;
+    size_t input;
+    size_t output;
+    char dotnotation[sizeof("255.255.255.255")];
+
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER starting.\n");
 
@@ -145,6 +154,13 @@ static pid_t provider(diminuto_port_t * portp)
         diminuto_list_datainit(&list[fd], (void *)pointer);
     }
     done = 0;
+    connects = 0;
+    disconnects = 0;
+    reads = 0;
+    writes = 0;
+    urgents = 0;
+    input = 0;
+    output = 0;
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d running.\n", pid);
 
@@ -155,16 +171,19 @@ static pid_t provider(diminuto_port_t * portp)
             while ((fd = diminuto_mux_ready_urgent(&mux)) >= 0) {
                 size = diminuto_ipc_datagram_receive_flags(fd, &control, sizeof(control), (diminuto_ipv4_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT);
                 if (size > 0) {
+                    ++urgents;
                     done = !0;
                     break;
                 } else if (size == 0) {
+                    ++disconnects;
+                    diminuto_ipc_farend(fd, &address, &port);
                     diminuto_mux_close(&mux, fd);
                     while ((nodep = diminuto_list_dequeue(&list[fd])) != (diminuto_list_t *)0) {
                         bufferp = containerof(buffer_t, link, nodep);
                         diminuto_pool_free(bufferp);
                     }
                     diminuto_list_dataset(&list[fd], (void *)(pointer = -1));
-                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d.\n", pid, fd);
+                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d %s:%u.\n", pid, fd, diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
                 } else {
                     /* Do nothing. */
                 }
@@ -176,10 +195,9 @@ static pid_t provider(diminuto_port_t * portp)
             }
 
             while ((fd = diminuto_mux_ready_accept(&mux)) >= 0) {
-                fd = diminuto_ipc_stream_accept(fd, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
+                fd = diminuto_ipc_stream_accept(fd, &address, &port);
                 if (fd >= 0) {
-                    char dotnotation[sizeof("255.255.255.255")];
-                    diminuto_ipc_nearend(listener, &address, &port);
+                    ++connects;
                     diminuto_mux_register_read(&mux, fd);
                     diminuto_mux_register_write(&mux, fd);
                     diminuto_mux_register_urgent(&mux, fd);
@@ -192,12 +210,16 @@ static pid_t provider(diminuto_port_t * portp)
                 if (bufferp != (buffer_t *)0) {
                     size = diminuto_fd_read(fd, bufferp->payload, 1, sizeof(bufferp->payload));
                     if (size > 0) {
+                        ++reads;
+                        input += size;
                         bufferp->size = size;
                         diminuto_list_init(&bufferp->link);
                         diminuto_list_enqueue(&list[fd], &bufferp->link);
                         pointer = fd;
                         diminuto_list_dataset(&list[fd], (void *)pointer);
                     } else if (size == 0) {
+                        ++disconnects;
+                        diminuto_ipc_farend(fd, &address, &port);
                         diminuto_mux_close(&mux, fd);
                         diminuto_pool_free(bufferp);
                         while ((nodep = diminuto_list_dequeue(&list[fd])) != (diminuto_list_t *)0) {
@@ -205,7 +227,7 @@ static pid_t provider(diminuto_port_t * portp)
                             diminuto_pool_free(bufferp);
                         }
                         diminuto_list_dataset(&list[fd], (void *)(pointer = -1));
-                        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d.\n", pid, fd);
+                        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d %s:%u.\n", pid, fd, diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
                     } else {
                         diminuto_pool_free(bufferp);
                     }
@@ -216,10 +238,14 @@ static pid_t provider(diminuto_port_t * portp)
                 nodep = diminuto_list_dequeue(&list[fd]);
                 if (nodep != (diminuto_list_t *)0) {
                     bufferp = containerof(buffer_t, link, nodep);
-                    size = diminuto_fd_write(fd, bufferp->payload, size, size);
+                    size = diminuto_fd_write(fd, bufferp->payload, bufferp->size, bufferp->size);
                     if (size > 0) {
+                        ++writes;
+                        output += size;
                         diminuto_pool_free(bufferp);
                     } else if (size == 0) {
+                        ++disconnects;
+                        diminuto_ipc_farend(fd, &address, &port);
                         diminuto_mux_close(&mux, fd);
                         diminuto_pool_free(bufferp);
                         while ((nodep = diminuto_list_dequeue(&list[fd])) != (diminuto_list_t *)0) {
@@ -227,7 +253,7 @@ static pid_t provider(diminuto_port_t * portp)
                             diminuto_pool_free(bufferp);
                         }
                         diminuto_list_dataset(&list[fd], (void *)(pointer = -1));
-                        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d.\n", pid, fd);
+                        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d disconnected %d %s:%u.\n", pid, fd, diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
                     } else {
                         diminuto_pool_free(bufferp);
                     }
@@ -266,6 +292,8 @@ static pid_t provider(diminuto_port_t * portp)
     diminuto_mux_unregister_accept(&mux, listener);
     diminuto_heap_free(list);
 
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d connects=%d disconnects=%d reads=%d input=%zu writes=%d output=%zu.\n", pid, connects, disconnects, reads, input, writes, output);
+
     exit(xc);
 }
 
@@ -273,10 +301,12 @@ static pid_t provider(diminuto_port_t * portp)
  * SERVICE CONSUMER
  ******************************************************************************/
 
-static pid_t consumer(diminuto_ipv4_t address, diminuto_port_t port, size_t connections, size_t messages)
+static pid_t consumer(diminuto_ipv4_t provideraddress, diminuto_port_t providerport, size_t connections, size_t messages)
 {
     pid_t pid;
     int * connection;
+    diminuto_ipv4_t address;
+    diminuto_port_t port;
     size_t ii;
     size_t jj;
     diminuto_ticks_t now;
@@ -295,12 +325,13 @@ static pid_t consumer(diminuto_ipv4_t address, diminuto_port_t port, size_t conn
 
     connection = (int *)diminuto_heap_malloc(sizeof(int) * connections);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER running.\n");
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d running.\n", pid);
 
     for (ii = 0; ii < connections; ++ii) {
-        connection[ii] = diminuto_ipc_stream_consumer(address, port);
+        connection[ii] = diminuto_ipc_stream_consumer(provideraddress, providerport);
         if (connection[ii] >= 0) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d connected [%d] %d.\n", pid, ii, connection[ii]);
+            diminuto_ipc_nearend(connection[ii], &address, &port);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d connected [%zu] %d %s:%u.\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
         } else {
             exit(1);
         }
@@ -311,24 +342,28 @@ static pid_t consumer(diminuto_ipv4_t address, diminuto_port_t port, size_t conn
             now = diminuto_time_clock();
             output = diminuto_fd_write(connection[ii], &now, sizeof(now), sizeof(now));
             if (output != sizeof(now)) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d write (%zd!=%zu)!\n", pid, output, sizeof(now));
+                diminuto_ipc_nearend(connection[ii], &address, &port);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d write [%zu] %d %s:%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port, output, sizeof(now));
                 exit(2);
             }
             input = diminuto_fd_read(connection[ii], &then, sizeof(then), sizeof(then));
             if (input != sizeof(then)) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d read (%zd!=%zu)!\n", pid, input, sizeof(then));
+                diminuto_ipc_nearend(connection[ii], &address, &port);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d read [%zu] %d %s:%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port, input, sizeof(then));
                 exit(3);
             }
             if (now != then) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d payload (%lld!=%lld)!\n", pid, now, then);
+                diminuto_ipc_nearend(connection[ii], &address, &port);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d compare [%zu] %d %s:%u (%lld!=%lld)!\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port, now, then);
                 exit(4);
             }
         }
     }
 
     for (ii = 0; ii < connections; ++ii) {
+        diminuto_ipc_nearend(connection[ii], &address, &port);
         diminuto_ipc_close(connection[ii]);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d disconnected [%d] %d.\n", pid, ii, connection[ii]);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d disconnected [%zu] %d %s:%u.\n", pid, ii, connection[ii], diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
     }
     diminuto_heap_free(connection);
 
@@ -393,13 +428,14 @@ int main(int argc, char ** argv)
     for (ii = 0; ii < clients; ++ii) {
         waitpid(client[ii], &status, 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "client %d exited %d %d.\n", client[ii], WIFEXITED(status), WEXITSTATUS(status));
-        ASSERT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
+        EXPECT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
     }
 
     diminuto_ipc_datagram_send_flags(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
+
     waitpid(service, &status, 0);
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "service %d exited %d %d.\n", service, WIFEXITED(status), WEXITSTATUS(status));
-    ASSERT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
+    EXPECT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
 
     diminuto_heap_free(client);
 
