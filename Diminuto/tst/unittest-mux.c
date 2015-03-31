@@ -43,7 +43,7 @@ static const size_t TOTAL = 1024 * 1024 * 1024;
 
 static const char * diminuto_mux_set_name(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
 {
-    return (setp == &muxp->read) ? "read" : (setp == &muxp->write) ? "write" : (setp == &muxp->accept) ? "accept" : "other";
+    return (setp == &muxp->read) ? "read" : (setp == &muxp->write) ? "write" : (setp == &muxp->accept) ? "accept" : (setp == &muxp->urgent) ? "urgent" :  "other";
 }
 
 static void diminuto_mux_sigs_dump(sigset_t * sigs)

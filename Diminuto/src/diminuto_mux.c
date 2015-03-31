@@ -336,10 +336,27 @@ int diminuto_mux_ready_urgent(diminuto_mux_t * muxp)
 
 int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
 {
-    int rc = -2;
+    int rc;
+    int accepting;
+    int reading;
+    int writing;
+    int urgenting;
 
-    if ((diminuto_mux_unregister_read(muxp, fd) < 0) && (diminuto_mux_unregister_write(muxp, fd) < 0) && (diminuto_mux_unregister_accept(muxp, fd) < 0) && (diminuto_mux_unregister_urgent(muxp, fd) < 0)) {
-        /* Do nothing. */
+    /*
+     * There was a remarkably subtle bug here that bit me because I momentarily
+     * forgot that boolean logic in C doesn't _quite_ follow De Morgan's Laws:
+     * OR expressions are required to short circuit and not evaluate successive
+     * terms when a prior term fails. This removes the side effects (if any)
+     * of any later terms.
+     */
+
+    accepting = diminuto_mux_unregister_accept(muxp, fd);
+    reading = diminuto_mux_unregister_read(muxp, fd);
+    writing = diminuto_mux_unregister_write(muxp, fd);
+    urgenting = diminuto_mux_unregister_urgent(muxp, fd);
+
+    if ((accepting < 0) && (reading < 0) && (writing < 0) && (urgenting < 0)) {
+        rc = -2;
     } else if ((rc = close(fd)) == 0) {
         /* Do nothing. */
     } else {
