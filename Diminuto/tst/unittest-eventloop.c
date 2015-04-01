@@ -283,7 +283,7 @@ static pid_t provider(diminuto_port_t * portp)
              * sent out of band, it can arrive before the provider has processed
              * all of the disconnects. By checking for done here, the provider
              * has a chance to see the disconnect. In practice, it may not make
-             * a different to an actual application; but for the unit test, we
+             * a difference to an actual application; but for the unit test, we
              * want to see the disconnect.
              */
 
