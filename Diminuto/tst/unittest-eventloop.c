@@ -117,6 +117,7 @@ static void provider_connect(pid_t pid, diminuto_mux_t * muxp, diminuto_list_t *
     diminuto_mux_register_write(muxp, fd);
     diminuto_mux_register_urgent(muxp, fd);
     diminuto_list_dataset(queuep, (void *)((uintptr_t)!0));
+    diminuto_ipc_farend(fd, &address, &port);
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d connected %d %s:%u.\n", pid, fd, diminuto_ipc_dotnotation(address, dotnotation, sizeof(dotnotation)), port);
 }
 
@@ -465,7 +466,7 @@ int main(int argc, char ** argv)
         }
     }
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "main running messages=%zu connections=%zu clients=%zu cycles=%zu.\n", messages, connections, clients, cycles);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "main %d running messages=%zu connections=%zu clients=%zu cycles=%zu.\n", getpid(), messages, connections, clients, cycles);
 
     address = diminuto_ipc_address("localhost");
     service = provider(&port);
@@ -484,7 +485,7 @@ int main(int argc, char ** argv)
 
         for (ii = 0; ii < clients; ++ii) {
             waitpid(client[ii], &status, 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "client %d exited exit=%d status=%d.\n", client[ii], WIFEXITED(status), WEXITSTATUS(status));
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "consumer %d exited exit=%d status=%d.\n", client[ii], WIFEXITED(status), WEXITSTATUS(status));
             EXPECT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
         }
 
@@ -493,7 +494,7 @@ int main(int argc, char ** argv)
     diminuto_ipc_datagram_send_flags(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
 
     waitpid(service, &status, 0);
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "service %d exited exit=%d status=%d.\n", service, WIFEXITED(status), WEXITSTATUS(status));
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "producer %d exited exit=%d status=%d.\n", service, WIFEXITED(status), WEXITSTATUS(status));
     EXPECT(WIFEXITED(status) && (WEXITSTATUS(status) == 0));
 
     diminuto_heap_free(client);
