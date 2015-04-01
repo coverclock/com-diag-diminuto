@@ -63,6 +63,17 @@ extern diminuto_port_t diminuto_ipc_port(const char * service, const char * prot
 extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
 
 /**
+ * Convert an IPv4 address in host byte order into a printable IP address
+ * string in dot notation.
+ * @param address is the IPv4 address in host byte order.
+ * @param buffer points to the buffer into to whcih the string is stored.
+ * @param length is the length of the buffer in bytes.
+ */
+static inline const char * diminuto_ipc_printable(diminuto_ipv4_t address, char * buffer, size_t length) {
+    return diminuto_ipc_dotnotation(address, buffer, length);
+}
+
+/**
  * Return the address and port of the near end of the socket if it can be
  * determined. If it cannot be determined, the address and port variables
  * will remain unchanged.

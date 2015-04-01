@@ -116,6 +116,17 @@ static inline diminuto_port_t diminuto_ipc6_port(const char * service, const cha
 extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length);
 
 /**
+ * Convert an IPV6 address in host byte order into a printable IP address
+ * string in colon notation.
+ * @param address is the IPv6 address.
+ * @param buffer points to the buffer into to whcih the string is stored.
+ * @param length is the length of the buffer in bytes.
+ */
+static inline const char * diminuto_ipc6_printable(diminuto_ipv6_t address, char * buffer, size_t length) {
+    return diminuto_ipc6_colonnotation(address, buffer, length);
+}
+
+/**
  * Return the address and port of the near end of the socket if it can be
  * determined. If it cannot be determined, the address and port variables
  * will remain unchanged. The address and port will be returned in host byte
