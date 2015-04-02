@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -14,7 +14,30 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_list.h"
 
+/**
+ * This describes the pool head. The allocation size of the type of object held
+ * in the pool or allocated from the heap is kept in the data field of the list
+ * structure. Hence this field cannot be used for any other purpose.
+ */
 typedef diminuto_list_t diminuto_pool_t;
+
+/**
+ * This describes the memory layout of the type of object held in the pool or
+ * allocated from the heap. Normally, the application only sees a pointer to the
+ * payload portion of the object (the part it cares about, whatever it is). But
+ * the format of the pool object is deliberately exposed so that an application
+ * may use, for example, diminuto_containerof(), to recover the pointer to the
+ * pool object so that the link field can be reused to queue the object on
+ * other lists, a common application idiom. However, note that a pointer to
+ * the pool from whence it came is kept in the data field of the link field of
+ * the pool object so that the object can be freed without the caller knowing
+ * the object's originating pool. Hence this field cannot be used for any other
+ * purpose.
+ */
+typedef struct DiminutoPoolObject {
+    diminuto_list_t link;
+    uint64_t payload[0];
+} diminuto_pool_object_t;
 
 /**
  * Initialize a pool for objects of the specified size. The pool is initially
@@ -44,7 +67,8 @@ extern diminuto_pool_t * diminuto_pool_fini(diminuto_pool_t * poolp);
 extern void * diminuto_pool_alloc(diminuto_pool_t * poolp);
 
 /**
- * Free an object back to the pool. The object is returned to the pool.
+ * Free an object back to the pool. The object is returned to the pool from
+ * whence it came.
  * @param pointer points to the object.
  */
 extern void diminuto_pool_free(void * pointer);

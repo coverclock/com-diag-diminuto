@@ -69,7 +69,7 @@ extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buf
  * @param buffer points to the buffer into to whcih the string is stored.
  * @param length is the length of the buffer in bytes.
  */
-static inline const char * diminuto_ipc_printable(diminuto_ipv4_t address, char * buffer, size_t length) {
+static inline const char * diminuto_ipc_address2string(diminuto_ipv4_t address, char * buffer, size_t length) {
     return diminuto_ipc_dotnotation(address, buffer, length);
 }
 

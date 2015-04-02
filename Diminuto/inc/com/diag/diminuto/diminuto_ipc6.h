@@ -122,7 +122,7 @@ extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * 
  * @param buffer points to the buffer into to whcih the string is stored.
  * @param length is the length of the buffer in bytes.
  */
-static inline const char * diminuto_ipc6_printable(diminuto_ipv6_t address, char * buffer, size_t length) {
+static inline const char * diminuto_ipc6_address2string(diminuto_ipv6_t address, char * buffer, size_t length) {
     return diminuto_ipc6_colonnotation(address, buffer, length);
 }
 

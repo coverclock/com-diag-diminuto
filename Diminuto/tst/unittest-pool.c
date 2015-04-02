@@ -2,12 +2,12 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * It is really helpful to run this with the valgrind tool.
+ * It is really helpful to run this with the valgrind(1) tool.
  */
 
 #include "com/diag/diminuto/diminuto_pool.h"
@@ -54,6 +54,7 @@ int main(void)
     for (ii = 0; ii < countof(pa); ++ii) {
         pa[ii] = diminuto_pool_alloc(&pool);
         ASSERT(pa[ii] != (void *)0);
+        ASSERT((((uintptr_t)pa[ii]) & (sizeof(uint64_t) - 1)) == 0);
     }
 
     ASSERT(count == countof(pa));
