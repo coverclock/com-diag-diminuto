@@ -8,36 +8,23 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
-#include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_delay.h"
+#include "diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <unistd.h>
 #include <errno.h>
 
-static const int MOSTPOSITIVE = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
-static const int MOSTNEGATIVE = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. */
-
-static inline void mux_set_init(diminuto_mux_set_t * setp)
-{
-    setp->next = -1;
-    setp->min = MOSTPOSITIVE;
-    setp->max = MOSTNEGATIVE;
-    FD_ZERO(&setp->active);
-    FD_ZERO(&setp->ready);
-}
-
 void diminuto_mux_init(diminuto_mux_t * muxp)
 {
     FD_ZERO(&muxp->read_or_accept);
-    mux_set_init(&muxp->read);
-    mux_set_init(&muxp->write);
-    mux_set_init(&muxp->accept);
-    mux_set_init(&muxp->urgent);
+    diminuto_mux_set_init(&muxp->read);
+    diminuto_mux_set_init(&muxp->write);
+    diminuto_mux_set_init(&muxp->accept);
+    diminuto_mux_set_init(&muxp->urgent);
     sigprocmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
 }
 
-static int mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
+int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
 {
     int rc = -1;
 
@@ -59,32 +46,32 @@ static int mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd
 
 int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd)
 {
-    return mux_register(muxp, &muxp->read, fd, !0);
+    return diminuto_mux_register(muxp, &muxp->read, fd, !0);
 }
 
 int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd)
 {
-    return mux_register(muxp, &muxp->write, fd, 0);
+    return diminuto_mux_register(muxp, &muxp->write, fd, 0);
 }
 
 int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd)
 {
-    return mux_register(muxp, &muxp->accept, fd, !0);
+    return diminuto_mux_register(muxp, &muxp->accept, fd, !0);
 }
 
 int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd)
 {
-    return mux_register(muxp, &muxp->urgent, fd, !0);
+    return diminuto_mux_register(muxp, &muxp->urgent, fd, !0);
 }
 
-static void mux_set_bound(diminuto_mux_set_t * setp)
+void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
 {
     int min;
     int max;
     int fd;
 
-    min = MOSTPOSITIVE;
-    max = MOSTNEGATIVE;
+    min = DIMINUTO_MUX_MOSTPOSITIVE;
+    max = DIMINUTO_MUX_MOSTNEGATIVE;
     for (fd = setp->min; fd <= setp->max; ++fd) {
         if (FD_ISSET(fd, &setp->active)) {
             if (fd < min) { min = fd; }
@@ -95,7 +82,7 @@ static void mux_set_bound(diminuto_mux_set_t * setp)
     setp->max = max;
 }
 
-static void mux_set_normalize(diminuto_mux_set_t * setp)
+void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
 {
     if (setp->next < 0) {
         /* Do nothing. */
@@ -110,7 +97,7 @@ static void mux_set_normalize(diminuto_mux_set_t * setp)
     }
 }
 
-static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
+int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept)
 {
     int rc = -1;
 
@@ -134,8 +121,8 @@ static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
         if (read_or_accept) { FD_CLR(fd, &muxp->read_or_accept); }
-        mux_set_bound(setp);
-        mux_set_normalize(setp);
+        diminuto_mux_set_bound(setp);
+        diminuto_mux_set_normalize(setp);
         rc = 0;
     }
 
@@ -144,22 +131,22 @@ static int mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
 
 int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd)
 {
-    return mux_unregister(muxp, &muxp->read, fd, !0);
+    return diminuto_mux_unregister(muxp, &muxp->read, fd, !0);
 }
 
 int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd)
 {
-    return mux_unregister(muxp, &muxp->write, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->write, fd, 0);
 }
 
 int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd)
 {
-    return mux_unregister(muxp, &muxp->accept, fd, !0);
+    return diminuto_mux_unregister(muxp, &muxp->accept, fd, !0);
 }
 
 int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd)
 {
-    return mux_unregister(muxp, &muxp->urgent, fd, !0);
+    return diminuto_mux_unregister(muxp, &muxp->urgent, fd, !0);
 }
 
 int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
@@ -192,22 +179,6 @@ int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum)
     return rc;
 }
 
-static inline void mux_set_census(diminuto_mux_set_t * setp, int * nfdsp)
-{
-    if (*nfdsp <= setp->max) { *nfdsp = setp->max + 1; }
-}
-
-static inline void mux_set_reset(diminuto_mux_set_t * setp)
-{
-    if (setp->next >= 0) {
-        /* Do nothing. */
-    } else if (setp->max < 0) {
-       /* Do nothing. */
-    } else {
-        setp->next = setp->min;
-    }
-}
-
 int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
 {
     int rc = 0;
@@ -217,10 +188,10 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
     fd_set read_or_accept;
     int fd;
 
-    mux_set_census(&muxp->read, &nfds);
-    mux_set_census(&muxp->write, &nfds);
-    mux_set_census(&muxp->accept, &nfds);
-    mux_set_census(&muxp->urgent, &nfds);
+    diminuto_mux_set_census(&muxp->read, &nfds);
+    diminuto_mux_set_census(&muxp->write, &nfds);
+    diminuto_mux_set_census(&muxp->accept, &nfds);
+    diminuto_mux_set_census(&muxp->urgent, &nfds);
 
     /*
      * It's perfectly legal to call this function with no registered file
@@ -268,10 +239,10 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
         if (rc > 0) {
             muxp->read.ready = read_or_accept;
             muxp->accept.ready = read_or_accept;
-            mux_set_reset(&muxp->read);
-            mux_set_reset(&muxp->write);
-            mux_set_reset(&muxp->accept);
-            mux_set_reset(&muxp->urgent);
+            diminuto_mux_set_reset(&muxp->read);
+            diminuto_mux_set_reset(&muxp->write);
+            diminuto_mux_set_reset(&muxp->accept);
+            diminuto_mux_set_reset(&muxp->urgent);
         } else if (rc == 0) {
             /* Do nothing. */
         } else if (errno == EINTR) {
@@ -285,16 +256,17 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
     return rc;
 }
 
-/*
- * Thanks to the fact that we have to have the pselect(2) readfds mask do double
- * duty for both read(2) and accept(2), we check for both the active and ready
- * bits below. They will never be different for the write(2) bits, but can be
- * for the read(2) or accept(2) bits.
- */
-static int mux_set_ready(diminuto_mux_set_t * setp)
+int diminuto_mux_set_ready(diminuto_mux_set_t * setp)
 {
     int fd = -1;
     int wrapped;
+
+    /*
+     * Thanks to the fact that we have to have the pselect(2) readfds mask do
+     * double duty for both read(2) and accept(2), we check for both the active
+     * and ready bits below. They will never be different for the write(2) bits,
+     * but can be for the read(2) or accept(2) bits.
+     */
 
     if ((wrapped = setp->next) >= 0) {
         do {
@@ -316,22 +288,22 @@ static int mux_set_ready(diminuto_mux_set_t * setp)
 
 int diminuto_mux_ready_read(diminuto_mux_t * muxp)
 {
-    return mux_set_ready(&muxp->read);
+    return diminuto_mux_set_ready(&muxp->read);
 }
 
 int diminuto_mux_ready_write(diminuto_mux_t * muxp)
 {
-    return mux_set_ready(&muxp->write);
+    return diminuto_mux_set_ready(&muxp->write);
 }
 
 int diminuto_mux_ready_accept(diminuto_mux_t * muxp)
 {
-    return mux_set_ready(&muxp->accept);
+    return diminuto_mux_set_ready(&muxp->accept);
 }
 
 int diminuto_mux_ready_urgent(diminuto_mux_t * muxp)
 {
-    return mux_set_ready(&muxp->urgent);
+    return diminuto_mux_set_ready(&muxp->urgent);
 }
 
 int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
