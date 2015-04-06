@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
 
 /*******************************************************************************
  * LOCALS
@@ -47,7 +48,7 @@ void diminuto_log_setmask(void)
     const char * mask;
 
     if ((mask = getenv(diminuto_log_mask_name)) != (const char *)0) {
-        DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
+        DIMINUTO_LOG_MASK = ntohl(strtoul(mask, (char **)0, 0));
     }
 }
 

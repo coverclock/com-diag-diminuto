@@ -333,6 +333,7 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_poll_close(&poll, producer) == 0);
             ASSERT(diminuto_poll_close(&poll, listener) == 0);
+            diminuto_poll_fini(&poll);
 
             ASSERT(input_8 == output_8);
 
@@ -441,6 +442,7 @@ int main(int argc, char ** argv)
             } while (!done);
 
             ASSERT(diminuto_poll_close(&poll, consumer) == 0);
+            diminuto_poll_fini(&poll);
 
             exit(0);
         }
