@@ -10,8 +10,6 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * WORK IN PROGRESS
- *
  * This is a socket multiplexer that uses the ppoll(2) system call instead of
  * the pselect(2) system call used by the mux feature. This feature exists
  * mostly because I wanted to benchmark ppoll(2) against pselect(2) using the
