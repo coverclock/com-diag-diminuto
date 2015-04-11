@@ -14,7 +14,7 @@
  * ABSTRACT
  *
  * Allows manipulation of general purpose input/output (GPIO) pins using the
- * lower level calls of the pin facility. Usees the /sys GPIO driver interface.
+ * lower level calls of the pin facility. Uses the sysfs GPIO driver interface.
  * Probably must be run as root.
  */
 
