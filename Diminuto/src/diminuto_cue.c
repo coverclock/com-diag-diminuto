@@ -37,13 +37,13 @@ diminuto_cue_edge_t diminuto_cue_edge(const diminuto_cue_state_t * statep)
         if (!statep->r) {
             result = DIMINUTO_CUE_EDGE_LOW;
         } else {
-        	result = DIMINUTO_CUE_EDGE_RISING;
+            result = DIMINUTO_CUE_EDGE_RISING;
         }
     } else {
         if (!statep->r) {
-        	result = DIMINUTO_CUE_EDGE_FALLING;
+            result = DIMINUTO_CUE_EDGE_FALLING;
         } else {
-        	result = DIMINUTO_CUE_EDGE_HIGH;
+            result = DIMINUTO_CUE_EDGE_HIGH;
         }
     }
 
