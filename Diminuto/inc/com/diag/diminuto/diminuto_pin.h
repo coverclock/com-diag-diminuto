@@ -11,9 +11,9 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * If you are reading a GPIO pin that changes in real-time, you will probably
- * need a debouncing algorithm and/or an edge detector. The Telegraph library,
- * which is not Linux-specific, has both. It can be found at
- * http://www.diag.com/navigation/downloads/Telegraph.html .
+ * need a debouncing algorithm and/or an edge detector. See the cue feature
+ * for such capabilities. These capabilities are not part of the pin feature
+ * since they can be used completely independently.
  */
 
 #include <stdio.h>
