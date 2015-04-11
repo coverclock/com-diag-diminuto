@@ -16,14 +16,25 @@
 
 int main(int argc, char ** argv)
 {
-	char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
-	int ii;
-	diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, DIMINUTO_LOG_HERE "HERE");
-	for (ii = 0; ii < sizeof(buffer) - 1; ++ii) {
-		buffer[ii] = (ii % ('~' - ' ' + 1)) + ' ';
-	}
-	buffer[sizeof(buffer) - 1] = '\0';
-	diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, "%s%s%s", DIMINUTO_LOG_HERE, "THERE", buffer);
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    int ii;
+    diminuto_log_mask = 0;
+    ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
+    diminuto_log_setmask();
+    ASSERT(diminuto_log_mask == ~(int)0);
+    ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
+    diminuto_log_setmask();
+    ASSERT(diminuto_log_mask == 0);
+    ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+    diminuto_log_setmask();
+    ASSERT(diminuto_log_mask == 255);
+    diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, DIMINUTO_LOG_HERE "HERE");
+    for (ii = 0; ii < sizeof(buffer) - 1; ++ii) {
+        buffer[ii] = (ii % ('~' - ' ' + 1)) + ' ';
+    }
+    buffer[sizeof(buffer) - 1] = '\0';
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, "%s%s%s", DIMINUTO_LOG_HERE, "THERE", buffer);
     if (argc > 1) {
         int rc;
         diminuto_log_emit("DAEMONIZING\n");

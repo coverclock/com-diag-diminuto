@@ -24,7 +24,8 @@
  * LOCALS
  *****************************************************************************/
 
-static const char levels[] = "01234567";
+static const char LEVELS[] = "01234567";
+static const char ALL[] = "~0";
 static uint8_t initialized = 0;
 
 /*******************************************************************************
@@ -47,8 +48,12 @@ void diminuto_log_setmask(void)
 {
     const char * mask;
 
-    if ((mask = getenv(diminuto_log_mask_name)) != (const char *)0) {
-        DIMINUTO_LOG_MASK = ntohl(strtoul(mask, (char **)0, 0));
+    if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
+        /* Do nothing. */
+    } else if (strcmp(mask, ALL) == 0) {
+        DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
+    } else {
+        DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
     }
 }
 
@@ -113,7 +118,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, levels[priority & 0x7], getpid());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {

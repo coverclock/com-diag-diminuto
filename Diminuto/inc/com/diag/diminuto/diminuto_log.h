@@ -40,7 +40,7 @@
 
 /******************************************************************************/
 
-/*
+/**
  * The log mask has one bit for every message priority that can be enabled or
  * disabled. We define here a bit for every priority that is supported by
  * the native Linux syslog (for daemons) and printk (for kernel and device
@@ -51,7 +51,6 @@
  * kernel or device driver modules. (Making it anything else except an int
  * will result in a compile-time error unless code elsewhere is changed.)
  */
-
 typedef int diminuto_log_mask_t;
 
 #define DIMINUTO_LOG_MASK_EMERGENCY     (1 << (7 - 0))
