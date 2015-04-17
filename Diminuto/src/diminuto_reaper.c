@@ -28,9 +28,7 @@ static void diminuto_reaper_handler(int signum)
     if (signum == SIGCHLD) {
         while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
             signaled = !0;
-            if (!diminuto_reaper_debug) {
-                /* Do nothing. */
-            } else if (WIFEXITED(status)) {
+            if (WIFEXITED(status)) {
                 DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d exit=%d", pid, WEXITSTATUS(status));
             } else if (WIFSIGNALED(status)) {
                 DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d signal=%d", pid, WTERMSIG(status));
