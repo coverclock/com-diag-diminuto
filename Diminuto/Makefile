@@ -15,6 +15,10 @@
 
 TITLE				:=	Diminuto
 
+MAJOR				:=	29# API changes that may require that applications be modified.
+MINOR				:=	18# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
 # on all of these other targets at one time or another, the current version has
@@ -35,10 +39,6 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
-
-MAJOR				:=	29# API changes that may require that applications be modified.
-MINOR				:=	17# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
