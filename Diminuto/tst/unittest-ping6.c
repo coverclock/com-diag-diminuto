@@ -28,32 +28,6 @@ int main(int argc, char * argv[])
     ASSERT((sock = diminuto_ping6_datagram_peer()) >= 0);
 
     {
-        to = diminuto_ipc6_address("google.com");
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
-        ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
-
-        ASSERT(diminuto_ping6_datagram_send(sock, to) > 0);
-
-        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from)) > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
-        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
-    }
-
-    {
-        to = diminuto_ipc6_address("diag.com");
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
-        ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
-
-        ASSERT(diminuto_ping6_datagram_send(sock, to) > 0);
-
-        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from)) > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
-        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
-    }
-
-    {
         to = diminuto_ipc6_address("::1");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
@@ -61,6 +35,14 @@ int main(int argc, char * argv[])
         ASSERT(diminuto_ping6_datagram_send(sock, to) > 0);
 
         memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+        /*
+         * Remarkably, the first datagram we get back when we ping ourselves
+         * is our own ICMP ECHO REQUEST. The ping feature recognizes this and
+         * returns a zero, indicating we didn't get an ICMP ECHO REPLY back,
+         * but we did get something, and it wasn't an error. It is up to the
+         * caller to decide what to do. The unit test just tries again.
+         */
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from)) == 0);
         ASSERT((size = diminuto_ping6_datagram_recv(sock, &from)) > 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
         ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);

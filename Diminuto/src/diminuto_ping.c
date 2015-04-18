@@ -108,23 +108,31 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
     while (!0) {
         if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
             diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+            if (total < (sizeof(struct ip) + sizeof(struct icmp))) {
+                total = 0;
+                break; /* Too small to be a legitimate reply. */
+            } else {
+                ipp = (struct iphdr *)(&buffer);
+                icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
+                if (icmpp->icmp_type == ICMP_ECHO) {
+                    total = 0;
+                    break; /* This is likely to be our own ICMP ECHO REQUEST to localhost. */
+                } else if (icmpp->icmp_type == ICMP_ECHOREPLY) {
+                    break; /* Nominal. */
+                } else {
+                    total = 0;
+                    break; /* This was not the response we wanted. */
+                }
+            }
             break;
         } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
             diminuto_perror("diminuto_ping_datagram_recv: recvfrom");
+            break; /* Error! */
         } else {
-            continue;
+            continue; /* Interrupted; try again. */
         }
     }
 
-    if (total < (sizeof(struct ip) + sizeof(struct icmp))) {
-        total = 0; /* Too small to be a reply. */
-    } else {
-        ipp = (struct iphdr *)(&buffer);
-        icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
-        if (icmpp->icmp_type != ICMP_ECHOREPLY) {
-            total = 0; /* This was not the reply we wanted. */
-        }
-    }
 
     return total;
 }

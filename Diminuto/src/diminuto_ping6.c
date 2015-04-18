@@ -19,8 +19,6 @@
 #include "com/diag/diminuto/diminuto_ping6.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_endianess.h"
-#include "com/diag/diminuto/diminuto_widthof.h"
 
 #define DATA_LENGTH 56
 
@@ -82,22 +80,29 @@ ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp)
     while (!0) {
         if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
             diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
-            break;
+            if (total < sizeof(struct icmp6_hdr)) {
+                total = 0;
+                break; /* Too small to be a reply. */
+            } else {
+                icmpp = (struct icmp6_hdr *)(&buffer);
+                if (icmpp->icmp6_type == ICMP6_ECHO_REQUEST) {
+                    total = 0;
+                    break; /* Likely to be our own ICMP6 ECHO REQUEST to localhost. */
+                } else if (icmpp->icmp6_type == ICMP6_ECHO_REPLY) {
+                    break; /* Nominal. */
+                } else {
+                    total = 0;
+                    break; /* This was not the reply we wanted. */
+                }
+            }
         } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
             diminuto_perror("diminuto_ping6_datagram_recv: recvfrom");
+            break; /* Error! */
         } else {
-            continue;
+            continue; /* Interrupted; try again. */
         }
     }
 
-    if (total < sizeof(struct icmp6_hdr)) {
-        total = 0; /* Too small to be a reply. */
-    } else {
-        icmpp = (struct icmp6_hdr *)(&buffer);
-        if (icmpp->icmp6_type != ICMP6_ECHO_REPLY) {
-            total = 0; /* This was not the reply we wanted. */
-        }
-    }
 
     return total;
 }

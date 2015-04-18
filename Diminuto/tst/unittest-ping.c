@@ -52,6 +52,27 @@ int main(int argc, char * argv[])
         ASSERT(from != 0);
     }
 
+    {
+        to = diminuto_ipc_address("localhost");
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc_address2string(to, buffer, sizeof(buffer)));
+        ASSERT(to != 0);
+
+        ASSERT(diminuto_ping_datagram_send(sock, to) > 0);
+
+        from = 0;
+        /*
+         * Remarkably, the first datagram we get back when we ping ourselves
+         * is our own ICMP ECHO REQUEST. The ping feature recognizes this and
+         * returns a zero, indicating we didn't get an ICMP ECHO REPLY back,
+         * but we did get something, and it wasn't an error. It is up to the
+         * caller to decide what to do. The unit test just tries again.
+         */
+        ASSERT((size = diminuto_ping_datagram_recv(sock, &from)) == 0);
+        ASSERT((size = diminuto_ping_datagram_recv(sock, &from)) > 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\"\n", diminuto_ipc_address2string(from, buffer, sizeof(buffer)));
+        ASSERT(from != 0);
+    }
+
     ASSERT(diminuto_ping_close(sock) >= 0);
 
     EXIT();
