@@ -139,8 +139,8 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_PRIORITY_DEBUG          LOG_DEBUG
 
 #define DIMINUTO_LOG_IDENT_DEFAULT           "Diminuto"
-#define DIMINUTO_LOG_OPTION_DEFAULT          LOG_CONS
-#define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL0
+#define DIMINUTO_LOG_OPTION_DEFAULT          (LOG_CONS | LOG_PID)
+#define DIMINUTO_LOG_FACILITY_DEFAULT        LOG_LOCAL7
 
 #   endif
 
@@ -173,8 +173,19 @@ extern void diminuto_log_setmask(void);
 /**
  * Open the underlying system log communication channel (whatever that is)
  * if it is not already open, and (if possible) provide it with an identifying
- * name.
+ * name, along with options, and a facility.
  * @param name points to a identifying name string.
+ * @param option are ORed syslog options, like (LOG_CONS | LOG_PID).
+ * @param facility is the syslog facility, like LOG_LOCAL7.
+ */
+extern void diminuto_log_open_syslog(const char * name, int option, int facility);
+
+/**
+ * Open the underlying system log communication channel (whatever that is)
+ * if it is not already open, and (if possible) provide it with an identifying
+ * name. This just calls diminuto_log_open_syslog() with the default options and
+ * facility.
+ * @param name points to a identifying name string or null to use the default.
  */
 extern void diminuto_log_open(const char * name);
 

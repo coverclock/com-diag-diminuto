@@ -57,17 +57,22 @@ void diminuto_log_setmask(void)
     }
 }
 
-void diminuto_log_open(const char * name)
+void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
     if (name != (const char *)0) {
         diminuto_log_ident = name;
     }
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
     if (!initialized) {
-        openlog(diminuto_log_ident, diminuto_log_option, diminuto_log_facility);
+        openlog(diminuto_log_ident, option, facility);
         initialized = !0;
     }
 #endif
+}
+
+void diminuto_log_open(const char * name)
+{
+    return diminuto_log_open_syslog(name, diminuto_log_option, diminuto_log_facility);
 }
 
 void diminuto_log_close(void)
