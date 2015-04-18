@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_countof.h"
@@ -37,7 +38,7 @@ const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { 0, 0, 0, 0, 0, 0xffff, ((127 <
  * HELPERS
  ******************************************************************************/
 
-static inline void ntoh6(diminuto_ipv6_t * addressp)
+void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
 {
     size_t ii;
 
@@ -46,7 +47,7 @@ static inline void ntoh6(diminuto_ipv6_t * addressp)
     }
 }
 
-static inline void hton6(diminuto_ipv6_t * addressp)
+void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
 {
     size_t ii;
 
@@ -102,7 +103,7 @@ static inline void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp
  * to send an urgent data byte out of band), we return UNSPECIFIED. Anything
  * else is an error.
  */
-static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     int result = -1;
 
@@ -110,7 +111,7 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         result = 0;
          if (addressp != (diminuto_ipv6_t *)0) {
             memcpy(addressp->u16, ((struct sockaddr_in6 *)sap)->sin6_addr.s6_addr, sizeof(addressp->u16));
-            ntoh6(addressp);
+            diminuto_ipc6_ntoh6(addressp);
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in6 *)sap)->sin6_port);
@@ -119,7 +120,7 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         result = 0;
         if (addressp != (diminuto_ipv6_t *)0) {
             ipv42ipv6(((struct sockaddr_in *)sap)->sin_addr.s_addr, addressp);
-            ntoh6(addressp);
+            diminuto_ipc6_ntoh6(addressp);
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in *)sap)->sin_port);
@@ -134,7 +135,7 @@ static int identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_
         }
     } else {
         errno = EINVAL;
-        diminuto_perror("diminuto_ipc6: sa_family");
+        diminuto_perror("diminuto_ipc6_identify: sa_family");
     }
 
     return result;
@@ -153,7 +154,7 @@ int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
     } else if (addressp == (diminuto_ipv4_t *)0) {
         /* Do nothing. */
     } else {
-        hton6(&address);
+        diminuto_ipc6_hton6(&address);
         memcpy(addressp, &(address.u16[6]), sizeof(*addressp));
         *addressp = ntohl(*addressp);
     }
@@ -164,7 +165,7 @@ int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
 void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
 {
     ipv42ipv6(htonl(address), addressp);
-    ntoh6(addressp);
+    diminuto_ipc6_ntoh6(addressp);
 }
 
 /*******************************************************************************
@@ -262,7 +263,7 @@ diminuto_ipv6_t * diminuto_ipc6_addresses(const char * hostname)
         index = 0;
         for (nextp = infop, prevp = (struct addrinfo *)0; nextp != (struct addrinfo *)0; prevp = nextp, nextp = prevp->ai_next) {
             if (!redundant(prevp, nextp)) {
-                identify(nextp->ai_addr, &(addresses[index]), (diminuto_port_t *)0);
+                diminuto_ipc6_identify(nextp->ai_addr, &(addresses[index]), (diminuto_port_t *)0);
                 ++index;
             }
         }
@@ -279,7 +280,7 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
     struct addrinfo * infop;
 
     if ((infop = resolve(hostname)) != (struct addrinfo *)0) {
-        identify(infop->ai_addr, &address, (diminuto_port_t *)0);
+        diminuto_ipc6_identify(infop->ai_addr, &address, (diminuto_port_t *)0);
         freeaddrinfo(infop);
     }
 
@@ -292,7 +293,7 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
         struct in6_addr in6;
         char temporary[INET6_ADDRSTRLEN];
 
-        hton6(&address);
+        diminuto_ipc6_hton6(&address);
         memcpy(in6.s6_addr, address.u16, sizeof(in6.s6_addr));
         inet_ntop(AF_INET6, &in6, temporary, sizeof(temporary));
 
@@ -353,7 +354,7 @@ int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_por
         diminuto_perror("diminuto_ipc6_accept: accept");
         newfd = -1;
     } else {
-        identify((struct sockaddr *)&sa, addressp, portp);
+        diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     }
    
     return newfd;
@@ -367,7 +368,7 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
     int rc;
 
     sin6.sin6_family = AF_INET6;
-    hton6(&address);
+    diminuto_ipc6_hton6(&address);
     memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
     sin6.sin6_port = htons(port);
 
@@ -420,7 +421,7 @@ ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size,
     if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
         /* Do nothing: "orderly shutdown" (not sure what that means in this context). */
     } else if (total > 0) {
-        identify((struct sockaddr *)&sa, addressp, portp);
+        diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     } else if ((errno != EINTR) && (errno != EAGAIN)) { 
         diminuto_perror("diminuto_ipc6_datagram_receive_flags: recvfrom");
     } else {
@@ -440,7 +441,7 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
     if (port > 0) {
         length = sizeof(sin6);
         sin6.sin6_family = AF_INET6;
-        hton6(&address);
+        diminuto_ipc6_hton6(&address);
         memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
         sin6.sin6_port = htons(port);
         sap = (struct sockaddr *)&sin6;
@@ -475,7 +476,7 @@ int diminuto_ipc6_nearend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * 
     if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc6_nearend: getsockname");
     } else {
-        identify((struct sockaddr *)&sa, addressp, portp);
+        diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     }
 
     return rc;
@@ -490,7 +491,7 @@ int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * p
     if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc6_farend: getpeername");
     } else {
-        identify((struct sockaddr *)&sa, addressp, portp);
+        diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     }
 
     return rc;

@@ -210,7 +210,7 @@ static inline int diminuto_ipc6_shutdown(int fd) {
  * Close a socket. Unless the socket has been shutdown, pending data will
  * still be transmitted.
  * @param fd is an open socket of any type.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_close(int fd) {
     return diminuto_ipc_close(fd);

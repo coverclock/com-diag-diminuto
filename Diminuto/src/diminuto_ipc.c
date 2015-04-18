@@ -9,6 +9,7 @@
  * Ported from the Desperado::Service class.
  */
 
+#include "diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -34,7 +35,8 @@
  * is performed against a stream socket (done typically to send an urgent data
  * byte out of band), we return zeros. Anything  else is an error.
  */
-static int identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp) {
+int diminuto_ipc_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
     int result = 0;
 
     if (sap->sa_family == AF_INET) {
@@ -55,7 +57,7 @@ static int identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_
     } else {
         result = -1;
         errno = EINVAL;
-        diminuto_perror("diminuto_ipc: sa_family");
+        diminuto_perror("diminuto_ipc_identify: sa_family");
     }
 
     return result;
@@ -302,7 +304,7 @@ int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port
         diminuto_perror("diminuto_ipc_accept: accept");
         newfd = -1;
     } else {
-        identify(&sa, addressp, portp);
+        diminuto_ipc_identify(&sa, addressp, portp);
     }
    
     return newfd;
@@ -345,13 +347,13 @@ int diminuto_ipc_datagram_peer(diminuto_port_t port)
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc_peer: socket");
+        diminuto_perror("diminuto_ipc_datagram_peer: socket");
     } else if (diminuto_ipc_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc_peer: diminuto_ipc_set_reuseaddress");
+        diminuto_perror("diminuto_ipc_datagram_peer: diminuto_ipc_set_reuseaddress");
         diminuto_ipc_close(fd);
         fd = -2;
     } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc_peer: bind");
+        diminuto_perror("diminuto_ipc_datagram_peer: bind");
         diminuto_ipc_close(fd);
         fd = -3;
     }
@@ -368,7 +370,7 @@ ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, 
     if ((total = recvfrom(fd, buffer, size, flags, &sa, &length)) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
-        identify(&sa, addressp, portp);
+        diminuto_ipc_identify(&sa, addressp, portp);
     } else if ((errno != EINTR) && (errno != EAGAIN)) { 
         diminuto_perror("diminuto_ipc_datagram_receive_flags: recvfrom");
     } else {
@@ -423,7 +425,7 @@ int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * p
     if ((rc = getsockname(fd, &sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc_nearend: getsockname");
     } else {
-        identify(&sa, addressp, portp);
+        diminuto_ipc_identify(&sa, addressp, portp);
     }
 
     return rc;
@@ -438,7 +440,7 @@ int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * po
     if ((rc = getpeername(fd, &sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc_farend: getpeername");
     } else {
-        identify(&sa, addressp, portp);
+        diminuto_ipc_identify(&sa, addressp, portp);
     }
 
     return rc;

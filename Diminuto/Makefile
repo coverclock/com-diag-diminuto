@@ -1,3 +1,4 @@
+# vi: set ts=4 shiftwidth=4:
 # Copyright 2008-2015 Digital Aggregates Corporation
 # Licensed under the terms in README.h
 # author:Chip Overclock
