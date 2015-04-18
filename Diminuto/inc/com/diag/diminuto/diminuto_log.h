@@ -12,7 +12,7 @@
  *
  * This header file can legitimately be included more than once in a
  * single translation unit. It can be used in applications, daemons,
- * the kernel modules, and device drivers. In applications, it prints
+ * kernel modules, and device drivers. In applications, it prints
  * to standard error. In daemons (processes who have been inherited
  * by process ID 1 as their parent), it logs to the system log. For
  * kernel modules and device drivers, it uses the printk kernel function.
@@ -154,13 +154,56 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #define DIMINUTO_LOG_BUFFER_MAXIMUM          (1024)
 
+/******************************************************************************/
+
+/**
+ * This is the log identity string used when openlog(3) is called. If the
+ * application changes this before the first log function is called, this is
+ * the identity that will be used.
+ */
 extern const char * diminuto_log_ident;
+
+/**
+ * This is the log option bit mask used when openlog(3) is called. If the
+ * application changes this before the first log function is called, these are
+ * the options that will be used.
+ */
 extern int diminuto_log_option;
+
+/**
+ * This is the log facility identifier used when openlog(3) is called. If the
+ * application changes this before the first log function is called, this is
+ * the facility that will be used.
+ */
 extern int diminuto_log_facility;
+
+/**
+ * This is the file descriptor to which log messages will be written if the
+ * caller is not running as a daemon.
+ */
 extern int diminuto_log_descriptor;
+
+/**
+ * This is the file stream object which corresponds to the file descriptor.
+ * (Some platforms have underlying logging mechanisms that need this.)
+ */
 extern FILE * diminuto_log_file;
+
+/**
+ * This is the name of the environmental variable assumed to contain a number
+ * that is the log mask.
+ */
 extern const char * diminuto_log_mask_name;
+
+/**
+ * This is the log mask: a one bit means the messages at that log level are
+ * emitted. The DEBUG level is the least significant bit (even though it is
+ * numerically the highest log level), with successively higher levels
+ * proceeding to the greater significant bits.
+ */
 extern diminuto_log_mask_t diminuto_log_mask;
+
+/******************************************************************************/
 
 /**
  * Set the global default log mask from the environment. By default, the name

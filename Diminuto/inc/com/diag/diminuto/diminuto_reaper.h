@@ -9,6 +9,12 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * The reaper feature provides a SIGCHLD signal handler that will reap any
+ * terminating children via a waitpid(2), and logging their termination signals
+ * or exit statuses. This prevents a forking application from being infested
+ * with zombie processes (although most applications will likely choose to do
+ * the waitpid(2) themselves).
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
