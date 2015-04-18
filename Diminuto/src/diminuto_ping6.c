@@ -103,6 +103,5 @@ ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp)
         }
     }
 
-
     return total;
 }
