@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * WORK IN PROGRESS!
  */
 
 #include <string.h>
@@ -40,6 +42,19 @@ int main(int argc, char * argv[])
 
     {
         to = diminuto_ipc6_address("diag.com");
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
+        ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
+
+        ASSERT(diminuto_ping6_datagram_send(sock, to) > 0);
+
+        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from)) > 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
+        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
+    }
+
+    {
+        to = diminuto_ipc6_address("::1");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
 

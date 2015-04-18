@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * WORK IN PROGRESS!
  */
 
 #include <errno.h>
@@ -22,13 +24,11 @@
 
 #define DATA_LENGTH 56
 
-static const int IPV6_ICMP = 58;
-
 int diminuto_ping6_datagram_peer(void)
 {
     int fd;
 
-    if ((fd = socket(AF_INET6, SOCK_RAW, IPV6_ICMP)) >= 0) {
+    if ((fd = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
         diminuto_perror("diminuto_ping6_datagram_peer: must be root");

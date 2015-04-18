@@ -6,6 +6,8 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * WORK IN PROGRESS!
  */
 
 #include <errno.h>
@@ -21,8 +23,6 @@
 #include "com/diag/diminuto/diminuto_widthof.h"
 
 #define DATA_LENGTH 56
-
-static const int IPV4_ICMP = 1;
 
 /*
  * Based on inet_cksum() in BusyBox 1.23.2.
@@ -56,7 +56,7 @@ int diminuto_ping_datagram_peer(void)
 {
     int fd;
 
-    if ((fd = socket(AF_INET, SOCK_RAW, IPV4_ICMP)) >= 0) {
+    if ((fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
         diminuto_perror("diminuto_ping_datagram_peer: must be root");
