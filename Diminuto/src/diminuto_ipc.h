@@ -17,6 +17,14 @@
 #include <sys/socket.h>
 #include "com/diag/diminuto/diminuto_types.h"
 
+/**
+ * Extract the IPv4 address and port number in host byte order from a socket
+ * address structure.
+ * @param sap points to a socket address structure.
+ * @param addressp points to an IPv4 address variable, or NULL.
+ * @param portp points to a port variable, or NULL.
+ * @return 0 for success, <0 otherwise.
+ */
 extern int diminuto_ipc_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 #endif

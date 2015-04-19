@@ -17,10 +17,26 @@
 #include <sys/socket.h>
 #include "com/diag/diminuto/diminuto_types.h"
 
+/**
+ * Swap an IPv6 address variable from network to host byte order in place.
+ * @param addressp points to an IPv6 address variable.
+ */
 extern void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp);
 
+/**
+ * Swap an IPv6 address variable from host to network byte order in place.
+ * @param addressp points to an IPv6 address variable.
+ */
 extern void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp);
 
+/**
+ * Extract the IPv6 address and port number in host byte order from a socket
+ * address structure. (IPv4 addresses are encapsulated into IPv6 addresses.)
+ * @param sap points to a socket address structure.
+ * @param addressp points to an IPv6 address variable, or NULL.
+ * @param portp points to a port variable, or NULL.
+ * @return 0 for success, <0 otherwise.
+ */
 extern int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 #endif

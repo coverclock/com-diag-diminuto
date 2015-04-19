@@ -12,13 +12,14 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_memberof.h"
 
 /**
  * @def diminuto_offsetof
  * Compute the offset in bytes of the member @a _MEMBER_ in the structure
  * @a _STRUCT_.
  */
-#define diminuto_offsetof(_STRUCT_, _MEMBER_) ((size_t)(((char *)&(((_STRUCT_ *)0)->_MEMBER_)) - ((char *)((_STRUCT_ *)0))))
+#define diminuto_offsetof(_STRUCT_, _MEMBER_) ((size_t)(((char *)&diminuto_memberof(_STRUCT_, _MEMBER_)) - ((char *)((_STRUCT_ *)0))))
 
 #ifndef offsetof
 #   define offsetof(_STRUCT_, _MEMBER_) diminuto_offsetof(_STRUCT_, _MEMBER_)

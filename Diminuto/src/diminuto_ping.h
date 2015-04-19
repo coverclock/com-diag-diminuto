@@ -11,16 +11,23 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * This is the ping feature private API.
- */
-
-#include "com/diag/diminuto/diminuto_types.h"
-
-/*
+ *
+ * REFERENCES
+ *
  * J. Postel, "Internet Control Message Protocol", RFC 792, September 1981
  *
  * R. Braden, D. Borman, C. Partridge, "Computing the Internet Checksum",
  * RFC 1071, September 1988
  */
-extern uint16_t diminuto_inet_checksum(void * payload, size_t size);
+
+#include "com/diag/diminuto/diminuto_types.h"
+
+/**
+ * Compute a sixteen-bit internet checksum across a buffer.
+ * @param buffer points to the buffer.
+ * @param size is the number of bytes in the buffer.
+ * @return the checksum.
+ */
+extern uint16_t diminuto_inet_checksum(void * buffer, size_t size);
 
 #endif
