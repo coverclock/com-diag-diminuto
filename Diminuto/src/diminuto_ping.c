@@ -77,7 +77,7 @@ int diminuto_ping_datagram_peer(void)
     return fd;
 }
 
-ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address)
+ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id, uint16_t seq)
 {
     ssize_t total;
     struct { char payload[sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + sizeof(diminuto_ticks_t)]; } buffer = { 0 };
@@ -92,11 +92,10 @@ ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address)
 
     icmpp = (struct icmp *)(&buffer);
     icmpp->icmp_type = ICMP_ECHO;
-    icmpp->icmp_id = 0;
-    icmpp->icmp_seq = 0;
+    icmpp->icmp_id = id;
+    icmpp->icmp_seq = seq;
     //memcpy(icmpp->icmp_data, &now, sizeof(diminuto_ticks_t));
     icmpp->icmp_cksum = diminuto_inet_checksum(&buffer, sizeof(buffer));
-DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "icmp_data=%zu\n", offsetof(struct icmp, icmp_data));
 
     if ((total = sendto(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, sizeof(sa))) == 0) {
         /* Do nothing: not sure what this means. */
@@ -112,7 +111,7 @@ DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "icmp_data=%zu\n", offsetof(struct icmp, ic
 
 }
 
-ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
+ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp)
 {
     ssize_t total;
     struct { char payload[sizeof(struct iphdr) + sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + sizeof(diminuto_ticks_t)]; } buffer = { 0 };
@@ -125,7 +124,6 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
 
     while (!0) {
         if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
-            diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
             if (total < sizeof(buffer)) {
                 total = 0;
                 break; /* Too small to be a legitimate reply. */
@@ -136,9 +134,11 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
                     total = 0;
                     break; /* This was not the response we wanted. */
                 } else {
+                    diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+                    if (idp != (uint16_t *)0) { *idp = icmpp->icmp_id; }
+                    if (seqp != (uint16_t *)0) { *seqp = icmpp->icmp_seq; }
                     now = diminuto_time_clock();
                     //memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
-                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "elapsed=%lld\n", now - then);
                     break; /* Nominal. */
                 }
             }
