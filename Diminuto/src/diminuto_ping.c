@@ -80,7 +80,7 @@ int diminuto_ping_datagram_peer(void)
 ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address)
 {
     ssize_t total;
-    struct { char payload[sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + DATA_LENGTH]; } buffer = { 0 };
+    struct { char payload[sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + sizeof(diminuto_ticks_t)]; } buffer = { 0 };
     struct sockaddr_in sa = { 0 };
     struct icmp * icmpp;
     diminuto_ticks_t now;
@@ -94,8 +94,9 @@ ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address)
     icmpp->icmp_type = ICMP_ECHO;
     icmpp->icmp_id = 0;
     icmpp->icmp_seq = 0;
-    //memcpy(icmpp->icmp_data, &now, sizeof(now));
+    //memcpy(icmpp->icmp_data, &now, sizeof(diminuto_ticks_t));
     icmpp->icmp_cksum = diminuto_inet_checksum(&buffer, sizeof(buffer));
+DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "icmp_data=%zu\n", offsetof(struct icmp, icmp_data));
 
     if ((total = sendto(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, sizeof(sa))) == 0) {
         /* Do nothing: not sure what this means. */
@@ -114,7 +115,7 @@ ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address)
 ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
 {
     ssize_t total;
-    struct { char payload[sizeof(struct iphdr) + sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + DATA_LENGTH]; } buffer = { 0 };
+    struct { char payload[sizeof(struct iphdr) + sizeof(struct icmp) - sizeof(memberof(struct icmp, icmp_data)) + sizeof(diminuto_ticks_t)]; } buffer = { 0 };
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
     struct iphdr * ipp;
@@ -125,21 +126,18 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp)
     while (!0) {
         if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
             diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
-            if (total < (sizeof(struct ip) + sizeof(struct icmp))) {
+            if (total < sizeof(buffer)) {
                 total = 0;
                 break; /* Too small to be a legitimate reply. */
             } else {
                 ipp = (struct iphdr *)(&buffer);
                 icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
-                if (icmpp->icmp_type == ICMP_ECHO) {
-                    total = 0;
-                    break; /* This is likely to be our own ICMP ECHO REQUEST to localhost. */
-                } else if (icmpp->icmp_type != ICMP_ECHOREPLY) {
+                if (icmpp->icmp_type != ICMP_ECHOREPLY) {
                     total = 0;
                     break; /* This was not the response we wanted. */
                 } else {
                     now = diminuto_time_clock();
-                    //memcpy(&then, icmpp->icmp_data, sizeof(now));
+                    //memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "elapsed=%lld\n", now - then);
                     break; /* Nominal. */
                 }
