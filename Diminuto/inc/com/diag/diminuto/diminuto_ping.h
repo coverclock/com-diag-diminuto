@@ -19,7 +19,7 @@
 /**
  * Create a raw socket over which an ICMP ECHO REQUEST datagram can be sent
  * and an ICMP ECHO REPLY datagram can be received. This is a privileged
- * operation.
+ * operation. This socket can be used with the mux feature.
  * @return >=0 for a raw socket, or <0 if an error occurred.
  */
 extern int diminuto_ping_datagram_peer(void);

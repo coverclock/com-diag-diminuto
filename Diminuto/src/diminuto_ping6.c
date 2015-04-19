@@ -37,10 +37,10 @@ int diminuto_ping6_datagram_peer(void)
     return fd;
 }
 
-ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address)
+ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uint16_t id, uint16_t seq)
 {
     ssize_t total;
-    union { char payload[sizeof(struct icmp6_hdr) + DATA_LENGTH]; uint16_t alignment[0]; } buffer = { { 0 } };
+    union { struct icmp6_hdr header; char payload[sizeof(struct icmp6_hdr) + DATA_LENGTH]; } buffer = { 0 };
     struct sockaddr_in6 sa = { 0 };
     struct icmp6_hdr * icmpp;
     int option;
@@ -52,6 +52,8 @@ ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address)
 
     icmpp = (struct icmp6_hdr *)(&buffer);
     icmpp->icmp6_type = ICMP6_ECHO_REQUEST;
+    icmpp->icmp6_id = id;
+    icmpp->icmp6_seq = seq;
     option = offsetof(struct icmp6_hdr, icmp6_cksum);
     setsockopt(fd, SOL_RAW, IPV6_CHECKSUM, &option, sizeof(option));
 
@@ -69,30 +71,29 @@ ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address)
 
 }
 
-ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp)
+ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_t * idp, uint16_t * seqp)
 {
     ssize_t total;
-    union { char payload[sizeof(struct icmp6_hdr) + DATA_LENGTH]; uint16_t alignment[0]; } buffer = { { 0 } };
+    union { struct icmp6_hdr header; char payload[sizeof(struct icmp6_hdr) + DATA_LENGTH]; } buffer = { 0 };
     diminuto_ipc6_sockaddr_t sa = { 0 };
     socklen_t length = sizeof(sa);
     struct icmp6_hdr * icmpp;
 
     while (!0) {
         if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
-            diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
             if (total < sizeof(struct icmp6_hdr)) {
                 total = 0;
                 break; /* Too small to be a reply. */
             } else {
                 icmpp = (struct icmp6_hdr *)(&buffer);
-                if (icmpp->icmp6_type == ICMP6_ECHO_REQUEST) {
-                    total = 0;
-                    break; /* Likely to be our own ICMP6 ECHO REQUEST to localhost. */
-                } else if (icmpp->icmp6_type == ICMP6_ECHO_REPLY) {
-                    break; /* Nominal. */
-                } else {
+                if (icmpp->icmp6_type != ICMP6_ECHO_REPLY) {
                     total = 0;
                     break; /* This was not the reply we wanted. */
+                } else {
+                    diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+                    if (idp != (uint16_t *)0) { *idp = icmpp->icmp6_id; }
+                    if (seqp != (uint16_t *)0) { *seqp = icmpp->icmp6_seq; }
+                    break; /* Nominal. */
                 }
             }
         } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {

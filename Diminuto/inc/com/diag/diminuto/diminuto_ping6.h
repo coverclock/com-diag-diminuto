@@ -28,9 +28,11 @@ extern int diminuto_ping6_datagram_peer(void);
  * Sent an ICMP6 ECHO REQUEST datagram to the specified IPv6 address.
  * @param fd is the raw socket.
  * @param address is the IPv4 address.
+ * @param id is the ECHO REQUEST id assigned by the caller.
+ * @param seq is the ECHO REQUEST sequence number assigned by the caller.
  * @return >0 if successful, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address);
+extern ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uint16_t id, uint16_t seq);
 
 /**
  * Receive a response to the ICMP6 ECHO REQUEST datagram. The response could be
@@ -39,9 +41,11 @@ extern ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address);
  * caller must decide whether to retry.
  * @param fd is the raw socket.
  * @param addressp points to a variable into which the replying address is returned or NULL.
+ * @param idp points to a variable into which the ECHO REPLY id is returned, or NULL.
+ * @param seqp points to a variable into which the ECHO REPLY sequence number is returned, or NULL
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp);
+extern ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_t * idp, uint16_t * seqp);
 
 /**
  * Close the raw socket.
