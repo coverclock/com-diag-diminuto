@@ -42,9 +42,10 @@ extern ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint
  * @param addressp points to a variable into which the replying address is returned, or NULL.
  * @param idp points to a variable into which the ECHO REPLY id is returned, or NULL.
  * @param seqp points to a variable into which the ECHO REPLY sequence number is returned, or NULL
+ * @param elapsedp points to a variable into which the elapsed ticks is returned, or NULL.
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp);
+extern ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp);
 
 /**
  * Close the raw socket.
