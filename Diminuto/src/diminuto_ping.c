@@ -6,8 +6,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * WORK IN PROGRESS!
  */
 
 #include <errno.h>
@@ -30,33 +28,37 @@
 
 int diminuto_ping_debug = 0; /* Not part of the public API. */
 
+typedef union {
+    uint16_t word;
+    uint8_t byte[sizeof(uint16_t)];
+} inet_checksum_t;
+
 uint16_t diminuto_inet_checksum(void * buffer, size_t size)
 {
-    uint16_t datum;
+    inet_checksum_t datum;
     uint32_t accumulator = 0;
     uint8_t * here;
 
     here = (uint8_t *)buffer;
 
     while (size > 1) {
-        datum = *(here++);
-        datum = (datum << widthof(uint8_t)) | *(here++);
-        accumulator += datum;
+        datum.byte[0] = *(here++);
+        datum.byte[1] = *(here++);
+        accumulator += datum.word;
         size -= sizeof(uint16_t);
     }
 
     if (size > 0) {
-        datum = *(here++);
-        accumulator += datum;
+        datum.byte[0] = *(here++);
+        datum.byte[1] = 0;
+        accumulator += datum.word;
     }
 
-    while ((datum = accumulator >> widthof(uint16_t))) {
-        accumulator = (accumulator & (uint16_t)~0) + datum;
+    while ((datum.word = accumulator >> widthof(uint16_t))) {
+        accumulator = (accumulator & (uint16_t)~0) + datum.word;
     }
 
-    datum = ~accumulator;
-
-    return datum;
+    return ~accumulator;
 }
 
 int diminuto_ping_datagram_peer(void)
@@ -96,10 +98,10 @@ ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id
 
     icmpp = (struct icmp *)(&buffer);
     icmpp->icmp_type = ICMP_ECHO;
-    icmpp->icmp_id = htons(id);
-    icmpp->icmp_seq = htons(seq);
+    icmpp->icmp_id = id;
+    icmpp->icmp_seq = seq;
     memcpy(icmpp->icmp_data, &now, sizeof(diminuto_ticks_t));
-    icmpp->icmp_cksum = htons(diminuto_inet_checksum(&buffer, sizeof(buffer)));
+    icmpp->icmp_cksum = diminuto_inet_checksum(&buffer, sizeof(buffer));
 
     if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, sizeof(buffer)); }
 
@@ -125,7 +127,7 @@ typedef union {
     char payload[20 + 8 + 56];
 } icmp_echo_reply_datagram_t;
 
-ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp_echo_reply_datagram_t buffer = { 0 };
@@ -133,43 +135,45 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t
     socklen_t length = sizeof(sa);
     struct iphdr * ipp;
     struct icmp * icmpp;
-    uint16_t checksum = 0;
     diminuto_ticks_t now;
     diminuto_ticks_t then;
 
-    while (!0) {
-        if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) >= 0) {
-            if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, total); }
-            if (total < sizeof(buffer)) {
-                total = 0;
-                break; /* Too small to be a legitimate reply. */
-            } else {
-                ipp = (struct iphdr *)(&buffer);
-                icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
-                if (icmpp->icmp_type != ICMP_ECHOREPLY) {
-                    total = 0;
-                    break; /* This was not the response we wanted. */
-                } else {
-                    checksum = htons(diminuto_inet_checksum(icmpp, total - ((char *)icmpp - (char *)ipp)));
-                    /* The checksum will be zero if everything is correct. */
-                    diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
-                    if (idp != (uint16_t *)0) { *idp = ntohs(icmpp->icmp_id); }
-                    if (seqp != (uint16_t *)0) { *seqp = ntohs(icmpp->icmp_seq); }
-                    if (elapsedp != (diminuto_ticks_t *)0) {
-                        now = diminuto_time_clock();
-                        memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
-                        *elapsedp = now - then;
-                    }
-                    break; /* Nominal. */
-                }
-            }
-            break;
-        } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-            diminuto_perror("diminuto_ping_datagram_recv: recvfrom");
-            break; /* Error! */
+    if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) > 0) {
+        if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, total); }
+        if (total < sizeof(buffer)) {
+            total = 0; /* Too small to be a legitimate reply. */
         } else {
-            continue; /* Interrupted; try again. */
+            ipp = (struct iphdr *)(&buffer);
+            icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
+            if (icmpp->icmp_type != ICMP_ECHOREPLY) {
+                total = 0; /* This was not the response we wanted. */
+            } else if (diminuto_inet_checksum(icmpp, total - ((char *)icmpp - (char *)ipp)) != 0) {
+                total = 0; /* Should never happen. */
+            } else {
+                diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+                if (idp != (uint16_t *)0) {
+                    *idp = icmpp->icmp_id;
+                }
+                if (seqp != (uint16_t *)0) {
+                    *seqp = icmpp->icmp_seq;
+                }
+                if (ttlp != (uint8_t *)0) {
+                    *ttlp = ipp->ttl;
+                }
+                if (elapsedp != (diminuto_ticks_t *)0) {
+                    now = diminuto_time_clock();
+                    memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
+                    *elapsedp = now - then;
+                }
+                total -= sizeof(struct iphdr); /* Nominal. */
+            }
         }
+    } else if (total == 0) {
+        /* Not sure what this means for a connectionless socket. */
+    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+        diminuto_perror("diminuto_ping_datagram_recv: recvfrom");
+    } else {
+        /* Interrupted. */
     }
 
     return total;

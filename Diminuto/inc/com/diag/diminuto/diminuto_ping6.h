@@ -10,7 +10,9 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * WORK IN PROGRESS!
+ * This feature is a programmatic version of ping(1): send an ICMP6 ECHO REQUEST
+ * to an IPv6 address and (hopefully) receive an ICMP6 ECHO REPLY back. If so,
+ * compute the latency in ticks between the REQUEST and the REPLY.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -43,9 +45,10 @@ extern ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uin
  * @param addressp points to a variable into which the replying address is returned or NULL.
  * @param idp points to a variable into which the ECHO REPLY id is returned, or NULL.
  * @param seqp points to a variable into which the ECHO REPLY sequence number is returned, or NULL
+ * @param elapsedp points to a variable into which the elapsed ticks is returned, or NULL.
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_t * idp, uint16_t * seqp);
+extern ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp);
 
 /**
  * Close the raw socket.

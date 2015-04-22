@@ -10,7 +10,9 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * WORK IN PROGRESS!
+ * This feature is a programmatic version of ping(1): send an ICMP ECHO REQUEST
+ * to an IPv4 address and (hopefully) receive an ICMP ECHO REPLY back. If so,
+ * compute the latency in ticks between the REQUEST and the REPLY.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -36,16 +38,17 @@ extern ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint
 
 /**
  * Receive an ICMP ECHO REPLY reply to the ECHO REQUEST datagram. The response could be
- * an error (<0), an ICMP ECHO REPLY datagram with a matching id (>0), or some
- * other datagram (0).
+ * an error (<0), an ICMP ECHO REPLY datagram (>0), or some other ICMP datagram
+ * (0). It is up to the caller to match the identifier and sequence number.
  * @param fd is the raw socket.
  * @param addressp points to a variable into which the replying address is returned, or NULL.
  * @param idp points to a variable into which the ECHO REPLY id is returned, or NULL.
- * @param seqp points to a variable into which the ECHO REPLY sequence number is returned, or NULL
+ * @param seqp points to a variable into which the ECHO REPLY sequence number is returned, or NULL.
+ * @param ttlp points to a variable into which the IP Time To Live hop count is returned, or NULL.
  * @param elapsedp points to a variable into which the elapsed ticks is returned, or NULL.
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp);
+extern ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp);
 
 /**
  * Close the raw socket.

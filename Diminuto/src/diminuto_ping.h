@@ -23,7 +23,8 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Compute a sixteen-bit internet checksum across a buffer.
+ * Compute a sixteen-bit internet checksum across a buffer. Remarkably,
+ * according to RFC 1071, the endianess of the processor doesn't matter.
  * @param buffer points to the buffer.
  * @param size is the number of bytes in the buffer.
  * @return the checksum.

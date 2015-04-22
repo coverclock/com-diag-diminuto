@@ -88,8 +88,8 @@ FEATURES
 * frequency - determine common library time frequency.
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
-* ipc6 - IPv6 socket interface.
 * ipc - IPv4 socket interface.
+* ipc6 - IPv6 socket interface.
 * list - doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
@@ -103,6 +103,8 @@ FEATURES
 * path - find a file from a list in a PATH-like environmental variable.
 * phex - emit printable and unprintable characters in a printable form.
 * pin - get and set GPIO pins using the sysfs interface.
+* ping - programmatic ICMP ECHO REQUEST.
+* ping6 - programmatic ICMP6 ECHO REQUEST.
 * platform - try to determine what kind of system or target is being used.
 * poll - file descriptor multiplexer using poll(2).
 * pool - manage a pool of objects from which they can be allocated and freed.
