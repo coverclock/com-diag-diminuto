@@ -77,7 +77,7 @@ ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uint16_t i
 
 }
 
-ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp6_datagram_t buffer = { 0 };
@@ -88,19 +88,25 @@ ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint16_
     diminuto_ticks_t then;
 
     if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) > 0) {
+        diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
         if (total < sizeof(struct icmp6_hdr)) {
             total = 0; /* Too small to be a reply. */
         } else {
             icmpp = (struct icmp6_hdr *)(&buffer);
+            if (typep != (uint8_t *)0) {
+                *typep = icmpp->icmp6_type;
+            }
             if (icmpp->icmp6_type != ICMP6_ECHO_REPLY) {
-                total = 0; /* This was not the reply we wanted. */
+                total = 0; /* This was not a reply. */
             } else {
-                diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
                 if (idp != (uint16_t *)0) {
                     *idp = icmpp->icmp6_id;
                 }
                 if (seqp != (uint16_t *)0) {
                     *seqp = icmpp->icmp6_seq;
+                }
+                if (total < sizeof(buffer)) {
+                    total = 0; /* This was not our reply. */
                 }
                 if (elapsedp != (diminuto_ticks_t *)0) {
                     now = diminuto_time_clock();

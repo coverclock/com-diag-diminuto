@@ -20,6 +20,7 @@ int main(int argc, char * argv[])
     diminuto_ipv6_t to;
     diminuto_ipv6_t from;
     ssize_t size;
+    uint8_t type;
     uint16_t id;
     uint16_t seq;
     diminuto_ticks_t elapsed;
@@ -36,6 +37,7 @@ int main(int argc, char * argv[])
         ASSERT(diminuto_ping6_datagram_send(sock, to, 0xdead, 1) > 0);
 
         memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+        type = ~0;
         id = 0;
         seq = 0;
         elapsed = 0;
@@ -46,10 +48,11 @@ int main(int argc, char * argv[])
          * but we did get something, and it wasn't an error. It is up to the
          * caller to decide what to do. The unit test just tries again.
          */
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &id, &seq, &elapsed)) > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, id, seq, elapsed);
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
         ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
+        ASSERT(type != ~0);
         ASSERT(id == 0xdead);
         ASSERT(seq == 1);
         ASSERT(elapsed > 0);

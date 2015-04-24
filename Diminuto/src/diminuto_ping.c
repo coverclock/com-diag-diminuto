@@ -127,7 +127,7 @@ typedef union {
     char payload[20 + 8 + 56];
 } icmp_echo_reply_datagram_t;
 
-ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp_echo_reply_datagram_t buffer = { 0 };
@@ -140,32 +140,41 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint16_t
 
     if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) > 0) {
         if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, total); }
-        if (total < sizeof(buffer)) {
-            total = 0; /* Too small to be a legitimate reply. */
+        diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+        if (total < (sizeof(struct iphdr) + ICMP_MINLEN)) {
+            total = 0; /* Too small to be an ICMP datagram. */
         } else {
             ipp = (struct iphdr *)(&buffer);
             icmpp = (struct icmp *)((&(buffer.payload[0])) + (ipp->ihl << 2));
-            if (icmpp->icmp_type != ICMP_ECHOREPLY) {
-                total = 0; /* This was not the response we wanted. */
-            } else if (diminuto_inet_checksum(icmpp, total - ((char *)icmpp - (char *)ipp)) != 0) {
+            if (diminuto_inet_checksum(icmpp, total - ((char *)icmpp - (char *)ipp)) != 0) {
                 total = 0; /* Should never happen. */
             } else {
-                diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
-                if (idp != (uint16_t *)0) {
-                    *idp = icmpp->icmp_id;
+                if (typep != (uint8_t *)0) {
+                    *typep = icmpp->icmp_type;
                 }
-                if (seqp != (uint16_t *)0) {
-                    *seqp = icmpp->icmp_seq;
+                if (icmpp->icmp_type != ICMP_ECHOREPLY) {
+                    total = 0; /* This was not an echo reply. */
+                } else {
+                    if (idp != (uint16_t *)0) {
+                        *idp = icmpp->icmp_id;
+                    }
+                    if (seqp != (uint16_t *)0) {
+                        *seqp = icmpp->icmp_seq;
+                    }
+                    if (ttlp != (uint8_t *)0) {
+                        *ttlp = ipp->ttl;
+                    }
+                    if (total < sizeof(buffer)) {
+                        total = 0; /* This was not our reply. */
+                    } else {
+                        if (elapsedp != (diminuto_ticks_t *)0) {
+                            now = diminuto_time_clock();
+                            memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
+                            *elapsedp = now - then;
+                        }
+                        total -= sizeof(struct iphdr); /* Nominal. */
+                    }
                 }
-                if (ttlp != (uint8_t *)0) {
-                    *ttlp = ipp->ttl;
-                }
-                if (elapsedp != (diminuto_ticks_t *)0) {
-                    now = diminuto_time_clock();
-                    memcpy(&then, icmpp->icmp_data, sizeof(diminuto_ticks_t));
-                    *elapsedp = now - then;
-                }
-                total -= sizeof(struct iphdr); /* Nominal. */
             }
         }
     } else if (total == 0) {
