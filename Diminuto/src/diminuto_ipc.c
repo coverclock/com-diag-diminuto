@@ -109,7 +109,12 @@ int diminuto_ipc_set_option(int fd, int enable, int option)
     int onoff;
 
     onoff = enable ? 1 : 0;
-    if (setsockopt(fd, SOL_SOCKET, option, &onoff, sizeof(onoff)) < 0) {
+    if (setsockopt(fd, SOL_SOCKET, option, &onoff, sizeof(onoff)) >= 0) {
+        /* Do nothing. */
+    } else if (errno == EPERM) {
+        diminuto_perror("diminuto_ipc_set_option: must be root");
+        fd = -1;
+    } else {
         diminuto_perror("diminuto_ipc_set_option: setsockopt");
         fd = -1;
     }
