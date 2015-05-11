@@ -95,7 +95,7 @@ static void diminuto_mux_dump(diminuto_mux_t * muxp)
     DIMINUTO_LOG_DEBUG("mux@%p: mask=<", muxp); diminuto_mux_sigs_dump(&muxp->mask); DIMINUTO_LOG_DEBUG(">");
 }
 
-static void diminuto_mux_test(diminuto_ticks_t timeout)
+static void diminuto_mux_test(diminuto_sticks_t timeout)
 {
     diminuto_mux_t mux;
     int pipefd[16][2]; /* 16^2==256 */

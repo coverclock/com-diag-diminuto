@@ -188,7 +188,7 @@ extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
  * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
-extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t timeout);
+extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t timeout);
 
 /**
  * Return the next registered file descriptor that is ready for reading.

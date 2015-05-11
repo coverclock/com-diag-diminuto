@@ -48,6 +48,12 @@
  * may not. You can, for example, have a negative offset from the epoch to
  * indicate a date prior to 1970, but you cannot have a negative delay time or
  * a negative timer interval.
+ *
+ * Also, some features, like time, have functions that return a signed value of
+ * ticks just so that they can return a -1 to indicate an error. But typically,
+ * after checking for that, you may want to use an unsigned variable so that you
+ * can use unsigned arithmetic to calculate duration between two tick values
+ * without concern for rollover.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

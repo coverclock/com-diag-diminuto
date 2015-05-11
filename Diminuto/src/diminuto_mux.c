@@ -179,7 +179,7 @@ int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum)
     return rc;
 }
 
-int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_ticks_t ticks)
+int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t ticks)
 {
     int rc = 0;
     struct timespec * top = (struct timespec *)0;

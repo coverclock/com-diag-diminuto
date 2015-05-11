@@ -75,7 +75,7 @@ static void poll_after(diminuto_poll_t * pollp, diminuto_mux_set_t * setp, short
     }
 }
 
-int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_ticks_t ticks)
+int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
 {
     int rc = 0;
     struct timespec * top = (struct timespec *)0;

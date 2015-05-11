@@ -225,7 +225,7 @@ static inline int diminuto_poll_unregister_signal(diminuto_poll_t * pollp, int s
  * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
-extern int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_ticks_t timeout);
+extern int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t timeout);
 
 /**
  * Return the next registered file descriptor that is ready for reading.
