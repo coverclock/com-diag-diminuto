@@ -1,6 +1,6 @@
-/* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_PING_PRIVATE_
-#define _H_COM_DIAG_DIMINUTO_PING_PRIVATE_
+//* vi: set ts=4 expandtab shiftwidth=4: */
+#ifndef _H_COM_DIAG_DIMINUTO_INET_
+#define _H_COM_DIAG_DIMINUTO_INET_
 
 /**
  * @file
@@ -9,8 +9,6 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
- *
- * This is the ping feature private API.
  *
  * REFERENCES
  *
@@ -27,7 +25,7 @@
  * according to RFC 1071, the endianess of the processor doesn't matter.
  * @param buffer points to the buffer.
  * @param size is the number of bytes in the buffer.
- * @return the checksum.
+ * @return the sixteen-bit RFC 1071 internet checksum.
  */
 extern uint16_t diminuto_inet_checksum(void * buffer, size_t size);
 

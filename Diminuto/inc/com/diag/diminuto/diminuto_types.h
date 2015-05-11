@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,10 +26,18 @@
 #endif
 
 /**
- * This type describes the integer declaration of a variable containing ticks,
- * which are the units of time used by Diminuto.
+ * This type describes the integer declaration of a variable containing unsigned
+ * ticks, which are the units of time used by Diminuto. See the comments in
+ * diminuto_frequency.h for more insight.
  */
-typedef int64_t diminuto_ticks_t;
+typedef uint64_t diminuto_ticks_t;
+
+/**
+ * This type describes the integer declaration of a variable containing signed
+ * ticks, which are the units of time used by Diminuto. See the comments in
+ * diminuto_frequency.h for more insight.
+ */
+typedef int64_t diminuto_sticks_t;
 
 /**
  * This type describes the integer declaration of a variable containing an

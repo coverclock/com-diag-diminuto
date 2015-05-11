@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -19,8 +19,9 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_ticks_t hertz;
-	diminuto_ticks_t then;
+    diminuto_sticks_t result;
+    diminuto_ticks_t hertz;
+    diminuto_ticks_t then;
     diminuto_ticks_t now;
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
@@ -59,9 +60,14 @@ int main(int argc, char ** argv)
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
         diminuto_timer_oneshot(requested);
-        then = diminuto_time_elapsed();
+        result = diminuto_time_elapsed();
+        ASSERT(result != (diminuto_sticks_t)-1);
+        then = result;
         remaining = diminuto_delay(requested * 2, !0);
-        now = diminuto_time_elapsed();
+        result = diminuto_time_elapsed();
+        ASSERT(result != (diminuto_sticks_t)-1);
+        now = result;
+        ASSERT(now >= then);
         diminuto_timer_oneshot(0);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());

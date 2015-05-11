@@ -41,10 +41,10 @@ int main(int argc, char ** argv)
 {
 	int64_t limit = 1000000000ULL;
 	int64_t iterations;
-	diminuto_ticks_t before;
-	diminuto_ticks_t after;
-	diminuto_ticks_t total = 0;
-	typedef diminuto_ticks_t (function_t)(void);
+	diminuto_sticks_t before;
+	diminuto_sticks_t after;
+	diminuto_sticks_t total = 0;
+	typedef diminuto_sticks_t (function_t)(void);
 	function_t * functionp = &diminuto_time_clock;
 	const char * label = "realtime";
 

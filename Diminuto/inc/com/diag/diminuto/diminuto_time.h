@@ -57,18 +57,18 @@
  * degree of accuracy.
  * @return the resolution in ticks per second.
  */
-static inline diminuto_ticks_t diminuto_time_frequency(void) {
-	return COM_DIAG_DIMINUTO_TIME_FREQUENCY;
+static inline diminuto_sticks_t diminuto_time_frequency(void) {
+    return COM_DIAG_DIMINUTO_TIME_FREQUENCY;
 }
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in
  * ticks since the Epoch (shown here in ISO8601 format)
  * 1970-01-01T00:00:00+0000.
- * @return the number of ticks elapsed since the Epoch or <0 with
+ * @return the number of ticks elapsed since the Epoch or -1 with
  * errno set if an error occurred.
  */
-extern diminuto_ticks_t diminuto_time_clock(void);
+extern diminuto_sticks_t diminuto_time_clock(void);
 
 /**
  * Return the elapsed time in ticks of a monotonically increasing
@@ -77,23 +77,23 @@ extern diminuto_ticks_t diminuto_time_clock(void);
  * platform does not support this feature, the standard clock time is returned;
  * however this time may have discontinuities due to NTP or manual time changes.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * <0 with errno set if an error occurred.
+ * -1 with errno set if an error occurred.
  */
-extern diminuto_ticks_t diminuto_time_elapsed(void);
+extern diminuto_sticks_t diminuto_time_elapsed(void);
 
 /**
  * Return the CPU time in ticks for the calling process.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * <0 with errno set if an error occurred.
+ * -1 with errno set if an error occurred.
  */
-extern diminuto_ticks_t diminuto_time_process(void);
+extern diminuto_sticks_t diminuto_time_process(void);
 
 /**
  * Return the CPU time in ticks for the calling thread.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * <0 with errno set if an error occurred.
+ * -1 with errno set if an error occurred.
  */
-extern diminuto_ticks_t diminuto_time_thread(void);
+extern diminuto_sticks_t diminuto_time_thread(void);
 
 /**
  * Return the number of ticks the local time zone is offset from Coordinated
@@ -110,7 +110,7 @@ extern diminuto_ticks_t diminuto_time_thread(void);
  * @param ticks is the number of ticks since the Epoch.
  * @return the number of ticks west of UTC.
  */
-extern diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks);
+extern diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks);
 
 /**
  * Return the number of ticks the local time zone is offset _west_
@@ -121,7 +121,7 @@ extern diminuto_ticks_t diminuto_time_timezone(diminuto_ticks_t ticks);
  * @param ticks is the number of ticks since the Epoch.
  * @return the number of ticks added to this time zone.
  */
-extern diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks);
+extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
 
 /**
  * Return the number of ticks after the Epoch (shown here in ISO8601
@@ -138,7 +138,7 @@ extern diminuto_ticks_t diminuto_time_daylightsaving(diminuto_ticks_t ticks);
  * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
  * @return the number of ticks since the Epoch.
  */
-extern diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_ticks_t offset, diminuto_ticks_t daylightsaving);
+extern diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t offset, diminuto_sticks_t daylightsaving);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
@@ -154,7 +154,7 @@ extern diminuto_ticks_t diminuto_time_epoch(int year, int month, int day, int ho
  * @param tickp is where the fraction of a second will be returned.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
@@ -170,7 +170,7 @@ extern int diminuto_time_zulu(diminuto_ticks_t ticks, int * yearp, int * monthp,
  * @param tickp is where the fraction of a second will be returned.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 /**
  * Convert ticks into individual fields representing a time duration. All of
@@ -184,6 +184,6 @@ extern int diminuto_time_juliet(diminuto_ticks_t ticks, int * yearp, int * month
  * @param tickp is where the number of ticks will be returned.
  * @return >0 if the duration was positive, <0 if the duration was negative.
  */
-extern int diminuto_time_duration(diminuto_ticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
 
 #endif

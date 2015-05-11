@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -29,7 +29,7 @@ static int zminute = -1;
 static int zsecond = -1;
 static int ztick = -1;
 
-static void epoch(diminuto_ticks_t now, int verbose)
+static void epoch(diminuto_sticks_t now, int verbose)
 {
     int dday = -1;
     int dhour = -1;
@@ -43,17 +43,18 @@ static void epoch(diminuto_ticks_t now, int verbose)
     int jminute = -1;
     int jsecond = -1;
     int jtick = -1;
-    diminuto_ticks_t zulu;
-    diminuto_ticks_t juliet;
-    diminuto_ticks_t timezone;
-    diminuto_ticks_t daylightsaving;
-    diminuto_ticks_t hertz;
+    diminuto_sticks_t zulu;
+    diminuto_sticks_t juliet;
+    diminuto_sticks_t timezone;
+    diminuto_sticks_t daylightsaving;
+    diminuto_sticks_t hertz;
     int zh;
     int zm;
     int dh;
     int dm;
     int rc;
     static int prior = -1;
+    time_t offset;
 
     zyear = -1;
     zmonth = -1;
@@ -63,6 +64,7 @@ static void epoch(diminuto_ticks_t now, int verbose)
     zsecond = -1;
     ztick = -1;
 
+    offset = diminuto_frequency_ticks2wholeseconds(now);
     diminuto_time_zulu(now, &zyear, &zmonth, &zday, &zhour, &zminute, &zsecond, &ztick);
     zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
     diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
@@ -77,8 +79,8 @@ static void epoch(diminuto_ticks_t now, int verbose)
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
-        DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %6d/%2.2d:%2.2d:%2.2d.%9.9d\n"
-            , now, zulu, juliet
+        DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d-%2.2d:%2.2d+%2.2d:%2.2d %6d/%2.2d:%2.2d:%2.2d.%9.9d\n"
+            , now, zulu, juliet, offset
             , zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0, 0, 0
             , jyear, jmonth, jday, jhour, jminute, jsecond, jtick, zh, zm, dh, dm
             , dday, dhour, dminute, dsecond, dtick
@@ -109,8 +111,8 @@ static void epoch(diminuto_ticks_t now, int verbose)
     prior = zyear;
 }
 
-static const diminuto_ticks_t LOW = 0xffffffff80000000LL;
-static const diminuto_ticks_t HIGH = 0x000000007fffffffLL - (7 * 3600) - 3600;
+static const diminuto_sticks_t LOW = 0xffffffff80000000LL;
+static const diminuto_sticks_t HIGH = 0x000000007fffffffLL - (7 * 3600) - 3600;
 
 #define ASSERTS(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
@@ -125,8 +127,8 @@ static const diminuto_ticks_t HIGH = 0x000000007fffffffLL - (7 * 3600) - 3600;
 
 int main(int argc, char ** argv)
 {
-    diminuto_ticks_t now;
-    diminuto_ticks_t hertz;
+    diminuto_sticks_t now;
+    diminuto_sticks_t hertz;
 
     SETLOGMASK();
 

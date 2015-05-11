@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -31,9 +31,9 @@
  * with even this resolution.
  * @return the resolution in ticks per second.
  */
-static inline diminuto_ticks_t diminuto_delay_frequency(void)
+static inline diminuto_sticks_t diminuto_delay_frequency(void)
 {
-	return COM_DIAG_DIMINUTO_DELAY_FREQUENCY;
+    return COM_DIAG_DIMINUTO_DELAY_FREQUENCY;
 }
 
 /**

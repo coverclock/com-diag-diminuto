@@ -40,7 +40,7 @@
  * with even this resolution.
  * @return the resolution in ticks per second.
  */
-static inline diminuto_ticks_t diminuto_poll_frequency(void) {
+static inline diminuto_sticks_t diminuto_poll_frequency(void) {
     return diminuto_mux_frequency();
 }
 

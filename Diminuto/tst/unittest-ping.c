@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "diminuto_ping.h" /* Just for unit testing. */
+#include "com/diag/diminuto/diminuto_inet.h"
 #include "com/diag/diminuto/diminuto_ping.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"

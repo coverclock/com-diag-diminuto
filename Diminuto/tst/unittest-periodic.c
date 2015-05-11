@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -18,16 +18,18 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 int main(int argc, char ** argv)
 {
+    diminuto_sticks_t result;
     diminuto_ticks_t hertz;
     diminuto_ticks_t then;
     diminuto_ticks_t now;
-    int64_t measured;
+    diminuto_sticks_t measured;
     diminuto_ticks_t remaining;
-    int64_t computed;
-    diminuto_ticks_t requested;
+    diminuto_sticks_t computed;
+    diminuto_sticks_t requested;
     int ii;
     char rs;
     char cs;
@@ -68,18 +70,21 @@ int main(int argc, char ** argv)
             remaining = diminuto_delay(requested * 2, !0);
             EXPECT(diminuto_alarm_check());
             EXPECT(!diminuto_alarm_check());
-            now = diminuto_time_elapsed();
+            result = diminuto_time_elapsed();
+            ASSERT(result != (diminuto_sticks_t)-1);
+            now = result;
             computed = (requested * 2) - remaining;
             measured = now - then;
+            ASSERT(measured > 0);
             delta = (100.0 * (measured - requested)) / requested;
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
             cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
             DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %10.3lf%%\n"
-            	, rs, rday, rhour, rminute, rsecond, rtick
-            	, cs, cday, chour, cminute, csecond, ctick
-            	, ms, mday, mhour, mminute, msecond, mtick
-            	, delta
+                , rs, rday, rhour, rminute, rsecond, rtick
+                , cs, cday, chour, cminute, csecond, ctick
+                , ms, mday, mhour, mminute, msecond, mtick
+                , delta
             );
             then = now;
         }
