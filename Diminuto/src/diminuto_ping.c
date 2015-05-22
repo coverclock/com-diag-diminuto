@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <arpa/inet.h>
@@ -74,6 +75,37 @@ int diminuto_ping_datagram_peer(void)
     }
 
     return fd;
+}
+
+int diminuto_ping_interface(int fd, const char * ifname)
+{
+    int rc;
+    struct ifreq iface = { 0 };
+
+    strncpy(iface.ifr_name, ifname, sizeof(iface.ifr_name));
+    iface.ifr_ifrn.ifrn_name[sizeof(iface.ifr_name) - 1] = '\0';
+
+    if ((rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &iface, sizeof(iface))) < 0) {
+        diminuto_perror("diminuto_ping_interface: setsockopt");
+    }
+
+    return rc;
+}
+
+int diminuto_ping_address(int fd, diminuto_ipv4_t address, diminuto_port_t port)
+{
+    int rc;
+    struct sockaddr_in sa = { 0 };
+
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(address);
+    sa.sin_port = htons(port);
+
+    if ((rc = bind(fd, &sa, sizeof(sa))) < 0) {
+        diminuto_perror("diminuto_ping_address: bind");
+    }
+
+    return rc;
 }
 
 typedef union {

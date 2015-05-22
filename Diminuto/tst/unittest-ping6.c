@@ -23,6 +23,7 @@ int main(int argc, char * argv[])
     uint8_t type;
     uint16_t id;
     uint16_t seq;
+    diminuto_port_t port;
     diminuto_ticks_t elapsed;
 
     SETLOGMASK();
@@ -30,6 +31,22 @@ int main(int argc, char * argv[])
     ASSERT((sock = diminuto_ping6_datagram_peer()) >= 0);
 
     {
+        TEST();
+
+        if (argc >= 2) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", argv[1] /* e.g. "lo" */);
+            ASSERT(diminuto_ping6_interface(sock, argv[1]) >= 0);
+        }
+        if (argc >= 3) {
+            from = diminuto_ipc6_address(argv[2] /* e.g. ::1 */);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
+            port = 0;
+            if (argc >= 4) {
+                port = strtoul(argv[3] /* e.g. 5555 */, (char **)0, 0);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port=%u\n", port);
+            }
+            ASSERT(diminuto_ping6_address(sock, from, port) >= 0);
+        }
         to = diminuto_ipc6_address("::1");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
@@ -56,6 +73,8 @@ int main(int argc, char * argv[])
         ASSERT(id == 0xdead);
         ASSERT(seq == 1);
         ASSERT(elapsed > 0);
+
+        STATUS();
     }
 
     ASSERT(diminuto_ping6_close(sock) >= 0);

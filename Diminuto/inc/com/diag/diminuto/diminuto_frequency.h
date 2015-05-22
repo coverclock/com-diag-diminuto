@@ -11,7 +11,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * This is where the fundamental unit of time is defined for Diminuto, in terms
- * of the duration of a single Diminuto tick, represented in the inverse of this
+ * of the duration of a single Diminuto tick, represented as the inverse of this
  * period, which is a frequency in Hertz or cycles per second. _All_ Diminuto
  * features represent time at this resolution, unlike the system calls and
  * library functions in the underlying POSIX implementation. Frequencies

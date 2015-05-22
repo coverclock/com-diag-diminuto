@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/icmp6.h>
 #include "diminuto_ipc6.h"
@@ -32,6 +33,38 @@ int diminuto_ping6_datagram_peer(void)
     }
 
     return fd;
+}
+
+int diminuto_ping6_interface(int fd, const char * ifname)
+{
+    int rc;
+    struct ifreq iface = { 0 };
+
+    strncpy(iface.ifr_name, ifname, sizeof(iface.ifr_name));
+    iface.ifr_ifrn.ifrn_name[sizeof(iface.ifr_name) - 1] = '\0';
+
+    if ((rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &iface, sizeof(iface))) < 0) {
+        diminuto_perror("diminuto_ping6_interface: setsockopt");
+    }
+
+    return rc;
+}
+
+int diminuto_ping6_address(int fd, diminuto_ipv6_t address, diminuto_port_t port)
+{
+    int rc;
+    struct sockaddr_in6 sa = { 0 };
+
+    sa.sin6_family = AF_INET6;
+    diminuto_ipc6_hton6(&address);
+    memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+    sa.sin6_port = htons(port);
+
+    if ((rc = bind(fd, &sa, sizeof(sa))) < 0) {
+        diminuto_perror("diminuto_ping6_address: bind");
+    }
+
+    return rc;
 }
 
 typedef union {
