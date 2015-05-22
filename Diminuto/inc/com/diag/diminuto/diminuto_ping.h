@@ -40,7 +40,8 @@ extern int diminuto_ping_interface(int fd, const char * ifname);
  * Optionally bind raw socket to a specific source address and port. This isn't
  * necessary for this feature to work, but does make commands that display the
  * local address being used (like netstat(1)) display something other than
- * zeros for the source address.
+ * zeros for the source address. (The kernel requires that the address be that
+ * of the interface being used.)
  * @param fd is the raw socket.
  * @param address is the IPv4 address.
  * @param port os the port number.
