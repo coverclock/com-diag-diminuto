@@ -62,8 +62,10 @@ typedef struct DiminutoThrottle {
     diminuto_ticks_t actual;        /* GCRA x1 */
     unsigned int alarmed : 1;       /* The leaky bucket has overflowed. */
     unsigned int alarming : 1;      /* The leaky bucket will overflow. */
+    unsigned int alarmly : 1;       /* The leaky bucket was overflowing. */
     unsigned int cleared : 1;       /* The leaky bucket has emptied. */
     unsigned int clearing : 1;      /* The leaky bucket will empty. */
+    unsigned int clearly : 1;       /* The leacky bucket was emptied. */
 } diminuto_throttle_t;
 
 /**
@@ -80,10 +82,8 @@ static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t 
     throttlep->then = now - throttlep->increment;
     throttlep->expected = throttlep->increment;
     throttlep->actual = 0;
-    throttlep->alarmed = 0;
-    throttlep->alarming = 0;
-    throttlep->cleared = !0;
-    throttlep->clearing = !0;
+    throttlep->alarmed = throttlep->alarming = throttlep->alarmly = 0;
+    throttlep->cleared = throttlep->clearing = throttlep->clearly = !0;
     return throttlep;
 }
 

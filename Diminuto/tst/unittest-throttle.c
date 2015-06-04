@@ -43,8 +43,10 @@ int main(int argc, char ** argv)
         ASSERT(throttle.actual == 0);
         ASSERT(throttle.alarmed == 0);
         ASSERT(throttle.alarming == 0);
+        ASSERT(throttle.alarmly == 0);
         ASSERT(throttle.cleared == !0);
         ASSERT(throttle.clearing == !0);
+        ASSERT(throttle.clearly == !0);
         /**/
         throttle.now = ~throttle.now;
         throttle.then = ~throttle.then;
@@ -52,8 +54,10 @@ int main(int argc, char ** argv)
         throttle.actual = ~throttle.actual;
         throttle.alarmed = ~throttle.alarmed;
         throttle.alarming = ~throttle.alarming;
+        throttle.alarmly = ~throttle.alarmly;
         throttle.cleared = ~throttle.cleared;
         throttle.clearing = ~throttle.clearing;
+        throttle.clearly = ~throttle.clearly;
         ASSERT(throttle.increment == II);
         ASSERT(throttle.limit == LL);
         ASSERT(throttle.now != TT);
@@ -62,8 +66,10 @@ int main(int argc, char ** argv)
         ASSERT(throttle.actual != 0);
         ASSERT(throttle.alarmed != 0);
         ASSERT(throttle.alarming != 0);
+        ASSERT(throttle.alarmly != 0);
         ASSERT(throttle.cleared == 0);
         ASSERT(throttle.clearing == 0);
+        ASSERT(throttle.clearly == 0);
         tp = diminuto_throttle_reset(&throttle, TT);
         ASSERT(tp == &throttle);
         ASSERT(throttle.increment == II);
@@ -74,8 +80,10 @@ int main(int argc, char ** argv)
         ASSERT(throttle.actual == 0);
         ASSERT(throttle.alarmed == 0);
         ASSERT(throttle.alarming == 0);
+        ASSERT(throttle.alarmly == 0);
         ASSERT(throttle.cleared == !0);
         ASSERT(throttle.clearing == !0);
+        ASSERT(throttle.clearly == !0);
     }
 
     {

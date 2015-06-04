@@ -39,7 +39,9 @@ int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events)
 {
     throttlep->then = throttlep->now;
     throttlep->expected = throttlep->actual + (events * throttlep->increment);
+    throttlep->alarmly = throttlep->alarmed;
     throttlep->alarmed = throttlep->alarming;
+    throttlep->clearly = throttlep->cleared;
     throttlep->cleared = throttlep->clearing;
     return throttlep->alarmed;
 }
@@ -47,7 +49,7 @@ int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events)
 void diminuto_throttle_log(diminuto_throttle_t * throttlep)
 {
     if (throttlep != (diminuto_throttle_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d cleared=%d clearing=%d}\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->alarmed, throttlep->alarming, throttlep->cleared, throttlep->clearing);
+        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d alarmly=%d cleared=%d clearing=%d clearly=%d }\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->alarmed, throttlep->alarming, throttlep->alarmly, throttlep->cleared, throttlep->clearing, throttlep->clearly);
     } else {
         DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]\n", throttlep, sizeof(*throttlep));
     }
