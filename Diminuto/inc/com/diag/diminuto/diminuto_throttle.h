@@ -24,13 +24,8 @@
  * bandwidth as with ATM. In the original TM spec, the variable "i" was the
  * increment or contracted inter-arrival interval, "l" was the limit or
  * threshold, "x" was the expected inter-arrival interval for the next event,
- * and "x1" was the actual inter-arrival interval of that event.
- *
- * A throttle can be used to smooth out low frequency events over a long
- * duration.
- *
- * You can use the edge detector of the cue feature to detect when the alarmed
- * and cleared bits changed.
+ * and "x1" was the actual inter-arrival interval of that event. (A throttle can
+ * be used to smooth out low frequency events over a long duration.)
  *
  * REFERENCES
  *

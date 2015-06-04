@@ -12,9 +12,8 @@
  *
  * The cue feature provides a software debouncer and edge detector. It can be
  * used with the pin feature which manipulates GPIO pins using the sysfs
- * interface, but it can also be used independently.
- *
- * A cue can smooth out high frequency events over a short duration.
+ * interface, but it can also be used independently. (A cue can smooth out high
+ * frequency events over a short duration.)
  *
  * The name was taken from "cue" as in "I missed my cue."
  *
