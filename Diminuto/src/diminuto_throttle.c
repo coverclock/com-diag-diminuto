@@ -20,12 +20,15 @@ diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, dimi
     if (throttlep->expected <= elapsed) {
         throttlep->actual = 0;
         throttlep->alarming = 0;
+        throttlep->clearing = !0;
         delay = 0;
     } else if ((throttlep->actual = throttlep->expected - elapsed) <= throttlep->limit) {
         throttlep->alarming = 0;
+        throttlep->clearing = 0;
         delay = 0;
     } else {
         throttlep->alarming = !0;
+        throttlep->clearing = 0;
         delay = throttlep->actual - throttlep->limit;
     }
 
@@ -37,24 +40,14 @@ int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events)
     throttlep->then = throttlep->now;
     throttlep->expected = throttlep->actual + (events * throttlep->increment);
     throttlep->alarmed = throttlep->alarming;
-    return throttlep->alarmed;
-}
-
-int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
-{
-    throttlep->now = now;
-    throttlep->then = now;
-    throttlep->expected = events * throttlep->increment;
-    throttlep->actual = 0;
-    throttlep->alarming = 0;
-    throttlep->alarmed = 0;
+    throttlep->cleared = throttlep->clearing;
     return throttlep->alarmed;
 }
 
 void diminuto_throttle_log(diminuto_throttle_t * throttlep)
 {
     if (throttlep != (diminuto_throttle_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d }\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->alarmed, throttlep->alarming);
+        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { (now-then)=%lld increment=%lld limit=%lld expected=%lld actual=%lld alarmed=%d alarming=%d cleared=%d clearing=%d}\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->alarmed, throttlep->alarming, throttlep->cleared, throttlep->clearing);
     } else {
         DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]\n", throttlep, sizeof(*throttlep));
     }

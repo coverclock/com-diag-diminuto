@@ -5,12 +5,12 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * Implement a Generic Cell Rate Algorithm (GCRA) using a Virtual Scheduler.
+ * Implements a Generic Cell Rate Algorithm (GCRA) using a Virtual Scheduler.
  * This can in turn be used to implement a variety of traffic shaping and rate
  * control algorithms. The VS works by monitoring the inter-arrival interval of
  * events and comparing that interval to the expected value. When the cumulative
@@ -25,6 +25,12 @@
  * increment or contracted inter-arrival interval, "l" was the limit or
  * threshold, "x" was the expected inter-arrival interval for the next event,
  * and "x1" was the actual inter-arrival interval of that event.
+ *
+ * A throttle can be used to smooth out low frequency events over a long
+ * duration.
+ *
+ * You can use the edge detector of the cue feature to detect when the alarmed
+ * and cleared bits changed.
  *
  * REFERENCES
  *
@@ -54,8 +60,10 @@ typedef struct DiminutoThrottle {
     diminuto_ticks_t limit;         /* GCRA l */
     diminuto_ticks_t expected;      /* GCRA x */
     diminuto_ticks_t actual;        /* GCRA x1 */
-    unsigned int alarmed : 1;
-    unsigned int alarming: 1;
+    unsigned int alarmed : 1;       /* The leaky bucket has overflowed. */
+    unsigned int alarming : 1;      /* The leaky bucket will overflow. */
+    unsigned int cleared : 1;       /* The leaky bucket has emptied. */
+    unsigned int clearing : 1;      /* The leaky bucket will empty. */
 } diminuto_throttle_t;
 
 /**
@@ -74,6 +82,8 @@ static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t 
     throttlep->actual = 0;
     throttlep->alarmed = 0;
     throttlep->alarming = 0;
+    throttlep->cleared = !0;
+    throttlep->clearing = !0;
     return throttlep;
 }
 
@@ -144,26 +154,24 @@ static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
 }
 
 /**
- * Tell the throttle that the previously requested event has been emitted after
- * delay at least as long as recommended by the request, so that it is
- * guaranteed to have been admissable even though another requested was not
- * made. This eliminates the need to make another request, as long as the
- * traffic stream is well behaved. (If it isn't, wackiness may ensue.) Multiple
- * events may be emitted.
+ * Combine a request with a commit. No matter what the request returns, no delay
+ * is performed. So if the event(s) are not admissable, wackiness may ensue.
+ * This function can be used after the caller has delayed following a request.
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
  * @param events is the number of events (nominally one).
  * @return true if the throttle is alarmed, false otherwise.
  */
-int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events);
+static int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
+{
+    diminuto_throttle_request(throttlep, now);
+    return diminuto_throttle_commitn(throttlep, events);
+}
 
 /**
- * Tell the throttle that the previously requested event has been emitted after
- * delay at least as long as recommended by the request, so that it is
- * guaranteed to have been admissable even though another requested was not
- * made. This eliminates the need to make another request, as long as the
- * traffic stream is well behaved. (If it isn't, wackiness may ensue.) A single
- * event is emitted.
+ * Combine a request with a commit. No matter what the request returns, no delay
+ * is performed. So if the event is not admissable, wackiness may ensue.
+ * This function can be used after the caller has delayed following a request.
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
  * @return true if the throttle is alarmed, false otherwise.
