@@ -55,18 +55,36 @@ typedef struct DiminutoThrottle {
     diminuto_ticks_t limit;         /* GCRA l */
     diminuto_ticks_t expected;      /* GCRA x */
     diminuto_ticks_t actual;        /* GCRA x1 */
-    unsigned int alarmed : 1;       /* The leaky bucket has overflowed. */
-    unsigned int alarming : 1;      /* The leaky bucket will overflow. */
-    unsigned int alarmly : 1;       /* The leaky bucket was overflowing. */
-    unsigned int cleared : 1;       /* The leaky bucket has emptied. */
-    unsigned int clearing : 1;      /* The leaky bucket will empty. */
-    unsigned int clearly : 1;       /* The leacky bucket was emptied. */
+    unsigned int full0 : 1;         /* The leaky bucket will fill. */
+    unsigned int full1 : 1;         /* The leaky bucket is filling. */
+    unsigned int full2 : 1;         /* The leaky bucket was filled. */
+    unsigned int empty0 : 1;        /* The leaky bucket will empty. */
+    unsigned int empty1 : 1;        /* The leaky bucket is emptying. */
+    unsigned int empty2 : 1;        /* The leaky bucket was emptied. */
+    unsigned int alarmed1 : 1;      /* The throttle is alarmed. */
+    unsigned int alarmed2 : 1;      /* The throttle was alarmed. */
 } diminuto_throttle_t;
+
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
+
+/**
+ * Return the current time from a monotonically increasing clock.
+ * @return the current time from a monotonically increasing clock in ticks.
+ */
+static inline diminuto_ticks_t diminuto_throttle_now(void)
+{
+    return diminuto_time_elapsed();
+}
 
 /**
  * Reset a throttle to the beginning of time such that all past sins are
  * forgotten and the traffic stream is in compliance with its contract with
- * no debt on its limit.
+ * no debt on its limit. This is especially useful for cases where no event has
+ * occurred in longer than the accumulated debt such that any future event will
+ * be admissable (because otherwise the throttle will not change state from
+ * either alarmed or not cleared unless an event arrives).
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time from a monotonically increasing clock.
  * @return a pointer to the throttle.
@@ -77,8 +95,9 @@ static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t 
     throttlep->then = now - throttlep->increment;
     throttlep->expected = throttlep->increment;
     throttlep->actual = 0;
-    throttlep->alarmed = throttlep->alarming = throttlep->alarmly = 0;
-    throttlep->cleared = throttlep->clearing = throttlep->clearly = !0;
+    throttlep->full0 = throttlep->full1 = throttlep->full2 = 0;
+    throttlep->empty0 = throttlep->empty1 = throttlep->empty2 = !0;
+    throttlep->alarmed1 = throttlep->alarmed2 = 0;
     return throttlep;
 }
 
@@ -97,14 +116,9 @@ static inline diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t *
     return diminuto_throttle_reset(throttlep, now);
 }
 
-/**
- * Return the current time from a monotonically increasing clock.
- * @return the current time from a monotonically increasing clock in ticks.
- */
-static inline diminuto_ticks_t diminuto_throttle_now(void)
-{
-    return diminuto_time_elapsed();
-}
+/*******************************************************************************
+ * STATE CHANGE
+ ******************************************************************************/
 
 /**
  * Ask if an event emitted now would conform to the contract. If it does, the
@@ -175,6 +189,88 @@ static inline int diminuto_throttle_admit(diminuto_throttle_t * throttlep, dimin
 {
     return diminuto_throttle_admitn(throttlep, now, 1);
 }
+
+/*******************************************************************************
+ * STABLE STATE
+ ******************************************************************************/
+
+/**
+ * Returns true if the leaky bucket is empty.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_throttle_isempty(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->empty1 != 0);
+}
+
+/**
+ * Returns true if the leaky bucket is full.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_throttle_isfull(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->full1 != 0);
+}
+
+/**
+ * Returns true if the throttle is alarmed.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_throttle_isalarmed(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->alarmed1 != 0);
+}
+
+/*******************************************************************************
+ * TRANSITION STATE
+ ******************************************************************************/
+
+/**
+ * Returns true if the leaky bucket just filled.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the leaky bucket just filled.
+ */
+static inline int diminuto_throttle_emptied(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->empty1 != 0) && (throttlep->empty2 == 0);
+}
+
+/**
+ * Returns true if the leaky bucket just filled.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the leaky bucket just filled.
+ */
+static inline int diminuto_throttle_filled(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->full1 != 0) && (throttlep->full2 == 0);
+}
+
+/**
+ * Returns true if the throttle just alarmed.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the throttle just alarmed.
+ */
+static inline int diminuto_throttle_alarmed(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->alarmed1 != 0) && (throttlep->alarmed2 == 0);
+}
+
+/**
+ * Returns true if the throttle just cleared.
+ * @param throttlep is a pointer to the throttle.
+ * @return true if the throttle just cleared.
+ */
+static inline int diminuto_throttle_cleared(diminuto_throttle_t * throttlep)
+{
+    return (throttlep->alarmed1 == 0) && (throttlep->alarmed2 != 0);
+}
+
+/*******************************************************************************
+ * ANCILLARY
+ ******************************************************************************/
 
 /**
  * Log the state of a throttle.
