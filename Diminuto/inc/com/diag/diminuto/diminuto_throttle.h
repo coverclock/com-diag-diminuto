@@ -24,8 +24,9 @@
  * bandwidth as with ATM. In the original TM spec, the variable "i" was the
  * increment or contracted inter-arrival interval, "l" was the limit or
  * threshold, "x" was the expected inter-arrival interval for the next event,
- * and "x1" was the actual inter-arrival interval of that event. (A throttle can
- * be used to smooth out low frequency events over a long duration.)
+ * and "x1" was the actual inter-arrival interval of that event. A throttle can
+ * be used to smooth out low frequency events over a long duration, or to
+ * implement a leaky bucket algorithm.
  *
  * REFERENCES
  *
@@ -68,6 +69,17 @@ typedef struct DiminutoThrottle {
 /*******************************************************************************
  * INITIALIZATION
  ******************************************************************************/
+
+/**
+ * Return the resolution of the Diminuto throttle units in ticks per second
+ * (Hertz). Time intervals smaller than the equivalent period in ticks will
+ * not yield the expected results.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_sticks_t diminuto_throttle_frequency(void)
+{
+    return diminuto_time_frequency();
+}
 
 /**
  * Return the current time from a monotonically increasing clock.
@@ -144,7 +156,7 @@ extern diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttle
  * bandwidth, not an instantaneous bandwidth.
  * @param throttlep is a pointer to the throttle.
  * @param events is the number of events (nominally one).
- * @return true if the throttle is alarmed, false otherwise.
+ * @return true if the leaky bucket is full, false otherwise.
  */
 extern int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events);
 
@@ -155,7 +167,7 @@ extern int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t eve
  * becomes alarmed. The throttle remains alarmed until the traffic stream once
  * again conforms to the contract. Only a single event is emitted.
  * @param throttlep is a pointer to the throttle.
- * @return true if the throttle is alarmed, false otherwise.
+ * @return true if the leaky bucket is full, false otherwise.
  */
 static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
 {
@@ -169,9 +181,9 @@ static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
  * @param events is the number of events (nominally one).
- * @return true if the throttle is alarmed, false otherwise.
+ * @return true if the leaky bucket is full, false otherwise.
  */
-static int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
+static inline int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
 {
     diminuto_throttle_request(throttlep, now);
     return diminuto_throttle_commitn(throttlep, events);
@@ -183,11 +195,23 @@ static int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ti
  * This function can be used after the caller has delayed following a request.
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
- * @return true if the throttle is alarmed, false otherwise.
+ * @return true if the leaky bucket is full, false otherwise.
  */
 static inline int diminuto_throttle_admit(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
     return diminuto_throttle_admitn(throttlep, now, 1);
+}
+
+/**
+ * Combine a request with a commit of zero events to indicate that time has
+ * passed without an event occurring, updating the state of the throttle.
+ * @param throttlep is a pointer to the throttle.
+ * @param now is the current time on a monotonically increasing clock.
+ * @return true if the leaky bucket is full, false otherwise.
+ */
+static inline int diminuto_throttle_update(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
+{
+    return diminuto_throttle_admitn(throttlep, now, 0);
 }
 
 /*******************************************************************************
