@@ -71,7 +71,7 @@ typedef struct DiminutoThrottle {
  ******************************************************************************/
 
 /**
- * Return the resolution of the Diminuto throttle units in ticks per second
+ * Return the resolution of the Diminuto throttle time units in ticks per second
  * (Hertz). Time intervals smaller than the equivalent period in ticks will
  * not yield the expected results.
  * @return the resolution in ticks per second.

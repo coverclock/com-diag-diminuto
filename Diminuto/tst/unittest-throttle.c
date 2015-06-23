@@ -33,6 +33,8 @@ int main(int argc, char ** argv)
         diminuto_throttle_t throttle;
         diminuto_throttle_t * tp;
         /**/
+        TEST();
+        /**/
         tp = diminuto_throttle_init(&throttle, II, LL, TT);
         ASSERT(tp == &throttle);
         ASSERT(throttle.increment == II);
@@ -107,231 +109,313 @@ int main(int argc, char ** argv)
         ASSERT(throttle.empty2 == !0);
         ASSERT(throttle.alarmed1 == 0);
         ASSERT(throttle.alarmed2 == 0);
+        /**/
+        STATUS();
     }
 
     {
         diminuto_throttle_t throttle;
         diminuto_throttle_t * tp;
-        diminuto_ticks_t ii;
-        diminuto_ticks_t ll;
+        diminuto_ticks_t increment;
+        diminuto_ticks_t limit;
         diminuto_ticks_t now;
+        /**/
+        TEST();
+        /**/
         tp = &throttle;
-        ii = 100;
-        ll = 10;
-        ASSERT(diminuto_throttle_init(tp, ii, ll, 0) == tp);
+        increment = 100;
+        limit = 10;
+        ASSERT(diminuto_throttle_init(tp, increment, limit, 0) == tp);
+        /**/
+        ASSERT(diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(!diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
         /* SUSTAINED */
         now = 0;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
+        /**/
+        ASSERT(diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(!diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
         /* CONSUME LIMIT */
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii - 1;
+        now += increment - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        /* ALARM */
-        now += ii - 2;
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(!diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
+        /* FILL */
+        now += increment - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         ASSERT(diminuto_throttle_commit(tp));
-        now += ii + 1;
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(diminuto_throttle_isfull(tp));
+        ASSERT(diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(diminuto_throttle_filled(tp));
+        ASSERT(diminuto_throttle_alarmed(tp));
+        /**/
+        now += increment + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
         ASSERT(diminuto_throttle_commit(tp));
-        now += ii + 1;
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(diminuto_throttle_isfull(tp));
+        ASSERT(diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
+        /**/
+        now += increment + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
         /* REQUEST, RE-REQUESTS, COMMIT */
-        now += ii - 2;
+        now += increment - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
         now += 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
         /* REQUEST, DELAY, ADMIT */
-        now += ii - 2;
+        now += increment - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 2;
         ASSERT(!diminuto_throttle_admit(tp, now));
-        /* SUSTAINED AGAIN */
-        now += ii + 10;
+        /**/
+        ASSERT(!diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
+        /* UPDATE */
+        now += increment + 10;
+        ASSERT(diminuto_throttle_update(tp, now) == 0);
+        /**/
+        ASSERT(diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(!diminuto_throttle_isalarmed(tp));
+        ASSERT(diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
+        /* SUSTAINED */
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
+        now += increment;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commit(tp));
-        now += ii;
-        ASSERT(diminuto_throttle_request(tp, now) == 0);
-        ASSERT(!diminuto_throttle_commit(tp));
+        /**/
+        ASSERT(diminuto_throttle_isempty(tp));
+        ASSERT(!diminuto_throttle_isfull(tp));
+        ASSERT(!diminuto_throttle_isalarmed(tp));
+        ASSERT(!diminuto_throttle_emptied(tp));
+        ASSERT(!diminuto_throttle_filled(tp));
+        ASSERT(!diminuto_throttle_alarmed(tp));
+        /**/
+        STATUS();
     }
 
     {
         diminuto_throttle_t throttle;
         diminuto_throttle_t * tp;
-        diminuto_ticks_t ii;
-        diminuto_ticks_t ll;
+        diminuto_ticks_t increment;
+        diminuto_ticks_t limit;
         size_t size;
         diminuto_ticks_t now;
+        /**/
+        TEST();
+        /**/
         tp = &throttle;
-        ii = 100;
-        ll = 10;
-        ASSERT(diminuto_throttle_init(tp, ii, ll, 0) == tp);
+        increment = 100;
+        limit = 10;
+        ASSERT(diminuto_throttle_init(tp, increment, limit, 0) == tp);
         /* SUSTAINED */
         now = 0;
         size = 10;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
         /* CONSUME LIMIT */
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        /* ALARM */
-        now += (size * ii) - 2;
+        /* FILL */
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         ASSERT(diminuto_throttle_commitn(tp, size));
-        now += (size * ii) + 1;
+        now += (size * increment) + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
         ASSERT(diminuto_throttle_commitn(tp, size));
-        now += (size * ii) + 1;
+        now += (size * increment) + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
         /* REQUEST, RE-REQUESTS, COMMIT */
-        now += (size * ii) - 2;
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
@@ -339,134 +423,139 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
         /* REQUEST, DELAY, ADMIT */
-        now += (size * ii) - 2;
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 2;
         ASSERT(!diminuto_throttle_admitn(tp, now, size));
         /* SUSTAINED AGAIN */
-        now += (size * ii) + 10;
+        now += (size * increment) + 10;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
+        /**/
+        STATUS();
     }
 
     {
         diminuto_throttle_t throttle;
         diminuto_throttle_t * tp;
-        diminuto_ticks_t ii;
-        diminuto_ticks_t ll;
+        diminuto_ticks_t increment;
+        diminuto_ticks_t limit;
         size_t size;
         diminuto_ticks_t now;
+        /**/
+        TEST();
+        /**/
         tp = &throttle;
-        ii = 100;
-        ll = 10;
-        ASSERT(diminuto_throttle_init(tp, ii, ll, 0) == tp);
+        increment = 100;
+        limit = 10;
+        ASSERT(diminuto_throttle_init(tp, increment, limit, 0) == tp);
         /* SUSTAINED */
         now = 0;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
         /* CONSUME LIMIT */
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) - 1;
+        now += (size * increment) - 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        /* ALARM */
-        now += (size * ii) - 2;
+        /* FILL */
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         ASSERT(diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) + 1;
+        now += (size * increment) + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
         ASSERT(diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii) + 1;
+        now += (size * increment) + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
         /* REQUEST, RE-REQUESTS, COMMIT */
-        now += (size * ii) - 2;
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 1;
         ASSERT(diminuto_throttle_request(tp, now) == 1);
@@ -474,44 +563,46 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
         /* REQUEST, DELAY, ADMIT */
-        now += (size * ii) - 2;
+        now += (size * increment) - 2;
         ASSERT(diminuto_throttle_request(tp, now) == 2);
         now += 2;
         ASSERT(!diminuto_throttle_admitn(tp, now, (size = blocksize())));
         /* SUSTAINED AGAIN */
-        now += (size * ii) + 10;
+        now += (size * increment) + 10;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
-        now += (size * ii);
+        now += (size * increment);
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize())));
+        /**/
+        STATUS();
     }
 
     {
@@ -527,6 +618,9 @@ int main(int argc, char ** argv)
         uint64_t total = 0;
         diminuto_ticks_t duration = 0;
         uint64_t measured;
+        /**/
+        TEST();
+        /**/
         tp = diminuto_throttle_init(&throttle, diminuto_frequency() / BANDWIDTH, 0, now);
         ASSERT(tp == &throttle);
         diminuto_throttle_log(tp);
@@ -544,11 +638,14 @@ int main(int argc, char ** argv)
             admissable = !diminuto_throttle_commitn(tp, size);
             ASSERT(admissable);
         }
+        /**/
         ASSERT(total > 0);
         ASSERT(duration > diminuto_frequency());
         measured = total / (duration / diminuto_frequency());
         DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds requested=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, measured);
         ASSERT(llabs(measured - BANDWIDTH) < (BANDWIDTH / 200));
+        /**/
+        STATUS();
      }
 
     EXIT();
