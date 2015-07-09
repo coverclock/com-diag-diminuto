@@ -28,6 +28,7 @@ BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 # The hardware for some of these targets isn't even available to me anymore.
 
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
+#TARGET				:=	betty# Build for the Raspberry Pi 2 running Raspbian.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
 #TARGET				:=	cobbler# Build for the Raspberry Pi version B running Raspbian.
 #TARGET				:=	contraption# Build for the BeagleBoard C4 running Android 2.2 but with glibc.
