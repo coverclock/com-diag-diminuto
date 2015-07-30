@@ -20,6 +20,21 @@ int diminuto_reaper_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
 
+pid_t diminuto_reaper_signal(pid_t pid)
+{
+    if (kill(pid, SIGCHLD) < 0) {
+        diminuto_perror("diminuto_reaper_signal: kill");
+        pid = -1;
+    } else if (diminuto_reaper_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_reaper_signal: SIGCHLD");
+        pid = 0;
+    } else {
+        pid = 0;
+    }
+
+    return pid;
+}
+
 static void diminuto_reaper_handler(int signum)
 {
     pid_t pid;
@@ -36,24 +51,14 @@ static void diminuto_reaper_handler(int signum)
                 DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d status=0x%x", pid, status);
             }
         }
+        if (pid >= 0) {
+            /* Do nothing. */
+        } else if (errno == ECHILD) {
+            /* Do nothing. */
+        } else {
+            diminuto_perror("diminuto_reaper_signal: waitpid");
+        }
     }
-}
-
-pid_t diminuto_reaper_signal(pid_t pid)
-{
-    if (pid < 0) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_reaper_signal: pid");
-    } else if (kill(pid, SIGCHLD) < 0) {
-        diminuto_perror("diminuto_reaper_signal: kill");
-        pid = -1;
-    } else if (diminuto_reaper_debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_reaper_signal: SIGCHLD");
-    } else {
-        /* Do nothing. */
-    }
-
-    return pid;
 }
 
 int diminuto_reaper_check(void)

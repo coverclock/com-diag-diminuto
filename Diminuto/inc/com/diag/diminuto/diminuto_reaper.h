@@ -21,8 +21,9 @@
 
 /**
  * Send a process a SIGCHLD signal.
- * @param pid is the process identifier.
- * @return pid or <0 if an error occurred.
+ * @param pid is the process identifier, or 0 for process group, or -1 for all
+ * processes for whom the sender has permissions to send a signal.
+ * @return 0 or <0 if an error occurred.
  */
 extern pid_t diminuto_reaper_signal(pid_t pid);
 

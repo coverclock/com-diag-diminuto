@@ -19,30 +19,26 @@ int diminuto_alarm_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
 
-static void diminuto_alarm_handler(int signum)
-{
-    if (signum == SIGALRM) {
-        signaled = !0;
-    } else {
-        /* Do nothing. */
-    }
-}
-
 pid_t diminuto_alarm_signal(pid_t pid)
 {
-    if (pid < 0) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_alarm_signal: pid");
-    } else if (kill(pid, SIGALRM) < 0) {
+    if (kill(pid, SIGALRM) < 0) {
         diminuto_perror("diminuto_alarm_signal: kill");
         pid = -1;
     } else if (diminuto_alarm_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_alarm_signal: SIGALRM");
+        pid = 0;
     } else {
-        /* Do nothing. */
+        pid = 0;
     }
 
     return pid;
+}
+
+static void diminuto_alarm_handler(int signum)
+{
+    if (signum == SIGALRM) {
+        signaled = !0;
+    }
 }
 
 int diminuto_alarm_check(void)
