@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_reaper_check());
 
     pid = getpid();
-    ASSERT(diminuto_reaper_signal(pid) == pid);
+    ASSERT(diminuto_reaper_signal(pid) == 0);
 
     EXIT();
 }
