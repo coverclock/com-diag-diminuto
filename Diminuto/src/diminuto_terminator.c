@@ -71,20 +71,20 @@ int diminuto_terminator_check(void)
 
 int diminuto_terminator_install(int restart)
 {
-    struct sigaction terminator;
+    int rc = 0;
+    struct sigaction terminator = { 0 };
 
-    memset(&terminator, 0, sizeof(terminator));
     terminator.sa_handler = diminuto_terminator_handler;
     terminator.sa_flags = restart ? SA_RESTART : 0;
 
     if (sigaction(SIGTERM, &terminator, (struct sigaction *)0) < 0) {
         diminuto_perror("diminuto_terminator_install: sigaction");
-        return -1;
-    }
-
-    if (diminuto_terminator_debug) {
+        rc = -1;
+    } else if (diminuto_terminator_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_terminator_install: SIGTERM");
+    } else {
+        /* Do nothing. */
     }
 
-    return 0;
+    return rc;
 }

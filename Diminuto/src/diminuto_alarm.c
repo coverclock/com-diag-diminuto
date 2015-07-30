@@ -66,20 +66,20 @@ int diminuto_alarm_check(void)
 
 int diminuto_alarm_install(int restart)
 {
-    struct sigaction alarm;
+    int rc = 0;
+    struct sigaction alarm = { 0 };
 
-    memset(&alarm, 0, sizeof(alarm));
     alarm.sa_handler = diminuto_alarm_handler;
     alarm.sa_flags = restart ? SA_RESTART : 0;
 
     if (sigaction(SIGALRM, &alarm, (struct sigaction *)0) < 0) {
         diminuto_perror("diminuto_alarm_install: sigaction");
-        return -1;
-    }
-
-    if (diminuto_alarm_debug) {
+        rc = -1;
+    } else if (diminuto_alarm_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_alarm_install: SIGALRM");
+    } else {
+        /* Do nothing. */
     }
 
-    return 0;
+    return rc;
 }

@@ -86,20 +86,20 @@ int diminuto_reaper_check(void)
 
 int diminuto_reaper_install(int restart)
 {
-    struct sigaction reaper;
+    int rc = 0;
+    struct sigaction reaper = { 0 };
 
-    memset(&reaper, 0, sizeof(reaper));
     reaper.sa_handler = diminuto_reaper_handler;
     reaper.sa_flags = restart ? SA_RESTART : 0;
 
     if (sigaction(SIGCHLD, &reaper, (struct sigaction *)0) < 0) {
         diminuto_perror("diminuto_reaper_install: sigaction");
-        return -1;
-    }
-
-    if (diminuto_reaper_debug) {
+        rc = -1;
+    } else if (diminuto_reaper_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_reaper_install: SIGCHLD");
+    } else {
+        /* Do nothing. */
     }
 
-    return 0;
+    return rc;
 }
