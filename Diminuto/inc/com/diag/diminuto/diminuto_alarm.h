@@ -19,7 +19,7 @@
  * processes for whom the sender has permissions to send a signal.
  * @return 0 or <0 if an error occurred.
  */
-extern pid_t diminuto_alarm_signal(pid_t pid);
+extern int diminuto_alarm_signal(pid_t pid);
 
 /**
  * Return true if the caller received a SIGALRM, false otherwise.

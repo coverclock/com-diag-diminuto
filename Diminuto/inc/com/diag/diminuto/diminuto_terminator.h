@@ -22,7 +22,7 @@
  * processes for whom the sender has permissions to send a signal.
  * @return 0 or <0 if an error occurred.
  */
-extern pid_t diminuto_terminator_signal(pid_t pid);
+extern int diminuto_terminator_signal(pid_t pid);
 
 /**
  * Return true if the caller received a SIGTERM, false otherwise.

@@ -22,26 +22,26 @@ int diminuto_terminator_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
 
-pid_t diminuto_terminator_signal(pid_t pid)
+int diminuto_terminator_signal(pid_t pid)
 {
+    int rc = 0;
+
     if (kill(pid, SIGTERM) < 0) {
         diminuto_perror("diminuto_terminator_signal: kill");
-        pid = -1;
+        rc = -1;
     } else if (diminuto_terminator_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_terminator_signal: SIGTERM");
-        pid = 0;
     } else {
-        pid = 0;
+        /* Do nothing. */
     }
 
-    return pid;
+    return rc;
 }
 
 static void diminuto_terminator_handler(int signum)
 {
-    pid_t pid;
-
     if (signum == SIGTERM) {
+        pid_t pid;
         pid = (getpid() == 1) ? -1 : 0;
         (void)diminuto_terminator_signal(pid);
     }

@@ -19,19 +19,20 @@ int diminuto_alarm_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
 
-pid_t diminuto_alarm_signal(pid_t pid)
+int diminuto_alarm_signal(pid_t pid)
 {
+    int rc = 0;
+
     if (kill(pid, SIGALRM) < 0) {
         diminuto_perror("diminuto_alarm_signal: kill");
-        pid = -1;
+        rc = -1;
     } else if (diminuto_alarm_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_alarm_signal: SIGALRM");
-        pid = 0;
     } else {
-        pid = 0;
+        /* Do nothing. */
     }
 
-    return pid;
+    return rc;
 }
 
 static void diminuto_alarm_handler(int signum)
