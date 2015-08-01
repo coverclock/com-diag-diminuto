@@ -12,6 +12,8 @@
  *
  * The terminator feature propagates a SIGTERM signal to appropriate processes
  * (children or process group) when it receives one.
+ *
+ * EXPERIMENTAL * UNTESTED
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

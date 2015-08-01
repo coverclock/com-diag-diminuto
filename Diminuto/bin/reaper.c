@@ -6,6 +6,7 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * EXPERIMENTAL * UNTESTED
  */
 
 #include "com/diag/diminuto/diminuto_reaper.h"
