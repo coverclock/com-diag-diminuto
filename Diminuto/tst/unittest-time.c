@@ -34,10 +34,13 @@ int main(int argc, char ** argv)
     diminuto_ticks_t rc;
     diminuto_ticks_t zulu;
     diminuto_ticks_t juliet;
-    diminuto_ticks_t timezone;
-    diminuto_ticks_t daylightsaving;
-    diminuto_ticks_t offset;
+    diminuto_sticks_t timezone;
+    diminuto_sticks_t daylightsaving;
+    diminuto_sticks_t offset;
     diminuto_ticks_t hertz;
+    uint64_t logical;
+    uint64_t logicalprime;
+    int first;
     int dday;
     int dhour;
     int dminute;
@@ -67,24 +70,30 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_frequency();
 
-    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n",
-        "requested",
-        "remaining",
-        "claimed",
-        "measured",
-        "difference",
-        "elapsed",
-        "difference",
-        "error-z",
-        "error-j",
-        "process",
-        "thread",
-        "duration",
-        "zulu",
-        "juliet"
+    first = !0;
+
+    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
+        , "logical"
+        , "difference"
+        , "requested"
+        , "remaining"
+        , "claimed"
+        , "measured"
+        , "difference"
+        , "elapsed"
+        , "difference"
+        , "error-z"
+        , "error-j"
+        , "process"
+        , "thread"
+        , "duration"
+        , "zulu"
+        , "juliet"
     );
 
     for (requested = 0; requested <= (hertz * 240); requested = (requested > 0) ? requested * 2 : 1) {
+        logical = diminuto_time_logical();
+        ASSERT(first || (logical > logicalprime));
         result = diminuto_time_elapsed();
         ASSERT(result != (diminuto_sticks_t)-1);
         then = result;
@@ -149,7 +158,8 @@ int main(int argc, char ** argv)
         result = diminuto_time_thread();
         ASSERT(result != (diminuto_sticks_t)-1);
         thread = result;
-        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n"
+        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n"
+            , logical, first ? 0 : logical - logicalprime
             , requested, remaining
             , claimed
             , measured, measured - requested
@@ -165,6 +175,8 @@ int main(int argc, char ** argv)
         ASSERT(after == zulu);
         ASSERT(after == juliet);
         diminuto_yield();
+        first = 0;
+        logicalprime = logical;
     }
 
     EXIT();
