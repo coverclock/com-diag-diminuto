@@ -22,7 +22,7 @@
  * ABSTRACT
  *
  * Prints on standard output the elapsed time of the rate
- * monotonic clock.
+ * monotonic clock in the specified units. Defaults to seconds.
  */
 
 #include <stdio.h>
