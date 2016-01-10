@@ -96,6 +96,15 @@ extern diminuto_sticks_t diminuto_time_process(void);
 extern diminuto_sticks_t diminuto_time_thread(void);
 
 /**
+ * Return the logical clock, which is a simple incrementing sixty-four bit
+ * unsigned counter value that is guaranteed to be unique for every thead in
+ * the same process until the counter reaches its maximum possible value of
+ * ~(uint64_t)0, after which it wraps around back to zero.
+ * @return a unique logical clock value.
+ */
+extern uint64_t diminuto_time_logical(void);
+
+/**
  * Return the number of ticks the local time zone is offset from Coordinated
  * Universal Time (UTC). For time zones west of UTC, this will be a negative
  * value (earlier), and for east of UTC, a positive value (later). This offset

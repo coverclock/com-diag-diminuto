@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
@@ -70,11 +71,11 @@ diminuto_sticks_t diminuto_time_clock()
 
 diminuto_sticks_t diminuto_time_elapsed()
 {
-#if defined(CLOCK_MONOTONIC_BOOTTIME)
+#if 0
     return diminuto_time_generic(CLOCK_MONOTONIC_BOOTTIME); /* Since Linux 2.6.39 */
-#elif defined(CLOCK_MONOTONIC_RAW)
+#elif (defined(CLOCK_MONOTONIC_RAW) && defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
     return diminuto_time_generic(CLOCK_MONOTONIC_RAW); /* Since Linux 2.6.28 */
-#elif (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
+#elif (defined(CLOCK_MONOTONIC) && defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
     return diminuto_time_generic(CLOCK_MONOTONIC); /* Prior to Linux 2.6.28 */
 #else
     return diminuto_time_generic(0);
@@ -259,4 +260,17 @@ int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int
     if (tickp   != (int *)0) { *tickp   = ticks % divisor; }
 
     return rc;
+}
+
+uint64_t diminuto_time_logical(void)
+{
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    static uint64_t counter = 0;
+    uint64_t result;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        result = counter++;
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return result;
 }
