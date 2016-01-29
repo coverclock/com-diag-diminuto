@@ -41,8 +41,13 @@ int diminuto_terminator_signal(pid_t pid)
 
 static void diminuto_terminator_handler(int signum)
 {
-    if (signum == SIGTERM) {
+    if (signum != SIGTERM) {
+        /* Do nothing. */
+    } else if (signaled) {
+        /* Do nothing. */
+    } else {
         pid_t pid;
+        signaled = !0;
         pid = (getpid() == 1) ? -1 : 0;
         (void)diminuto_terminator_signal(pid);
     }
@@ -86,6 +91,8 @@ int diminuto_terminator_install(int restart)
     } else {
         /* Do nothing. */
     }
+
+    signaled = 0;
 
     return rc;
 }
