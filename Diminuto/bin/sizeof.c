@@ -19,6 +19,8 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+#include <sys/types.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_offsetof.h"
 
@@ -56,6 +58,7 @@ int main(void)
     printsizeof(float);
     printsizeof(double);
     printsizeof(void);
+    printsizeof(bool);
     printsignof(enum_t);
     printsizeof(function_t);
     printsignof(int8_t);

@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2015 Digital Aggregates Corporation
+# Copyright 2008-2016 Digital Aggregates Corporation
 # Licensed under the terms in README.h
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -60,7 +60,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2015 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2016 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
