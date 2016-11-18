@@ -404,13 +404,21 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 # unlike the shared objects. This program also serves as a unit test, so be
 # careful about removing stuff from it that looks redundant or unused.
 # NOTE: in the generated C code below, whether you should have \\n or \n in the
-# echo statements seems to depend on whether you are running make 3.81 or prior
-# versus make 3.82 or after. make 3.81 is what my Ubuntu 14.04 build server has.
+# echo statements seems to depend on what version of make you are running.
+# 3.81 seems to like one slash, 3.82 two slashes, and 4.1 one slash.
 
+SLASHES=1
 ifeq (3.82, $(firstword $(sort $(MAKE_VERSION) 3.82)))
+SLASHES=2
+endif
+ifeq (4.1, $(firstword $(sort $(MAKE_VERSION) 4.1)))
+SLASHES=2
+endif
+
+ifeq ($(SLASHES), 1)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
-	@echo MAKE_VERSION=$(MAKE_VERSION)
+	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -468,10 +476,12 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    return 0;' >> $@
 	echo '}' >> $@
 
-else
+endif
+
+ifeq ($(SLASHES), 2)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
-	@echo MAKE_VERSION=$(MAKE_VERSION)
+	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
 	D=`dirname $@`; mkdir -p $$D	
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
