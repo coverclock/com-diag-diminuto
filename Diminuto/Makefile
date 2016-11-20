@@ -16,9 +16,9 @@
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	32# API changes that may require that applications be modified.
-MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MAJOR				:=	33# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -49,7 +49,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # a more stringent requirement than requiring that checksums or cryptographic
 # hashes are the same, although in practice it is the same thing.) This allows
 # agency inspectors to verify the integrity of the binary software images. This
-# makes embedding timestamps inside compiled translation units problematic.
+# makes embedding build timestamps inside compiled translation units problematic.
 # If your application has this requirement, you can pass in any fixed string
 # for the value of the VINTAGE make variable, and only use the value of this
 # symbol as a build time stamp, and you should be able to generate identical
@@ -57,13 +57,17 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # Diminuto "vintage" application. The default build time stamp is an ISO-8601
 # complaint string with the time specified in UTC with nanosecond resolution.
 
-VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
-
 # This stuff all gets embedded in the vintage application.
 COPYRIGHT			:=	2008-2016 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
+HOST				:=	$(shell hostname -s)
+BRANCH				:=	$(shell git rev-parse --abbrev-ref HEAD)
+REVISION			:=	$(shell git rev-parse HEAD)
+MODIFIED			:=	$(shell date -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
+ROOT				:=	$(shell git rev-parse --show-toplevel)
+VINTAGE				:=	$(shell date +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
@@ -103,9 +107,6 @@ OUT					:=	$(OUT_DIR)/$(TARGET)
 
 TEMP_DIR			:=	/tmp
 ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
-
-TIMESTAMP			:=	$(shell date -u +%Y%m%d%H%M%S%N%Z)
-DATESTAMP			:=	$(shell date +%Y%m%d)
 
 SVNREPO				:=	svn://graphite/$(PROJECT)
 SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
@@ -279,7 +280,7 @@ tarball $(TARBALL).tgz:
 .PHONY:	backup
 
 backup:
-	tar --exclude=$(OUT_DIR) -cvzf - . > ../$(PROJECT)-$(TIMESTAMP).tgz
+	tar --exclude=$(OUT_DIR) -cvzf - . > ../$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z).tgz
 
 ########## Source Code Control
 
@@ -430,21 +431,24 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo '    "Title = $(TITLE)\n"' >> $@
-	echo '    "Copyright = $(COPYRIGHT)\n"' >> $@
-	echo '    "Contact = $(CONTACT)\n"' >> $@
-	echo '    "License = $(LICENSE)\n"' >> $@
-	echo '    "Homepage = $(HOMEPAGE)\n"' >> $@
-	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\n"' >> $@
-	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\n"' >> $@
-	echo '    "Host = $(shell hostname)\n"' >> $@
-	echo '    "Directory = $(shell pwd)\n"' >> $@
 	echo '    "Arch = $(ARCH)\n"' >> $@
-	echo '    "Target = $(TARGET)\n"' >> $@
+	echo '    "Branch = $(BRANCH)\n"' >> $@
+	echo '    "Contact = $(CONTACT)\n"' >> $@
+	echo '    "Copyright = $(COPYRIGHT)\n"' >> $@
+	echo '    "Homepage = $(HOMEPAGE)\n"' >> $@
+	echo '    "Host = $(HOST)\n"' >> $@
+	echo '    "License = $(LICENSE)\n"' >> $@
+	echo '    "Modified = $(MODIFIED)\n"' >> $@
 	echo '    "Os = $(OS)\n"' >> $@
 	echo '    "Platform = " COM_DIAG_$(SYMBOL)_PLATFORM "\n"' >> $@
+	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\n"' >> $@
+	echo '    "Revision = $(REVISION)\n"' >> $@
+	echo '    "Root = $(ROOT)\n"' >> $@
+	echo '    "Target = $(TARGET)\n"' >> $@
+	echo '    "Title = $(TITLE)\n"' >> $@
 	echo '    "Toolchain = $(TOOLCHAIN)\n"' >> $@
 	echo '    "User = $(USER)\n"' >> $@
+	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\n"' >> $@
 	echo ';' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
@@ -493,21 +497,24 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo '    "Title = $(TITLE)\\n"' >> $@
-	echo '    "Copyright = $(COPYRIGHT)\\n"' >> $@
-	echo '    "Contact = $(CONTACT)\\n"' >> $@
-	echo '    "License = $(LICENSE)\\n"' >> $@
-	echo '    "Homepage = $(HOMEPAGE)\\n"' >> $@
-	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\\n"' >> $@
-	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\\n"' >> $@
-	echo '    "Host = $(shell hostname)\\n"' >> $@
-	echo '    "Directory = $(shell pwd)\\n"' >> $@
 	echo '    "Arch = $(ARCH)\\n"' >> $@
-	echo '    "Target = $(TARGET)\\n"' >> $@
+	echo '    "Branch = $(BRANCH)\\n"' >> $@
+	echo '    "Contact = $(CONTACT)\\n"' >> $@
+	echo '    "Copyright = $(COPYRIGHT)\\n"' >> $@
+	echo '    "Homepage = $(HOMEPAGE)\\n"' >> $@
+	echo '    "Host = $(HOST)\\n"' >> $@
+	echo '    "License = $(LICENSE)\\n"' >> $@
+	echo '    "Modified = $(MODIFIED)\\n"' >> $@
 	echo '    "Os = $(OS)\\n"' >> $@
 	echo '    "Platform = " COM_DIAG_$(SYMBOL)_PLATFORM "\\n"' >> $@
+	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\\n"' >> $@
+	echo '    "Revision = $(REVISION)\\n"' >> $@
+	echo '    "Root = $(ROOT)\\n"' >> $@
+	echo '    "Target = $(TARGET)\\n"' >> $@
+	echo '    "Title = $(TITLE)\\n"' >> $@
 	echo '    "Toolchain = $(TOOLCHAIN)\\n"' >> $@
 	echo '    "User = $(USER)\\n"' >> $@
+	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\\n"' >> $@
 	echo ';' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
