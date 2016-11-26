@@ -18,7 +18,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	33# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -406,15 +406,8 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 # careful about removing stuff from it that looks redundant or unused.
 # NOTE: in the generated C code below, whether you should have \\n or \n in the
 # echo statements seems to depend on what version of make you are running.
-# 3.81 seems to like one slash, 3.82 two slashes, and 4.1 one slash.
 
-SLASHES=1
-ifeq (3.82, $(firstword $(sort $(MAKE_VERSION) 3.82)))
 SLASHES=2
-endif
-ifeq (4.1, $(firstword $(sort $(MAKE_VERSION) 4.1)))
-SLASHES=2
-endif
 
 ifeq ($(SLASHES), 1)
 
