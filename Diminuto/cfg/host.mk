@@ -1,4 +1,4 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# Copyright 2008-2016 Digital Aggregates Corporation
 # Licensed under the terms in README.hz
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -6,15 +6,16 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
-# host: Dell Inspiron 530 x86_64 running Ubuntu 14.04 LTS.
+# host: most Linux/GNU systems hosting the native toolchain.
 
 ARCH				:=	x86_64
 OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
-KERNEL_REV			:=	3.13.0-24
-KERNEL_DIR			:=	$(HOME_DIR)/host/linux-source-3.13.0
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)-generic
+KERNEL_REV			:=	$(shell uname -r)
+KERNEL_DIR			:=	/lib/modules/$(KERNEL_REV)/build
+# sudo apt-get install linux-headers-$(uname -r)
+CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT)/$(LIB_DIR)

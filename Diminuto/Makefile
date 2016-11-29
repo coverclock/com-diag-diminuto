@@ -18,7 +18,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	33# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -65,9 +65,9 @@ HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
 HOST				:=	$(shell hostname -s)
 BRANCH				:=	$(shell git rev-parse --abbrev-ref HEAD)
 REVISION			:=	$(shell git rev-parse HEAD)
-MODIFIED			:=	$(shell date -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
+MODIFIED			:=	$(shell date -u -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
 ROOT				:=	$(shell git rev-parse --show-toplevel)
-VINTAGE				:=	$(shell date +%Y-%m-%dT%H:%M:%S.%N%z)
+VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
@@ -430,6 +430,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Copyright = $(COPYRIGHT)\n"' >> $@
 	echo '    "Homepage = $(HOMEPAGE)\n"' >> $@
 	echo '    "Host = $(HOST)\n"' >> $@
+	echo '    "Kernel = $(KERNEL_REV)\n"' >> $@
 	echo '    "License = $(LICENSE)\n"' >> $@
 	echo '    "Modified = $(MODIFIED)\n"' >> $@
 	echo '    "Os = $(OS)\n"' >> $@
@@ -496,6 +497,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Copyright = $(COPYRIGHT)\\n"' >> $@
 	echo '    "Homepage = $(HOMEPAGE)\\n"' >> $@
 	echo '    "Host = $(HOST)\\n"' >> $@
+	echo '    "Kernel = $(KERNEL_REV)\\n"' >> $@
 	echo '    "License = $(LICENSE)\\n"' >> $@
 	echo '    "Modified = $(MODIFIED)\\n"' >> $@
 	echo '    "Os = $(OS)\\n"' >> $@
