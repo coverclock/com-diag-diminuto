@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -135,29 +135,6 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
     }
 
     return buffer;
-}
-
-diminuto_port_t diminuto_ipc4_port(const char * service, const char * protocol)
-{
-    diminuto_port_t port = 0;
-    struct servent * portp;
-    size_t length;
-    diminuto_unsigned_t temp;
-    const char * end;
-
-    if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
-        port = ntohs(portp->s_port);
-    } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
-        /* Do nothing: might be an unknown service. */
-    } else if (temp > (diminuto_port_t)~0) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_ipc4_port: magnitude");
-        port = 0;
-    } else {
-        port = temp;
-    }
-
-    return port;
 }
 
 /*******************************************************************************

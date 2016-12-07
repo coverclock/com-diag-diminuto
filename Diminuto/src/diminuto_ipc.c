@@ -25,6 +25,33 @@
 #include <arpa/inet.h>
 
 /*******************************************************************************
+ * STRING TO PORT AND VICE VERSA
+ ******************************************************************************/
+
+diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
+{
+    diminuto_port_t port = 0;
+    struct servent * portp;
+    size_t length;
+    diminuto_unsigned_t temp;
+    const char * end;
+
+    if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
+        port = ntohs(portp->s_port);
+    } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
+        /* Do nothing: might be an unknown service. */
+    } else if (temp > (diminuto_port_t)~0) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipc_port: magnitude");
+        port = 0;
+    } else {
+        port = temp;
+    }
+
+    return port;
+}
+
+/*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
