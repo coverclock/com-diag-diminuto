@@ -17,7 +17,7 @@
 #include <netinet/ip_icmp.h>
 #include <arpa/inet.h>
 #include "diminuto_ipc4.h"
-#include "com/diag/diminuto/diminuto_ping.h"
+#include "com/diag/diminuto/diminuto_ping4.h"
 #include "com/diag/diminuto/diminuto_inet.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_log.h"

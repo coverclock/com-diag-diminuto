@@ -11,7 +11,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_inet.h"
-#include "com/diag/diminuto/diminuto_ping.h"
+#include "com/diag/diminuto/diminuto_ping4.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 
@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-    ASSERT((sock = diminuto_ping_datagram_peer()) >= 0);
+    ASSERT((sock = diminuto_ping4_datagram_peer()) >= 0);
 
     {
         TEST();
@@ -92,14 +92,14 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc4_address2string(to, buffer, sizeof(buffer)));
         ASSERT(to != 0);
 
-        ASSERT(diminuto_ping_datagram_send(sock, to, 0xcafe, 1) > 0);
+        ASSERT(diminuto_ping4_datagram_send(sock, to, 0xcafe, 1) > 0);
 
         from = 0;
         type = ~0;
         id = 0;
         seq = 0;
         elapsed = 0;
-        ASSERT((size = diminuto_ping_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+        ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
         EXPECT(from != 0);
         EXPECT(type != ~0);
@@ -117,14 +117,14 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc4_address2string(to, buffer, sizeof(buffer)));
         ASSERT(to != 0);
 
-        ASSERT(diminuto_ping_datagram_send(sock, to, 0xbabe, 2) > 0);
+        ASSERT(diminuto_ping4_datagram_send(sock, to, 0xbabe, 2) > 0);
 
         from = 0;
         type = ~0;
         id = 0;
         seq = 0;
         elapsed = 0;
-        ASSERT((size = diminuto_ping_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+        ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
         EXPECT(from != 0);
         EXPECT(type != ~0);
@@ -142,7 +142,7 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc4_address2string(to, buffer, sizeof(buffer)));
         ASSERT(to != 0);
 
-        ASSERT(diminuto_ping_datagram_send(sock, to, 0xbeef, 3) > 0);
+        ASSERT(diminuto_ping4_datagram_send(sock, to, 0xbeef, 3) > 0);
 
         from = 0;
         type = ~0;
@@ -156,8 +156,8 @@ int main(int argc, char * argv[])
          * but we did get something, and it wasn't an error. It is up to the
          * caller to decide what to do. The unit test just tries again.
          */
-        ASSERT((size = diminuto_ping_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (uint8_t *)0, (diminuto_ticks_t *)0)) == 0);
-        ASSERT((size = diminuto_ping_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+        ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (uint8_t *)0, (diminuto_ticks_t *)0)) == 0);
+        ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
         EXPECT(from != 0);
         EXPECT(type != ~0);
@@ -181,13 +181,13 @@ int main(int argc, char * argv[])
         ASSERT(to != 0);
 
         for (ss = 0; ss < 10; ++ss) {
-            ASSERT(diminuto_ping_datagram_send(sock, to, 0xdead, ss) > 0);
+            ASSERT(diminuto_ping4_datagram_send(sock, to, 0xdead, ss) > 0);
             from = 0;
             type = ~0;
             id = 0;
             seq = 0;
             elapsed = 0;
-            ASSERT((size = diminuto_ping_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+            ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
             ASSERT(from != 0);
             ASSERT(type != ~0);
@@ -200,15 +200,15 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-    ASSERT(diminuto_ping_close(sock) >= 0);
+    ASSERT(diminuto_ping4_close(sock) >= 0);
 
     {
         TEST();
 
-        ASSERT((sock = diminuto_ping_datagram_peer()) >= 0);
+        ASSERT((sock = diminuto_ping4_datagram_peer()) >= 0);
         if (argc >= 2) {
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", argv[1] /* e.g. "eth0" */);
-            ASSERT(diminuto_ping_interface(sock, argv[1]) >= 0);
+            ASSERT(diminuto_ping4_interface(sock, argv[1]) >= 0);
         }
         if (argc >= 3) {
             from = diminuto_ipc4_address(argv[2] /* e.g. 192.168.1.222 */);
@@ -218,20 +218,20 @@ int main(int argc, char * argv[])
                 port = strtoul(argv[3] /* e.g. 5555 */, (char **)0, 0);
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port=%u\n", port);
             }
-            ASSERT(diminuto_ping_address(sock, from, port) >= 0);
+            ASSERT(diminuto_ping4_address(sock, from, port) >= 0);
         }
         to = diminuto_ipc4_address("google.com");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc4_address2string(to, buffer, sizeof(buffer)));
         EXPECT(to != 0);
 
-        ASSERT(diminuto_ping_datagram_send(sock, to, 0xc0ed, 1) > 0);
+        ASSERT(diminuto_ping4_datagram_send(sock, to, 0xc0ed, 1) > 0);
 
         from = 0;
         type = ~0;
         id = 0;
         seq = 0;
         elapsed = 0;
-        ASSERT((size = diminuto_ping_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+        ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
         EXPECT(from != 0);
         EXPECT(type != ~0);
