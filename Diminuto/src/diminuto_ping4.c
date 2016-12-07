@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,10 +16,10 @@
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <arpa/inet.h>
-#include "diminuto_ipc.h"
+#include "diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ping.h"
 #include "com/diag/diminuto/diminuto_inet.h"
-#include "com/diag/diminuto/diminuto_ipc.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
 #include "com/diag/diminuto/diminuto_offsetof.h"
@@ -27,7 +27,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 
-int diminuto_ping_debug = 0; /* Not part of the public API. */
+int diminuto_ping4_debug = 0; /* Not part of the public API. */
 
 typedef union {
     uint16_t word;
@@ -62,22 +62,22 @@ uint16_t diminuto_inet_checksum(void * buffer, size_t size)
     return ~accumulator;
 }
 
-int diminuto_ping_datagram_peer(void)
+int diminuto_ping4_datagram_peer(void)
 {
     int fd;
 
     if ((fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ping_datagram_peer: must be root");
+        diminuto_perror("diminuto_ping4_datagram_peer: must be root");
     } else {
-        diminuto_perror("diminuto_ping_datagram_peer: socket");
+        diminuto_perror("diminuto_ping4_datagram_peer: socket");
     }
 
     return fd;
 }
 
-int diminuto_ping_interface(int fd, const char * ifname)
+int diminuto_ping4_interface(int fd, const char * ifname)
 {
     int rc;
     struct ifreq iface = { 0 };
@@ -86,13 +86,13 @@ int diminuto_ping_interface(int fd, const char * ifname)
     iface.ifr_ifrn.ifrn_name[sizeof(iface.ifr_name) - 1] = '\0';
 
     if ((rc = setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &iface, sizeof(iface))) < 0) {
-        diminuto_perror("diminuto_ping_interface: setsockopt");
+        diminuto_perror("diminuto_ping4_interface: setsockopt");
     }
 
     return rc;
 }
 
-int diminuto_ping_address(int fd, diminuto_ipv4_t address, diminuto_port_t port)
+int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 {
     int rc;
     struct sockaddr_in sa = { 0 };
@@ -102,7 +102,7 @@ int diminuto_ping_address(int fd, diminuto_ipv4_t address, diminuto_port_t port)
     sa.sin_port = htons(port);
 
     if ((rc = bind(fd, &sa, sizeof(sa))) < 0) {
-        diminuto_perror("diminuto_ping_address: bind");
+        diminuto_perror("diminuto_ping4_address: bind");
     }
 
     return rc;
@@ -115,7 +115,7 @@ typedef union {
     char payload[8 + 56];
 } icmp_echo_request_datagram_t;
 
-ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id, uint16_t seq)
+ssize_t diminuto_ping4_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id, uint16_t seq)
 {
     ssize_t total;
     icmp_echo_request_datagram_t buffer = { 0 };
@@ -135,14 +135,14 @@ ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id
     memcpy(icmpp->icmp_data, &now, sizeof(diminuto_ticks_t));
     icmpp->icmp_cksum = diminuto_inet_checksum(&buffer, sizeof(buffer));
 
-    if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, sizeof(buffer)); }
+    if (diminuto_ping4_debug) { diminuto_dump(stderr, &buffer, sizeof(buffer)); }
 
     if ((total = sendto(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, sizeof(sa))) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
         /* Do nothing: nominal case. */
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipc_datagram_send_flags: sendto");
+        diminuto_perror("diminuto_ipc4_datagram_send_flags: sendto");
     } else {
         /* Do nothing: timeout or poll. */
     }
@@ -159,7 +159,7 @@ typedef union {
     char payload[20 + 8 + 56];
 } icmp_echo_reply_datagram_t;
 
-ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping4_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp_echo_reply_datagram_t buffer = { 0 };
@@ -171,8 +171,8 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t 
     diminuto_ticks_t then;
 
     if ((total = recvfrom(fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&sa, &length)) > 0) {
-        if (diminuto_ping_debug) { diminuto_dump(stderr, &buffer, total); }
-        diminuto_ipc_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
+        if (diminuto_ping4_debug) { diminuto_dump(stderr, &buffer, total); }
+        diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, (diminuto_port_t *)0);
         if (total < (sizeof(struct iphdr) + ICMP_MINLEN)) {
             total = 0; /* Too small to be an ICMP datagram. */
         } else {
@@ -212,7 +212,7 @@ ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t 
     } else if (total == 0) {
         /* Not sure what this means for a connectionless socket. */
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ping_datagram_recv: recvfrom");
+        diminuto_perror("diminuto_ping4_datagram_recv: recvfrom");
     } else {
         /* Interrupted. */
     }

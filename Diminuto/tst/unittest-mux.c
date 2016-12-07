@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -17,7 +17,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_timer.h"
-#include "com/diag/diminuto/diminuto_ipc.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -740,7 +740,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT((socket = diminuto_ipc_stream_provider(0)) >= 0);
+        ASSERT((socket = diminuto_ipc4_stream_provider(0)) >= 0);
 
         diminuto_mux_init(&mux);
 
@@ -838,8 +838,8 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT((listener = diminuto_ipc_stream_provider(0)) >= 0);
-        ASSERT(diminuto_ipc_nearend(listener, (diminuto_ipv4_t *)0, &rendezvous) == 0);
+        ASSERT((listener = diminuto_ipc4_stream_provider(0)) >= 0);
+        ASSERT(diminuto_ipc4_nearend(listener, (diminuto_ipv4_t *)0, &rendezvous) == 0);
         ASSERT(rendezvous > 0);
 
         ASSERT((pid = fork()) >= 0);
@@ -909,7 +909,7 @@ int main(int argc, char ** argv)
             ASSERT((fd = diminuto_mux_ready_accept(&mux)) >= 0);
             ASSERT(fd == listener);
 
-            ASSERT((producer = diminuto_ipc_stream_accept(fd, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc4_stream_accept(fd, &address, &port)) >= 0);
 
             ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
             ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
@@ -942,7 +942,7 @@ int main(int argc, char ** argv)
 
             input_a = input_b = output_a = output_b = 0;
 
-            ASSERT((sent = diminuto_ipc_datagram_send_flags(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
+            ASSERT((sent = diminuto_ipc4_datagram_send_flags(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
             DIMINUTO_LOG_DEBUG("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
 
             do {
@@ -973,7 +973,7 @@ int main(int argc, char ** argv)
                             used = TOTAL - totalsent;
                         }
 
-                        ASSERT((sent = diminuto_ipc_stream_write(fd, here, 1, used)) > 0);
+                        ASSERT((sent = diminuto_ipc4_stream_write(fd, here, 1, used)) > 0);
                         ASSERT(sent <= used);
                         output_8 = fletcher8(here, sent, &output_a, &output_b);
 
@@ -1006,7 +1006,7 @@ int main(int argc, char ** argv)
                     ASSERT(fd == producer);
 
                     ASSERT((readable = diminuto_fd_readable(fd)) > 0);
-                    ASSERT((received = diminuto_ipc_stream_read(fd, there, 1, available)) > 0);
+                    ASSERT((received = diminuto_ipc4_stream_read(fd, there, 1, available)) > 0);
                     ASSERT(received <= available);
                     input_8 = fletcher8(there, received, &input_a, &input_b);
 
@@ -1064,11 +1064,11 @@ int main(int argc, char ** argv)
             ssize_t readable;
             double percentage;
 
-            ASSERT(diminuto_ipc_close(listener) >= 0);
+            ASSERT(diminuto_ipc4_close(listener) >= 0);
 
             diminuto_mux_init(&mux);
 
-            ASSERT((consumer = diminuto_ipc_stream_consumer(diminuto_ipc_address("localhost"), rendezvous)) >= 0);
+            ASSERT((consumer = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("localhost"), rendezvous)) >= 0);
             ASSERT(diminuto_mux_register_read(&mux, consumer) == 0);
             ASSERT(diminuto_mux_register_urgent(&mux, consumer) == 0);
 
@@ -1095,7 +1095,7 @@ int main(int argc, char ** argv)
                     while ((fd = diminuto_mux_ready_urgent(&mux)) >= 0) {
                         ASSERT(fd == consumer);
                         buffer[0] = '\0';
-                        ASSERT((received = diminuto_ipc_datagram_receive_flags(fd, buffer, 1, (diminuto_ipv4_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
+                        ASSERT((received = diminuto_ipc4_datagram_receive_flags(fd, buffer, 1, (diminuto_ipv4_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
                         DIMINUTO_LOG_DEBUG("consumer ACKed    %10d %10d %10u %7.3lf%%\n", 0, received, 0, 0.0);
                         ASSERT(buffer[0] == ACK);
                         if (buffer[0] == ACK) {
@@ -1113,7 +1113,7 @@ int main(int argc, char ** argv)
                     ASSERT(fd == consumer);
 
                     ASSERT((readable = diminuto_fd_readable(fd)) >= 0);
-                    ASSERT((received = diminuto_ipc_stream_read(fd, buffer, 1, sizeof(buffer))) >= 0);
+                    ASSERT((received = diminuto_ipc4_stream_read(fd, buffer, 1, sizeof(buffer))) >= 0);
                     ASSERT(received <= sizeof(buffer));
 
                     totalreceived += received;
@@ -1129,7 +1129,7 @@ int main(int argc, char ** argv)
 
                     sent = 0;
                     while (sent < received) {
-                        ASSERT((sent = diminuto_ipc_stream_write(fd,  buffer + sent, 1, received - sent)) > 0);
+                        ASSERT((sent = diminuto_ipc4_stream_write(fd,  buffer + sent, 1, received - sent)) > 0);
                         ASSERT(sent <= received);
 
                         totalsent += sent;

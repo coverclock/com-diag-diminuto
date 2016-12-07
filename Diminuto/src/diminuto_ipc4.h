@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_IPC_PRIVATE_
-#define _H_COM_DIAG_DIMINUTO_IPC_PRIVATE_
+#ifndef _H_COM_DIAG_DIMINUTO_IPC4_PRIVATE_
+#define _H_COM_DIAG_DIMINUTO_IPC4_PRIVATE_
 
 /**
  * @file
@@ -10,7 +10,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * This is the ipc feature private API.
+ * This is the ipc4 feature private API.
  */
 
 #include <sys/types.h>
@@ -25,6 +25,6 @@
  * @param portp points to a port variable, or NULL.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_ipc_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+extern int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 #endif

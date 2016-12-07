@@ -1,11 +1,11 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_PING_
-#define _H_COM_DIAG_DIMINUTO_PING_
+#ifndef _H_COM_DIAG_DIMINUTO_PING4_
+#define _H_COM_DIAG_DIMINUTO_PING4_
 
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,7 +16,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_ipc.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
 
 /**
  * Create a raw socket over which an ICMP ECHO REQUEST datagram can be sent
@@ -24,7 +24,7 @@
  * operation. This socket can be used with the mux feature.
  * @return >=0 for a raw socket, or <0 if an error occurred.
  */
-extern int diminuto_ping_datagram_peer(void);
+extern int diminuto_ping4_datagram_peer(void);
 
 /**
  * Optionally bind raw socket to a specific interface. This forces the ICMP
@@ -34,7 +34,7 @@ extern int diminuto_ping_datagram_peer(void);
  * @param ifname is the interface name, e.g. "eth1".
  * @return >=0 for success, or <0 if an error occurred.
  */
-extern int diminuto_ping_interface(int fd, const char * ifname);
+extern int diminuto_ping4_interface(int fd, const char * ifname);
 
 /**
  * Optionally bind raw socket to a specific source address and port. This isn't
@@ -47,7 +47,7 @@ extern int diminuto_ping_interface(int fd, const char * ifname);
  * @param port os the port number.
  * @return >= 0 for success, or <0 of an error occurred.
  */
-extern int diminuto_ping_address(int fd, diminuto_ipv4_t address, diminuto_port_t port);
+extern int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port);
 
 /**
  * Sent an ICMP ECHO REQUEST datagram to the specified IPv4 address.
@@ -57,7 +57,7 @@ extern int diminuto_ping_address(int fd, diminuto_ipv4_t address, diminuto_port_
  * @param seq is the ECHO REQUEST sequence number assigned by the caller.
  * @return >0 if successful, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id, uint16_t seq);
+extern ssize_t diminuto_ping4_datagram_send(int fd, diminuto_ipv4_t address, uint16_t id, uint16_t seq);
 
 /**
  * Receive an ICMP ECHO REPLY reply to the ECHO REQUEST datagram. The response could be
@@ -76,15 +76,15 @@ extern ssize_t diminuto_ping_datagram_send(int fd, diminuto_ipv4_t address, uint
  * @param elapsedp points to a variable into which the elapsed ticks is returned, or NULL.
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp);
+extern ssize_t diminuto_ping4_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp);
 
 /**
  * Close the raw socket.
  * @param fd is the raw socket.
  * @return >=0 for success, <0 for failure.
  */
-static inline int diminuto_ping_close(int fd) {
-    return diminuto_ipc_close(fd);
+static inline int diminuto_ping4_close(int fd) {
+    return diminuto_ipc4_close(fd);
 }
 
 #endif

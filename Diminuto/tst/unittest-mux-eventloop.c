@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -23,7 +23,7 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_ipc.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_pool.h"
@@ -172,17 +172,17 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER starting.\n");
 
-    listener4 = diminuto_ipc_stream_provider(0);
+    listener4 = diminuto_ipc4_stream_provider(0);
     if (listener4 < 0) {
         return -2;
     }
-    diminuto_ipc_nearend(listener4, (diminuto_ipv4_t *)0, port4p);
+    diminuto_ipc4_nearend(listener4, (diminuto_ipv4_t *)0, port4p);
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER listening IPv4 %u.\n", *port4p);
 
     listener6 = diminuto_ipc6_stream_provider(0);
     if (listener6 < 0) {
-        diminuto_ipc_close(listener4);
+        diminuto_ipc4_close(listener4);
         return -3;
     }
     diminuto_ipc6_nearend(listener6, (diminuto_ipv6_t *)0, port6p);
@@ -191,7 +191,7 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
 
     pid = fork();
     if (pid != 0) {
-        diminuto_ipc_close(listener4);
+        diminuto_ipc4_close(listener4);
         diminuto_ipc6_close(listener6);
         return pid;
     }
@@ -380,7 +380,7 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d running.\n", pid);
 
     for (ii = 0; ii < connections; ++ii) {
-        connection[ii] = ((ii % 2) == 0) ? diminuto_ipc_stream_consumer(address4, port4) : diminuto_ipc6_stream_consumer(address6, port6);
+        connection[ii] = ((ii % 2) == 0) ? diminuto_ipc4_stream_consumer(address4, port4) : diminuto_ipc6_stream_consumer(address6, port6);
         if (connection[ii] >= 0) {
             diminuto_ipc6_nearend(connection[ii], &address, &port);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d connected [%zu] %d %s;%u.\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
@@ -482,9 +482,9 @@ int main(int argc, char ** argv)
 
     service = provider(&port4, &port6);
     ASSERT(service >= 0);
-    address4 = diminuto_ipc_address("localhost");
+    address4 = diminuto_ipc4_address("localhost");
     address6 = diminuto_ipc6_address("localhost");
-    control = diminuto_ipc_stream_consumer(address4, port4);
+    control = diminuto_ipc4_stream_consumer(address4, port4);
     ASSERT(control >= 0);
     client = (pid_t *)diminuto_heap_calloc(clients, sizeof(pid_t));
     ASSERT(client != (pid_t *)0);
@@ -504,7 +504,7 @@ int main(int argc, char ** argv)
 
     }
 
-    diminuto_ipc_datagram_send_flags(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
+    diminuto_ipc4_datagram_send_flags(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
 
     waitpid(service, &status, 0);
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "producer %d exited exit=%d status=%d.\n", service, WIFEXITED(status), WEXITSTATUS(status));

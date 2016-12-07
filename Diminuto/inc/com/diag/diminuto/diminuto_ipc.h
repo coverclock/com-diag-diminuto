@@ -5,44 +5,17 @@
 /**
  * @file
  *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * This provides a slightly more abstract interface to stream and datagram
- * IPv4 sockets. It was ported from the Desperado library.
- *
- * Note that ALL uses of IPv4 addresses and ports are in HOST BYTE ORDER.
- * This simplifies their use in unit tests and applications.
+ * Provides socket and other interprocess/interprocessor communication
+ * capabilities that are agnostic as to whether IPv4 or IPv6 is being used.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-
-/**
- * Convert a hostname or an IPv4 address string in dot notation into one
- * or more IPv4 addresses in host byte order. Since a single host can map to
- * multiple addresses, this returns a list of addresses in dynamically acquired
- * memory. The last entry will be all zeros. The list must be freed by the
- * application. IMPORTANT SAFETY TIP: the underlying glibc gethostbyname()
- * function ONLY works if the application is dynamically linked; the build will
- * emit a warning to this effect.
- * @param hostname points to the hostname or IP address string.
- * @return an array or NULL if no such hostname or the string is invalid.
- */
-extern diminuto_ipv4_t * diminuto_ipc_addresses(const char * hostname);
-
-/**
- * Convert a hostname or an IPv4 address string in dot notation into an IPv4
- * address in host byte order. Since a single host can map to multiple
- * addresses, only the first address is returned. IMPORTANT SAFETY TIP: the
- * underlying glibc gethostbyname() function ONLY works if the application is
- * dynamically linked; the build will emit a warning to this effect.
- * @param hostname points to the hostname or IP address string.
- * @return the IPv4 address or 0 if no such hostname or the string is invalid.
- */
-extern diminuto_ipv4_t diminuto_ipc_address(const char * hostname);
 
 /**
  * Convert a service name or a port number string into a port in host byte
@@ -52,101 +25,6 @@ extern diminuto_ipv4_t diminuto_ipc_address(const char * hostname);
  * @return the port number or 0 if no such service exists for the protocol.
  */
 extern diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol);
-
-/**
- * Convert an IPv4 address in host byte order into a printable IP address
- * string in dot notation.
- * @param address is the IPv4 address in host byte order.
- * @param buffer points to the buffer into to whcih the string is stored.
- * @param length is the length of the buffer in bytes.
- */
-extern const char * diminuto_ipc_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
-
-/**
- * Convert an IPv4 address in host byte order into a printable IP address
- * string in dot notation.
- * @param address is the IPv4 address in host byte order.
- * @param buffer points to the buffer into to whcih the string is stored.
- * @param length is the length of the buffer in bytes.
- */
-static inline const char * diminuto_ipc_address2string(diminuto_ipv4_t address, char * buffer, size_t length) {
-    return diminuto_ipc_dotnotation(address, buffer, length);
-}
-
-/**
- * Return the address and port of the near end of the socket if it can be
- * determined. If it cannot be determined, the address and port variables
- * will remain unchanged.
- * @param fd is a socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
- * @return 0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
-
-/**
- * Return the address and port of the far end of the socket if it can be
- * determined. If it cannot be determined, the address and port variables
- * will remain unchanged.
- * @param fd is a socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
- * @return 0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
-
-/**
- * Create a provider-side stream socket with a specified connection backlog.
- * The port is in host byte order. If the port is zero, an unused ephemeral
- * port is allocated; its value can be determined using the nearend function.
- * @param port is the port number at which connection requests will rendezvous.
- * @param backlog is the limit to how many incoming connections may be queued.
- * @return a provider-side stream socket or <0 if an error occurred.
- */
-extern int diminuto_ipc_stream_provider_backlog(diminuto_port_t port, int backlog);
-
-
-/**
- * Create a provider-side stream socket with the maximum connection backlog.
- * The port is in host byte order. If the port is zero, an unused ephemeral port
- * is allocated; its value can be determined using the nearend function.
- * @param port is the port number at which connection requests will rendezvous.
- * @return a provider-side stream socket or <0 if an error occurred.
- */
-extern int diminuto_ipc_stream_provider(diminuto_port_t port);
-
-/**
- * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket. Optionally return the address and port of the requestor.
- * @param fd is the provider-side stream socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
- * @return a data stream socket to the requestor or <0 if an error occurred.
- */
-extern int diminuto_ipc_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
-
-/**
- * Request a consumer-side stream socket to a provider.
- * @param address is the provider's IPv4 address in host byte order.
- * @param port is the provider's port in host byte order.
- * @return a data stream socket to the provider or <0 if an error occurred.
- */
-extern int diminuto_ipc_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port);
-
-/**
- * Request a peer datagram socket. The port is in host byte order. If the port
- * is zero, an unused ephemeral port is allocated; its value can be determined
- * using the nearend function.
- * @param port is the port number.
- * @return a peer datagram socket or <0 if an error occurred.
- */
-extern int diminuto_ipc_datagram_peer(diminuto_port_t port);
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.
@@ -256,72 +134,6 @@ static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min
 static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max)
 {
     return diminuto_fd_write(fd, buffer, min, max);
-}
-
-/**
- * Receive a datagram from a datagram socket using the specified flags.
- * Optionally return the address and port of the sender. Flags may be specified
- * for recvfrom(2) such as MSG_DONTWAIT, MSG_WAITALL, or MSG_OOB. (This function
- * can legitimately be also used with a stream socket.)
- * @param fd is an open datagram socket.
- * @param buffer points to the buffer into which data is received.
- * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
- * @param flags is the recvfrom(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
- */
-extern ssize_t diminuto_ipc_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags);
-
-/**
- * Receive a datagram from a datagram socket using no flags. Optionally return
- * the address and port of the sender. (This function can legitimately be also
- * used with a stream socket.)
- * @param fd is an open datagram socket.
- * @param buffer points to the buffer into which data is received.
- * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
- */
-static inline ssize_t diminuto_ipc_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
-{
-    return diminuto_ipc_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
-}
-
-/**
- * Send a datagram to a datagram socket using the specified flags. Flags may be
- * specified for sendto(2) such as MSG_DONTWAIT, MSG_WAITALL, or MSG_OOB. (This
- * function can legitimately be also used with a stream socket by passing zero
- * as the port number, in which case the address is ignored.)
- * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
- * @param size is the maximum number of bytes to be sent.
- * @param address is the receiver's address.
- * @param port is the receiver's port.
- * @param flags is the sendto(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
- */
-extern ssize_t diminuto_ipc_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags);
-
-/**
- * Send a datagram to a datagram socket using no flags. (This function can
- * legitimately be also used with a stream socket by passing zero as the port
- * number, in which case the address is ignored.)
- * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
- * @param size is the maximum number of bytes to be sent.
- * @param address is the receiver's address.
- * @param port is the receiver's port.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
- */
-static inline ssize_t diminuto_ipc_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port)
-{
-    return diminuto_ipc_datagram_send_flags(fd, buffer, size, address, port, 0);
 }
 
 #endif
