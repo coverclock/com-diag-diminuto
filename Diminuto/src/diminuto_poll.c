@@ -13,6 +13,9 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_heap.h"
+/* For ppoll(2). */
+#define _GNU_SOURCE
+#include <signal.h>
 #include <poll.h>
 #include <errno.h>
 #include <string.h>
