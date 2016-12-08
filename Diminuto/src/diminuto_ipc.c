@@ -23,6 +23,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/if.h>
 
 /*******************************************************************************
  * STRING TO PORT AND VICE VERSA
@@ -70,6 +71,26 @@ int diminuto_ipc_shutdown(int fd)
     if (shutdown(fd, SHUT_RDWR) < 0) {
         diminuto_perror("diminuto_ipc_shutdown: shutdown");
         fd = -1;
+    }
+
+    return fd;
+}
+
+int diminuto_ipc_set_interface(int fd, const char * name)
+{
+    struct ifreq intf = { 0 };
+    socklen_t length = 0;
+
+    if (name[0] != '\0') {
+        strncpy(intf.ifr_name, name, sizeof(intf.ifr_name));
+        intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
+        length = sizeof(intf);
+    }
+    if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) < 0) {
+        diminuto_perror("diminuto_ipc_set_interface: setsockopt(SO_BINDTODEVICE)");
+        fd = -1;
+    } else {
+        /* Do nothing: success. */
     }
 
     return fd;

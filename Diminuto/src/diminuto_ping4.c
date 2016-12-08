@@ -101,7 +101,7 @@ int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port
     sa.sin_addr.s_addr = htonl(address);
     sa.sin_port = htons(port);
 
-    if ((rc = bind(fd, &sa, sizeof(sa))) < 0) {
+    if ((rc = bind(fd, (struct sockaddr *)&sa, sizeof(sa))) < 0) {
         diminuto_perror("diminuto_ping4_address: bind");
     }
 

@@ -60,10 +60,24 @@ void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
  * It is fortuitous (and probably by design) that the values for which we have
  * to check are the same whether in host byte order or network byte order.
  */
+static inline int isipany(const diminuto_ipv6_t * addressp) {
+    size_t ii;
+
+    for (ii = 0; ii < countof(addressp->u16); ++ii) {
+        if (addressp->u16[ii] != 0x0000) {
+            return 0;
+        }
+    }
+
+    return !0;
+}
+
+/*
+ * It is fortuitous (and probably by design) that the values for which we have
+ * to check are the same whether in host byte order or network byte order.
+ */
 static inline int isipv4(const diminuto_ipv6_t * addressp)
 {
-    int result = 0;
-
     if (addressp->u16[0] != 0x0000) {
         /* Do nothing. */
     } else if (addressp->u16[1] != 0x0000) {
@@ -77,11 +91,10 @@ static inline int isipv4(const diminuto_ipv6_t * addressp)
     } else if (addressp->u16[5] != 0xffff) {
         /* Do nothing. */
     } else {
-        result = !0;
+        return !0;
     }
 
-    return result;
-
+    return 0;
 }
 
 static inline void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
@@ -308,7 +321,7 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog)
+int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, int backlog)
 {
     struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
@@ -317,7 +330,13 @@ int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog)
     if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
 
     sa.sin6_family = AF_INET6;
-    memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    /* in6addr_any is all zeros so this is overly paranoid. */
+    if (isipany(&address)) {
+        memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    } else {
+        diminuto_ipc6_hton6(&address);
+        memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+    }
     sa.sin6_port = htons(port);
 
     if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
@@ -341,7 +360,8 @@ int diminuto_ipc6_stream_provider_backlog(diminuto_port_t port, int backlog)
 
 int diminuto_ipc6_stream_provider(diminuto_port_t port)
 {
-    return diminuto_ipc6_stream_provider_backlog(port, SOMAXCONN);
+    diminuto_ipv6_t any = { 0 };
+    return diminuto_ipc6_stream_provider_generic(any, port, SOMAXCONN);
 }
 
 int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)

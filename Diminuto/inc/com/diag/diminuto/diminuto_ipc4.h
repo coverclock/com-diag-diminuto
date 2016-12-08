@@ -119,14 +119,17 @@ extern int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_po
 extern int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
- * Create a provider-side stream socket with a specified connection backlog.
- * The port is in host byte order. If the port is zero, an unused ephemeral
- * port is allocated; its value can be determined using the nearend function.
+ * Create a provider-side stream socket bound to a specific address and with
+ * a specific connection backlog The address and port are in host byte order.
+ * If the address is zero, the socket will be bound to any appropriate
+ * interface. If the port is zero, an unused ephemeral port is allocated;
+ * its value can be determined using the nearend function.
+ * @param address is the address of the interface that will be used.
  * @param port is the port number at which connection requests will rendezvous.
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider_backlog(diminuto_port_t port, int backlog);
+extern int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.

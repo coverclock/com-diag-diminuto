@@ -60,7 +60,7 @@ int diminuto_ping6_address(int fd, diminuto_ipv6_t address, diminuto_port_t port
     memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
     sa.sin6_port = htons(port);
 
-    if ((rc = bind(fd, &sa, sizeof(sa))) < 0) {
+    if ((rc = bind(fd, (struct sockaddr *)&sa, sizeof(sa))) < 0) {
         diminuto_perror("diminuto_ping6_address: bind");
     }
 

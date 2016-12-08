@@ -151,7 +151,7 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_stream_provider_backlog(diminuto_port_t port, int backlog)
+int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, int backlog)
 {
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
@@ -160,7 +160,8 @@ int diminuto_ipc4_stream_provider_backlog(diminuto_port_t port, int backlog)
     if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
 
     sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = INADDR_ANY;
+    /* INADDR_ANY is all zeros so this is overly paranoid. */
+    sa.sin_addr.s_addr = (address == 0) ? INADDR_ANY : htonl(address);
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -184,7 +185,7 @@ int diminuto_ipc4_stream_provider_backlog(diminuto_port_t port, int backlog)
 
 int diminuto_ipc4_stream_provider(diminuto_port_t port)
 {
-    return diminuto_ipc4_stream_provider_backlog(port, SOMAXCONN);
+    return diminuto_ipc4_stream_provider_generic(0, port, SOMAXCONN);
 }
 
 int diminuto_ipc4_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)

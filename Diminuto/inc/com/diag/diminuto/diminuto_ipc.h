@@ -29,7 +29,7 @@ extern diminuto_port_t diminuto_ipc_port(const char * service, const char * prot
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.
  * @param fd is an open socket of any type.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_shutdown(int fd);
 
@@ -42,11 +42,22 @@ extern int diminuto_ipc_shutdown(int fd);
 extern int diminuto_ipc_close(int fd);
 
 /**
+ * Bind a socket to a particular interface identified by name, e.g. "eth0"
+ * etc. Only data received by this interface will be processed by the socket.
+ * If the name is an empty (zero length) string, the socket will be
+ * disassociated with any interface with which it was previously been bound.
+ * @param fd is an open socket that is not of type packet.
+ * @param name is the name of the network interface.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_interface(int fd, const char * name);
+
+/**
  * Set or clear a mask in the file descriptor or socket status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to set the mask, 0 to clear the mask.
  * @param mask is the bit mask.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_status(int fd, int enable, long mask);
 
@@ -55,7 +66,7 @@ extern int diminuto_ipc_set_status(int fd, int enable, long mask);
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable an option, 0 to disable an option.
  * @param option is option name.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_option(int fd, int enable, int option);
 
@@ -63,7 +74,7 @@ extern int diminuto_ipc_set_option(int fd, int enable, int option);
  * Enable or disable the non-blocking status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable non-blocking, 0 to disable non-blocking.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_nonblocking(int fd, int enable);
 
@@ -71,7 +82,7 @@ extern int diminuto_ipc_set_nonblocking(int fd, int enable);
  * Enable or disable the address reuse option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable address reuse, 0 to disable address reuse.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
 
@@ -79,7 +90,7 @@ extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
  * Enable or disable the keep alive option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable keep alive, 0 to disable keep alive.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_keepalive(int fd, int enable);
 
@@ -87,7 +98,7 @@ extern int diminuto_ipc_set_keepalive(int fd, int enable);
  * Enable or disable the debug option (only available to root on most systems).
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable debug, 0 to disable debug.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_debug(int fd, int enable);
 
@@ -96,7 +107,7 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
  * @param fd is an open socket of any type.
  * @param ticks is the number of ticks to linger (although
  * lingering has granularity of seconds), or 0 for no lingering.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 
