@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -43,7 +43,7 @@ typedef struct DiminutoBufferPool {
  * @param nomalloc if true disables allocating a buffer from the heap.
  * @return a pointer to the payload portion of the buffer.
  */
-void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int nomalloc);
+extern void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int nomalloc);
 
 /**
  * Put a buffer back on to the appropriate linked list in a pool, or if the
@@ -51,7 +51,13 @@ void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int
  * @param poolp points to the pool.
  * @param ptr points to the payload portion of the buffer.
  */
-void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr);
+extern void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr);
+
+/**
+ * Free all storage associated with the buffer pool.
+ * @param poolp points to the pool.
+ */
+extern void diminuto_buffer_pool_fini(diminuto_buffer_pool_t * poolp);
 
 /**
  * Dynamically allocate the specified number of buffers with the minimum
@@ -62,13 +68,13 @@ void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr);
  * @param size is the minimum payload size of the buffers in bytes.
  * @return the total number of bytes allocated.
  */
-size_t diminuto_buffer_pool_prealloc(diminuto_buffer_pool_t * poolp, size_t nmemb, size_t size);
+extern size_t diminuto_buffer_pool_prealloc(diminuto_buffer_pool_t * poolp, size_t nmemb, size_t size);
 
 /**
  * Log information about a pool to the debug log.
  * @param poolp points to the pool.
  * @return the total number of bytes currently allocated by buffers in the pool.
  */
-size_t diminuto_buffer_pool_log(diminuto_buffer_pool_t * poolp);
+extern size_t diminuto_buffer_pool_log(diminuto_buffer_pool_t * poolp);
 
 #endif

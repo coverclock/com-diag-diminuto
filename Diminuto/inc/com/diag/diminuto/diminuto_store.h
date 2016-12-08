@@ -24,6 +24,7 @@
 #include "com/diag/diminuto/diminuto_tree.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_comparator.h"
+#include <string.h>
 
 /*******************************************************************************
  * TYPES

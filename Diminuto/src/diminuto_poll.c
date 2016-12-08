@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_heap.h"
+#include <poll.h>
 #include <errno.h>
 #include <string.h>
 
