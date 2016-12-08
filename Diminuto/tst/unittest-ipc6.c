@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "../src/diminuto_ipc6.h" /* Private API accessed for unit testing. */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>

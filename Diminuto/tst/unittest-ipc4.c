@@ -26,7 +26,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-static const diminuto_ipv4_t LOCALHOST = 0x7f000001UL;
 static const size_t LIMIT = 256;
 //static const diminuto_port_t PORT = 0xfff0;
 //static const diminuto_port_t PORT1 = 65535;
@@ -42,18 +41,55 @@ int main(void)
 	hertz = diminuto_frequency();
 
     {
-        diminuto_ipv4_t address;
+        const char name[] = "0.0.0.0";
+        diminuto_ipv4_t address = 0xffffffffUL;
         char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
 
         TEST();
 
-        address = diminuto_ipc4_address("127.0.0.1");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "127.0.0.1", address, LOCALHOST);
-        EXPECT(address == LOCALHOST);
+        address = diminuto_ipc4_address(name);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_UNSPECIFIED);
+        EXPECT(address == DIMINUTO_IPC4_UNSPECIFIED);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, "127.0.0.1");
-        EXPECT(strcmp(buffer, "127.0.0.1") == 0);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        EXPECT(strcmp(buffer, name) == 0);
+
+        STATUS();
+    }
+
+    {
+        const char name[] = "127.0.0.1";
+        diminuto_ipv4_t address = 0x00000000UL;
+        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
+
+        TEST();
+
+        address = diminuto_ipc4_address(name);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_LOOPBACK);
+        EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
+
+        EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        EXPECT(strcmp(buffer, name) == 0);
+
+        STATUS();
+    }
+
+    {
+        const char name[] = "127.0.0.2";
+        diminuto_ipv4_t address = 0x00000000UL;
+        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
+
+        TEST();
+
+        address = diminuto_ipc4_address(name);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_LOOPBACK2);
+        EXPECT(address == DIMINUTO_IPC4_LOOPBACK2);
+
+        EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
     }
@@ -64,8 +100,8 @@ int main(void)
         TEST();
 
         address = diminuto_ipc4_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", address, LOCALHOST);
-        EXPECT(address == LOCALHOST);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", address, DIMINUTO_IPC4_LOOPBACK);
+        EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         address = diminuto_ipc4_address("www.diag.com");
         DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "www.diag.com", address, 0UL);
@@ -417,20 +453,20 @@ int main(void)
             address = 0;
             port = (diminuto_port_t)-1;
             EXPECT((producer = diminuto_ipc4_stream_accept(service, &address, &port)) >= 0);
-            EXPECT(address == LOCALHOST);
+            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != rendezvous);
 
             address = 0;
             port = -(diminuto_port_t)1;
             EXPECT(diminuto_ipc4_nearend(producer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
+            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port == rendezvous);
 
             address = 0;
             port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc4_farend(producer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
+            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != rendezvous);
 
@@ -511,13 +547,13 @@ int main(void)
             address = 0;
             port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc4_farend(consumer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
+            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port == rendezvous);
 
             address = 0;
             port = (diminuto_port_t)-1;
             EXPECT(diminuto_ipc4_nearend(consumer, &address, &port) >= 0);
-            EXPECT(address == LOCALHOST);
+            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != rendezvous);
 

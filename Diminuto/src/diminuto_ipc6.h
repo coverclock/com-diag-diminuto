@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,6 +16,22 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "com/diag/diminuto/diminuto_types.h"
+
+/**
+ * Remarkably, the standard sockaddr structure doesn't reserve enough space to
+ * actually hold an entire IPv6 in6_addr field; it's only fourteen bytes, where
+ * as an IPv6 address is 16 bytes (and even that's not enough, since there are
+ * other fields in the sockaddr_in6 structure). So we use a larger one of our
+ * own devising, carefully mimicing the legacy structure's format. Other than
+ * the initial family field that indicates what kind of address family structure
+ * this really is (IPv6, IPv4, UNIX, etc.), the rest of this structure is just
+ * just buffer space. Although this isn't part of the public API, it is used
+ * in the ipc6 unit test.
+ */
+typedef struct DiminutoIpc6SocketAddress {
+    unsigned short int sa_family; /* POSIX requires an unsigned short int. */
+    char sa_data[256 - sizeof(unsigned short int)]; /* glibc assumes short alignment. */
+} diminuto_ipc6_sockaddr_t;
 
 /**
  * Swap an IPv6 address variable from network to host byte order in place.

@@ -20,6 +20,24 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /**
+ * This is the Diminuto binary IPv4 address in host byte order for "0.0.0.0",
+ * the IPv4 address of all zeros.
+ */
+extern const diminuto_ipv4_t DIMINUTO_IPC4_UNSPECIFIED;
+
+/**
+ * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.1",
+ * the IPv4 loopback address.
+ */
+extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK;
+
+/**
+ * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.2",
+ * the second IPv4 loopback address used in some circumstances.
+ */
+extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2;
+
+/**
  * Convert a hostname or an IPv4 address string in dot notation into one
  * or more IPv4 addresses in host byte order. Since a single host can map to
  * multiple addresses, this returns a list of addresses in dynamically acquired
@@ -109,7 +127,6 @@ extern int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_por
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 extern int diminuto_ipc4_stream_provider_backlog(diminuto_port_t port, int backlog);
-
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
