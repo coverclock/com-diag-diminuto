@@ -6,6 +6,10 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * Typical ICMP6 responses other than the desired ECHO REPLY on a
+ * _successful_ test include NEIGHBOR SOLICIT, NEIGHBOR ADVERTISE, and
+ * (remarkably) DESTINATION UNREACHABLE.
  */
 
 #include <errno.h>

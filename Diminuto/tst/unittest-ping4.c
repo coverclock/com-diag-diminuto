@@ -6,6 +6,9 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * NOTE: Creating a raw socket such as used for ICMP is a privileged
+ *       operation. Hence this unit test has to be run with root privileges.
  */
 
 #include <unistd.h>
