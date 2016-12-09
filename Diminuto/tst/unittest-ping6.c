@@ -122,7 +122,7 @@ int main(int argc, char * argv[])
             id = 0;
             seq = ~0;
             elapsed = 0;
-            ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
+            ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
             ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
             ASSERT(type != ~0);
