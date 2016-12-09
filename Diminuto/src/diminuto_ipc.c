@@ -76,13 +76,13 @@ int diminuto_ipc_shutdown(int fd)
     return fd;
 }
 
-int diminuto_ipc_set_interface(int fd, const char * name)
+int diminuto_ipc_set_interface(int fd, const char * ifname)
 {
     struct ifreq intf = { 0 };
     socklen_t length = 0;
 
-    if (name[0] != '\0') {
-        strncpy(intf.ifr_name, name, sizeof(intf.ifr_name));
+    if (ifname[0] != '\0') {
+        strncpy(intf.ifr_name, ifname, sizeof(intf.ifr_name));
         intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
         length = sizeof(intf);
     }

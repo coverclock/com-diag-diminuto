@@ -47,10 +47,10 @@ extern int diminuto_ipc_close(int fd);
  * If the name is an empty (zero length) string, the socket will be
  * disassociated with any interface with which it was previously been bound.
  * @param fd is an open socket that is not of type packet.
- * @param name is the name of the network interface.
+ * @param ifname is the name of the network interface.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_interface(int fd, const char * name);
+extern int diminuto_ipc_set_interface(int fd, const char * ifname);
 
 /**
  * Set or clear a mask in the file descriptor or socket status.

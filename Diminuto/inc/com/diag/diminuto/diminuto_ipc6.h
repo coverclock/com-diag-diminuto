@@ -134,6 +134,18 @@ extern int diminuto_ipc6_nearend(int fd, diminuto_ipv6_t * addressp, diminuto_po
 extern int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
+ * Bind an existing socket to a specific address and port. The address and port
+ * are in host byte order. If the address is zero, the socket will be bound to
+ * any appropriate interface. If the port is zero, an unused ephemeral port is
+ * allocated.
+ * @param fd is the socket.
+ * @param address is the address to which to bind.
+ * @param port is the port to which to bind.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_bind(int fd, diminuto_ipv6_t address, diminuto_port_t port);
+
+/**
  * Create a provider-side stream socket bound to a specific address and with
  * a specific connection backlog. The address and port are in host byte order.
  * If the address is zero, any appropriate network interface may be used. If

@@ -101,7 +101,7 @@ static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address,
  * in host byte order.
  * @param portp if non-NULL points to where the port will be stored
  * in host byte order.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
@@ -114,13 +114,25 @@ extern int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_po
  * in host byte order.
  * @param portp if non-NULL points to where the port will be stored
  * in host byte order.
- * @return 0 for success or <0 if an error occurred.
+ * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
+ * Bind an existing socket to a specific address and port. The address and port
+ * are in host byte order. If the address is zero, the socket will be bound to
+ * any appropriate interface. If the port is zero, an unused ephemeral port is
+ * allocated.
+ * @param fd is the socket.
+ * @param address is the address to which to bind.
+ * @param port is the port to which to bind.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc4_bind(int fd, diminuto_ipv4_t address, diminuto_port_t port);
+
+/**
  * Create a provider-side stream socket bound to a specific address and with
- * a specific connection backlog The address and port are in host byte order.
+ * a specific connection backlog. The address and port are in host byte order.
  * If the address is zero, the socket will be bound to any appropriate
  * interface. If the port is zero, an unused ephemeral port is allocated;
  * its value can be determined using the nearend function.

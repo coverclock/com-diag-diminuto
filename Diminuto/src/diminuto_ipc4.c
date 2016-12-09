@@ -148,6 +148,28 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
 }
 
 /*******************************************************************************
+ * SOCKETS
+ ******************************************************************************/
+
+int diminuto_ipc4_bind(int fd, diminuto_ipv4_t address, diminuto_port_t port)
+{
+    struct sockaddr_in sa = { 0 };
+    socklen_t length = sizeof(sa);
+
+    sa.sin_family = AF_INET;
+    /* INADDR_ANY is all zeros so this is overly paranoid. */
+    sa.sin_addr.s_addr = (address == 0) ? INADDR_ANY : htonl(address);
+    sa.sin_port = htons(port);
+
+    if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc4_bind: bind");
+        fd = -1;
+    }
+
+    return fd;
+}
+
+/*******************************************************************************
  * STREAM SOCKETS
  ******************************************************************************/
 
@@ -165,17 +187,17 @@ int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port
     sa.sin_port = htons(port);
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_backlog: socket");
+        diminuto_perror("diminuto_ipc4_provider_generic: socket");
     } else if (diminuto_ipc4_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc4_provider_backlog: diminuto_ipc4_set_reuseadddress");
+        diminuto_perror("diminuto_ipc4_provider_generic: diminuto_ipc4_set_reuseadddress");
         diminuto_ipc4_close(fd);
         fd = -2;
     } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_backlog: bind");
+        diminuto_perror("diminuto_ipc4_provider_generic: bind");
         diminuto_ipc4_close(fd);
         fd = -3;
     } else if (listen(fd, backlog) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_backlog: listen");
+        diminuto_perror("diminuto_ipc4_provider_generic: listen");
         diminuto_ipc4_close(fd);
         fd = -4;
     }

@@ -34,7 +34,9 @@ extern int diminuto_ping4_datagram_peer(void);
  * @param ifname is the interface name, e.g. "eth1".
  * @return >=0 for success, or <0 if an error occurred.
  */
-extern int diminuto_ping4_interface(int fd, const char * ifname);
+static inline int diminuto_ping4_interface(int fd, const char * ifname) {
+    return diminuto_ipc_set_interface(fd, ifname);
+}
 
 /**
  * Optionally bind raw socket to a specific source address and port. This isn't
@@ -47,7 +49,9 @@ extern int diminuto_ping4_interface(int fd, const char * ifname);
  * @param port os the port number.
  * @return >= 0 for success, or <0 of an error occurred.
  */
-extern int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port);
+static inline int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port) {
+    return diminuto_ipc4_bind(fd, address, port);
+}
 
 /**
  * Sent an ICMP ECHO REQUEST datagram to the specified IPv4 address.
