@@ -166,13 +166,17 @@ int main(int argc, char * argv[])
         ASSERT(to != 0);
 
         for (ss = 0; ss < 10; ++ss) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "sending 0x%x %u\n", ID, ss);
             ASSERT(diminuto_ping4_datagram_send(sock, to, ID, ss) > 0);
-            from = 0;
-            type = ~0;
-            id = 0;
-            seq = ~0;
-            elapsed = 0;
-            ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) > 0);
+            do {
+                from = 0;
+                type = ~0;
+                id = 0;
+                seq = ~0;
+                elapsed = 0;
+                ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) >= 0);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x\n", type);
+            } while (size == 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
             ASSERT(from != 0);
             ASSERT(type != ~0);

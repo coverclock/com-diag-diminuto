@@ -116,13 +116,17 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
 
         for (ss = 0; ss < 10; ++ss) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "sending 0x%x %u\n", ID, ss);
             ASSERT(diminuto_ping6_datagram_send(sock, to, ID, ss) > 0);
-            memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
-            type = ~0;
-            id = 0;
-            seq = ~0;
-            elapsed = 0;
-            ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
+            do {
+                memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+                type = ~0;
+                id = 0;
+                seq = ~0;
+                elapsed = 0;
+                ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) >= 0);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x\n", type);
+            } while (size == 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
             ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
             ASSERT(type != ~0);
