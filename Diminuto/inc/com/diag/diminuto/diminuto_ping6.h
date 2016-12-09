@@ -49,8 +49,8 @@ static inline int diminuto_ping6_interface(int fd, const char * ifname) {
  * @param port is the port number.
  * @return >= 0 for success, or <0 of an error occurred.
  */
-static inline int diminuto_ping6_address(int fd, diminuto_ipv6_t address, diminuto_port_t port) {
-    return diminuto_ipc6_bind(fd, address, port);
+static inline int diminuto_ping6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port) {
+    return diminuto_ipc6_source(fd, address, port);
 }
 
 /**

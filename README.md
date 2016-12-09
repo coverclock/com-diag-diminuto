@@ -1,7 +1,7 @@
 com-diag-diminuto
 =================
 
-Copyright 2008-2015 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2016 by the Digital Aggregates Corporation, Colorado, USA.
 
 LICENSE
 
@@ -75,7 +75,7 @@ FEATURES
 * controller - PID controller (EXPERIMENTAL).
 * core - enable core dumps.
 * countof - macro to compute array positions using sizeof operator.
-* criticalsection - macros use pthread calls to implement serialized code blocks.
+* criticalsection - macros calls to implement pthread serialization.
 * cue - logic level debouncer and edge detector.
 * daemon - deamonizer that reports back to the parent on success.
 * datum - memory mapped register operators for device drivers.
@@ -88,7 +88,7 @@ FEATURES
 * frequency - determine common library time frequency.
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
-* ipc - IPv4 socket interface.
+* ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface.
 * list - doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
@@ -103,7 +103,7 @@ FEATURES
 * path - find a file from a list in a PATH-like environmental variable.
 * phex - emit printable and unprintable characters in a printable form.
 * pin - get and set GPIO pins using the sysfs interface.
-* ping - programmatic ICMP ECHO REQUEST.
+* ping4 - programmatic ICMP ECHO REQUEST.
 * ping6 - programmatic ICMP6 ECHO REQUEST.
 * platform - try to determine what kind of system or target is being used.
 * poll - file descriptor multiplexer using poll(2).

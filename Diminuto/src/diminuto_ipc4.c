@@ -151,7 +151,7 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
  * SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_bind(int fd, diminuto_ipv4_t address, diminuto_port_t port)
+int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 {
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
@@ -162,7 +162,7 @@ int diminuto_ipc4_bind(int fd, diminuto_ipv4_t address, diminuto_port_t port)
     sa.sin_port = htons(port);
 
     if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc4_bind: bind");
+        diminuto_perror("diminuto_ipc4_source: bind");
         fd = -1;
     }
 

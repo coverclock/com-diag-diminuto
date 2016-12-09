@@ -143,7 +143,7 @@ extern int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_por
  * @param port is the port to which to bind.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc6_bind(int fd, diminuto_ipv6_t address, diminuto_port_t port);
+extern int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port);
 
 /**
  * Create a provider-side stream socket bound to a specific address and with

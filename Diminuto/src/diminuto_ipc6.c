@@ -321,7 +321,7 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
  * SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_bind(int fd, diminuto_ipv6_t address, diminuto_port_t port)
+int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
 {
     struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
@@ -337,7 +337,7 @@ int diminuto_ipc6_bind(int fd, diminuto_ipv6_t address, diminuto_port_t port)
     sa.sin6_port = htons(port);
 
     if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc6_bind: bind");
+        diminuto_perror("diminuto_ipc6_source: bind");
         fd = -1;
     }
 

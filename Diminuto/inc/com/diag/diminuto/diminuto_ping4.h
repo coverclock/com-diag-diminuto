@@ -49,8 +49,8 @@ static inline int diminuto_ping4_interface(int fd, const char * ifname) {
  * @param port os the port number.
  * @return >= 0 for success, or <0 of an error occurred.
  */
-static inline int diminuto_ping4_address(int fd, diminuto_ipv4_t address, diminuto_port_t port) {
-    return diminuto_ipc4_bind(fd, address, port);
+static inline int diminuto_ping4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port) {
+    return diminuto_ipc4_source(fd, address, port);
 }
 
 /**

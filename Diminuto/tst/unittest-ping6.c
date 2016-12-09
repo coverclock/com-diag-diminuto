@@ -2,12 +2,16 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * NOTE: Creating a raw socket such as used for ICMP is a privileged
+ *       operation. Hence this unit test has to be run with root privileges.
  */
 
+#include <unistd.h>
 #include <string.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -25,33 +29,88 @@ int main(int argc, char * argv[])
     uint16_t seq;
     diminuto_port_t port;
     diminuto_ticks_t elapsed;
+    const char * Address = 0;
+    const char * Interface = 0;
+    const char * Port = 0;
+    extern char * optarg;
+    extern int optind;
+    extern int opterr;
+    extern int optopt;
+    int opt;
 
     SETLOGMASK();
 
-    ASSERT((sock = diminuto_ping6_datagram_peer()) >= 0);
+    while ((opt = getopt(argc, argv, "a:i:p:")) >= 0) {
+        switch (opt) {
+        case 'a':
+            /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
+            Address = optarg;
+            break;
+        case 'i':
+            /* e.g. "eth0" */
+            Interface = optarg;
+            break;
+        case 'p':
+            /* e.g. "5555" */
+            Port = optarg;
+            break;
+        default:
+            break;
+        }
+    }
 
     {
         TEST();
 
-        if (argc >= 2) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", argv[1] /* e.g. "lo" */);
-            ASSERT(diminuto_ping6_interface(sock, argv[1]) >= 0);
+        ASSERT((sock = diminuto_ping6_datagram_peer()) >= 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        if (Interface != (const char *)0) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", Interface);
+            ASSERT(diminuto_ping6_interface(sock, Interface) >= 0);
         }
-        if (argc >= 3) {
-            from = diminuto_ipc6_address(argv[2] /* e.g. ::1 */);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address=\"%s\"\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
-            port = 0;
-            if (argc >= 4) {
-                port = strtoul(argv[3] /* e.g. 5555 */, (char **)0, 0);
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port=%u\n", port);
-            }
-            ASSERT(diminuto_ping6_address(sock, from, port) >= 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        memset(&from, 0, sizeof(from));
+        if (Address != (const char *)0) {
+            from = diminuto_ipc6_address(argv[2]);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address=\"%s\"=%x:%x:%x:%x:%x:%x:%x:%x=\"%s\"\n", Address, from.u16[0], from.u16[1], from.u16[2], from.u16[3], from.u16[4], from.u16[5], from.u16[6], from.u16[7], diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
         }
-        to = diminuto_ipc6_address("::1");
+
+        port = 0;
+        if (Port != (const char *)0) {
+            port = strtoul(Port, (char **)0, 0);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port=\"%s\"=%u\n", Port, port);
+        }
+
+        if ((Address != (const char *)0) || (Port != (const char * )0)) {
+            ASSERT(diminuto_ping6_source(sock, from, port) >= 0);
+        }
+
+        STATUS();
+    }
+
+    {
+        static const uint16_t ID = 0xcafe;
+        static const uint16_t SEQ = 1;
+
+        TEST();
+
+        to = diminuto_ipc6_address("google.com");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
 
-        ASSERT(diminuto_ping6_datagram_send(sock, to, 0xdead, 1) > 0);
+        ASSERT(diminuto_ping6_datagram_send(sock, to, ID, SEQ) > 0);
 
         memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
         type = ~0;
@@ -70,14 +129,56 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
         ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
         ASSERT(type != ~0);
-        ASSERT(id == 0xdead);
-        ASSERT(seq == 1);
+        ASSERT(id == ID);
+        ASSERT(seq == SEQ);
         ASSERT(elapsed > 0);
 
         STATUS();
     }
 
-    ASSERT(diminuto_ping6_close(sock) >= 0);
+    {
+        static const uint16_t ID = 0xbabe;
+        static const uint16_t SEQ = 2;
+
+        TEST();
+
+        to = diminuto_ipc6_address("ip6-localhost");
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
+        ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
+
+        ASSERT(diminuto_ping6_datagram_send(sock, to, ID, SEQ) > 0);
+
+        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+        type = ~0;
+        id = 0;
+        seq = 0;
+        elapsed = 0;
+        /*
+         * Remarkably, the first datagram we get back when we ping ourselves
+         * is our own ICMP ECHO REQUEST. The ping feature recognizes this and
+         * returns a zero, indicating we didn't get an ICMP ECHO REPLY back,
+         * but we did get something, and it wasn't an error. It is up to the
+         * caller to decide what to do. The unit test just tries again.
+         */
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
+        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
+        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
+        ASSERT(type != ~0);
+        ASSERT(id == ID);
+        ASSERT(seq == SEQ);
+        ASSERT(elapsed > 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(diminuto_ping6_close(sock) >= 0);
+
+        STATUS();
+    }
 
     EXIT();
 }
