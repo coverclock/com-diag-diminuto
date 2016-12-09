@@ -39,11 +39,38 @@ static const diminuto_ipv6_t TEST6 = TEST_INIT;
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;
 
-int main(void)
+int main(int argc, char * argv[])
 {
     diminuto_ticks_t hertz;
+    const char * Address = 0;
+    const char * Interface = 0;
+    const char * Port = 0;
+    extern char * optarg;
+    extern int optind;
+    extern int opterr;
+    extern int optopt;
+    int opt;
 
     SETLOGMASK();
+
+    while ((opt = getopt(argc, argv, "a:i:p:")) >= 0) {
+        switch (opt) {
+        case 'a':
+            /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
+            Address = optarg;
+            break;
+        case 'i':
+            /* e.g. "eth0" */
+            Interface = optarg;
+            break;
+        case 'p':
+            /* e.g. "5555" */
+            Port = optarg;
+            break;
+        default:
+            break;
+        }
+    }
 
     hertz = diminuto_frequency();
 
