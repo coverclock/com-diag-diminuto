@@ -100,6 +100,16 @@ static int diminuto_unittest_errors = 0;
     } while (0)
 
 /**
+ * @def FAILURE()
+ * Log a warning message and increment the error counter.
+ */
+#define FAILURE() \
+    do { \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "FAILURE!\n"); \
+        ++diminuto_unittest_errors; \
+    } while (0)
+
+/**
  * @def ASSERT(_COND_)
  * Log a warning message if the specified condition @a _COND_ is not true,
  * increment the error counter, and exit immediately.
