@@ -215,6 +215,19 @@ static inline int diminuto_ipc6_close(int fd) {
 }
 
 /**
+ * Bind a socket to a particular interface identified by name, e.g. "eth0"
+ * etc. Only data received by this interface will be processed by the socket.
+ * If the name is an empty (zero length) string, the socket will be
+ * disassociated with any interface with which it was previously been bound.
+ * @param fd is an open socket that is not of type packet.
+ * @param ifname is the name of the network interface.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_set_interface(int fd, const char * ifname) {
+    return diminuto_ipc_set_interface(fd, ifname);
+}
+
+/**
  * Set or clear a mask in the file descriptor or socket status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to set the mask, 0 to clear the mask.
