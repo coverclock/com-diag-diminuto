@@ -2,10 +2,13 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * NOTE: On many Linux systems, you will need to either be root or
+ *       be in the dialout group to access serial ports.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -18,6 +21,27 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
+
+static int done = 0;
+static int curious = 0;
+
+static void handler(int signum)
+{
+    if (signum == SIGPIPE) {
+        done = !0;
+    } else if (signum == SIGINT) {
+        done = !0;
+    } else if (signum == SIGTERM) {
+        done = !0;
+    } else if (signum == SIGQUIT) {
+        done = !0;
+    } else if (signum == SIGHUP) {
+        curious = !0;
+    } else {
+        /* No nothing. */
+    }
+}
 
 int main(int argc, char * argv[])
 {
@@ -50,10 +74,13 @@ int main(int argc, char * argv[])
     int bitspercharacter;
     int running = 0;
     double bandwidth;
+    int forward = 0;
+    struct sigaction action = { 0 };
+    int printable = 0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678D:b:ehlmnos")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:Fb:ehlmnops")) >= 0) {
 
     	switch (opt) {
 
@@ -81,9 +108,17 @@ int main(int argc, char * argv[])
     		databits = 8;
     		break;
 
+        case 'B':
+            forward = 0;
+            break;
+
     	case 'D':
     		device = optarg;
     		break;
+
+        case 'F':
+            forward = !0;
+            break;
 
     	case 'b':
     		bitspersecond = strtoul(optarg, (char **)0, 0);
@@ -113,9 +148,35 @@ int main(int argc, char * argv[])
     		paritybit = 1;
     		break;
 
+        case 'p':
+            printable = !0;
+            break;
+
     	case 's':
     		xonxoff = !0;
     		break;
+
+        case '?':
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F ] [ -D DEVICE ] [ -b BPS ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ]\n", program);
+            fprintf(stderr, "       -1        One stop bit.\n");
+            fprintf(stderr, "       -2        Two stop bits.\n");
+            fprintf(stderr, "       -5        Five data bits.\n");
+            fprintf(stderr, "       -6        Six data bits.\n");
+            fprintf(stderr, "       -7        Seven data bits.\n");
+            fprintf(stderr, "       -8        Eight data bits.\n");
+            fprintf(stderr, "       -B        Loop back (send and receive).\n");
+            fprintf(stderr, "       -F        Loop forward (receive and send).\n");
+            fprintf(stderr, "       -D DEVICE Use DEVICE.\n");
+            fprintf(stderr, "       -b BPS    Bits per second.\n");
+            fprintf(stderr, "       -e        Even parity.\n");
+            fprintf(stderr, "       -o        Odd parity.\n");
+            fprintf(stderr, "       -n        No parity.\n");
+            fprintf(stderr, "       -h        Hardware flow control (RTS/CTS).\n");
+            fprintf(stderr, "       -s        Software flow control (XON/XOFF).\n");
+            fprintf(stderr, "       -l        Local (no modem control).\n");
+            fprintf(stderr, "       -m        Modem control.\n");
+            fprintf(stderr, "       -p        Printable only ('!' to '~').\n");
+            break;
 
     	}
 
@@ -123,16 +184,14 @@ int main(int argc, char * argv[])
 
     hertz = diminuto_frequency();
 
-    fd = open("/dev/null", O_RDWR);
-    ASSERT(fd >= 0);
+    action.sa_handler = handler;
+    ASSERT(sigaction(SIGPIPE, &action, (struct sigaction *)0) >= 0);
+    ASSERT(sigaction(SIGINT, &action, (struct sigaction *)0) >= 0);
+    ASSERT(sigaction(SIGQUIT, &action, (struct sigaction *)0) >= 0);
+    ASSERT(sigaction(SIGTERM, &action, (struct sigaction *)0) >= 0);
+    ASSERT(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
 
-    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
-    ASSERT(rc < 0);
-
-    rc = close(fd);
-    ASSERT(rc == 0);
-
-    CHECKPOINT("LOOPBACK \"%s\" %d %d%c%d %s %s %s\n", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow");
+    CHECKPOINT("loop%s \"%s\" %d %d%c%d %s %s %s %s\n", forward ? "forward" : "backward", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all");
 
     fd = open(device, O_RDWR);
     ASSERT(fd >= 0);
@@ -150,41 +209,105 @@ int main(int argc, char * argv[])
     ASSERT(rc == 0);
 
     bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
-    output = 0x00;
 
-    while (!0) {
+    output = printable ? '!' : 0x00;
 
-        count = 0;
-    	then = diminuto_time_elapsed();
+    count = 0;
 
-    	while (!0) {
+    then = diminuto_time_elapsed();
 
-       		fputc(output, fp);
-     		input = fgetc(fp);
+    if (forward) {
 
-     		if (!running) {
-     			CHECKPOINT("running\n");
-     			running = !0;
-     		}
+        /*
+         * Loop Forward: we receive a character and write that same character
+         * back out.
+         */
 
-      		ASSERT(input == output);
+        while (!done) {
+            input = fgetc(fp);
+            if (input != EOF) {
+     		    if (!running) {
+     		        CHECKPOINT("running\n");
+                    running = !0;
+                }
+                output = input;
+                fputc(output, fp);
+                ++count;
+            } else if (done) {
+                now = diminuto_time_elapsed();
+                elapsed = (now - then) / (double)hertz;
+                bandwidth = (count * bitspercharacter) / elapsed;
+                CHECKPOINT("done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+            } else if (curious) {
+                now = diminuto_time_elapsed();
+                elapsed = (now - then) / (double)hertz;
+                bandwidth = (count * bitspercharacter) / elapsed;
+                CHECKPOINT("curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                curious = 0;
+            } else {
+                now = diminuto_time_elapsed();
+                elapsed = (now - then) / (double)hertz;
+                bandwidth = (count * bitspercharacter) / elapsed;
+                CHECKPOINT("eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                done = !0;
+            }
+        }
 
-      		output = (output + 1) % (1 << (sizeof(char) * 8));
+    } else {
 
-      		++count;
+        /*
+         * Loop Backward: we write a character and expect to receive that same
+         * character back. This is the default.
+         */
 
-        	now = diminuto_time_elapsed();
-        	if ((now - then) >= hertz) {
-        		break;
-        	}
-
-    	}
-
-    	elapsed = (now - then) / (double)hertz;
-	bandwidth = (count * bitspercharacter) / elapsed;
-    	CHECKPOINT("%luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
-
+        while (!done) {
+            fputc(output, fp);
+            while (!0) {
+                input = fgetc(fp);
+                if (input != EOF) {
+     		        if (!running) {
+     			        CHECKPOINT("running\n");
+     			        running = !0;
+     		        }
+                    if (input != output) {
+                        CHECKPOINT("mismatch 0x%x 0x%x\n", input, output);
+                    }
+      		        EXPECT(input == output);
+                    if (!printable) {
+      		            output = (output + 1) % (1 << (sizeof(char) * 8));
+                    } else if ((++output) > '~') {
+                        output = '!';
+                    } else {
+                        /* Do nothing. */
+                    }
+                    ++count;
+                    break;
+                } else if (done) {
+                    now = diminuto_time_elapsed();
+                    elapsed = (now - then) / (double)hertz;
+                    bandwidth = (count * bitspercharacter) / elapsed;
+                    CHECKPOINT("done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    break;
+                } else if (curious) {
+                    now = diminuto_time_elapsed();
+                    elapsed = (now - then) / (double)hertz;
+                    bandwidth = (count * bitspercharacter) / elapsed;
+                    CHECKPOINT("curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    curious = 0;
+                } else {
+                    now = diminuto_time_elapsed();
+                    elapsed = (now - then) / (double)hertz;
+                    bandwidth = (count * bitspercharacter) / elapsed;
+                    CHECKPOINT("eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    done = !0;
+                    break;
+                }
+            }
+        }
+                
     }
+
+    CHECKPOINT("fini\n");
 
     EXIT();
 }
