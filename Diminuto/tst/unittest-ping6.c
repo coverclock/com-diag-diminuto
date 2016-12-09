@@ -16,6 +16,8 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ping6.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 
 int main(int argc, char * argv[])
 {
@@ -102,72 +104,33 @@ int main(int argc, char * argv[])
 
     {
         static const uint16_t ID = 0xcafe;
-        static const uint16_t SEQ = 1;
+        uint16_t ss;
+        diminuto_ticks_t delay;
 
         TEST();
+
+        delay = diminuto_frequency();
 
         to = diminuto_ipc6_address("google.com");
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
 
-        ASSERT(diminuto_ping6_datagram_send(sock, to, ID, SEQ) > 0);
-
-        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
-        type = ~0;
-        id = 0;
-        seq = 0;
-        elapsed = 0;
-        /*
-         * Remarkably, the first datagram we get back when we ping ourselves
-         * is our own ICMP ECHO REQUEST. The ping feature recognizes this and
-         * returns a zero, indicating we didn't get an ICMP ECHO REPLY back,
-         * but we did get something, and it wasn't an error. It is up to the
-         * caller to decide what to do. The unit test just tries again.
-         */
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
-        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
-        ASSERT(type != ~0);
-        ASSERT(id == ID);
-        ASSERT(seq == SEQ);
-        ASSERT(elapsed > 0);
-
-        STATUS();
-    }
-
-    {
-        static const uint16_t ID = 0xbabe;
-        static const uint16_t SEQ = 2;
-
-        TEST();
-
-        to = diminuto_ipc6_address("ip6-localhost");
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
-        ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
-
-        ASSERT(diminuto_ping6_datagram_send(sock, to, ID, SEQ) > 0);
-
-        memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
-        type = ~0;
-        id = 0;
-        seq = 0;
-        elapsed = 0;
-        /*
-         * Remarkably, the first datagram we get back when we ping ourselves
-         * is our own ICMP ECHO REQUEST. The ping feature recognizes this and
-         * returns a zero, indicating we didn't get an ICMP ECHO REPLY back,
-         * but we did get something, and it wasn't an error. It is up to the
-         * caller to decide what to do. The unit test just tries again.
-         */
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
-        ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
-        ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
-        ASSERT(type != ~0);
-        ASSERT(id == ID);
-        ASSERT(seq == SEQ);
-        ASSERT(elapsed > 0);
+        for (ss = 0; ss < 10; ++ss) {
+            ASSERT(diminuto_ping6_datagram_send(sock, to, ID, ss) > 0);
+            memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
+            type = ~0;
+            id = 0;
+            seq = ~0;
+            elapsed = 0;
+            ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, (uint8_t *)0, (uint16_t *)0, (uint16_t *)0, (diminuto_ticks_t *)0)) == 0);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
+            ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
+            ASSERT(type != ~0);
+            ASSERT(id == ID);
+            ASSERT(seq == ss);
+            ASSERT(elapsed > 0);
+            diminuto_delay(delay, 0);
+        }
 
         STATUS();
     }
