@@ -163,6 +163,17 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
 
+        address6 = diminuto_ipc6_address("ip6-localhost");
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "ip6-localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        /*
+         * This next test depends on how the local host is administered with an
+         * IPv6 local host address, or whether we get back a IPv4 local host
+         * address encapsulated in an IPv6 address. Either is okay.
+         */
+        EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK4, sizeof(address6)) == 0));
+        EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "ip6-localhost", buffer);
+
         address6 = diminuto_ipc6_address("www.diag.com");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(memcmp(&address6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address6)) != 0);

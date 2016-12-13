@@ -5,18 +5,42 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * If you are reading a GPIO pin that changes in real-time, you will probably
  * need a debouncing algorithm and/or an edge detector. See the cue feature
- * for such capabilities. These capabilities are not part of the pin feature
- * since they can be used completely independently.
+ * for such capabilities implemented in software. These capabilities are not
+ * part of the pin feature since they can be used completely independently.
+ *
+ * The fact that non-digital devices - like mechanical switches - tend to
+ * bounce - sometimes for many milliseconds - makes interrupt-driven edge
+ * detection problematic unless the debouncing is implemented in hardware.
+ *
+ * Some domains that I've worked in, like aircraft avionics, don't have digital
+ * logic high/ground signaling but rather ground/open signaling, where ground
+ * typically means asserted and open means unasserted. To make things even more
+ * complicated, this interpretation is sometimes reversed. In either case, the
+ * intent is to make the action stimulated by the discrete benign to aircraft
+ * safety in the event that a wire is severed. Such ground/open signals are
+ * referred to as "discretes", and their conversion to and from conventional
+ * digital logic is typically done in hardware. Companies such as Holt
+ * Integrated Circuits Inc. make semiconductor chips for the aerospace industry
+ * that handle this.
+ *
+ * You can use the diminuto_pin feature with the diminuto_mux or diminuto_poll
+ * features to block until a GPIO pin changes. Use the fileno(3) function from
+ * stdio to extract the file descriptor from the object to which the FILE
+ * pointer points, and register the descriptor for urgent events (exceptions).
  */
 
 #include <stdio.h>
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
 
 /**
  * Place the feature in debug mode in which the functions write to files
@@ -54,7 +78,7 @@ extern int diminuto_pin_unexport(int pin);
 /**
  * Ask that the specified GPIO pin be configured to be active low or high.
  * @param pin identifies the pin by number from the data sheet. This is only
- * useful for pins wired to produce an interrupt.
+ * useful for wired to produce an interrupt.
  * @param high if !0 configures the pin for active high, else active low.
  * @return >=0 for success, <0 for error.
  */
@@ -69,8 +93,9 @@ typedef enum DiminutoPinEdge {
 
 /**
  * Ask that the specified GPIO pin be configured to for no edge (0), rising
- * edge (1), falling edge (2), or both edges (3). This is only useful for pins
- * wired to produce an interrupt.
+ * edge (1), falling edge (2), or both edges (3). This is only useful for GPIO
+ * hardware and device drivers that support the select(2) system call, so that
+ * a user-space application can block until the pin state changes.
  * @param pin identifies the pin by number from the data sheet.
  * @param edge is 0 for none, 1 for rising, 2 for falling, or 3 for both.
  * @return >=0 for success, <0 for error.
@@ -151,7 +176,10 @@ extern FILE * diminuto_pin_output(int pin);
  * @param fp points to an output GPIO FILE pointer.
  * @return >=0 for success, <0 for error.
  */
-extern int diminuto_pin_set(FILE * fp);
+static inline int diminuto_pin_set(FILE * fp)
+{
+	return diminuto_pin_put(fp, !0);
+}
 
 /**
  * Set a GPIO pin to low (false). The application is responsible
@@ -159,7 +187,10 @@ extern int diminuto_pin_set(FILE * fp);
  * @param fp points to an output GPIO FILE pointer.
  * @return >=0 for success, <0 for error.
  */
-extern int diminuto_pin_clear(FILE * fp);
+static inline int diminuto_pin_clear(FILE * fp)
+{
+	return diminuto_pin_put(fp, 0);
+}
 
 /**
  * Close a FILE pointer to a GPIO pin, and deconfigure the pin. It is not an

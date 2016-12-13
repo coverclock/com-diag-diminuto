@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado USA<BR>
+ * Copyright 2014-2016 Digital Aggregates Corporation, Colorado USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -19,21 +19,24 @@
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_string.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdio.h>
 
 static void usage(const char * program)
 {
-	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -N | -R | -F | -B ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t | -f ] [ -U MICROSECONDS ] [ -n ] [ ... ]\n", program);
+	fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -N | -R | -F | -B ] [ -b USECONDS ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t | -f ] [ -U MICROSECONDS ] [ -n ] [ ... ]\n", program);
 	fprintf(stderr, "       -B            Set PIN edge to both\n");
 	fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
 	fprintf(stderr, "       -F            Set PIN edge to falling\n");
 	fprintf(stderr, "       -H            Set PIN active to high\n");
 	fprintf(stderr, "       -L            Set PIN active to low\n");
+	fprintf(stderr, "       -M            Multiplex upon PIN edge\n");
 	fprintf(stderr, "       -N            Set PIN edge to none\n");
 	fprintf(stderr, "       -R            Set PIN edge to rising\n");
 	fprintf(stderr, "       -c            Clear PIN by writing 0\n");
@@ -42,6 +45,7 @@ static void usage(const char * program)
 	fprintf(stderr, "       -h            Set PIN direction to output and write !0\n");
 	fprintf(stderr, "       -i            Set PIN direction to input\n");
 	fprintf(stderr, "       -l            Set PIN direction to output and write 0\n");
+	fprintf(stderr, "       -m USECONDS   Multiplex upon PIN edge or until USECONDS microseconds\n");
 	fprintf(stderr, "       -n            Unexport PIN\n");
 	fprintf(stderr, "       -o            Set PIN direction to output\n");
 	fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
@@ -69,10 +73,14 @@ int main(int argc, char * argv[])
 	char opts[2] = { '\0', '\0' };
 	int opt;
 	extern char * optarg;
+    diminuto_mux_t mux;
+    diminuto_sticks_t timeout = -2;
+    int fd;
+    int nfds;
 
 	program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-	while ((opt = getopt(argc, argv, "BD:FHLNRcdfhilnop:rstu:vw:x?")) >= 0) {
+	while ((opt = getopt(argc, argv, "BD:FHLNRb:cdfhilnop:rstu:vw:x?")) >= 0) {
 
 		opts[0] = opt;
 
@@ -252,6 +260,70 @@ int main(int argc, char * argv[])
 			}
 			break;
 
+		case 'm':
+			if ((*diminuto_number(optarg, &value) != '\0')) {
+				perror(optarg);
+                error = !0;
+                break;
+			} else {
+				value *= diminuto_mux_frequency();
+				value /= 1000000;
+                timeout = value;
+            }
+            /* Fall through. */
+		case 'M':
+				if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, timeout); }
+			    if (fp != (FILE *)0) {
+				    /* Do nothing. */
+			    } else if (pin < 0) {
+				    errno = EINVAL;
+				    perror(opts);
+				    error = !0;
+				    break;
+			    } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+				    error = !0;
+				    break;
+			    } else {
+				    /* Do nothing. */
+			    }
+                fd = fileno(fp);
+                diminuto_mux_init(&mux);
+                if (diminuto_mux_register_urgent(&mux, fd) < 0) {
+				    perror(opts);
+				    error = !0;
+                    break;
+                } else {
+                    while (!0) {
+                        if ((nfds = diminuto_mux_wait(&mux, value)) < 0) {
+                            perror(opts);
+                            error = !0;
+                            break;
+                        } else if (nfds == 0) {
+                            /* Do nothing. */
+                        } else if ((fd = diminuto_mux_ready_urgent(&mux)) < 0) {
+                            perror(opts);
+                            error = !0;
+                            break;
+                        } else if (fd != fileno(fp)) {
+                            /* Do nothing. */
+                        } else if ((state = diminuto_pin_get(fp)) < 0) {
+				            error = !0;
+				            break;
+			            } else {
+				            state = !!state;
+				            printf("%d\n", state);
+                        }
+                    }
+                    if (diminuto_mux_unregister_urgent(&mux, fd) < 0) {
+				        perror(opts);
+				        error = !0;
+                    }
+                    if (error) {
+                        break;
+                    }
+                }
+            break;
+
 		case 'n':
 			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
 			if (pin < 0) {
@@ -303,7 +375,6 @@ int main(int argc, char * argv[])
 				} else {
 					/* Do nothing. */
 				}
-
 			}
 			break;
 
@@ -311,6 +382,11 @@ int main(int argc, char * argv[])
 			if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
 			if (fp != (FILE *)0) {
 				/* Do nothing. */
+			} else if (pin < 0) {
+				errno = EINVAL;
+				perror(opts);
+				error = !0;
+				break;
 			} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
 				error = !0;
 				break;
@@ -356,8 +432,9 @@ int main(int argc, char * argv[])
 			break;
 
 		case 'u':
-			if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
+			if ((*diminuto_number(optarg, &value) != '\0')) {
 				perror(optarg);
+                error = !0;
 			} else {
 				if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
 				value *= diminuto_delay_frequency();
@@ -376,6 +453,11 @@ int main(int argc, char * argv[])
 				if (debug) { fprintf(stderr, "%s -%c %d\n", program, opt, state); }
 				if (fp != (FILE *)0) {
 					/* Do nothing. */
+			    } else if (pin < 0) {
+				    errno = EINVAL;
+				    perror(opts);
+				    error = !0;
+				    break;
 				} else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
 					error = !0;
 					break;

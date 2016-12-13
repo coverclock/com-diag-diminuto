@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_endianess.h"
 
 /**
  * Remarkably, the standard sockaddr structure doesn't reserve enough space to
@@ -37,13 +38,36 @@ typedef struct DiminutoIpc6SocketAddress {
  * Swap an IPv6 address variable from network to host byte order in place.
  * @param addressp points to an IPv6 address variable.
  */
-extern void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp);
+extern void diminuto_ipc6_ntoh6_generic(diminuto_ipv6_t * addressp);
+
+/**
+ * Swap an IPv6 address variable from network to host byte order in place
+ * if necessary.
+ * @param addressp points to an IPv6 address variable.
+ */
+static inline void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
+{
+    if (diminuto_littleendian()) {
+        diminuto_ipc6_ntoh6_generic(addressp);
+    }
+}
 
 /**
  * Swap an IPv6 address variable from host to network byte order in place.
  * @param addressp points to an IPv6 address variable.
  */
-extern void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp);
+extern void diminuto_ipc6_hton6_generic(diminuto_ipv6_t * addressp);
+
+/**
+ * Swap an IPv6 address variable from host to network byte order in place.
+ * @param addressp points to an IPv6 address variable.
+ */
+static inline void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
+{
+    if (diminuto_littleendian()) {
+        diminuto_ipc6_hton6_generic(addressp);
+    }
+}
 
 /**
  * Extract the IPv6 address and port number in host byte order from a socket

@@ -13,9 +13,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
 #include <sys/param.h>
+#include <sys/select.h>
 
 static const char ROOT[] = "/sys";
 
@@ -278,14 +280,4 @@ int diminuto_pin_get(FILE * fp)
 	}
 
 	return value;
-}
-
-int diminuto_pin_set(FILE * fp)
-{
-	return diminuto_pin_put(fp, !0);
-}
-
-int diminuto_pin_clear(FILE * fp)
-{
-	return diminuto_pin_put(fp, 0);
 }

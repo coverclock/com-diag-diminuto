@@ -38,7 +38,7 @@ const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { 0, 0, 0, 0, 0, 0xffff, ((127 <
  * HELPERS
  ******************************************************************************/
 
-void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
+void diminuto_ipc6_ntoh6_generic(diminuto_ipv6_t * addressp)
 {
     size_t ii;
 
@@ -47,7 +47,7 @@ void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
     }
 }
 
-void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
+void diminuto_ipc6_hton6_generic(diminuto_ipv6_t * addressp)
 {
     size_t ii;
 
