@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,6 +26,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #define TEST_PORT 0xDEAD
 #define TEST_WORD 0xDEADC0DE
@@ -194,7 +196,57 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-   {
+    {
+        static const char ADDRESS[] = "2607:f8b0:4000:80c::200e";
+        static const char HOSTNAME[] = "google.com";
+        struct addrinfo hints = { 0 };
+        struct addrinfo * infop = (struct addrinfo *)0;
+        diminuto_ipv6_t address = { 0x2607, 0xf8b0, 0x400f, 0x0803, 0x0000, 0x0000, 0x0000, 0x200e };
+        diminuto_ipv6_t host;
+        diminuto_ipv6_t network;
+        diminuto_ipv6_t prime;
+        char buffer0[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        char buffer1[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        char buffer2[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        char buffer3[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        char buffer4[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        int rc;
+
+        TEST();
+
+        ASSERT(diminuto_ipc6_colonnotation(address, buffer0, sizeof(buffer0)) == buffer0);
+        DIMINUTO_LOG_DEBUG("%s CON \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer0, address.u16[0], address.u16[1], address.u16[2], address.u16[3], address.u16[4], address.u16[5], address.u16[6], address.u16[7]);
+
+        hints.ai_family = AF_INET6;
+        rc = getaddrinfo(HOSTNAME, (const char *)0, &hints, &infop);
+        ASSERT(rc == 0);
+        ASSERT(infop != (struct addrinfo *)0);
+        ASSERT(infop->ai_family == AF_INET6);
+#define IN6ADDR (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr)
+#define IN6ADDR16 (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr16)
+        ASSERT(inet_ntop(infop->ai_family, IN6ADDR, buffer1, sizeof(buffer1)) == buffer1);
+        DIMINUTO_LOG_DEBUG("%s RAW \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer1, IN6ADDR16[0], IN6ADDR16[1], IN6ADDR16[2], IN6ADDR16[3], IN6ADDR16[4], IN6ADDR16[5], IN6ADDR16[6], IN6ADDR16[7]);
+        freeaddrinfo(infop);
+
+        host = diminuto_ipc6_address(HOSTNAME);
+        ASSERT(diminuto_ipc6_colonnotation(host, buffer2, sizeof(buffer2)) == buffer2);
+        DIMINUTO_LOG_DEBUG("%s HBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer2, host.u16[0], host.u16[1], host.u16[2], host.u16[3], host.u16[4], host.u16[5], host.u16[6], host.u16[7]);
+
+        network = host;
+        diminuto_ipc6_hton6(&network);
+        ASSERT(inet_ntop(AF_INET6, &network, buffer3, sizeof(buffer3)) == buffer3);
+        DIMINUTO_LOG_DEBUG("%s NBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer3, network.u16[0], network.u16[1], network.u16[2], network.u16[3], network.u16[4], network.u16[5], network.u16[6], network.u16[7]);
+
+        prime = network;
+        diminuto_ipc6_ntoh6(&prime);
+        ASSERT(memcmp(&host, &prime, sizeof(diminuto_ipv6_t)) == 0);
+        ASSERT(diminuto_ipc6_colonnotation(prime, buffer4, sizeof(buffer4)) == buffer4);
+        DIMINUTO_LOG_DEBUG("%s PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
+
+        STATUS();
+    }
+
+    {
         diminuto_ipv6_t * addresses;
         size_t ii;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
@@ -227,7 +279,7 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-   {
+    {
         diminuto_ipv6_t * addresses;
         size_t ii;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
