@@ -216,7 +216,7 @@ int diminuto_ipc4_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_por
     socklen_t length = sizeof(sa);
     int newfd;
 
-    if ((newfd = accept(fd, &sa, &length)) < 0) {
+    if ((newfd = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc4_accept: accept");
         newfd = -1;
     } else {
@@ -283,7 +283,7 @@ ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size,
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
 
-    if ((total = recvfrom(fd, buffer, size, flags, &sa, &length)) == 0) {
+    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
         /* Do nothing: not sure what this means. */
     } else if (total > 0) {
         diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
