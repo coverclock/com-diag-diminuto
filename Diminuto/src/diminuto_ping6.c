@@ -86,7 +86,7 @@ ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint8_t
 {
     ssize_t total;
     icmp6_datagram_t buffer = { 0 };
-    diminuto_ipc6_sockaddr_t sa = { 0 };
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
     struct icmp6_hdr * icmpp;
     diminuto_ticks_t now;

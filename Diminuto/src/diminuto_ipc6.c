@@ -393,7 +393,7 @@ int diminuto_ipc6_stream_provider(diminuto_port_t port)
 
 int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
-    diminuto_ipc6_sockaddr_t sa = { 0 };
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
     int newfd;
 
@@ -409,19 +409,19 @@ int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_por
 
 int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
 {
-    struct sockaddr_in6 sin6 = { 0 };
-    socklen_t length = sizeof(sin6);
+    struct sockaddr_in6 sa = { 0 };
+    socklen_t length = sizeof(sa);
     int fd;
     int rc;
 
-    sin6.sin6_family = AF_INET6;
+    sa.sin6_family = AF_INET6;
     diminuto_ipc6_hton6(&address);
-    memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
-    sin6.sin6_port = htons(port);
+    memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+    sa.sin6_port = htons(port);
 
     if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc6_consumer: socket");
-    } else if ((rc = connect(fd, (struct sockaddr *)&sin6, length)) < 0) {
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
         diminuto_perror("diminuto_ipc6_consumer: connect");
         diminuto_ipc6_close(fd);
         fd = -2;
@@ -462,7 +462,7 @@ int diminuto_ipc6_datagram_peer(diminuto_port_t port)
 ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags)
 {
     ssize_t total;
-    diminuto_ipc6_sockaddr_t sa = { 0 };
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
 
     if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
@@ -481,17 +481,17 @@ ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size,
 ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags)
 {
     ssize_t total;
-    struct sockaddr_in6 sin6 = { 0 };
-    struct sockaddr * sap;
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length;
+    struct sockaddr * sap;
 
     if (port > 0) {
-        length = sizeof(sin6);
-        sin6.sin6_family = AF_INET6;
+        length = sizeof(sa);
+        sa.sin6_family = AF_INET6;
         diminuto_ipc6_hton6(&address);
-        memcpy(sin6.sin6_addr.s6_addr, address.u16, sizeof(sin6.sin6_addr.s6_addr));
-        sin6.sin6_port = htons(port);
-        sap = (struct sockaddr *)&sin6;
+        memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+        sa.sin6_port = htons(port);
+        sap = (struct sockaddr *)&sa;
     } else {
         length = 0;
         sap = (struct sockaddr *)0;
@@ -517,7 +517,7 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
 int diminuto_ipc6_nearend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     int rc;
-    diminuto_ipc6_sockaddr_t sa = { 0 };
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
 
     if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
@@ -532,7 +532,7 @@ int diminuto_ipc6_nearend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * 
 int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     int rc;
-    diminuto_ipc6_sockaddr_t sa = { 0 };
+    struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
 
     if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {

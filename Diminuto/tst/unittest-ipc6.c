@@ -77,14 +77,6 @@ int main(int argc, char * argv[])
     hertz = diminuto_frequency();
 
     {
-        diminuto_ipc6_sockaddr_t sa;
-
-        ASSERT(sizeof(sa) == 256);
-        ASSERT(sizeof(sa.sa_family) == sizeof(unsigned short int));
-        ASSERT(sizeof(sa.sa_data) == (sizeof(sa) - sizeof(unsigned short int)));
-    }
-
-    {
         diminuto_ipv4_t address4;
 
         TEST();
