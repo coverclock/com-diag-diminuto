@@ -165,4 +165,12 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
     return diminuto_fd_write(fd, buffer, min, max);
 }
 
+/**
+ * Return an array of strings containing a list of the network interfaces
+ * available on the host. This is a single block of dynamically allocated
+ * memory that should be eventually deallocated by the caller using free(3).
+ * @return a dynamically allocated list of available network interfaces.
+ */
+extern const char ** diminuto_ipc_interfaces(void);
+
 #endif

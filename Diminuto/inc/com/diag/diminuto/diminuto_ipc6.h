@@ -399,4 +399,15 @@ static inline ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, s
     return diminuto_ipc6_datagram_send_flags(fd, buffer, size, address, port, 0);
 }
 
+/**
+ * Return a list of IPv6 addresses associated with the specified network
+ * interface. The addresses will be in host byte order. Since a single
+ * interface can map to multiple addresses, this returns a list of addresses
+ * in dynamically acquired memory. The last entry will be all zeros. The
+ * list must be freed by the application.
+ * @param interface points to the interface name string.
+ * @return an array or NULL if no such interface or the string is invalid.
+ */
+extern diminuto_ipv6_t * diminuto_ipc6_interface(const char * interface);
+
 #endif
