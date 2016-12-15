@@ -19,8 +19,14 @@
  */
 
 #include "com/diag/diminuto/diminuto_mux.h"
-#define _GNU_SOURCE
+#if !defined(__USE_GNU)
+#   define __USE_GNU
+#   define UNDEF__USE_GNU
+#endif
 #include <poll.h>
+#if defined(UNDEF__USE_GNU)
+#   undef __USE_GNU
+#endif
 
 /**
  * @def COM_DIAG_DIMINUTO_POLL_FREQUENCY

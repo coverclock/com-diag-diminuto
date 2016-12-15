@@ -11,8 +11,14 @@
 #include "com/diag/diminuto/diminuto_module.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#define __USE_GNU
+#if !defined(__USE_GNU)
+#   define __USE_GNU
+#   define UNDEF__USE_GNU
+#endif
 #include <dlfcn.h>
+#if defined(UNDEF__USE_GNU)
+#   undef __USE_GNU
+#endif
 
 /*
  * This is deliberately global but not in the header file. So it is not part
