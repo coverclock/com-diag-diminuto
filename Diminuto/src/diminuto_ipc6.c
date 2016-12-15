@@ -348,7 +348,7 @@ int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, int backlog)
+int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, int backlog)
 {
     struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
@@ -367,19 +367,21 @@ int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port
     sa.sin6_port = htons(port);
 
     if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc6_provider_generic: socket");
+        diminuto_perror("diminuto_ipc6_provider_specific: socket");
     } else if (diminuto_ipc6_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc6_provider_generic: diminuto_ipc6_set_reuseadddress");
+        diminuto_perror("diminuto_ipc6_provider_specific: diminuto_ipc6_set_reuseadddress");
         diminuto_ipc6_close(fd);
         fd = -2;
     } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc6_provider_generic: bind");
+        diminuto_perror("diminuto_ipc6_provider_specific: bind");
         diminuto_ipc6_close(fd);
         fd = -3;
     } else if (listen(fd, backlog) < 0) {
-        diminuto_perror("diminuto_ipc6_provider_generic: listen");
+        diminuto_perror("diminuto_ipc6_provider_specific: listen");
         diminuto_ipc6_close(fd);
         fd = -4;
+    } else {
+        /* Do nothing. */
     }
 
     return fd;
@@ -388,7 +390,7 @@ int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port
 int diminuto_ipc6_stream_provider(diminuto_port_t port)
 {
     diminuto_ipv6_t any = { 0 };
-    return diminuto_ipc6_stream_provider_generic(any, port, SOMAXCONN);
+    return diminuto_ipc6_stream_provider_specific(any, port, SOMAXCONN);
 }
 
 int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
@@ -425,6 +427,8 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
         diminuto_perror("diminuto_ipc6_consumer: connect");
         diminuto_ipc6_close(fd);
         fd = -2;
+    } else {
+        /* Do nothing. */
     }
 
     return fd;
@@ -434,29 +438,43 @@ int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port)
  * DATAGRAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_datagram_peer(diminuto_port_t port)
+int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_t port)
 {
     struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
     int fd;
 
     sa.sin6_family = AF_INET6;
-    memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    /* in6addr_any is all zeros so this is overly paranoid. */
+    if (isipany(&address)) {
+        memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
+    } else {
+        diminuto_ipc6_hton6(&address);
+        memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+    }
     sa.sin6_port = htons(port);
 
     if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc6_peer: socket");
+        diminuto_perror("diminuto_ipc6_peer_specific: socket");
     } else if (diminuto_ipc6_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc6_peer: diminuto_ipc6_set_reuseaddress");
+        diminuto_perror("diminuto_ipc6_peer_specific: diminuto_ipc6_set_reuseaddress");
         diminuto_ipc6_close(fd);
         fd = -2;
     } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc6_peer: bind");
+        diminuto_perror("diminuto_ipc6_peer_specific: bind");
         diminuto_ipc6_close(fd);
         fd = -3;
+    } else {
+        /* Do nothing. */
     }
 
     return fd;
+}
+
+int diminuto_ipc6_datagram_peer(diminuto_port_t port)
+{
+    diminuto_ipv6_t any = { 0 };
+	return diminuto_ipc6_datagram_peer_specific(any, port);
 }
 
 ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags)

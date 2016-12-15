@@ -141,7 +141,7 @@ extern int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, int backlog);
+extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -171,6 +171,16 @@ extern int diminuto_ipc4_stream_accept(int fd, diminuto_ipv4_t * addressp, dimin
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 extern int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port);
+
+/**
+ * Request a peer datagram socket. The address and port are in host byte order.
+ * If the port is zero, an unused ephemeral port is allocated; its value can
+ * be determined using the nearend function.
+ * @param address is the IPv4 address of the interface to use.
+ * @param port is the port number.
+ * @return a peer datagram socket or <0 if an error occurred.
+ */
+extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port);
 
 /**
  * Request a peer datagram socket. The port is in host byte order. If the port

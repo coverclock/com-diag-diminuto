@@ -156,7 +156,7 @@ extern int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t
  * @param backlog is the limit to how many incoming connections may be queued.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, int backlog);
+extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -186,6 +186,15 @@ extern int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, dimin
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 extern int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port);
+
+/**
+ * Request a peer datagram socket. The address and port are in host byte order.
+ * @param address is the address of the interface that will be used.
+ * @param port is the port number. If the port is zero, an unused ephemeral
+ * port is allocated; its value can be determined using the nearend function.
+ * @return a peer datagram socket or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_t port);
 
 /**
  * Request a peer datagram socket. The port is in host byte order.
