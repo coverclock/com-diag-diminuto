@@ -392,6 +392,55 @@ int main(int argc, char * argv[])
     }
 
     {
+        int fd1;
+        int fd2;
+        const char MSG1[] = "Chip Overclock";
+        const char MSG2[] = "Digital Aggregates Corporation";
+        char buffer[64];
+        diminuto_ipv4_t binding = 0;
+        diminuto_ipv4_t address = 0;
+        diminuto_ipv4_t address1 = 0;
+        diminuto_ipv4_t address2 = 0;
+        static const diminuto_port_t PORT = 5555;
+        diminuto_port_t port = 0;
+        diminuto_port_t port1 = 0;
+        diminuto_port_t port2 = 0;
+
+        TEST();
+
+        binding = diminuto_ipc4_address("localhost");
+        DIMINUTO_LOG_DEBUG("%s 0 0x%8.8x %d\n", DIMINUTO_LOG_HERE, binding, PORT);
+
+        EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc4_nearend(fd1, &address1, &port1) >= 0);
+        /* fd1 not bound to specific address, and port is ephemeral. */
+
+        EXPECT(binding == 0x7f000001);
+        EXPECT((fd2 = diminuto_ipc4_datagram_peer_specific(binding, PORT)) >= 0);
+        EXPECT(diminuto_ipc4_nearend(fd2, &address2, &port2) >= 0);
+
+        EXPECT(address2 == binding);
+        EXPECT(port2 == PORT);
+
+        /* This only works because the kernel buffers socket data. */
+
+        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), binding, PORT)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc4_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
+        EXPECT(strcmp(buffer, MSG1) == 0);
+
+        EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), binding, port1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc4_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
+        EXPECT(address == binding);
+        EXPECT(port == PORT);
+        EXPECT(strcmp(buffer, MSG2) == 0);
+
+        EXPECT(diminuto_ipc4_close(fd1) >= 0);
+        EXPECT(diminuto_ipc4_close(fd2) >= 0);
+
+        STATUS();
+    }
+
+    {
         int fd;
         char buffer[1];
         diminuto_ipv4_t address = 0x12345678;

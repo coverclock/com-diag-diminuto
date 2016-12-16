@@ -494,25 +494,28 @@ int main(int argc, char * argv[])
         const char MSG[] = "Chip Overclock";
         char buffer[sizeof(MSG) * 2];
         diminuto_ipv6_t server;
+        diminuto_ipv6_t binding = TEST_INIT;
         diminuto_port_t rendezvous = TEST_PORT;
         diminuto_ipv6_t address = TEST_INIT;
         diminuto_port_t port = TEST_PORT;
+        static const diminuto_port_t PORT = 5555;
 
         TEST();
 
         server = diminuto_ipc6_address("::1");
         EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
-        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
-        EXPECT(rendezvous != 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer_specific(server, PORT)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(fd, &binding, &rendezvous) == 0);
+        EXPECT(memcmp(&binding, &server, sizeof(binding)) == 0);
+        EXPECT(rendezvous == PORT);
 
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
         EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
-        ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
-        EXPECT(port == rendezvous);
+        EXPECT(memcmp(&address, &server, sizeof(address)) == 0);
+        EXPECT(port == PORT);
 
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
