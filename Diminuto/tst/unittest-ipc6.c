@@ -716,16 +716,22 @@ int main(int argc, char * argv[])
      */
 
     {
+        diminuto_ipv6_t provider;
+        diminuto_port_t rendezvous;
+        static const diminuto_port_t PORT = 5555;
+        diminuto_ipv6_t source;
         diminuto_ipv6_t address;
         diminuto_port_t port;
-        diminuto_port_t rendezvous;
         int service;
         pid_t pid;
 
         TEST();
 
-        ASSERT((service = diminuto_ipc6_stream_provider(0)) >= 0);
-        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        provider = diminuto_ipc6_address("::1");
+        ASSERT((service = diminuto_ipc6_stream_provider_specific(provider, PORT, 16)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, &source, &rendezvous) >= 0);
+        EXPECT(memcmp(&source, &provider, sizeof(source)) == 0);
+        EXPECT(rendezvous == PORT);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -837,7 +843,7 @@ int main(int argc, char * argv[])
 
             diminuto_delay(hertz / 1000, !0);
 
-            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(provider, rendezvous)) >= 0);
 
             totalreceived = 0;
             totalsent = 0;
