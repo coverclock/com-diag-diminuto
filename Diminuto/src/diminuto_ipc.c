@@ -24,6 +24,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <ifaddrs.h>
+#include <linux/limits.h>
 
 /*******************************************************************************
  * STRING TO PORT AND VICE VERSA
@@ -169,4 +171,61 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     }
 
     return fd;
+}
+
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
+
+const char ** diminuto_ipc_interfaces(void)
+{
+    struct ifaddrs * ifa = (struct ifaddrs *)0;
+    const char ** rp;
+    struct ifaddrs * ip;
+    char ** vp;
+    char * np;
+    size_t vs = sizeof(char *);
+    size_t ns = 0;
+    const char ** cp;
+    int rc;
+
+    if ((rc = getifaddrs(&ifa)) >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name != (char *)0) {
+                vs += sizeof(char *);
+                ns += strnlen(ip->ifa_name, NAME_MAX) + 1;
+            }
+        }
+    }
+
+    rp = (char **)malloc(vs + ns);
+    vp = rp;
+    np = (char *)vp + vs;
+
+    if (rc >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name != (char *)0) {
+                for (cp = rp; cp < vp; ++cp) {
+                    if (strncmp(ip->ifa_name, *cp, NAME_MAX) == 0) {
+                        break;
+                    }
+                }
+                if (cp >= vp) {
+                    *(vp++) = np;
+                    ns = strnlen(ip->ifa_name, NAME_MAX);
+                    strncpy(np, ip->ifa_name, ns);
+                    np += ns;
+                    *(np++) = '\0';
+                }
+            }
+        }
+    }
+
+    *vp = (const char *)0;
+
+    if (ifa != (struct ifaddrs *)0) {
+        freeifaddrs(ifa);
+    }
+
+    return rp;
 }

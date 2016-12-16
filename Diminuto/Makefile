@@ -225,8 +225,11 @@ clean:
 	rm -rf $(OUT)
 	rm -rf *.gcda *.gcno *.gcov
 
-pristine clobber:	clean
+pristine:	clean
 	rm -rf $(OUT_DIR)
+
+clobber:	pristine
+	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po
 
 ########## Packaging and Distribution
 
