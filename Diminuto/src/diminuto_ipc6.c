@@ -23,6 +23,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <linux/limits.h>
 
 /*******************************************************************************
  * GLOBALS
@@ -560,4 +562,63 @@ int diminuto_ipc6_farend(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * p
     }
 
     return rc;
+}
+
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
+
+diminuto_ipv6_t * diminuto_ipc6_interface(const char * interface)
+{
+    diminuto_ipv6_t * rp;
+    struct ifaddrs * ifa = (struct ifaddrs *)0;
+    struct ifaddrs * ip;
+    diminuto_ipv6_t * vp;
+    size_t vs = sizeof(diminuto_ipv6_t);
+    int rc;
+
+    if ((rc = getifaddrs(&ifa)) >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET6) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                vs += sizeof(diminuto_ipv6_t);
+            }
+        }
+    }
+
+    rp = (diminuto_ipv6_t *)malloc(vs);
+    vp = rp;
+
+    if (rc >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET6) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                memcpy(vp, ((struct sockaddr_in6 *)(ip->ifa_addr))->sin6_addr.s6_addr, sizeof(diminuto_ipv6_t));
+                diminuto_ipc6_ntoh6(vp);
+                ++vp;
+            }
+        }
+    }
+
+    memset(vp, 0, sizeof(diminuto_ipv6_t));
+
+    if (ifa != (struct ifaddrs *)0) {
+        freeifaddrs(ifa);
+    }
+
+    return rp;
 }

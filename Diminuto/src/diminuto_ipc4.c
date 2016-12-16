@@ -24,6 +24,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <linux/limits.h>
 
 /*******************************************************************************
  * GLOBALS
@@ -371,4 +373,61 @@ int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * p
     }
 
     return rc;
+}
+
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
+
+diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
+{
+    diminuto_ipv4_t * rp;
+    struct ifaddrs * ifa = (struct ifaddrs *)0;
+    struct ifaddrs * ip;
+    diminuto_ipv4_t * vp;
+    size_t vs = sizeof(diminuto_ipv4_t);
+    int rc;
+
+    if ((rc = getifaddrs(&ifa)) >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                vs += sizeof(diminuto_ipv4_t);
+            }
+        }
+    }
+
+    rp = (diminuto_ipv4_t *)malloc(vs);
+    vp = rp;
+
+    if (rc >= 0) {
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                *(vp++) = ntohl(((struct sockaddr_in *)(ip->ifa_addr))->sin_addr.s_addr);
+            }
+        }
+    }
+
+    *vp = 0;
+
+    if (ifa != (struct ifaddrs *)0) {
+        freeifaddrs(ifa);
+    }
+
+    return rp;
 }
