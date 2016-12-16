@@ -141,7 +141,9 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed,
+ * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max)
 {
@@ -158,7 +160,9 @@ static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed,
+ * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max)
 {
@@ -168,8 +172,9 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
 /**
  * Return an array of strings containing a list of the network interfaces
  * available on the host. This is a single block of dynamically allocated
- * memory that should be eventually deallocated by the caller using free(3).
- * @return a dynamically allocated list of available network interfaces.
+ * memory that should be eventually deallocated by the application using
+ * free(3).
+ * @return a list of available network interfaces or NULL if an error occurred.
  */
 extern const char ** diminuto_ipc_interfaces(void);
 

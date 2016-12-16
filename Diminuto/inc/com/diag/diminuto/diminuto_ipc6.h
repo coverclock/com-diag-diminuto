@@ -413,7 +413,7 @@ static inline ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, s
  * interface. The addresses will be in host byte order. Since a single
  * interface can map to multiple addresses, this returns a list of addresses
  * in dynamically acquired memory. The last entry will be all zeros. The
- * list must be freed by the application.
+ * list must be freed by the application using free(3).
  * @param interface points to the interface name string.
  * @return an array or NULL if no such interface or the string is invalid.
  */
