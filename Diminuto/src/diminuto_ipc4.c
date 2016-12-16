@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
@@ -381,14 +382,20 @@ int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * p
 
 diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
 {
-    diminuto_ipv4_t * rp;
+    diminuto_ipv4_t * rp = (diminuto_ipv4_t *)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;
     struct ifaddrs * ip;
     diminuto_ipv4_t * vp;
     size_t vs = sizeof(diminuto_ipv4_t);
     int rc;
 
-    if ((rc = getifaddrs(&ifa)) >= 0) {
+    do {
+
+        if ((rc = getifaddrs(&ifa)) < 0) {
+            diminuto_perror("diminuto_ipc4_interface: getifaddrs");
+            break;
+        }
+
         for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
             if (ip->ifa_name == (char *)0) {
                 continue;
@@ -402,12 +409,10 @@ diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
                 vs += sizeof(diminuto_ipv4_t);
             }
         }
-    }
 
-    rp = (diminuto_ipv4_t *)malloc(vs);
-    vp = rp;
+        rp = (diminuto_ipv4_t *)malloc(vs);
+        vp = rp;
 
-    if (rc >= 0) {
         for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
             if (ip->ifa_name == (char *)0) {
                 continue;
@@ -421,9 +426,14 @@ diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
                 *(vp++) = ntohl(((struct sockaddr_in *)(ip->ifa_addr))->sin_addr.s_addr);
             }
         }
-    }
 
-    *vp = 0;
+        *vp = 0;
+
+#if 0
+        diminuto_dump(stderr, rp, vs);
+#endif
+
+    } while (0);
 
     if (ifa != (struct ifaddrs *)0) {
         freeifaddrs(ifa);

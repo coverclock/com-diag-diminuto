@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
@@ -179,30 +180,35 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 
 const char ** diminuto_ipc_interfaces(void)
 {
-    const char ** rp;
+    const char ** rp = (const char **)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;
     struct ifaddrs * ip;
     char ** vp;
     char * np;
     size_t vs = sizeof(char *);
     size_t ns = 0;
+    size_t rs;
     const char ** cp;
-    int rc;
 
-    if ((rc = getifaddrs(&ifa)) >= 0) {
+    do {
+
+        if (getifaddrs(&ifa) < 0) {
+            diminuto_perror("diminuto_ipc_interfaces: getifaddrs");
+            break;
+        }
+
         for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
             if (ip->ifa_name != (char *)0) {
                 vs += sizeof(char *);
                 ns += strnlen(ip->ifa_name, NAME_MAX) + 1;
             }
         }
-    }
 
-    rp = (char **)malloc(vs + ns);
-    vp = rp;
-    np = (char *)vp + vs;
+        rs = vs + ns;
+        rp = (char **)malloc(rs);
+        vp = rp;
+        np = (char *)vp + vs;
 
-    if (rc >= 0) {
         for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
             if (ip->ifa_name != (char *)0) {
                 for (cp = rp; cp < vp; ++cp) {
@@ -219,9 +225,14 @@ const char ** diminuto_ipc_interfaces(void)
                 }
             }
         }
-    }
 
-    *vp = (const char *)0;
+        *vp = (const char *)0;
+
+#if 0
+        diminuto_dump(stderr, rp, rs);
+#endif
+
+    } while (0);
 
     if (ifa != (struct ifaddrs *)0) {
         freeifaddrs(ifa);
