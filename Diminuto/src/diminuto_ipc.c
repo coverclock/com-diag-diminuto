@@ -180,7 +180,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 
 const char ** diminuto_ipc_interfaces(void)
 {
-    const char ** rp = (const char **)0;
+    char ** rp = (char **)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;
     struct ifaddrs * ip;
     char ** vp;
@@ -188,7 +188,7 @@ const char ** diminuto_ipc_interfaces(void)
     size_t vs = sizeof(char *);
     size_t ns = 0;
     size_t rs;
-    const char ** cp;
+    char ** cp;
 
     do {
 
@@ -226,7 +226,7 @@ const char ** diminuto_ipc_interfaces(void)
             }
         }
 
-        *vp = (const char *)0;
+        *vp = (char *)0;
 
 #if 0
         diminuto_dump(stderr, rp, rs);
