@@ -60,62 +60,6 @@ void diminuto_ipc6_hton6_generic(diminuto_ipv6_t * addressp)
 }
 
 /*******************************************************************************
- * CLASSIFIERS
- ******************************************************************************/
-
-/*
- * It is fortuitous (and probably by design) that the values for which we have
- * to check are the same whether in host byte order or network byte order.
- */
-static inline int isipany(const diminuto_ipv6_t * addressp) {
-    size_t ii;
-
-    for (ii = 0; ii < countof(addressp->u16); ++ii) {
-        if (addressp->u16[ii] != 0x0000) {
-            return 0;
-        }
-    }
-
-    return !0;
-}
-
-/*
- * It is fortuitous (and probably by design) that the values for which we have
- * to check are the same whether in host byte order or network byte order.
- */
-static inline int isipv4(const diminuto_ipv6_t * addressp)
-{
-    if (addressp->u16[0] != 0x0000) {
-        /* Do nothing. */
-    } else if (addressp->u16[1] != 0x0000) {
-        /* Do nothing. */
-    } else if (addressp->u16[2] != 0x0000) {
-        /* Do nothing. */
-    } else if (addressp->u16[3] != 0x0000) {
-        /* Do nothing. */
-    } else if (addressp->u16[4] != 0x0000) {
-        /* Do nothing. */
-    } else if (addressp->u16[5] != 0xffff) {
-        /* Do nothing. */
-    } else {
-        return !0;
-    }
-
-    return 0;
-}
-
-static inline void ipv4toipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
-{
-    addressp->u16[0] = 0x0000;
-    addressp->u16[1] = 0x0000;
-    addressp->u16[2] = 0x0000;
-    addressp->u16[3] = 0x0000;
-    addressp->u16[4] = 0x0000;
-    addressp->u16[5] = 0xffff;
-    memcpy(&(addressp->u16[6]), &address, sizeof(address));
-}
-
-/*******************************************************************************
  * EXTRACTORS
  ******************************************************************************/
 
@@ -143,8 +87,7 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
     } else if (sap->sa_family == AF_INET) {
         result = 0;
         if (addressp != (diminuto_ipv6_t *)0) {
-            ipv4toipv6(((struct sockaddr_in *)sap)->sin_addr.s_addr, addressp);
-            diminuto_ipc6_ntoh6(addressp);
+            diminuto_ipc6_ipv4toipv6(ntohl(((struct sockaddr_in *)sap)->sin_addr.s_addr), addressp);
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in *)sap)->sin_port);
@@ -173,7 +116,7 @@ int diminuto_ipc6_ipv6toipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp
 {
     int result;
 
-    if ((result = isipv4(&address))) {
+    if ((result = diminuto_ipc6_is_ipv4(&address))) {
         diminuto_ipc6_hton6(&address);
         memcpy(addressp, &(address.u16[6]), sizeof(*addressp));
         *addressp = ntohl(*addressp);
@@ -342,7 +285,7 @@ int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
 
     sa.sin6_family = AF_INET6;
     /* in6addr_any is all zeros so this is overly paranoid. */
-    if (isipany(&address)) {
+    if (diminuto_ipc6_is_unspecified(&address)) {
         memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
     } else {
         diminuto_ipc6_hton6(&address);
@@ -372,7 +315,7 @@ int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_por
 
     sa.sin6_family = AF_INET6;
     /* in6addr_any is all zeros so this is overly paranoid. */
-    if (isipany(&address)) {
+    if (diminuto_ipc6_is_unspecified(&address)) {
         memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
     } else {
         diminuto_ipc6_hton6(&address);
@@ -460,7 +403,7 @@ int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_
 
     sa.sin6_family = AF_INET6;
     /* in6addr_any is all zeros so this is overly paranoid. */
-    if (isipany(&address)) {
+    if (diminuto_ipc6_is_unspecified(&address)) {
         memcpy(sa.sin6_addr.s6_addr, &in6addr_any, sizeof(sa.sin6_addr.s6_addr));
     } else {
         diminuto_ipc6_hton6(&address);

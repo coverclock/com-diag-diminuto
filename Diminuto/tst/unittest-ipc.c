@@ -28,6 +28,7 @@ int main(int argc, char * argv[])
         diminuto_ipv6_t * v6vp;
         diminuto_ipv6_t * v6p;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+        const char * type;
 
         TEST();
 
@@ -61,7 +62,24 @@ int main(int argc, char * argv[])
             }
 
             for (v6p = v6vp; memcmp(v6p, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(*v6p)) != 0; ++v6p) {
-                DIMINUTO_LOG_DEBUG("%s %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc6_colonnotation(*v6p, buffer, sizeof(buffer)));
+                if (diminuto_ipc6_is_unspecified(v6p)) {
+                    type = "unspecified"; /* Impossible. */
+                } else if (diminuto_ipc6_is_loopback(v6p)) {
+                    type = "loopback";
+                } else if (diminuto_ipc6_is_ipv4(v6p)) {
+                    type = "ipv4"; /* Unlikely. */
+                } else if (diminuto_ipc6_is_unicast(v6p)) {
+                    type = "unicast";
+                } else if (diminuto_ipc6_is_local(v6p)) {
+                    type = "local";
+                } else if (diminuto_ipc6_is_link(v6p)) {
+                    type = "link";
+                } else if (diminuto_ipc6_is_multicast(v6p)) {
+                    type = "multicast";
+                } else {
+                    type = "other";
+                }
+                DIMINUTO_LOG_DEBUG("%s %s %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc6_colonnotation(*v6p, buffer, sizeof(buffer)), type);
             }
 
             free(v4vp);

@@ -81,10 +81,12 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        ASSERT(!diminuto_ipc6_is_ipv4(&DIMINUTO_IPC6_LOOPBACK));
         address4 = TEST_WORD;
         ASSERT(!diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK, &address4));
         ASSERT(address4 == TEST_WORD);
 
+        ASSERT(diminuto_ipc6_is_ipv4(&DIMINUTO_IPC6_LOOPBACK4));
         address4 = TEST_WORD;
         ASSERT(diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK4, &address4));
         ASSERT(address4 == LOCALHOST4);
@@ -101,6 +103,7 @@ int main(int argc, char * argv[])
 
         diminuto_ipc6_ipv4toipv6(SERVER4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
+        ASSERT(diminuto_ipc6_is_ipv4(&address6));
 
         ASSERT(diminuto_ipc6_ipv6toipv4(address6, &address4));
         ASSERT(address4 == SERVER4);
@@ -167,6 +170,8 @@ int main(int argc, char * argv[])
         EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK4, sizeof(address6)) == 0));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "ip6-localhost", buffer);
+
+        /* Long pause here, not sure why. */
 
         address6 = diminuto_ipc6_address("www.diag.com");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
