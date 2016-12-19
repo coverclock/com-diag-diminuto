@@ -27,6 +27,7 @@ int main(int argc, char * argv[])
     diminuto_ipv6_t from;
     ssize_t size;
     uint8_t type;
+    uint8_t code;
     uint16_t id;
     uint16_t seq;
     diminuto_port_t port;
@@ -121,15 +122,17 @@ int main(int argc, char * argv[])
             do {
                 memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
                 type = ~0;
+                code = ~0;
                 id = 0;
                 seq = ~0;
                 elapsed = 0;
-                ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &id, &seq, &elapsed)) >= 0);
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x\n", type);
+                ASSERT((size = diminuto_ping6_datagram_recv(sock, &from, &type, &code, &id, &seq, &elapsed)) >= 0);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x 0x%x\n", type, code);
             } while (size == 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, elapsed);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, elapsed);
             ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
             ASSERT(type != ~0);
+            ASSERT(code != ~0);
             ASSERT(id == ID);
             ASSERT(seq == ss);
             ASSERT(elapsed > 0);

@@ -31,6 +31,7 @@ int main(int argc, char * argv[])
     diminuto_port_t port;
     uint8_t ttl;
     uint8_t type;
+    uint8_t code;
     diminuto_ticks_t elapsed;
     const char * Address = 0;
     const char * Interface = 0;
@@ -174,15 +175,17 @@ int main(int argc, char * argv[])
             do {
                 from = 0;
                 type = ~0;
+                code = ~0;
                 id = 0;
                 seq = ~0;
                 elapsed = 0;
-                ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &id, &seq, &ttl, &elapsed)) >= 0);
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x\n", type);
+                ASSERT((size = diminuto_ping4_datagram_recv(sock, &from, &type, &code, &id, &seq, &ttl, &elapsed)) >= 0);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x 0x%x\n", type, code);
             } while (size == 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, id, seq, ttl, elapsed);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, ttl, elapsed);
             ASSERT(from != 0);
             ASSERT(type != ~0);
+            ASSERT(code != ~0);
             ASSERT(id == ID);
             ASSERT(seq == ss);
             ASSERT(elapsed > 0);

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -130,7 +130,6 @@ static inline diminuto_store_t * diminuto_store_downcast(diminuto_tree_t * point
 /*******************************************************************************
  * COMPARATORS
  ******************************************************************************/
-
 
 /**
  * Compare two nodes by doing a string comparison of their key fields. This is

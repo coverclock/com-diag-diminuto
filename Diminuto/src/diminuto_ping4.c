@@ -128,7 +128,7 @@ typedef union {
     char payload[20 + 8 + 56];
 } icmp_echo_reply_datagram_t;
 
-ssize_t diminuto_ping4_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping4_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t * typep, uint8_t * codep, uint16_t * idp, uint16_t * seqp, uint8_t * ttlp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp_echo_reply_datagram_t buffer = { 0 };
@@ -152,6 +152,9 @@ ssize_t diminuto_ping4_datagram_recv(int fd, diminuto_ipv4_t * addressp, uint8_t
             } else {
                 if (typep != (uint8_t *)0) {
                     *typep = icmpp->icmp_type;
+                }
+                if (codep != (uint8_t *)0) {
+                    *codep = icmpp->icmp_code;
                 }
                 if (icmpp->icmp_type != ICMP_ECHOREPLY) {
                     total = 0; /* This was not an echo reply. */
