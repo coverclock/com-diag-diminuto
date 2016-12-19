@@ -38,7 +38,7 @@ const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK = { 0, 0, 0, 0, 0, 0, 0, 1 };
 const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1) };
 
 /*******************************************************************************
- * HELPERS
+ * ORDERERS
  ******************************************************************************/
 
 void diminuto_ipc6_ntoh6_generic(diminuto_ipv6_t * addressp)
@@ -58,6 +58,10 @@ void diminuto_ipc6_hton6_generic(diminuto_ipv6_t * addressp)
         addressp->u16[ii] = htons(addressp->u16[ii]);
     }
 }
+
+/*******************************************************************************
+ * CLASSIFIERS
+ ******************************************************************************/
 
 /*
  * It is fortuitous (and probably by design) that the values for which we have
@@ -100,7 +104,7 @@ static inline int isipv4(const diminuto_ipv6_t * addressp)
     return 0;
 }
 
-static inline void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
+static inline void ipv4toipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
 {
     addressp->u16[0] = 0x0000;
     addressp->u16[1] = 0x0000;
@@ -110,6 +114,10 @@ static inline void ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp
     addressp->u16[5] = 0xffff;
     memcpy(&(addressp->u16[6]), &address, sizeof(address));
 }
+
+/*******************************************************************************
+ * EXTRACTORS
+ ******************************************************************************/
 
 /*
  * If the socket is in the IPv6 family, we returned the IPv6 address as is. If
@@ -135,7 +143,7 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
     } else if (sap->sa_family == AF_INET) {
         result = 0;
         if (addressp != (diminuto_ipv6_t *)0) {
-            ipv42ipv6(((struct sockaddr_in *)sap)->sin_addr.s_addr, addressp);
+            ipv4toipv6(((struct sockaddr_in *)sap)->sin_addr.s_addr, addressp);
             diminuto_ipc6_ntoh6(addressp);
         }
         if (portp != (diminuto_port_t *)0) {
@@ -158,18 +166,14 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
 }
 
 /*******************************************************************************
- * ADDRESS FORMAT CONVERTORS
+ * CONVERTORS
  ******************************************************************************/
 
-int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
+int diminuto_ipc6_ipv6toipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
 {
     int result;
 
-    if (!(result = isipv4(&address))) {
-        /* Do nothing. */
-    } else if (addressp == (diminuto_ipv4_t *)0) {
-        /* Do nothing. */
-    } else {
+    if ((result = isipv4(&address))) {
         diminuto_ipc6_hton6(&address);
         memcpy(addressp, &(address.u16[6]), sizeof(*addressp));
         *addressp = ntohl(*addressp);
@@ -178,14 +182,17 @@ int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp)
     return result;
 }
 
-void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
+void diminuto_ipc6_ipv4toipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
 {
-    ipv42ipv6(htonl(address), addressp);
-    diminuto_ipc6_ntoh6(addressp);
+	memcpy(addressp, &DIMINUTO_IPC6_LOOPBACK4, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t));
+    address = htonl(address);
+    memcpy(&(addressp->u16[6]), &address, sizeof(diminuto_ipv4_t));
+    addressp->u16[6] = ntohs(addressp->u16[6]);
+    addressp->u16[7] = ntohs(addressp->u16[7]);
 }
 
 /*******************************************************************************
- * STRING TO ADDRESS AND VICE VERSA
+ * RESOLVERS
  ******************************************************************************/
 
 /*
@@ -302,6 +309,10 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
 
     return address;
 }
+
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
 
 const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length)
 {

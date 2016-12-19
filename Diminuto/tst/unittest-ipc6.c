@@ -82,11 +82,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address4 = TEST_WORD;
-        ASSERT(!diminuto_ipc6_ipv62ipv4(DIMINUTO_IPC6_LOOPBACK, &address4));
+        ASSERT(!diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK, &address4));
         ASSERT(address4 == TEST_WORD);
 
         address4 = TEST_WORD;
-        ASSERT(diminuto_ipc6_ipv62ipv4(DIMINUTO_IPC6_LOOPBACK4, &address4));
+        ASSERT(diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK4, &address4));
         ASSERT(address4 == LOCALHOST4);
 
         STATUS();
@@ -99,10 +99,10 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        diminuto_ipc6_ipv42ipv6(SERVER4, &address6);
+        diminuto_ipc6_ipv4toipv6(SERVER4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
 
-        ASSERT(diminuto_ipc6_ipv62ipv4(address6, &address4));
+        ASSERT(diminuto_ipc6_ipv6toipv4(address6, &address4));
         ASSERT(address4 == SERVER4);
 
         STATUS();
@@ -114,10 +114,10 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        ASSERT(diminuto_ipc6_ipv62ipv4(SERVER64, &address4));
+        ASSERT(diminuto_ipc6_ipv6toipv4(SERVER64, &address4));
         ASSERT(address4 == SERVER4);
 
-        diminuto_ipc6_ipv42ipv6(address4, &address6);
+        diminuto_ipc6_ipv4toipv6(address4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
 
         STATUS();

@@ -18,6 +18,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
+#include <string.h>
+
+/*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for "::", the
@@ -38,6 +43,15 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK;
  */
 extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
 
+static inline int diminuto_ipc6_isunspecified(const diminuto_ipv6_t * ap)
+{
+    return (memcmp(ap, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(diminuto_ipv6_t)) == 0);
+}
+
+/*******************************************************************************
+ * CONVERTORS
+ ******************************************************************************/
+
 /**
  * If an IPv6 address in host byte order encapsulates an IPv4 address, extract
  * the IPv4 address in host byte order.
@@ -45,7 +59,7 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
  * @param addressp points to an IPv4 address variable or null for no extraction.
  * @return !0 if the address was an IPv4 address, 0 otherwise.
  */
-extern int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp);
+extern int diminuto_ipc6_ipv6toipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp);
 
 /**
  * Encapsulate an IPv4 address in host byte order into an IPv6 address in host
@@ -53,7 +67,7 @@ extern int diminuto_ipc6_ipv62ipv4(diminuto_ipv6_t address, diminuto_ipv4_t * ad
  * @param address is the IPv4 address.
  * @param addressp points to an IPv6 address variable.
  */
-extern void diminuto_ipc6_ipv42ipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp);
+extern void diminuto_ipc6_ipv4toipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp);
 
 /**
  * Convert a hostname or an IPV6 address string in dot notation into one

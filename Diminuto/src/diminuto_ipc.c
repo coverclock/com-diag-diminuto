@@ -178,7 +178,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
  * INTERFACES
  ******************************************************************************/
 
-const char ** diminuto_ipc_interfaces(void)
+char ** diminuto_ipc_interfaces(void)
 {
     char ** rp = (char **)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;

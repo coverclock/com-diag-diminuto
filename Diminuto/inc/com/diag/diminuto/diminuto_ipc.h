@@ -176,6 +176,6 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
  * free(3).
  * @return a list of available network interfaces or NULL if an error occurred.
  */
-extern const char ** diminuto_ipc_interfaces(void);
+extern char ** diminuto_ipc_interfaces(void);
 
 #endif

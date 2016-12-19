@@ -21,8 +21,8 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     {
-        const char ** ifvp;
-        const char ** ifp;
+        char ** ifvp;
+        char ** ifp;
         diminuto_ipv4_t * v4vp;
         diminuto_ipv4_t * v4p;
         diminuto_ipv6_t * v6vp;
@@ -39,9 +39,9 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(v6vp, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(*v6vp)) == 0);
         free(v6vp);
 
-        ASSERT((ifvp = diminuto_ipc_interfaces()) != (const char **)0);
+        ASSERT((ifvp = diminuto_ipc_interfaces()) != (char **)0);
 
-        for (ifp = ifvp; *ifp != (const char *)0; ++ifp) {
+        for (ifp = ifvp; *ifp != (char *)0; ++ifp) {
 
 
             ASSERT((v4vp = diminuto_ipc4_interface(*ifp)) != (diminuto_ipv4_t *)0);
