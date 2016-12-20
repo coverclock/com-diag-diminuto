@@ -23,6 +23,7 @@
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_string.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -271,7 +272,7 @@ int main(int argc, char * argv[])
                 break;
             } else if (svalue > 0) {
                 timeout = svalue;
-                timeout *= diminuto_mux_frequency();
+                timeout *= diminuto_frequency();
                 timeout /= 1000000;
             } else {
                 /* Do nothing. */
@@ -454,7 +455,7 @@ int main(int argc, char * argv[])
                 error = !0;
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
-                uvalue *= diminuto_delay_frequency();
+                uvalue *= diminuto_frequency();
                 uvalue /= 1000000;
                 diminuto_delay(uvalue, 0);
             }
