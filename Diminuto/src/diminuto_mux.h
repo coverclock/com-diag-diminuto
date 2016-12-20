@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -26,9 +26,9 @@ static const int DIMINUTO_MUX_MOSTNEGATIVE = (((int)1)<<((sizeof(int)*8)-1)); /*
  */
 static inline void diminuto_mux_set_init(diminuto_mux_set_t * setp)
 {
-    setp->next = -1;
     setp->min = DIMINUTO_MUX_MOSTPOSITIVE;
     setp->max = DIMINUTO_MUX_MOSTNEGATIVE;
+    setp->next = -1;
     FD_ZERO(&setp->active);
     FD_ZERO(&setp->ready);
 }

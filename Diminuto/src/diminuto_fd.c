@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/select.h>
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
 #   include <asm/socket.h> /* FIONREAD */
 #   include <sys/ioctl.h> /* TIOCINQ */
@@ -167,11 +168,7 @@ ssize_t diminuto_fd_readable(int fd)
 
 size_t diminuto_fd_count(void)
 {
-    long count;
-
-    count = sysconf(_SC_OPEN_MAX);
-
-    return (count >= 0) ? count : 0;
+    return FD_SETSIZE;
 }
 
 diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)

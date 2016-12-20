@@ -71,7 +71,9 @@ extern ssize_t diminuto_fd_readable(int fd);
 /**
  * Return the maximum possible number of unique open file descriptor values. The
  * value of any file descriptor will range from zero to one less than this
- * number.
+ * number. In this implementation, this is the number of file descriptors
+ * supported by the select(2) system call; the actual number of open files
+ * returned by sysconf(3) for _SC_OPEN_MAX may be significantly larger.
  * @return the maximum possible number of open file descriptors.
  */
 extern size_t diminuto_fd_count(void);
