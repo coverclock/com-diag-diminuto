@@ -30,7 +30,7 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r | -M | -m USECONDS | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r | -m USECONDS | -M | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
     fprintf(stderr, "       -F            Set PIN edge to falling.\n");
@@ -66,7 +66,8 @@ int main(int argc, char * argv[])
     int error = 0;
     int debug = 0;
     FILE * fp = (FILE *)0;
-    diminuto_unsigned_t value = 0;
+    diminuto_unsigned_t uvalue = 0;
+    diminuto_signed_t svalue = -1;
     int pin = -1;
     int state = 0;
     const char * path = "/sys";
@@ -83,6 +84,9 @@ int main(int argc, char * argv[])
     while ((opt = getopt(argc, argv, "BD:FHLMNRb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
+
+        uvalue = 0;
+        svalue = -1;
 
         switch (opt) {
 
@@ -261,19 +265,21 @@ int main(int argc, char * argv[])
             break;
 
         case 'm':
-            if ((*diminuto_number(optarg, &value) != '\0')) {
+            if ((*diminuto_number_signed(optarg, &svalue) != '\0')) {
                 perror(optarg);
                 error = !0;
                 break;
+            } else if (svalue > 0) {
+                timeout = svalue;
+                timeout *= diminuto_mux_frequency();
+                timeout /= 1000000;
             } else {
-                value *= diminuto_mux_frequency();
-                value /= 1000000;
-                timeout = value;
+                /* Do nothing. */
             }
             /* Fall through. */
 
         case 'M':
-            if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, timeout); }
+            if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, svalue); }
             if (fp != (FILE *)0) {
                 /* Do nothing. */
             } else if (pin < 0) {
@@ -366,12 +372,12 @@ int main(int argc, char * argv[])
             break;
 
         case 'p':
-            if (*diminuto_number(optarg, &value) != '\0') {
+            if (*diminuto_number_unsigned(optarg, &uvalue) != '\0') {
                 perror(optarg);
                 error = !0;
                 break;
             } else {
-                pin = value;
+                pin = uvalue;
                 if (debug) { fprintf(stderr, "%s -%c %d\n", program, opt, pin); }
                 if (pin < 0) {
                     errno = EINVAL;
@@ -443,24 +449,24 @@ int main(int argc, char * argv[])
             break;
 
         case 'u':
-            if ((*diminuto_number(optarg, &value) != '\0')) {
+            if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 perror(optarg);
                 error = !0;
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
-                value *= diminuto_delay_frequency();
-                value /= 1000000;
-                diminuto_delay(value, 0);
+                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
+                uvalue *= diminuto_delay_frequency();
+                uvalue /= 1000000;
+                diminuto_delay(uvalue, 0);
             }
             break;
 
         case 'w':
-            if (*diminuto_number(optarg, &value) != '\0') {
+            if (*diminuto_number_unsigned(optarg, &uvalue) != '\0') {
                 perror(optarg);
                 error = !0;
                 break;
             } else {
-                state = !!value;
+                state = !!uvalue;
                 if (debug) { fprintf(stderr, "%s -%c %d\n", program, opt, state); }
                 if (fp != (FILE *)0) {
                     /* Do nothing. */
