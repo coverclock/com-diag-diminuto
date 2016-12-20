@@ -30,32 +30,32 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o | -h | -l ] [ -N | -R | -F | -B ] [ -b USECONDS ] [ -r ] [ -w BOOLEAN | -s | -c ] [ -t | -f ] [ -U MICROSECONDS ] [ -n ] [ ... ]\n", program);
-    fprintf(stderr, "       -B            Set PIN edge to both\n");
-    fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations\n");
-    fprintf(stderr, "       -F            Set PIN edge to falling\n");
-    fprintf(stderr, "       -H            Set PIN active to high\n");
-    fprintf(stderr, "       -L            Set PIN active to low\n");
-    fprintf(stderr, "       -M            Multiplex upon PIN edge\n");
-    fprintf(stderr, "       -N            Set PIN edge to none\n");
-    fprintf(stderr, "       -R            Set PIN edge to rising\n");
-    fprintf(stderr, "       -c            Clear PIN by writing 0\n");
-    fprintf(stderr, "       -d            Enable debug mode\n");
-    fprintf(stderr, "       -f            Proceed if the last PIN state was 0\n");
-    fprintf(stderr, "       -h            Set PIN direction to output and write !0\n");
-    fprintf(stderr, "       -i            Set PIN direction to input\n");
-    fprintf(stderr, "       -l            Set PIN direction to output and write 0\n");
-    fprintf(stderr, "       -m USECONDS   Multiplex upon PIN edge or until USECONDS microseconds\n");
-    fprintf(stderr, "       -n            Unexport PIN\n");
-    fprintf(stderr, "       -o            Set PIN direction to output\n");
-    fprintf(stderr, "       -p PIN        Use PIN for subsequent operations\n");
-    fprintf(stderr, "       -r            Read PIN and print to standard output\n");
-    fprintf(stderr, "       -s            Set PIN by writing !0\n");
-    fprintf(stderr, "       -t            Proceed if the last PIN state was !0\n");
-    fprintf(stderr, "       -u USECONDS   Delay for USECONDS microseconds\n");
-    fprintf(stderr, "       -w BOOLEAN    Write BOOLEAN to PIN\n");
-    fprintf(stderr, "       -x            Export PIN\n");
-    fprintf(stderr, "       -?            Print menu\n");
+    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r | -M | -m USECONDS | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "       -B            Set PIN edge to both.\n");
+    fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
+    fprintf(stderr, "       -F            Set PIN edge to falling.\n");
+    fprintf(stderr, "       -H            Set PIN active to high.\n");
+    fprintf(stderr, "       -L            Set PIN active to low.\n");
+    fprintf(stderr, "       -M            Multiplex upon PIN edge.\n");
+    fprintf(stderr, "       -N            Set PIN edge to none.\n");
+    fprintf(stderr, "       -R            Set PIN edge to rising.\n");
+    fprintf(stderr, "       -c            Clear PIN by writing 0.\n");
+    fprintf(stderr, "       -d            Enable debug mode.\n");
+    fprintf(stderr, "       -f            Proceed if the last PIN state was 0.\n");
+    fprintf(stderr, "       -h            Set PIN direction to output and write !0.\n");
+    fprintf(stderr, "       -i            Set PIN direction to input.\n");
+    fprintf(stderr, "       -l            Set PIN direction to output and write 0.\n");
+    fprintf(stderr, "       -m USECONDS   Multiplex upon PIN edge or until USECONDS microseconds.\n");
+    fprintf(stderr, "       -n            Unexport PIN.\n");
+    fprintf(stderr, "       -o            Set PIN direction to output.\n");
+    fprintf(stderr, "       -p PIN        Use PIN for subsequent operations.\n");
+    fprintf(stderr, "       -r            Read PIN and print to standard output.\n");
+    fprintf(stderr, "       -s            Set PIN by writing !0.\n");
+    fprintf(stderr, "       -t            Proceed if the last PIN state was !0.\n");
+    fprintf(stderr, "       -u USECONDS   Delay for USECONDS microseconds.\n");
+    fprintf(stderr, "       -w BOOLEAN    Write BOOLEAN to PIN.\n");
+    fprintf(stderr, "       -x            Export PIN.\n");
+    fprintf(stderr, "       -?            Print menu.\n");
 }
 
 int main(int argc, char * argv[])
@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "BD:FHLNRb:cdfhilnop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "BD:FHLMNRb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
 

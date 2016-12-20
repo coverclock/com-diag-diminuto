@@ -171,7 +171,14 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "ip6-localhost", buffer);
 
-        /* Long pause here, not sure why. */
+        /*
+         * Long pause here, not sure why. strace(1) suggests it's blocked in
+         * a poll(2) in the resolver waiting on a socket to "127.0.1.1", which
+         * is a variant of the localhost IPv4 loopback address, trying to
+         * resolve "diag.com". I'm seeing some long delays on "copper", the
+         * RaspberryPi 3 too, that seem to be related to DNS6 over the
+         * Hurricane Electric tunnel.
+         */
 
         address6 = diminuto_ipc6_address("www.diag.com");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
