@@ -22,6 +22,7 @@ void diminuto_mux_init(diminuto_mux_t * muxp)
     diminuto_mux_set_init(&muxp->write);
     diminuto_mux_set_init(&muxp->accept);
     diminuto_mux_set_init(&muxp->urgent);
+    diminuto_mux_set_init(&muxp->interrupt);
     sigprocmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
 }
 

@@ -94,6 +94,7 @@ int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
     poll_bounds(pollp, &pollp->mux.write);
     poll_bounds(pollp, &pollp->mux.accept);
     poll_bounds(pollp, &pollp->mux.urgent);
+    poll_bounds(pollp, &pollp->mux.interrupt);
 
     if (pollp->min <= pollp->max) { nfds = pollp->max - pollp->min + 1; }
 
@@ -117,6 +118,7 @@ int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
         poll_before(pollp, &pollp->mux.write, POLLOUT);
         poll_before(pollp, &pollp->mux.accept, POLLIN);
         poll_before(pollp, &pollp->mux.urgent, POLLPRI);
+        poll_before(pollp, &pollp->mux.interrupt, POLLPRI);
         pollp->refresh = 0;
     }
 
@@ -135,10 +137,12 @@ int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
             poll_after(pollp, &pollp->mux.write, POLLOUT);
             poll_after(pollp, &pollp->mux.accept, POLLIN);
             poll_after(pollp, &pollp->mux.urgent, POLLPRI);
+            poll_after(pollp, &pollp->mux.interrupt, POLLPRI);
             diminuto_mux_set_reset(&pollp->mux.read);
             diminuto_mux_set_reset(&pollp->mux.write);
             diminuto_mux_set_reset(&pollp->mux.accept);
             diminuto_mux_set_reset(&pollp->mux.urgent);
+            diminuto_mux_set_reset(&pollp->mux.interrupt);
         } else if (rc == 0) {
             /* Do nothing. */
         } else if (errno == EINTR) {
