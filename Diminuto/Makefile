@@ -7,10 +7,14 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 #
-#	make default TARGET=<target>	# Build libraries, unit tests, executable programs.
+#	make all TARGET=<target>		# Build libraries, unit tests, executable programs.
 #	make most TARGET=<target>		# Build default plus user-space loadable modules.
-#	make all TARGET=<target>		# Build most plus kernel-space loadable modules.
+#	make plus TARGET=<target>		# Build most plus kernel-space loadable modules.
 #
+
+.PHONY:	default
+
+default:	all
 
 ########## Customizations
 
@@ -205,19 +209,19 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 TARGETLIBRARIES		:=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	:=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
-TARGETDEFAULT		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
-TARGETMOST			:=	$(TARGETDEFAULT) $(TARGETMODULES)
-TARGETALL			:=	$(TARGETMOST) $(TARGETDRIVERS)
+TARGETALL		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
+TARGETMOST			:=	$(TARGETALL) $(TARGETMODULES)
+TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 ########## Main Entry Points
 
-.PHONY:	default all dist clean pristine clobber
+.PHONY:	all most plus dist clean pristine clobber
 
-default:	$(TARGETDEFAULT)
+all:	$(TARGETALL)
 
 most:	$(TARGETMOST)
 
-all:	$(TARGETALL)
+plus:	$(TARGETPLUS)
 
 dist:	distribution
 

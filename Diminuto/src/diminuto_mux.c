@@ -26,7 +26,7 @@ void diminuto_mux_init(diminuto_mux_t * muxp)
     sigprocmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
 }
 
-int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
+static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
 {
     int rc = -1;
 
@@ -74,7 +74,7 @@ int diminuto_mux_register_interrupt(diminuto_mux_t * muxp, int fd)
     return diminuto_mux_register(muxp, &muxp->interrupt, fd);
 }
 
-void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
+static void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
 {
     int min;
     int max;
@@ -92,7 +92,7 @@ void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
     setp->max = max;
 }
 
-void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
+static void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
 {
     if (setp->next < 0) {
         /* Do nothing. */
@@ -107,7 +107,7 @@ void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
     }
 }
 
-int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
+static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
 {
     int rc = -1;
 
@@ -211,6 +211,7 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t ticks)
     diminuto_mux_set_census(&muxp->write, &nfds);
     diminuto_mux_set_census(&muxp->accept, &nfds);
     diminuto_mux_set_census(&muxp->urgent, &nfds);
+    diminuto_mux_set_census(&muxp->interrupt, &nfds);
 
     /*
      * It's perfectly legal to call this function with no registered file
@@ -278,7 +279,7 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t ticks)
     return rc;
 }
 
-int diminuto_mux_set_ready(diminuto_mux_set_t * setp)
+static int diminuto_mux_set_ready(diminuto_mux_set_t * setp)
 {
     int fd = -1;
     int wrapped;
