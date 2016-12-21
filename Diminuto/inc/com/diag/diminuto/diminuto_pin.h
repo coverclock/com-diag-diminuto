@@ -95,7 +95,10 @@ typedef enum DiminutoPinEdge {
  * Ask that the specified GPIO pin be configured to for no edge (0), rising
  * edge (1), falling edge (2), or both edges (3). This is only useful for GPIO
  * hardware and device drivers that support the select(2) system call, so that
- * a user-space application can block until the pin state changes.
+ * a user-space application can block until the pin state changes. It is only
+ * practical for for GPIO pins with exceptionally clean transitions (e.g.
+ * a digital logic output) or for those with some kind of debouncing circuit
+ * (e.g. an FPGA).
  * @param pin identifies the pin by number from the data sheet.
  * @param edge is 0 for none, 1 for rising, 2 for falling, or 3 for both.
  * @return >=0 for success, <0 for error.

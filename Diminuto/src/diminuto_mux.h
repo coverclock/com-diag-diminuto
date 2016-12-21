@@ -88,19 +88,17 @@ int diminuto_mux_set_ready(diminuto_mux_set_t * setp);
  * @param muxp points to the multiplexer.
  * @param setp points to a multiplexer set in the multiplexer.
  * @param fd is the file descriptor to be registered.
- * @param read_or_accept is true if this set is the read or accept set.
  * @return 0 for success or <0 for failure (e.g. the fd is already registered).
  */
-int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept);
+int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd);
 
 /**
  * Unregister a file descriptor from a multiplexer set in a multiplexer.
  * @param muxp points to the multiplexer.
  * @param setp points to a multiplexer set in the multiplexer.
  * @param fd is the file descriptor to be unregistered.
- * @param read_or_accept is true if this set is the read or accept set.
  * @return 0 for success or <0 for failure (e.g. the fd was not registered).
  */
-int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int read_or_accept);
+int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd);
 
 #endif

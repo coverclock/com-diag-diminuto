@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -36,60 +36,6 @@ static const size_t TOTAL = 1024 * 1024 * 100;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
-
-static const char * diminuto_mux_set_name(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
-{
-    return (setp == &muxp->read) ? "read" : (setp == &muxp->write) ? "write" : (setp == &muxp->accept) ? "accept" : "other";
-}
-
-static void diminuto_mux_sigs_dump(sigset_t * sigs)
-{
-    int signum;
-
-    for (signum = 1; signum < NSIG; ++signum) {
-        if (sigismember(sigs, signum)) {
-            DIMINUTO_LOG_DEBUG(" %d", signum);
-        }
-    }
-}
-
-static void diminuto_mux_fds_dump(fd_set * fds)
-{
-    int fd;
-    int nfds;
-
-    nfds = diminuto_fd_count();
-    for (fd = 0; fd < nfds; ++fd) {
-        if (FD_ISSET(fd, fds)) {
-            DIMINUTO_LOG_DEBUG(" %d", fd);
-        }
-    }
-
-}
-
-static void diminuto_mux_set_dump(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
-{
-    const char * name;
-
-    name = diminuto_mux_set_name(muxp, setp);
-    DIMINUTO_LOG_DEBUG("mux@%p: %s.next=%d", muxp, name, setp->next);
-    DIMINUTO_LOG_DEBUG("mux@%p: %s.min=%d", muxp, name, setp->min);
-    DIMINUTO_LOG_DEBUG("mux@%p: %s.max=%d", muxp, name, setp->max);
-    DIMINUTO_LOG_DEBUG("mux@%p: %s.active=<", muxp, name); diminuto_mux_fds_dump(&setp->active); DIMINUTO_LOG_DEBUG(">");
-    DIMINUTO_LOG_DEBUG("mux@%p: %s.ready=<", muxp, name); diminuto_mux_fds_dump(&setp->ready); DIMINUTO_LOG_DEBUG(">");
-}
-
-static void diminuto_mux_dump(diminuto_mux_t * muxp)
-{
-    int signum;
-
-    DIMINUTO_LOG_DEBUG("mux@%p: read_or_accept=<", muxp); diminuto_mux_fds_dump(&muxp->read_or_accept); DIMINUTO_LOG_DEBUG(">");
-    diminuto_mux_set_dump(muxp, &muxp->read);
-    diminuto_mux_set_dump(muxp, &muxp->write);
-    diminuto_mux_set_dump(muxp, &muxp->accept);
-    diminuto_mux_set_dump(muxp, &muxp->urgent);
-    DIMINUTO_LOG_DEBUG("mux@%p: mask=<", muxp); diminuto_mux_sigs_dump(&muxp->mask); DIMINUTO_LOG_DEBUG(">");
-}
 
 static uint16_t fletcher8(const void * buffer, size_t length, uint8_t * ap, uint8_t * bp)
 {

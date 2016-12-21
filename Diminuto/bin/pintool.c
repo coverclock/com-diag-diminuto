@@ -296,7 +296,7 @@ int main(int argc, char * argv[])
             }
             fd = fileno(fp);
             diminuto_mux_init(&mux);
-            if (diminuto_mux_register_urgent(&mux, fd) < 0) {
+            if (diminuto_mux_register_interrupt(&mux, fd) < 0) {
                 perror(opts);
                 error = !0;
                 break;
@@ -308,7 +308,7 @@ int main(int argc, char * argv[])
                         break;
                     } else if (nfds > 0) {
                         while (!0) {
-                            if ((fd = diminuto_mux_ready_urgent(&mux)) < 0) {
+                            if ((fd = diminuto_mux_ready_interrupt(&mux)) < 0) {
                                 break;
                             } else if (fd != fileno(fp)) {
                                 /* Do nothing. */
@@ -332,7 +332,7 @@ int main(int argc, char * argv[])
                         printf("%d\n", state);
                     }
                 }
-                if (diminuto_mux_unregister_urgent(&mux, fd) < 0) {
+                if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
                     perror(opts);
                     error = !0;
                 }
