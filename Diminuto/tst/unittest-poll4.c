@@ -21,6 +21,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_fletcher.h"
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -36,18 +37,6 @@ static const size_t TOTAL = 1024 * 1024 * 100;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
-
-static uint16_t fletcher8(const void * buffer, size_t length, uint8_t * ap, uint8_t * bp)
-{
-    const uint8_t * pp;
-
-    for (pp = (const uint8_t *)buffer; length > 0; --length) {
-        *ap += *(pp++);
-        *bp += *ap;
-    }
-
-    return (*bp << 8) | *ap;
-}
 
 int main(int argc, char ** argv)
 {
@@ -100,10 +89,10 @@ int main(int argc, char ** argv)
             double percentage;
             uint8_t output_a;
             uint8_t output_b;
-            uint16_t output_8;
+            uint16_t output_16;
             uint8_t input_a;
             uint8_t input_b;
-            uint16_t input_8;
+            uint16_t input_16;
 
             ASSERT(sigemptyset(&mask) == 0);
             ASSERT(sigaddset(&mask, SIGALRM) == 0);
@@ -201,7 +190,7 @@ int main(int argc, char ** argv)
 
                         ASSERT((sent = diminuto_ipc4_stream_write(fd, here, 1, used)) > 0);
                         ASSERT(sent <= used);
-                        output_8 = fletcher8(here, sent, &output_a, &output_b);
+                        output_16 = diminuto_fletcher_16(here, sent, &output_a, &output_b);
 
                         totalsent += sent;
                         percentage = totalsent;
@@ -234,7 +223,7 @@ int main(int argc, char ** argv)
                     ASSERT((readable = diminuto_fd_readable(fd)) > 0);
                     ASSERT((received = diminuto_ipc4_stream_read(fd, there, 1, available)) > 0);
                     ASSERT(received <= available);
-                    input_8 = fletcher8(there, received, &input_a, &input_b);
+                    input_16 = diminuto_fletcher_16(there, received, &input_a, &input_b);
 
                     totalreceived += received;
                     DIMINUTO_LOG_INFORMATION("producer received %10d %10d %10u\n", readable, received, totalreceived);
@@ -260,7 +249,7 @@ int main(int argc, char ** argv)
             ASSERT(diminuto_poll_close(&poll, listener) == 0);
             diminuto_poll_fini(&poll);
 
-            ASSERT(input_8 == output_8);
+            ASSERT(input_16 == output_16);
 
             ADVISE(timeouts > 0);
             ADVISE(alarms > 0);
