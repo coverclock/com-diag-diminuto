@@ -20,7 +20,6 @@ uint16_t diminuto_fletcher_16(const void * buffer, size_t length, uint8_t * ap, 
     b = *bp;
 
     for (pp = (const uint8_t *)buffer; length > 0; --length) {
-        
         a = (a + *(pp++)) % 0xff;
         b = (b + a) % 0xff;
     }

@@ -10,22 +10,26 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * Implement the computationally simple Fletcher-16 checksum algorithm.
+ * Implement the computationally simple Fletcher checksum algorithm.
  * This checksum is used in some of the unit tests.
  *
  * REFERENCES
  *
- * J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1145,
- * IETF, March 1990
+ * J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1146,
+ * https://tools.ietf.org/html/rfc1146, IETF, February 1990
  *
  * "Fletcher's checksum", Wikipedia,
  * https://en.wikipedia.org/wiki/Fletcher's_checksum, 2016-12-21
+ *
+ * J. Fletcher, "An Arithmetic Checksum for Serial Transmissions",
+ * IEEE Transactions on Communication, COM-30, No. 1, pp. 247-252,
+ * January 1982
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Compute the running Fletcher-16 checksum. Takes as input two eight-bit
+ * Compute the running sixteen bit Fletcher checksum. Requires two eight-bit
  * counters which should each be initialized to zero. Returns the current
  * sixteen-bit Fletcher-16 checksum.
  * @param buffer points to a data buffer to be checksummed.

@@ -69,7 +69,7 @@ int main(int argc, char * argv[])
                 } else if (diminuto_ipc6_is_ipv4(v6p)) {
                     type = "ipv4"; /* Unlikely. */
                 } else if (diminuto_ipc6_is_unicast(v6p)) {
-                    type = "unicast";
+                    type = "global";
                 } else if (diminuto_ipc6_is_local(v6p)) {
                     type = "local";
                 } else if (diminuto_ipc6_is_link(v6p)) {

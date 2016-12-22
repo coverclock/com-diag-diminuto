@@ -19,11 +19,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
-#include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_string.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -31,7 +31,8 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -r | -m USECONDS | -M | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "       -1            Read PIN initially when multiplexing.\n");
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
     fprintf(stderr, "       -F            Set PIN edge to falling.\n");
@@ -70,6 +71,7 @@ int main(int argc, char * argv[])
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
     int pin = -1;
+    int oldstate = 0;
     int state = 0;
     const char * path = "/sys";
     char opts[2] = { '\0', '\0' };
@@ -77,12 +79,13 @@ int main(int argc, char * argv[])
     extern char * optarg;
     diminuto_mux_t mux;
     diminuto_sticks_t timeout = -2;
+    int first = 0;
     int fd;
     int nfds;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "BD:FHLMNRb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1BD:FHLMNRb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
 
@@ -90,6 +93,11 @@ int main(int argc, char * argv[])
         svalue = -1;
 
         switch (opt) {
+
+        case '1':
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            first = !0;
+            break;
 
         case 'B':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
@@ -291,8 +299,14 @@ int main(int argc, char * argv[])
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
                 error = !0;
                 break;
-            } else {
+            } else if (!first) {
                 /* Do nothing. */
+            } else if ((state = diminuto_pin_get(fp)) < 0) {
+                error = !0;
+                break;
+            } else {
+                state = !!state;
+                printf("%d\n", state);
             }
             fd = fileno(fp);
             diminuto_mux_init(&mux);
