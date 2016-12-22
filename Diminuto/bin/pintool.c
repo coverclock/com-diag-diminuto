@@ -24,6 +24,8 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_poll.h"
+#include "com/diag/diminuto/diminuto_cue.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -31,7 +33,7 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
     fprintf(stderr, "       -1            Read PIN initially when multiplexing.\n");
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
@@ -41,6 +43,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -M            Multiplex upon PIN edge.\n");
     fprintf(stderr, "       -N            Set PIN edge to none.\n");
     fprintf(stderr, "       -R            Set PIN edge to rising.\n");
+    fprintf(stderr, "       -b USECONDS   Poll with debounce every USECONDS (try 10000) microseconds.\n");
     fprintf(stderr, "       -c            Clear PIN by writing 0.\n");
     fprintf(stderr, "       -d            Enable debug mode.\n");
     fprintf(stderr, "       -f            Proceed if the last PIN state was 0.\n");
@@ -78,8 +81,10 @@ int main(int argc, char * argv[])
     int opt;
     extern char * optarg;
     diminuto_mux_t mux;
-    diminuto_sticks_t timeout = -2;
+    diminuto_ticks_t ticks;
+    diminuto_sticks_t sticks = -2;
     int first = 0;
+    diminuto_cue_state_t cue;
     int fd;
     int nfds;
 
@@ -194,6 +199,53 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'b':
+            if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
+                perror(optarg);
+                error = !0;
+                break;
+            }
+            if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
+            ticks = uvalue;
+            ticks *= diminuto_frequency();
+            ticks /= 1000000;
+            if (fp != (FILE *)0) {
+                /* Do nothing. */
+            } else if (pin < 0) {
+                errno = EINVAL;
+                perror(opts);
+                error = !0;
+                break;
+            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+                error = !0;
+                break;
+            } else {
+                /* Do nothing. */
+            }
+            if ((state = diminuto_pin_get(fp)) < 0) {
+                error = !0;
+                break;
+            }
+            state = !!state;
+            printf("%d\n", state);
+            diminuto_cue_init(&cue, state);
+            while (!0) {
+                oldstate = state;
+                diminuto_delay(ticks, 0);
+                if ((state = diminuto_pin_get(fp)) < 0) {
+                    error = !0;
+                    break;
+                }
+                state = diminuto_cue_debounce(&cue, !!state);
+                if (state != oldstate) {
+                    printf("%d\n", state);
+                }
+            }
+            if (error) {
+                break;
+            }
+            break;
+
         case 'c':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             state = 0;
@@ -279,9 +331,9 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (svalue > 0) {
-                timeout = svalue;
-                timeout *= diminuto_frequency();
-                timeout /= 1000000;
+                sticks = svalue;
+                sticks *= diminuto_frequency();
+                sticks /= 1000000;
             } else {
                 /* Do nothing. */
             }
@@ -316,7 +368,7 @@ int main(int argc, char * argv[])
                 break;
             } else {
                 while (!0) {
-                    if ((nfds = diminuto_mux_wait(&mux, timeout)) < 0) {
+                    if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
                         perror(opts);
                         error = !0;
                         break;
@@ -469,9 +521,10 @@ int main(int argc, char * argv[])
                 error = !0;
             } else {
                 if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
-                uvalue *= diminuto_frequency();
-                uvalue /= 1000000;
-                diminuto_delay(uvalue, 0);
+                ticks = uvalue;
+                ticks *= diminuto_frequency();
+                ticks /= 1000000;
+                diminuto_delay(ticks, 0);
             }
             break;
 
