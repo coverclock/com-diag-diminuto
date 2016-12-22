@@ -68,6 +68,7 @@ int main(int argc, char * argv[])
     int rc = 0;
     const char * program = "pintool";
     int done = 0;
+    int fail = 0;
     int error = 0;
     int debug = 0;
     FILE * fp = (FILE *)0;
@@ -85,6 +86,7 @@ int main(int argc, char * argv[])
     diminuto_sticks_t sticks = -2;
     int first = 0;
     diminuto_cue_state_t cue;
+    diminuto_pin_edge_t edge;
     int fd;
     int nfds;
 
@@ -106,13 +108,13 @@ int main(int argc, char * argv[])
 
         case 'B':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            edge = DIMINUTO_PIN_EDGE_BOTH;
             if (pin < 0) {
                 errno = EINVAL;
                 perror(opts);
                 error = !0;
                 break;
-            } else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_BOTH) < 0) {
-                error = !0;
+            } else if (diminuto_pin_edge(pin, edge) < 0) {
                 break;
             } else {
                 /* Do nothing. */
@@ -126,12 +128,13 @@ int main(int argc, char * argv[])
 
         case 'F':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            edge = DIMINUTO_PIN_EDGE_FALLING;
             if (pin < 0) {
                 errno = EINVAL;
                 perror(opts);
                 error = !0;
                 break;
-            } else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_FALLING) < 0) {
+            } else if (diminuto_pin_edge(pin, edge) < 0) {
                 error = !0;
                 break;
             } else {
@@ -171,12 +174,13 @@ int main(int argc, char * argv[])
 
         case 'N':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            edge = DIMINUTO_PIN_EDGE_NONE;
             if (pin < 0) {
                 errno = EINVAL;
                 perror(opts);
                 error = !0;
                 break;
-            } else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_NONE) < 0) {
+            } else if (diminuto_pin_edge(pin, edge) < 0) {
                 error = !0;
                 break;
             } else {
@@ -186,12 +190,13 @@ int main(int argc, char * argv[])
 
         case 'R':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            edge = DIMINUTO_PIN_EDGE_RISING;
             if (pin < 0) {
                 errno = EINVAL;
                 perror(opts);
                 error = !0;
                 break;
-            } else if (diminuto_pin_edge(pin, DIMINUTO_PIN_EDGE_RISING) < 0) {
+            } else if (diminuto_pin_edge(pin, edge) < 0) {
                 error = !0;
                 break;
             } else {
@@ -217,13 +222,13 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
             }
             if ((state = diminuto_pin_get(fp)) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             }
             state = !!state;
@@ -233,7 +238,7 @@ int main(int argc, char * argv[])
                 oldstate = state;
                 diminuto_delay(ticks, 0);
                 if ((state = diminuto_pin_get(fp)) < 0) {
-                    error = !0;
+                    fail = !0;
                     break;
                 }
                 state = diminuto_cue_debounce(&cue, !!state);
@@ -241,7 +246,7 @@ int main(int argc, char * argv[])
                     printf("%d\n", state);
                 }
             }
-            if (error) {
+            if (fail) {
                 break;
             }
             break;
@@ -257,13 +262,13 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
             }
             if (diminuto_pin_put(fp, state) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -288,7 +293,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_initialize(pin, !0) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -303,7 +308,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_direction(pin, 0) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -318,7 +323,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_initialize(pin, 0) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -335,7 +340,7 @@ int main(int argc, char * argv[])
                 sticks *= diminuto_frequency();
                 sticks /= 1000000;
             } else {
-                /* Do nothing. */
+                sticks = svalue;
             }
             /* Fall through. */
 
@@ -349,31 +354,31 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
             }
+            oldstate = -1;
             if (!first) {
                 /* Do nothing. */
             } else if ((state = diminuto_pin_get(fp)) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 state = !!state;
                 printf("%d\n", state);
+                oldstate = state;
             }
             fd = fileno(fp);
             diminuto_mux_init(&mux);
             if (diminuto_mux_register_interrupt(&mux, fd) < 0) {
-                perror(opts);
-                error = !0;
+                fail = !0;
                 break;
             }
             while (!0) {
                 if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
-                    perror(opts);
-                    error = !0;
+                    fail = !0;
                     break;
                 }
                 if (nfds > 0) {
@@ -383,32 +388,38 @@ int main(int argc, char * argv[])
                         } else if (fd != fileno(fp)) {
                             /* Do nothing. */
                         } else if ((state = diminuto_pin_get(fp)) < 0) {
-                            perror(opts);
-                            error = !0;
+                            fail = !0;
                             break;
                         } else {
                             state = !!state;
-                            printf("%d\n", state);
+                            if (edge != DIMINUTO_PIN_EDGE_BOTH) {
+                                printf("%d\n", state);
+                            } else if (oldstate < 0) {
+                                printf("%d\n", state);
+                            } else if (oldstate != state) {
+                                printf("%d\n", state);
+                            } else {
+                                /* Do nothing. */
+                            }
+                            oldstate = state;
                         }
                     }
-                    if (error) {
+                    if (fail) {
                         break;
                     }
                 } else if ((state = diminuto_pin_get(fp)) < 0) {
-                    perror(opts);
-                    error = !0;
+                    fail = !0;
                     break;
                 } else {
                     state = !!state;
                     printf("%d\n", state);
                 }
-                if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
-                    perror(opts);
-                    error = !0;
-                    break;
-                }
             }
-            if (error) {
+            if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
+                fail = !0;
+                break;
+            }
+            if (fail) {
                 break;
             }
             break;
@@ -421,7 +432,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_unexport(pin) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -436,7 +447,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_direction(pin, !0) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -459,7 +470,7 @@ int main(int argc, char * argv[])
                 } else if (fp == (FILE *)0) {
                     /* Do nothing. */
                 } else if ((fp = diminuto_pin_close(fp)) != (FILE *)0) {
-                    error = !0;
+                    fail = !0;
                     break;
                 } else {
                     /* Do nothing. */
@@ -477,13 +488,13 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
             }
             if ((state = diminuto_pin_get(fp)) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 state = !!state;
@@ -502,13 +513,13 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
             }
             if (diminuto_pin_put(fp, state) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -549,13 +560,13 @@ int main(int argc, char * argv[])
                     error = !0;
                     break;
                 } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-                    error = !0;
+                    fail = !0;
                     break;
                 } else {
                     /* Do nothing. */
                 }
                 if (diminuto_pin_put(fp, state) < 0) {
-                    error = !0;
+                    fail = !0;
                     break;
                 } else {
                     /* Do nothing. */
@@ -571,7 +582,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             } else if (diminuto_pin_export(pin) < 0) {
-                error = !0;
+                fail = !0;
                 break;
             } else {
                 /* Do nothing. */
@@ -591,6 +602,11 @@ int main(int argc, char * argv[])
         if (error) {
             usage(program);
             rc = 1;
+            break;
+        }
+
+        if (fail) {
+            rc = 2;
             break;
         }
 
