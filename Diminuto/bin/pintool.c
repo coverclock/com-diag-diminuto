@@ -351,7 +351,10 @@ int main(int argc, char * argv[])
             } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
                 error = !0;
                 break;
-            } else if (!first) {
+            } else {
+                /* Do nothing. */
+            }
+            if (!first) {
                 /* Do nothing. */
             } else if ((state = diminuto_pin_get(fp)) < 0) {
                 error = !0;
@@ -366,45 +369,47 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else {
-                while (!0) {
-                    if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
-                        perror(opts);
-                        error = !0;
-                        break;
-                    } else if (nfds > 0) {
-                        while (!0) {
-                            if ((fd = diminuto_mux_ready_interrupt(&mux)) < 0) {
-                                break;
-                            } else if (fd != fileno(fp)) {
-                                /* Do nothing. */
-                            } else if ((state = diminuto_pin_get(fp)) < 0) {
-                                perror(opts);
-                                error = !0;
-                                break;
-                            } else {
-                                state = !!state;
-                                printf("%d\n", state);
-                            }
-                        }
-                        if (error) {
+            }
+            while (!0) {
+                if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
+                    perror(opts);
+                    error = !0;
+                    break;
+                }
+                if (nfds > 0) {
+                    while (!0) {
+                        if ((fd = diminuto_mux_ready_interrupt(&mux)) < 0) {
                             break;
+                        } else if (fd != fileno(fp)) {
+                            /* Do nothing. */
+                        } else if ((state = diminuto_pin_get(fp)) < 0) {
+                            perror(opts);
+                            error = !0;
+                            break;
+                        } else {
+                            state = !!state;
+                            printf("%d\n", state);
                         }
-                    } else if ((state = diminuto_pin_get(fp)) < 0) {
-                        error = !0;
-                        break;
-                    } else {
-                        state = !!state;
-                        printf("%d\n", state);
                     }
+                    if (error) {
+                        break;
+                    }
+                } else if ((state = diminuto_pin_get(fp)) < 0) {
+                    perror(opts);
+                    error = !0;
+                    break;
+                } else {
+                    state = !!state;
+                    printf("%d\n", state);
                 }
                 if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
                     perror(opts);
                     error = !0;
-                }
-                if (error) {
                     break;
                 }
+            }
+            if (error) {
+                break;
             }
             break;
 
