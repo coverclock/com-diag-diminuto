@@ -66,9 +66,9 @@ typedef struct DiminutoPoll {
  * Initialize a poller. Any prior state is lost, although this does not
  * effect any file descriptors. The poller inherits the current signal
  * mask of the caller such that signals that are blocked when the poller
- * is initialized will continue to be blocked when the poller is waiting.
- * Signals can be removed from this cached mask using the unblock poller
- * function.
+ * is initialized will continue to be blocked when the poller is waiting
+ * (in other words, blocked signals are automatically registered).
+ * Signals can be removed from this cached mask by unregistering them.
  * @param pollp points to a poller structure.
  */
 extern void diminuto_poll_init(diminuto_poll_t * pollp);
@@ -149,10 +149,10 @@ static inline int diminuto_poll_register_interrupt(diminuto_poll_t * pollp, int 
 }
 
 /**
- * Add a signal to the mask of those to be atomically unblocked while the
+ * Add a signal to the mask of those to be atomically blocked while the
  * poller is waiting.
  * @param pollp points to an initialized poller structure.
- * @param signum is an unregistered blocked signal.
+ * @param signum is an unregistered blocked to be blocked.
  * @return 0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_signal(diminuto_poll_t * pollp, int signum) {
@@ -226,10 +226,10 @@ static inline int diminuto_poll_unregister_interrupt(diminuto_poll_t * pollp, in
 }
 
 /**
- * Remove a signal from the mask of those to be atomically unblocked while the
+ * Remove a signal from the mask of those to be atomically blocked while the
  * poller is waiting.
  * @param pollp points to an initialized poller structure.
- * @param signum is a registered blocked signal.
+ * @param signum is a registered signal to be unblocked.
  * @return 0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_signal(diminuto_poll_t * pollp, int signum) {
@@ -241,12 +241,32 @@ static inline int diminuto_poll_unregister_signal(diminuto_poll_t * pollp, int s
  * writing, or accepting, a timeout occurs, or a signal interrupt occurs. A
  * timeout of zero returns immediately, which is useful for polling. A timeout
  * that is negative causes the poller to block indefinitely until either
- * a file descriptor is ready or one of the registered signals is caught.
+ * a file descriptor is ready or a signal is caught. This is an alternative
+ * API call that allows the application to provide its own signal mask (which
+ * it may have for other reasons).
+ * @param pollp points to an initialized poller structure.
+ * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
+ * @param maskp points to the signal mask, or NULL is none.
+ * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
+ */
+extern int diminuto_poll_wait_generic(diminuto_poll_t * pollp, diminuto_sticks_t timeout, const sigset_t * maskp);
+
+/**
+ * Wait until one or more registered file descriptors are ready for reading,
+ * writing, or accepting, a timeout occurs, or a signal interrupt occurs. A
+ * timeout of zero returns immediately, which is useful for polling. A timeout
+ * that is negative causes the poller to block indefinitely until either
+ * a file descriptor is ready or one of the registered signals is caught. This
+ * API call uses the cached signal mask of registered signals in the poll
+ * structure.
  * @param pollp points to an initialized poller structure.
  * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
-extern int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t timeout);
+static inline int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t timeout)
+{
+    return diminuto_poll_wait_generic(pollp, timeout, &(pollp->mux.mask));
+}
 
 /**
  * Return the next registered file descriptor that is ready for reading.

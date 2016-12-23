@@ -76,7 +76,7 @@ static void poll_after(diminuto_poll_t * pollp, diminuto_mux_set_t * setp, short
     }
 }
 
-int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
+int diminuto_poll_wait_generic(diminuto_poll_t * pollp, diminuto_sticks_t ticks, const sigset_t * maskp)
 {
     int rc = 0;
     struct timespec * top = (struct timespec *)0;
@@ -130,7 +130,7 @@ int diminuto_poll_wait(diminuto_poll_t * pollp, diminuto_sticks_t ticks)
 
     if ((nfds > 0) || (ticks >= 0)) {
 
-        rc = ppoll(pollp->pollfd, nfds, top, &pollp->mux.mask);
+        rc = ppoll(pollp->pollfd, nfds, top, maskp);
 
         if (rc > 0) {
             poll_after(pollp, &pollp->mux.read, POLLIN);

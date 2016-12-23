@@ -75,9 +75,9 @@ typedef struct DiminutoMux {
  * Initialize a multiplexer. Any prior state is lost, although this does not
  * effect any file descriptors. The multiplexer inherits the current signal
  * mask of the caller such that signals that are blocked when the multiplexer
- * is initialized will continue to be blocked when the multiplexer is waiting.
- * Signals can be removed from this cached mask using the unblock multiplexer
- * function.
+ * is initialized will continue to be blocked when the multiplexer is waiting
+ * (in other words, blocked signals are automatically registered).
+ * Signals can be removed from this cached mask by unregistering them.
  * @param muxp points to a multiplexer structure.
  */
 extern void diminuto_mux_init(diminuto_mux_t * muxp);
@@ -129,10 +129,10 @@ extern int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_register_interrupt(diminuto_mux_t * muxp, int fd);
 
 /**
- * Add a signal to the mask of those to be atomically unblocked while the
+ * Add a signal to the mask of those to be atomically blocked while the
  * multiplexer is waiting.
  * @param muxp points to an initialized multiplexer structure.
- * @param signum is an unregistered blocked signal.
+ * @param signum is an unregistered signal to be blocked.
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum);
@@ -178,10 +178,10 @@ extern int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd);
 extern int diminuto_mux_unregister_interrupt(diminuto_mux_t * muxp, int fd);
 
 /**
- * Remove a signal from the mask of those to be atomically unblocked while the
+ * Remove a signal from the mask of those to be atomically blocked while the
  * multiplexer is waiting.
  * @param muxp points to an initialized multiplexer structure.
- * @param signum is a registered blocked signal.
+ * @param signum is a registered signal to be unblocked.
  * @return 0 for success, <0 for error.
  */
 extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
@@ -191,12 +191,32 @@ extern int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum);
  * writing, or accepting, a timeout occurs, or a signal interrupt occurs. A
  * timeout of zero returns immediately, which is useful for polling. A timeout
  * that is negative causes the multiplexer to block indefinitely until either
- * a file descriptor is ready or one of the registered signals is caught.
+ * a file descriptor is ready or a signal is caught. This is an alternative
+ * API call that allows the application to provide its own signal mask (which
+ * it may have for other reasons).
+ * @param muxp points to an initialized multiplexer structure.
+ * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
+ * @param maskp points to the signal mask or NULL if none.
+ * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
+ */
+extern int diminuto_mux_wait_generic(diminuto_mux_t * muxp, diminuto_sticks_t timeout, const sigset_t * maskp);
+
+/**
+ * Wait until one or more registered file descriptors are ready for reading,
+ * writing, or accepting, a timeout occurs, or a signal interrupt occurs. A
+ * timeout of zero returns immediately, which is useful for polling. A timeout
+ * that is negative causes the multiplexer to block indefinitely until either
+ * a file descriptor is ready or one of the registered signals is caught. This
+ * API call uses the signal mask in the mux structure that contains registered
+ * signals.
  * @param muxp points to an initialized multiplexer structure.
  * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @return the number of ready file descriptors, 0 for a timeout, <0 for error.
  */
-extern int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t timeout);
+static inline int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t timeout)
+{
+    return diminuto_mux_wait_generic(muxp, timeout, &(muxp->mask));
+}
 
 /**
  * Return the next registered file descriptor that is ready for reading.
