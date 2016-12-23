@@ -724,7 +724,7 @@ int main(int argc, char ** argv)
         diminuto_mux_dump(&mux);
 
         CHECKPOINT();
-        ASSERT(diminuto_mux_wait(&mux, -1) == 0);
+        ASSERT(diminuto_mux_wait(&mux, 0) == 0);
         CHECKPOINT();
 
         ASSERT(diminuto_mux_ready_write(&mux) < 0);

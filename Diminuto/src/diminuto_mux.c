@@ -216,14 +216,13 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t ticks)
     /*
      * It's perfectly legal to call this function with no registered file
      * descriptors. In fact, that's a common idiom in POSIX systems, using
-     * the select(2) system call (or here, pselect(2)) to wait. But if you call
-     * this function with no registered file descriptors _and_ an infinite wait
-     * time, that's probably not correct. So we check for that. We should
-     * probably return with an error, but instead we just indicate that no file
-     * descriptors are ready.
+     * the select(2) system call (or here, pselect(2)) to wait for a
+     * timeout. And you can call it with an infinite wait time, expecting
+     * to be interrupted by a signal. We only short circuit if there are
+     * no registered file descriptors *and* the wait time is zero.
      */
 
-    if ((nfds > 0) || (ticks >= 0)) {
+    if ((nfds > 0) || (ticks != 0)) {
 
         /*
          * Handling listen(2)-ing file descriptors that will want to do an
@@ -233,7 +232,8 @@ int diminuto_mux_wait(diminuto_mux_t * muxp, diminuto_sticks_t ticks)
          * returns, we have to figure out which of the ready read descriptors
          * are actually registered for read versus registered for accept.
          * I wish there was a portable way to OR and AND fd_sets together, or
-         * to see if a set were completely empty.
+         * to see if a set were completely empty. (Similarly for urgent and
+         * interrupt exceptions.)
          */
 
         read_or_accept = muxp->read_or_accept;
