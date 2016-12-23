@@ -33,7 +33,7 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
     fprintf(stderr, "       -1            Read PIN initially when multiplexing.\n");
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
@@ -43,6 +43,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -M            Multiplex upon PIN edge.\n");
     fprintf(stderr, "       -N            Set PIN edge to none.\n");
     fprintf(stderr, "       -R            Set PIN edge to rising.\n");
+    fprintf(stderr, "       -U            Filter out non-unique edge changes.\n");
     fprintf(stderr, "       -b USECONDS   Poll with debounce every USECONDS (try 10000) microseconds.\n");
     fprintf(stderr, "       -c            Clear PIN by writing 0.\n");
     fprintf(stderr, "       -d            Enable debug mode.\n");
@@ -71,28 +72,29 @@ int main(int argc, char * argv[])
     int fail = 0;
     int error = 0;
     int debug = 0;
+    int first = 0;
+    int unique = 0;
+    int pin = -1;
+    int state = 0;
+    int prior = 0;
     FILE * fp = (FILE *)0;
+    const char * path = "/sys";
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
-    int pin = -1;
-    int oldstate = 0;
-    int state = 0;
-    const char * path = "/sys";
-    char opts[2] = { '\0', '\0' };
-    int opt;
-    extern char * optarg;
     diminuto_mux_t mux;
     diminuto_ticks_t ticks;
     diminuto_sticks_t sticks = -2;
-    int first = 0;
     diminuto_cue_state_t cue;
     diminuto_pin_edge_t edge;
     int fd;
     int nfds;
+    char opts[2] = { '\0', '\0' };
+    int opt;
+    extern char * optarg;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1BD:FHLMNRb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1BD:FHLMNRUb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
 
@@ -204,6 +206,11 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'U':
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            unique = !0;
+            break;
+
         case 'b':
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 perror(optarg);
@@ -235,14 +242,14 @@ int main(int argc, char * argv[])
             printf("%d\n", state);
             diminuto_cue_init(&cue, state);
             while (!0) {
-                oldstate = state;
+                prior = state;
                 diminuto_delay(ticks, 0);
                 if ((state = diminuto_pin_get(fp)) < 0) {
                     fail = !0;
                     break;
                 }
                 state = diminuto_cue_debounce(&cue, !!state);
-                if (state != oldstate) {
+                if (state != prior) {
                     printf("%d\n", state);
                 }
             }
@@ -359,7 +366,7 @@ int main(int argc, char * argv[])
             } else {
                 /* Do nothing. */
             }
-            oldstate = -1;
+            prior = -1;
             if (!first) {
                 /* Do nothing. */
             } else if ((state = diminuto_pin_get(fp)) < 0) {
@@ -368,7 +375,7 @@ int main(int argc, char * argv[])
             } else {
                 state = !!state;
                 printf("%d\n", state);
-                oldstate = state;
+                prior = state;
             }
             fd = fileno(fp);
             diminuto_mux_init(&mux);
@@ -392,16 +399,16 @@ int main(int argc, char * argv[])
                             break;
                         } else {
                             state = !!state;
-                            if (edge != DIMINUTO_PIN_EDGE_BOTH) {
+                            if (!unique) {
                                 printf("%d\n", state);
-                            } else if (oldstate < 0) {
+                            } else if (prior < 0) {
                                 printf("%d\n", state);
-                            } else if (oldstate != state) {
+                            } else if (prior != state) {
                                 printf("%d\n", state);
                             } else {
                                 /* Do nothing. */
                             }
-                            oldstate = state;
+                            prior = state;
                         }
                     }
                     if (fail) {
