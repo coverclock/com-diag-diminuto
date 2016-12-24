@@ -427,7 +427,7 @@ ifeq ($(SLASHES), 1)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -504,7 +504,7 @@ ifeq ($(SLASHES), 2)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -579,7 +579,7 @@ endif
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
@@ -594,7 +594,7 @@ $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
@@ -606,7 +606,7 @@ $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(
 
 # For embedding in an application where it can be interrogated or displayed.
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
 	echo '#define _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
@@ -621,12 +621,12 @@ $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_revision.o:	$(OUT)/$(INC_DIR)/com/diag/$
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 # For sourcing into a bash shell (for example, ". setup").
 $(OUT)/$(BIN_DIR)/setup:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../sym:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -636,7 +636,7 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 	chmod 644 $@
 
 $(OUT)/$(SYM_DIR)/setup:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../sym:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -648,7 +648,7 @@ $(OUT)/$(SYM_DIR)/setup:	Makefile
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
 # (Because the Android bash doesn't seem to implement BASH_ARGV.)
 $(OUT)/$(BIN_DIR)/generate:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../sym:$$COM_DIAG_$(SYMBOL)_ROOT/../bin:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -658,7 +658,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	chmod 755 $@
 
 $(OUT)/$(SYM_DIR)/generate:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../sym:$$COM_DIAG_$(SYMBOL)_ROOT/../tst' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../drv' >> $@
@@ -686,17 +686,17 @@ $(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.cpp
 OBJ_M := $(addsuffix .o,$(basename $(shell cd $(DRV_DIR); ls *.c)))
 
 $(OUT)/$(SYS_DIR)/Makefile:	Makefile
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
 	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
 
 $(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	cp $< $@
 
 $(OUT)/$(DRV_DIR)/%.ko:	$(OUT)/$(SYS_DIR)/%.ko
-	D=`dirname $@`; mkdir -p $$D	
+	D=`dirname $@`; mkdir -p $$D
 	cp $< $@
 
 # Was your kernel built with CONFIG_MODULES=y?
