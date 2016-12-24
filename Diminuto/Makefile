@@ -403,14 +403,21 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 ########## Generated Source Files
 
 # For embedding in a system where it can be executed from a shell.
+#
 # The major.minor.build is emitted to standard error, a bunch more
 # metadata to standard output. Hence, they can be redirected to separate
-# files. The metadata file is intended to parsable as a standard properties
-# file (although I have not tested it). Some of the information in this binary
-# executable may be sensitive, for example, the Directory or the User. That's
-# why it's in a form that doesn't have to be distributed with the product,
-# unlike the shared objects. This program also serves as a unit test, so be
-# careful about removing stuff from it that looks redundant or unused.
+# files.
+#
+# Some of the information in this binary executable may be sensitive, for
+# example, the Directory or the User. That's why it's in a form that doesn't
+# have to be distributed with the product, unlike the shared objects.
+#
+# This program also serves as a unit test, so be careful about removing stuff
+# from it that looks redundant or unused.
+#
+# The stdout stream from vintage is designed so that you can source it
+# into a variety of tools including bash. e.g. eval $(vintage 2> /dev/null) .
+#
 # NOTE: in the generated C code below, whether you should have \\n or \n in the
 # echo statements seems to depend on what version of make you are running.
 
@@ -426,6 +433,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_revision.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_revision.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include <stdio.h>' >> $@
@@ -443,7 +452,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Os=\"$(OS)\"\n"' >> $@
 	echo '    "Platform=\"" COM_DIAG_$(SYMBOL)_PLATFORM "\"\n"' >> $@
 	echo '    "Release=\"" COM_DIAG_$(SYMBOL)_RELEASE "\"\n"' >> $@
-	echo '    "Revision=\"$(REVISION)\"\n"' >> $@
+	echo '    "Revision=\"" COM_DIAG_$(SYMBOL)_REVISION "\"\n"' >> $@
 	echo '    "Root=\"$(ROOT)\"\n"' >> $@
 	echo '    "Target=\"$(TARGET)\"\n"' >> $@
 	echo '    "Title=\"$(TITLE)\"\n"' >> $@
@@ -455,6 +464,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_VINTAGE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_$(SYMBOL)_REVISION_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_$(SYMBOL)_REVISION_VALUE;' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_PLATFORM_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_PLATFORM_VALUE;' >> $@
 	echo 'int main(void) {' >> $@
@@ -462,6 +473,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    const char * release_value = (const char *)0;' >> $@
 	echo '    const char * vintage_keyword = (const char *)0;' >> $@
 	echo '    const char * vintage_value = (const char *)0;' >> $@
+	echo '    const char * revision_keyword = (const char *)0;' >> $@
+	echo '    const char * revision_value = (const char *)0;' >> $@
 	echo '    const char * platform_keyword = (const char *)0;' >> $@
 	echo '    const char * platform_value = (const char *)0;' >> $@
 	echo '    fputs(METADATA, stdout);' >> $@
@@ -470,12 +483,16 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    release_value = COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo '    vintage_keyword = COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD;' >> $@
 	echo '    vintage_value = COM_DIAG_$(SYMBOL)_VINTAGE_VALUE;' >> $@
+	echo '    revision_keyword = COM_DIAG_$(SYMBOL)_REVISION_KEYWORD;' >> $@
+	echo '    revision_value = COM_DIAG_$(SYMBOL)_REVISION_VALUE;' >> $@
 	echo '    platform_keyword = COM_DIAG_$(SYMBOL)_PLATFORM_KEYWORD;' >> $@
 	echo '    platform_value = COM_DIAG_$(SYMBOL)_PLATFORM_VALUE;' >> $@
 	echo '    assert(release_keyword != (const char *)0);' >> $@
 	echo '    assert(release_value != (const char *)0);' >> $@
 	echo '    assert(vintage_keyword != (const char *)0);' >> $@
 	echo '    assert(vintage_value != (const char *)0);' >> $@
+	echo '    assert(release_keyword != (const char *)0);' >> $@
+	echo '    assert(release_value != (const char *)0);' >> $@
 	echo '    assert(platform_keyword != (const char *)0);' >> $@
 	echo '    assert(platform_value != (const char *)0);' >> $@
 	echo '    return 0;' >> $@
@@ -493,6 +510,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_vintage.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_revision.h"' >> $@
+	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_revision.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_platform.h"' >> $@
 	echo '#include <stdio.h>' >> $@
@@ -510,7 +529,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Os=\\"$(OS)\\"\\n"' >> $@
 	echo '    "Platform=\\"" COM_DIAG_$(SYMBOL)_PLATFORM "\\"\\n"' >> $@
 	echo '    "Release=\\"" COM_DIAG_$(SYMBOL)_RELEASE "\\"\\n"' >> $@
-	echo '    "Revision=\\"$(REVISION)\\"\\n"' >> $@
+	echo '    "Revision=\\"" COM_DIAG_$(SYMBOL)_REVISION "\\"\\n"' >> $@
 	echo '    "Root=\\"$(ROOT)\\"\\n"' >> $@
 	echo '    "Target=\\"$(TARGET)\\"\\n"' >> $@
 	echo '    "Title=\\"$(TITLE)\\"\\n"' >> $@
@@ -522,6 +541,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_VINTAGE_VALUE;' >> $@
+	echo 'extern const char COM_DIAG_$(SYMBOL)_REVISION_KEYWORD[];' >> $@
+	echo 'extern const char * COM_DIAG_$(SYMBOL)_REVISION_VALUE;' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_PLATFORM_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_PLATFORM_VALUE;' >> $@
 	echo 'int main(void) {' >> $@
@@ -529,6 +550,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    const char * release_value = (const char *)0;' >> $@
 	echo '    const char * vintage_keyword = (const char *)0;' >> $@
 	echo '    const char * vintage_value = (const char *)0;' >> $@
+	echo '    const char * revision_keyword = (const char *)0;' >> $@
+	echo '    const char * revision_value = (const char *)0;' >> $@
 	echo '    const char * platform_keyword = (const char *)0;' >> $@
 	echo '    const char * platform_value = (const char *)0;' >> $@
 	echo '    fputs(METADATA, stdout);' >> $@
@@ -537,12 +560,16 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    release_value = COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo '    vintage_keyword = COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD;' >> $@
 	echo '    vintage_value = COM_DIAG_$(SYMBOL)_VINTAGE_VALUE;' >> $@
+	echo '    revision_keyword = COM_DIAG_$(SYMBOL)_REVISION_KEYWORD;' >> $@
+	echo '    revision_value = COM_DIAG_$(SYMBOL)_REVISION_VALUE;' >> $@
 	echo '    platform_keyword = COM_DIAG_$(SYMBOL)_PLATFORM_KEYWORD;' >> $@
 	echo '    platform_value = COM_DIAG_$(SYMBOL)_PLATFORM_VALUE;' >> $@
 	echo '    assert(release_keyword != (const char *)0);' >> $@
 	echo '    assert(release_value != (const char *)0);' >> $@
 	echo '    assert(vintage_keyword != (const char *)0);' >> $@
 	echo '    assert(vintage_value != (const char *)0);' >> $@
+	echo '    assert(revision_keyword != (const char *)0);' >> $@
+	echo '    assert(revision_value != (const char *)0);' >> $@
 	echo '    assert(platform_keyword != (const char *)0);' >> $@
 	echo '    assert(platform_value != (const char *)0);' >> $@
 	echo '    return 0;' >> $@
@@ -576,6 +603,21 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 
 # For embedding in the library archive and shared object.
 $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h
+
+# For embedding in an application where it can be interrogated or displayed.
+$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h:	Makefile
+	D=`dirname $@`; mkdir -p $$D	
+	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
+	echo '#define COM_DIAG_$(SYMBOL)_REVISION "$(REVISION)"' >> $@
+	echo '#endif' >> $@
+
+# For embedding in the library archive and shared object.
+$(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_revision.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h
+
+# For embedding in the library archive and shared object.
+$(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_revision.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h
 
 # For executing from the command line during testing.
 $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
