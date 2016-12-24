@@ -37,13 +37,14 @@
  *
  * I tested the edge interrupt feature with the pintool utility using a
  * Raspberry Pi 3B. Alas, there is a known bug in the GPIO implementation
- * (probably in the device driver) that treats a rising edge configuration
- * as both edge, so you get select(2) or poll(2) firings on both the rising
+ * (probably in the device driver) that treats a "rising" edge configuration
+ * as "both" edge, so you get select(2) or poll(2) firings on both the rising
  * and the falling edges. You can read the pin to tell which is which, but
  * it was unexpected. Some of the discussion on the interwebs lead you to
  * believe that this is a bug in the Pi's Python library, but that's just
  * because that's what most people are using. This C library uses the GPIO
- * device driver that is exposed via /sys/class/gpio.
+ * device driver that is exposed via /sys/class/gpio and it sees the same
+ * misbehavior.
  */
 
 #include <stdio.h>

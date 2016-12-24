@@ -7,8 +7,12 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * EXAMPLE (for stampede)
+ * EXAMPLES
  *
+ * pintool -p 20 -x -i -b 10000
+ * pintool -p 20 -x -i; pintool -b 10000
+ * pintool -p 20 -x -i -B -U -M
+ * pintool -p 20 -x -i -B -U -m 1000000
  * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
  *
  * ABSTRACT
