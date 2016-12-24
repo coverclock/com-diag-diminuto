@@ -18,6 +18,13 @@
  * on which read(2), write(2), or accept(2) may be performed without blocking).
  * The algorithm round-robins on the ready sockets in each category to prevent
  * starvation.
+ *
+ * NOTE: Because the diminuto_mux feature uses the pselect(2) system call, it
+ * is limited to using the first 1024 file descriptors enumerated 0 to 1023.
+ * This is a limit imposed by the size of the fd_set bit mask. The ppoll(2)
+ * system call circumvents this limit, but alas even though the diminuto_poll
+ * feature uses this system call instead, it still uses the fd_set bit mask
+ * to manage file descriptors, hence it has the same limitation.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
