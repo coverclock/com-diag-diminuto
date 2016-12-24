@@ -22,7 +22,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	35# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -403,8 +403,8 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 ########## Generated Source Files
 
 # For embedding in a system where it can be executed from a shell.
-# The major.minor.build is emitted to standard output, a bunch more
-# metadata to standard error. Hence, they can be redirected to separate
+# The major.minor.build is emitted to standard error, a bunch more
+# metadata to standard output. Hence, they can be redirected to separate
 # files. The metadata file is intended to parsable as a standard properties
 # file (although I have not tested it). Some of the information in this binary
 # executable may be sensitive, for example, the Directory or the User. That's
@@ -431,25 +431,25 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo '    "Arch = $(ARCH)\n"' >> $@
-	echo '    "Branch = $(BRANCH)\n"' >> $@
-	echo '    "Contact = $(CONTACT)\n"' >> $@
-	echo '    "Copyright = $(COPYRIGHT)\n"' >> $@
-	echo '    "Homepage = $(HOMEPAGE)\n"' >> $@
-	echo '    "Host = $(HOST)\n"' >> $@
-	echo '    "Kernel = $(KERNEL_REV)\n"' >> $@
-	echo '    "License = $(LICENSE)\n"' >> $@
-	echo '    "Modified = $(MODIFIED)\n"' >> $@
-	echo '    "Os = $(OS)\n"' >> $@
-	echo '    "Platform = " COM_DIAG_$(SYMBOL)_PLATFORM "\n"' >> $@
-	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\n"' >> $@
-	echo '    "Revision = $(REVISION)\n"' >> $@
-	echo '    "Root = $(ROOT)\n"' >> $@
-	echo '    "Target = $(TARGET)\n"' >> $@
-	echo '    "Title = $(TITLE)\n"' >> $@
-	echo '    "Toolchain = $(TOOLCHAIN)\n"' >> $@
-	echo '    "User = $(USER)\n"' >> $@
-	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\n"' >> $@
+	echo '    "Arch=\"$(ARCH)\"\n"' >> $@
+	echo '    "Branch=\"$(BRANCH)\"\n"' >> $@
+	echo '    "Contact=\"$(CONTACT)\"\n"' >> $@
+	echo '    "Copyright=\"$(COPYRIGHT)\"\n"' >> $@
+	echo '    "Homepage=\"$(HOMEPAGE)\"\n"' >> $@
+	echo '    "Host=\"$(HOST)\"\n"' >> $@
+	echo '    "Kernel=\"$(KERNEL_REV)\"\n"' >> $@
+	echo '    "License=\"$(LICENSE)\"\n"' >> $@
+	echo '    "Modified=\"$(MODIFIED)\"\n"' >> $@
+	echo '    "Os=\"$(OS)\"\n"' >> $@
+	echo '    "Platform=\"" COM_DIAG_$(SYMBOL)_PLATFORM "\"\n"' >> $@
+	echo '    "Release=\"" COM_DIAG_$(SYMBOL)_RELEASE "\"\n"' >> $@
+	echo '    "Revision=\"$(REVISION)\"\n"' >> $@
+	echo '    "Root=\"$(ROOT)\"\n"' >> $@
+	echo '    "Target=\"$(TARGET)\"\n"' >> $@
+	echo '    "Title=\"$(TITLE)\"\n"' >> $@
+	echo '    "Toolchain=\"$(TOOLCHAIN)\"\n"' >> $@
+	echo '    "User=\"$(USER)\"\n"' >> $@
+	echo '    "Vintage=\"" COM_DIAG_$(SYMBOL)_VINTAGE "\"\n"' >> $@
 	echo ';' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
@@ -464,8 +464,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    const char * vintage_value = (const char *)0;' >> $@
 	echo '    const char * platform_keyword = (const char *)0;' >> $@
 	echo '    const char * platform_value = (const char *)0;' >> $@
-	echo '    fputs(METADATA, stderr);' >> $@
-	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stdout);' >> $@
+	echo '    fputs(METADATA, stdout);' >> $@
+	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\n", stderr);' >> $@
 	echo '    release_keyword = COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD;' >> $@
 	echo '    release_value = COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo '    vintage_keyword = COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD;' >> $@
@@ -498,25 +498,25 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
-	echo '    "Arch = $(ARCH)\\n"' >> $@
-	echo '    "Branch = $(BRANCH)\\n"' >> $@
-	echo '    "Contact = $(CONTACT)\\n"' >> $@
-	echo '    "Copyright = $(COPYRIGHT)\\n"' >> $@
-	echo '    "Homepage = $(HOMEPAGE)\\n"' >> $@
-	echo '    "Host = $(HOST)\\n"' >> $@
-	echo '    "Kernel = $(KERNEL_REV)\\n"' >> $@
-	echo '    "License = $(LICENSE)\\n"' >> $@
-	echo '    "Modified = $(MODIFIED)\\n"' >> $@
-	echo '    "Os = $(OS)\\n"' >> $@
-	echo '    "Platform = " COM_DIAG_$(SYMBOL)_PLATFORM "\\n"' >> $@
-	echo '    "Release = " COM_DIAG_$(SYMBOL)_RELEASE "\\n"' >> $@
-	echo '    "Revision = $(REVISION)\\n"' >> $@
-	echo '    "Root = $(ROOT)\\n"' >> $@
-	echo '    "Target = $(TARGET)\\n"' >> $@
-	echo '    "Title = $(TITLE)\\n"' >> $@
-	echo '    "Toolchain = $(TOOLCHAIN)\\n"' >> $@
-	echo '    "User = $(USER)\\n"' >> $@
-	echo '    "Vintage = " COM_DIAG_$(SYMBOL)_VINTAGE "\\n"' >> $@
+	echo '    "Arch=\\"$(ARCH)\\"\\n"' >> $@
+	echo '    "Branch=\\"$(BRANCH)\\"\\n"' >> $@
+	echo '    "Contact=\\"$(CONTACT)\\"\\n"' >> $@
+	echo '    "Copyright=\\"$(COPYRIGHT)\\"\\n"' >> $@
+	echo '    "Homepage=\\"$(HOMEPAGE)\\"\\n"' >> $@
+	echo '    "Host=\\"$(HOST)\\"\\n"' >> $@
+	echo '    "Kernel=\\"$(KERNEL_REV)\\"\\n"' >> $@
+	echo '    "License=\\"$(LICENSE)\\"\\n"' >> $@
+	echo '    "Modified=\\"$(MODIFIED)\\"\\n"' >> $@
+	echo '    "Os=\\"$(OS)\\"\\n"' >> $@
+	echo '    "Platform=\\"" COM_DIAG_$(SYMBOL)_PLATFORM "\\"\\n"' >> $@
+	echo '    "Release=\\"" COM_DIAG_$(SYMBOL)_RELEASE "\\"\\n"' >> $@
+	echo '    "Revision=\\"$(REVISION)\\"\\n"' >> $@
+	echo '    "Root=\\"$(ROOT)\\"\\n"' >> $@
+	echo '    "Target=\\"$(TARGET)\\"\\n"' >> $@
+	echo '    "Title=\\"$(TITLE)\\"\\n"' >> $@
+	echo '    "Toolchain=\\"$(TOOLCHAIN)\\"\\n"' >> $@
+	echo '    "User=\\"$(USER)\\"\\n"' >> $@
+	echo '    "Vintage=\\"" COM_DIAG_$(SYMBOL)_VINTAGE "\\"\\n"' >> $@
 	echo ';' >> $@
 	echo 'extern const char COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD[];' >> $@
 	echo 'extern const char * COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
@@ -531,8 +531,8 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    const char * vintage_value = (const char *)0;' >> $@
 	echo '    const char * platform_keyword = (const char *)0;' >> $@
 	echo '    const char * platform_value = (const char *)0;' >> $@
-	echo '    fputs(METADATA, stderr);' >> $@
-	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stdout);' >> $@
+	echo '    fputs(METADATA, stdout);' >> $@
+	echo '    fputs("$(MAJOR).$(MINOR).$(BUILD)\\n", stderr);' >> $@
 	echo '    release_keyword = COM_DIAG_$(SYMBOL)_RELEASE_KEYWORD;' >> $@
 	echo '    release_value = COM_DIAG_$(SYMBOL)_RELEASE_VALUE;' >> $@
 	echo '    vintage_keyword = COM_DIAG_$(SYMBOL)_VINTAGE_KEYWORD;' >> $@
