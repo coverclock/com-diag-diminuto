@@ -27,8 +27,8 @@ int main(int argc, char * argv[])
     const char * Server =  (const char *)0;
     const char * Rendezvous = (const char *)0;
     const char * Blocksize = (const char *)0;
-    diminuto_ipv4_t address4 = DIMINUTO_IPC4_LOOPBACK;
-    diminuto_ipv6_t address6 = DIMINUTO_IPC6_LOOPBACK;
+    diminuto_ipv4_t address4 = DIMINUTO_IPC4_UNSPECIFIED;
+    diminuto_ipv6_t address6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_ipv4_t server4 = DIMINUTO_IPC4_LOOPBACK;
     diminuto_ipv6_t server6 = DIMINUTO_IPC6_LOOPBACK;
     diminuto_ipv4_t datum4 = DIMINUTO_IPC4_UNSPECIFIED;
