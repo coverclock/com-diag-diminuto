@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include <unistd.h>
 
 int main(int argc, char * argv[])
 {
@@ -39,22 +40,32 @@ int main(int argc, char * argv[])
     char * buffer = (char *)0;
     ssize_t input = 0;
     ssize_t output = 0;
-    diminuto_unsigned_t value;
-    diminuto_mux_t mux;
+    ssize_t total = 0;
     int Protocol = 0;
     int sock = -2;
     int fd = -3;
     int rc = 0;
     int fds = 0;
+    int eof = 0;
+    diminuto_unsigned_t value;
+    diminuto_mux_t mux;
     extern char * optarg;
     extern int optind;
     extern int opterr;
     extern int optopt;
     int opt;
 
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
+
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
     SETLOGMASK();
+
+/*******************************************************************************
+ * PARSE
+ ******************************************************************************/
 
     while ((opt = getopt(argc, argv, "46?A:P:a:b:i:p:")) >= 0) {
         switch (opt) {
@@ -90,6 +101,10 @@ int main(int argc, char * argv[])
             break;
         }
     }
+
+/*******************************************************************************
+ * PARAMETERS
+ ******************************************************************************/
 
     TEST();
 
@@ -170,6 +185,10 @@ int main(int argc, char * argv[])
 
     COMMENT("blocksize=%zu\n", blocksize);
 
+/*******************************************************************************
+ * ENDPOINTS
+ ******************************************************************************/
+
     TEST();
 
     if (Protocol == 4) {
@@ -178,16 +197,16 @@ int main(int argc, char * argv[])
             ASSERT(sock >= 0);
             rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+            COMMENT("role=provider end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
         } else {
-            fd = diminuto_ipc4_stream_consumer_specific(server4, rendezvous46, address4, port46, Interface);
-            ASSERT(fd >= 0);
-            rc = diminuto_ipc4_nearend(fd, &datum4, &datum46);
+            sock = diminuto_ipc4_stream_consumer_specific(server4, rendezvous46, address4, port46, Interface);
+            ASSERT(sock >= 0);
+            rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=near fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-            rc = diminuto_ipc4_farend(fd, &datum4, &datum46);
+            COMMENT("role=consumer end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+            rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+            COMMENT("role=consumer end=far sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
         }
     } else if (Protocol == 6) {
         if (Rendezvous == (const char *)0) {
@@ -195,16 +214,16 @@ int main(int argc, char * argv[])
             ASSERT(sock >= 0);
             rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+            COMMENT("role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
         } else {
-            fd = diminuto_ipc6_stream_consumer_specific(server6, rendezvous46, address6, port46, Interface);
-            ASSERT(fd >= 0);
-            rc = diminuto_ipc6_nearend(fd, &datum6, &datum46);
+            sock = diminuto_ipc6_stream_consumer_specific(server6, rendezvous46, address6, port46, Interface);
+            ASSERT(sock >= 0);
+            rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=near fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-            rc = diminuto_ipc6_farend(fd, &datum6, &datum46);
+            COMMENT("role=consumer end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+            rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
             ASSERT(rc >= 0);
-            COMMENT("end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+            COMMENT("role=consumer end=far sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
         }
     } else {
         /* Do nothing. */
@@ -213,11 +232,22 @@ int main(int argc, char * argv[])
     buffer = (char *)malloc(blocksize);
     ASSERT(buffer != (char *)0);
 
+/*******************************************************************************
+ * SETUP
+ ******************************************************************************/
+
     TEST();
 
     diminuto_mux_init(&mux);
 
+/*******************************************************************************
+ * PROVIDER
+ ******************************************************************************/
+
     if (Rendezvous == (const char *)0) {
+
+        TEST();
+
         rc = diminuto_mux_register_accept(&mux, sock);
         ASSERT(rc >= 0);
         while (!0) {
@@ -231,11 +261,11 @@ int main(int argc, char * argv[])
                 if (Protocol == 4) {
                     fd = diminuto_ipc4_stream_accept(fd, &datum4, &datum46);
                     ASSERT(fd >= 0);
-                    COMMENT("end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+                    COMMENT("role=provider end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
                 } else if (Protocol == 6) {
                     fd = diminuto_ipc6_stream_accept(fd, &datum6, &datum46);
                     ASSERT(fd >= 0);
-                    COMMENT("end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+                    COMMENT("role=provider end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
                 } else {
                     /* Do nothing. */
                 }
@@ -254,7 +284,7 @@ int main(int argc, char * argv[])
                     ASSERT(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     ASSERT(rc >= 0);
-                    COMMENT("end=far fd=%d input=%zd\n", fd, input);
+                    COMMENT("role=provider end=far fd=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input, input);
                     ASSERT(output == input);
@@ -267,18 +297,64 @@ int main(int argc, char * argv[])
         ASSERT(rc >= 0);
         rc = diminuto_ipc_close(sock);
         ASSERT(rc >= 0);
+
+/*******************************************************************************
+ * CONSUMER
+ ******************************************************************************/
+
     } else {
-        rc = diminuto_mux_register_read(&mux, fd);
+
+        TEST();
+
+        rc = diminuto_mux_register_read(&mux, sock);
         ASSERT(rc >= 0);
-        rc = diminuto_mux_register_write(&mux, fd);
+        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
         ASSERT(rc >= 0);
-        while (!0) {
+        while ((!eof) || (total > 0)) {
+            fds = diminuto_mux_wait(&mux, -1);
+            ASSERT(fds > 0);
+            while (!0) {
+                fd = diminuto_mux_ready_read(&mux);
+                if (fd < 0) {
+                    break;
+                }
+                if (fd == sock) {
+                    input = diminuto_fd_read(sock, buffer, 1, blocksize);
+                    ASSERT(input >= 0);
+                    if (input == 0) {
+                        FATAL("role=consumer fd=%d input=%zd\n", fd, input);
+                    } else {
+                        output = diminuto_fd_write(STDOUT_FILENO, buffer, input, input);
+                        ASSERT(output == input);
+                        total -= output;
+                    }
+                } else if (fd == STDIN_FILENO) {
+                    input = diminuto_fd_read(STDIN_FILENO, buffer, 1, blocksize);
+                    ASSERT(input >= 0);
+                    if (input == 0) {
+                        COMMENT("role=consumer fd=%d input=%zd\n", fd, input);
+                        eof = !0;
+                    } else {
+                        output = diminuto_fd_write(sock, buffer, input, input);
+                        ASSERT(output == input);
+                        total += output;
+                    }
+                } else {
+                    FATAL("fd=%d\n", fd);
+                }
+            }
         }
-        rc = diminuto_mux_unregister_read(&mux, fd);
+        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
         ASSERT(rc >= 0);
-        rc = diminuto_mux_unregister_write(&mux, fd);
+        rc = diminuto_mux_unregister_read(&mux, sock);
+        ASSERT(rc >= 0);
+        rc = diminuto_ipc_close(sock);
         ASSERT(rc >= 0);
     }
+
+/*******************************************************************************
+ * EXIT
+ ******************************************************************************/
 
     diminuto_mux_fini(&mux);
 

@@ -38,10 +38,10 @@ extern int diminuto_unittest_errors;
 
 /**
  * @def TEST()
- * Emit a notice message identifying the current unit test.
+ * Emit a notice message identifying the the start of a new unit test.
  */
 #define TEST() \
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests)
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests++)
 
 /**
  * @def CHECKPOINT(...)
@@ -78,7 +78,7 @@ extern int diminuto_unittest_errors;
  */
 #define STATUS() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d %s\n", diminuto_unittest_tests++, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
     } while (0)
