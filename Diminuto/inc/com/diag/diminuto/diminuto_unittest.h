@@ -24,8 +24,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static int diminuto_unittest_tests = 0;
-static int diminuto_unittest_errors = 0;
+extern int diminuto_unittest_tests;
+extern int diminuto_unittest_errors;
 
 /**
  * @def SETLOGMASK()
@@ -50,6 +50,14 @@ static int diminuto_unittest_errors = 0;
  */
 #define CHECKPOINT(...) \
     diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE __VA_ARGS__)
+
+/**
+ * @def COMMENT(...)
+ * Emit a debug message with the current translation unit file and line number
+ * and an optional manifest string argument.
+ */
+#define COMMENT(...) \
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE __VA_ARGS__)
 
 /**
  * @def EXIT()
