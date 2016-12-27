@@ -90,9 +90,14 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
             intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
             length = sizeof(intf);
         }
-        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) < 0) {
-            diminuto_perror("diminuto_ipc_set_interface: setsockopt");
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) >= 0) {
+            /* Do nothing. */
+        } else if (errno == EPERM) {
+            diminuto_perror("diminuto_ipc_set_interface: setsockopt: must be root");
             fd = -4;
+        } else {
+            diminuto_perror("diminuto_ipc_set_interface: setsockopt");
+            fd = -5;
         }
     }
 
@@ -105,10 +110,10 @@ int diminuto_ipc_set_status(int fd, int enable, long mask)
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
-        fd = -5;
+        fd = -6;
     } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
-        fd = -6;
+        fd = -7;
     } else {
         /* Do nothing: success. */
     }
@@ -124,11 +129,11 @@ int diminuto_ipc_set_option(int fd, int enable, int option)
     if (setsockopt(fd, SOL_SOCKET, option, &onoff, sizeof(onoff)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ipc_set_option: must be root");
-        fd = -7;
+        diminuto_perror("diminuto_ipc_set_option: setsockopt: must be root");
+        fd = -8;
     } else {
         diminuto_perror("diminuto_ipc_set_option: setsockopt");
-        fd = -8;
+        fd = -9;
     }
 
     return fd;
@@ -164,7 +169,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     }
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
-        fd = -9;
+        fd = -10;
     }
 
     return fd;

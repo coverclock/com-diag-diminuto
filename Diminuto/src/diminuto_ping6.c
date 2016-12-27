@@ -31,7 +31,7 @@ int diminuto_ping6_datagram_peer(void)
     if ((fd = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ping6_datagram_peer: must be root");
+        diminuto_perror("diminuto_ping6_datagram_peer: socket: must be root");
     } else {
         diminuto_perror("diminuto_ping6_datagram_peer: socket");
     }

@@ -121,7 +121,7 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
         if (portp != (diminuto_port_t *)0) {
             *portp = 0;
         }
-        rc = -10;
+        rc = -40;
     }
 
     return rc;
@@ -289,7 +289,7 @@ int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
 
     if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
         diminuto_perror("diminuto_ipc6_source: bind");
-        rc = -11;
+        rc = -41;
     }
 
     return rc;
@@ -323,7 +323,7 @@ int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_por
     } else if (listen(fd, backlog) < 0) {
         diminuto_perror("diminuto_ipc6_stream_provider_specific: listen");
         diminuto_ipc6_close(fd);
-        rc = -12;
+        rc = -42;
     } else {
         /* Do nothing. */
     }
@@ -339,7 +339,7 @@ int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_por
 
     if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc6_accept: accept");
-        rc = -13;
+        rc = -43;
     } else {
         diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     }
@@ -371,7 +371,7 @@ int diminuto_ipc6_stream_consumer_specific(diminuto_ipv6_t address, diminuto_por
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
          diminuto_perror("diminuto_ipc6_stream_consumer_specific: connect");
          diminuto_ipc6_close(fd);
-         rc = -14;
+         rc = -44;
     } else {
         /* Do nothing. */
     }

@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include <unistd.h>
+#include <string.h>
 
 int main(int argc, char * argv[])
 {
@@ -32,9 +33,12 @@ int main(int argc, char * argv[])
     diminuto_ipv6_t server6 = DIMINUTO_IPC6_LOOPBACK;
     diminuto_ipv4_t datum4 = DIMINUTO_IPC4_UNSPECIFIED;
     diminuto_ipv6_t datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+    diminuto_ipv4_t * addresses4 = (diminuto_ipv4_t *)0;
+    diminuto_ipv6_t * addresses6 = (diminuto_ipv6_t *)0;
     diminuto_port_t port46 = 0;
     diminuto_port_t rendezvous46 = 0;
     diminuto_port_t datum46 = 0;
+    char * interface = (char *)0;
     size_t blocksize = 4096;
     char string[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")] = { '\0' };
     char * buffer = (char *)0;
@@ -48,6 +52,8 @@ int main(int argc, char * argv[])
     int fds = 0;
     int eof = 0;
     diminuto_unsigned_t value;
+    char ** interfaci;
+    char ** interfaces;
     diminuto_mux_t mux;
     extern char * optarg;
     extern int optind;
@@ -158,9 +164,9 @@ int main(int argc, char * argv[])
     }
 
     if (Protocol == 4) {
-        COMMENT("server4==%s\n", diminuto_ipc4_address2string(server4, string, sizeof(string)));
+        COMMENT("server4=%s\n", diminuto_ipc4_address2string(server4, string, sizeof(string)));
     } else if (Protocol == 6) {
-        COMMENT("server6==%s\n", diminuto_ipc6_address2string(server6, string, sizeof(string)));
+        COMMENT("server6=%s\n", diminuto_ipc6_address2string(server6, string, sizeof(string)));
     } else {
         /* Do nothing. */
     }
@@ -173,6 +179,37 @@ int main(int argc, char * argv[])
     }
 
     COMMENT("rendezvous46=%d\n", rendezvous46);
+
+    if (Interface == (const char *)0) {
+        /* Do nothing. */
+    } else {
+        COMMENT("Interface=\"%s\"\n", Interface);
+        interfaci = interfaces = diminuto_ipc_interfaces();
+        ASSERT(interfaces != (char **)0);
+        for (; *interfaces != (char *)0; ++interfaces) {
+            COMMENT("interface=\"%s\"\n", *interfaces);
+            if (strcmp(Interface, *interfaces) == 0) {
+                interface = *interfaces;
+            }
+        }
+        ASSERT(interface != (char *)0);
+        if (Protocol == 4) {
+            addresses4 = diminuto_ipc4_interface(interface);
+            ASSERT(addresses4 != (diminuto_ipv4_t *)0);
+            for (; *addresses4 != DIMINUTO_IPC4_UNSPECIFIED; ++addresses4) {
+                COMMENT("interface4=%s\n", diminuto_ipc4_address2string(*addresses4, string, sizeof(string)));
+            }
+        } else if (Protocol == 6) {
+            addresses6 = diminuto_ipc6_interface(interface);
+            ASSERT(addresses6 != (diminuto_ipv6_t *)0);
+            for (; memcmp(addresses6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(*addresses6)) != 0; ++addresses6) {
+                COMMENT("interface6=%s\n", diminuto_ipc6_address2string(*addresses6, string, sizeof(string)));
+            }
+        } else {
+            /* Do nothing. */
+        }
+        free(interfaci);
+    }
 
     if (Blocksize == (const char *)0) {
         /* Do nothing. */
