@@ -6,6 +6,14 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ *
+ * #XAMPLES
+ *
+ * SERVICE PROVIDER:    unittest-ipc-pipe -6 -p 5555
+ * SERVICE CONSUMER:    unittest-ipc-pipe -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE
+ *
+ * SERVICE PROVIDER:    unittest-ipc-pipe -4 -p 5555
+ * SERVICE CONSUMER:    unittest-ipc-pipe -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -360,6 +368,8 @@ int main(int argc, char * argv[])
                     ASSERT(input >= 0);
                     if (input == 0) {
                         FATAL("role=consumer fd=%d input=%zd\n", fd, input);
+                        rc = diminuto_mux_unregister_read(&mux, sock);
+                        ASSERT(rc >= 0);
                     } else {
                         output = diminuto_fd_write(STDOUT_FILENO, buffer, input, input);
                         ASSERT(output == input);
@@ -370,6 +380,8 @@ int main(int argc, char * argv[])
                     ASSERT(input >= 0);
                     if (input == 0) {
                         COMMENT("role=consumer fd=%d input=%zd\n", fd, input);
+                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        ASSERT(rc >= 0);
                         eof = !0;
                     } else {
                         output = diminuto_fd_write(sock, buffer, input, input);
@@ -381,10 +393,6 @@ int main(int argc, char * argv[])
                 }
             }
         }
-        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
-        ASSERT(rc >= 0);
-        rc = diminuto_mux_unregister_read(&mux, sock);
-        ASSERT(rc >= 0);
         rc = diminuto_ipc_close(sock);
         ASSERT(rc >= 0);
     }
