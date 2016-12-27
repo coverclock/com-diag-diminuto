@@ -282,10 +282,12 @@ static inline int diminuto_ipc6_close(int fd) {
  * determined using the nearend function.
  * @param address is the address of the interface that will be used.
  * @param port is the port number at which connection requests will rendezvous.
- * @param backlog is the limit to how many incoming connections may be queued.
+ * @param interface points to the interface name, or NULL.
+ * @param backlog is the limit to how many incoming connections may be queued,
+ * <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, int backlog);
+extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -294,7 +296,10 @@ extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, dimin
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_provider(diminuto_port_t port);
+static inline int diminuto_ipc6_stream_provider(diminuto_port_t port)
+{
+    return diminuto_ipc6_stream_provider_specific(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0, -1);
+}
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -308,13 +313,27 @@ extern int diminuto_ipc6_stream_provider(diminuto_port_t port);
 extern int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 /**
+ * Request a consumer-side stream socket to a provider using a specific
+ * interface. The address and port are in host byte order.
+ * @param address is the provider's IPv6 address.
+ * @param port is the provider's port.
+ * @param address0 is the address to which to bind the socket, or zero.
+ * @param port0 is the port to which to bind the socket, or zero
+ * @param interface points to the name of the interface, or NULL.
+ * @return a data stream socket to the provider or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_stream_consumer_specific(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface);
+
+/**
  * Request a consumer-side stream socket to a provider. The address and port
- * are in host byte oder.
+ * are in host byte order.
  * @param address is the provider's IPv6 address.
  * @param port is the provider's port.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port);
+static inline int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port) {
+    return diminuto_ipc6_stream_consumer_specific(address, port, DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0);
+}
 
 /**
  * Read bytes from a stream socket into a buffer until at least a minimum
@@ -357,9 +376,10 @@ static inline ssize_t diminuto_ipc6_stream_write(int fd, const void * buffer, si
  * @param address is the address of the interface that will be used.
  * @param port is the port number. If the port is zero, an unused ephemeral
  * port is allocated; its value can be determined using the nearend function.
+ * @param interface points to the name of the interface, or NULL.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_t port);
+extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_t port, const char * interface);
 
 /**
  * Request a peer datagram socket. The port is in host byte order.
@@ -367,7 +387,10 @@ extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminut
  * port is allocated; its value can be determined using the nearend function.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_datagram_peer(diminuto_port_t port);
+static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port)
+{
+    return diminuto_ipc6_datagram_peer_specific(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0);
+}
 
 /**
  * Receive a datagram from a datagram socket using the specified flags.

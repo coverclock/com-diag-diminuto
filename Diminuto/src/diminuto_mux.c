@@ -43,7 +43,7 @@ static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * set
         if (setp == &muxp->interrupt) { FD_SET(fd, &muxp->urgent_or_interrupt); }
         if (fd < setp->min) { setp->min = fd; }
         if (fd > setp->max) { setp->max = fd; }
-        rc = 0;
+        rc = fd;
     }
 
     return rc;
@@ -136,7 +136,7 @@ static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * s
         if (setp == &muxp->interrupt) { FD_CLR(fd, &muxp->urgent_or_interrupt); }
         diminuto_mux_set_bound(setp);
         diminuto_mux_set_normalize(setp);
-        rc = 0;
+        rc = fd;
     }
 
     return rc;
@@ -176,7 +176,7 @@ int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
     } else if (sigaddset(&muxp->mask, signum) < 0) {
         /* Do nothing. */
     } else {
-        rc = 0;
+        rc = signum;
     }
 
     return rc;

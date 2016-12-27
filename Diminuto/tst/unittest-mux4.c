@@ -93,8 +93,8 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
         ASSERT(pipefd[ii][0] >= 0);
         ASSERT(pipefd[ii][1] < ss);
         ASSERT(pipefd[ii][0] != pipefd[ii][1]);
-        ASSERT(diminuto_mux_register_read(&mux, pipefd[ii][0]) == 0);
-        ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) == 0);
+        ASSERT(diminuto_mux_register_read(&mux, pipefd[ii][0]) >= 0);
+        ASSERT(diminuto_mux_register_write(&mux, pipefd[ii][1]) >= 0);
         *(int *)*diminuto_fd_map_ref(mapp, pipefd[ii][0]) = ii;
         *(int *)*diminuto_fd_map_ref(mapp, pipefd[ii][1]) = ii;
     }
@@ -300,7 +300,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
 
-        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
+        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -310,7 +310,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == MIN_UNINIT);
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -320,7 +320,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == MIN_UNINIT);
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
+        ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -330,7 +330,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == MIN_UNINIT);
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_register_accept(&mux, socket) == 0);
+        ASSERT(diminuto_mux_register_accept(&mux, socket) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -340,7 +340,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == socket);
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_register_signal(&mux, SIGHUP) == 0);
+        ASSERT(diminuto_mux_register_signal(&mux, SIGHUP) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -350,7 +350,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == socket);
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_register_signal(&mux, SIGINT) == 0);
+        ASSERT(diminuto_mux_register_signal(&mux, SIGINT) >= 0);
         ASSERT(mux.read.min == STDIN_FILENO);
         ASSERT(mux.read.max == STDIN_FILENO);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -484,7 +484,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
 
-        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -494,7 +494,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == socket);
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -504,7 +504,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == socket);
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -514,7 +514,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == socket);
         ASSERT(mux.accept.max == socket);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_unregister_accept(&mux, socket) == 0);
+        ASSERT(diminuto_mux_unregister_accept(&mux, socket) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -524,7 +524,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == MIN_UNINIT);
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) == 0);
+        ASSERT(diminuto_mux_unregister_signal(&mux, SIGHUP) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -534,7 +534,7 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.min == MIN_UNINIT);
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
-        ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) == 0);
+        ASSERT(diminuto_mux_unregister_signal(&mux, SIGINT) >= 0);
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -679,10 +679,10 @@ int main(int argc, char ** argv)
 
         diminuto_mux_init(&mux);
 
-        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
-        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
-        ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) == 0);
-        ASSERT(diminuto_mux_register_accept(&mux, socket) == 0);
+        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
+        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
+        ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) >= 0);
+        ASSERT(diminuto_mux_register_accept(&mux, socket) >= 0);
 
         CHECKPOINT();
         ASSERT(diminuto_mux_wait(&mux, -1) == 2);
@@ -708,8 +708,8 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
-        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
-        ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) >= 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) >= 0);
 
         CHECKPOINT();
         ASSERT(diminuto_mux_wait(&mux, -1) == 1);
@@ -718,7 +718,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
-        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) >= 0);
         ASSERT(diminuto_mux_close(&mux, socket) == 0);
 
         diminuto_mux_dump(&mux);
@@ -739,8 +739,8 @@ int main(int argc, char ** argv)
 
         diminuto_mux_init(&mux);
 
-        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) == 0);
-        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) == 0);
+        ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
+        ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
 
         ASSERT(diminuto_mux_wait(&mux, -1) == 1);
 
@@ -749,8 +749,8 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
-        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) == 0);
-        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) == 0);
+        ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) >= 0);
+        ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) >= 0);
 
         STATUS();
     }
@@ -820,8 +820,8 @@ int main(int argc, char ** argv)
 
             diminuto_mux_init(&mux);
 
-            ASSERT(diminuto_mux_register_accept(&mux, listener) == 0);
-            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
+            ASSERT(diminuto_mux_register_accept(&mux, listener) >= 0);
+            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
 
             diminuto_mux_dump(&mux);
 
@@ -846,8 +846,8 @@ int main(int argc, char ** argv)
 
             ASSERT((producer = diminuto_ipc4_stream_accept(fd, &address, &port)) >= 0);
 
-            ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
-            ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
+            ASSERT(diminuto_mux_register_read(&mux, producer) >= 0);
+            ASSERT(diminuto_mux_register_write(&mux, producer) >= 0);
 
             diminuto_mux_dump(&mux);
 
@@ -1004,8 +1004,8 @@ int main(int argc, char ** argv)
             diminuto_mux_init(&mux);
 
             ASSERT((consumer = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("localhost"), rendezvous)) >= 0);
-            ASSERT(diminuto_mux_register_read(&mux, consumer) == 0);
-            ASSERT(diminuto_mux_register_urgent(&mux, consumer) == 0);
+            ASSERT(diminuto_mux_register_read(&mux, consumer) >= 0);
+            ASSERT(diminuto_mux_register_urgent(&mux, consumer) >= 0);
 
             totalreceived = 0;
             totalsent = 0;

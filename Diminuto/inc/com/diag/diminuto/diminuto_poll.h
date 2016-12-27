@@ -90,12 +90,12 @@ extern void diminuto_poll_fini(diminuto_poll_t * pollp);
  * Register a file descriptor with the poller for reading.
  * @param pollp points to an initialized poller structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_read(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_register_read(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -103,12 +103,12 @@ static inline int diminuto_poll_register_read(diminuto_poll_t * pollp, int fd) {
  * Register a file descriptor with the poller for writing.
  * @param pollp points to an initialized poller structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_write(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_register_write(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -117,12 +117,12 @@ static inline int diminuto_poll_register_write(diminuto_poll_t * pollp, int fd) 
  * connections.
  * @param pollp points to an initialized poller structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_accept(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_register_accept(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -131,12 +131,12 @@ static inline int diminuto_poll_register_accept(diminuto_poll_t * pollp, int fd)
  * typically means for urgent out-of-band one byte receives on a stream socket.
  * @param pollp points to an initialized poller structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_urgent(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_register_urgent(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -146,12 +146,12 @@ static inline int diminuto_poll_register_urgent(diminuto_poll_t * pollp, int fd)
  * pin configured to interrupt on edge or level transitions.
  * @param pollp points to an initialized poller structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_interrupt(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_register_interrupt(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -160,7 +160,7 @@ static inline int diminuto_poll_register_interrupt(diminuto_poll_t * pollp, int 
  * poller is waiting.
  * @param pollp points to an initialized poller structure.
  * @param signum is an unregistered blocked to be blocked.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_register_signal(diminuto_poll_t * pollp, int signum) {
     return diminuto_mux_register_signal(&pollp->mux, signum);
@@ -170,12 +170,12 @@ static inline int diminuto_poll_register_signal(diminuto_poll_t * pollp, int sig
  * Unregister a file descriptor from the poller for reading.
  * @param pollp points to an initialized poller structure.
  * @param fd is an registered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_read(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_unregister_read(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -183,12 +183,12 @@ static inline int diminuto_poll_unregister_read(diminuto_poll_t * pollp, int fd)
  * Unregister a file descriptor from the poller for writing.
  * @param pollp points to an initialized poller structure.
  * @param fd is a registered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_write(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_unregister_write(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -197,12 +197,12 @@ static inline int diminuto_poll_unregister_write(diminuto_poll_t * pollp, int fd
  * connections.
  * @param pollp points to an initialized poller structure.
  * @param fd is a registered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_accept(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_unregister_accept(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -210,12 +210,12 @@ static inline int diminuto_poll_unregister_accept(diminuto_poll_t * pollp, int f
  * Unregister a file descriptor from the poller for urgent exceptions.
  * @param pollp points to an initialized poller structure.
  * @param fd is a registered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_urgent(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_unregister_urgent(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -223,12 +223,12 @@ static inline int diminuto_poll_unregister_urgent(diminuto_poll_t * pollp, int f
  * Unregister a file descriptor from the poller for interrupt exceptions.
  * @param pollp points to an initialized poller structure.
  * @param fd is a registered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_interrupt(diminuto_poll_t * pollp, int fd) {
     int rc;
     rc = diminuto_mux_unregister_interrupt(&pollp->mux, fd);
-    if (rc == 0) { pollp->refresh = !0; }
+    if (rc >= 0) { pollp->refresh = !0; }
     return rc;
 }
 
@@ -237,7 +237,7 @@ static inline int diminuto_poll_unregister_interrupt(diminuto_poll_t * pollp, in
  * poller is waiting.
  * @param pollp points to an initialized poller structure.
  * @param signum is a registered signal to be unblocked.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 static inline int diminuto_poll_unregister_signal(diminuto_poll_t * pollp, int signum) {
     return diminuto_mux_unregister_signal(&pollp->mux, signum);

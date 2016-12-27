@@ -100,8 +100,8 @@ int main(int argc, char ** argv)
 
             diminuto_poll_init(&poll);
 
-            ASSERT(diminuto_poll_register_accept(&poll, listener) == 0);
-            ASSERT(diminuto_poll_unregister_signal(&poll, SIGALRM) == 0);
+            ASSERT(diminuto_poll_register_accept(&poll, listener) >= 0);
+            ASSERT(diminuto_poll_unregister_signal(&poll, SIGALRM) >= 0);
 
             diminuto_poll_dump(&poll);
 
@@ -126,8 +126,8 @@ int main(int argc, char ** argv)
 
             ASSERT((producer = diminuto_ipc4_stream_accept(fd, &address, &port)) >= 0);
 
-            ASSERT(diminuto_poll_register_read(&poll, producer) == 0);
-            ASSERT(diminuto_poll_register_write(&poll, producer) == 0);
+            ASSERT(diminuto_poll_register_read(&poll, producer) >= 0);
+            ASSERT(diminuto_poll_register_write(&poll, producer) >= 0);
 
             diminuto_poll_dump(&poll);
 
@@ -283,8 +283,8 @@ int main(int argc, char ** argv)
             diminuto_poll_init(&poll);
 
             ASSERT((consumer = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("localhost"), rendezvous)) >= 0);
-            ASSERT(diminuto_poll_register_read(&poll, consumer) == 0);
-            ASSERT(diminuto_poll_register_urgent(&poll, consumer) == 0);
+            ASSERT(diminuto_poll_register_read(&poll, consumer) >= 0);
+            ASSERT(diminuto_poll_register_urgent(&poll, consumer) >= 0);
 
             totalreceived = 0;
             totalsent = 0;

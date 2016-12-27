@@ -138,10 +138,11 @@ extern int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t
  * its value can be determined using the nearend function.
  * @param address is the address of the interface that will be used.
  * @param port is the port number at which connection requests will rendezvous.
- * @param backlog is the limit to how many incoming connections may be queued.
+ * @param interface points to the interface name, or NULL.
+ * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, int backlog);
+extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -150,7 +151,10 @@ extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, dimin
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider(diminuto_port_t port);
+static inline int diminuto_ipc4_stream_provider(diminuto_port_t port)
+{
+    return diminuto_ipc4_stream_provider_specific(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0, -1);
+}
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -165,12 +169,27 @@ extern int diminuto_ipc4_stream_provider(diminuto_port_t port);
 extern int diminuto_ipc4_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /**
+ * Request a consumer-side stream socket to a provider using a specific address,
+ * port, and interface on the near end.
+ * @param address is the provider's IPv4 address in host byte order.
+ * @param port is the provider's port in host byte order.
+ * @param address0 is the address to which to bind the socket, or zero.
+ * @param port0 is the port to which to bind the socket, or zero
+ * @param interface points to the name of the interface, or NULL.
+ * @return a data stream socket to the provider or <0 if an error occurred.
+ */
+extern int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface);
+
+/**
  * Request a consumer-side stream socket to a provider.
  * @param address is the provider's IPv4 address in host byte order.
  * @param port is the provider's port in host byte order.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port);
+static inline int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
+{
+    return diminuto_ipc4_stream_consumer_specific(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
+}
 
 /**
  * Request a peer datagram socket. The address and port are in host byte order.
@@ -178,9 +197,10 @@ extern int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_
  * be determined using the nearend function.
  * @param address is the IPv4 address of the interface to use.
  * @param port is the port number.
+ * @param interface points to the name of the interface, or NULL.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port);
+extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface);
 
 /**
  * Request a peer datagram socket. The port is in host byte order. If the port
@@ -189,7 +209,10 @@ extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminut
  * @param port is the port number.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_datagram_peer(diminuto_port_t port);
+static inline int diminuto_ipc4_datagram_peer(diminuto_port_t port)
+{
+    return diminuto_ipc4_datagram_peer_specific(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
+}
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.

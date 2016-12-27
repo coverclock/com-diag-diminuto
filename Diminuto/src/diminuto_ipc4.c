@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <linux/limits.h>
+#include <net/if.h>
 
 /*******************************************************************************
  * GLOBALS
@@ -44,13 +45,11 @@ const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2 = 0x7f000002UL;
 
 /*
  * If the socket is in the IPv4 family, we return the IPv4 address as is. If it
- * is unspecified, which can legitimately occur when a datagram send or receive
- * is performed against a stream socket (done typically to send an urgent data
- * byte out of band), we return zeros. Anything  else is an error.
+ * is anything else, we return zeros.
  */
 int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
-    int result = 0;
+    int rc = 0;
 
     if (sap->sa_family == AF_INET) {
         if (addressp != (diminuto_ipv4_t *)0) {
@@ -59,21 +58,17 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
         if (portp != (diminuto_port_t *)0) {
             *portp = ntohs(((struct sockaddr_in *)sap)->sin_port);
         }
-    } else if (sap->sa_family == AF_UNSPEC) {
-        result = 0;
+    } else {
         if (addressp != (diminuto_ipv4_t *)0) {
             *addressp = 0;
         }
         if (portp != (diminuto_port_t *)0) {
             *portp = 0;
         }
-    } else {
-        result = -1;
-        errno = EINVAL;
-        diminuto_perror("diminuto_ipc4_identify: sa_family");
+        rc = -10;
     }
 
-    return result;
+    return rc;
 }
 
 /*******************************************************************************
@@ -156,6 +151,7 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
 
 int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 {
+    int rc = fd;
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
 
@@ -166,129 +162,114 @@ int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 
     if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
         diminuto_perror("diminuto_ipc4_source: bind");
-        fd = -1;
+        rc = -11;
     }
 
-    return fd;
+    return rc;
 }
 
 /*******************************************************************************
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, int backlog)
+int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog)
 {
-    struct sockaddr_in sa = { 0 };
-    socklen_t length = sizeof(sa);
+    int rc;
     int fd;
 
-    if (backlog > SOMAXCONN) { backlog = SOMAXCONN; }
-
-    sa.sin_family = AF_INET;
-    /* INADDR_ANY is all zeros so this is overly paranoid. */
-    sa.sin_addr.s_addr = (address == 0) ? INADDR_ANY : htonl(address);
-    sa.sin_port = htons(port);
-
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_specific: socket");
-    } else if (diminuto_ipc4_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc4_provider_specific: diminuto_ipc4_set_reuseadddress");
-        diminuto_ipc4_close(fd);
-        fd = -2;
-    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_specific: bind");
-        diminuto_ipc4_close(fd);
-        fd = -3;
-    } else if (listen(fd, backlog) < 0) {
-        diminuto_perror("diminuto_ipc4_provider_specific: listen");
-        diminuto_ipc4_close(fd);
-        fd = -4;
+    if (backlog > SOMAXCONN) {
+        backlog = SOMAXCONN;
+    } else if (backlog < 0) {
+        backlog = SOMAXCONN;
     } else {
         /* Do nothing. */
     }
 
-    return fd;
-}
+    if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc4_stream_provider_specific: socket");
+    } else if ((rc = diminuto_ipc4_set_reuseaddress(fd, !0)) < 0) {
+        diminuto_ipc4_close(fd);
+    } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {
+        diminuto_ipc4_close(fd);
+    } else if ((rc = diminuto_ipc4_set_interface(fd, interface)) < 0) {
+        diminuto_ipc4_close(fd);
+    } else if (listen(fd, backlog) < 0) {
+        diminuto_perror("diminuto_ipc4_stream_provider_specific: listen");
+        diminuto_ipc4_close(fd);
+        rc = -12;
+    } else {
+        /* Do nothing. */
+    }
 
-int diminuto_ipc4_stream_provider(diminuto_port_t port)
-{
-    return diminuto_ipc4_stream_provider_specific(0, port, SOMAXCONN);
+    return rc;
 }
 
 int diminuto_ipc4_stream_accept(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
+    int rc;
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
-    int newfd;
 
-    if ((newfd = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
+    if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipc4_accept: accept");
-        newfd = -1;
+        rc = -13;
     } else {
         diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
     }
    
-    return newfd;
+    return rc;
 }
 
-int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
+int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface)
 {
+    int rc;
+    int fd;
     struct sockaddr_in sa = { 0 };
     socklen_t length = sizeof(sa);
-    int fd;
-    int rc;
 
     sa.sin_family = AF_INET;
     sa.sin_addr.s_addr = htonl(address);
     sa.sin_port = htons(port);
 
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_consumer: socket");
-    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
-        diminuto_perror("diminuto_ipc4_consumer: connect");
+    if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        diminuto_perror("diminuto_ipc4_stream_consumer_specific: socket");
+    } else if ((rc = diminuto_ipc4_source(fd, address0, port0)) < 0) {
         diminuto_ipc4_close(fd);
-        fd = -2;
+    } else if ((rc = diminuto_ipc4_set_interface(fd, interface)) < 0) {
+        diminuto_ipc4_close(fd);
+    } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipc4_stream_consumer_specific: connect");
+         diminuto_ipc4_close(fd);
+         rc = -14;
     } else {
         /* Do nothing. */
     }
 
-    return fd;
+    return rc;
 }
 
 /*******************************************************************************
  * DATAGRAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port)
+int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface)
 {
-    struct sockaddr_in sa = { 0 };
-    socklen_t length = sizeof(sa);
+    int rc;
     int fd;
 
-    sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = (address == 0) ? INADDR_ANY : htonl(address);
-    sa.sin_port = htons(port);
-
-    if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    if ((rc = fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_datagram_peer_specific: socket");
-    } else if (diminuto_ipc4_set_reuseaddress(fd, !0) != fd) {
-        diminuto_perror("diminuto_ipc4_datagram_peer_specific: diminuto_ipc4_set_reuseaddress");
+    } else if ((rc = diminuto_ipc4_set_reuseaddress(fd, !0)) < 0) {
         diminuto_ipc4_close(fd);
-        fd = -2;
-    } else if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc4_datagram_peer_specific: bind");
+    } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {
         diminuto_ipc4_close(fd);
-        fd = -3;
+    } else if ((rc = diminuto_ipc4_set_interface(fd, interface)) < 0) {
+        diminuto_ipc4_close(fd);
     } else {
         /* Do nothing. */
     }
 
-    return fd;
-}
-
-int diminuto_ipc4_datagram_peer(diminuto_port_t port)
-{
-    return diminuto_ipc4_datagram_peer_specific(0, port);
+    return rc;
 }
 
 ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)

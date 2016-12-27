@@ -416,7 +416,7 @@ int main(int argc, char * argv[])
         /* fd1 not bound to specific address, and port is ephemeral. */
 
         EXPECT(binding == 0x7f000001);
-        EXPECT((fd2 = diminuto_ipc4_datagram_peer_specific(binding, PORT)) >= 0);
+        EXPECT((fd2 = diminuto_ipc4_datagram_peer_specific(binding, PORT, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd2, &address2, &port2) >= 0);
 
         EXPECT(address2 == binding);
@@ -675,7 +675,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((provider = diminuto_ipc4_address("localhost")) == 0x7f000001);
-        ASSERT((service = diminuto_ipc4_stream_provider_specific(provider, PORT, 16)) >= 0);
+        ASSERT((service = diminuto_ipc4_stream_provider_specific(provider, PORT, (const char *)0, 16)) >= 0);
         EXPECT(diminuto_ipc4_nearend(service, &source, &rendezvous) >= 0);
         EXPECT(source == provider);
         EXPECT(rendezvous == PORT);

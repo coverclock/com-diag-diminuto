@@ -516,7 +516,7 @@ int main(int argc, char * argv[])
 
         server = diminuto_ipc6_address("::1");
         EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
-        EXPECT((fd = diminuto_ipc6_datagram_peer_specific(server, PORT)) >= 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer_specific(server, PORT, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &binding, &rendezvous) == 0);
         EXPECT(memcmp(&binding, &server, sizeof(binding)) == 0);
         EXPECT(rendezvous == PORT);
@@ -716,7 +716,7 @@ int main(int argc, char * argv[])
 
     /*
      * There's a subtle design flaw in the next unit test which I first ran
-     * first about fifteen years ago when doing socket programming under SunOS.
+     * about fifteen years ago when doing socket programming under SunOS.
      * It is possible for the two processes below to deadlock, one waiting
      * for space to become available on the output side, one waiting for data
      * to become available on the input side. I'm not concerned about this
@@ -740,7 +740,7 @@ int main(int argc, char * argv[])
         TEST();
 
         provider = diminuto_ipc6_address("::1");
-        ASSERT((service = diminuto_ipc6_stream_provider_specific(provider, PORT, 16)) >= 0);
+        ASSERT((service = diminuto_ipc6_stream_provider_specific(provider, PORT, (const char *)0, -1)) >= 0);
         EXPECT(diminuto_ipc6_nearend(service, &source, &rendezvous) >= 0);
         EXPECT(memcmp(&source, &provider, sizeof(source)) == 0);
         EXPECT(rendezvous == PORT);

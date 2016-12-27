@@ -90,10 +90,16 @@ typedef struct DiminutoMux {
 extern void diminuto_mux_init(diminuto_mux_t * muxp);
 
 /**
+ * Handle any necessary deinitialization on a multiplexer.
+ * param muxp points to the multiplexer structure.
+ */
+static inline void diminuto_mux_fini(diminuto_mux_t * muxp) {}
+
+/**
  * Register a file descriptor with the multiplexer for reading.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
 
@@ -101,7 +107,7 @@ extern int diminuto_mux_register_read(diminuto_mux_t * muxp, int fd);
  * Register a file descriptor with the multiplexer for writing.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
 
@@ -111,7 +117,7 @@ extern int diminuto_mux_register_write(diminuto_mux_t * muxp, int fd);
  * It is an error to register a registered file descriptor.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd);
 
@@ -121,7 +127,7 @@ extern int diminuto_mux_register_accept(diminuto_mux_t * muxp, int fd);
  * stream socket.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd);
 
@@ -131,7 +137,7 @@ extern int diminuto_mux_register_urgent(diminuto_mux_t * muxp, int fd);
  * (GPIO) pin configured to interrupt on edge or level transitions.
  * @param muxp points to an initialized multiplexer structure.
  * @param fd is an unregistered file descriptor.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_interrupt(diminuto_mux_t * muxp, int fd);
 
@@ -140,7 +146,7 @@ extern int diminuto_mux_register_interrupt(diminuto_mux_t * muxp, int fd);
  * multiplexer is waiting.
  * @param muxp points to an initialized multiplexer structure.
  * @param signum is an unregistered signal to be blocked.
- * @return 0 for success, <0 for error.
+ * @return >=0 for success, <0 for error.
  */
 extern int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum);
 

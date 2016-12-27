@@ -63,7 +63,7 @@ int diminuto_ipc_close(int fd)
 {
     if (close(fd) < 0) {
         diminuto_perror("diminuto_ipc_close: close");
-        fd = -1;
+        fd = -2;
     }
 
     return fd;
@@ -73,27 +73,27 @@ int diminuto_ipc_shutdown(int fd)
 {
     if (shutdown(fd, SHUT_RDWR) < 0) {
         diminuto_perror("diminuto_ipc_shutdown: shutdown");
-        fd = -1;
+        fd = -3;
     }
 
     return fd;
 }
 
-int diminuto_ipc_set_interface(int fd, const char * ifname)
+int diminuto_ipc_set_interface(int fd, const char * interface)
 {
     struct ifreq intf = { 0 };
     socklen_t length = 0;
 
-    if (ifname[0] != '\0') {
-        strncpy(intf.ifr_name, ifname, sizeof(intf.ifr_name));
-        intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
-        length = sizeof(intf);
-    }
-    if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) < 0) {
-        diminuto_perror("diminuto_ipc_set_interface: setsockopt(SO_BINDTODEVICE)");
-        fd = -1;
-    } else {
-        /* Do nothing: success. */
+    if (interface != (const char *)0) {
+        if (interface[0] != '\0') {
+            strncpy(intf.ifr_name, interface, sizeof(intf.ifr_name));
+            intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
+            length = sizeof(intf);
+        }
+        if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) < 0) {
+            diminuto_perror("diminuto_ipc_set_interface: setsockopt");
+            fd = -4;
+        }
     }
 
     return fd;
@@ -105,10 +105,10 @@ int diminuto_ipc_set_status(int fd, int enable, long mask)
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
-        fd = -1;
+        fd = -5;
     } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
-        fd = -2;
+        fd = -6;
     } else {
         /* Do nothing: success. */
     }
@@ -125,10 +125,10 @@ int diminuto_ipc_set_option(int fd, int enable, int option)
         /* Do nothing. */
     } else if (errno == EPERM) {
         diminuto_perror("diminuto_ipc_set_option: must be root");
-        fd = -1;
+        fd = -7;
     } else {
         diminuto_perror("diminuto_ipc_set_option: setsockopt");
-        fd = -1;
+        fd = -8;
     }
 
     return fd;
@@ -156,19 +156,15 @@ int diminuto_ipc_set_debug(int fd, int enable)
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 {
-    struct linger opt;
+    struct linger opt = { 0 };
 
     if (ticks > 0) {
         opt.l_onoff = !0;
         opt.l_linger = (ticks + diminuto_frequency() - 1) / diminuto_frequency();
-    } else {
-        opt.l_onoff = 0;
-        opt.l_linger = 0;
     }
-
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
-        fd = -1;
+        fd = -9;
     }
 
     return fd;

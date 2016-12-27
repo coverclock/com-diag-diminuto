@@ -100,8 +100,8 @@ int main(int argc, char ** argv)
 
             diminuto_mux_init(&mux);
 
-            ASSERT(diminuto_mux_register_accept(&mux, listener) == 0);
-            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) == 0);
+            ASSERT(diminuto_mux_register_accept(&mux, listener) >= 0);
+            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
 
             diminuto_mux_dump(&mux);
 
@@ -126,8 +126,8 @@ int main(int argc, char ** argv)
 
             ASSERT((producer = diminuto_ipc6_stream_accept(fd, &address, &port)) >= 0);
 
-            ASSERT(diminuto_mux_register_read(&mux, producer) == 0);
-            ASSERT(diminuto_mux_register_write(&mux, producer) == 0);
+            ASSERT(diminuto_mux_register_read(&mux, producer) >= 0);
+            ASSERT(diminuto_mux_register_write(&mux, producer) >= 0);
 
             diminuto_mux_dump(&mux);
 
@@ -282,8 +282,8 @@ int main(int argc, char ** argv)
             diminuto_mux_init(&mux);
 
             ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
-            ASSERT(diminuto_mux_register_read(&mux, consumer) == 0);
-            ASSERT(diminuto_mux_register_urgent(&mux, consumer) == 0);
+            ASSERT(diminuto_mux_register_read(&mux, consumer) >= 0);
+            ASSERT(diminuto_mux_register_urgent(&mux, consumer) >= 0);
 
             totalreceived = 0;
             totalsent = 0;
