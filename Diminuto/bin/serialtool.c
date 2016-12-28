@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#undef NDEBUG
 #include <assert.h>
 #include <stdlib.h>
 
@@ -176,8 +177,8 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -6          Six data bits.\n");
             fprintf(stderr, "       -7          Seven data bits.\n");
             fprintf(stderr, "       -8          Eight data bits.\n");
-            fprintf(stderr, "       -B          Loop back (send and receive).\n");
-            fprintf(stderr, "       -F          Loop forward (receive and send).\n");
+            fprintf(stderr, "       -B          Loop back (send then receive).\n");
+            fprintf(stderr, "       -F          Loop forward (receive then send).\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -e          Even parity.\n");

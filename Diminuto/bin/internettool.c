@@ -9,13 +9,13 @@
  *
  * EXAMPLES
  *
- * loopback -\?
+ * internettool -\?                                                                     # Help Menu
+ * 
+ * internettool -6 -p 5555                                                              # Service Provider
+ * internettool -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE    # Service Consumer
  *
- * loopback -6 -p 5555                                                              # Service Provider
- * loopback -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE    # Service Consumer
- *
- * loopback -4 -p 5555                                                              # Service Provider
- * loopback -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                         # Service Consumer
+ * internettool -4 -p 5555                                                              # Service Provider
+ * internettool -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                         # Service Consumer
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
@@ -74,16 +74,16 @@ int main(int argc, char * argv[])
     int opt;
 
 /*******************************************************************************
- * INITIALIZATION
+ * PRELIMINARIES
  ******************************************************************************/
 
     diminuto_log_setmask();
 
-    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
-
 /*******************************************************************************
  * PARSE
  ******************************************************************************/
+
+    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
     while ((opt = getopt(argc, argv, "46?A:P:a:b:i:p:")) >= 0) {
         switch (opt) {
@@ -113,6 +113,16 @@ int main(int argc, char * argv[])
             break;
         case '?':
             fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
+            fprintf(stderr, "       -?          Display this menu.\n");
+            fprintf(stderr, "       -4          Use IPv4.\n");
+            fprintf(stderr, "       -6          Use IPv6.\n");
+            fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
+            fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
+            fprintf(stderr, "       -i NEINTF   Bind near end socket to interface NEINTF.\n");
+            fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
+            fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
+            fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
+            fprintf(stderr, "       -?          Display this menu.\n");
             return 1;
             break;
         default:
@@ -233,17 +243,48 @@ int main(int argc, char * argv[])
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "blocksize=%zu\n", blocksize);
 
 /*******************************************************************************
- * ENDPOINTS
+ * INITIALIZATION
  ******************************************************************************/
 
-    if (Protocol == 4) {
-        if (Rendezvous == (const char *)0) {
+    buffer = (char *)malloc(blocksize);
+    assert(buffer != (char *)0);
+
+    diminuto_mux_init(&mux);
+
+/*******************************************************************************
+ * SERVICE PROVIDER
+ ******************************************************************************/
+
+    if (Rendezvous == (const char *)0) {
+
+        if (Protocol == 4) {
+
             sock = diminuto_ipc4_stream_provider_specific(address4, port46, Interface, -1);
             assert(sock >= 0);
             rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
             assert(rc >= 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+
+        } else if (Protocol == 6) {
+
+            sock = diminuto_ipc6_stream_provider_specific(address6, port46, Interface, -1);
+            assert(sock >= 0);
+            rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+            assert(rc >= 0);
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
         } else {
+            /* Do nothing. */
+        }
+
+/*******************************************************************************
+ * SERVICE CONSUMER
+ ******************************************************************************/
+
+    } else {
+
+        if (Protocol == 4) {
+
             sock = diminuto_ipc4_stream_consumer_specific(server4, rendezvous46, address4, port46, Interface);
             assert(sock >= 0);
             rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
@@ -252,15 +293,9 @@ int main(int argc, char * argv[])
             rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
             assert(rc >= 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-        }
-    } else if (Protocol == 6) {
-        if (Rendezvous == (const char *)0) {
-            sock = diminuto_ipc6_stream_provider_specific(address6, port46, Interface, -1);
-            assert(sock >= 0);
-            rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-        } else {
+
+        } else if (Protocol == 6) {
+
             sock = diminuto_ipc6_stream_consumer_specific(server6, rendezvous46, address6, port46, Interface);
             assert(sock >= 0);
             rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
@@ -269,22 +304,15 @@ int main(int argc, char * argv[])
             rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
             assert(rc >= 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+        } else {
+            /* Do nothing. */
         }
-    } else {
-        /* Do nothing. */
+
     }
 
-    buffer = (char *)malloc(blocksize);
-    assert(buffer != (char *)0);
-
 /*******************************************************************************
- * SETUP
- ******************************************************************************/
-
-    diminuto_mux_init(&mux);
-
-/*******************************************************************************
- * PROVIDER
+ * PROVIDE SERVICE
  ******************************************************************************/
 
     if (Rendezvous == (const char *)0) {
@@ -340,7 +368,7 @@ int main(int argc, char * argv[])
         assert(rc >= 0);
 
 /*******************************************************************************
- * CONSUMER
+ * CONSUME SERVICE
  ******************************************************************************/
 
     } else {
@@ -392,7 +420,7 @@ int main(int argc, char * argv[])
     }
 
 /*******************************************************************************
- * EXIT
+ * FINALIZE
  ******************************************************************************/
 
     diminuto_mux_fini(&mux);
