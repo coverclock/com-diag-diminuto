@@ -117,7 +117,7 @@ SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
 GENERATED			:=	vintage setup generate
-SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h
+SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h $(PROJECT)_revision.h
 
 ALIASES				:=	hex oct ntohs htons ntohl htonl
 
@@ -613,9 +613,6 @@ $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h:	Makefile
 	echo '#define _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_REVISION "$(REVISION)"' >> $@
 	echo '#endif' >> $@
-
-# For embedding in the library archive and shared object.
-$(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_revision.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h
 
 # For embedding in the library archive and shared object.
 $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_revision.o:	$(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h
