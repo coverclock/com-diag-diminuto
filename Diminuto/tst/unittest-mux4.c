@@ -844,7 +844,7 @@ int main(int argc, char ** argv)
             ASSERT((fd = diminuto_mux_ready_accept(&mux)) >= 0);
             ASSERT(fd == listener);
 
-            ASSERT((producer = diminuto_ipc4_stream_accept(fd, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc4_stream_accept_generic(fd, &address, &port)) >= 0);
 
             ASSERT(diminuto_mux_register_read(&mux, producer) >= 0);
             ASSERT(diminuto_mux_register_write(&mux, producer) >= 0);

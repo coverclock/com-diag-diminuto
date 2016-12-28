@@ -310,7 +310,18 @@ static inline int diminuto_ipc6_stream_provider(diminuto_port_t port)
  * @param portp if non-NULL points to where the port will be stored.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+extern int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+
+/**
+ * Wait for and accept a connection request from a consumer on a provider-side
+ * stream socket.
+ * @param fd is the provider-side stream socket.
+ * @return a data stream socket to the requestor or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_stream_accept(int fd)
+{
+    return diminuto_ipc6_stream_accept_generic(fd, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
+}
 
 /**
  * Request a consumer-side stream socket to a provider using a specific

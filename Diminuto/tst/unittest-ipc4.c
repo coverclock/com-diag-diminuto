@@ -528,7 +528,7 @@ int main(int argc, char * argv[])
 
             address = 0;
             port = (diminuto_port_t)-1;
-            EXPECT((producer = diminuto_ipc4_stream_accept(service, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipc4_stream_accept_generic(service, &address, &port)) >= 0);
             EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
             EXPECT(port != (diminuto_port_t)-1);
             EXPECT(port != rendezvous);
@@ -600,7 +600,7 @@ int main(int argc, char * argv[])
 
             int producer;
 
-            EXPECT((producer = diminuto_ipc4_stream_accept(service, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipc4_stream_accept_generic(service, &address, &port)) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
@@ -699,7 +699,7 @@ int main(int argc, char * argv[])
             size_t totalreceived;
             int status;
 
-            ASSERT((producer = diminuto_ipc4_stream_accept(service, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc4_stream_accept_generic(service, &address, &port)) >= 0);
 
             here = output;
             used = sizeof(output);

@@ -331,14 +331,14 @@ int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_por
     return rc;
 }
 
-int diminuto_ipc6_stream_accept(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     int rc;
     struct sockaddr_in6 sa = { 0 };
     socklen_t length = sizeof(sa);
 
     if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipc6_accept: accept");
+        diminuto_perror("diminuto_ipc6_accept_generic: accept");
         rc = -43;
     } else {
         diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);

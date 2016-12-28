@@ -176,7 +176,7 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
             }
 
             while ((fd = diminuto_poll_ready_accept(&poll)) >= 0) {
-                fd = diminuto_ipc6_stream_accept(fd, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
+                fd = diminuto_ipc6_stream_accept(fd);
                 if (fd >= 0) {
                     ++connects;
                     provider_connect(pid, &poll, &queue[fd], fd);

@@ -663,7 +663,7 @@ int main(int argc, char * argv[])
 
             memcpy(&address, &TEST6, sizeof(address));
             port = TEST_PORT;
-            EXPECT((producer = diminuto_ipc6_stream_accept(service, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
             EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
             EXPECT(port != TEST_PORT);
             EXPECT(port != rendezvous);
@@ -764,7 +764,7 @@ int main(int argc, char * argv[])
             size_t totalreceived;
             int status;
 
-            ASSERT((producer = diminuto_ipc6_stream_accept(service, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
 
             here = output;
             used = sizeof(output);

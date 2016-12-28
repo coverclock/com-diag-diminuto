@@ -7,7 +7,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * #XAMPLES
+ * EXAMPLES
  *
  * SERVICE PROVIDER:    unittest-ipc-pipe -6 -p 5555
  * SERVICE CONSUMER:    unittest-ipc-pipe -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE
@@ -304,11 +304,11 @@ int main(int argc, char * argv[])
                     break;
                 }
                 if (Protocol == 4) {
-                    fd = diminuto_ipc4_stream_accept(fd, &datum4, &datum46);
+                    fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
                     ASSERT(fd >= 0);
                     COMMENT("role=provider end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
                 } else if (Protocol == 6) {
-                    fd = diminuto_ipc6_stream_accept(fd, &datum6, &datum46);
+                    fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
                     ASSERT(fd >= 0);
                     COMMENT("role=provider end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
                 } else {
