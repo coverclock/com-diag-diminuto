@@ -112,8 +112,6 @@ OUT					:=	$(OUT_DIR)/$(TARGET)
 TEMP_DIR			:=	/tmp
 ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
 
-SVNREPO				:=	svn://graphite/$(PROJECT)
-SVNURL				:=	$(SVNREPO)/trunk/$(TITLE)
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
 GENERATED			:=	vintage setup generate
@@ -262,11 +260,11 @@ distribution distro $(DISTRIBUTION).tgz:
 	D=`dirname $(DISTRIBUTION)`; mkdir -p $$D; \
 	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
 	B=`basename $(DISTRIBUTION)`; \
-	( cd $$T; svn export $(SVNURL) $$B; ); \
-	tar -C $$T --exclude-vcs -cvzf - $$B > $(DISTRIBUTION).tgz; \
+	( cd $$T; git clone $(GITURL) $$B ); \
+	tar -C $$T --exclude-vcs -cvzf - ./$$B > $(DISTRIBUTION).tgz; \
 	rm -rf $$T/$$B; \
 	tar -C $$T -xvzf - < $(DISTRIBUTION).tgz; \
-	( cd $$T/$$B; make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
+	( cd $$T/$$B/$(TITLE); make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
 	rm -rf $$T
 
 # Useful for copying a tarball of the current development source base to a
@@ -289,27 +287,6 @@ tarball $(TARBALL).tgz:
 
 backup:
 	tar --exclude=$(OUT_DIR) -cvzf - . > ../$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z).tgz
-
-########## Source Code Control
-
-.PHONY: commit dcommit push origin init
-
-commit:
-	git commit .
-
-dcommit:
-	git svn dcommit
-
-push:
-	git push origin master
-
-pull:
-	git pull origin master
-
-init:
-	git svn show-ignore > .gitignore
-	git add .gitignore
-	git remote add origin $(GITURL)
 
 ########## Target C Libraries
 
