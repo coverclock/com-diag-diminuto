@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -16,5 +16,12 @@
  * @return zero if successful, non-zero otherwise.
  */
 extern int diminuto_core_enable(void);
+
+/**
+ * Try to end the calling processes and generate a core
+ * dump if possible (see above).  Several mechanisms
+ * of increasing severity are  attempted.
+ */
+extern void diminuto_core_fatal(void);
 
 #endif

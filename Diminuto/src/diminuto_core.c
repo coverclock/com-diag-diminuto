@@ -15,8 +15,10 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <sys/types.h>
+#include <signal.h>
+#include <stdlib.h>
 
-int diminuto_core_enable()
+int diminuto_core_enable(void)
 {
 	int rc = -1;
 	struct rlimit limit;
@@ -40,4 +42,12 @@ int diminuto_core_enable()
     } while (0);
 
 	return rc;
+}
+
+void diminuto_core_fatal(void)
+{
+    abort();
+    (void)kill(getpid(), SIGSEGV);
+    *((volatile char *)0);
+    _exit(1);
 }

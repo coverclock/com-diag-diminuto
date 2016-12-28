@@ -11,7 +11,7 @@
  *       be in the dialout group to access serial ports.
  */
 
-#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
@@ -22,6 +22,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <assert.h>
+#include <stdlib.h>
 
 static int done = 0;
 static int curious = 0;
@@ -81,6 +83,8 @@ int main(int argc, char * argv[])
     struct sigaction action = { 0 };
     int printable = 0;
     unsigned int seconds = 1;
+
+    diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -194,29 +198,29 @@ int main(int argc, char * argv[])
     hertz = diminuto_frequency();
 
     action.sa_handler = handler;
-    ASSERT(sigaction(SIGPIPE, &action, (struct sigaction *)0) >= 0);
-    ASSERT(sigaction(SIGINT, &action, (struct sigaction *)0) >= 0);
-    ASSERT(sigaction(SIGQUIT, &action, (struct sigaction *)0) >= 0);
-    ASSERT(sigaction(SIGTERM, &action, (struct sigaction *)0) >= 0);
-    ASSERT(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
-    ASSERT(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGPIPE, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGINT, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGQUIT, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGTERM, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
+    assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    CHECKPOINT("loop%s %s %dbps %d%c%d %s %s %s %s %useconds\n", forward ? "forward" : "backward", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", seconds);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "loop%s %s %dbps %d%c%d %s %s %s %s %useconds\n", forward ? "forward" : "backward", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", seconds);
 
     fd = open(device, O_RDWR);
-    ASSERT(fd >= 0);
+    assert(fd >= 0);
 
     rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
-    ASSERT(rc == 0);
+    assert(rc == 0);
 
     rc = diminuto_serial_raw(fd);
-    ASSERT(rc == 0);
+    assert(rc == 0);
 
     fp = fdopen(fd, "r+");
-    ASSERT(fp != (FILE *)0);
+    assert(fp != (FILE *)0);
 
     rc = diminuto_serial_unbuffered(fp);
-    ASSERT(rc == 0);
+    assert(rc == 0);
 
     bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
@@ -237,7 +241,7 @@ int main(int argc, char * argv[])
             input = fgetc(fp);
             if (input != EOF) {
      		    if (!running) {
-     		        CHECKPOINT("running\n");
+     		        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
                     running = !0;
                 }
                 output = input;
@@ -247,18 +251,18 @@ int main(int argc, char * argv[])
                 now = diminuto_time_elapsed();
                 elapsed = (now - then) / (double)hertz;
                 bandwidth = (count * bitspercharacter) / elapsed;
-                CHECKPOINT("done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
             } else if (curious) {
                 now = diminuto_time_elapsed();
                 elapsed = (now - then) / (double)hertz;
                 bandwidth = (count * bitspercharacter) / elapsed;
-                CHECKPOINT("curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                 curious = 0;
             } else {
                 now = diminuto_time_elapsed();
                 elapsed = (now - then) / (double)hertz;
                 bandwidth = (count * bitspercharacter) / elapsed;
-                CHECKPOINT("eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                 done = !0;
             }
         }
@@ -278,12 +282,11 @@ int main(int argc, char * argv[])
                 alarm(0);
                 if (input != EOF) {
      		        if (!running) {
-     			        CHECKPOINT("running\n");
+     			        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
      			        running = !0;
      		        }
                     if (input != output) {
-                        CHECKPOINT("mismatch 0x%x 0x%x\n", input, output);
-                        FAILURE();
+                        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "mismatch 0x%x 0x%x\n", input, output);
                         done = !0;
                         break;
                     }
@@ -300,27 +303,26 @@ int main(int argc, char * argv[])
                     now = diminuto_time_elapsed();
                     elapsed = (now - then) / (double)hertz;
                     bandwidth = (count * bitspercharacter) / elapsed;
-                    CHECKPOINT("timeout %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
-                    FAILURE();
+                    DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "timeout %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                     done = !0;
                     break;
                 } else if (done) {
                     now = diminuto_time_elapsed();
                     elapsed = (now - then) / (double)hertz;
                     bandwidth = (count * bitspercharacter) / elapsed;
-                    CHECKPOINT("done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "done %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                     break;
                 } else if (curious) {
                     now = diminuto_time_elapsed();
                     elapsed = (now - then) / (double)hertz;
                     bandwidth = (count * bitspercharacter) / elapsed;
-                    CHECKPOINT("curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "curious %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                     curious = 0;
                 } else {
                     now = diminuto_time_elapsed();
                     elapsed = (now - then) / (double)hertz;
                     bandwidth = (count * bitspercharacter) / elapsed;
-                    CHECKPOINT("eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
+                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "eof %luB %.6lfs %dbaud %dbpC %.6lfbps\n", count, elapsed, bitspersecond, bitspercharacter, bandwidth);
                     done = !0;
                     break;
                 }
@@ -329,7 +331,7 @@ int main(int argc, char * argv[])
                 
     }
 
-    CHECKPOINT("fini\n");
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "fini\n");
 
-    EXIT();
+    exit(0);
 }

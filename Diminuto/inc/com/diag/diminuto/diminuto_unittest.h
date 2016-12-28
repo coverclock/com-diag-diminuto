@@ -152,6 +152,7 @@ extern int diminuto_unittest_errors;
             fflush(stdout); \
             fflush(stderr); \
             diminuto_core_enable(); \
+            diminuto_core_fatal(); \
             FATAL("0x%x", *((volatile char *)0)); \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
             EXIT(); \
