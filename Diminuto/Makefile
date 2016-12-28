@@ -286,7 +286,7 @@ tarball $(TARBALL).tgz:
 .PHONY:	backup
 
 backup:
-	tar --exclude=$(OUT_DIR) -cvzf - . > ../$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z).tgz
+	tar --exclude=$(OUT_DIR) -cvzf - . > $(HOME)/$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z).tgz
 
 ########## Target C Libraries
 
