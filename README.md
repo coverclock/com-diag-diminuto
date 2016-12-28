@@ -131,15 +131,16 @@ UTILITIES
 * coreable - enable core dumps.
 * dec - display an argument number in decimal.
 * dump - display a file in a formatted hexidecimal dump.
-* gpiotool - simple get and set GPIO pins.
 * hex - display an argument number in hexidecimal.
+* internettool - test internet connections.
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the time in the local time zone in ISO 8601 format.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
-* pintool - scriptable get and set GPIO pins.
+* pintool - manipulate GPIO pins.
+* serialtool - test serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
 * usecsleep - sleep for a specified number of microseconds.
