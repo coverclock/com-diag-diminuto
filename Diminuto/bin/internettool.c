@@ -442,7 +442,7 @@ int main(int argc, char * argv[])
  * PROVIDE SERVICE - IPv6 - TCP
  ******************************************************************************/
 
-    else if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 't')) {
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '6') && (Layer3 == 't')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
