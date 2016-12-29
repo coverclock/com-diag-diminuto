@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
     diminuto_port_t rendezvous46 = 0;
     diminuto_port_t datum46 = 0;
     char * interface = (char *)0;
-    size_t blocksize = 4096;
+    size_t blocksize = 512;
     char string[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")] = { '\0' };
     char * buffer = (char *)0;
     ssize_t input = 0;
@@ -75,14 +75,10 @@ int main(int argc, char * argv[])
     int opt;
 
 /*******************************************************************************
- * PRELIMINARIES
+ * PARSE
  ******************************************************************************/
 
     diminuto_log_setmask();
-
-/*******************************************************************************
- * PARSE
- ******************************************************************************/
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -602,6 +598,53 @@ int main(int argc, char * argv[])
 
     else if ((Rendezvous != (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
 
+        diminuto_mux_init(&mux);
+        rc = diminuto_mux_register_read(&mux, sock);
+        assert(rc >= 0);
+        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        assert(rc >= 0);
+        while ((!eof) || (total > 0)) {
+            fds = diminuto_mux_wait(&mux, -1);
+            assert(fds > 0);
+            while (!0) {
+                fd = diminuto_mux_ready_read(&mux);
+                if (fd < 0) {
+                    break;
+                }
+                if (fd == sock) {
+                    datum4 = DIMINUTO_IPC4_UNSPECIFIED;
+                    datum46 = 0;
+                    input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
+                    assert(input > 0);
+                    assert(datum4 == server4);
+                    assert(datum46 == rendezvous46);
+                    output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
+                    assert(output == input);
+                    total -= output;
+                } else if (fd == STDIN_FILENO) {
+                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
+                    assert(input >= 0);
+                    if (input == 0) {
+                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        assert(rc >= 0);
+                        eof = !0;
+                    } else {
+                        output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, server4, rendezvous46, 0);
+                        assert(output == input);
+                        total += output;
+                    }
+                } else {
+                    assert(0);
+                }
+            }
+        }
+        rc = diminuto_mux_unregister_read(&mux, sock);
+        assert(rc >= 0);
+        rc = diminuto_ipc_close(sock);
+        assert(rc >= 0);
+        diminuto_mux_fini(&mux);
+
     }
 
 /*******************************************************************************
@@ -609,6 +652,53 @@ int main(int argc, char * argv[])
  ******************************************************************************/
 
     else if ((Rendezvous != (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
+
+        diminuto_mux_init(&mux);
+        rc = diminuto_mux_register_read(&mux, sock);
+        assert(rc >= 0);
+        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        assert(rc >= 0);
+        while ((!eof) || (total > 0)) {
+            fds = diminuto_mux_wait(&mux, -1);
+            assert(fds > 0);
+            while (!0) {
+                fd = diminuto_mux_ready_read(&mux);
+                if (fd < 0) {
+                    break;
+                }
+                if (fd == sock) {
+                    datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+                    datum46 = 0;
+                    input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
+                    assert(input > 0);
+                    assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+                    assert(datum46 == rendezvous46);
+                    output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
+                    assert(output == input);
+                    total -= output;
+                } else if (fd == STDIN_FILENO) {
+                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
+                    assert(input >= 0);
+                    if (input == 0) {
+                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        assert(rc >= 0);
+                        eof = !0;
+                    } else {
+                        output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, server6, rendezvous46, 0);
+                        assert(output == input);
+                        total += output;
+                    }
+                } else {
+                    assert(0);
+                }
+            }
+        }
+        rc = diminuto_mux_unregister_read(&mux, sock);
+        assert(rc >= 0);
+        rc = diminuto_ipc_close(sock);
+        assert(rc >= 0);
+        diminuto_mux_fini(&mux);
 
     }
 
