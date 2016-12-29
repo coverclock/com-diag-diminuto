@@ -416,7 +416,7 @@ int main(int argc, char * argv[])
         /* fd1 not bound to specific address, and port is ephemeral. */
 
         EXPECT(binding == 0x7f000001);
-        EXPECT((fd2 = diminuto_ipc4_datagram_peer_specific(binding, PORT, (const char *)0)) >= 0);
+        EXPECT((fd2 = diminuto_ipc4_datagram_peer_generic(binding, PORT, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd2, &address2, &port2) >= 0);
 
         EXPECT(address2 == binding);

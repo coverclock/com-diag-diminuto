@@ -190,6 +190,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -m          Modem control.\n");
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
             fprintf(stderr, "       -t SECONDS  Timeout in SECONDS.\n");
+            return 1;
             break;
 
     	}

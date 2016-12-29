@@ -186,7 +186,7 @@ int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port
     }
 
     if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_stream_provider_specific: socket");
+        diminuto_perror("diminuto_ipc4_stream_provider_generic: socket");
     } else if ((rc = diminuto_ipc4_set_reuseaddress(fd, !0)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {
@@ -194,7 +194,7 @@ int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port
     } else if ((rc = diminuto_ipc4_set_interface(fd, interface)) < 0) {
         diminuto_ipc4_close(fd);
     } else if (listen(fd, backlog) < 0) {
-        diminuto_perror("diminuto_ipc4_stream_provider_specific: listen");
+        diminuto_perror("diminuto_ipc4_stream_provider_generic: listen");
         diminuto_ipc4_close(fd);
         rc = -22;
     } else {
@@ -220,7 +220,7 @@ int diminuto_ipc4_stream_accept_generic(int fd, diminuto_ipv4_t * addressp, dimi
     return rc;
 }
 
-int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface)
+int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface)
 {
     int rc;
     int fd;
@@ -232,13 +232,13 @@ int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_por
     sa.sin_port = htons(port);
 
     if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_stream_consumer_specific: socket");
+        diminuto_perror("diminuto_ipc4_stream_consumer_generic: socket");
     } else if ((rc = diminuto_ipc4_source(fd, address0, port0)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_set_interface(fd, interface)) < 0) {
         diminuto_ipc4_close(fd);
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipc4_stream_consumer_specific: connect");
+        diminuto_perror("diminuto_ipc4_stream_consumer_generic: connect");
          diminuto_ipc4_close(fd);
          rc = -24;
     } else {
@@ -252,13 +252,13 @@ int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_por
  * DATAGRAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface)
+int diminuto_ipc4_datagram_peer_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface)
 {
     int rc;
     int fd;
 
     if ((rc = fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc4_datagram_peer_specific: socket");
+        diminuto_perror("diminuto_ipc4_datagram_peer_generic: socket");
     } else if ((rc = diminuto_ipc4_set_reuseaddress(fd, !0)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {

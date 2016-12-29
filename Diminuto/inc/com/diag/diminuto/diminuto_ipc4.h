@@ -189,7 +189,7 @@ static inline int diminuto_ipc4_stream_accept(int fd)
  * @param interface points to the name of the interface, or NULL.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface);
+extern int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface);
 
 /**
  * Request a consumer-side stream socket to a provider.
@@ -199,7 +199,7 @@ extern int diminuto_ipc4_stream_consumer_specific(diminuto_ipv4_t address, dimin
  */
 static inline int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port)
 {
-    return diminuto_ipc4_stream_consumer_specific(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
+    return diminuto_ipc4_stream_consumer_generic(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
 }
 
 /**
@@ -211,7 +211,7 @@ static inline int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminut
  * @param interface points to the name of the interface, or NULL.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface);
+extern int diminuto_ipc4_datagram_peer_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface);
 
 /**
  * Request a peer datagram socket. The port is in host byte order. If the port
@@ -222,7 +222,7 @@ extern int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminut
  */
 static inline int diminuto_ipc4_datagram_peer(diminuto_port_t port)
 {
-    return diminuto_ipc4_datagram_peer_specific(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
+    return diminuto_ipc4_datagram_peer_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
 }
 
 /**

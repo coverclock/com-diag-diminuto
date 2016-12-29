@@ -516,7 +516,7 @@ int main(int argc, char * argv[])
 
         server = diminuto_ipc6_address("::1");
         EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
-        EXPECT((fd = diminuto_ipc6_datagram_peer_specific(server, PORT, (const char *)0)) >= 0);
+        EXPECT((fd = diminuto_ipc6_datagram_peer_generic(server, PORT, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &binding, &rendezvous) == 0);
         EXPECT(memcmp(&binding, &server, sizeof(binding)) == 0);
         EXPECT(rendezvous == PORT);

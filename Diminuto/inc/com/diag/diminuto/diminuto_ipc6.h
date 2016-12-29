@@ -408,7 +408,7 @@ static inline ssize_t diminuto_ipc6_stream_write(int fd, const void * buffer, si
  * @param interface points to the name of the interface, or NULL.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_t port, const char * interface);
+extern int diminuto_ipc6_datagram_peer_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface);
 
 /**
  * Request a peer datagram socket. The port is in host byte order.
@@ -418,7 +418,7 @@ extern int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminut
  */
 static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port)
 {
-    return diminuto_ipc6_datagram_peer_specific(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0);
+    return diminuto_ipc6_datagram_peer_generic(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0);
 }
 
 /**

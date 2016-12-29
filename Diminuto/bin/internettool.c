@@ -57,7 +57,8 @@ int main(int argc, char * argv[])
     ssize_t input = 0;
     ssize_t output = 0;
     ssize_t total = 0;
-    int Protocol = 0;
+    char Layer2 = '4';
+    char Layer3 = 't';
     int sock = -2;
     int fd = -3;
     int rc = 0;
@@ -85,13 +86,17 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "46?A:P:a:b:i:p:")) >= 0) {
+    while ((opt = getopt(argc, argv, "46?A:P:a:b:i:p:tu")) >= 0) {
         switch (opt) {
         case '4':
-            Protocol = 4; /* IPv4 */
-            break;
         case '6':
-            Protocol = 6; /* IPv6 */
+            Layer2 = opt; /* IPv4 or IPv6 */
+            break;
+        case 'A':
+            Server = optarg; /* far end server address */
+            break;
+        case 'P':
+            Rendezvous = optarg; /* far end port number */
             break;
         case 'a':
             Address = optarg; /* near end bind address */
@@ -105,23 +110,23 @@ int main(int argc, char * argv[])
         case 'p':
             Port = optarg; /* near end bind port number */
             break;
-        case 'A':
-            Server = optarg; /* far end server address */
-            break;
-        case 'P':
-            Rendezvous = optarg; /* far end port number */
+        case 't':
+        case 'u':
+            Layer3 = opt; /* tcp or udp */
             break;
         case '?':
-            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
+            fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
+            fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
             fprintf(stderr, "       -i NEINTF   Bind near end socket to interface NEINTF.\n");
             fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
-            fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
-            fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
+            fprintf(stderr, "       -t          Use TCP.\n");
+            fprintf(stderr, "       -u          Use UDP.\n");
             fprintf(stderr, "       -?          Display this menu.\n");
             return 1;
             break;
@@ -134,29 +139,37 @@ int main(int argc, char * argv[])
  * PARAMETERS
  ******************************************************************************/
 
-    if (Protocol == 4) {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Protocol=%d\n", Protocol);
-    } else if (Protocol == 6) {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Protocol=%d\n", Protocol);
+    if (Layer2 == '4') {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer2=IPv4\n");
+    } else if (Layer2 == '6') {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer2=IPv6\n");
+    } else {
+        assert(!0);
+    }
+
+    if (Layer3 == 't') {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=TCP\n");
+    } else if (Layer3 == 'u') {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=UDP\n");
     } else {
         assert(!0);
     }
 
     if (Address == (const char *)0) {
         /* Do nothing. */
-    } else if (Protocol == 4) {
+    } else if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Address4=\"%s\"\n", Address);
         address4 = diminuto_ipc4_address(Address);
-    } else if (Protocol == 6) {
+    } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Address6=\"%s\"\n", Address);
         address6 = diminuto_ipc6_address(Address);
     } else {
         /* Do nothing. */
     }
 
-    if (Protocol == 4) {
+    if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address4=%s\n",  diminuto_ipc4_address2string(address4, string, sizeof(string)));
-    } else if (Protocol == 6) {
+    } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address6=%s\n",  diminuto_ipc6_address2string(address6, string, sizeof(string)));
     } else {
         /* Do nothing. */
@@ -173,19 +186,19 @@ int main(int argc, char * argv[])
 
     if (Server == (const char *)0) {
         /* Do nothing. */
-    } else if (Protocol == 4) {
+    } else if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Server4=\"%s\"\n", Server);
         server4 = diminuto_ipc4_address(Server);
-    } else if (Protocol == 6) {
+    } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Server6=\"%s\"\n", Server);
         server6 = diminuto_ipc6_address(Server);
     } else {
         /* Do nothing. */
     }
 
-    if (Protocol == 4) {
+    if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server4=%s\n", diminuto_ipc4_address2string(server4, string, sizeof(string)));
-    } else if (Protocol == 6) {
+    } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server6=%s\n", diminuto_ipc6_address2string(server6, string, sizeof(string)));
     } else {
         /* Do nothing. */
@@ -213,13 +226,13 @@ int main(int argc, char * argv[])
             }
         }
         assert(interface != (char *)0);
-        if (Protocol == 4) {
+        if (Layer2 == '4') {
             addresses4 = diminuto_ipc4_interface(interface);
             assert(addresses4 != (diminuto_ipv4_t *)0);
             for (; *addresses4 != DIMINUTO_IPC4_UNSPECIFIED; ++addresses4) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface4=%s\n", diminuto_ipc4_address2string(*addresses4, string, sizeof(string)));
             }
-        } else if (Protocol == 6) {
+        } else if (Layer2 == '6') {
             addresses6 = diminuto_ipc6_interface(interface);
             assert(addresses6 != (diminuto_ipv6_t *)0);
             for (; memcmp(addresses6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(*addresses6)) != 0; ++addresses6) {
@@ -257,7 +270,7 @@ int main(int argc, char * argv[])
 
     if (Rendezvous == (const char *)0) {
 
-        if (Protocol == 4) {
+        if (Layer2 == '4') {
 
             sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
             assert(sock >= 0);
@@ -265,7 +278,7 @@ int main(int argc, char * argv[])
             assert(rc >= 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
 
-        } else if (Protocol == 6) {
+        } else if (Layer2 == '6') {
 
             sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
             assert(sock >= 0);
@@ -283,9 +296,9 @@ int main(int argc, char * argv[])
 
     } else {
 
-        if (Protocol == 4) {
+        if (Layer2 == '4') {
 
-            sock = diminuto_ipc4_stream_consumer_specific(server4, rendezvous46, address4, port46, Interface);
+            sock = diminuto_ipc4_stream_consumer_generic(server4, rendezvous46, address4, port46, Interface);
             assert(sock >= 0);
             rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
             assert(rc >= 0);
@@ -294,7 +307,7 @@ int main(int argc, char * argv[])
             assert(rc >= 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
 
-        } else if (Protocol == 6) {
+        } else if (Layer2 == '6') {
 
             sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
             assert(sock >= 0);
@@ -327,11 +340,11 @@ int main(int argc, char * argv[])
                 if (fd < 0) {
                     break;
                 }
-                if (Protocol == 4) {
+                if (Layer2 == '4') {
                     fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
                     assert(fd >= 0);
                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-                } else if (Protocol == 6) {
+                } else if (Layer2 == '6') {
                     fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
                     assert(fd >= 0);
                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
