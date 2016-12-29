@@ -346,7 +346,7 @@ int main(int argc, char * argv[])
                 if (fd < 0) {
                     break;
                 }
-                input = diminuto_fd_read(fd, buffer, 1, blocksize);
+                input = diminuto_fd_read(fd, buffer, blocksize);
                 assert(input >= 0);
                 if (input == 0) {
                     rc = diminuto_ipc_close(fd);
@@ -355,7 +355,7 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d input=%zd\n", fd, input);
                 } else {
-                    output = diminuto_fd_write(fd, buffer, input, input);
+                    output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                 }
             }
@@ -386,19 +386,19 @@ int main(int argc, char * argv[])
                     break;
                 }
                 if (fd == sock) {
-                    input = diminuto_fd_read(sock, buffer, 1, blocksize);
+                    input = diminuto_fd_read(sock, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, sock);
                         assert(rc >= 0);
                     } else {
-                        output = diminuto_fd_write(STDOUT_FILENO, buffer, input, input);
+                        output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
                         assert(output == input);
                         total -= output;
                     }
                 } else if (fd == STDIN_FILENO) {
-                    input = diminuto_fd_read(STDIN_FILENO, buffer, 1, blocksize);
+                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer fd=%d input=%zd\n", fd, input);
@@ -406,7 +406,7 @@ int main(int argc, char * argv[])
                         assert(rc >= 0);
                         eof = !0;
                     } else {
-                        output = diminuto_fd_write(sock, buffer, input, input);
+                        output = diminuto_fd_write(sock, buffer, input);
                         assert(output == input);
                         total += output;
                     }

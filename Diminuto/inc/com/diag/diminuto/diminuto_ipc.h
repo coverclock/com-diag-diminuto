@@ -134,9 +134,7 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 /**
  * Read bytes from a stream socket into a buffer until at least a minimum
  * number of bytes are read and no more than a maximum number of bytes are
- * read. Less than the minimum can still be read if an error occurs. A
- * minimum of zero should always be used for file descriptors for which
- * zero indicates end of file (this is not the case for non-blocking sockets).
+ * read. Less than the minimum can still be read if an error occurs.
  * @param fd is an open stream socket.
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
@@ -145,17 +143,27 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
  * or <0 if an error occurred (errno will be EGAIN for non-blocking,
  * EINTR for timer expiry).
  */
-static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min, size_t max)
-{
-    return diminuto_fd_read(fd, buffer, min, max);
+static inline ssize_t diminuto_ipc_stream_read_generic(int fd, void * buffer, size_t min, size_t max) {
+    return diminuto_fd_read_generic(fd, buffer, min, max);
 }
 
 /**
- * Write bytes to a stream socketfrom a buffer until at least a minimum
+ * Read bytes from a stream socket into a buffer.
+ * @param fd is an open stream socket.
+ * @param buffer points to the buffer into which data is read.
+ * @param size is the maximum number of bytes to be read.
+ * @return the number of bytes received, 0 if the far end closed,
+ * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * EINTR for timer expiry).
+ */
+static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t size) {
+    return diminuto_fd_read(fd, buffer, size);
+}
+
+/**
+ * Write bytes to a stream socket from a buffer until at least a minimum
  * number of bytes are written and no more than a maximum number of bytes are
- * written. Less than the minimum can still be written if an error occurs. A
- * minimum of zero should always be used for file descriptors for which
- * zero indicates end of file (this is not the case for non-blocking sockets).
+ * written. Less than the minimum can still be written if an error occurs.
  * @param fd is an open stream socket.
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
@@ -164,9 +172,21 @@ static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t min
  * or <0 if an error occurred (errno will be EGAIN for non-blocking,
  * EINTR for timer expiry).
  */
-static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t min, size_t max)
-{
-    return diminuto_fd_write(fd, buffer, min, max);
+static inline ssize_t diminuto_ipc_stream_write_generic(int fd, const void * buffer, size_t min, size_t max) {
+    return diminuto_fd_write_generic(fd, buffer, min, max);
+}
+
+/**
+ * Write bytes to a stream socket from a buffer.
+ * @param fd is an open stream socket.
+ * @param buffer points to the buffer from which data is written.
+ * @param size is the maximum number of bytes to be written.
+ * @return the number of bytes received, 0 if the far end closed,
+ * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * EINTR for timer expiry).
+ */
+static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t size) {
+    return diminuto_fd_write(fd, buffer, size);
 }
 
 /**

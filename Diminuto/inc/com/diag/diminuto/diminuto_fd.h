@@ -43,9 +43,21 @@ extern int diminuto_fd_relinquish(int fd, const char * device);
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
+ * @return the number of bytes read, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
  */
-extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
+extern ssize_t diminuto_fd_read_generic(int fd, void * buffer, size_t min, size_t max);
+
+/**
+ * Read bytes from a file descriptor into a buffer.
+ * @param fd is an open file descriptor.
+ * @param buffer points to the buffer into which data is read.
+ * @param size is the maximum number of bytes to be read.
+ * @return the number of bytes read, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
+ */
+static inline ssize_t diminuto_fd_read(int fd, void * buffer, size_t size)
+{
+    return diminuto_fd_read_generic(fd, buffer, 1, size);
+}
 
 /**
  * Write bytes to a file descriptor from a buffer until at least a minimum
@@ -56,9 +68,21 @@ extern ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max);
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
- * @return the number of bytes received, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
+ * @return the number of bytes written, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
  */
-extern ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max);
+extern ssize_t diminuto_fd_write_generic(int fd, const void * buffer, size_t min, size_t max);
+
+/**
+ * Write bytes to a file descriptor from a buffer.
+ * @param fd is an open file descriptor.
+ * @param buffer points to the buffer from which data is written.
+ * @param size is the maximum number of bytes to be written.
+ * @return the number of bytes written, 0 if end of file, or <0 if an error occurred (errno will be EINTR for a timer expiray, EAGAIN for non-blocking).
+ */
+static inline ssize_t diminuto_fd_write(int fd, const void * buffer, size_t size)
+{
+    return diminuto_fd_write_generic(fd, buffer, size, size);
+}
 
 /**
  * Return the number of bytes buffered for a file descriptor for device drivers

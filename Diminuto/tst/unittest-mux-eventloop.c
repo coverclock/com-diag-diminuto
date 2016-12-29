@@ -196,7 +196,7 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
             while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
                 bufferp = (buffer_t *)diminuto_pool_alloc(&pool);
                 if (bufferp != (buffer_t *)0) {
-                    size = diminuto_fd_read(fd, bufferp->payload, 1, sizeof(bufferp->payload));
+                    size = diminuto_fd_read(fd, bufferp->payload, sizeof(bufferp->payload));
                     if (size > 0) {
                         ++reads;
                         input += size;
@@ -217,7 +217,7 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
                 nodep = diminuto_list_dequeue(&queue[fd]);
                 if (nodep != (diminuto_list_t *)0) {
                     bufferp = (buffer_t *)&(containerof(diminuto_pool_object_t, link, nodep)->payload[0]);
-                    size = diminuto_fd_write(fd, bufferp->payload, bufferp->size, bufferp->size);
+                    size = diminuto_fd_write(fd, bufferp->payload, bufferp->size);
                     if (size > 0) {
                         ++writes;
                         output += size;
@@ -339,14 +339,14 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
     for (jj = 0; jj < messages; ++jj) {
         for (ii = 0; ii < connections; ++ii) {
             now = diminuto_time_clock();
-            output = diminuto_fd_write(connection[ii], &now, sizeof(now), sizeof(now));
+            output = diminuto_fd_write(connection[ii], &now, sizeof(now));
             if (output != sizeof(now)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d write [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, output, sizeof(now));
                 xc = 2;
                 goto exiting;
             }
-            input = diminuto_fd_read(connection[ii], &then, sizeof(then), sizeof(then));
+            input = diminuto_fd_read_generic(connection[ii], &then, sizeof(then), sizeof(then));
             if (input != sizeof(then)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "CONSUMER %d read [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, input, sizeof(then));

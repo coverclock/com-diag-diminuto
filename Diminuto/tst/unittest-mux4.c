@@ -908,7 +908,7 @@ int main(int argc, char ** argv)
                             used = TOTAL - totalsent;
                         }
 
-                        ASSERT((sent = diminuto_ipc4_stream_write(fd, here, 1, used)) > 0);
+                        ASSERT((sent = diminuto_ipc4_stream_write_generic(fd, here, 1, used)) > 0);
                         ASSERT(sent <= used);
                         output_16 = diminuto_fletcher_16(here, sent, &output_a, &output_b);
 
@@ -941,7 +941,7 @@ int main(int argc, char ** argv)
                     ASSERT(fd == producer);
 
                     ASSERT((readable = diminuto_fd_readable(fd)) > 0);
-                    ASSERT((received = diminuto_ipc4_stream_read(fd, there, 1, available)) > 0);
+                    ASSERT((received = diminuto_ipc4_stream_read(fd, there, available)) > 0);
                     ASSERT(received <= available);
                     input_16 = diminuto_fletcher_16(there, received, &input_a, &input_b);
 
@@ -1048,7 +1048,7 @@ int main(int argc, char ** argv)
                     ASSERT(fd == consumer);
 
                     ASSERT((readable = diminuto_fd_readable(fd)) >= 0);
-                    ASSERT((received = diminuto_ipc4_stream_read(fd, buffer, 1, sizeof(buffer))) >= 0);
+                    ASSERT((received = diminuto_ipc4_stream_read(fd, buffer, sizeof(buffer))) >= 0);
                     ASSERT(received <= sizeof(buffer));
 
                     totalreceived += received;
@@ -1064,7 +1064,7 @@ int main(int argc, char ** argv)
 
                     sent = 0;
                     while (sent < received) {
-                        ASSERT((sent = diminuto_ipc4_stream_write(fd,  buffer + sent, 1, received - sent)) > 0);
+                        ASSERT((sent = diminuto_ipc4_stream_write_generic(fd,  buffer + sent, 1, received - sent)) > 0);
                         ASSERT(sent <= received);
 
                         totalsent += sent;

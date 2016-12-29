@@ -75,7 +75,7 @@ int diminuto_fd_relinquish(int fd, const char * device)
     return fd;
 }
 
-ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
+ssize_t diminuto_fd_read_generic(int fd, void * buffer, size_t min, size_t max)
 {
     ssize_t total = 0;
     char * bp;
@@ -90,7 +90,7 @@ ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
             break;
         } else if (current < 0) {
             if ((errno != EINTR) && (errno != EAGAIN)) {
-                diminuto_perror("diminuto_fd_read: read");
+                diminuto_perror("diminuto_fd_read_generic: read");
             }
             if (total == 0) {
                 total = current;
@@ -109,7 +109,7 @@ ssize_t diminuto_fd_read(int fd, void * buffer, size_t min, size_t max)
     return total;
 }
 
-ssize_t diminuto_fd_write(int fd, const void * buffer, size_t min, size_t max)
+ssize_t diminuto_fd_write_generic(int fd, const void * buffer, size_t min, size_t max)
 {
     ssize_t total = 0;
     const char * bp;

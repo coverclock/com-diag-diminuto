@@ -727,7 +727,7 @@ int main(int argc, char * argv[])
                         used = TOTAL - totalsent;
                     }
 
-                    ASSERT((sent = diminuto_ipc4_stream_write(producer, here, 1, used)) > 0);
+                    ASSERT((sent = diminuto_ipc4_stream_write_generic(producer, here, 1, used)) > 0);
                     ASSERT(sent <= used);
 
                     totalsent += sent;
@@ -749,7 +749,7 @@ int main(int argc, char * argv[])
                     available = TOTAL - totalreceived;
                 }
 
-                ASSERT((received = diminuto_ipc4_stream_read(producer, there, 1, available)) > 0);
+                ASSERT((received = diminuto_ipc4_stream_read(producer, there, available)) > 0);
                 ASSERT(received <= available);
 
                 totalreceived += received;
@@ -797,7 +797,7 @@ int main(int argc, char * argv[])
 
             while (!0) {
 
-                ASSERT((received = diminuto_ipc4_stream_read(consumer, buffer, 1, sizeof(buffer))) >= 0);
+                ASSERT((received = diminuto_ipc4_stream_read(consumer, buffer, sizeof(buffer))) >= 0);
                 ASSERT(received <= sizeof(buffer));
 
                 totalreceived += received;
@@ -809,7 +809,7 @@ int main(int argc, char * argv[])
 
                 sent = 0;
                 while (sent < received) {
-                    ASSERT((sent = diminuto_ipc4_stream_write(consumer,  buffer + sent, 1, received - sent)) > 0);
+                    ASSERT((sent = diminuto_ipc4_stream_write_generic(consumer,  buffer + sent, 1, received - sent)) > 0);
                     ASSERT(sent <= received);
 
                     totalsent += sent;
