@@ -39,6 +39,8 @@ int main(int argc, char * argv[])
     const char * Server =  (const char *)0;
     const char * Rendezvous = (const char *)0;
     const char * Blocksize = (const char *)0;
+    const char * Source = (const char *)0;
+    const char * Sink = (const char *)0;
     diminuto_ipv4_t address4 = DIMINUTO_IPC4_UNSPECIFIED;
     diminuto_ipv6_t address6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_ipv4_t server4 = DIMINUTO_IPC4_LOOPBACK;
@@ -52,6 +54,8 @@ int main(int argc, char * argv[])
     diminuto_port_t datum46 = 0;
     char * interface = (char *)0;
     size_t blocksize = 512;
+    int source = STDIN_FILENO;
+    int sink = STDOUT_FILENO;
     char string[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")] = { '\0' };
     char * buffer = (char *)0;
     ssize_t input = 0;
@@ -82,7 +86,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "46?A:P:a:b:i:p:tu")) >= 0) {
+    while ((opt = getopt(argc, argv, "46?A:I:O:P:a:b:i:p:tu")) >= 0) {
         switch (opt) {
         case '4':
         case '6':
@@ -90,6 +94,12 @@ int main(int argc, char * argv[])
             break;
         case 'A':
             Server = optarg; /* far end server address */
+            break;
+        case 'I':
+            Source = optarg; /* source file descriptor */
+            break;
+        case 'O':
+            Sink = optarg; /* sink file descriptor */
             break;
         case 'P':
             Rendezvous = optarg; /* far end port number */
@@ -111,11 +121,13 @@ int main(int argc, char * argv[])
             Layer3 = opt; /* tcp or udp */
             break;
         case '?':
-            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
             fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
+            fprintf(stderr, "       -I INFD     Source file descriptor.\n");
+            fprintf(stderr, "       -O OUTFD    Sink file descriptor.\n");
             fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
@@ -253,6 +265,28 @@ int main(int argc, char * argv[])
 
     buffer = (char *)malloc(blocksize);
     assert(buffer != (char *)0);
+
+    if (Source == (const char *)0) {
+        /* Do nothing. */
+    } else if (*diminuto_number_unsigned(Source, &value) != '\0') {
+        assert(0);
+    } else {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Source=\"%s\"\n", Source);
+        source = value;
+    }
+
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "source=%zu\n", source);
+
+    if (Sink == (const char *)0) {
+        /* Do nothing. */
+    } else if (*diminuto_number_unsigned(Sink, &value) != '\0') {
+        assert(0);
+    } else {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Sink=\"%s\"\n", Sink);
+        sink = value;
+    }
+
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "sink=%zu\n", sink);
 
 /*******************************************************************************
  * SERVICE PROVIDER - IPv4 - TCP
@@ -547,7 +581,7 @@ int main(int argc, char * argv[])
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
         assert(rc >= 0);
-        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        rc = diminuto_mux_register_read(&mux, source);
         assert(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
@@ -559,22 +593,16 @@ int main(int argc, char * argv[])
                 }
                 if (fd == sock) {
                     input = diminuto_fd_read(sock, buffer, blocksize);
+                    assert(input > 0);
+                    output = diminuto_fd_write(sink, buffer, input);
+                    assert(output == input);
+                    total -= output;
+                } else if (fd == source) {
+                    input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
-                        rc = diminuto_mux_unregister_read(&mux, sock);
-                        assert(rc >= 0);
-                    } else {
-                        output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
-                        assert(output == input);
-                        total -= output;
-                    }
-                } else if (fd == STDIN_FILENO) {
-                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
-                    assert(input >= 0);
-                    if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
-                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
                     } else {
@@ -601,7 +629,7 @@ int main(int argc, char * argv[])
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
         assert(rc >= 0);
-        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        rc = diminuto_mux_register_read(&mux, source);
         assert(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
@@ -618,15 +646,15 @@ int main(int argc, char * argv[])
                     assert(input > 0);
                     assert(datum4 == server4);
                     assert(datum46 == rendezvous46);
-                    output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
+                    output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
                     total -= output;
-                } else if (fd == STDIN_FILENO) {
-                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
+                } else if (fd == source) {
+                    input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
-                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
                     } else {
@@ -656,7 +684,7 @@ int main(int argc, char * argv[])
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
         assert(rc >= 0);
-        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        rc = diminuto_mux_register_read(&mux, source);
         assert(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
@@ -673,15 +701,15 @@ int main(int argc, char * argv[])
                     assert(input > 0);
                     assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
                     assert(datum46 == rendezvous46);
-                    output = diminuto_fd_write(STDOUT_FILENO, buffer, input);
+                    output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
                     total -= output;
-                } else if (fd == STDIN_FILENO) {
-                    input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
+                } else if (fd == source) {
+                    input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
-                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
                     } else {
