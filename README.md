@@ -129,10 +129,11 @@ FEATURES
 UTILITIES
  
 * coreable - enable core dumps.
+* datastream - generate human readable data stream for testing.
 * dec - display an argument number in decimal.
 * dump - display a file in a formatted hexidecimal dump.
 * hex - display an argument number in hexidecimal.
-* internettool - test internet connections.
+* internettool - test internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the time in the local time zone in ISO 8601 format.
 * memtool - manipulate memory mapped registers directly (requires root).
