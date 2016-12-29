@@ -162,7 +162,7 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
         if (nready > 0) {
 
             while ((fd = diminuto_poll_ready_urgent(&poll)) >= 0) {
-                size = diminuto_ipc6_datagram_receive_flags(fd, &control, sizeof(control), (diminuto_ipv6_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT);
+                size = diminuto_ipc6_datagram_receive_generic(fd, &control, sizeof(control), (diminuto_ipv6_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT);
                 if (size > 0) {
                     ++controls;
                     done = !0;
@@ -441,7 +441,7 @@ int main(int argc, char ** argv)
 
     }
 
-    diminuto_ipc4_datagram_send_flags(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
+    diminuto_ipc4_datagram_send_generic(control, &ACK, sizeof(ACK), 0, 0, MSG_OOB);
 
     waitpid(service, &status, 0);
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "producer %d exited exit=%d status=%d.\n", service, WIFEXITED(status), WEXITSTATUS(status));

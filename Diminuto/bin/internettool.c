@@ -259,7 +259,7 @@ int main(int argc, char * argv[])
 
         if (Protocol == 4) {
 
-            sock = diminuto_ipc4_stream_provider_specific(address4, port46, Interface, -1);
+            sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
             assert(sock >= 0);
             rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
             assert(rc >= 0);
@@ -267,7 +267,7 @@ int main(int argc, char * argv[])
 
         } else if (Protocol == 6) {
 
-            sock = diminuto_ipc6_stream_provider_specific(address6, port46, Interface, -1);
+            sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
             assert(sock >= 0);
             rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
             assert(rc >= 0);
@@ -296,7 +296,7 @@ int main(int argc, char * argv[])
 
         } else if (Protocol == 6) {
 
-            sock = diminuto_ipc6_stream_consumer_specific(server6, rendezvous46, address6, port46, Interface);
+            sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
             assert(sock >= 0);
             rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
             assert(rc >= 0);

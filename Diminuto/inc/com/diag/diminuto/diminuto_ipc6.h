@@ -287,7 +287,7 @@ static inline int diminuto_ipc6_close(int fd) {
  * <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog);
+extern int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -298,7 +298,7 @@ extern int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, dimin
  */
 static inline int diminuto_ipc6_stream_provider(diminuto_port_t port)
 {
-    return diminuto_ipc6_stream_provider_specific(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0, -1);
+    return diminuto_ipc6_stream_provider_generic(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0, -1);
 }
 
 /**
@@ -333,7 +333,7 @@ static inline int diminuto_ipc6_stream_accept(int fd)
  * @param interface points to the name of the interface, or NULL.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_consumer_specific(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface);
+extern int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface);
 
 /**
  * Request a consumer-side stream socket to a provider. The address and port
@@ -343,7 +343,7 @@ extern int diminuto_ipc6_stream_consumer_specific(diminuto_ipv6_t address, dimin
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port) {
-    return diminuto_ipc6_stream_consumer_specific(address, port, DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0);
+    return diminuto_ipc6_stream_consumer_generic(address, port, DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0);
 }
 
 /**
@@ -417,7 +417,7 @@ static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port)
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags);
+extern ssize_t diminuto_ipc6_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags);
 
 /**
  * Receive a datagram from a datagram socket using no flags.
@@ -426,14 +426,10 @@ extern ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp) {
-    return diminuto_ipc6_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
+static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size) {
+    return diminuto_ipc6_datagram_receive_generic(fd, buffer, size, (diminuto_ipv6_t *)0, (diminuto_port_t *)0, 0);
 }
 
 /**
@@ -450,7 +446,7 @@ static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size
  * @param flags is the sendto(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags);
+extern ssize_t diminuto_ipc6_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags);
 
 /**
  * Send a datagram to a datagram socket using no flags. The address and port are
@@ -465,7 +461,7 @@ extern ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, si
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port) {
-    return diminuto_ipc6_datagram_send_flags(fd, buffer, size, address, port, 0);
+    return diminuto_ipc6_datagram_send_generic(fd, buffer, size, address, port, 0);
 }
 
 /*******************************************************************************

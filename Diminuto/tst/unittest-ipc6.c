@@ -491,7 +491,7 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
-        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
         ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
         EXPECT(port == rendezvous);
@@ -524,7 +524,7 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
-        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
         EXPECT(memcmp(&address, &server, sizeof(address)) == 0);
         EXPECT(port == PORT);
@@ -554,7 +554,7 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
-        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG));
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
         ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
         EXPECT(port == rendezvous);
@@ -588,7 +588,7 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_set_nonblocking(fd, !0) >= 0);
-        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
         EXPECT(port == TEST_PORT);
@@ -606,7 +606,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
-        EXPECT((diminuto_ipc6_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
         EXPECT(port == TEST_PORT);
@@ -629,7 +629,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_alarm_install(0) >= 0);
         diminuto_timer_oneshot(2000000ULL);
         before = diminuto_time_elapsed();
-        EXPECT((diminuto_ipc6_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         after = diminuto_time_elapsed();
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
@@ -740,7 +740,7 @@ int main(int argc, char * argv[])
         TEST();
 
         provider = diminuto_ipc6_address("::1");
-        ASSERT((service = diminuto_ipc6_stream_provider_specific(provider, PORT, (const char *)0, -1)) >= 0);
+        ASSERT((service = diminuto_ipc6_stream_provider_generic(provider, PORT, (const char *)0, -1)) >= 0);
         EXPECT(diminuto_ipc6_nearend(service, &source, &rendezvous) >= 0);
         EXPECT(memcmp(&source, &provider, sizeof(source)) == 0);
         EXPECT(rendezvous == PORT);

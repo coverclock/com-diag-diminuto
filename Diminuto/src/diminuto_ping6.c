@@ -73,7 +73,7 @@ ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uint16_t i
     } else if (total > 0) {
         /* Do nothing: nominal case. */
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipc6_datagram_send_flags: sendto");
+        diminuto_perror("diminuto_ping6_datagram_send: sendto");
     } else {
         /* Do nothing: timeout or poll. */
     }

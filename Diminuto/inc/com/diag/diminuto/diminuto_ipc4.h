@@ -142,7 +142,7 @@ extern int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog);
+extern int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog);
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
@@ -153,7 +153,7 @@ extern int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, dimin
  */
 static inline int diminuto_ipc4_stream_provider(diminuto_port_t port)
 {
-    return diminuto_ipc4_stream_provider_specific(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0, -1);
+    return diminuto_ipc4_stream_provider_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0, -1);
 }
 
 /**
@@ -381,7 +381,7 @@ static inline ssize_t diminuto_ipc4_stream_write(int fd, const void * buffer, si
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags);
+extern ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags);
 
 /**
  * Receive a datagram from a datagram socket using no flags. Optionally return
@@ -390,15 +390,11 @@ extern ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-static inline ssize_t diminuto_ipc4_datagram_receive(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+static inline ssize_t diminuto_ipc4_datagram_receive(int fd, void * buffer, size_t size)
 {
-    return diminuto_ipc4_datagram_receive_flags(fd, buffer, size, addressp, portp, 0);
+    return diminuto_ipc4_datagram_receive_generic(fd, buffer, size, (diminuto_ipv4_t *)0, (diminuto_port_t)0, 0);
 }
 
 /**
@@ -414,7 +410,7 @@ static inline ssize_t diminuto_ipc4_datagram_receive(int fd, void * buffer, size
  * @param flags is the sendto(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipc4_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags);
+extern ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags);
 
 /**
  * Send a datagram to a datagram socket using no flags. (This function can
@@ -429,7 +425,7 @@ extern ssize_t diminuto_ipc4_datagram_send_flags(int fd, const void * buffer, si
  */
 static inline ssize_t diminuto_ipc4_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port)
 {
-    return diminuto_ipc4_datagram_send_flags(fd, buffer, size, address, port, 0);
+    return diminuto_ipc4_datagram_send_generic(fd, buffer, size, address, port, 0);
 }
 
 /**

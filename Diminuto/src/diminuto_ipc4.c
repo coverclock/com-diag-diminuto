@@ -172,7 +172,7 @@ int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc4_stream_provider_specific(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog)
+int diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog)
 {
     int rc;
     int fd;
@@ -272,7 +272,7 @@ int diminuto_ipc4_datagram_peer_specific(diminuto_ipv4_t address, diminuto_port_
     return rc;
 }
 
-ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)
+ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)
 {
     ssize_t total;
     struct sockaddr_in sa = { 0 };
@@ -283,7 +283,7 @@ ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size,
     } else if (total > 0) {
         diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
     } else if ((errno != EINTR) && (errno != EAGAIN)) { 
-        diminuto_perror("diminuto_ipc4_datagram_receive_flags: recvfrom");
+        diminuto_perror("diminuto_ipc4_datagram_receive_generic: recvfrom");
     } else {
         /* Do nothing: timeout or poll. */
     }
@@ -291,7 +291,7 @@ ssize_t diminuto_ipc4_datagram_receive_flags(int fd, void * buffer, size_t size,
     return total;
 }
 
-ssize_t diminuto_ipc4_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags)
+ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags)
 {
     ssize_t total;
     struct sockaddr_in sa;
@@ -315,7 +315,7 @@ ssize_t diminuto_ipc4_datagram_send_flags(int fd, const void * buffer, size_t si
     } else if (total > 0) {
         /* Do nothing: nominal case. */
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipc4_datagram_send_flags: sendto");
+        diminuto_perror("diminuto_ipc4_datagram_send_generic: sendto");
     } else {
         /* Do nothing: timeout or poll. */
     }

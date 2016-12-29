@@ -374,13 +374,13 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc4_address("localhost"), port2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipc4_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
         EXPECT(address == diminuto_ipc4_address("localhost"));
         EXPECT(port == port1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc4_address("localhost"), port1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipc4_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
         EXPECT(address == diminuto_ipc4_address("localhost"));
         EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
@@ -425,11 +425,11 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), binding, PORT)) == sizeof(MSG1));
-        EXPECT((diminuto_ipc4_datagram_receive(fd2, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), binding, port1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipc4_datagram_receive(fd1, buffer, sizeof(buffer), &address, &port)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
         EXPECT(address == binding);
         EXPECT(port == PORT);
         EXPECT(strcmp(buffer, MSG2) == 0);
@@ -452,7 +452,7 @@ int main(int argc, char * argv[])
         EXPECT((fd = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd, (diminuto_ipv4_t *)0, &rendezvous) >= 0);
         EXPECT(diminuto_ipc4_set_nonblocking(fd, !0) >= 0);
-        EXPECT((diminuto_ipc4_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
@@ -472,7 +472,7 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd, (diminuto_ipv4_t *)0, &rendezvous) >= 0);
-        EXPECT((diminuto_ipc4_datagram_receive_flags(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(address == 0x12345678);
         EXPECT(port == 0x9abc);
@@ -497,7 +497,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_alarm_install(0) >= 0);
         diminuto_timer_oneshot(2000000ULL);
         before = diminuto_time_elapsed();
-        EXPECT((diminuto_ipc4_datagram_receive(fd, buffer, sizeof(buffer), &address, &port)) < 0);
+        EXPECT((diminuto_ipc4_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         after = diminuto_time_elapsed();
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
@@ -675,7 +675,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((provider = diminuto_ipc4_address("localhost")) == 0x7f000001);
-        ASSERT((service = diminuto_ipc4_stream_provider_specific(provider, PORT, (const char *)0, 16)) >= 0);
+        ASSERT((service = diminuto_ipc4_stream_provider_generic(provider, PORT, (const char *)0, 16)) >= 0);
         EXPECT(diminuto_ipc4_nearend(service, &source, &rendezvous) >= 0);
         EXPECT(source == provider);
         EXPECT(rendezvous == PORT);

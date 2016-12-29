@@ -299,7 +299,7 @@ int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_stream_provider_specific(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog)
+int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog)
 {
     int rc;
     int fd;
@@ -347,7 +347,7 @@ int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * addressp, dimi
     return rc;
 }
 
-int diminuto_ipc6_stream_consumer_specific(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface)
+int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface)
 {
     int rc;
     int fd;
@@ -403,7 +403,7 @@ int diminuto_ipc6_datagram_peer_specific(diminuto_ipv6_t address, diminuto_port_
     return rc;
 }
 
-ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags)
+ssize_t diminuto_ipc6_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags)
 {
     ssize_t total;
     struct sockaddr_in6 sa = { 0 };
@@ -414,7 +414,7 @@ ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size,
     } else if (total > 0) {
         diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
     } else if ((errno != EINTR) && (errno != EAGAIN)) { 
-        diminuto_perror("diminuto_ipc6_datagram_receive_flags: recvfrom");
+        diminuto_perror("diminuto_ipc6_datagram_receive_generic: recvfrom");
     } else {
         /* Do nothing: timeout or poll. */
     }
@@ -422,7 +422,7 @@ ssize_t diminuto_ipc6_datagram_receive_flags(int fd, void * buffer, size_t size,
     return total;
 }
 
-ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags)
+ssize_t diminuto_ipc6_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags)
 {
     ssize_t total;
     struct sockaddr_in6 sa = { 0 };
@@ -446,7 +446,7 @@ ssize_t diminuto_ipc6_datagram_send_flags(int fd, const void * buffer, size_t si
     } else if (total > 0) {
         /* Do nothing: nominal case. */
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipc6_datagram_send_flags: sendto");
+        diminuto_perror("diminuto_ipc6_datagram_send_generic: sendto");
     } else {
         /* Do nothing: timeout or poll. */
     }

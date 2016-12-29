@@ -184,6 +184,7 @@ int main(int argc, char * argv[])
             } while (size == 0);
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, ttl, elapsed);
             ASSERT(from != 0);
+            EXPECT(from == to);
             ASSERT(type != ~0);
             ASSERT(code != ~0);
             ASSERT(id == ID);

@@ -157,7 +157,7 @@ int main(int argc, char ** argv)
 
             input_a = input_b = output_a = output_b = 0;
 
-            ASSERT((sent = diminuto_ipc6_datagram_send_flags(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
+            ASSERT((sent = diminuto_ipc6_datagram_send_generic(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
             DIMINUTO_LOG_DEBUG("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
 
             do {
@@ -307,7 +307,7 @@ int main(int argc, char ** argv)
                     while ((fd = diminuto_mux_ready_urgent(&mux)) >= 0) {
                         ASSERT(fd == consumer);
                         buffer[0] = '\0';
-                        ASSERT((received = diminuto_ipc6_datagram_receive_flags(fd, buffer, 1, (diminuto_ipv6_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
+                        ASSERT((received = diminuto_ipc6_datagram_receive_generic(fd, buffer, 1, (diminuto_ipv6_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
                         DIMINUTO_LOG_DEBUG("consumer ACKed    %10d %10d %10u %7.3lf%%\n", 0, received, 0, 0.0);
                         ASSERT(buffer[0] == ACK);
                         if (buffer[0] == ACK) {
