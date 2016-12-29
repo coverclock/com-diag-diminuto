@@ -82,7 +82,7 @@ ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uint16_t i
 
 }
 
-ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint8_t * typep, uint8_t * codep, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp)
+ssize_t diminuto_ping6_datagram_receive(int fd, diminuto_ipv6_t * addressp, uint8_t * typep, uint8_t * codep, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp)
 {
     ssize_t total;
     icmp6_datagram_t buffer = { 0 };

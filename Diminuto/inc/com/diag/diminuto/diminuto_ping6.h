@@ -81,7 +81,7 @@ extern ssize_t diminuto_ping6_datagram_send(int fd, diminuto_ipv6_t address, uin
  * @param elapsedp points to a variable into which the elapsed ticks is returned, or NULL.
  * @return >0 for a reply, 0 for some other datagram, or <0 if an error occurred.
  */
-extern ssize_t diminuto_ping6_datagram_recv(int fd, diminuto_ipv6_t * addressp, uint8_t * typep, uint8_t * codep, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp);
+extern ssize_t diminuto_ping6_datagram_receive(int fd, diminuto_ipv6_t * addressp, uint8_t * typep, uint8_t * codep, uint16_t * idp, uint16_t * seqp, diminuto_ticks_t * elapsedp);
 
 /**
  * Close the raw socket.

@@ -144,7 +144,7 @@ int main(int argc, char * argv[])
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer2=IPv6\n");
     } else {
-        assert(!0);
+        assert(0);
     }
 
     if (Layer3 == 't') {
@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
     } else if (Layer3 == 'u') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=UDP\n");
     } else {
-        assert(!0);
+        assert(0);
     }
 
     if (Address == (const char *)0) {
@@ -164,7 +164,7 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Address6=\"%s\"\n", Address);
         address6 = diminuto_ipc6_address(Address);
     } else {
-        /* Do nothing. */
+        assert(0);
     }
 
     if (Layer2 == '4') {
@@ -172,7 +172,7 @@ int main(int argc, char * argv[])
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address6=%s\n",  diminuto_ipc6_address2string(address6, string, sizeof(string)));
     } else {
-        /* Do nothing. */
+        assert(0);
     }
 
     if (Port == (const char *)0) {
@@ -193,7 +193,7 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Server6=\"%s\"\n", Server);
         server6 = diminuto_ipc6_address(Server);
     } else {
-        /* Do nothing. */
+        assert(0);
     }
 
     if (Layer2 == '4') {
@@ -201,7 +201,7 @@ int main(int argc, char * argv[])
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server6=%s\n", diminuto_ipc6_address2string(server6, string, sizeof(string)));
     } else {
-        /* Do nothing. */
+        assert(0);
     }
 
     if (Rendezvous == (const char *)0) {
@@ -239,7 +239,7 @@ int main(int argc, char * argv[])
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface6=%s\n", diminuto_ipc6_address2string(*addresses6, string, sizeof(string)));
             }
         } else {
-            /* Do nothing. */
+            assert(0);
         }
         free(interfaci);
     }
@@ -247,7 +247,7 @@ int main(int argc, char * argv[])
     if (Blocksize == (const char *)0) {
         /* Do nothing. */
     } else if (*diminuto_number_unsigned(Blocksize, &value) != '\0') {
-        assert(!0);
+        assert(0);
     } else {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Blocksize=\"%s\"\n", Blocksize);
         blocksize = value;
@@ -255,81 +255,144 @@ int main(int argc, char * argv[])
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "blocksize=%zu\n", blocksize);
 
-/*******************************************************************************
- * INITIALIZATION
- ******************************************************************************/
-
     buffer = (char *)malloc(blocksize);
     assert(buffer != (char *)0);
 
-    diminuto_mux_init(&mux);
-
 /*******************************************************************************
- * SERVICE PROVIDER
+ * SERVICE PROVIDER - IPv4 - TCP
  ******************************************************************************/
 
-    if (Rendezvous == (const char *)0) {
+    if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 't')) {
 
-        if (Layer2 == '4') {
-
-            sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
-            assert(sock >= 0);
-            rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-
-        } else if (Layer2 == '6') {
-
-            sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
-            assert(sock >= 0);
-            rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-
-        } else {
-            /* Do nothing. */
-        }
-
-/*******************************************************************************
- * SERVICE CONSUMER
- ******************************************************************************/
-
-    } else {
-
-        if (Layer2 == '4') {
-
-            sock = diminuto_ipc4_stream_consumer_generic(server4, rendezvous46, address4, port46, Interface);
-            assert(sock >= 0);
-            rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-            rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-
-        } else if (Layer2 == '6') {
-
-            sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
-            assert(sock >= 0);
-            rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-            rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
-            assert(rc >= 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-
-        } else {
-            /* Do nothing. */
-        }
+         sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
+         assert(sock >= 0);
+         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
+         assert(rc >= 0);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
 
     }
 
 /*******************************************************************************
- * PROVIDE SERVICE
+ * SERVICE PROVIDER - IPv4 - UDP
  ******************************************************************************/
 
-    if (Rendezvous == (const char *)0) {
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
 
+         sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
+         assert(sock >= 0);
+         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
+         assert(rc >= 0);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE PROVIDER - IPv6 - TCP
+ ******************************************************************************/
+
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '6') && (Layer3 == 't')) {
+
+         sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
+         assert(sock >= 0);
+         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+         assert(rc >= 0);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE PROVIDER - IPv6 - UDP
+ ******************************************************************************/
+
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
+
+         sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
+         assert(sock >= 0);
+         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+         assert(rc >= 0);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE CONSUMER - IPv4 - TCP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '4') && (Layer3 == 't')) {
+
+        sock = diminuto_ipc4_stream_consumer_generic(server4, rendezvous46, address4, port46, Interface);
+        assert(sock >= 0);
+        rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+        rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE CONSUMER - IPv4 - UDP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
+
+        sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
+        assert(sock >= 0);
+        rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE CONSUMER - IPv6 - TCP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '6') && (Layer3 == 't')) {
+
+        sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
+        assert(sock >= 0);
+        rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+        rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * SERVICE CONSUMER - IPv6 - UDP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
+
+        sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
+        assert(sock >= 0);
+        rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * DONE
+ ******************************************************************************/
+
+    else {
+
+        assert(0);
+
+    }
+
+/*******************************************************************************
+ * PROVIDE SERVICE - IPv4 - TCP
+ ******************************************************************************/
+
+    if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 't')) {
+
+        diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
         assert(rc >= 0);
         while (!0) {
@@ -340,17 +403,13 @@ int main(int argc, char * argv[])
                 if (fd < 0) {
                     break;
                 }
-                if (Layer2 == '4') {
-                    fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
-                    assert(fd >= 0);
-                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-                } else if (Layer2 == '6') {
-                    fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
-                    assert(fd >= 0);
-                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-                } else {
-                    /* Do nothing. */
-                }
+                datum4 = DIMINUTO_IPC4_UNSPECIFIED;
+                datum46 = 0;
+                fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
+                assert(fd >= 0);
+                assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
+                assert(datum46 != 0);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
                 rc = diminuto_mux_register_read(&mux, fd);
                 assert(rc >= 0);
             }
@@ -366,26 +425,130 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     assert(rc >= 0);
-                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far fd=%d input=%zd\n", fd, input);
+                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                 }
             }
         }
-        /* Can never reach here. */
+        /* Can never reach here but if we did this is what we would do. */
         assert(fds == 0);
         rc = diminuto_mux_unregister_accept(&mux, sock);
         assert(rc >= 0);
         rc = diminuto_ipc_close(sock);
         assert(rc >= 0);
+        diminuto_mux_fini(&mux);
+
+    }
 
 /*******************************************************************************
- * CONSUME SERVICE
+ * PROVIDE SERVICE - IPv6 - TCP
  ******************************************************************************/
 
-    } else {
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 't')) {
 
+        diminuto_mux_init(&mux);
+        rc = diminuto_mux_register_accept(&mux, sock);
+        assert(rc >= 0);
+        while (!0) {
+            fds = diminuto_mux_wait(&mux, -1);
+            assert(fds > 0);
+            while (!0) {
+                fd = diminuto_mux_ready_accept(&mux);
+                if (fd < 0) {
+                    break;
+                }
+                datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+                datum46 = 0;
+                fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
+                assert(fd >= 0);
+                assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
+                assert(datum46 != 0);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+                rc = diminuto_mux_register_read(&mux, fd);
+                assert(rc >= 0);
+            }
+            while (!0) {
+                fd = diminuto_mux_ready_read(&mux);
+                if (fd < 0) {
+                    break;
+                }
+                input = diminuto_fd_read(fd, buffer, blocksize);
+                assert(input >= 0);
+                if (input == 0) {
+                    rc = diminuto_ipc_close(fd);
+                    assert(rc >= 0);
+                    rc = diminuto_mux_unregister_read(&mux, fd);
+                    assert(rc >= 0);
+                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
+                } else {
+                    output = diminuto_fd_write(fd, buffer, input);
+                    assert(output == input);
+                }
+            }
+        }
+        /* Can never reach here but if we did this is what we would do. */
+        assert(fds == 0);
+        rc = diminuto_mux_unregister_accept(&mux, sock);
+        assert(rc >= 0);
+        rc = diminuto_ipc_close(sock);
+        assert(rc >= 0);
+        diminuto_mux_fini(&mux);
+
+    }
+
+/*******************************************************************************
+ * PROVIDE SERVICE - IPv4 - UCP
+ ******************************************************************************/
+
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
+
+        while (!0) {
+            datum4 = DIMINUTO_IPC4_UNSPECIFIED;
+            datum46 = 0;
+            input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
+            assert(input > 0);
+            assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
+            assert(datum46 != 0);
+            output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
+            assert(output == input);
+        }
+        /* Can never reach here but if we did this is what we would do. */
+        rc = diminuto_ipc_close(sock);
+        assert(rc >= 0);
+
+    }
+
+/*******************************************************************************
+ * PROVIDE SERVICE - IPv6 - UCP
+ ******************************************************************************/
+
+    else if ((Rendezvous == (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
+
+        while (!0) {
+            datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+            datum46 = 0;
+            input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
+            assert(input > 0);
+            assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
+            assert(datum46 != 0);
+            output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
+            assert(output == input);
+        }
+        /* Can never reach here but if we did this is what we would do. */
+        rc = diminuto_ipc_close(sock);
+        assert(rc >= 0);
+
+    }
+
+/*******************************************************************************
+ * CONSUME SERVICE - IPv4 or IPv6 - TCP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && ((Layer2 == '4') || (Layer2 == '6')) && (Layer3 == 't')) {
+
+        diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
         assert(rc >= 0);
         rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
@@ -402,7 +565,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(sock, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, sock);
                         assert(rc >= 0);
                     } else {
@@ -414,7 +577,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(STDIN_FILENO, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
                         assert(rc >= 0);
                         eof = !0;
@@ -424,17 +587,40 @@ int main(int argc, char * argv[])
                         total += output;
                     }
                 } else {
-                    assert(!0);
+                    assert(0);
                 }
             }
         }
         rc = diminuto_ipc_close(sock);
         assert(rc >= 0);
+        diminuto_mux_fini(&mux);
     }
 
 /*******************************************************************************
- * FINALIZE
+ * CONSUME SERVICE - IPv4 - UDP
  ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
+
+    }
+
+/*******************************************************************************
+ * CONSUME SERVICE - IPv4 - UDP
+ ******************************************************************************/
+
+    else if ((Rendezvous != (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
+
+    }
+
+/*******************************************************************************
+ * DONE
+ ******************************************************************************/
+
+    else {
+
+        assert(0);
+
+    }
 
     diminuto_mux_fini(&mux);
 
