@@ -9,17 +9,17 @@
  *
  * EXAMPLES
  *
- * internettool -\?                                                                     # Help Menu
+ * internettool -\?                                                                         # Help Menu
  * 
- * internettool -6 -p 5555                                                              # Service Provider
- * internettool -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE    # Service Consumer
+ * internettool -6 -p 5555                                                                  # Service Provider
+ * internettool -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE        # Service Consumer
  *
- * internettool -4 -p 5555                                                              # Service Provider
- * internettool -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                         # Service Consumer
+ * internettool -4 -p 5555                                                                  # Service Provider
+ * internettool -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                             # Service Consumer
  *
- * internettool -6 -t -p 5555                                                           # Service Provider
- * datastream | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555        # Service Consumer 1
- * datastream | internettool -4 -t -A 192.168.1.237 -P 5555                             # Service Consumer 2
+ * internettool -6 -t -p 5555                                                               # Service Provider
+ * datasource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | datasink # Service Consumer 1
+ * datasource | internettool -4 -t -A 192.168.1.237 -P 5555 | datasink                      # Service Consumer 2
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
