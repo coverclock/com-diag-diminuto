@@ -20,20 +20,9 @@
 #include <linux/limits.h>
 
 /**
- * Remarkably, the generic sockaddr structure doesn't reserve enough space to
- * actually hold an entire IPv6 in6_addr field; it's only fourteen bytes, where
- * as an IPv6 address is 16 bytes (and even that's not enough, since there are
- * other fields in the sockaddr_in6 structure). So we use a larger one of our
- * own devising, carefully mimicing the legacy structure's format. Other than
- * the initial family field that indicates what kind of address family structure
- * this really is (IPv6, IPv4, UNIX, etc.), the rest of this structure is just
- * just buffer space. This includes enough space to accomodate even a UNIX
- * domain socket address, which is a file system path; so this is BIG.
+ * Defines the prototype of a function used for dependency injection.
  */
-typedef struct DiminutoSocketAddress {
-    __SOCKADDR_COMMON (sa_); /* Address family, etc.  */
-    char sa_data[PATH_MAX]; /* glibc assumes short alignment. */
-} diminuto_sockaddr_t;
+typedef int (diminuto_ipc_injector_t)(int fd, void *);
 
 /**
  * Convert a service name or a port number string into a port in host byte

@@ -147,6 +147,11 @@ int diminuto_ipc_set_reuseaddress(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_REUSEADDR);
 }
 
+int diminuto_ipc_stream_provider_reuseaddress(int fd, void * datap)
+{
+    return diminuto_ipc_set_reuseaddress(fd, !0);
+}
+
 int diminuto_ipc_set_keepalive(int fd, int enable)
 {
     return diminuto_ipc_set_option(fd, enable, SO_KEEPALIVE);
@@ -157,14 +162,40 @@ int diminuto_ipc_set_debug(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
 }
 
+/*
+ * Adapted from:
+ * https://github.com/coverclock/com-diag-desperadito/blob/master/Desperadito/inc/com/diag/desperado/generics.h
+ */
+static const int MAXIMUM_SIGNED_INT = (~((int)1 << ((sizeof(int) * 8) - 1)));
+
 int diminuto_ipc_set_send(int fd, ssize_t size)
 {
-    return (size >= 0) ? diminuto_ipc_set_value(fd, size, SO_SNDBUF) : fd;
+    int value;
+
+    if (size < 0) {
+        /* Do nothing. */
+    } else if (size > MAXIMUM_SIGNED_INT) {
+        fd = -13;
+    } else {
+        fd = diminuto_ipc_set_value(fd, value = size, SO_SNDBUF);
+    }
+
+    return fd;
 }
 
 int diminuto_ipc_set_receive(int fd, ssize_t size)
 {
-    return (size >= 0) ? diminuto_ipc_set_value(fd, size, SO_RCVBUF) : fd;
+    int value;
+
+    if (size < 0) {
+        /* Do nothing. */
+    } else if (size > MAXIMUM_SIGNED_INT) {
+        fd = -14;
+    } else {
+        fd = diminuto_ipc_set_value(fd, value = size, SO_RCVBUF);
+    }
+
+    return fd;
 }
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)

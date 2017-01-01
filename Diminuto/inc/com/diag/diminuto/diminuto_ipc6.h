@@ -53,8 +53,7 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_unspecified(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_unspecified(const diminuto_ipv6_t * addressp) {
     return (memcmp(addressp, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(diminuto_ipv6_t)) == 0);
 }
 
@@ -64,8 +63,7 @@ static inline int diminuto_ipc6_is_unspecified(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_loopback(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_loopback(const diminuto_ipv6_t * addressp) {
     return (memcmp(addressp, &DIMINUTO_IPC6_LOOPBACK, sizeof(diminuto_ipv6_t)) == 0);
 }
 
@@ -75,8 +73,7 @@ static inline int diminuto_ipc6_is_loopback(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_ipv4(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_ipv4(const diminuto_ipv6_t * addressp) {
     return (memcmp(addressp, &DIMINUTO_IPC6_LOOPBACK4, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t)) == 0);
 }
 
@@ -86,8 +83,7 @@ static inline int diminuto_ipc6_is_ipv4(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp) {
     return ((0x2000 <= addressp->u16[0]) && (addressp->u16[0] <= 0x3fff));
 }
 
@@ -97,8 +93,7 @@ static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_local(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_local(const diminuto_ipv6_t * addressp) {
     return ((0xfc00 <= addressp->u16[0]) && (addressp->u16[0] <= 0xfdff));
 }
 
@@ -108,8 +103,7 @@ static inline int diminuto_ipc6_is_local(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_link(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_link(const diminuto_ipv6_t * addressp) {
     return ((0xfe80 <= addressp->u16[0]) && (addressp->u16[0] <= 0xfebf));
 }
 
@@ -119,8 +113,7 @@ static inline int diminuto_ipc6_is_link(const diminuto_ipv6_t * addressp)
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_multicast(const diminuto_ipv6_t * addressp)
-{
+static inline int diminuto_ipc6_is_multicast(const diminuto_ipv6_t * addressp) {
     return ((0xff00 <= addressp->u16[0]) && (addressp->u16[0] <= 0xffff));
 }
 
@@ -277,6 +270,41 @@ static inline int diminuto_ipc6_close(int fd) {
 /**
  * Create a provider-side stream socket bound to a specific address and with
  * a specific connection backlog. The address and port are in host byte order.
+ * If the address is zero, the socket will be bound to any appropriate
+ * interface. If the port is zero, an unused ephemeral port is allocated;
+ * its value can be determined using the nearend function. If an optional
+ * function is provided by the caller, invoke it to set socket options before
+ * the listen(2) is performed.
+ * @param address is the address of the interface that will be used.
+ * @param port is the port number at which connection requests will rendezvous.
+ * @param interface points to the interface name, or NULL.
+ * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
+ * @param functionp points to an optional function to set socket options.
+ * @param datap is passed to the optional function.
+ * @return a provider-side stream socket or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_stream_provider_extended(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
+
+/**
+ * Create a provider-side stream socket bound to a specific address and with
+ * a specific connection backlog. The address and port are in host byte order.
+ * If the address is zero, the socket will be bound to any appropriate
+ * interface. If the port is zero, an unused ephemeral port is allocated;
+ * its value can be determined using the nearend function.
+ * @param address is the address of the interface that will be used.
+ * @param port is the port number at which connection requests will rendezvous.
+ * @param interface points to the interface name, or NULL.
+ * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
+ * @return a provider-side stream socket or <0 if an error occurred.
+ */
+static inline diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog) {
+    extern int diminuto_ipc_stream_provider_reuseaddress(int fd, void * datap);
+    return diminuto_ipc6_stream_provider_extended(address, port, interface, backlog, diminuto_ipc_stream_provider_reuseaddress, (void *)0);
+}
+
+/**
+ * Create a provider-side stream socket bound to a specific address and with
+ * a specific connection backlog. The address and port are in host byte order.
  * If the address is zero, any appropriate network interface may be used. If
  * the port is zero, an unused ephemeral port is allocated; its value can be
  * determined using the nearend function.
@@ -296,8 +324,7 @@ extern int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminu
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_stream_provider(diminuto_port_t port)
-{
+static inline int diminuto_ipc6_stream_provider(diminuto_port_t port) {
     return diminuto_ipc6_stream_provider_generic(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0, -1);
 }
 
@@ -318,22 +345,39 @@ extern int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * address
  * @param fd is the provider-side stream socket.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_stream_accept(int fd)
-{
+static inline int diminuto_ipc6_stream_accept(int fd) {
     return diminuto_ipc6_stream_accept_generic(fd, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
 }
 
 /**
- * Request a consumer-side stream socket to a provider using a specific
- * interface. The address and port are in host byte order.
- * @param address is the provider's IPv6 address.
- * @param port is the provider's port.
+ * Request a consumer-side stream socket to a provider using a specific address,
+ * port, and interface on the near end. If an optional function is provided by
+ * the caller, invoke it to set socket options before the connect(2) is
+ * performed.
+ * @param address is the provider's IPv6 address in host byte order.
+ * @param port is the provider's port in host byte order.
+ * @param address0 is the address to which to bind the socket, or zero.
+ * @param port0 is the port to which to bind the socket, or zero
+ * @param interface points to the name of the interface, or NULL.
+ * @param functionp points to an optional function to set socket options.
+ * @param datap is passed to the optional function.
+ * @return a data stream socket to the provider or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_stream_consumer_extended(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
+
+/**
+ * Request a consumer-side stream socket to a provider using a specific address,
+ * port, and interface on the near end.
+ * @param address is the provider's IPv6 address in host byte order.
+ * @param port is the provider's port in host byte order.
  * @param address0 is the address to which to bind the socket, or zero.
  * @param port0 is the port to which to bind the socket, or zero
  * @param interface points to the name of the interface, or NULL.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface);
+static inline int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface) {
+    return diminuto_ipc6_stream_consumer_extended(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
+}
 
 /**
  * Request a consumer-side stream socket to a provider. The address and port
@@ -416,8 +460,7 @@ extern int diminuto_ipc6_datagram_peer_generic(diminuto_ipv6_t address, diminuto
  * port is allocated; its value can be determined using the nearend function.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port)
-{
+static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port) {
     return diminuto_ipc6_datagram_peer_generic(DIMINUTO_IPC6_UNSPECIFIED, port, (const char *)0);
 }
 
