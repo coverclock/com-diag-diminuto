@@ -572,6 +572,46 @@ static inline int diminuto_ipc6_set_linger(int fd, diminuto_ticks_t ticks) {
     return diminuto_ipc_set_linger(fd, ticks);
 }
 
+/**
+ * Enable or disable the TCP No Delay option .
+ * @param fd is an open stream socket.
+ * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_set_nodelay(int fd, int enable) {
+    return diminuto_ipc_set_nodelay(fd, enable);
+}
+
+/**
+ * Enable or disable the TCP Quick Acknowledgement option.
+ * @param fd is an open strean socket.
+ * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_set_quickack(int fd, int enable) {
+    return diminuto_ipc_set_quickack(fd, enable);
+}
+
+/**
+ * Change the send TCP buffer size.
+ * @param fd is an open stream socket.
+ * @param size is the window size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_set_send(int fd, int size) {
+    return diminuto_ipc_set_send(fd, size);
+}
+
+/**
+ * Change the receive TCP buffer size.
+ * @param fd is an open stream socket.
+ * @param size is the window size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc6_set_receive(int fd, int size) {
+    return diminuto_ipc_set_receive(fd, size);
+}
+
 /*******************************************************************************
  * INTERFACES
  ******************************************************************************/

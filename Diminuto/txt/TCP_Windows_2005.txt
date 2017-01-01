@@ -1,0 +1,300 @@
+Introduction to TCP Windows and Window Shifting/Scaling (2005)
+
+Introduction
+
+Some years ago when I was at the National Center for Atmospheric Research
+in Boulder, Colorado, some colleagues and I worked on a DARPA-funded
+project in which we had two supercomputers a couple of thousand miles
+apart running a distributed application communicating using TCP/IP
+stream sockets. The physical layer was a 155 megabit per second (OC-3)
+SONET link via a geosynchronous satellite. The link was capable of 622
+megabit per second (OC-12) speeds, but the microwave power required
+would have cooked any birds flying in front of the satellite dish. We
+had to use TCP window shifting and nine megabyte socket buffers to make
+effective use of the TCP/IP pipeline. That was my introduction to the
+need for windowing protocols.
+
+More recently I had reason to revisit what I had learned regarding TCP
+windows and window shifting. These notes are the result.
+
+Background
+
+TCP sockets are bidirectional byte streams connecting two end
+points. Bytes may flow in either direction. Bytes are packaged for
+transmission into TCP segments, which are in turn packaged into IP
+packets. (I tend to use the terms segment and packet interchangeably, but
+they are different things. Things get even more complicated as packets
+may be combined or even split up into frames for final transmission on
+the physical layer.)
+
+When sockets are established, there is an originating side and a
+terminating side. On systems based on the BSD IP protocol stack (which
+is most of them), the originating side calls the connect() function
+to begin the establishment of a socket connection to the terminating
+side. The terminating side has called the listen() function to indicate
+its willingness to accept incoming socket connections, and calls the
+accept() function to accept an incoming connection when it arrives.
+
+Once a socket connection is established, either or both sides may function
+in the role of either sender or receiver or both. The sender transmits
+data to the receiver. Whether you send or receive data over a socket has
+nothing to do with whether you originated or terminated the connection.
+
+TCP is a reliable byte stream protocol. The protocol is reliable because
+all bytes sent must be acknowledged by the receiver. After a timeout
+period, unacknowledged bytes are resent until they are acknowledged. Byte
+order is preserved.
+
+TCP is a sliding window protocol. The window size in sliding window
+protocols specifies the amount of data that can be sent before
+the sender has to pause and wait for the receiver to acknowledge
+them. This limit accomplishes several things. First, it is a form of
+flow control, preventing the sending side from overrunning the receive
+buffer on the receiving side. Second, it is a form of speed matching,
+allowing the sending side to keep sending at its own pace without
+having to stall and wait for the receiving side to acknowledge the
+sent bytes. The window size specifies how far the sender can get ahead
+of the receiver. (Students of producer-consumer queuing systems will
+recognize this immediately.) Finally, as we will see below, it is a
+performance mechanism to take best advantage of the characteristics of
+the underlying network.
+
+(Another example of a sliding window protocol is the Link Access
+Protocol for the D channel. LAP-D is an ITU standard protocol used in
+ISDN signaling for digital telephony.)
+
+Window Sizes
+
+The number of bytes that may be sent at any time before the sender must
+pause and wait for acknowledgement is limited by two factors: the size of
+the receiver’s buffer, and the size of the sender’s buffer. The size
+of the receiver’s buffer matters because the sender cannot send more
+bytes than the receiver has room to buffer; otherwise data is lost. The
+size of the sender’s buffer matters because the sender cannot recycle
+its own buffer space until the receiver has acknowledged the bytes in
+the send buffer, in case the network loses the data and the bytes must
+be resent.
+
+The sender knows the receiver’s remaining buffer size because
+the receiver advertises this value as the TCP window size in each
+acknowledgement replied to the sender. The sender always knows its own
+send buffer size. But the effective window size used by the sender is
+actually the minimum of the TCP window size advertised by the receiver,
+based on the unused space in its receive buffer, and the sender’s
+own send buffer size. To change the effective window size for best
+performance, both buffer sizes, one at either end of the connection,
+must be tuned.
+
+Buffer Sizes
+
+The TCP window size specifies the number of unacknowledged bytes that may
+be outstanding from the sender to the receiver. The window size field
+in the TCP header is an unsigned sixteen-bit value. This provides for
+a maximum TCP window size of 0xffff or 65535 bytes, although as will be
+explained below, this can be circumvented. A socket will have two window
+sizes, one in each direction. They can be different sizes.
+
+The receiver advertises its window size in each acknowledgement replied
+to the sender. Acknowledgements may be standalone segments, called pure
+acknowledgements, or they may be piggy backed on data segments being
+sent in the other direction. The advertised window size is the space
+remaining in the receiver’s buffer. This is the flow control aspect of
+the sliding window. The window size is also the largest number of bytes
+that may be sent before the sender has to wait for the receiver to reply
+with an acknowledgement. Sent bytes must be buffered by the sender until
+they are acknowledged by the receiver, in case the sender must resend
+them. This is the reliability aspect of TCP. The sender can run at its
+own rate until the receiver advertises a window size of zero. This is
+the speed matching aspect of TCP.
+
+The initial TCP window size advertised by the receiver is based on the
+receive buffer size. It has a default size which can be different for
+different systems, for example Linux versus VxWorks. The default size
+typically isn’t optimal for any particular network (more on that
+later). On systems based on the BSD IP protocol stack (which includes
+both Linux and VxWorks), the receive buffer size may be set on a per
+socket basis using the setsockopt() function and the socket option
+SO_RCVBUF. The buffer size is specified in units of bytes.
+
+The effective window size also depends on the send buffer size. The send
+buffer size may be set on a per socket basis using the same setsockopt()
+function and the socket option SO_SNDBUF. As before, the buffer size is
+in units of bytes.
+
+In Linux and other UNIXen based on the BSD IP protocol stack, the window
+size computation uses the SO_SNDBUF and SO_RCVBUF of the listen socket
+on the terminating end at the time when it calls accept(), and of the
+socket on the originating end at the time when it calls connect(). The
+SO_SNDBUF and SO_RCVBUF socket options can be set on a per socket basis
+using the setsockopt() call. Not only can the terminating-side socket
+inherit the SO_SNDBUF and SO_RCVBUF options from the listen socket from
+which it is accepted, it must. The setsockopt() call must be done on
+the listen socket on the terminating side before the accept() call is
+made. Likewise, the setsockopt() on the originating side must be done
+before the connect() call is made. Otherwise it has no effect because
+the window size establishment has already been completed.
+
+Bandwidth * Delay Product
+
+On a perfectly reliable network, the optimal effective window size
+for maximum throughput is ideally the result of the bandwidth * delay
+product. The bandwidth is the speed of the physical layer over which
+the connection runs. The delay is the round trip time or RTT of a
+typical data segment on that network. Long RTT can be due to either
+propagation delays or latency introduced by network devices. Over
+LAN connections round trip times are on the order of microseconds or
+milliseconds. Over geosynchronous satellite connections, it is more than
+a half a second. Over telemetry links to cometary probes to the Kuiper
+Belt, it is much longer.
+
+For example, given a 100 megabit per second Ethernet and a round trip
+time of 2 milliseconds, the bandwidth * delay product is 25,000 bytes:
+(100 * 1000000 / 8) * (2 / 1000).
+
+The Linux et al. ping(8) command displays the RTT for each sent ICMP
+packet it receives back. It does this by embedding a timestamp in each
+sent packet and comparing it to its time when the reflected packet is
+received. The Linux et al. traceroute(8) command works similarly.
+
+> ping 192.168.1.110
+PING 192.168.1.110 (192.168.1.110) from 135.9.78.45 : 56(84) bytes of data.
+64 bytes from 192.168.1.110: icmp_seq=1 ttl=127 time=0.184 ms
+64 bytes from 192.168.1.110: icmp_seq=2 ttl=127 time=0.202 ms
+64 bytes from 192.168.1.110: icmp_seq=3 ttl=127 time=0.207 ms
+64 bytes from 192.168.1.110: icmp_seq=4 ttl=127 time=1.94 ms
+
+When I spent a month in the People’s Republic of China in 1995, I used
+traceroute to measure the RTT to my server in Boulder Colorado at over
+two seconds. This was a terrestrial link, and the latency was due mainly
+to the many network devices through which my packets had to travel. This
+made telnet sessions particularly challenging. I could type an entire
+sentence before I saw any text echoed back.
+
+The distributed supercomputer project had a bandwidth of 155 megabits
+per second and an RTT of half a second. The bandwidth * delay product
+was (155 * 1000000 / 8) * 0.5; that works out to more than nine million
+bytes. That may not sound like much, but that was nine megabytes of
+non-virtual high-speed SRAM.
+
+Bandwidth versus Latency
+
+Large window sizes may be necessary for networks which have high bandwidth
+and large latencies (due to either network or propagation delays) in order
+to keep the connection “pipe” full. Failure to keep the pipe full
+results in the end points being able to make use of only a fraction of
+the available bandwidth. The sending end must pause once the window size
+is reached, wait for the receiver to send an acknowledgement, and receive
+and process it. A significant percentage of the pipe remains empty, and
+the sender and receiver are both idle or stalled much of the time. On
+high latency links, this can result in a significant loss in performance.
+
+For any link, the speed of light places a hard limit on how short the
+end-to-end propagation latency can be. Even on an “infinite bandwidth”
+link, if such a thing existed, end-to-end propagation will never be zero.
+
+Think of it this way: given a geosynchronous satellite link with an
+RTT of half a second and a window size of one byte, it takes at least
+one second to send every byte, regardless of the bandwidth of the
+link. You send a byte, it takes half a second to reach the receiver,
+and the acknowledgement takes another half a second to reach the sender,
+before another byte is sent. This reduces the network bandwidth to no
+better than one byte per second, regardless of the bandwidth of the link,
+unless a larger window size is used.
+
+This is similar to the need to use larger block sizes to increase
+performance on I/O devices like disk drives. It reduces the per-byte
+overhead by amortizing the latency over a larger number of bytes.
+
+Window Scaling
+
+RFC1323 window shifting, called window scaling by the BSD stack, allows
+window sizes larger than the 65535 byte maximum. Recall that the TCP
+window size is the most bytes the sender can have un-acknowledged
+by the receiver before the sender stalls. Window shifting is used
+automatically (a vast improvement over when I first used it) when the
+SO_SNDBUF and SO_RCVBUF values result in a window size exceeding the
+unsigned sixteen-bit maximum. Window shifting increases the window size
+by successive powers of two, allowing both end points to scale the window
+size value by shifting it left or right. Using this RFC1323 feature causes
+effective increases in window size to be of very coarse granularity;
+it allows you to double it, or half it, but no values in between.
+
+The ability to keep the pipe full is affected directly by the size of
+the send buffer; the sender must be able to buffer the bandwidth * delay
+product number of bytes pending acknowledgement by the receiver. The
+ability to recover from lost packets is affected by both the size of
+the send buffer and of the receive buffer; the sender must be able to
+resend unacknowledged bytes, and the receiver must buffer received bytes
+until an ordered TCP byte sequence can be reconstructed and delivered
+to the application.
+
+Setting SO_SNDBUF and SO_RCVBUF to honkin’ big values, whether window
+scaling is used or not, is not the no-brainer it might seem, even if
+memory is not a constraint. The larger the TCP window size, the more
+bytes must be retransmitted in the event of the loss of a single TCP data
+segment. This consumes bandwidth and time resending bytes that would
+have been received and acknowledged successfully had a smaller window
+size been used. New bytes to be sent must wait behind the bytes being
+resent, adding a lot of latency for both the resent and new bytes. This
+can lead to jitter in constant rate byte streams, to processes on both the
+sending and receiving sides being blocked, to missed real-time responses;
+all sorts of wackiness may ensue. Tuning the socket buffer sizes for
+sensitive applications may be a non-trivial matter.
+
+Implementations
+
+The Linux TCP minimum, default, and maximum SO_SNDBUF and SO_RCVBUF
+values are displayed by the sysctl command.
+
+> sysctl –a
+net.ipv4.tcp_rmem = 4096        87380   174760
+net.ipv4.tcp_wmem = 4096        16384   131072
+ 
+So in this example, unless setsockopt() is used, SO_RCVBUF will
+be 87380 bytes and SO_SNDBUF will be 16384 bytes. The ip-sysctl.txt
+documentation states that the default value of 87380 bytes for SO_RCVBUF
+“results in window of 65535 with default setting of tcp_adv_win_scale
+and tcp_app_win:0”, indicating that the use of window scaling (which
+appears to be what Linux calls the window shifting described in RFC1323)
+will not be needed if SO_RCVBUF is 87380 or smaller.
+
+The VxWorks Reference Manual 5.4 (setsockopt(), pp. 2.736-737) indicates
+that the default SO_SNDBUF and SO_RCVBUF are both 8192 bytes for TCP
+sockets unless set otherwise by setsocketopt().
+
+Linux documentation suggests that this value is not enough to induce
+RFC1323 window shifting because of overhead subtracted from the receive
+buffer space. Since the IP stacks in both Linux and VxWorks are based on
+the BSD stack, I’d guess the VxWorks stack works similarly. Technical
+documentation on the Wind River web site supports this.
+
+References
+ 
+Linux 2.4, socket(7)
+ 
+Linux 2.4, tcp(7)
+ 
+Linux 2.4, sysctl(8)
+ 
+Linux 2.4, linux/Documentation/networking/ip-sysctl.txt
+ 
+Linux 2.4, linux/include/net/tcp.h and other source files
+ 
+Wind River Systems, VxWorks Reference Manual, 5.4
+ 
+Wind River Systems, http://secure.windriver.com/windsurf
+ 
+V. Jacobson et al., “TCP Extensions for High Performance”, RFC1323, 1992
+ 
+V. Welch, “A User’s Guide to TCP Windows”, NCSA, 1996
+ 
+J. Mahdavi, “Enabling High Performance Data Transfers on Hosts”, PSC, 1996
+ 
+W. Stevens, TCP/IP Illustrated Volume 1: The Protocols, Addison-Wesley, 1994
+ 
+G. Wright et al., TCP/IP Illustrated Volume 2: The Implementation, Addison-Wesley, 1995
+ 
+Author
+ 
+J. L. Sloan jsloan@diag.com 2005-04-29
+© 2005 by the Digital Aggregates Corporation. All rights reserved.

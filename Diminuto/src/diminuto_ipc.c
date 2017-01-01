@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -121,18 +122,15 @@ int diminuto_ipc_set_status(int fd, int enable, long mask)
     return fd;
 }
 
-int diminuto_ipc_set_option(int fd, int enable, int option)
+int diminuto_ipc_set_value(int fd, int value, int option)
 {
-    int onoff;
-
-    onoff = enable ? 1 : 0;
-    if (setsockopt(fd, SOL_SOCKET, option, &onoff, sizeof(onoff)) >= 0) {
+    if (setsockopt(fd, SOL_SOCKET, option, &value, sizeof(value)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ipc_set_option: setsockopt: must be root");
+        diminuto_perror("diminuto_ipc_set_value: setsockopt: must be root");
         fd = -8;
     } else {
-        diminuto_perror("diminuto_ipc_set_option: setsockopt");
+        diminuto_perror("diminuto_ipc_set_value: setsockopt");
         fd = -9;
     }
 
@@ -159,6 +157,16 @@ int diminuto_ipc_set_debug(int fd, int enable)
     return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
 }
 
+int diminuto_ipc_set_send(int fd, ssize_t size)
+{
+    return (size >= 0) ? diminuto_ipc_set_value(fd, size, SO_SNDBUF) : fd;
+}
+
+int diminuto_ipc_set_receive(int fd, ssize_t size)
+{
+    return (size >= 0) ? diminuto_ipc_set_value(fd, size, SO_RCVBUF) : fd;
+}
+
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 {
     struct linger opt = { 0 };
@@ -173,6 +181,35 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     }
 
     return fd;
+}
+
+int diminuto_ipc_set_tcpoption(int fd, int enable, int option)
+{
+    struct protoent *pp;
+    int onoff;
+
+    onoff = enable ? 1 : 0;
+    if ((pp = getprotobyname("tcp")) == (struct protoent *)0) {
+        diminuto_perror("diminuto_ipc_set_tcpoption: getprotobyname: tcp");
+        fd = -11;
+    } else if (setsockopt(fd, pp->p_proto, option, &onoff, sizeof(onoff)) < 0) {
+        diminuto_perror("diminuto_ipc_set_tcpoption: setsockopt");
+        fd = -12;
+    } else {
+        /* Do nothing. */
+    }
+
+    return fd;
+}
+
+int diminuto_ipc_set_nodelay(int fd, int enable)
+{
+    return diminuto_ipc_set_tcpoption(fd, enable, TCP_NODELAY);
+}
+
+int diminuto_ipc_set_quickack(int fd, int enable)
+{
+    return diminuto_ipc_set_tcpoption(fd, enable, TCP_QUICKACK);
 }
 
 /*******************************************************************************

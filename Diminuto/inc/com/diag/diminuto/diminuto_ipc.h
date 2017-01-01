@@ -80,13 +80,33 @@ extern int diminuto_ipc_set_interface(int fd, const char * interface);
 extern int diminuto_ipc_set_status(int fd, int enable, long mask);
 
 /**
- * Enable or disable a socket option.
+ * Set a socket integer value option.
+ * @param fd is an open socket of any type.
+ * @param value is the value to set.
+ * @param option is option name.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_value(int fd, int value, int option);
+
+/**
+ * Enable or disable a socket boolean option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable an option, 0 to disable an option.
  * @param option is option name.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_option(int fd, int enable, int option);
+static inline int diminuto_ipc_set_option(int fd, int enable, int option) {
+    return diminuto_ipc_set_value(fd, enable ? 1 : 0, option);
+}
+
+/**
+ * Enable or disable a TCP option.
+ * @param fd is an open stream socket.
+ * @param enable is !0 to enable an option, 0 to disable an option.
+ * @param option is option name.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_tcpoption(int fd, int enable, int option);
 
 /**
  * Enable or disable the non-blocking status.
@@ -128,6 +148,38 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
+
+/**
+ * Enable or disable the TCP No Delay option .
+ * @param fd is an open stream socket.
+ * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_nodelay(int fd, int enable);
+
+/**
+ * Enable or disable the TCP Quick Acknowledgement option.
+ * @param fd is an open strean socket.
+ * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_quickack(int fd, int enable);
+
+/**
+ * Change the send TCP buffer size.
+ * @param fd is an open stream socket.
+ * @param size is the buffer size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_send(int fd, ssize_t size);
+
+/**
+ * Change the receive TCP buffer size.
+ * @param fd is an open stream socket.
+ * @param size is the buffer size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_receive(int fd, ssize_t size);
 
 /* (Many other options are possible, but these are the ones I have used.) */
 
