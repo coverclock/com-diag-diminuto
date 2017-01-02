@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include "../src/diminuto_ipc6.h" /* Private API accessed for unit testing. */
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -122,6 +123,47 @@ int main(int argc, char * argv[])
 
         diminuto_ipc6_ipv4toipv6(address4, &address6);
         ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t address6;
+
+        TEST();
+
+        address6 = diminuto_ipc6_address("::");
+        EXPECT(diminuto_ipc6_is_unspecified(&address6));
+
+        address6 = diminuto_ipc6_address("::1");
+        EXPECT(diminuto_ipc6_is_loopback(&address6));
+
+        address6 = diminuto_ipc6_address("::ffff:192.168.1.1");
+        EXPECT(diminuto_ipc6_is_ipv4(&address6));
+
+        address6 = diminuto_ipc6_address("64:ff9b::192.168.1.1");
+        EXPECT(diminuto_ipc6_is_nat64wkp(&address6));
+
+        address6 = diminuto_ipc6_address("2001:1234:4678:9abc:def0:1234:5678:9abc");
+        EXPECT(diminuto_ipc6_is_unicast(&address6));
+
+        address6 = diminuto_ipc6_address("2001:1234:4678:9abc:0000:5efe:192.168.1.1");
+        EXPECT(diminuto_ipc6_is_isatap(&address6));
+
+        address6 = diminuto_ipc6_address("2002:c0a8:0101:9abc:def0:1234:5678:9abc");
+        EXPECT(diminuto_ipc6_is_6to4(&address6));
+
+        address6 = diminuto_ipc6_address("2002:c0a8:0101:9abc:def0:1234:5678:9abc");
+        EXPECT(diminuto_ipc6_is_6to4(&address6));
+
+        address6 = diminuto_ipc6_address("fd71:1234:4678:9abc:def0:12ff:fe78:9abc");
+        EXPECT(diminuto_ipc6_is_local(&address6));
+
+        address6 = diminuto_ipc6_address("fe80:1234:4678:9abc:def0:12ff:fe78:9abc");
+        EXPECT(diminuto_ipc6_is_link(&address6));
+
+        address6 = diminuto_ipc6_address("ff02:1:4678:9abc:def0:1234:5678:9abc");
+        EXPECT(diminuto_ipc6_is_multicast(&address6));
 
         STATUS();
     }

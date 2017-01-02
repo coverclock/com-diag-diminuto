@@ -78,6 +78,16 @@ static inline int diminuto_ipc6_is_ipv4(const diminuto_ipv6_t * addressp) {
 }
 
 /**
+ * Return true if the IPv6 address in host byte order is NAT64 WKP, false
+ * otherwise.
+ * @param addressp points to an IPv6 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc6_is_nat64wkp(const diminuto_ipv6_t * addressp) {
+    return ((addressp->u16[0] == 0x64) && (addressp->u16[1] == 0xff9b) && (addressp->u16[2] == 0) && (addressp->u16[3] == 0) && (addressp->u16[4] == 0) && (addressp->u16[5] == 0));
+}
+
+/**
  * Return true if the IPv6 address in host byte order is global unicast, false
  * otherwise.
  * @param addressp points to an IPv6 address.
@@ -88,16 +98,6 @@ static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp) {
 }
 
 /**
- * Return true if the IPv6 address in host byte order is a 6to4 tunnel, false
- * otherwise.
- * @param addressp points to an IPv6 address.
- * @return true or false.
- */
-static inline int diminuto_ipc6_is_6to4(const diminuto_ipv6_t * addressp) {
-    return (addressp->u16[0] == 0x2002);
-}
-
-/**
  * Return true if the IPv6 address in host byte order is an ISATAP tunnel, false
  * otherwise.
  * @param addressp points to an IPv6 address.
@@ -105,6 +105,16 @@ static inline int diminuto_ipc6_is_6to4(const diminuto_ipv6_t * addressp) {
  */
 static inline int diminuto_ipc6_is_isatap(const diminuto_ipv6_t * addressp) {
     return (diminuto_ipc6_is_unicast(addressp) && (addressp->u16[4] == 0x0000) && (addressp->u16[5] == 0x5efe));
+}
+
+/**
+ * Return true if the IPv6 address in host byte order is a 6to4 tunnel, false
+ * otherwise.
+ * @param addressp points to an IPv6 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc6_is_6to4(const diminuto_ipv6_t * addressp) {
+    return (addressp->u16[0] == 0x2002);
 }
 
 /**

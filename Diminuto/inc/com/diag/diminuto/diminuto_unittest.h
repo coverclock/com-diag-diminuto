@@ -26,6 +26,7 @@
 
 extern int diminuto_unittest_tests;
 extern int diminuto_unittest_errors;
+extern int diminuto_unittest_total;
 
 /**
  * @def SETLOGMASK()
@@ -41,7 +42,12 @@ extern int diminuto_unittest_errors;
  * Emit a notice message identifying the the start of a new unit test.
  */
 #define TEST() \
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests++)
+    do { \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests++); \
+        fflush(stdout); \
+        fflush(stderr); \
+        diminuto_unittest_errors = 0; \
+    } while (0)
 
 /**
  * @def CHECKPOINT(...)
@@ -66,10 +72,10 @@ extern int diminuto_unittest_errors;
  */
 #define EXIT() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d total=%d %s\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
-        exit(diminuto_unittest_errors > 255 ? 255 : diminuto_unittest_errors); \
+        exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
     } while (0)
 
 /**
@@ -78,7 +84,7 @@ extern int diminuto_unittest_errors;
  */
 #define STATUS() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d total=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
     } while (0)
@@ -104,6 +110,7 @@ extern int diminuto_unittest_errors;
         if (!(_COND_)) { \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "!EXPECT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
+            ++diminuto_unittest_total; \
         } \
     } while (0)
 
@@ -115,6 +122,7 @@ extern int diminuto_unittest_errors;
     do { \
         diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "FAILURE!\n"); \
         ++diminuto_unittest_errors; \
+        ++diminuto_unittest_total; \
     } while (0)
 
 /**
@@ -127,6 +135,7 @@ extern int diminuto_unittest_errors;
         if (!(_COND_)) { \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "!ASSERT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
+            ++diminuto_unittest_total; \
             EXIT(); \
         } \
     } while (0)
@@ -139,6 +148,7 @@ extern int diminuto_unittest_errors;
         do { \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
             ++diminuto_unittest_errors; \
+            ++diminuto_unittest_total; \
             EXIT(); \
 	    } while (0)
 
