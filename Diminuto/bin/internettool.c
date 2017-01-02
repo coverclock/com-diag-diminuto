@@ -30,6 +30,7 @@
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include <unistd.h>
@@ -78,10 +79,10 @@ int main(int argc, char * argv[])
     int eof = 0;
     uint8_t type = 0;
     uint8_t code = 0;
-    static const uint16_t ID = 0xc0de;
     uint16_t id = 0;
     uint16_t sn = 0;
     uint8_t ttl = 0;
+    uint16_t ii;
     uint16_t ss;
     diminuto_unsigned_t value;
     char ** interfaci;
@@ -794,16 +795,21 @@ int main(int argc, char * argv[])
     else if ((Layer2 == '4') && (Layer3 == 'g')) {
 
         delay = diminuto_frequency();
+        srandom(diminuto_time_clock());
+        ii = random();
         ss = 0;
         while (!0) {
-            output = diminuto_ping4_datagram_send(sock, server4, ID, ss);
+            output = diminuto_ping4_datagram_send(sock, server4, ii, ss);
             assert(output > 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=send id=0x%4.4x sn=%u to=%s\n", ID, ss, diminuto_ipc4_address2string(server4, string, sizeof(string)));
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc4_address2string(server4, string, sizeof(string)));
             do {
                 input = diminuto_ping4_datagram_receive(sock, &datum4, &type, &code, &id, &sn, &ttl, &elapsed);
                 assert(input >= 0);
             } while (input == 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=receive id=0x%4.4x sn=%u ttl=0x%2.2x elapsed=%lf from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
+            assert(datum4 == server4);
+            assert(id == ii);
+            assert(sn == ss);
             ss += 1;
             diminuto_delay(delay, 0);
         }
@@ -817,16 +823,21 @@ int main(int argc, char * argv[])
     else if ((Layer2 == '6') && (Layer3 == 'g')) {
 
         delay = diminuto_frequency();
+        srandom(diminuto_time_clock());
+        ii = random();
         ss = 0;
         while (!0) {
-            output = diminuto_ping6_datagram_send(sock, server6, ID, ss);
+            output = diminuto_ping6_datagram_send(sock, server6, ii, ss);
             assert(output > 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=send id=0x%4.4x sn=%u to=%s\n", ID, ss, diminuto_ipc6_address2string(server6, string, sizeof(string)));
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc6_address2string(server6, string, sizeof(string)));
             do {
                 input = diminuto_ping6_datagram_receive(sock, &datum6, &type, &code, &id, &sn, &elapsed);
                 assert(input >= 0);
             } while (input == 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=receive id=0x%4.4x sn=%u elapsed=%lf from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
+            assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+            assert(id == ii);
+            assert(sn == ss);
             ss += 1;
             diminuto_delay(delay, 0);
         }
@@ -842,8 +853,6 @@ int main(int argc, char * argv[])
         assert(0);
 
     }
-
-    diminuto_mux_fini(&mux);
 
     exit(0);
 }
