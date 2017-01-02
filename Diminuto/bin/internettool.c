@@ -25,9 +25,13 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
+#include "com/diag/diminuto/diminuto_ping4.h"
+#include "com/diag/diminuto/diminuto_ping6.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -72,10 +76,19 @@ int main(int argc, char * argv[])
     int rc = 0;
     int fds = 0;
     int eof = 0;
+    uint8_t type = 0;
+    uint8_t code = 0;
+    static const uint16_t ID = 0xc0de;
+    uint16_t id = 0;
+    uint16_t sn = 0;
+    uint8_t ttl = 0;
+    uint16_t ss;
     diminuto_unsigned_t value;
     char ** interfaci;
     char ** interfaces;
     diminuto_mux_t mux;
+    diminuto_ticks_t delay;
+    diminuto_ticks_t elapsed;
     extern char * optarg;
     extern int optind;
     extern int opterr;
@@ -90,7 +103,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "46?A:I:O:P:a:b:i:p:tu")) >= 0) {
+    while ((opt = getopt(argc, argv, "46?A:I:O:P:a:b:gi:p:tu")) >= 0) {
         switch (opt) {
         case '4':
         case '6':
@@ -120,12 +133,13 @@ int main(int argc, char * argv[])
         case 'p':
             Port = optarg; /* near end bind port number */
             break;
+        case 'g':
         case 't':
         case 'u':
-            Layer3 = opt; /* tcp or udp */
+            Layer3 = opt; /* tcp or udp or ping */
             break;
         case '?':
-            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
@@ -135,6 +149,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
+            fprintf(stderr, "       -g          Use ICMP echo request (ping).\n");
             fprintf(stderr, "       -i NEINTF   Bind near end socket to interface NEINTF.\n");
             fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
             fprintf(stderr, "       -t          Use TCP.\n");
@@ -161,6 +176,8 @@ int main(int argc, char * argv[])
 
     if (Layer3 == 't') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=TCP\n");
+    } else if (Layer3 == 'g') {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=ICMP Echo Request\n");
     } else if (Layer3 == 'u') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=UDP\n");
     } else {
@@ -407,6 +424,42 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
         assert(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * PING - IPv4 - ICMP Echo Request
+ ******************************************************************************/
+
+    else if ((Layer2 == '4') && (Layer3 == 'g')) {
+
+        sock = diminuto_ping4_datagram_peer();
+        assert(sock >= 0);
+        rc = diminuto_ipc4_source(sock, address4, port46);
+        assert(rc >= 0);
+        rc = diminuto_ipc_set_interface(sock, interface);
+        assert(rc >= 0);
+        rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+
+    }
+
+/*******************************************************************************
+ * PING - IPv6 - ICMP Echo Request
+ ******************************************************************************/
+
+    else if ((Layer2 == '6') && (Layer3 == 'g')) {
+
+        sock = diminuto_ping6_datagram_peer();
+        assert(sock >= 0);
+        rc = diminuto_ipc6_source(sock, address6, port46);
+        assert(rc >= 0);
+        rc = diminuto_ipc_set_interface(sock, interface);
+        assert(rc >= 0);
+        rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
+        assert(rc >= 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
 
     }
 
@@ -731,6 +784,52 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_close(sock);
         assert(rc >= 0);
         diminuto_mux_fini(&mux);
+
+    }
+
+/*******************************************************************************
+ * PING - IPv4 - ICMP Echo Request
+ ******************************************************************************/
+
+    else if ((Layer2 == '4') && (Layer3 == 'g')) {
+
+        delay = diminuto_frequency();
+        ss = 0;
+        while (!0) {
+            output = diminuto_ping4_datagram_send(sock, server4, ID, ss);
+            assert(output > 0);
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=send id=0x%4.4x sn=%u to=%s\n", ID, ss, diminuto_ipc4_address2string(server4, string, sizeof(string)));
+            do {
+                input = diminuto_ping4_datagram_receive(sock, &datum4, &type, &code, &id, &sn, &ttl, &elapsed);
+                assert(input >= 0);
+            } while (input == 0);
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=receive id=0x%4.4x sn=%u ttl=0x%2.2x elapsed=%lf from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
+            ss += 1;
+            diminuto_delay(delay, 0);
+        }
+
+    }
+
+/*******************************************************************************
+ * PING - IPv6 - ICMP Echo Request
+ ******************************************************************************/
+
+    else if ((Layer2 == '6') && (Layer3 == 'g')) {
+
+        delay = diminuto_frequency();
+        ss = 0;
+        while (!0) {
+            output = diminuto_ping6_datagram_send(sock, server6, ID, ss);
+            assert(output > 0);
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=send id=0x%4.4x sn=%u to=%s\n", ID, ss, diminuto_ipc6_address2string(server6, string, sizeof(string)));
+            do {
+                input = diminuto_ping6_datagram_receive(sock, &datum6, &type, &code, &id, &sn, &elapsed);
+                assert(input >= 0);
+            } while (input == 0);
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=receive id=0x%4.4x sn=%u elapsed=%lf from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
+            ss += 1;
+            diminuto_delay(delay, 0);
+        }
 
     }
 

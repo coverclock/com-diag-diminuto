@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 
         if (Interface != (const char *)0) {
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", Interface);
-            ASSERT(diminuto_ping6_interface(sock, Interface) >= 0);
+            ASSERT(diminuto_ipc_set_interface(sock, Interface) >= 0);
         }
 
         STATUS();
@@ -97,7 +97,7 @@ int main(int argc, char * argv[])
         }
 
         if ((Address != (const char *)0) || (Port != (const char * )0)) {
-            ASSERT(diminuto_ping6_source(sock, from, port) >= 0);
+            ASSERT(diminuto_ipc6_source(sock, from, port) >= 0);
         }
 
         STATUS();

@@ -27,33 +27,6 @@
 extern int diminuto_ping6_datagram_peer(void);
 
 /**
- * Optionally bind raw socket to a specific interface. This forces the ICMP6
- * ECHO REQUEST datagram send and the receive for the ICMP6 ECHO REPLY datagram
- * to only use the specified interface.
- * @param fd is the raw socket.
- * @param ifname is the interface name, e.g. "eth1".
- * @return >=0 for success, or <0 if an error occurred.
- */
-static inline int diminuto_ping6_interface(int fd, const char * ifname) {
-    return diminuto_ipc_set_interface(fd, ifname);
-}
-
-/**
- * Optionally bind raw socket to a specific source address and port. This isn't
- * necessary for this feature to work, but does make commands that display the
- * local address being used (like netstat(1)) display something other than
- * zeros for the source address. (The kernel requires that the address be that
- * of the interface being used.)
- * @param fd is the raw socket.
- * @param address is the IPv6 address.
- * @param port is the port number.
- * @return >= 0 for success, or <0 of an error occurred.
- */
-static inline int diminuto_ping6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port) {
-    return diminuto_ipc6_source(fd, address, port);
-}
-
-/**
  * Sent an ICMP6 ECHO REQUEST datagram to the specified IPv6 address.
  * @param fd is the raw socket.
  * @param address is the IPv4 address.
