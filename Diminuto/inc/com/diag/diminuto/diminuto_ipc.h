@@ -84,7 +84,7 @@ extern int diminuto_ipc_set_value(int fd, int value, int option);
  * @param option is option name.
  * @return >=0 for success or <0 if an error occurred.
  */
-static inline int diminuto_ipc_set_option(int fd, int enable, int option) {
+static inline int diminuto_ipc_set_boolean(int fd, int enable, int option) {
     return diminuto_ipc_set_value(fd, enable ? 1 : 0, option);
 }
 
@@ -112,6 +112,11 @@ extern int diminuto_ipc_set_nonblocking(int fd, int enable);
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
+
+/**
+ * Dependency injector used to set the Reuse Address socket option.
+ */
+extern diminuto_ipc_injector_t diminuto_ipc_reuseaddress;
 
 /**
  * Enable or disable the keep alive option.

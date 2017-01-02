@@ -144,22 +144,22 @@ int diminuto_ipc_set_nonblocking(int fd, int enable)
 
 int diminuto_ipc_set_reuseaddress(int fd, int enable)
 {
-    return diminuto_ipc_set_option(fd, enable, SO_REUSEADDR);
+    return diminuto_ipc_set_boolean(fd, enable, SO_REUSEADDR);
 }
 
-int diminuto_ipc_stream_provider_reuseaddress(int fd, void * datap)
+int diminuto_ipc_reuseaddress(int fd, void * datap)
 {
     return diminuto_ipc_set_reuseaddress(fd, !0);
 }
 
 int diminuto_ipc_set_keepalive(int fd, int enable)
 {
-    return diminuto_ipc_set_option(fd, enable, SO_KEEPALIVE);
+    return diminuto_ipc_set_boolean(fd, enable, SO_KEEPALIVE);
 }
 
 int diminuto_ipc_set_debug(int fd, int enable)
 {
-    return diminuto_ipc_set_option(fd, enable, SO_DEBUG);
+    return diminuto_ipc_set_boolean(fd, enable, SO_DEBUG);
 }
 
 /*

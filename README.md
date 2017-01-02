@@ -154,7 +154,7 @@ DIRECTORIES
 * bin - utility source files
 * cfg - configuration makefiles
 * drv - kernel space loadable module source files
-* etc - configuration files
+* etc - miscellaneous occasionally useful files
 * inc - public header files
 * mod - user space dynamically linkable module source files
 * out - build artifacts

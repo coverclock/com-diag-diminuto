@@ -331,22 +331,22 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc4_stream_provider(0)) >= 0);
 
-        EXPECT(diminuto_ipc4_set_nonblocking(fd, !0) >= 0);
-        EXPECT(diminuto_ipc4_set_nonblocking(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
 
-        EXPECT(diminuto_ipc4_set_reuseaddress(fd, 0) >= 0);
-        EXPECT(diminuto_ipc4_set_reuseaddress(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_reuseaddress(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_reuseaddress(fd, !0) >= 0);
 
-        EXPECT(diminuto_ipc4_set_keepalive(fd, !0) >= 0);
-        EXPECT(diminuto_ipc4_set_keepalive(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_keepalive(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_keepalive(fd, 0) >= 0);
 
         if (geteuid() == 0) {
-            EXPECT(diminuto_ipc4_set_debug(fd, !0) >= 0);
-            EXPECT(diminuto_ipc4_set_debug(fd, 0) >= 0);
+            EXPECT(diminuto_ipc_set_debug(fd, !0) >= 0);
+            EXPECT(diminuto_ipc_set_debug(fd, 0) >= 0);
         }
 
-        EXPECT(diminuto_ipc4_set_linger(fd, hertz) >= 0);
-        EXPECT(diminuto_ipc4_set_linger(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, hertz) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
 
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
@@ -451,7 +451,7 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd, (diminuto_ipv4_t *)0, &rendezvous) >= 0);
-        EXPECT(diminuto_ipc4_set_nonblocking(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(address == 0x12345678);

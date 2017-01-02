@@ -449,22 +449,22 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc6_stream_provider(0)) >= 0);
 
-        EXPECT(diminuto_ipc6_set_nonblocking(fd, !0) >= 0);
-        EXPECT(diminuto_ipc6_set_nonblocking(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
 
-        EXPECT(diminuto_ipc6_set_reuseaddress(fd, 0) >= 0);
-        EXPECT(diminuto_ipc6_set_reuseaddress(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_reuseaddress(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_reuseaddress(fd, !0) >= 0);
 
-        EXPECT(diminuto_ipc6_set_keepalive(fd, !0) >= 0);
-        EXPECT(diminuto_ipc6_set_keepalive(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_keepalive(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_keepalive(fd, 0) >= 0);
 
         if (geteuid() == 0) {
-            EXPECT(diminuto_ipc6_set_debug(fd, !0) >= 0);
-            EXPECT(diminuto_ipc6_set_debug(fd, 0) >= 0);
+            EXPECT(diminuto_ipc_set_debug(fd, !0) >= 0);
+            EXPECT(diminuto_ipc_set_debug(fd, 0) >= 0);
         }
 
-        EXPECT(diminuto_ipc6_set_linger(fd, hertz) >= 0);
-        EXPECT(diminuto_ipc6_set_linger(fd, 0) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, hertz) >= 0);
+        EXPECT(diminuto_ipc_set_linger(fd, 0) >= 0);
 
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
@@ -587,7 +587,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipc6_set_nonblocking(fd, !0) >= 0);
+        EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT(errno == EAGAIN);
         EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);

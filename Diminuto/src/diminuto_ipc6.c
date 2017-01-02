@@ -299,7 +299,7 @@ int diminuto_ipc6_source(int fd, diminuto_ipv6_t address, diminuto_port_t port)
  * STREAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_stream_provider_extended(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap)
+int diminuto_ipc6_stream_provider_base(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap)
 {
     int rc;
     int fd;
@@ -313,17 +313,15 @@ int diminuto_ipc6_stream_provider_extended(diminuto_ipv6_t address, diminuto_por
     }
 
     if ((rc = fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc6_stream_provider_extended: socket");
-    } else if ((rc = diminuto_ipc6_set_reuseaddress(fd, !0)) < 0) {
-        diminuto_ipc6_close(fd);
+        diminuto_perror("diminuto_ipc6_stream_provider_base: socket");
     } else if ((rc = diminuto_ipc6_source(fd, address, port)) < 0) {
         diminuto_ipc6_close(fd);
-    } else if ((rc = diminuto_ipc6_set_interface(fd, interface)) < 0) {
+    } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
         diminuto_ipc6_close(fd);
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc6_close(fd);
     } else if (listen(fd, backlog) < 0) {
-        diminuto_perror("diminuto_ipc6_stream_provider_extended: listen");
+        diminuto_perror("diminuto_ipc6_stream_provider_base: listen");
         diminuto_ipc6_close(fd);
         rc = -42;
     } else {
@@ -349,7 +347,7 @@ int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * addressp, dimi
     return rc;
 }
 
-int diminuto_ipc6_stream_consumer_extended(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface,  diminuto_ipc_injector_t * functionp, void * datap)
+int diminuto_ipc6_stream_consumer_base(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface,  diminuto_ipc_injector_t * functionp, void * datap)
 {
     int rc;
     int fd;
@@ -363,17 +361,15 @@ int diminuto_ipc6_stream_consumer_extended(diminuto_ipv6_t address, diminuto_por
      sa.sin6_port = htons(port);
 
     if ((rc = fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc6_stream_consumer_extended: socket");
-    } else if ((rc = diminuto_ipc6_set_reuseaddress(fd, !0)) < 0) {
-        diminuto_ipc6_close(fd);
+        diminuto_perror("diminuto_ipc6_stream_consumer_base: socket");
     } else if ((rc = diminuto_ipc6_source(fd, address0, port0)) < 0) {
         diminuto_ipc6_close(fd);
-    } else if ((rc = diminuto_ipc6_set_interface(fd, interface)) < 0) {
+    } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
         diminuto_ipc6_close(fd);
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc6_close(fd);
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
-         diminuto_perror("diminuto_ipc6_stream_consumer_extended: connect");
+         diminuto_perror("diminuto_ipc6_stream_consumer_base: connect");
          diminuto_ipc6_close(fd);
          rc = -44;
     } else {
@@ -387,18 +383,18 @@ int diminuto_ipc6_stream_consumer_extended(diminuto_ipv6_t address, diminuto_por
  * DATAGRAM SOCKETS
  ******************************************************************************/
 
-int diminuto_ipc6_datagram_peer_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface)
+int diminuto_ipc6_datagram_peer_base(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, diminuto_ipc_injector_t * functionp, void * datap)
 {
     int rc;
     int fd;
 
     if ((rc = fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
-        diminuto_perror("diminuto_ipc6_peer_generic: socket");
-    } else if ((rc = diminuto_ipc6_set_reuseaddress(fd, !0)) < 0) {
-        diminuto_ipc6_close(fd);
+        diminuto_perror("diminuto_ipc6_peer_base: socket");
     } else if ((rc = diminuto_ipc6_source(fd, address, port)) < 0) {
         diminuto_ipc6_close(fd);
-    } else if ((rc = diminuto_ipc6_set_interface(fd, interface)) < 0) {
+    } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
+        diminuto_ipc6_close(fd);
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc6_close(fd);
     } else {
         /* Do nothing. */

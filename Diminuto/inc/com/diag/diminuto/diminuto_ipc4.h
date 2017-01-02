@@ -19,6 +19,10 @@
 
 #include "com/diag/diminuto/diminuto_ipc.h"
 
+/*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "0.0.0.0",
  * the IPv4 address of all zeros.
@@ -36,6 +40,10 @@ extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK;
  * the second IPv4 loopback address used in some circumstances.
  */
 extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2;
+
+/*******************************************************************************
+ * RESOLVERS
+ ******************************************************************************/
 
 /**
  * Convert a hostname or an IPv4 address string in dot notation into one
@@ -72,6 +80,10 @@ static inline diminuto_port_t diminuto_ipc4_port(const char * service, const cha
 	return diminuto_ipc_port(service, protocol);
 }
 
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
+
 /**
  * Convert an IPv4 address in host byte order into a printable IP address
  * string in dot notation.
@@ -91,6 +103,10 @@ extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * bu
 static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address, char * buffer, size_t length) {
     return diminuto_ipc4_dotnotation(address, buffer, length);
 }
+
+/*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
 
 /**
  * Return the address and port of the near end of the socket if it can be
@@ -118,6 +134,10 @@ extern int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_po
  */
 extern int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
+/*******************************************************************************
+ * SOCKETS
+ ******************************************************************************/
+
 /**
  * Bind an existing socket to a specific address and port. The address and port
  * are in host byte order. If the address is zero, the socket will be bound to
@@ -129,6 +149,29 @@ extern int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_por
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port);
+
+/**
+ * Shutdown a socket. This eliminates the transmission of any pending data.
+ * @param fd is an open socket of any type.
+ * @return 0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc4_shutdown(int fd) {
+    return diminuto_ipc_shutdown(fd);
+}
+
+/**
+ * Close a socket. Unless the socket has been shutdown, pending data will
+ * still be transmitted.
+ * @param fd is an open socket of any type.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc4_close(int fd) {
+    return diminuto_ipc_close(fd);
+}
+
+/*******************************************************************************
+ * STREAM SOCKETS
+ ******************************************************************************/
 
 /**
  * Create a provider-side stream socket bound to a specific address and with
@@ -146,7 +189,7 @@ extern int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t
  * @param datap is passed to the optional function.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_provider_extended(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
  * Create a provider-side stream socket bound to a specific address and with
@@ -161,8 +204,7 @@ extern int diminuto_ipc4_stream_provider_extended(diminuto_ipv4_t address, dimin
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 static inline diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog) {
-    extern int diminuto_ipc_stream_provider_reuseaddress(int fd, void * datap);
-    return diminuto_ipc4_stream_provider_extended(address, port, interface, backlog, diminuto_ipc_stream_provider_reuseaddress, (void *)0);
+    return diminuto_ipc4_stream_provider_base(address, port, interface, backlog, diminuto_ipc_reuseaddress, (void *)0);
 }
 
 /**
@@ -212,7 +254,7 @@ static inline int diminuto_ipc4_stream_accept(int fd) {
  * @param datap is passed to the optional function.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipc4_stream_consumer_extended(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
  * Request a consumer-side stream socket to a provider using a specific address,
@@ -225,7 +267,7 @@ extern int diminuto_ipc4_stream_consumer_extended(diminuto_ipv4_t address, dimin
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface) {
-    return diminuto_ipc4_stream_consumer_extended(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
+    return diminuto_ipc4_stream_consumer_base(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
 }
 
 /**
@@ -236,173 +278,6 @@ static inline int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address,
  */
 static inline int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port) {
     return diminuto_ipc4_stream_consumer_generic(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
-}
-
-/**
- * Request a peer datagram socket. The address and port are in host byte order.
- * If the port is zero, an unused ephemeral port is allocated; its value can
- * be determined using the nearend function.
- * @param address is the IPv4 address of the interface to use.
- * @param port is the port number.
- * @param interface points to the name of the interface, or NULL.
- * @return a peer datagram socket or <0 if an error occurred.
- */
-extern int diminuto_ipc4_datagram_peer_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface);
-
-/**
- * Request a peer datagram socket. The port is in host byte order. If the port
- * is zero, an unused ephemeral port is allocated; its value can be determined
- * using the nearend function.
- * @param port is the port number.
- * @return a peer datagram socket or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_datagram_peer(diminuto_port_t port) {
-    return diminuto_ipc4_datagram_peer_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
-}
-
-/**
- * Shutdown a socket. This eliminates the transmission of any pending data.
- * @param fd is an open socket of any type.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_shutdown(int fd) {
-    return diminuto_ipc_shutdown(fd);
-}
-
-/**
- * Close a socket. Unless the socket has been shutdown, pending data will
- * still be transmitted.
- * @param fd is an open socket of any type.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_close(int fd) {
-    return diminuto_ipc_close(fd);
-}
-
-/**
- * Bind a socket to a particular interface identified by name, e.g. "eth0"
- * etc. Only data received by this interface will be processed by the socket.
- * If the name is an empty (zero length) string, the socket will be
- * disassociated with any interface with which it was previously been bound.
- * @param fd is an open socket that is not of type packet.
- * @param ifname is the name of the network interface.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_interface(int fd, const char * ifname) {
-    return diminuto_ipc_set_interface(fd, ifname);
-}
-
-/**
- * Set or clear a mask in the file descriptor or socket status.
- * @param fd is an open socket of any type.
- * @param enable is !0 to set the mask, 0 to clear the mask.
- * @param mask is the bit mask.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_status(int fd, int enable, long mask) {
-    return diminuto_ipc_set_status(fd, enable, mask);
-}
-
-/**
- * Enable or disable a socket option.
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable an option, 0 to disable an option.
- * @param option is option name.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_option(int fd, int enable, int option) {
-    return diminuto_ipc_set_option(fd, enable, option);
-}
-
-/**
- * Enable or disable the non-blocking status.
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable non-blocking, 0 to disable non-blocking.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_nonblocking(int fd, int enable) {
-    return diminuto_ipc_set_nonblocking(fd, enable);
-}
-
-/**
- * Enable or disable the address reuse option.
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable address reuse, 0 to disable address reuse.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_reuseaddress(int fd, int enable) {
-    return diminuto_ipc_set_reuseaddress(fd, enable);
-}
-
-/**
- * Enable or disable the keep alive option.
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable keep alive, 0 to disable keep alive.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_keepalive(int fd, int enable) {
-    return diminuto_ipc_set_keepalive(fd, enable);
-}
-
-/**
- * Enable or disable the debug option (only available to root on most systems).
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable debug, 0 to disable debug.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_debug(int fd, int enable) {
-    return diminuto_ipc_set_debug(fd, enable);
-}
-
-/**
- * Enable or disable the linger option.
- * @param fd is an open socket of any type.
- * @param ticks is the number of ticks to linger (although
- * lingering has granularity of seconds), or 0 for no lingering.
- * @return 0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_linger(int fd, diminuto_ticks_t ticks) {
-    return diminuto_ipc_set_linger(fd, ticks);
-}
-
-/**
- * Enable or disable the TCP No Delay option .
- * @param fd is an open stream socket.
- * @param enable is !0 to enable no delay, 0 to disable no delay.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_nodelay(int fd, int enable) {
-    return diminuto_ipc_set_nodelay(fd, enable);
-}
-
-/**
- * Enable or disable the TCP Quick Acknowledgement option.
- * @param fd is an open strean socket.
- * @param enable is !0 to enable no delay, 0 to disable no delay.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_quickack(int fd, int enable) {
-    return diminuto_ipc_set_quickack(fd, enable);
-}
-
-/**
- * Change the send TCP buffer size.
- * @param fd is an open stream socket.
- * @param size is the buffer size in bytes or <0 for no change.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_send(int fd, int size) {
-    return diminuto_ipc_set_send(fd, size);
-}
-
-/**
- * Change the receive TCP buffer size.
- * @param fd is an open stream socket.
- * @param size is the buffer size in bytes or <0 for no change.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc4_set_receive(int fd, int size) {
-    return diminuto_ipc_set_receive(fd, size);
 }
 
 /**
@@ -453,6 +328,48 @@ static inline ssize_t diminuto_ipc4_stream_write_generic(int fd, const void * bu
  */
 static inline ssize_t diminuto_ipc4_stream_write(int fd, const void * buffer, size_t size) {
     return diminuto_ipc_stream_write(fd, buffer, size);
+}
+
+/*******************************************************************************
+ * DATAGRAM SOCKETS
+ ******************************************************************************/
+
+/**
+ * Request a peer datagram socket. The address and port are in host byte order.
+ * If the port is zero, an unused ephemeral port is allocated; its value can
+ * be determined using the nearend function. If an optional function is
+ * provided by the caller, invoke it to set socket options.
+ * @param address is the IPv4 address of the interface to use.
+ * @param port is the port number.
+ * @param interface points to the name of the interface, or NULL.
+ * @param functionp points to an optional function to set socket options.
+ * @param datap is passed to the optional function.
+ * @return a peer datagram socket or <0 if an error occurred.
+ */
+extern int diminuto_ipc4_datagram_peer_base(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
+
+/**
+ * Request a peer datagram socket. The address and port are in host byte order.
+ * If the port is zero, an unused ephemeral port is allocated; its value can
+ * be determined using the nearend function.
+ * @param address is the IPv4 address of the interface to use.
+ * @param port is the port number.
+ * @param interface points to the name of the interface, or NULL.
+ * @return a peer datagram socket or <0 if an error occurred.
+ */
+static inline int diminuto_ipc4_datagram_peer_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface) {
+    return diminuto_ipc4_datagram_peer_base(address, port, interface, diminuto_ipc_reuseaddress, (void *)0);
+}
+
+/**
+ * Request a peer datagram socket. The port is in host byte order. If the port
+ * is zero, an unused ephemeral port is allocated; its value can be determined
+ * using the nearend function.
+ * @param port is the port number.
+ * @return a peer datagram socket or <0 if an error occurred.
+ */
+static inline int diminuto_ipc4_datagram_peer(diminuto_port_t port) {
+    return diminuto_ipc4_datagram_peer_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
 }
 
 /**
@@ -514,6 +431,10 @@ extern ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, 
 static inline ssize_t diminuto_ipc4_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port) {
     return diminuto_ipc4_datagram_send_generic(fd, buffer, size, address, port, 0);
 }
+
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
 
 /**
  * Return a list of IPv4 addresses associated with the specified network
