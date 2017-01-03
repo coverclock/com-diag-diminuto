@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #define TEST_PORT 0xDEAD
 #define TEST_WORD 0xDEADC0DE
@@ -41,6 +42,12 @@ static const diminuto_ipv6_t TEST6 = TEST_INIT;
 
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;
+
+static struct in6_addr * convert(diminuto_ipv6_t * addressp, struct in6_addr * in6p)
+{
+    memcpy(&(in6p->s6_addr16), diminuto_ipc6_hton6(addressp), sizeof(in6p->s6_addr16));
+    return in6p;
+}
 
 int main(int argc, char * argv[])
 {
@@ -82,12 +89,12 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        ASSERT(!diminuto_ipc6_is_ipv4(&DIMINUTO_IPC6_LOOPBACK));
+        ASSERT(!diminuto_ipc6_is_v4mapped(&DIMINUTO_IPC6_LOOPBACK));
         address4 = TEST_WORD;
         ASSERT(!diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK, &address4));
         ASSERT(address4 == TEST_WORD);
 
-        ASSERT(diminuto_ipc6_is_ipv4(&DIMINUTO_IPC6_LOOPBACK4));
+        ASSERT(diminuto_ipc6_is_v4mapped(&DIMINUTO_IPC6_LOOPBACK4));
         address4 = TEST_WORD;
         ASSERT(diminuto_ipc6_ipv6toipv4(DIMINUTO_IPC6_LOOPBACK4, &address4));
         ASSERT(address4 == LOCALHOST4);
@@ -103,8 +110,8 @@ int main(int argc, char * argv[])
         TEST();
 
         diminuto_ipc6_ipv4toipv6(SERVER4, &address6);
-        ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
-        ASSERT(diminuto_ipc6_is_ipv4(&address6));
+        ASSERT(diminuto_ipc6_compare(&address6, &SERVER64) == 0);
+        ASSERT(diminuto_ipc6_is_v4mapped(&address6));
 
         ASSERT(diminuto_ipc6_ipv6toipv4(address6, &address4));
         ASSERT(address4 == SERVER4);
@@ -122,48 +129,61 @@ int main(int argc, char * argv[])
         ASSERT(address4 == SERVER4);
 
         diminuto_ipc6_ipv4toipv6(address4, &address6);
-        ASSERT(memcmp(&address6, &SERVER64, sizeof(address6)) == 0);
+        ASSERT(diminuto_ipc6_compare(&address6, &SERVER64) == 0);
 
         STATUS();
     }
 
     {
         diminuto_ipv6_t address6;
+        struct in6_addr in6;
 
         TEST();
 
         address6 = diminuto_ipc6_address("::");
         EXPECT(diminuto_ipc6_is_unspecified(&address6));
+        EXPECT(IN6_IS_ADDR_UNSPECIFIED(convert(&address6, &in6)));
 
         address6 = diminuto_ipc6_address("::1");
         EXPECT(diminuto_ipc6_is_loopback(&address6));
+        EXPECT(IN6_IS_ADDR_LOOPBACK(convert(&address6, &in6)));
+
+        /*
+         * IN6_IS_ADDR_V4COMPAT not present because IPv4-compatible addresses
+         * have been deprecated, replaced with IPv4-mapped addresses.
+         */
 
         address6 = diminuto_ipc6_address("::ffff:192.168.1.1");
-        EXPECT(diminuto_ipc6_is_ipv4(&address6));
+        EXPECT(diminuto_ipc6_is_v4mapped(&address6));
+        EXPECT(IN6_IS_ADDR_V4MAPPED(convert(&address6, &in6)));
 
         address6 = diminuto_ipc6_address("64:ff9b::192.168.1.1");
         EXPECT(diminuto_ipc6_is_nat64wkp(&address6));
 
         address6 = diminuto_ipc6_address("2001:1234:4678:9abc:def0:1234:5678:9abc");
-        EXPECT(diminuto_ipc6_is_unicast(&address6));
+        EXPECT(diminuto_ipc6_is_unicastglobal(&address6));
 
         address6 = diminuto_ipc6_address("2001:1234:4678:9abc:0000:5efe:192.168.1.1");
         EXPECT(diminuto_ipc6_is_isatap(&address6));
 
-        address6 = diminuto_ipc6_address("2002:c0a8:0101:9abc:def0:1234:5678:9abc");
-        EXPECT(diminuto_ipc6_is_6to4(&address6));
-
-        address6 = diminuto_ipc6_address("2002:c0a8:0101:9abc:def0:1234:5678:9abc");
+        address6 = diminuto_ipc6_address("2002:c0a8:0101:9abc:def0:1234:c0a8:0101");
         EXPECT(diminuto_ipc6_is_6to4(&address6));
 
         address6 = diminuto_ipc6_address("fd71:1234:4678:9abc:def0:12ff:fe78:9abc");
-        EXPECT(diminuto_ipc6_is_local(&address6));
+        EXPECT(diminuto_ipc6_is_uniquelocal(&address6));
 
         address6 = diminuto_ipc6_address("fe80:1234:4678:9abc:def0:12ff:fe78:9abc");
-        EXPECT(diminuto_ipc6_is_link(&address6));
+        EXPECT(diminuto_ipc6_is_linklocal(&address6));
+        EXPECT(IN6_IS_ADDR_LINKLOCAL(convert(&address6, &in6)));
+
+        /*
+         * IN6_IS_ADDR_SITELOCAL not present because site-local addresses have been
+         * deprecated, replaced with unique local addresses.
+         */
 
         address6 = diminuto_ipc6_address("ff02:1:4678:9abc:def0:1234:5678:9abc");
         EXPECT(diminuto_ipc6_is_multicast(&address6));
+        EXPECT(IN6_IS_ADDR_MULTICAST(convert(&address6, &in6)));
 
         STATUS();
     }
@@ -176,7 +196,7 @@ int main(int argc, char * argv[])
 
         address6 = diminuto_ipc6_address("::1");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "::1", DIMINUTO_IPC6_LOOPBACK.u16[0], DIMINUTO_IPC6_LOOPBACK.u16[1], DIMINUTO_IPC6_LOOPBACK.u16[2], DIMINUTO_IPC6_LOOPBACK.u16[3], DIMINUTO_IPC6_LOOPBACK.u16[4], DIMINUTO_IPC6_LOOPBACK.u16[5], DIMINUTO_IPC6_LOOPBACK.u16[6], DIMINUTO_IPC6_LOOPBACK.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
-        EXPECT(memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0);
+        EXPECT(diminuto_ipc6_is_loopback(&address6));
 
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, "::1");
@@ -198,7 +218,7 @@ int main(int argc, char * argv[])
          * IPv6 local host address, or whether we get back a IPv4 local host
          * address encapsulated in an IPv6 address. Either is okay.
          */
-        EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK4, sizeof(address6)) == 0));
+        EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
 
@@ -209,7 +229,7 @@ int main(int argc, char * argv[])
          * IPv6 local host address, or whether we get back a IPv4 local host
          * address encapsulated in an IPv6 address. Either is okay.
          */
-        EXPECT((memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK, sizeof(address6)) == 0) || (memcmp(&address6, &DIMINUTO_IPC6_LOOPBACK4, sizeof(address6)) == 0));
+        EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "ip6-localhost", buffer);
 
@@ -224,7 +244,7 @@ int main(int argc, char * argv[])
 
         address6 = diminuto_ipc6_address("www.diag.com");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
-        EXPECT(memcmp(&address6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address6)) != 0);
+        EXPECT(!diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "www.diag.com", buffer);
 
@@ -235,7 +255,7 @@ int main(int argc, char * argv[])
          * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
          * a.k.a. "search5.comcast.com". That's not helpful!
          */
-        ADVISE(memcmp(&address6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(address6)) == 0);
+        ADVISE(diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "invalid.domain", buffer);
 
@@ -285,7 +305,7 @@ int main(int argc, char * argv[])
 
         prime = network;
         diminuto_ipc6_ntoh6(&prime);
-        ASSERT(memcmp(&host, &prime, sizeof(diminuto_ipv6_t)) == 0);
+        ASSERT(diminuto_ipc6_compare(&host, &prime) == 0);
         ASSERT(diminuto_ipc6_colonnotation(prime, buffer4, sizeof(buffer4)) == buffer4);
         DIMINUTO_LOG_DEBUG("%s PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
 
@@ -304,7 +324,7 @@ int main(int argc, char * argv[])
 
         for (ii = 0; ii < LIMIT; ++ii) {
             DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
-            if (memcmp(&addresses[ii], &DIMINUTO_IPC6_UNSPECIFIED, sizeof(addresses[ii])) == 0) {
+            if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
@@ -337,7 +357,7 @@ int main(int argc, char * argv[])
 
         for (ii = 0; ii < LIMIT; ++ii) {
             DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
-            if (memcmp(&addresses[ii], &DIMINUTO_IPC6_UNSPECIFIED, sizeof(addresses[ii])) == 0) {
+            if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
@@ -363,7 +383,7 @@ int main(int argc, char * argv[])
 
         for (ii = 0; ii < LIMIT; ++ii) {
             DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "diag.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
-            if (memcmp(&addresses[ii], &DIMINUTO_IPC6_UNSPECIFIED, sizeof(addresses[ii])) == 0) {
+            if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
@@ -455,7 +475,7 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
-        EXPECT(memcmp(&address6, &TEST6, sizeof(address6)) != 0);
+        EXPECT(diminuto_ipc6_compare(&address6, &TEST6) != 0);
         EXPECT(port != TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
@@ -474,7 +494,7 @@ int main(int argc, char * argv[])
 
         EXPECT((fd = diminuto_ipc6_stream_provider(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
-        EXPECT(memcmp(&address6, &TEST6, sizeof(address6)) != 0);
+        EXPECT(diminuto_ipc6_compare(&address6, &TEST6) != 0);
         EXPECT(port != TEST_PORT);
         EXPECT(port != 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
@@ -525,7 +545,7 @@ int main(int argc, char * argv[])
         TEST();
 
         server = diminuto_ipc6_address("localhost");
-        EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
+        EXPECT(!diminuto_ipc6_is_unspecified(&server));
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
         EXPECT(rendezvous != TEST_PORT);
@@ -535,7 +555,7 @@ int main(int argc, char * argv[])
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
-        ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
+        ADVISE(diminuto_ipc6_compare(&address, &server) == 0);
         EXPECT(port == rendezvous);
 
         EXPECT(diminuto_ipc6_close(fd) >= 0);
@@ -557,10 +577,10 @@ int main(int argc, char * argv[])
         TEST();
 
         server = diminuto_ipc6_address("::1");
-        EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
+        EXPECT(!diminuto_ipc6_is_unspecified(&server));
         EXPECT((fd = diminuto_ipc6_datagram_peer_generic(server, PORT, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, &binding, &rendezvous) == 0);
-        EXPECT(memcmp(&binding, &server, sizeof(binding)) == 0);
+        EXPECT(diminuto_ipc6_compare(&binding, &server) == 0);
         EXPECT(rendezvous == PORT);
 
         /* This only works because the kernel buffers socket data. */
@@ -568,7 +588,7 @@ int main(int argc, char * argv[])
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
-        EXPECT(memcmp(&address, &server, sizeof(address)) == 0);
+        EXPECT(diminuto_ipc6_compare(&address, &server) == 0);
         EXPECT(port == PORT);
 
         EXPECT(diminuto_ipc6_close(fd) >= 0);
@@ -588,7 +608,7 @@ int main(int argc, char * argv[])
         TEST();
 
         server = diminuto_ipc6_address("::ffff:127.0.0.1");
-        EXPECT(memcmp(&server, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(server)) != 0);
+        EXPECT(!diminuto_ipc6_is_unspecified(&server));
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
         EXPECT(rendezvous != 0);
@@ -598,7 +618,7 @@ int main(int argc, char * argv[])
         EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
         EXPECT(strcmp(buffer, MSG) == 0);
-        ADVISE(memcmp(&address, &server, sizeof(address)) == 0);
+        ADVISE(diminuto_ipc6_compare(&address, &server) == 0);
         EXPECT(port == rendezvous);
 
         EXPECT(diminuto_ipc6_close(fd) >= 0);
@@ -632,7 +652,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT(errno == EAGAIN);
-        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(diminuto_ipc6_compare(&address, &TEST6) == 0);
         EXPECT(port == TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
@@ -650,7 +670,7 @@ int main(int argc, char * argv[])
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
-        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(diminuto_ipc6_compare(&address, &TEST6) == 0);
         EXPECT(port == TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
@@ -676,7 +696,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
         EXPECT(errno == EINTR);
-        EXPECT(memcmp(&address, &TEST6, sizeof(address)) == 0);
+        EXPECT(diminuto_ipc6_compare(&address, &TEST6) == 0);
         EXPECT(port == TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
@@ -706,21 +726,21 @@ int main(int argc, char * argv[])
             memcpy(&address, &TEST6, sizeof(address));
             port = TEST_PORT;
             EXPECT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
-            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
             EXPECT(port != TEST_PORT);
             EXPECT(port != rendezvous);
 
             memcpy(&address, &TEST6, sizeof(address));
             port = TEST_PORT;
             EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
-            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
             EXPECT(port != TEST_PORT);
             EXPECT(port == rendezvous);
 
             memcpy(&address, &TEST6, sizeof(address));
             port = TEST_PORT;
             EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
-            EXPECT(memcmp(&address, &TEST6, sizeof(address)) != 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
             EXPECT(port != TEST_PORT);
             EXPECT(port != rendezvous);
 
@@ -784,7 +804,7 @@ int main(int argc, char * argv[])
         provider = diminuto_ipc6_address("::1");
         ASSERT((service = diminuto_ipc6_stream_provider_generic(provider, PORT, (const char *)0, -1)) >= 0);
         EXPECT(diminuto_ipc6_nearend(service, &source, &rendezvous) >= 0);
-        EXPECT(memcmp(&source, &provider, sizeof(source)) == 0);
+        EXPECT(diminuto_ipc6_compare(&source, &provider) == 0);
         EXPECT(rendezvous == PORT);
 
         ASSERT((pid = fork()) >= 0);

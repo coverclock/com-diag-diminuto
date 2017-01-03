@@ -66,14 +66,14 @@ int main(int argc, char * argv[])
                     type = "unspecified"; /* Impossible. */
                 } else if (diminuto_ipc6_is_loopback(v6p)) {
                     type = "loopback";
-                } else if (diminuto_ipc6_is_ipv4(v6p)) {
-                    type = "ipv4"; /* Unlikely. */
-                } else if (diminuto_ipc6_is_unicast(v6p)) {
-                    type = "global";
-                } else if (diminuto_ipc6_is_local(v6p)) {
-                    type = "local";
-                } else if (diminuto_ipc6_is_link(v6p)) {
-                    type = "link";
+                } else if (diminuto_ipc6_is_v4mapped(v6p)) {
+                    type = "v4-mapped"; /* Unlikely. */
+                } else if (diminuto_ipc6_is_unicastglobal(v6p)) {
+                    type = "global-unicast";
+                } else if (diminuto_ipc6_is_uniquelocal(v6p)) {
+                    type = "unique-local";
+                } else if (diminuto_ipc6_is_linklocal(v6p)) {
+                    type = "link-local";
                 } else if (diminuto_ipc6_is_multicast(v6p)) {
                     type = "multicast";
                 } else {

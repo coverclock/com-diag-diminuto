@@ -44,6 +44,14 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK;
 extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
 
 /*******************************************************************************
+ * COMPARATORS
+ ******************************************************************************/
+
+static inline int diminuto_ipc6_compare(const diminuto_ipv6_t * address1p, const diminuto_ipv6_t * address2p) {
+    return memcmp(address1p, address2p, sizeof(diminuto_ipv6_t));
+}
+
+/*******************************************************************************
  * CLASSIFIERS
  ******************************************************************************/
 
@@ -54,7 +62,7 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
  * @return true or false.
  */
 static inline int diminuto_ipc6_is_unspecified(const diminuto_ipv6_t * addressp) {
-    return (memcmp(addressp, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(diminuto_ipv6_t)) == 0);
+    return (diminuto_ipc6_compare(addressp, &DIMINUTO_IPC6_UNSPECIFIED) == 0);
 }
 
 /**
@@ -64,7 +72,17 @@ static inline int diminuto_ipc6_is_unspecified(const diminuto_ipv6_t * addressp)
  * @return true or false.
  */
 static inline int diminuto_ipc6_is_loopback(const diminuto_ipv6_t * addressp) {
-    return (memcmp(addressp, &DIMINUTO_IPC6_LOOPBACK, sizeof(diminuto_ipv6_t)) == 0);
+    return (diminuto_ipc6_compare(addressp, &DIMINUTO_IPC6_LOOPBACK) == 0);
+}
+
+/**
+ * Return true if the IPv6 address in host byte order is the IPv4-mapped
+ * loopback address, false otherwise.
+ * @param addressp points to an IPv6 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc6_is_loopback4(const diminuto_ipv6_t * addressp) {
+    return (diminuto_ipc6_compare(addressp, &DIMINUTO_IPC6_LOOPBACK4) == 0);
 }
 
 /**
@@ -73,7 +91,7 @@ static inline int diminuto_ipc6_is_loopback(const diminuto_ipv6_t * addressp) {
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_ipv4(const diminuto_ipv6_t * addressp) {
+static inline int diminuto_ipc6_is_v4mapped(const diminuto_ipv6_t * addressp) {
     return (memcmp(addressp, &DIMINUTO_IPC6_LOOPBACK4, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t)) == 0);
 }
 
@@ -93,7 +111,7 @@ static inline int diminuto_ipc6_is_nat64wkp(const diminuto_ipv6_t * addressp) {
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp) {
+static inline int diminuto_ipc6_is_unicastglobal(const diminuto_ipv6_t * addressp) {
     return ((0x2000 <= addressp->u16[0]) && (addressp->u16[0] <= 0x3fff));
 }
 
@@ -104,7 +122,7 @@ static inline int diminuto_ipc6_is_unicast(const diminuto_ipv6_t * addressp) {
  * @return true or false.
  */
 static inline int diminuto_ipc6_is_isatap(const diminuto_ipv6_t * addressp) {
-    return (diminuto_ipc6_is_unicast(addressp) && (addressp->u16[4] == 0x0000) && (addressp->u16[5] == 0x5efe));
+    return (diminuto_ipc6_is_unicastglobal(addressp) && (addressp->u16[4] == 0x0000) && (addressp->u16[5] == 0x5efe));
 }
 
 /**
@@ -123,7 +141,7 @@ static inline int diminuto_ipc6_is_6to4(const diminuto_ipv6_t * addressp) {
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_local(const diminuto_ipv6_t * addressp) {
+static inline int diminuto_ipc6_is_uniquelocal(const diminuto_ipv6_t * addressp) {
     return ((0xfc00 <= addressp->u16[0]) && (addressp->u16[0] <= 0xfdff));
 }
 
@@ -133,7 +151,7 @@ static inline int diminuto_ipc6_is_local(const diminuto_ipv6_t * addressp) {
  * @param addressp points to an IPv6 address.
  * @return true or false.
  */
-static inline int diminuto_ipc6_is_link(const diminuto_ipv6_t * addressp) {
+static inline int diminuto_ipc6_is_linklocal(const diminuto_ipv6_t * addressp) {
     return ((0xfe80 <= addressp->u16[0]) && (addressp->u16[0] <= 0xfebf));
 }
 

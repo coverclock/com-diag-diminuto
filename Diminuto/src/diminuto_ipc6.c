@@ -68,7 +68,7 @@ int diminuto_ipc6_ipv6toipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp
 {
     int result;
 
-    if ((result = diminuto_ipc6_is_ipv4(&address))) {
+    if ((result = diminuto_ipc6_is_v4mapped(&address))) {
         diminuto_ipc6_hton6(&address);
         memcpy(addressp, &(address.u16[6]), sizeof(*addressp));
         *addressp = ntohl(*addressp);

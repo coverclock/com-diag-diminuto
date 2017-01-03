@@ -28,12 +28,12 @@ extern void diminuto_ipc6_ntoh6_generic(diminuto_ipv6_t * addressp);
  * Swap an IPv6 address variable from network to host byte order in place
  * if necessary.
  * @param addressp points to an IPv6 address variable.
+ * @return the address of the variable.
  */
-static inline void diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
+static inline diminuto_ipv6_t * diminuto_ipc6_ntoh6(diminuto_ipv6_t * addressp)
 {
-    if (diminuto_littleendian()) {
-        diminuto_ipc6_ntoh6_generic(addressp);
-    }
+    if (diminuto_littleendian()) { diminuto_ipc6_ntoh6_generic(addressp); }
+    return addressp;
 }
 
 /**
@@ -45,12 +45,12 @@ extern void diminuto_ipc6_hton6_generic(diminuto_ipv6_t * addressp);
 /**
  * Swap an IPv6 address variable from host to network byte order in place.
  * @param addressp points to an IPv6 address variable.
+ * @return the address of the variable.
  */
-static inline void diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
+static inline diminuto_ipv6_t * diminuto_ipc6_hton6(diminuto_ipv6_t * addressp)
 {
-    if (diminuto_littleendian()) {
-        diminuto_ipc6_hton6_generic(addressp);
-    }
+    if (diminuto_littleendian()) { diminuto_ipc6_hton6_generic(addressp); }
+    return addressp;
 }
 
 /**

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+extern int diminuto_unittest_test;
 extern int diminuto_unittest_tests;
 extern int diminuto_unittest_errors;
 extern int diminuto_unittest_total;
@@ -43,10 +44,12 @@ extern int diminuto_unittest_total;
  */
 #define TEST() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_tests++); \
+        diminuto_unittest_test += 1; \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_test); \
         fflush(stdout); \
         fflush(stderr); \
         diminuto_unittest_errors = 0; \
+        diminuto_unittest_tests += 1; \
     } while (0)
 
 /**
@@ -72,7 +75,7 @@ extern int diminuto_unittest_total;
  */
 #define EXIT() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d total=%d %s\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
         exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
@@ -84,7 +87,7 @@ extern int diminuto_unittest_total;
  */
 #define STATUS() \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d total=%d %s\n", diminuto_unittest_tests, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d total=%d %s\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
     } while (0)
