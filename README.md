@@ -89,7 +89,7 @@ FEATURES
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
 * ipc4 - IPv4 socket interface.
-* ipc6 - IPv6 socket interface.
+* ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
 * list - doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
 * log - generic logging mechanism for applications, daemons, and kernel modules.

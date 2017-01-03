@@ -15,6 +15,10 @@
  *
  * Note that ALL uses of IPv6 addresses and ports are in HOST BYTE ORDER.
  * This simplifies their use in unit tests and applications.
+ *
+ * When in doubt, choose ipc6 over ipc4. The ipc6 API works just fine with
+ * IPv4 hosts and supports both address formats in the same structure, at
+ * some minor loss in efficiency.
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
