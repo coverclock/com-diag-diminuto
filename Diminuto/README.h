@@ -4,7 +4,7 @@
 
 /*******************************************************************************
 
-    Copyright 2008-2015 by the Digital Aggregates Corporation, Colorado, USA.
+    Copyright 2008-2017 by the Digital Aggregates Corporation, Colorado, USA.
 
     ----------------------------------------------------------------------
 
@@ -100,9 +100,9 @@
 
     vi Makefile						# establish your configuration.
     make TARGET=<target> depend     # make dependencies.
-    make TARGET=<target>			# make library, binaries.
-    make TARGET=<target> all        # make library, binaries, modules, drivers.
-    make TARGET=<target> package	# make tarball to copy to target.
+    make TARGET=<target> all		# make library, binaries.
+    make TARGET=<target> most       # make library, binaries, modules.
+    make TARGET=<target> plus       # make library, binaries, modules, drivers.
 
     . out/<target>/bin/setup		# establish PATH etc. environment.
     unittest-<test>					# run unit test.
