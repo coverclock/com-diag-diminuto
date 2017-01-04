@@ -235,26 +235,6 @@ int diminuto_ipc_set_quickack(int fd, int enable)
     return diminuto_ipc_set_tcpoption(fd, !!enable, TCP_QUICKACK);
 }
 
-int diminuto_ipc_set_ipv6option(int fd, int value, int option)
-{
-    if (setsockopt(fd, IPPROTO_IPV6, option, &value, sizeof(value)) < 0) {
-        diminuto_perror("diminuto_ipc_set_ipv6option: setsockopt");
-        fd = -15;
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_set_ipv6only(int fd, int enable)
-{
-    return diminuto_ipc_set_ipv6option(fd, !!enable, IPV6_V6ONLY);
-}
-
-int diminuto_ipc_set_ipv6toipv4(int fd)
-{
-    return diminuto_ipc_set_ipv6option(fd, AF_INET, IPV6_ADDRFORM);
-}
-
 /*******************************************************************************
  * INJECTORS
  ******************************************************************************/

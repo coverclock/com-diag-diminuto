@@ -89,15 +89,6 @@ static inline int diminuto_ipc_set_boolean(int fd, int enable, int option) {
 extern int diminuto_ipc_set_tcpoption(int fd, int value, int option);
 
 /**
- * Enable or disable a IPv6 option.
- * @param fd is an open IPv6 socket.
- * @param value is the value of the option.
- * @param option is option name.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_ipv6option(int fd, int value, int option);
-
-/**
  * Set or clear a mask in the file descriptor or socket status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to set the mask, 0 to clear the mask.
@@ -178,25 +169,6 @@ extern int diminuto_ipc_set_send(int fd, ssize_t size);
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
-
-/**
- * Enable or disable the IPv6 Only option, which restricts an IPv6
- * to handling IPv6 traffic only (versus also handling IPv4 traffic
- * using IPv6-mapped addresses).
- * @param fd is an open strean socket.
- * @param enable is !0 to enable, 0 to disable.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_ipv6only(int fd, int enable);
-
-/**
- * Enable the IPv6 Address Form option, which turns an IPv6
- * into an IPv4 socket, which henceforth will use the IPv4 API.
- * (There is currently no way to convert back to an IPv6 socket.)
- * @param fd is an open strean socket.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_ipv6toipv4(int fd);
 
 /*
  * (Many other options are possible, but these are the ones I have used.)

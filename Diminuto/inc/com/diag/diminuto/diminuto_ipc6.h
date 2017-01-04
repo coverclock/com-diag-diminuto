@@ -16,12 +16,23 @@
  * Note that ALL uses of IPv6 addresses and ports are in HOST BYTE ORDER.
  * This simplifies their use in unit tests and applications.
  *
- * Unless specifically optioned to do otherwise, the ipc6 API can be used
- * to talk to both IPv6 and IPv4 end points, the latter done through IPv4-
- * mapped IPv6 addresses. This may seem to make the preferential use of the
- * ipc6 API over the ipc4 API a no-brainer. However, RFC 4942 points out a
- * number of security issues with this approach, some of which involve
- * circumventing firewall rules. [RFC 4942, section 2.2, pp. 19-20]
+ * The ipc6 API can be used to talk to both IPv6 and IPv4 end points, the
+ * latter done through IPv4-mapped IPv6 addresses. This would seem to make the
+ * preferential use of the ipc6 API over the ipc4 API a no-brainer, and in
+ * fact is what I would recommend, all other things being equal. However,
+ * RFC 4942 points out a number of security issues with this approach, some
+ * of which involve circumventing firewall rules. [RFC 4942, section 2.2,
+ * pp. 19-20]
+ *
+ * I experimented with implementing the socket options IPV6_ONLY (only accept
+ * IPv6 packets) and IPV6_ADDRFORM (convert an IPv6 socket into an IPv4 socket)
+ * but after a lot of debugging and finally perusing the implementation in
+ * the 4.2 kernel, it appears that those options are only usable on IPPROTO_IP
+ * sockets, not on IPPROTO_TCP or IPPROTO_UDP sockets. Such fu is beyond the
+ * scope of this framework. My tests always returned EINVAL for setsockopt(2),
+ * consist with what I see in the 4.2 Kernel. Remarkably, I happened across
+ * this same socket option used by the Sun Remote Procedure Call (sunrpc)
+ * code, which does not check the return value from its setsockopt(2).
  *
  * REFERENCES
  *

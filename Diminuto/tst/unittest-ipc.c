@@ -99,17 +99,6 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_set_receive(sock, 512);
         ASSERT(rc >= 0);
 
-        rc = diminuto_ipc_set_ipv6only(sock, !0);
-        ASSERT(rc >= 0);
-        rc = diminuto_ipc_set_ipv6only(sock, 0);
-        ASSERT(rc >= 0);
-
-#if 0
-        /* Can only be performed on connected sockets. */
-        rc = diminuto_ipc_set_ipv6toipv4(sock);
-        ASSERT(rc >= 0);
-#endif
-
         rc = close(sock);
         ASSERT(rc >= 0);
     }
