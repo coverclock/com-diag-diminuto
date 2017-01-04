@@ -60,15 +60,6 @@ extern int diminuto_ipc_close(int fd);
 extern int diminuto_ipc_set_interface(int fd, const char * interface);
 
 /**
- * Set or clear a mask in the file descriptor or socket status.
- * @param fd is an open socket of any type.
- * @param enable is !0 to set the mask, 0 to clear the mask.
- * @param mask is the bit mask.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_status(int fd, int enable, long mask);
-
-/**
  * Set a socket integer value option.
  * @param fd is an open socket of any type.
  * @param value is the value to set.
@@ -85,22 +76,40 @@ extern int diminuto_ipc_set_value(int fd, int value, int option);
  * @return >=0 for success or <0 if an error occurred.
  */
 static inline int diminuto_ipc_set_boolean(int fd, int enable, int option) {
-    return diminuto_ipc_set_value(fd, enable ? 1 : 0, option);
+    return diminuto_ipc_set_value(fd, !!enable, option);
 }
 
 /**
  * Enable or disable a TCP option.
  * @param fd is an open stream socket.
- * @param enable is !0 to enable an option, 0 to disable an option.
+ * @param value is the value of the option.
  * @param option is option name.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_tcpoption(int fd, int enable, int option);
+extern int diminuto_ipc_set_tcpoption(int fd, int value, int option);
+
+/**
+ * Enable or disable a IPv6 option.
+ * @param fd is an open IPv6 socket.
+ * @param value is the value of the option.
+ * @param option is option name.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_ipv6option(int fd, int value, int option);
+
+/**
+ * Set or clear a mask in the file descriptor or socket status.
+ * @param fd is an open socket of any type.
+ * @param enable is !0 to set the mask, 0 to clear the mask.
+ * @param mask is the bit mask.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_status(int fd, int enable, long mask);
 
 /**
  * Enable or disable the non-blocking status.
  * @param fd is an open socket of any type.
- * @param enable is !0 to enable non-blocking, 0 to disable non-blocking.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_nonblocking(int fd, int enable);
@@ -108,20 +117,15 @@ extern int diminuto_ipc_set_nonblocking(int fd, int enable);
 /**
  * Enable or disable the address reuse option.
  * @param fd is an open socket of any type.
- * @param enable is !0 to enable address reuse, 0 to disable address reuse.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
 
 /**
- * Dependency injector used to set the Reuse Address socket option.
- */
-extern diminuto_ipc_injector_t diminuto_ipc_reuseaddress;
-
-/**
  * Enable or disable the keep alive option.
  * @param fd is an open socket of any type.
- * @param enable is !0 to enable keep alive, 0 to disable keep alive.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_keepalive(int fd, int enable);
@@ -129,7 +133,7 @@ extern int diminuto_ipc_set_keepalive(int fd, int enable);
 /**
  * Enable or disable the debug option (only available to root on most systems).
  * @param fd is an open socket of any type.
- * @param enable is !0 to enable debug, 0 to disable debug.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_debug(int fd, int enable);
@@ -146,7 +150,7 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 /**
  * Enable or disable the TCP No Delay option .
  * @param fd is an open stream socket.
- * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_nodelay(int fd, int enable);
@@ -154,7 +158,7 @@ extern int diminuto_ipc_set_nodelay(int fd, int enable);
 /**
  * Enable or disable the TCP Quick Acknowledgement option.
  * @param fd is an open strean socket.
- * @param enable is !0 to enable no delay, 0 to disable no delay.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_quickack(int fd, int enable);
@@ -175,7 +179,34 @@ extern int diminuto_ipc_set_send(int fd, ssize_t size);
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
 
-/* (Many other options are possible, but these are the ones I have used.) */
+/**
+ * Enable or disable the IPv6 Only option, which restricts an IPv6
+ * to handling IPv6 traffic only (versus also handling IPv4 traffic
+ * using IPv6-mapped addresses).
+ * @param fd is an open strean socket.
+ * @param enable is !0 to enable, 0 to disable.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_ipv6only(int fd, int enable);
+
+/**
+ * Enable the IPv6 Address Form option, which turns an IPv6
+ * into an IPv4 socket, which henceforth will use the IPv4 API.
+ * (There is currently no way to convert back to an IPv6 socket.)
+ * @param fd is an open strean socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_ipv6toipv4(int fd);
+
+/*
+ * (Many other options are possible, but these are the ones I have used.)
+ */
+
+/**
+ * Dependency injector used to set the the socket options in the
+ * ipc4 and ipc6 APIs.
+ */
+extern diminuto_ipc_injector_t diminuto_ipc_inject_defaults;
 
 /**
  * Read bytes from a stream socket into a buffer until at least a minimum

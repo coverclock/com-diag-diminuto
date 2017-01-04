@@ -204,7 +204,7 @@ extern int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 static inline diminuto_ipc4_stream_provider_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog) {
-    return diminuto_ipc4_stream_provider_base(address, port, interface, backlog, diminuto_ipc_reuseaddress, (void *)0);
+    return diminuto_ipc4_stream_provider_base(address, port, interface, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
@@ -358,7 +358,7 @@ extern int diminuto_ipc4_datagram_peer_base(diminuto_ipv4_t address, diminuto_po
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipc4_datagram_peer_generic(diminuto_ipv4_t address, diminuto_port_t port, const char * interface) {
-    return diminuto_ipc4_datagram_peer_base(address, port, interface, diminuto_ipc_reuseaddress, (void *)0);
+    return diminuto_ipc4_datagram_peer_base(address, port, interface, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**

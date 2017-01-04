@@ -16,9 +16,30 @@
  * Note that ALL uses of IPv6 addresses and ports are in HOST BYTE ORDER.
  * This simplifies their use in unit tests and applications.
  *
- * When in doubt, choose ipc6 over ipc4. The ipc6 API works just fine with
- * IPv4 hosts and supports both address formats in the same structure, at
- * some minor loss in efficiency.
+ * Unless specifically optioned to do otherwise, the ipc6 API can be used
+ * to talk to both IPv6 and IPv4 end points, the latter done through IPv4-
+ * mapped IPv6 addresses. This may seem to make the preferential use of the
+ * ipc6 API over the ipc4 API a no-brainer. However, RFC 4942 points out a
+ * number of security issues with this approach, some of which involve
+ * circumventing firewall rules. [RFC 4942, section 2.2, pp. 19-20]
+ *
+ * REFERENCES
+ *
+ * R. Graziani, IPV6 FUNDAMENTALS, Cisco Press, 2013
+ *
+ * P. Bieringer, LINUX IPv6 HOWTO, 2015-10-16
+ *
+ * R. Gilligan, S. Thomson, J. Bound, J. McCann, W. Stevens, "Basic Socket
+ * Interface Extentions for IPv6", RFC 3493, February 2003
+ *
+ * W. Stevens, M. Thomas, E. Nordmark, T. Jinmei, "Advanced Sockets
+ * Applications Program Interface (API) for IPv6", RFC 3542, May 2003
+ *
+ * E. Davies, S. Krishnan, P. Sovola, "IPv6 Transition/Coexistence Security
+ * Considerations", RFC 4942, September 2007 
+ *
+ * T. Berners-Lee, R. Fielding, L. Masinter, "Uniform Resource Identifier
+ * (URI) Syntax", RFC 3986, January 2005
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
@@ -350,7 +371,7 @@ extern int diminuto_ipc6_stream_provider_base(diminuto_ipv6_t address, diminuto_
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 static inline diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog) {
-    return diminuto_ipc6_stream_provider_base(address, port, interface, backlog, diminuto_ipc_reuseaddress, (void *)0);
+    return diminuto_ipc6_stream_provider_base(address, port, interface, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
@@ -518,7 +539,7 @@ extern int diminuto_ipc6_datagram_peer_base(diminuto_ipv6_t address, diminuto_po
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_datagram_peer_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface) {
-    return diminuto_ipc6_datagram_peer_base(address, port, interface, diminuto_ipc_reuseaddress, (void *)0);
+    return diminuto_ipc6_datagram_peer_base(address, port, interface, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
