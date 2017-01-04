@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_set_keepalive(sock, 0);
         ASSERT(rc >= 0);
 
-        if (getuid() == 0) {
+        if (geteuid() == 0) {
             rc = diminuto_ipc_set_debug(sock, !0);
             ASSERT(rc >= 0);
             rc = diminuto_ipc_set_debug(sock, 0);
@@ -187,4 +187,3 @@ int main(int argc, char * argv[])
 
     EXIT();
 }
-

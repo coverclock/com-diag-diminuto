@@ -122,6 +122,11 @@ int diminuto_ipc_set_status(int fd, int enable, long mask)
     return fd;
 }
 
+int diminuto_ipc_set_nonblocking(int fd, int enable)
+{
+    return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
+}
+
 int diminuto_ipc_set_value(int fd, int value, int option)
 {
     if (setsockopt(fd, SOL_SOCKET, option, &value, sizeof(value)) >= 0) {
@@ -135,54 +140,6 @@ int diminuto_ipc_set_value(int fd, int value, int option)
     }
 
     return fd;
-}
-
-int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
-{
-    struct linger opt = { 0 };
-
-    if (ticks > 0) {
-        opt.l_onoff = !0;
-        opt.l_linger = (ticks + diminuto_frequency() - 1) / diminuto_frequency();
-    }
-    if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
-        diminuto_perror("diminuto_ipc_set_linger: setsockopt");
-        fd = -10;
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_set_tcpoption(int fd, int value, int option)
-{
-    struct protoent *pp;
-
-    if ((pp = getprotobyname("tcp")) == (struct protoent *)0) {
-        diminuto_perror("diminuto_ipc_set_tcpoption: getprotobyname: tcp");
-        fd = -11;
-    } else if (setsockopt(fd, pp->p_proto, option, &value, sizeof(value)) < 0) {
-        diminuto_perror("diminuto_ipc_set_tcpoption: setsockopt");
-        fd = -12;
-    } else {
-        /* Do nothing. */
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_set_ipv6option(int fd, int value, int option)
-{
-    if (setsockopt(fd, IPPROTO_IPV6, option, &value, sizeof(value)) < 0) {
-        diminuto_perror("diminuto_ipc_set_ipv6option: setsockopt");
-        fd = -15;
-    }
-
-    return fd;
-}
-
-int diminuto_ipc_set_nonblocking(int fd, int enable)
-{
-    return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
 }
 
 int diminuto_ipc_set_reuseaddress(int fd, int enable)
@@ -235,6 +192,39 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
     return fd;
 }
 
+int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
+{
+    struct linger opt = { 0 };
+
+    if (ticks > 0) {
+        opt.l_onoff = !0;
+        opt.l_linger = (ticks + diminuto_frequency() - 1) / diminuto_frequency();
+    }
+    if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
+        diminuto_perror("diminuto_ipc_set_linger: setsockopt");
+        fd = -10;
+    }
+
+    return fd;
+}
+
+int diminuto_ipc_set_tcpoption(int fd, int value, int option)
+{
+    struct protoent *pp;
+
+    if ((pp = getprotobyname("tcp")) == (struct protoent *)0) {
+        diminuto_perror("diminuto_ipc_set_tcpoption: getprotobyname: tcp");
+        fd = -11;
+    } else if (setsockopt(fd, pp->p_proto, option, &value, sizeof(value)) < 0) {
+        diminuto_perror("diminuto_ipc_set_tcpoption: setsockopt");
+        fd = -12;
+    } else {
+        /* Do nothing. */
+    }
+
+    return fd;
+}
+
 int diminuto_ipc_set_nodelay(int fd, int enable)
 {
     return diminuto_ipc_set_tcpoption(fd, !!enable, TCP_NODELAY);
@@ -243,6 +233,16 @@ int diminuto_ipc_set_nodelay(int fd, int enable)
 int diminuto_ipc_set_quickack(int fd, int enable)
 {
     return diminuto_ipc_set_tcpoption(fd, !!enable, TCP_QUICKACK);
+}
+
+int diminuto_ipc_set_ipv6option(int fd, int value, int option)
+{
+    if (setsockopt(fd, IPPROTO_IPV6, option, &value, sizeof(value)) < 0) {
+        diminuto_perror("diminuto_ipc_set_ipv6option: setsockopt");
+        fd = -15;
+    }
+
+    return fd;
 }
 
 int diminuto_ipc_set_ipv6only(int fd, int enable)
