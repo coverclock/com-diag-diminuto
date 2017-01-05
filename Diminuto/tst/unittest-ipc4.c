@@ -575,7 +575,7 @@ int main(int argc, char * argv[])
 
             EXPECT(diminuto_ipc4_close(consumer) >= 0);
 
-            exit(0);
+            EXIT();
 
         }
 
@@ -607,7 +607,7 @@ int main(int argc, char * argv[])
             EXPECT(diminuto_ipc4_close(producer) >= 0);
             EXPECT(diminuto_ipc4_close(service) >= 0);
 
-            exit(0);
+            EXIT();
 
         } else {
 
@@ -821,7 +821,7 @@ int main(int argc, char * argv[])
 
             ASSERT(diminuto_ipc4_close(consumer) >= 0);
 
-            exit(0);
+            EXIT();
         }
 
         STATUS();

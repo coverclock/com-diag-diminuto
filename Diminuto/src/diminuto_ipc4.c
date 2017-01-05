@@ -187,11 +187,11 @@ int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t 
 
     if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_stream_provider_base: socket");
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
-        diminuto_ipc4_close(fd);
-    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc4_close(fd);
     } else if (listen(fd, backlog) < 0) {
         diminuto_perror("diminuto_ipc4_stream_provider_base: listen");
@@ -233,11 +233,11 @@ int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t 
 
     if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_stream_consumer_base: socket");
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_source(fd, address0, port0)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
-        diminuto_ipc4_close(fd);
-    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc4_close(fd);
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
         diminuto_perror("diminuto_ipc4_stream_consumer_base: connect");
@@ -261,11 +261,11 @@ int diminuto_ipc4_datagram_peer_base(diminuto_ipv4_t address, diminuto_port_t po
 
     if ((rc = fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_datagram_peer_base: socket");
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc4_source(fd, address, port)) < 0) {
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
-        diminuto_ipc4_close(fd);
-    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipc4_close(fd);
     } else {
         /* Do nothing. */

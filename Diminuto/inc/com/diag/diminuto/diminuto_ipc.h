@@ -135,27 +135,27 @@ extern int diminuto_ipc_set_receive(int fd, ssize_t size);
 /**
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
  * via the IPV6 Only option.
- * @param fd is an open socket.
+ * @param fd is an open ipc6 socket.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_ipv6only(int fd, int enable);
+extern int diminuto_ipc6_set_ipv6only(int fd, int enable);
 
 /**
  * Change an ipc6 stream socket into an ipc4 stream socket via the
  * IPv6 Address Form option.
- * @param fd is an open stream ocket.
+ * @param fd is an open ipc6 stream ocket.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_stream_ipv6toipv4(int fd);
+extern int diminuto_ipc6_set_stream_ipv6toipv4(int fd);
 
 /**
  * Change an ipc6 datagram socket into an ipc4 datagram socket via the
  * IPv6 Address Form option.
- * @param fd is an open datagram socket.
+ * @param fd is an open ipc6 datagram socket.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_datagram_ipv6toipv4(int fd);
+extern int diminuto_ipc6_set_datagram_ipv6toipv4(int fd);
 
 /*
  * (Many other options are possible, but these are the ones I have used.)

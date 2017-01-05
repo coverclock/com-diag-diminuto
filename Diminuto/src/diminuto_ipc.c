@@ -222,17 +222,17 @@ int diminuto_ipc_set_quickack(int fd, int enable)
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
 }
 
-int diminuto_ipc_set_ipv6only(int fd, int enable)
+int diminuto_ipc6_set_ipv6only(int fd, int enable)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
 }
 
-int diminuto_ipc_set_stream_ipv6toipv4(int fd)
+int diminuto_ipc6_set_stream_ipv6toipv4(int fd)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
 }
 
-int diminuto_ipc_set_datagram_ipv6toipv4(int fd)
+int diminuto_ipc6_set_datagram_ipv6toipv4(int fd)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }

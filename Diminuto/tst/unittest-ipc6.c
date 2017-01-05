@@ -11,7 +11,6 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
-#include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -49,6 +48,18 @@ static struct in6_addr * convert(diminuto_ipv6_t * addressp, struct in6_addr * i
 {
     memcpy(&(in6p->s6_addr16), diminuto_ipc6_hton6(addressp), sizeof(in6p->s6_addr16));
     return in6p;
+}
+
+static int ipv6only(int fd, void * vp)
+{
+    if ((fd = diminuto_ipc_set_reuseaddress(fd, !0)) < 0) {
+        /* Do nothing. */
+    } else if ((fd = diminuto_ipc6_set_ipv6only(fd, (intptr_t)vp)) < 0) {
+        /* Do nothing. */
+    } else {
+        /* Do nothing. */
+    }
+    return fd;
 }
 
 int main(int argc, char * argv[])
@@ -517,7 +528,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        server = diminuto_ipc6_address("localhost");
+        server = diminuto_ipc6_address("::1");
         EXPECT(!diminuto_ipc6_is_unspecified(&server));
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
@@ -685,7 +696,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((service = diminuto_ipc6_stream_provider(0)) >= 0);
+        ASSERT((service = diminuto_ipc6_stream_provider(0)) >= 0);
         EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
         EXPECT(rendezvous != TEST_PORT);
 
@@ -738,11 +749,279 @@ int main(int argc, char * argv[])
 
             EXPECT(diminuto_ipc6_close(service) >= 0);
             diminuto_delay(hertz / 1000, !0);
-            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::1"), rendezvous)) >= 0);
             diminuto_delay(hertz / 1000, !0);
             EXPECT(diminuto_ipc6_close(consumer) >= 0);
 
-            exit(0);
+            EXIT();
+
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t address;
+        diminuto_port_t port;
+        diminuto_port_t rendezvous = TEST_PORT;
+        int service;
+        pid_t pid;
+
+        TEST();
+
+        ASSERT((service = diminuto_ipc6_stream_provider_base(DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0, -1, ipv6only, (void *)0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        EXPECT(rendezvous != TEST_PORT);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+            int status;
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port == rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipc6_close(producer) >= 0);
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::1"), rendezvous)) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            EXPECT(diminuto_ipc6_close(consumer) >= 0);
+
+            EXIT();
+
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t address;
+        diminuto_port_t port;
+        diminuto_port_t rendezvous = TEST_PORT;
+        int service;
+        pid_t pid;
+
+        TEST();
+
+        ASSERT((service = diminuto_ipc6_stream_provider_base(DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0, -1, ipv6only, (void *)!0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        EXPECT(rendezvous != TEST_PORT);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+            int status;
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port == rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipc6_close(producer) >= 0);
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::1"), rendezvous)) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            EXPECT(diminuto_ipc6_close(consumer) >= 0);
+
+            EXIT();
+
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t address;
+        diminuto_port_t port;
+        diminuto_port_t rendezvous = TEST_PORT;
+        int service;
+        pid_t pid;
+
+        TEST();
+
+        ASSERT((service = diminuto_ipc6_stream_provider_base(DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0, -1, ipv6only, (void *)0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        EXPECT(rendezvous != TEST_PORT);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+            int status;
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT((producer = diminuto_ipc6_stream_accept_generic(service, &address, &port)) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_nearend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port == rendezvous);
+
+            memcpy(&address, &TEST6, sizeof(address));
+            port = TEST_PORT;
+            EXPECT(diminuto_ipc6_farend(producer, &address, &port) >= 0);
+            EXPECT(diminuto_ipc6_compare(&address, &TEST6) != 0);
+            EXPECT(port != TEST_PORT);
+            EXPECT(port != rendezvous);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipc6_close(producer) >= 0);
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::ffff:127.0.0.1"), rendezvous)) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            EXPECT(diminuto_ipc6_close(consumer) >= 0);
+
+            EXIT();
+
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t address;
+        diminuto_port_t port;
+        diminuto_port_t rendezvous = TEST_PORT;
+        int service;
+        pid_t pid;
+
+        TEST();
+
+        ASSERT((service = diminuto_ipc6_stream_provider_base(DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0, -1, ipv6only, (void *)!0)) >= 0);
+        EXPECT(diminuto_ipc6_nearend(service, (diminuto_ipv6_t *)0, &rendezvous) >= 0);
+        EXPECT(rendezvous != TEST_PORT);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int status;
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipc6_close(service) >= 0);
+            diminuto_delay(hertz / 1000, !0);
+            EXPECT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("::ffff:127.0.0.1"), rendezvous)) < 0);
+            diminuto_delay(hertz / 1000, !0);
+
+            EXIT();
 
         }
 
@@ -921,7 +1200,7 @@ int main(int argc, char * argv[])
 
             ASSERT(diminuto_ipc6_close(consumer) >= 0);
 
-            exit(0);
+            EXIT();
         }
 
         STATUS();

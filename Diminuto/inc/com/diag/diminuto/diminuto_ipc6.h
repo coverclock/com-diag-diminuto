@@ -21,13 +21,9 @@
  * preferential use of the ipc6 API over the ipc4 API a no-brainer, and in
  * fact is what I would recommend, all other things being equal. However,
  * RFC 4942 points out a number of security issues with this approach, some
- * of which involve circumventing firewall rules. [RFC 4942, section 2.2,
- * pp. 19-20]
- *
- * I've experimented with implementing the socket options IPV6_ONLY (only accept
- * IPv6 packets) and IPV6_ADDRFORM (convert an IPv6 socket into an IPv4 socket)
- * but after a lot of experimenting and perusing the implementation in the 4.2
- * kernel, I'm deferring those implementations to a later edition (if at all).
+ * of which involve circumventing firewall rules. You can use the IPv6 Only
+ * socket option supported by the ipc6 API to prohibit acceoting IPv4-mapped
+ * IPv6 connections. [RFC 4942, section 2.2, pp. 19-20]
  *
  * REFERENCES
  *

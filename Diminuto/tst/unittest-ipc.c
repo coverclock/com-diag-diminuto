@@ -176,9 +176,9 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_STREAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc_set_ipv6only(sock, !0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_set_ipv6only(sock, 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, 0);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
@@ -194,9 +194,9 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_DGRAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc_set_ipv6only(sock, !0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_set_ipv6only(sock, 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, 0);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
@@ -212,7 +212,7 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_STREAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc_set_stream_ipv6toipv4(sock);
+        rc = diminuto_ipc6_set_stream_ipv6toipv4(sock);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_DGRAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc_set_datagram_ipv6toipv4(sock);
+        rc = diminuto_ipc6_set_datagram_ipv6toipv4(sock);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
