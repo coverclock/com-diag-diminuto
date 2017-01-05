@@ -227,6 +227,13 @@ int diminuto_ipc6_set_ipv6only(int fd, int enable)
     return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
 }
 
+/*
+ * IPV6_ADDRFORM appears to have been deprecated in the latest pertinent
+ * internet standard, RFC 3943. And perusing the implementation of it in
+ * the 4.2 kernel code I had some WTF moments (e.g. UDP is supported but
+ * the socket has to have TCP Established set). Seems pretty sketchy to me.
+ */
+
 int diminuto_ipc6_set_stream_ipv6toipv4(int fd)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
