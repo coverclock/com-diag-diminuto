@@ -22,7 +22,7 @@
  * fact is what I would recommend, all other things being equal. However,
  * RFC 4942 points out a number of security issues with this approach, some
  * of which involve circumventing firewall rules. You can use the IPv6 Only
- * socket option supported by the ipc6 API to prohibit acceoting IPv4-mapped
+ * socket option supported by the ipc6 API to prohibit accepting IPv4-mapped
  * IPv6 connections. [RFC 4942, section 2.2, pp. 19-20]
  *
  * REFERENCES
