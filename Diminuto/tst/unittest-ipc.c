@@ -22,27 +22,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-static int get_option(int fd, int level, int * valuep, int option)
-{
-    int rc;
-    int size = sizeof(*valuep);
-
-    if ((rc =  getsockopt(fd, level, option, valuep, &size)) < 0) {
-        diminuto_perror("getsockopt");
-    }
-
-    return rc;
-}
-
-static inline get_socket_option(int fd, int level, int * valuep, int option) {
-    return get_option(fd, SOL_SOCKET, valuep, option);
-}
-
-static inline get_tcp_option(int fd, int level, int * valuep, int option) {
-    static const int IPPROTO_TCP = 6;
-    return get_option(fd, IPPROTO_TCP, valuep, option);
-}
-
 int main(int argc, char * argv[])
 {
     SETLOGMASK();
@@ -57,50 +36,204 @@ int main(int argc, char * argv[])
         ASSERT(sock >= 0);
 
         rc = diminuto_ipc_set_nonblocking(sock, !0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_nonblocking(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_reuseaddress(sock, !0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_reuseaddress(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_keepalive(sock, !0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_keepalive(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         if (geteuid() == 0) {
             rc = diminuto_ipc_set_debug(sock, !0);
-            ASSERT(rc >= 0);
+            EXPECT(rc >= 0);
             rc = diminuto_ipc_set_debug(sock, 0);
-            ASSERT(rc >= 0);
+            EXPECT(rc >= 0);
         }
 
         rc = diminuto_ipc_set_linger(sock, diminuto_frequency());
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_debug(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_nodelay(sock, !0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_nodelay(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_quickack(sock, !0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_quickack(sock, 0);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_send(sock, 512);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = diminuto_ipc_set_receive(sock, 512);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
 
         rc = close(sock);
-        ASSERT(rc >= 0);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+
+        value = !0;
+        rc = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_IPV6 IPV6_V6ONLY"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+
+        value = !0;
+        rc = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_IP IPV6_V6ONLY"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+
+        value = AF_INET;
+        rc = setsockopt(sock, IPPROTO_TCP, IPV6_ADDRFORM, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_TCP IPV6_ADDRFORM"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+
+        value = AF_INET;
+        rc = setsockopt(sock, IPPROTO_UDP, IPV6_ADDRFORM, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_UDP IPV6_ADDRFORM"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc_set_ipv6only(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_ipv6only(sock, 0);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc_set_ipv6only(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_ipv6only(sock, 0);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc_set_stream_ipv6toipv4(sock);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc_set_datagram_ipv6toipv4(sock);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
     }
 
     {

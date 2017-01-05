@@ -80,6 +80,10 @@ int diminuto_ipc_shutdown(int fd)
     return fd;
 }
 
+/*******************************************************************************
+ * OPTIONS
+ ******************************************************************************/
+
 int diminuto_ipc_set_interface(int fd, const char * interface)
 {
     struct ifreq intf = { 0 };
@@ -105,7 +109,7 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
     return fd;
 }
 
-int diminuto_ipc_set_status(int fd, int enable, long mask)
+static int diminuto_ipc_set_status(int fd, int enable, long mask)
 {
     long flags;
 
@@ -127,15 +131,15 @@ int diminuto_ipc_set_nonblocking(int fd, int enable)
     return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
 }
 
-int diminuto_ipc_set_value(int fd, int value, int option)
+static int diminuto_ipc_set_socket(int fd, int level, int option, int value)
 {
-    if (setsockopt(fd, SOL_SOCKET, option, &value, sizeof(value)) >= 0) {
+    if (setsockopt(fd, level, option, &value, sizeof(value)) >= 0) {
         /* Do nothing. */
     } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ipc_set_value: setsockopt: must be root");
+        diminuto_perror("diminuto_ipc_set_socket: setsockopt: must be root");
         fd = -8;
     } else {
-        diminuto_perror("diminuto_ipc_set_value: setsockopt");
+        diminuto_perror("diminuto_ipc_set_socket: setsockopt");
         fd = -9;
     }
 
@@ -144,17 +148,17 @@ int diminuto_ipc_set_value(int fd, int value, int option)
 
 int diminuto_ipc_set_reuseaddress(int fd, int enable)
 {
-    return diminuto_ipc_set_boolean(fd, enable, SO_REUSEADDR);
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
 }
 
 int diminuto_ipc_set_keepalive(int fd, int enable)
 {
-    return diminuto_ipc_set_boolean(fd, enable, SO_KEEPALIVE);
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_KEEPALIVE, !!enable);
 }
 
 int diminuto_ipc_set_debug(int fd, int enable)
 {
-    return diminuto_ipc_set_boolean(fd, enable, SO_DEBUG);
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_DEBUG, !!enable);
 }
 
 /*
@@ -171,7 +175,7 @@ int diminuto_ipc_set_send(int fd, ssize_t size)
     } else if (size > MAXIMUM_SIGNED_INT) {
         fd = -13;
     } else {
-        fd = diminuto_ipc_set_value(fd, value = size, SO_SNDBUF);
+        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, value = size);
     }
 
     return fd;
@@ -186,7 +190,7 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
     } else if (size > MAXIMUM_SIGNED_INT) {
         fd = -14;
     } else {
-        fd = diminuto_ipc_set_value(fd, value = size, SO_RCVBUF);
+        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, value = size);
     }
 
     return fd;
@@ -208,31 +212,29 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     return fd;
 }
 
-int diminuto_ipc_set_tcpoption(int fd, int value, int option)
-{
-    struct protoent *pp;
-
-    if ((pp = getprotobyname("tcp")) == (struct protoent *)0) {
-        diminuto_perror("diminuto_ipc_set_tcpoption: getprotobyname: tcp");
-        fd = -11;
-    } else if (setsockopt(fd, pp->p_proto, option, &value, sizeof(value)) < 0) {
-        diminuto_perror("diminuto_ipc_set_tcpoption: setsockopt");
-        fd = -12;
-    } else {
-        /* Do nothing. */
-    }
-
-    return fd;
-}
-
 int diminuto_ipc_set_nodelay(int fd, int enable)
 {
-    return diminuto_ipc_set_tcpoption(fd, !!enable, TCP_NODELAY);
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
 }
 
 int diminuto_ipc_set_quickack(int fd, int enable)
 {
-    return diminuto_ipc_set_tcpoption(fd, !!enable, TCP_QUICKACK);
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
+}
+
+int diminuto_ipc_set_ipv6only(int fd, int enable)
+{
+    return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
+}
+
+int diminuto_ipc_set_stream_ipv6toipv4(int fd)
+{
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
+}
+
+int diminuto_ipc_set_datagram_ipv6toipv4(int fd)
+{
+    return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }
 
 /*******************************************************************************

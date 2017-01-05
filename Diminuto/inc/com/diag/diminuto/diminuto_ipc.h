@@ -60,44 +60,6 @@ extern int diminuto_ipc_close(int fd);
 extern int diminuto_ipc_set_interface(int fd, const char * interface);
 
 /**
- * Set a socket integer value option.
- * @param fd is an open socket of any type.
- * @param value is the value to set.
- * @param option is option name.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_value(int fd, int value, int option);
-
-/**
- * Enable or disable a socket boolean option.
- * @param fd is an open socket of any type.
- * @param enable is !0 to enable an option, 0 to disable an option.
- * @param option is option name.
- * @return >=0 for success or <0 if an error occurred.
- */
-static inline int diminuto_ipc_set_boolean(int fd, int enable, int option) {
-    return diminuto_ipc_set_value(fd, !!enable, option);
-}
-
-/**
- * Enable or disable a TCP option.
- * @param fd is an open stream socket.
- * @param value is the value of the option.
- * @param option is option name.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_tcpoption(int fd, int value, int option);
-
-/**
- * Set or clear a mask in the file descriptor or socket status.
- * @param fd is an open socket of any type.
- * @param enable is !0 to set the mask, 0 to clear the mask.
- * @param mask is the bit mask.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_set_status(int fd, int enable, long mask);
-
-/**
  * Enable or disable the non-blocking status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable, 0 to disable.
@@ -140,7 +102,7 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 
 /**
  * Enable or disable the TCP No Delay option .
- * @param fd is an open stream socket.
+ * @param fd is an open socket.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -156,7 +118,7 @@ extern int diminuto_ipc_set_quickack(int fd, int enable);
 
 /**
  * Change the send TCP buffer size.
- * @param fd is an open stream socket.
+ * @param fd is an open socket.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -164,11 +126,36 @@ extern int diminuto_ipc_set_send(int fd, ssize_t size);
 
 /**
  * Change the receive TCP buffer size.
- * @param fd is an open stream socket.
+ * @param fd is an open socket.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
+
+/**
+ * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
+ * via the IPV6 Only option.
+ * @param fd is an open socket.
+ * @param size is the buffer size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_ipv6only(int fd, int enable);
+
+/**
+ * Change an ipc6 stream socket into an ipc4 stream socket via the
+ * IPv6 Address Form option.
+ * @param fd is an open stream ocket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_stream_ipv6toipv4(int fd);
+
+/**
+ * Change an ipc6 datagram socket into an ipc4 datagram socket via the
+ * IPv6 Address Form option.
+ * @param fd is an open datagram socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_datagram_ipv6toipv4(int fd);
 
 /*
  * (Many other options are possible, but these are the ones I have used.)

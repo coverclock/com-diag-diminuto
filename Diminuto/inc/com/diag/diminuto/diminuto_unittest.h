@@ -39,13 +39,14 @@ extern int diminuto_unittest_total;
     diminuto_log_setmask()
 
 /**
- * @def TEST()
- * Emit a notice message identifying the the start of a new unit test.
+ * @def TEST(...)
+ * Emit a notice message identifying the the start of a new unit test
+ * and an optional manifest string argument.
  */
-#define TEST() \
+#define TEST(...) \
     do { \
         diminuto_unittest_test += 1; \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST(): test=%d\n", diminuto_unittest_test); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "TEST: test=%d " __VA_ARGS__ "\n", diminuto_unittest_test); \
         fflush(stdout); \
         fflush(stderr); \
         diminuto_unittest_errors = 0; \
@@ -54,121 +55,128 @@ extern int diminuto_unittest_total;
 
 /**
  * @def CHECKPOINT(...)
- * Emit a notice message with the current translation unit file and line number
- * and an optional manifest string argument.
+ * Emit a notice message with the current translation unit file and line nunber.
  */
 #define CHECKPOINT(...) \
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE __VA_ARGS__)
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "CHECKPOINT: " __VA_ARGS__)
 
 /**
  * @def COMMENT(...)
- * Emit a debug message with the current translation unit file and line number
- * and an optional manifest string argument.
+ * Emit a debug message with the current translation unit file and line number.
  */
 #define COMMENT(...) \
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE __VA_ARGS__)
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEBUG, DIMINUTO_LOG_HERE "COMMENT: " __VA_ARGS__)
 
 /**
- * @def EXIT()
+ * @def STATUS()
+ * Emit a count of the  errors so far and an optional manifest string argument.
+ */
+#define STATUS(...) \
+    do { \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        fflush(stdout); \
+        fflush(stderr); \
+    } while (0)
+
+/**
+ * @def FAILURE()
+ * Increment the error counter and emit a warning message and an optional
+ * manifest string argument.
+ */
+#define FAILURE(...) \
+    do { \
+        ++diminuto_unittest_errors; \
+        ++diminuto_unittest_total; \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "FAILURE: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
+    } while (0)
+
+/**
+ * @def EXIT(...)
+ * Emit  a notice message with an optional manifest string argument.
  * Exit the calling process with a zero exit code if there are no errors,
  * or a non-zero exit code if there are.
  */
-#define EXIT() \
+#define EXIT(...) \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT(): tests=%d errors=%d %s\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "EXIT: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
         exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
     } while (0)
 
 /**
- * @def STATUS()
- * Report errors so far.
+ * @def FATAL(...)
+ * Emit a error message and an optional manifest string argument and exit the
+ * calling process with a non-zero exit code.
  */
-#define STATUS() \
+#define FATAL(...) \
     do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "STATUS(): test=%d errors=%d total=%d %s\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        ++diminuto_unittest_errors; \
+        ++diminuto_unittest_total; \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "FATAL: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
+        exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
+    } while (0)
+
+/**
+ * @def PANIC(...)
+ * Emit a error message and an optional manifest string argument. Try to dump
+ * core.
+ */
+#define PANIC(...) \
+    do { \
+        ++diminuto_unittest_errors; \
+        ++diminuto_unittest_total; \
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "PANIC: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
+        fflush(stdout); \
+        fflush(stderr); \
+        diminuto_core_enable(); \
+        diminuto_core_fatal(); \
+        *((volatile char *)0); \
+        exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
     } while (0)
 
 /**
  * @def ADVISE(_COND_)
- * Log a notice message if the specified condition @a _COND_ is not true.
+ * Emit a notice message if the specified condition @a _COND_ is not true.
  */
 #define ADVISE(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "!ADVISE(" #_COND_ ")!\n"); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
         } \
     } while (0)
 
 /**
  * @def EXPECT(_COND_)
- * Log a warning message if the specified condition @a _COND_ is not true
+ * Emit a warning message if the specified condition @a _COND_ is not true
  * and increment the error counter.
  */
 #define EXPECT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "!EXPECT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: test=%d errors=%d total=%d !(%s)?\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
         } \
     } while (0)
 
 /**
- * @def FAILURE()
- * Log a warning message and increment the error counter.
- */
-#define FAILURE() \
-    do { \
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "FAILURE!\n"); \
-        ++diminuto_unittest_errors; \
-        ++diminuto_unittest_total; \
-    } while (0)
-
-/**
  * @def ASSERT(_COND_)
- * Log a warning message if the specified condition @a _COND_ is not true,
+ * Emit a warning message if the specified condition @a _COND_ is not true,
  * increment the error counter, and exit immediately.
  */
 #define ASSERT(_COND_) \
     do { \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "!ASSERT(" #_COND_ ")!\n"); \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
-            EXIT(); \
-        } \
-    } while (0)
-
-/**
- * @def FATAL(...)
- * Emit a error message and exit the calling process with a non-zero exit code.
- */
-#define FATAL(...) \
-        do { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
-            ++diminuto_unittest_errors; \
-            ++diminuto_unittest_total; \
-            EXIT(); \
-	    } while (0)
-
-/**
- * @def PANIC(...)
- * Emit a error message and try to dump core.
- */
-#define PANIC(...) \
-        do { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: test=%d errors=%d total=%d !(%s)!\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
             fflush(stdout); \
             fflush(stderr); \
-            diminuto_core_enable(); \
-            diminuto_core_fatal(); \
-            FATAL("0x%x", *((volatile char *)0)); \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE __VA_ARGS__); \
-            EXIT(); \
-        } while (0)
+            exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
+        } \
+    } while (0)
 
 #endif

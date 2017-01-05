@@ -24,15 +24,10 @@
  * of which involve circumventing firewall rules. [RFC 4942, section 2.2,
  * pp. 19-20]
  *
- * I experimented with implementing the socket options IPV6_ONLY (only accept
+ * I've experimented with implementing the socket options IPV6_ONLY (only accept
  * IPv6 packets) and IPV6_ADDRFORM (convert an IPv6 socket into an IPv4 socket)
- * but after a lot of debugging and finally perusing the implementation in
- * the 4.2 kernel, it appears that those options are only usable on IPPROTO_IP
- * sockets, not on IPPROTO_TCP or IPPROTO_UDP sockets. Such fu is beyond the
- * scope of this framework. My tests always returned EINVAL for setsockopt(2),
- * consist with what I see in the 4.2 Kernel. Remarkably, I happened across
- * this same socket option used by the Sun Remote Procedure Call (sunrpc)
- * code, which does not check the return value from its setsockopt(2).
+ * but after a lot of experimenting and perusing the implementation in the 4.2
+ * kernel, I'm deferring those implementations to a later edition (if at all).
  *
  * REFERENCES
  *
