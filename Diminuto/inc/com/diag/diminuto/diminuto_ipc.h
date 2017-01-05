@@ -136,7 +136,7 @@ extern int diminuto_ipc_set_receive(int fd, ssize_t size);
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
  * via the IPV6 Only option.
  * @param fd is an open ipc6 socket.
- * @param size is the buffer size in bytes or <0 for no change.
+ * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc6_set_ipv6only(int fd, int enable);
