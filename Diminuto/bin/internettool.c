@@ -702,7 +702,9 @@ int main(int argc, char * argv[])
                     datum46 = 0;
                     input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
                     assert(input > 0);
+#if 0
                     assert(datum4 == server4);
+#endif
                     assert(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
@@ -734,7 +736,7 @@ int main(int argc, char * argv[])
     }
 
 /*******************************************************************************
- * CONSUME SERVICE - IPv4 - UDP
+ * CONSUME SERVICE - IPv6 - UDP
  ******************************************************************************/
 
     else if ((Rendezvous != (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
@@ -757,7 +759,9 @@ int main(int argc, char * argv[])
                     datum46 = 0;
                     input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
                     assert(input > 0);
+#if 0
                     assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+#endif
                     assert(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
@@ -807,7 +811,9 @@ int main(int argc, char * argv[])
                 assert(input >= 0);
             } while (input == 0);
             DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
+#if 0
             assert(datum4 == server4);
+#endif
             assert(id == ii);
             assert(sn == ss);
             ss += 1;
@@ -835,7 +841,9 @@ int main(int argc, char * argv[])
                 assert(input >= 0);
             } while (input == 0);
             DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
+#if 0
             assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+#endif
             assert(id == ii);
             assert(sn == ss);
             ss += 1;
