@@ -42,6 +42,9 @@
  *
  * T. Berners-Lee, R. Fielding, L. Masinter, "Uniform Resource Identifier
  * (URI) Syntax", RFC 3986, January 2005
+ *
+ * O.Li, T. Jimmel, K. Shima, IPV6 CORE PROTOCOLS IMPLEMENTATION, Morgan
+ * Kaufmann, 2007
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"

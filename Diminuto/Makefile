@@ -8,8 +8,10 @@
 # "Digital Aggregates Corporation" is a registered trademark.
 #
 #	make all TARGET=<target>		# Build libraries, unit tests, executable programs.
-#	make most TARGET=<target>		# Build default plus user-space loadable modules.
+#	make most TARGET=<target>		# Build all plus user-space loadable modules.
 #	make plus TARGET=<target>		# Build most plus kernel-space loadable modules.
+#
+#	. out/host/bin/setup			# Sets up PATH and LD_LIBRARY_PATH after build.
 #
 
 .PHONY:	default
