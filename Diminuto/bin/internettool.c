@@ -18,8 +18,8 @@
  * internettool -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                             # Service Consumer
  *
  * internettool -6 -t -p 5555                                                               # Service Provider
- * datasource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | datasink # Service Consumer 1
- * datasource | internettool -4 -t -A 192.168.1.237 -P 5555 | datasink                      # Service Consumer 2
+ * datesource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | datesink # Service Consumer 1
+ * datesource | internettool -4 -t -A 192.168.1.237 -P 5555 | datesink                      # Service Consumer 2
  * timesource | internettool -6 -t -A ::ffff:192.168.1.237 | timesink                       # Service Consumer 3
  */
 
