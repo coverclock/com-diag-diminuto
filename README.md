@@ -129,13 +129,17 @@ FEATURES
 UTILITIES
  
 * coreable - enable core dumps.
-* datastream - generate human readable data stream for testing.
+* datesink - consume verbose timestamp stream.
+* datesource - produce verbose timestamp stream.
 * dec - display an argument number in decimal.
 * dump - display a file in a formatted hexidecimal dump.
+* elapsedsleep - sleep for monotonic duration to specified resolution.
+* elapsedtime - display monotonic elapsed time to specified resolution.
+* frequency - display Diminuto base tick frequency in hertz.
 * hex - display an argument number in hexidecimal.
 * internettool - test internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
-* juliet - display the time in the local time zone in ISO 8601 format.
+* juliet - display the local time in ISO 8601 format.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
 * oct - display an argument number in octal.
@@ -144,10 +148,12 @@ UTILITIES
 * serialtool - test serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
+* timesink - consume concise timestamp stream.
+* timesource - produce concise timestamp stream.
 * usecsleep - sleep for a specified number of microseconds.
 * usectime - display the elapsed monotonic time in microseconds.
 * wipe - aggressively wipe a storage device.
-* zulu - display the time in UTC in ISO 8601 format.
+* zulu - display the UTC time in ISO 8601 format.
  
 DIRECTORIES
  
