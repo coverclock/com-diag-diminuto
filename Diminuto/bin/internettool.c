@@ -41,7 +41,7 @@
 #undef NDEBUG
 #include <assert.h>
 
-static const char * newline(const char * buffer, ssize_t size)
+static inline const char * newline(const char * buffer, ssize_t size)
 {
     return (((size > 0) && (buffer[size - 1] == '\n')) || ((size > 1) && (buffer[size - 1] == '\0') && (buffer[size - 2] == '\n'))) ? "" : "\n";
 }
