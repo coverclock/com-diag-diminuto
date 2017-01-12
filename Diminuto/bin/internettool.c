@@ -34,6 +34,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,8 +50,10 @@ int main(int argc, char * argv[])
     const char * Server =  (const char *)0;
     const char * Rendezvous = (const char *)0;
     const char * Blocksize = (const char *)0;
-    const char * Source = (const char *)0;
-    const char * Sink = (const char *)0;
+    char Layer2 = '4';
+    char Layer3 = 't';
+    char Debug = 0;
+    char Verbose = 0;
     diminuto_ipv4_t address4 = DIMINUTO_IPC4_UNSPECIFIED;
     diminuto_ipv6_t address6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_ipv4_t server4 = DIMINUTO_IPC4_LOOPBACK;
@@ -66,13 +69,12 @@ int main(int argc, char * argv[])
     size_t blocksize = 512;
     int source = STDIN_FILENO;
     int sink = STDOUT_FILENO;
+    FILE * tee = stderr;
     char string[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")] = { '\0' };
     char * buffer = (char *)0;
     ssize_t input = 0;
     ssize_t output = 0;
     ssize_t total = 0;
-    char Layer2 = '4';
-    char Layer3 = 't';
     int sock = -2;
     int fd = -3;
     int rc = 0;
@@ -105,7 +107,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "46?A:I:O:P:a:b:gi:p:tu")) >= 0) {
+    while ((opt = getopt(argc, argv, "46?A:P:a:b:dgi:p:tuv")) >= 0) {
         switch (opt) {
         case '4':
         case '6':
@@ -113,12 +115,6 @@ int main(int argc, char * argv[])
             break;
         case 'A':
             Server = optarg; /* far end server address */
-            break;
-        case 'I':
-            Source = optarg; /* source file descriptor */
-            break;
-        case 'O':
-            Sink = optarg; /* sink file descriptor */
             break;
         case 'P':
             Rendezvous = optarg; /* far end port number */
@@ -128,6 +124,9 @@ int main(int argc, char * argv[])
             break;
         case 'b':
             Blocksize = optarg; /* input/output blocksize */
+            break;
+        case 'd':
+            Debug = opt; /* dump to stderr */
             break;
         case 'i':
             Interface = optarg; /* near end interface */
@@ -140,22 +139,25 @@ int main(int argc, char * argv[])
         case 'u':
             Layer3 = opt; /* tcp or udp or ping */
             break;
+        case 'v':
+            Verbose = opt; /* print to stderr */
+            break;
         case '?':
             fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
             fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
-            fprintf(stderr, "       -I INFD     Source file descriptor.\n");
-            fprintf(stderr, "       -O OUTFD    Sink file descriptor.\n");
             fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
+            fprintf(stderr, "       -d          Dump to standard error.\n");
             fprintf(stderr, "       -g          Use ICMP echo request (ping).\n");
             fprintf(stderr, "       -i NEINTF   Bind near end socket to interface NEINTF.\n");
             fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
             fprintf(stderr, "       -t          Use TCP.\n");
             fprintf(stderr, "       -u          Use UDP.\n");
+            fprintf(stderr, "       -v          Print to standard error.\n");
             fprintf(stderr, "       -?          Display this menu.\n");
             return 1;
             break;
@@ -288,28 +290,6 @@ int main(int argc, char * argv[])
 
     buffer = (char *)malloc(blocksize);
     assert(buffer != (char *)0);
-
-    if (Source == (const char *)0) {
-        /* Do nothing. */
-    } else if (*diminuto_number_unsigned(Source, &value) != '\0') {
-        assert(0);
-    } else {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Source=\"%s\"\n", Source);
-        source = value;
-    }
-
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "source=%zu\n", source);
-
-    if (Sink == (const char *)0) {
-        /* Do nothing. */
-    } else if (*diminuto_number_unsigned(Sink, &value) != '\0') {
-        assert(0);
-    } else {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Sink=\"%s\"\n", Sink);
-        sink = value;
-    }
-
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "sink=%zu\n", sink);
 
 /*******************************************************************************
  * SERVICE PROVIDER - IPv4 - TCP
@@ -518,6 +498,8 @@ int main(int argc, char * argv[])
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
+                    if (Debug) { diminuto_dump(tee, buffer, input); }
+                    if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
                 }
             }
         }
@@ -574,6 +556,8 @@ int main(int argc, char * argv[])
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
+                    if (Debug) { diminuto_dump(tee, buffer, input); }
+                    if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
                 }
             }
         }
@@ -602,6 +586,8 @@ int main(int argc, char * argv[])
             assert(datum46 != 0);
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
+            if (Debug) { diminuto_dump(tee, buffer, input); }
+            if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
@@ -624,6 +610,8 @@ int main(int argc, char * argv[])
             assert(datum46 != 0);
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
+            if (Debug) { diminuto_dump(tee, buffer, input); }
+            if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
