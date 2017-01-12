@@ -501,7 +501,6 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
                 } else {
-                    buffer[input] = '\0';
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
@@ -560,7 +559,6 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
                 } else {
-                    buffer[input] = '\0';
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
@@ -591,7 +589,6 @@ int main(int argc, char * argv[])
             assert(input > 0);
             assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
             assert(datum46 != 0);
-            buffer[input] = '\0';
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
@@ -616,7 +613,6 @@ int main(int argc, char * argv[])
             assert(input > 0);
             assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
             assert(datum46 != 0);
-            buffer[input] = '\0';
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
