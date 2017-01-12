@@ -156,13 +156,13 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
-            fprintf(stderr, "       -d          Dump to standard error.\n");
+            fprintf(stderr, "       -d          Dump received data to standard error on provider.\n");
             fprintf(stderr, "       -g          Use ICMP echo request (ping).\n");
             fprintf(stderr, "       -i NEINTF   Bind near end socket to interface NEINTF.\n");
             fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
             fprintf(stderr, "       -t          Use TCP.\n");
             fprintf(stderr, "       -u          Use UDP.\n");
-            fprintf(stderr, "       -v          Print to standard error.\n");
+            fprintf(stderr, "       -v          Print received data to standard error on provider.\n");
             fprintf(stderr, "       -?          Display this menu.\n");
             return 1;
             break;
