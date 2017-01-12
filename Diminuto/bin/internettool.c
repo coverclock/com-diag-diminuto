@@ -48,7 +48,7 @@ static const char * newline(const char * buffer, ssize_t size)
 
 int main(int argc, char * argv[])
 {
-    const char * program = (const char *)0;
+    const char * Program = (const char *)0;
     const char * Address = (const char *)0;
     const char * Interface = (const char *)0;
     const char * Port = (const char *)0;
@@ -110,7 +110,7 @@ int main(int argc, char * argv[])
 
     diminuto_log_setmask();
 
-    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+    Program = ((Program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : Program + 1;
 
     while ((opt = getopt(argc, argv, "46?A:P:a:b:dgi:p:tuv")) >= 0) {
         switch (opt) {
@@ -148,7 +148,7 @@ int main(int argc, char * argv[])
             Verbose = opt; /* print to stderr */
             break;
         case '?':
-            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", Program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
