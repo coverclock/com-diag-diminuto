@@ -499,7 +499,7 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
-                    if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
+                    if (Verbose) { fprintf(tee, "%.*s\n", (int)input, buffer); }
                 }
             }
         }
@@ -557,7 +557,7 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
-                    if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
+                    if (Verbose) { fprintf(tee, "%.*s\n", (int)input, buffer); }
                 }
             }
         }
@@ -587,7 +587,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
+            if (Verbose) { fprintf(tee, "%.*s\n", (int)input, buffer); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
@@ -611,7 +611,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { fprintf(tee, "%.*s", (int)input, buffer); }
+            if (Verbose) { fprintf(tee, "%.*s\n", (int)input, buffer); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
