@@ -172,13 +172,13 @@ REMARKS
 
 Diminuto started out many years ago as a project to build a minimal
 Linux-based embedded system for an ARMv4 processor that seems laughbly
-small now. It consisted of a stripped down 2.4 (later, 2.6) Linux kernel
-with just the stuff I needed, Busybox, and an application. The application
-was built around a small C-based library that contained functions that
-I wrote to support the kinds of systems work that I do. In the fullness
-of time the library became more important than the project as some or
-all of it found its way into several products I was helping my clients
-develop and ship.
+small now. It consisted of a stripped down 2.4 (later, 2.6) Linux
+kernel with just the stuff I needed, Busybox, and an application. The
+application was built around a small C-based library I developed that
+contained functions to support the kinds of systems work that I am
+typically called upon to do. In the fullness of time the library became
+more important than the project as some or all of it found its way into
+several products I was helping my clients develop and ship.
 
 Today there are several reasons Diminuto continues to be a useful resource
 that I expand and maintain.
@@ -186,18 +186,24 @@ that I expand and maintain.
 I got tired of writing the same code over and over again, even though I
 got paid by the hour to do so. Sometimes even for the same client. Some
 of the work I do is under a subcontract, and my clients' clients often
-explicitly didn't want code whose development they pay for to be shared. I
-wanted to write that useful but generic code once, test it thoroughly,
+explicitly didn't want code whose development they pay for to be shared
+with other clients; but they were completely okay using open source code.
+I wanted to write that useful but generic code once, test it thoroughly,
 make it open source and easily available.
 
 I needed a way I could get my arms and head around the evolving low level
 POSIX and Linux APIs where I spent a lot of time. I'm a very hands-on
 person, and can only really learn by doing.
 
-I wanted to develop a simpler, inter-operable, reasonably consistent API
-of my own on top of those low level APIs. This was partly because I was
-interested in exploring API design; I wanted to reduce the development
-time needed to work in C and C++ (although I routinely work in Python,
-Bash, and Java, and have been known to hack JavaScript, when duty calls);
-and I wanted perhaps to return to teaching this stuff in the future but
-didn't want to start at the low level to do so.
+I wanted to develop a simpler, inter-operable, reasonably consistent
+API of my own on top of those low level APIs. This was partly because
+I was interested in exploring API design; because I wanted to reduce
+the development time needed to work in C and C++ (although I routinely
+work in Python, Bash, and Java, and have been known to hack JavaScript,
+when duty calls); and because I wanted perhaps to return to teaching this
+stuff in the future but didn't want to start at the low level to do so.
+
+If you happen upon this repo and find it useful, that's great. If you
+don't, that's great too. Portions of it will still be shipping in a number
+of commercial products, ranging from satellite communications systems
+to cellular base station routers to in-flight entertainment systems.
