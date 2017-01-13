@@ -42,6 +42,57 @@ extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK;
 extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2;
 
 /*******************************************************************************
+ * CLASSIFIERS
+ ******************************************************************************/
+
+/**
+ * Return true if the IPv4 address in host byte order is unspecified.
+ * @param addressp points to an IPv4 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc4_is_unspecified(const diminuto_ipv4_t * addressp) {
+    return (*addressp == 0x00000000);
+}
+
+/**
+ * Return true if the IPv4 address in host byte order is limited broadcast.
+ * @param addressp points to an IPv4 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc4_is_limitedbroadcast(const diminuto_ipv4_t * addressp) {
+    return (*addressp == 0xffffffff);
+}
+
+/**
+ * Return true if the IPv4 address in host byte order is loopback.
+ * @param addressp points to an IPv4 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc4_is_loopback(const diminuto_ipv4_t * addressp) {
+    return ((0x7f000001 <= *addressp) && (*addressp <= 0x7fffffff));
+}
+
+/**
+ * Return true if the IPv4 address in host byte order is private.
+ * @param addressp points to an IPv4 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc4_is_private(const diminuto_ipv4_t * addressp) {
+    return ((0xc0a80000 <= *addressp) && (*addressp <= 0xc0a8ffff)) || /* /16 */
+           ((0xac100000 <= *addressp) && (*addressp <= 0xac1fffff)) || /* /12 */
+           ((0x0a000000 <= *addressp) && (*addressp <= 0x0affffff));   /* /24 */
+}
+
+/**
+ * Return true if the IPv4 address in host byte order is multicast.
+ * @param addressp points to an IPv4 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc4_is_multicast(const diminuto_ipv4_t * addressp) {
+    return ((0xe0000000 <= *addressp) && (*addressp <= 0xefffffff));
+}
+
+/*******************************************************************************
  * RESOLVERS
  ******************************************************************************/
 

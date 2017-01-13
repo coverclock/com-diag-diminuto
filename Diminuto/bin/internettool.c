@@ -57,8 +57,9 @@ int main(int argc, char * argv[])
     const char * Blocksize = (const char *)0;
     char Layer2 = '4';
     char Layer3 = 't';
-    char Debug = 0;
-    char Verbose = 0;
+    char Debug = '\0';
+    char Verbose = '\0';
+    char Interfaces = '\0';
     diminuto_ipv4_t address4 = DIMINUTO_IPC4_UNSPECIFIED;
     diminuto_ipv6_t address6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_ipv4_t server4 = DIMINUTO_IPC4_LOOPBACK;
@@ -112,7 +113,7 @@ int main(int argc, char * argv[])
 
     Program = ((Program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : Program + 1;
 
-    while ((opt = getopt(argc, argv, "46?A:P:a:b:dgi:p:tuv")) >= 0) {
+    while ((opt = getopt(argc, argv, "46?A:IP:a:b:dgi:p:tuv")) >= 0) {
         switch (opt) {
         case '4':
         case '6':
@@ -120,6 +121,9 @@ int main(int argc, char * argv[])
             break;
         case 'A':
             Server = optarg; /* far end server address */
+            break;
+        case 'I':
+            Interfaces = opt; /* log interfaces. */
             break;
         case 'P':
             Rendezvous = optarg; /* far end port number */
@@ -148,11 +152,12 @@ int main(int argc, char * argv[])
             Verbose = opt; /* print to stderr */
             break;
         case '?':
-            fprintf(stderr, "usage: %s [ -? ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", Program);
+            fprintf(stderr, "usage: %s [ -? ] [ -I ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -b BYTES ]\n", Program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
             fprintf(stderr, "       -6          Use IPv6.\n");
             fprintf(stderr, "       -A FEADDR   Connect far end socket to host or address FEADDR.\n");
+            fprintf(stderr, "       -I          Display interfaces and exit.\n");
             fprintf(stderr, "       -P FEPORT   Connect far end socket to service or port FEPORT.\n");
             fprintf(stderr, "       -a NEADDR   Bind near end socket to host or address NEADDR.\n");
             fprintf(stderr, "       -b BYTES    Size input/output buffer to BYTES bytes.\n");
@@ -163,12 +168,98 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -t          Use TCP.\n");
             fprintf(stderr, "       -u          Use UDP.\n");
             fprintf(stderr, "       -v          Print received data to standard error on provider.\n");
-            fprintf(stderr, "       -?          Display this menu.\n");
+            fprintf(stderr, "       -?          Display this menu and exit.\n");
             return 1;
             break;
         default:
             break;
         }
+    }
+
+/*******************************************************************************
+ * IMMEDIATES
+ ******************************************************************************/
+
+    if (Interfaces) {
+        char ** ifvp;
+        char ** ifp;
+        diminuto_ipv4_t * v4vp;
+        diminuto_ipv4_t * v4p;
+        diminuto_ipv6_t * v6vp;
+        diminuto_ipv6_t * v6p;
+        const char * type;
+
+        assert((ifvp = diminuto_ipc_interfaces()) != (char **)0);
+
+        for (ifp = ifvp; *ifp != (char *)0; ++ifp) {
+
+            assert((v4vp = diminuto_ipc4_interface(*ifp)) != (diminuto_ipv4_t *)0);
+            assert((v6vp = diminuto_ipc6_interface(*ifp)) != (diminuto_ipv6_t *)0);
+
+            if (*v4vp != DIMINUTO_IPC4_UNSPECIFIED) {
+                /* Do nothing. */
+            } else if (diminuto_ipc6_compare(v6vp, &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+                /* Do nothing. */
+            } else {
+                DIMINUTO_LOG_NOTICE("%s %s\n", DIMINUTO_LOG_HERE, *ifp);
+                continue;
+            }
+
+            for (v4p = v4vp; *v4p != DIMINUTO_IPC4_UNSPECIFIED; ++v4p) {
+                if (diminuto_ipc4_is_unspecified(v4p)) {
+                    type = "unspecified"; /* IMpossible. */
+                } else if (diminuto_ipc4_is_limitedbroadcast(v4p)) {
+                    type = "limited-broadcast";
+                } else if (diminuto_ipc4_is_loopback(v4p)) {
+                    type = "loopback";
+                } else if (diminuto_ipc4_is_private(v4p)) {
+                    type = "private";
+                } else if (diminuto_ipc4_is_multicast(v4p)) {
+                    type = "multicast";
+                } else {
+                    type = "other";
+                }
+                DIMINUTO_LOG_NOTICE("%s %s v4 %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc4_dotnotation(*v4p, string, sizeof(string)), type);
+            }
+
+            for (v6p = v6vp; diminuto_ipc6_compare(v6p, &DIMINUTO_IPC6_UNSPECIFIED) != 0; ++v6p) {
+                if (diminuto_ipc6_is_unspecified(v6p)) {
+                    type = "unspecified"; /* Impossible. */
+                } else if (diminuto_ipc6_is_loopback(v6p)) {
+                    type = "loopback";
+                } else if (diminuto_ipc6_is_unicastglobal(v6p)) {
+                    type = "global-unicast";
+                } else if (diminuto_ipc6_is_uniquelocal(v6p)) {
+                    type = "unique-local";
+                } else if (diminuto_ipc6_is_linklocal(v6p)) {
+                    type = "link-local";
+                } else if (diminuto_ipc6_is_multicast(v6p)) {
+                    type = "multicast";
+                } else if (diminuto_ipc6_is_nat64wkp(v6p)) {
+                    type = "nat64-wkp";
+                } else if (diminuto_ipc6_is_isatap(v6p)) {
+                    type = "atap";
+                } else if (diminuto_ipc6_is_6to4(v6p)) {
+                    type = "6to4";
+                } else if (diminuto_ipc6_is_loopback4(v6p)) {
+                    type = "v4-loopback";
+                } else if (diminuto_ipc6_is_v4mapped(v6p)) {
+                    type = "v4-mapped";
+                } else if (diminuto_ipc6_is_v4compatible(v6p)) {
+                    type = "v4-compatible";
+                } else {
+                    type = "other";
+                }
+                DIMINUTO_LOG_NOTICE("%s %s v6 %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc6_colonnotation(*v6p, string, sizeof(string)), type);
+            }
+
+            free(v4vp);
+            free(v6vp);
+        }
+
+        free(ifvp);
+
+        return 0;
     }
 
 /*******************************************************************************
@@ -483,7 +574,7 @@ int main(int argc, char * argv[])
                 assert(fd >= 0);
                 assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
                 assert(datum46 != 0);
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
                 rc = diminuto_mux_register_read(&mux, fd);
                 assert(rc >= 0);
             }
@@ -499,7 +590,7 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     assert(rc >= 0);
-                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
@@ -541,7 +632,7 @@ int main(int argc, char * argv[])
                 assert(fd >= 0);
                 assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
                 assert(datum46 != 0);
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
                 rc = diminuto_mux_register_read(&mux, fd);
                 assert(rc >= 0);
             }
@@ -557,7 +648,7 @@ int main(int argc, char * argv[])
                     assert(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     assert(rc >= 0);
-                    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
@@ -653,7 +744,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
@@ -707,7 +798,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
@@ -764,7 +855,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         assert(rc >= 0);
                         eof = !0;
@@ -799,12 +890,12 @@ int main(int argc, char * argv[])
         while (!0) {
             output = diminuto_ping4_datagram_send(sock, server4, ii, ss);
             assert(output > 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc4_address2string(server4, string, sizeof(string)));
+            DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc4_address2string(server4, string, sizeof(string)));
             do {
                 input = diminuto_ping4_datagram_receive(sock, &datum4, &type, &code, &id, &sn, &ttl, &elapsed);
                 assert(input >= 0);
             } while (input == 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
+            DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, string, sizeof(string)));
 #if 0
             assert(datum4 == server4);
 #endif
@@ -829,12 +920,12 @@ int main(int argc, char * argv[])
         while (!0) {
             output = diminuto_ping6_datagram_send(sock, server6, ii, ss);
             assert(output > 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc6_address2string(server6, string, sizeof(string)));
+            DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc6_address2string(server6, string, sizeof(string)));
             do {
                 input = diminuto_ping6_datagram_receive(sock, &datum6, &type, &code, &id, &sn, &elapsed);
                 assert(input >= 0);
             } while (input == 0);
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
+            DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, string, sizeof(string)));
 #if 0
             assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
 #endif

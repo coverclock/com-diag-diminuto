@@ -126,6 +126,16 @@ static inline int diminuto_ipc6_is_v4mapped(const diminuto_ipv6_t * addressp) {
 }
 
 /**
+ * Return true if the IPv6 address in host byte order is embedded IPv4, false
+ * otherwise.
+ * @param addressp points to an IPv6 address.
+ * @return true or false.
+ */
+static inline int diminuto_ipc6_is_v4compatible(const diminuto_ipv6_t * addressp) {
+    return (memcmp(addressp, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t)) == 0);
+}
+
+/**
  * Return true if the IPv6 address in host byte order is NAT64 WKP, false
  * otherwise.
  * @param addressp points to an IPv6 address.
