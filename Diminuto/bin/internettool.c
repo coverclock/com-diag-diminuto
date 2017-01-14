@@ -201,7 +201,7 @@ int main(int argc, char * argv[])
             } else if (diminuto_ipc6_compare(v6vp, &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
                 /* Do nothing. */
             } else {
-                DIMINUTO_LOG_NOTICE("%s %s\n", DIMINUTO_LOG_HERE, *ifp);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s\n", *ifp);
                 continue;
             }
 
@@ -219,7 +219,7 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE("%s %s v4 %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc4_dotnotation(*v4p, string, sizeof(string)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v4 %s %s\n", *ifp, diminuto_ipc4_dotnotation(*v4p, string, sizeof(string)), type);
             }
 
             for (v6p = v6vp; diminuto_ipc6_compare(v6p, &DIMINUTO_IPC6_UNSPECIFIED) != 0; ++v6p) {
@@ -250,7 +250,7 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE("%s %s v6 %s %s\n", DIMINUTO_LOG_HERE, *ifp, diminuto_ipc6_colonnotation(*v6p, string, sizeof(string)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v6 %s %s\n", *ifp, diminuto_ipc6_colonnotation(*v6p, string, sizeof(string)), type);
             }
 
             free(v4vp);
@@ -595,7 +595,7 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
-                    if (Verbose) { fprintf(tee, "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+                    if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
                 }
             }
         }
@@ -653,7 +653,7 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
                     if (Debug) { diminuto_dump(tee, buffer, input); }
-                    if (Verbose) { fprintf(tee, "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+                    if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
                 }
             }
         }
@@ -683,7 +683,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { fprintf(tee, "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+            if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
@@ -707,7 +707,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { fprintf(tee, "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+            if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
