@@ -26,7 +26,7 @@
 
 #define printsizeof(_TYPE_) printf("sizeof(%s)=%zu\nsizeof(%s*)=%zu\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*))
 
-#define issigned(_TYPE_) ((~(_TYPE_)0) < 0)
+#define issigned(_TYPE_) (((_TYPE_)(~(_TYPE_)0)) < 0)
 
 #define printsignof(_TYPE_) printf("sizeof(%s)=%zu\nsizeof(%s*)=%zu\nissigned(%s)=%d\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*), #_TYPE_, issigned(_TYPE_))
 
@@ -80,9 +80,10 @@ int main(void)
     printsizeof(pthread_mutex_t);
     printsizeof(pthread_cond_t);
     printsignof(diminuto_ticks_t);
+    printsignof(diminuto_sticks_t);
     printsizeof(diminuto_ipv4_t);
     printsizeof(diminuto_ipv6_t);
-    printsizeof(diminuto_port_t);
+    printsignof(diminuto_port_t);
     printsignof(diminuto_unsigned_t);
     printsignof(diminuto_signed_t);
     printsizeof(struct Zero);
