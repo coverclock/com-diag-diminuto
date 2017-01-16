@@ -425,7 +425,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Contact=\"$(CONTACT)\"\n"' >> $@
 	echo '    "Copyright=\"$(COPYRIGHT)\"\n"' >> $@
 	echo '    "Homepage=\"$(HOMEPAGE)\"\n"' >> $@
-	echo '    "Repo=\"$(GITURL)\"\n"' >> $@
+	echo '    "Repository=\"$(GITURL)\"\n"' >> $@
 	echo '    "Host=\"$(HOST)\"\n"' >> $@
 	echo '    "Kernel=\"$(KERNEL_REV)\"\n"' >> $@
 	echo '    "License=\"$(LICENSE)\"\n"' >> $@
@@ -503,7 +503,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Contact=\\"$(CONTACT)\\"\\n"' >> $@
 	echo '    "Copyright=\\"$(COPYRIGHT)\\"\\n"' >> $@
 	echo '    "Homepage=\\"$(HOMEPAGE)\\"\\n"' >> $@
-	echo '    "Repo=\\"$(GITURL)\\"\\n"' >> $@
+	echo '    "Repository=\\"$(GITURL)\\"\\n"' >> $@
 	echo '    "Host=\\"$(HOST)\\"\\n"' >> $@
 	echo '    "Kernel=\\"$(KERNEL_REV)\\"\\n"' >> $@
 	echo '    "License=\\"$(LICENSE)\\"\\n"' >> $@
