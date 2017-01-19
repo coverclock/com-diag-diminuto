@@ -262,7 +262,7 @@ int main(int argc, char * argv[])
                 output = input;
                 fputc(output, fp);
                 ++count;
-                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, !0); }
+                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, 0); }
                 if (verbose) { fputc(input, stderr); }
             } else if (done) {
                 now = diminuto_time_elapsed();
@@ -297,7 +297,7 @@ int main(int argc, char * argv[])
                 alarm(seconds);
                 input = fgetc(fp);
                 alarm(0);
-                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, !0); }
+                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, 0); }
                 if (verbose) { fputc(input, stderr); }
                 if (input != EOF) {
      		        if (!running) {
