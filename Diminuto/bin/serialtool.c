@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_phex.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -84,12 +85,14 @@ int main(int argc, char * argv[])
     struct sigaction action = { 0 };
     int printable = 0;
     unsigned int seconds = 1;
+    int debug = 0;
+    int verbose = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:Fb:ehlmnopst:")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:Fb:dehlmnopst:v")) >= 0) {
 
     	switch (opt) {
 
@@ -133,6 +136,10 @@ int main(int argc, char * argv[])
     		bitspersecond = strtoul(optarg, (char **)0, 0);
     		break;
 
+        case 'd':
+            debug = !0;
+            break;
+
     	case 'e':
     		paritybit = 2;
     		break;
@@ -169,6 +176,10 @@ int main(int argc, char * argv[])
     		seconds = strtoul(optarg, (char **)0, 0);
     		break;
 
+        case 'v':
+            verbose = !0;
+            break;
+
         case '?':
             fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F ] [ -D DEVICE ] [ -b BPS ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
@@ -181,6 +192,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -F          Loop forward (receive then send).\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
+            fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
             fprintf(stderr, "       -e          Even parity.\n");
             fprintf(stderr, "       -o          Odd parity.\n");
             fprintf(stderr, "       -n          No parity.\n");
@@ -190,6 +202,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -m          Modem control.\n");
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
             fprintf(stderr, "       -t SECONDS  Timeout in SECONDS.\n");
+            fprintf(stderr, "       -v          Print characters on standard error.\n");
             return 1;
             break;
 
@@ -249,6 +262,8 @@ int main(int argc, char * argv[])
                 output = input;
                 fputc(output, fp);
                 ++count;
+                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, !0); }
+                if (verbose) { fputc(input, stderr); }
             } else if (done) {
                 now = diminuto_time_elapsed();
                 elapsed = (now - then) / (double)hertz;
@@ -282,6 +297,8 @@ int main(int argc, char * argv[])
                 alarm(seconds);
                 input = fgetc(fp);
                 alarm(0);
+                if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, !0); }
+                if (verbose) { fputc(input, stderr); }
                 if (input != EOF) {
      		        if (!running) {
      			        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
