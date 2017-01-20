@@ -2,13 +2,20 @@
 /**
  * @file
  *
- * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
- * NOTE: On many Linux systems, you will need to either be root or
- *       be in the dialout group to access serial ports.
+ * EXAMPLES
+ *
+ * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d
+ * originator:  serialtool -D /dev/ttyS0 -b 115200 -8 -1 -n -l -B -d
+ *
+ * NOTES
+ *
+ * You will likely need to either be root or be in the dialout group to
+ * access serial ports.
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
@@ -188,8 +195,8 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -6          Six data bits.\n");
             fprintf(stderr, "       -7          Seven data bits.\n");
             fprintf(stderr, "       -8          Eight data bits.\n");
-            fprintf(stderr, "       -B          Loop back (send then receive).\n");
-            fprintf(stderr, "       -F          Loop forward (receive then send).\n");
+            fprintf(stderr, "       -B          Expect loop back (send then receive).\n");
+            fprintf(stderr, "       -F          Expect loop forward (receive then send).\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");

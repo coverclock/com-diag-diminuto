@@ -2,25 +2,22 @@
 /**
  * @file
  *
- * Copyright 2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2016-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
  * EXAMPLES
  *
- * internettool -\?                                                                         # Help Menu
- * 
- * internettool -6 -p 5555                                                                  # Service Provider
- * internettool -6 -A 2001:470:4b:4e2:e79:7f1e:21f5:9355 -P 5555 < OLDFILE > NEWFILE        # Service Consumer
+ * server:      internettool -v -6 -t -p 5555
+ * client1:     timesource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink
+ * client2:     timesource | internettool -4 -t -A 192.168.1.237 -P 5555 | timesink
+ * client3:     timesource | internettool -6 -t -A ::ffff:192.168.1.237 | timesink
  *
- * internettool -4 -p 5555                                                                  # Service Provider
- * internettool -4 -A 192.168.2.182 -P 5555 < OLDFILE > NEWFILE                             # Service Consumer
- *
- * internettool -6 -t -p 5555                                                               # Service Provider
- * datesource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | datesink # Service Consumer 1
- * datesource | internettool -4 -t -A 192.168.1.237 -P 5555 | datesink                      # Service Consumer 2
- * timesource | internettool -6 -t -A ::ffff:192.168.1.237 | timesink                       # Service Consumer 3
+ * server:      internettool -v -6 -u -p 5555
+ * client1:     timesource | internettool -6 -u -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink
+ * client2:     timesource | internettool -4 -u -A 192.168.1.237 -P 5555 | timesink
+ * client3:     timesource | internettool -6 -u -A ::ffff:192.168.1.237 | timesink
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
