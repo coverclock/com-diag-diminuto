@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v4 %s %s\n", *ifp, diminuto_ipc4_dotnotation(*v4p, string, sizeof(string)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v4 %s %s\n", *ifp, diminuto_ipc4_address2string(*v4p, string, sizeof(string)), type);
             }
 
             for (v6p = v6vp; diminuto_ipc6_compare(v6p, &DIMINUTO_IPC6_UNSPECIFIED) != 0; ++v6p) {
@@ -247,7 +247,7 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v6 %s %s\n", *ifp, diminuto_ipc6_colonnotation(*v6p, string, sizeof(string)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v6 %s %s\n", *ifp, diminuto_ipc6_address2string(*v6p, string, sizeof(string)), type);
             }
 
             free(v4vp);
@@ -680,7 +680,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+            if (Verbose) { DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s %.*s%s", diminuto_ipc4_address2string(datum4, string, sizeof(string)), (int)input, buffer, newline(buffer, input)); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
@@ -704,7 +704,7 @@ int main(int argc, char * argv[])
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
             if (Debug) { diminuto_dump(tee, buffer, input); }
-            if (Verbose) { DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%.*s%s", (int)input, buffer, newline(buffer, input)); }
+            if (Verbose) { DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s %.*s%s", diminuto_ipc6_address2string(datum6, string, sizeof(string)), (int)input, buffer, newline(buffer, input)); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
