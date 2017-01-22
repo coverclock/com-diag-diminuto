@@ -171,7 +171,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -p NEPORT   Bind near end socket to service or port NEPORT.\n");
             fprintf(stderr, "       -t          Use TCP.\n");
             fprintf(stderr, "       -u          Use UDP.\n");
-            fprintf(stderr, "       -v          Log received data on provider.\n");
+            fprintf(stderr, "       -v          Print received data to standard error on provider.\n");
             fprintf(stderr, "       -?          Display this menu and exit.\n");
             return 1;
             break;
