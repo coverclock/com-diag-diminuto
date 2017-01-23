@@ -412,6 +412,12 @@ int main(int argc, char * argv[])
                     }
                     writes = diminuto_fd_write(STDOUT_FILENO, buffer, reads);
                     assert(writes == reads);
+                    if (debug) {
+                        char * bb;
+                        for (bb = (char *)buffer; reads > 0; --reads) {
+                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
+                        }
+                    }
                 } else if (ready == STDIN_FILENO) {
                     reads = diminuto_fd_read(STDIN_FILENO, buffer, maximum);
                     assert(reads >= 0);
