@@ -7,6 +7,19 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
+ * ABSTRACT
+ *
+ * serialtool is used to test serial port connectivity. It can be used
+ * in loop back (-B), loop forward (-F), or interactive (default) modes.
+ * In loop back mode, it tests a loopback by sending data to the serial
+ * device and verifying that the same data is received from the serial
+ * device. In loop forward mode, it implements a loopback by receiving data
+ * from the serial device and sending it back to the serial device. In
+ * interactive mode, it reads data from standard input and seends it to
+ * the serial device, and receives data from the serial device and writes
+ * it to standard output. It can configure the serial port baud rate,
+ * data bits, stop bits, parity, modem control, and flow control.
+ *
  * EXAMPLES
  *
  * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d

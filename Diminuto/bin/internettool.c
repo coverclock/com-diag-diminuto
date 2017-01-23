@@ -7,6 +7,19 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  *
+ * ABSTRACT
+ *
+ * internettool is used to test internet connectivity using application
+ * protocols like Transmission Control Protocol or TCP (-t), or User Datagram
+ * Protocol or UDP (-u), although it can also use Internet Control Message
+ * Protocol or ICMP (-g) like ping(1). internettool can use IPv4 (-4) or IPv6
+ * (-6). It can be used in server mode (-p) or client mode (-A, -P). In server
+ * mode, it receives packets from one or more clients, and sends them back to
+ * the sender unaltered. In client mode, it reads standard input and sends
+ * the data to the server, and receives from the server and writes the data
+ * to standard output. It can bind its socket to a specific interface (-i) or
+ * address (-a).
+ *
  * EXAMPLES
  *
  * server:      internettool -v -6 -t -p 5555
