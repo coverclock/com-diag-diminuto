@@ -55,21 +55,27 @@
 
 static void stamp(FILE *fp)
 {
-    diminuto_sticks_t now;
-    int year;
-    int month;
-    int day;
-    int hour;
-    int minute;
-    int second;
-    int ticks;
-    int rc;
+    diminuto_sticks_t frequency = 0;
+    diminuto_sticks_t now = 0;
+    int year = 0;
+    int month = 0;
+    int day = 0;
+    int hour = 0;
+    int minute = 0;
+    int second = 0;
+    int ticks = 0;
+    int rc = -1;
+    diminuto_ticks_t microseconds = 0;
 
     now = diminuto_time_clock();
     assert(now != -1);
     rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &ticks);
     assert(rc >= 0);
-    fprintf(fp, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d ", year, month, day, hour, minute, second, ticks);
+    microseconds = ticks;
+    microseconds *= 1000000;
+    microseconds /= diminuto_time_frequency();
+    ticks = microseconds;
+    fprintf(fp, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ ", year, month, day, hour, minute, second, ticks);
 }
 
 static void emit(FILE * fp, const void * buffer, size_t length)
