@@ -23,6 +23,8 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_phex.h"
+#include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -59,14 +61,14 @@ static void handler(int signum)
 
 int main(int argc, char * argv[])
 {
-    int rc;
+    int rc = -1;
     extern char * optarg;
     extern int optind;
     extern int opterr;
     extern int optopt;
     int opt;
-    const char * program;
-    int fd;
+    const char * program = (const char *)0;
+    int fd = -1;
     int bitspersecond = 115200;
     int databits = 8;
     int paritybit = 0;
@@ -75,128 +77,141 @@ int main(int argc, char * argv[])
     int xonxoff = 0;
     int rtscts = 0;
     const char * device = "/dev/null";
-    FILE * fp;
-    int input;
-    int output;
+    FILE * fp = (FILE *)0;
+    int input = 0;
+    int output = 0;
     size_t current = 0;
     int end = 0;
-    diminuto_ticks_t now;
-    diminuto_ticks_t then;
-    diminuto_ticks_t hertz;
-    double elapsed;
-    size_t count;
-    int bitspercharacter;
+    diminuto_ticks_t now = 0;
+    diminuto_ticks_t then = 0;
+    diminuto_ticks_t hertz = 0;
+    double elapsed = 0.0;
+    size_t count = 0;
+    int bitspercharacter = 0;
     int running = 0;
-    double bandwidth;
+    double bandwidth = 0.0;
     int forward = 0;
+    int backward = 0;
     struct sigaction action = { 0 };
     int printable = 0;
     unsigned int seconds = 1;
     int debug = 0;
     int verbose = 0;
+    size_t maximum = 512;
+    diminuto_mux_t mux = { 0 };
+    void * buffer = (void *)0;
+    ssize_t reads = 0;
+    ssize_t writes = 0;
+    int fds = 0;
+    int ready = -1;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:Fb:dehlmnopst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:b:dehlmnopst:v")) >= 0) {
 
-    	switch (opt) {
+        switch (opt) {
 
-    	case '1':
-    		stopbits = 1;
-    		break;
-
-    	case '2':
-    		stopbits = 2;
-    		break;
-
-    	case '5':
-    		databits = 5;
-    		break;
-
-    	case '6':
-    		databits = 6;
-    		break;
-
-    	case '7':
-    		databits = 7;
-    		break;
-
-    	case '8':
-    		databits = 8;
-    		break;
-
-        case 'B':
-            forward = 0;
+        case '1':
+            stopbits = 1;
             break;
 
-    	case 'D':
-    		device = optarg;
-    		break;
+        case '2':
+            stopbits = 2;
+            break;
+
+        case '5':
+            databits = 5;
+            break;
+
+        case '6':
+            databits = 6;
+            break;
+
+        case '7':
+            databits = 7;
+            break;
+
+        case '8':
+            databits = 8;
+            break;
+
+        case 'B':
+            backward = !0;
+            break;
+
+        case 'D':
+            device = optarg;
+            break;
 
         case 'F':
             forward = !0;
             break;
 
-    	case 'b':
-    		bitspersecond = strtoul(optarg, (char **)0, 0);
-    		break;
+        case 'I':
+            maximum = strtoul(optarg, (char **)0, 0);
+            break;
+
+        case 'b':
+            bitspersecond = strtoul(optarg, (char **)0, 0);
+            break;
 
         case 'd':
             debug = !0;
             break;
 
-    	case 'e':
-    		paritybit = 2;
-    		break;
+        case 'e':
+            paritybit = 2;
+            break;
 
-    	case 'h':
-    		rtscts = !0;
-    		break;
+        case 'h':
+            rtscts = !0;
+            break;
 
-    	case 'l':
-    		modemcontrol = 0;
-    		break;
+        case 'l':
+            modemcontrol = 0;
+            break;
 
-    	case 'm':
-    		modemcontrol = !0;
-    		break;
+        case 'm':
+            modemcontrol = !0;
+            break;
 
-    	case 'n':
-    		paritybit = 0;
-    		break;
+        case 'n':
+            paritybit = 0;
+            break;
 
-    	case 'o':
-    		paritybit = 1;
-    		break;
+        case 'o':
+            paritybit = 1;
+            break;
 
         case 'p':
             printable = !0;
             break;
 
-    	case 's':
-    		xonxoff = !0;
-    		break;
+        case 's':
+            xonxoff = !0;
+            break;
 
-    	case 't':
-    		seconds = strtoul(optarg, (char **)0, 0);
-    		break;
+        case 't':
+            seconds = strtoul(optarg, (char **)0, 0);
+            break;
 
         case 'v':
             verbose = !0;
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F ] [ -D DEVICE ] [ -b BPS ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -v ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
             fprintf(stderr, "       -6          Six data bits.\n");
             fprintf(stderr, "       -7          Seven data bits.\n");
             fprintf(stderr, "       -8          Eight data bits.\n");
-            fprintf(stderr, "       -B          Expect loop back (send then receive).\n");
-            fprintf(stderr, "       -F          Expect loop forward (receive then send).\n");
+            fprintf(stderr, "       -B          Test loop back (send then receive).\n");
+            fprintf(stderr, "       -F          Implement loop back (receive then send).\n");
+            fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
@@ -213,7 +228,7 @@ int main(int argc, char * argv[])
             return 1;
             break;
 
-    	}
+        }
 
     }
 
@@ -227,7 +242,7 @@ int main(int argc, char * argv[])
     assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "loop%s %s %dbps %d%c%d %s %s %s %s %useconds\n", forward ? "forward" : "backward", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", seconds);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %useconds %ubytes\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", seconds, maximum);
 
     fd = open(device, O_RDWR);
     assert(fd >= 0);
@@ -236,12 +251,6 @@ int main(int argc, char * argv[])
     assert(rc == 0);
 
     rc = diminuto_serial_raw(fd);
-    assert(rc == 0);
-
-    fp = fdopen(fd, "r+");
-    assert(fp != (FILE *)0);
-
-    rc = diminuto_serial_unbuffered(fp);
     assert(rc == 0);
 
     bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
@@ -259,11 +268,17 @@ int main(int argc, char * argv[])
          * back out.
          */
 
+        fp = fdopen(fd, "r+");
+        assert(fp != (FILE *)0);
+
+        rc = diminuto_serial_unbuffered(fp);
+        assert(rc == 0);
+
         while (!done) {
             input = fgetc(fp);
             if (input != EOF) {
-     		    if (!running) {
-     		        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
+                 if (!running) {
+                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
                     running = !0;
                 }
                 output = input;
@@ -291,12 +306,18 @@ int main(int argc, char * argv[])
             }
         }
 
-    } else {
+    } else if (backward) {
 
         /*
          * Loop Backward: we write a character and expect to receive that same
          * character back. This is the default.
          */
+
+        fp = fdopen(fd, "r+");
+        assert(fp != (FILE *)0);
+
+        rc = diminuto_serial_unbuffered(fp);
+        assert(rc == 0);
 
         while (!done) {
             fputc(output, fp);
@@ -307,17 +328,17 @@ int main(int argc, char * argv[])
                 if (debug) { diminuto_phex_emit(stderr, input, 72, 0, 0, 0, &current, &end, 0); }
                 if (verbose) { fputc(input, stderr); }
                 if (input != EOF) {
-     		        if (!running) {
-     			        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
-     			        running = !0;
-     		        }
+                     if (!running) {
+                         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
+                         running = !0;
+                     }
                     if (input != output) {
                         DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "mismatch 0x%x 0x%x\n", input, output);
                         done = !0;
                         break;
                     }
                     if (!printable) {
-      		            output = (output + 1) % (1 << (sizeof(char) * 8));
+                          output = (output + 1) % (1 << (sizeof(char) * 8));
                     } else if ((++output) > '~') {
                         output = '!';
                     } else {
@@ -355,6 +376,60 @@ int main(int argc, char * argv[])
             }
         }
                 
+    } else {
+
+        /*
+         * Interactive: data read from standard input is sent to device,
+         * data received from device is written to standard output.
+         */
+
+        assert(maximum > 0);
+        buffer = malloc(maximum);
+        assert(buffer != (void *)0);
+        diminuto_mux_init(&mux);
+        assert(fd != STDIN_FILENO);
+        assert(fd != STDOUT_FILENO);
+        rc = diminuto_mux_register_read(&mux, fd);
+        assert(rc >= 0);
+        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+        assert(rc >= 0);
+        while (!done) {
+            fds = diminuto_mux_wait(&mux, -1);
+            assert(fds > 0);
+            while (!done) {
+                ready = diminuto_mux_ready_read(&mux);
+                if (ready < 0) {
+                    break;
+                } else if (ready == fd) {
+                    reads = diminuto_fd_read(fd, buffer, maximum);
+                    assert(reads >= 0);
+                    assert(reads <= maximum);
+                    if (reads == 0) {
+                        done = !0;
+                        break;
+                    }
+                    writes = diminuto_fd_write(STDOUT_FILENO, buffer, reads);
+                    assert(writes == reads);
+                } else if (ready == STDIN_FILENO) {
+                    reads = diminuto_fd_read(STDIN_FILENO, buffer, maximum);
+                    assert(reads >= 0);
+                    assert(reads <= maximum);
+                    if (reads == 0) {
+                        done = !0;
+                        break;
+                    }
+                    writes = diminuto_fd_write(fd, buffer, reads);
+                    assert(writes == reads);
+                } else {
+                    assert(0);
+                }
+            }
+        }
+        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+        assert(rc >= 0);
+        rc = diminuto_mux_unregister_read(&mux, fd);
+        assert(rc >= 0);
+
     }
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "fini\n");
