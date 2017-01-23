@@ -10,12 +10,12 @@
  * ABSTRACT
  *
  * serialtool is used to test serial port connectivity. It can be used
- * in loop back (-B), loop forward (-F), or interactive (default) modes.
+ * in loop back (-B), loop forward (-F), or interactive (default) mode.
  * In loop back mode, it tests a loopback by sending data to the serial
  * device and verifying that the same data is received from the serial
  * device. In loop forward mode, it implements a loopback by receiving data
  * from the serial device and sending it back to the serial device. In
- * interactive mode, it reads data from standard input and seends it to
+ * interactive mode, it reads data from standard input and sends it to
  * the serial device, and receives data from the serial device and writes
  * it to standard output. It can configure the serial port baud rate,
  * data bits, stop bits, parity, modem control, and flow control.
