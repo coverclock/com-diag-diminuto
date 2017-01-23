@@ -12,6 +12,8 @@
  * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d
  * originator:  serialtool -D /dev/ttyS0 -b 115200 -8 -1 -n -l -B -d
  *
+ * e.g. GPS:    serialtool -D /dev/ttyUSB0 -b 4800 -8 -1 -n -l -v
+ *
  * NOTES
  *
  * You will likely need to either be root or be in the dialout group to
