@@ -46,11 +46,31 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_phex.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #undef NDEBUG
 #include <assert.h>
+
+static void stamp(FILE *fp)
+{
+    diminuto_sticks_t now;
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    int ticks;
+    int rc;
+
+    now = diminuto_time_clock();
+    assert(now != -1);
+    rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &ticks);
+    assert(rc >= 0);
+    fprintf(fp, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d ", year, month, day, hour, minute, second, ticks);
+}
 
 static void emit(FILE * fp, const void * buffer, size_t length)
 {
@@ -611,7 +631,7 @@ int main(int argc, char * argv[])
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
-                    if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
+                    if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 }
             }
@@ -669,7 +689,7 @@ int main(int argc, char * argv[])
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     assert(output == input);
-                    if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
+                    if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 }
             }
@@ -699,7 +719,7 @@ int main(int argc, char * argv[])
             assert(datum46 != 0);
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             assert(output == input);
-            if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%s \"", diminuto_ipc4_address2string(datum4, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
+            if (Verbose) { stamp(tee); fprintf(tee, "%s \"", diminuto_ipc4_address2string(datum4, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
             if (Debug) { diminuto_dump(tee, buffer, input); }
         }
         /* Can never reach here but if we did this is what we would do. */
@@ -723,7 +743,7 @@ int main(int argc, char * argv[])
             assert(datum46 != 0);
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             assert(output == input);
-            if (Verbose) { fprintf(tee, DIMINUTO_LOG_HERE "%s \"", diminuto_ipc6_address2string(datum6, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
+            if (Verbose) { stamp(tee); fprintf(tee, "%s \"", diminuto_ipc6_address2string(datum6, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
             if (Debug) { diminuto_dump(tee, buffer, input); }
         }
         /* Can never reach here but if we did this is what we would do. */
