@@ -14,5 +14,5 @@ scope:
 .PHONY:	rescope
 
 rescope:
-	rm .cscope*
+	rm -f .cscope*
 	mycscope
