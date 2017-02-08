@@ -119,12 +119,13 @@ int main(int argc, char * argv[])
     ssize_t writes = 0;
     int fds = 0;
     int ready = -1;
+    int noinput = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:b:dehlmnopst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:b:dehilmnopst:v")) >= 0) {
 
         switch (opt) {
 
@@ -184,6 +185,10 @@ int main(int argc, char * argv[])
             rtscts = !0;
             break;
 
+        case 'i':
+            noinput = !0;
+            break;
+
         case 'l':
             modemcontrol = 0;
             break;
@@ -217,7 +222,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -v ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i ] [ -v ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -240,6 +245,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
             fprintf(stderr, "       -t SECONDS  Timeout in SECONDS.\n");
             fprintf(stderr, "       -v          Print characters on standard error.\n");
+            fprintf(stderr, "       -i          In interactive mode don't use stdin.\n");
             return 1;
             break;
 
@@ -257,7 +263,7 @@ int main(int argc, char * argv[])
     assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %useconds %ubytes\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", seconds, maximum);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %useconds %ubytes\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum);
 
     fd = open(device, O_RDWR);
     assert(fd >= 0);
@@ -406,8 +412,10 @@ int main(int argc, char * argv[])
         assert(fd != STDOUT_FILENO);
         rc = diminuto_mux_register_read(&mux, fd);
         assert(rc >= 0);
-        rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
-        assert(rc >= 0);
+        if (!noinput) {
+            rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
+            assert(rc >= 0);
+        }
         while (!done) {
             fds = diminuto_mux_wait(&mux, -1);
             assert(fds > 0);
