@@ -244,6 +244,7 @@ int main(int argc, char * argv[])
             }
             state = !!state;
             printf("%d\n", state);
+            fflush(stdout);
             diminuto_cue_init(&cue, state);
             while (!0) {
                 prior = state;
@@ -255,6 +256,7 @@ int main(int argc, char * argv[])
                 state = diminuto_cue_debounce(&cue, !!state);
                 if (state != prior) {
                     printf("%d\n", state);
+                    fflush(stdout);
                 }
             }
             if (fail) {
@@ -379,6 +381,7 @@ int main(int argc, char * argv[])
             } else {
                 state = !!state;
                 printf("%d\n", state);
+                fflush(stdout);
                 prior = state;
             }
             fd = fileno(fp);
@@ -405,10 +408,13 @@ int main(int argc, char * argv[])
                             state = !!state;
                             if (!unique) {
                                 printf("%d\n", state);
+                                fflush(stdout);
                             } else if (prior < 0) {
                                 printf("%d\n", state);
+                                fflush(stdout);
                             } else if (prior != state) {
                                 printf("%d\n", state);
+                                fflush(stdout);
                             } else {
                                 /* Do nothing. */
                             }
@@ -424,6 +430,7 @@ int main(int argc, char * argv[])
                 } else {
                     state = !!state;
                     printf("%d\n", state);
+                    fflush(stdout);
                 }
             }
             if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
@@ -510,6 +517,7 @@ int main(int argc, char * argv[])
             } else {
                 state = !!state;
                 printf("%d\n", state);
+                fflush(stdout);
             }
             break;
 
