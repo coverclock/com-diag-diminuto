@@ -1,14 +1,24 @@
 #!/bin/bash
 
 # This is built for a specific test fixture I breadboarded up.
+# After the values of input pins 22 and 27 are read and displayed,
+# and the LEDs on output pins 16, 20, and 21 cycle on and off,
+# press the button on pin 27 to advance the 3-bit binary counter
+# displayed on the LEDs, or press the button pn pin 22 simultaneously
+# with pin 27 to exit.
 
-ROOT=/home/pi
-export COM_DIAG_DIMINUTO_ROOT=${ROOT}/src/com-diag-diminuto/Diminuto/out/host/bin
-export PATH=$PATH:$COM_DIAG_DIMINUTO_ROOT/../sym:$COM_DIAG_DIMINUTO_ROOT/../bin:$COM_DIAG_DIMINUTO_ROOT/../tst
+. $(readlink -e $(dirname ${0})/../bin)/setup
 
 pintool -p 16 -n -x -o
 pintool -p 20 -n -x -o
 pintool -p 21 -n -x -o
+pintool -p 22 -n -x -i -L
+pintool -p 27 -n -x -i -H
+
+PIN22=$(pintool -p 22 -r)
+echo PIN22=${PIN22}
+PIN27=$(pintool -p 27 -r)
+echo PIN27=${PIN27}
 
 pintool -p 16 -s
 sleep 1
@@ -23,16 +33,12 @@ sleep 1
 pintool -p 21 -c
 sleep 1
 
-pintool -p 22 -n -x -i -L
-PIN22=$(pintool -p 22 -r)
-echo ${PIN22}
-pintool -p 27 -n -x -i -H
-PIN27=$(pintool -p 27 -r)
-echo ${PIN27}
-
 VALUE=0
 pintool -p 27 -b 10000 | while read PIN27; do
-	if [[ ${PIN27} -eq 1 ]]; then
+	PIN22=$(pintool -p 22 -r)
+	if [[ ${PIN22} -ne 0 ]]; then
+		break
+	elif [[ ${PIN27} -ne 0 ]]; then
 		VALUE=$((${VALUE} + 1))
 		TEMP=${VALUE}
 		PIN16=$((${TEMP} % 2))
@@ -43,6 +49,8 @@ pintool -p 27 -b 10000 | while read PIN27; do
 		pintool -p 16 -w ${PIN16}
 		pintool -p 20 -w ${PIN20}
 		pintool -p 21 -w ${PIN21}
+	else
+		:
 	fi
 done
 
