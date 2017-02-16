@@ -37,6 +37,9 @@ VALUE=0
 pintool -p 27 -b 10000 | while read PIN27; do
 	PIN22=$(pintool -p 22 -r)
 	if [[ ${PIN22} -ne 0 ]]; then
+		pintool -p 16 -c
+		pintool -p 20 -c
+		pintool -p 21 -c
 		break
 	elif [[ ${PIN27} -ne 0 ]]; then
 		VALUE=$((${VALUE} + 1))
