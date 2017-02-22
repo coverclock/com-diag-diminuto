@@ -5,13 +5,82 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include <stdio.h>
+
+/**
+ * These are the data rates that Diminuto Serial supports. The enumeration
+ * isn't used in the function call because the typical use case is that
+ * the data rate is being set by an integer parameter from the command
+ * line.
+ */
+typedef enum DiminutoSerialBitsPerSecond {
+    DIMINUTO_SERIAL_BITSPERSECOND_NOCHANGE      = -1,
+    DIMINUTO_SERIAL_BITSPERSECOND_DISCONNECT    = 0,
+    DIMINUTO_SERIAL_BITSPERSECOND_50            = 50,
+    DIMINUTO_SERIAL_BITSPERSECOND_75            = 75,
+    DIMINUTO_SERIAL_BITSPERSECOND_110           = 110,
+    DIMINUTO_SERIAL_BITSPERSECOND_134           = 134,
+    DIMINUTO_SERIAL_BITSPERSECOND_150           = 150,
+    DIMINUTO_SERIAL_BITSPERSECOND_200           = 200,
+    DIMINUTO_SERIAL_BITSPERSECOND_300           = 300,
+    DIMINUTO_SERIAL_BITSPERSECOND_600           = 600,
+    DIMINUTO_SERIAL_BITSPERSECOND_1200          = 1200,
+    DIMINUTO_SERIAL_BITSPERSECOND_1800          = 1800,
+    DIMINUTO_SERIAL_BITSPERSECOND_2400          = 2400,
+    DIMINUTO_SERIAL_BITSPERSECOND_4800          = 4800,
+    DIMINUTO_SERIAL_BITSPERSECOND_9600          = 9600,
+    DIMINUTO_SERIAL_BITSPERSECOND_19200         = 19200,
+    DIMINUTO_SERIAL_BITSPERSECOND_38400         = 38400,
+    DIMINUTO_SERIAL_BITSPERSECOND_57600         = 57600,
+    DIMINUTO_SERIAL_BITSPERSECOND_115200        = 115200,
+    DIMINUTO_SERIAL_BITSPERSECOND_230400        = 230400,
+    DIMINUTO_SERIAL_BITSPERSECOND_NOMINAL       = 115200,
+} diminuto_serial_bitspersecond_t;
+
+/**
+ * These are the data bits that Diminuto Serial supports. The enumeration
+ * isn't used in the function call because the typical use case is that
+ * the data bits are being set by an integer parameter from the command
+ * line.
+ */
+typedef enum DiminutoSerialDataBits {
+    DIMINUTO_SERIAL_DATABITS_5          = 5,
+    DIMINUTO_SERIAL_DATABITS_6          = 6,
+    DIMINUTO_SERIAL_DATABITS_7          = 7,
+    DIMINUTO_SERIAL_DATABITS_8          = 8,
+    DIMINUTO_SERIAL_DATABITS_NOMINAL    = 8,
+} diminuto_serial_databits_t;
+
+/**
+ * These are the parity bits that Diminuto Serial supports. The enumeration
+ * isn't used in the function call because the typical use case is that
+ * the parity bits are being set by an integer parameter from the command
+ * line.
+ */
+typedef enum DiminutoSerialParityBit {
+    DIMINUTO_SERIAL_PARITYBIT_NONE      = 0,
+    DIMINUTO_SERIAL_PARITYBIT_ODD       = 1,
+    DIMINUTO_SERIAL_PARITYBIT_EVEN      = 2,
+    DIMINUTO_SERIAL_PARITYBIT_NOMINAL   = 0,
+} diminuto_serial_paritybit_t;
+
+/**
+ * These are the stop bits that Diminuto Serial supports. The enumeration
+ * isn't used in the function call because the typical use case is that
+ * the stop bits are being set by an integer parameter from the command
+ * line.
+ */
+typedef enum DiminutoSerialStopBits {
+    DIMINUTO_SERIAL_STOPBITS_1          = 1,
+    DIMINUTO_SERIAL_STOPBITS_2          = 2,
+    DIMINUTO_SERIAL_STOPBITS_NOMINAL    = 1,
+} diminuto_serial_stopbits_t;
 
 /**
  * If the specified file descriptor identifies a device that is a terminal
