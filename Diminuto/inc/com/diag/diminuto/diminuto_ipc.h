@@ -53,6 +53,7 @@ extern int diminuto_ipc_close(int fd);
  * etc. Only data received by this interface will be processed by the socket.
  * If the name is an empty (zero length) string, the socket will be
  * disassociated with any interface with which it was previously been bound.
+ * (Caller probably needs to have root or other privileges.)
  * @param fd is an open socket that is not of type packet.
  * @param interface is the name of the network interface.
  * @return >=0 for success or <0 if an error occurred.
@@ -101,7 +102,8 @@ extern int diminuto_ipc_set_debug(int fd, int enable);
 extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 
 /**
- * Enable or disable the TCP No Delay option .
+ * Enable or disable the TCP No Delay option. (Useful for reducing latency
+ * when using small packets.)
  * @param fd is an open socket.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -109,7 +111,8 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 extern int diminuto_ipc_set_nodelay(int fd, int enable);
 
 /**
- * Enable or disable the TCP Quick Acknowledgement option.
+ * Enable or disable the TCP Quick Acknowledgement option. (Useful for
+ * reducing latency when using small packets.)
  * @param fd is an open strean socket.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -117,7 +120,8 @@ extern int diminuto_ipc_set_nodelay(int fd, int enable);
 extern int diminuto_ipc_set_quickack(int fd, int enable);
 
 /**
- * Change the send TCP buffer size.
+ * Change the send TCP buffer size. (Useful for setting to the bandwidth-
+ * delay product for long latency paths to achieve more throughput.)
  * @param fd is an open socket.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
@@ -125,7 +129,8 @@ extern int diminuto_ipc_set_quickack(int fd, int enable);
 extern int diminuto_ipc_set_send(int fd, ssize_t size);
 
 /**
- * Change the receive TCP buffer size.
+ * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
+ * delay product for long latency paths to achieve more throughput.)
  * @param fd is an open socket.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
