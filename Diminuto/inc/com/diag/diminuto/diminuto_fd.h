@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -97,10 +97,29 @@ extern ssize_t diminuto_fd_readable(int fd);
  * value of any file descriptor will range from zero to one less than this
  * number. In this implementation, this is the number of file descriptors
  * supported by the select(2) system call; the actual number of open files
- * returned by sysconf(3) for _SC_OPEN_MAX may be significantly larger.
- * @return the maximum possible number of open file descriptors.
+ * returned by sysconf(3) for _SC_OPEN_MAX or getrlimit(2) for RLIMIT_NOFILE
+ *  may be significantly larger.
+ * @return the maximum possible number of open file descriptors or <0 for error.
  */
-extern size_t diminuto_fd_count(void);
+extern ssize_t diminuto_fd_count(void);
+
+/**
+ * Return the maximum possible number of unique open file descriptor values. The
+ * value of any file descriptor will range from zero to one less than this
+ * number. In this implementation, this is the number of file descriptors
+ * returned by the getrlimit(2) system call for RLIMIT_NOFILE.
+ * @return the maximum possible number of open file descriptors or <0 for error.
+ */
+extern ssize_t diminuto_fd_limit(void);
+
+/**
+ * Return the maximum possible number of unique open file descriptor values. The
+ * value of any file descriptor will range from zero to one less than this
+ * number. In this implementation, this is the number of file descriptors
+ * returned by the sysconf(3) function for _SC_OPEN_MAX.
+ * @return the maximum possible number of open file descriptors or <0 for error.
+ */
+extern ssize_t diminuto_fd_maximum(void);
 
 /**
  * This is a table that can be used to map file descriptors to a void pointer

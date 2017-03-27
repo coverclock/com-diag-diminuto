@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -60,11 +60,26 @@ int main(void)
     SETLOGMASK();
 
     {
+        ssize_t count;
+        ssize_t limit;
+        ssize_t maximum;
+        count = diminuto_fd_count();
+        limit = diminuto_fd_limit();
+        maximum = diminuto_fd_maximum();
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
+        fflush(stderr);
+        ASSERT(count > 0);
+        ASSERT(limit > 0);
+        ASSERT(maximum > 0);
+    }
+
+    {
         size_t count;
         diminuto_fd_map_t * map;
         int ii;
         count = diminuto_fd_count();
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zufds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
+        ASSERT(count > 0);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
         map = diminuto_fd_map_alloc(count);
         ASSERT(map->count == count);
         for (ii = 0; ii < count; ++ii) {

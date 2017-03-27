@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -166,9 +167,35 @@ ssize_t diminuto_fd_readable(int fd)
     return result;
 }
 
-size_t diminuto_fd_count(void)
+ssize_t diminuto_fd_count(void)
 {
     return FD_SETSIZE;
+}
+
+ssize_t diminuto_fd_limit(void)
+{
+    ssize_t result = -1;
+    struct rlimit limit;
+
+    if (getrlimit(RLIMIT_NOFILE, &limit) >= 0) {
+        result = limit.rlim_cur;
+    } else {
+        diminuto_perror("diminuto_fd_limit: getrlimit");
+    }
+
+    return result;
+}
+
+ssize_t diminuto_fd_maximum(void)
+{
+    ssize_t result;
+
+    result = sysconf(_SC_OPEN_MAX);
+    if (result < 0) {
+        diminuto_perror("diminuto_fd_maximum: sysconf");
+    }
+
+    return result;
 }
 
 diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
