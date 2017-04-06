@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -15,7 +15,9 @@
  * ("kernel"), uClibc ("uclibc"), Android ("bionic"), Cygwin ("cygwin"), and
  * Mac OS X ("darwin"). It has also been used on ChrUbuntu, which is an Ubuntu
  * environment running on top of ChromeOS, but this just looks like Ubuntu
- * ("glibc").
+ * ("glibc"). HOWEVER, note that Diminuto has never been intended to run on
+ * anything but Linux/GNU, so future compatibility with Android, Cygwin, or
+ * Mac OS is not guaranteed.
  */
 
 #undef COM_DIAG_DIMINUTO_PLATFORM_EXPLICIT
