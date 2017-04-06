@@ -27,7 +27,9 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <ifaddrs.h>
+#include <asm/ioctls.h>
 #include <linux/limits.h>
+#include <linux/sockios.h>
 
 /*******************************************************************************
  * STRING TO PORT AND VICE VERSA
@@ -78,6 +80,30 @@ int diminuto_ipc_shutdown(int fd)
     }
 
     return fd;
+}
+
+ssize_t diminuto_ipc_stream_get_available(int fd)
+{
+    int value = 0;
+
+    if (ioctl(fd, SIOCINQ, &value)) {
+        diminuto_perror("diminuto_ipc_stream_get_available: ioctl");
+        value = -1;
+    }
+
+    return value;
+}
+
+ssize_t diminuto_ipc_stream_get_pending(int fd)
+{
+    int value = 0;
+
+    if (ioctl(fd, SIOCOUTQ, &value)) {
+        diminuto_perror("diminuto_ipc_stream_get_pending: ioctl");
+        value = -1;
+    }
+
+    return value;
 }
 
 /*******************************************************************************
@@ -234,12 +260,12 @@ int diminuto_ipc6_set_ipv6only(int fd, int enable)
  * the socket has to have TCP Established set). Seems pretty sketchy to me.
  */
 
-int diminuto_ipc6_set_stream_ipv6toipv4(int fd)
+int diminuto_ipc6_stream_set_ipv6toipv4(int fd)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
 }
 
-int diminuto_ipc6_set_datagram_ipv6toipv4(int fd)
+int diminuto_ipc6_datagram_set_ipv6toipv4(int fd)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }

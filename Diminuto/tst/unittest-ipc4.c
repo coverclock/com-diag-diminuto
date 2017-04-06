@@ -27,9 +27,6 @@
 #include <stdlib.h>
 
 static const size_t LIMIT = 256;
-//static const diminuto_port_t PORT = 0xfff0;
-//static const diminuto_port_t PORT1 = 65535;
-//static const diminuto_port_t PORT2 = 65534;
 static const size_t TOTAL = 1024 * 1024 * 100;
 
 int main(int argc, char * argv[])
@@ -401,7 +398,6 @@ int main(int argc, char * argv[])
         diminuto_ipv4_t address = 0;
         diminuto_ipv4_t address1 = 0;
         diminuto_ipv4_t address2 = 0;
-        static const diminuto_port_t PORT = 5555;
         diminuto_port_t port = 0;
         diminuto_port_t port1 = 0;
         diminuto_port_t port2 = 0;
@@ -409,29 +405,29 @@ int main(int argc, char * argv[])
         TEST();
 
         binding = diminuto_ipc4_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s 0 0x%8.8x %d\n", DIMINUTO_LOG_HERE, binding, PORT);
+        DIMINUTO_LOG_DEBUG("%s 0 0x%8.8x %d\n", DIMINUTO_LOG_HERE, binding, 0);
 
         EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd1, &address1, &port1) >= 0);
         /* fd1 not bound to specific address, and port is ephemeral. */
+        EXPECT(port1 != 0);
 
         EXPECT(binding == 0x7f000001);
-        EXPECT((fd2 = diminuto_ipc4_datagram_peer_generic(binding, PORT, (const char *)0)) >= 0);
+        EXPECT((fd2 = diminuto_ipc4_datagram_peer_generic(binding, 0, (const char *)0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd2, &address2, &port2) >= 0);
 
         EXPECT(address2 == binding);
-        EXPECT(port2 == PORT);
 
         /* This only works because the kernel buffers socket data. */
-
-        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), binding, PORT)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), binding, port2)) == sizeof(MSG1));
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
         EXPECT(strcmp(buffer, MSG1) == 0);
+        EXPECT(port == port1);
 
         EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), binding, port1)) == sizeof(MSG2));
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
         EXPECT(address == binding);
-        EXPECT(port == PORT);
+        EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipc4_close(fd1) >= 0);
@@ -664,7 +660,6 @@ int main(int argc, char * argv[])
 
     {
         diminuto_ipv4_t provider;
-        static const diminuto_port_t PORT = 5555;
         diminuto_ipv4_t source;
         diminuto_port_t rendezvous;
         diminuto_ipv4_t address;
@@ -675,10 +670,10 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((provider = diminuto_ipc4_address("localhost")) == 0x7f000001);
-        ASSERT((service = diminuto_ipc4_stream_provider_generic(provider, PORT, (const char *)0, 16)) >= 0);
+        ASSERT((service = diminuto_ipc4_stream_provider_generic(provider, 0, (const char *)0, 16)) >= 0);
         EXPECT(diminuto_ipc4_nearend(service, &source, &rendezvous) >= 0);
         EXPECT(source == provider);
-        EXPECT(rendezvous == PORT);
+        EXPECT(rendezvous != 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -692,6 +687,8 @@ int main(int argc, char * argv[])
             ssize_t received;
             ssize_t used;
             ssize_t available;
+            ssize_t inputqueue;
+            ssize_t outputqueue;
             uint8_t * here;
             uint8_t * there;
             uint8_t * current;
@@ -730,8 +727,10 @@ int main(int argc, char * argv[])
                     ASSERT((sent = diminuto_ipc4_stream_write_generic(producer, here, 1, used)) > 0);
                     ASSERT(sent <= used);
 
+                    EXPECT((outputqueue = diminuto_ipc_stream_get_pending(producer)) >= 0);
+
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("producer sent %d %u\n", sent, totalsent);
+                    DIMINUTO_LOG_DEBUG("producer sent %zd %zd %zu\n", sent, outputqueue, totalsent);
 
                     here += sent;
                     used -= sent;
@@ -749,11 +748,13 @@ int main(int argc, char * argv[])
                     available = TOTAL - totalreceived;
                 }
 
+                EXPECT((inputqueue = diminuto_ipc_stream_get_available(producer)) >= 0);
+
                 ASSERT((received = diminuto_ipc4_stream_read(producer, there, available)) > 0);
                 ASSERT(received <= available);
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("producer received %d %u\n", received, totalreceived);
+                DIMINUTO_LOG_DEBUG("producer received %zd %zd %zu\n", received, inputqueue, totalreceived);
 
                 there += received;
                 available -= received;
@@ -770,6 +771,9 @@ int main(int argc, char * argv[])
 
             } while (totalreceived < TOTAL);
 
+            EXPECT(diminuto_ipc4_shutdown(producer) >= 0);
+            EXPECT(diminuto_ipc4_shutdown(service) >= 0);
+
             ASSERT(diminuto_ipc4_close(producer) >= 0);
             ASSERT(diminuto_ipc4_close(service) >= 0);
 
@@ -785,6 +789,8 @@ int main(int argc, char * argv[])
             ssize_t received;
             size_t totalsent;
             size_t totalreceived;
+            ssize_t inputqueue;
+            ssize_t outputqueue;
 
             ASSERT(diminuto_ipc4_close(service) >= 0);
 
@@ -797,11 +803,13 @@ int main(int argc, char * argv[])
 
             while (!0) {
 
+                EXPECT((inputqueue = diminuto_ipc_stream_get_available(consumer)) >= 0);
+
                 ASSERT((received = diminuto_ipc4_stream_read(consumer, buffer, sizeof(buffer))) >= 0);
                 ASSERT(received <= sizeof(buffer));
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("consumer received %d %u\n", received, totalreceived);
+                DIMINUTO_LOG_DEBUG("consumer received %zd %zd %zu\n", received, inputqueue, totalreceived);
 
                 if (received == 0) {
                     break;
@@ -812,12 +820,16 @@ int main(int argc, char * argv[])
                     ASSERT((sent = diminuto_ipc4_stream_write_generic(consumer,  buffer + sent, 1, received - sent)) > 0);
                     ASSERT(sent <= received);
 
+                    EXPECT((outputqueue = diminuto_ipc_stream_get_pending(consumer)) >= 0);
+
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("consumer sent %d %u\n", sent, totalsent);
+                    DIMINUTO_LOG_DEBUG("consumer sent %zd %zd %zu\n", sent, outputqueue, totalsent);
 
                     received -= sent;
                 }
             }
+
+            EXPECT(diminuto_ipc4_shutdown(consumer) >= 0);
 
             ASSERT(diminuto_ipc4_close(consumer) >= 0);
 

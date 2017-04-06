@@ -49,6 +49,22 @@ extern int diminuto_ipc_shutdown(int fd);
 extern int diminuto_ipc_close(int fd);
 
 /**
+ * Return the number of bytes available on the input queue waiting to be
+ * received by the application.
+ * @param fd is an open stream socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern ssize_t diminuto_ipc_stream_get_available(int fd);
+
+/**
+ * Return the number of bytes pending on the output queue waiting to be
+ * transmitted by the kernel.
+ * @param fd is an open stream socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern ssize_t diminuto_ipc_stream_get_pending(int fd);
+
+/**
  * Bind a socket to a particular interface identified by name, e.g. "eth0"
  * etc. Only data received by this interface will be processed by the socket.
  * If the name is an empty (zero length) string, the socket will be
@@ -145,6 +161,22 @@ extern int diminuto_ipc_set_receive(int fd, ssize_t size);
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc6_set_ipv6only(int fd, int enable);
+
+/**
+ * Convert a IPv6 stream socket into an IPv4 stream socket (DEPRECATED and
+ * SKETCHY in the kernel, NOT RECOMMENDED).
+ * @param fd is an open IPv6 stream socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_stream_set_ipv6toipv4(int fd);
+
+/**
+ * Convert a IPv6 datagram socket into an IPv4 datagram socket (DEPRECATED and
+ * SKETCHY in the kernel, NOT RECOMMENDED).
+ * @param fd is an open IPv6 datagram socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc6_datagram_set_ipv6toipv4(int fd);
 
 /*
  * (Many other options are possible, but these are the ones I have used.)

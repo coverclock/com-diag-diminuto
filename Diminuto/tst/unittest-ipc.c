@@ -59,6 +59,10 @@ int main(int argc, char * argv[])
 
         rc = diminuto_ipc_set_linger(sock, diminuto_frequency());
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, 0);
+        EXPECT(rc >= 0);
+
+
         rc = diminuto_ipc_set_debug(sock, 0);
         EXPECT(rc >= 0);
 
@@ -77,6 +81,12 @@ int main(int argc, char * argv[])
 
         rc = diminuto_ipc_set_receive(sock, 512);
         EXPECT(rc >= 0);
+
+        rc = diminuto_ipc_stream_get_available(sock);
+        EXPECT(rc == 0);
+
+        rc = diminuto_ipc_stream_get_pending(sock);
+        EXPECT(rc == 0);
 
         rc = close(sock);
         EXPECT(rc >= 0);
@@ -212,7 +222,7 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_STREAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc6_set_stream_ipv6toipv4(sock);
+        rc = diminuto_ipc6_stream_set_ipv6toipv4(sock);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
@@ -228,7 +238,7 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_DGRAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc6_set_datagram_ipv6toipv4(sock);
+        rc = diminuto_ipc6_datagram_set_ipv6toipv4(sock);
         EXPECT(rc >= 0);
         rc = close(sock);
         EXPECT(rc >= 0);
