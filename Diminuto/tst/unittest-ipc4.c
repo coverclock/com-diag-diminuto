@@ -687,8 +687,8 @@ int main(int argc, char * argv[])
             ssize_t received;
             ssize_t used;
             ssize_t available;
-            ssize_t inputqueue;
-            ssize_t outputqueue;
+            ssize_t inputqueued;
+            ssize_t outputqueued;
             uint8_t * here;
             uint8_t * there;
             uint8_t * current;
@@ -727,10 +727,10 @@ int main(int argc, char * argv[])
                     ASSERT((sent = diminuto_ipc4_stream_write_generic(producer, here, 1, used)) > 0);
                     ASSERT(sent <= used);
 
-                    EXPECT((outputqueue = diminuto_ipc_stream_get_pending(producer)) >= 0);
+                    EXPECT((outputqueued = diminuto_ipc_stream_get_pending(producer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("producer sent %zd %zd %zu\n", sent, outputqueue, totalsent);
+                    DIMINUTO_LOG_DEBUG("producer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     here += sent;
                     used -= sent;
@@ -748,13 +748,13 @@ int main(int argc, char * argv[])
                     available = TOTAL - totalreceived;
                 }
 
-                EXPECT((inputqueue = diminuto_ipc_stream_get_available(producer)) >= 0);
+                EXPECT((inputqueued = diminuto_ipc_stream_get_available(producer)) >= 0);
 
                 ASSERT((received = diminuto_ipc4_stream_read(producer, there, available)) > 0);
                 ASSERT(received <= available);
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("producer received %zd %zd %zu\n", received, inputqueue, totalreceived);
+                DIMINUTO_LOG_DEBUG("producer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 there += received;
                 available -= received;
@@ -789,8 +789,8 @@ int main(int argc, char * argv[])
             ssize_t received;
             size_t totalsent;
             size_t totalreceived;
-            ssize_t inputqueue;
-            ssize_t outputqueue;
+            ssize_t inputqueued;
+            ssize_t outputqueued;
 
             ASSERT(diminuto_ipc4_close(service) >= 0);
 
@@ -803,13 +803,13 @@ int main(int argc, char * argv[])
 
             while (!0) {
 
-                EXPECT((inputqueue = diminuto_ipc_stream_get_available(consumer)) >= 0);
+                EXPECT((inputqueued = diminuto_ipc_stream_get_available(consumer)) >= 0);
 
                 ASSERT((received = diminuto_ipc4_stream_read(consumer, buffer, sizeof(buffer))) >= 0);
                 ASSERT(received <= sizeof(buffer));
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("consumer received %zd %zd %zu\n", received, inputqueue, totalreceived);
+                DIMINUTO_LOG_DEBUG("consumer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 if (received == 0) {
                     break;
@@ -820,14 +820,16 @@ int main(int argc, char * argv[])
                     ASSERT((sent = diminuto_ipc4_stream_write_generic(consumer,  buffer + sent, 1, received - sent)) > 0);
                     ASSERT(sent <= received);
 
-                    EXPECT((outputqueue = diminuto_ipc_stream_get_pending(consumer)) >= 0);
+                    EXPECT((outputqueued = diminuto_ipc_stream_get_pending(consumer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("consumer sent %zd %zd %zu\n", sent, outputqueue, totalsent);
+                    DIMINUTO_LOG_DEBUG("consumer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     received -= sent;
                 }
             }
+
+            EXPECT(inputqueued == 0);
 
             EXPECT(diminuto_ipc4_shutdown(consumer) >= 0);
 
