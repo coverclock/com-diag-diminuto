@@ -9,6 +9,7 @@
  * Ported from the Desperado::Service class.
  */
 
+#include "diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -82,24 +83,48 @@ int diminuto_ipc_shutdown(int fd)
     return fd;
 }
 
-ssize_t diminuto_ipc_stream_get_available(int fd)
-{
-    int value = 0;
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
 
-    if (ioctl(fd, SIOCINQ, &value)) {
-        diminuto_perror("diminuto_ipc_stream_get_available: ioctl");
-        value = -1;
+int diminuto_ipc_set_status(int fd, int enable, long mask)
+{
+    long flags;
+
+    if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
+        diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
+        fd = -6;
+    } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
+        diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
+        fd = -7;
+    } else {
+        /* Do nothing: success. */
     }
 
-    return value;
+    return fd;
 }
 
-ssize_t diminuto_ipc_stream_get_pending(int fd)
+int diminuto_ipc_set_socket(int fd, int level, int option, int value)
 {
-    int value = 0;
+    if (setsockopt(fd, level, option, &value, sizeof(value)) >= 0) {
+        /* Do nothing. */
+    } else if (errno == EPERM) {
+        diminuto_perror("diminuto_ipc_set_socket: setsockopt: must be root");
+        fd = -8;
+    } else {
+        diminuto_perror("diminuto_ipc_set_socket: setsockopt");
+        fd = -9;
+    }
 
-    if (ioctl(fd, SIOCOUTQ, &value)) {
-        diminuto_perror("diminuto_ipc_stream_get_pending: ioctl");
+    return fd;
+}
+
+int diminuto_ipc_get_control(int fd, int option)
+{
+    int value = -2;
+
+    if (ioctl(fd, option, &value) < 0) {
+        diminuto_perror("diminuto_ipc_get_control: ioctl");
         value = -1;
     }
 
@@ -135,41 +160,9 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
     return fd;
 }
 
-static int diminuto_ipc_set_status(int fd, int enable, long mask)
-{
-    long flags;
-
-    if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
-        diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
-        fd = -6;
-    } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
-        diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
-        fd = -7;
-    } else {
-        /* Do nothing: success. */
-    }
-
-    return fd;
-}
-
 int diminuto_ipc_set_nonblocking(int fd, int enable)
 {
     return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
-}
-
-static int diminuto_ipc_set_socket(int fd, int level, int option, int value)
-{
-    if (setsockopt(fd, level, option, &value, sizeof(value)) >= 0) {
-        /* Do nothing. */
-    } else if (errno == EPERM) {
-        diminuto_perror("diminuto_ipc_set_socket: setsockopt: must be root");
-        fd = -8;
-    } else {
-        diminuto_perror("diminuto_ipc_set_socket: setsockopt");
-        fd = -9;
-    }
-
-    return fd;
 }
 
 int diminuto_ipc_set_reuseaddress(int fd, int enable)
@@ -251,6 +244,16 @@ int diminuto_ipc_set_quickack(int fd, int enable)
 int diminuto_ipc6_set_ipv6only(int fd, int enable)
 {
     return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
+}
+
+ssize_t diminuto_ipc_stream_get_available(int fd)
+{
+    return diminuto_ipc_get_control(fd, SIOCINQ);
+}
+
+ssize_t diminuto_ipc_stream_get_pending(int fd)
+{
+    return diminuto_ipc_get_control(fd, SIOCOUTQ);
 }
 
 /*
