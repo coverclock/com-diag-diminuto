@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	41# API changes that may require that applications be modified.
 MINOR				:=	7# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -94,7 +94,7 @@ INC_DIR				:=	inc# Header files
 LIB_DIR				:=	lib# Shared objects for dynamic linking
 MOD_DIR				:=	mod# Loadable user modules
 OBC_DIR				:=	obc# C object modules
-OBP_DIR				:=	obp# C++ object modules
+OBX_DIR				:=	obx# C++ object modules
 OUT_DIR				:=	out# Build artifacts
 SRC_DIR				:=	src# Library source files
 SYM_DIR				:=	sym# Unstripped executable binaries
@@ -185,7 +185,7 @@ BROWSER				:=	evince
 ########## Build Artifacts
 
 TARGETOBJECTS		:=	$(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.c))))
-TARGETOBJECTSXX		:=	$(addprefix $(OUT)/$(OBP_DIR)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
+TARGETOBJECTSXX		:=	$(addprefix $(OUT)/$(OBX_DIR)/,$(addsuffix .o,$(basename $(wildcard $(SRC_DIR)/*.cpp))))
 TARGETDRIVERS		:=	$(addprefix $(OUT)/,$(addsuffix .ko,$(basename $(wildcard $(DRV_DIR)/*.c))))
 TARGETMODULES		:=	$(addprefix $(OUT)/,$(addsuffix .$(SO),$(basename $(wildcard $(MOD_DIR)/*.c))))
 TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
@@ -330,7 +330,7 @@ $(OUT)/$(SYM_DIR)/%:	$(OUT)/$(OBC_DIR)/$(BIN_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-$(OUT)/$(SYM_DIR)/%:	$(OUT)/$(OBP_DIR)/$(BIN_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+$(OUT)/$(SYM_DIR)/%:	$(OUT)/$(OBX_DIR)/$(BIN_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
@@ -376,7 +376,7 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBC_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
-$(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBP_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+$(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBX_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
@@ -765,11 +765,11 @@ patch:	$(OLD) $(NEW)
 
 ########## Rules
 
-$(OUT)/$(OBP_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
+$(OUT)/$(OBX_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT)/$(OBP_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
+$(OUT)/$(OBX_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
@@ -828,7 +828,7 @@ depend:	$(TARGETSYNTHESIZED)
 			for F in $$S/*.cpp; do \
 				D=`dirname $$F`; \
 				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-				echo -n "$(OUT)/$(OBP_DIR)/$$D/" > $$T; \
+				echo -n "$(OUT)/$(OBX_DIR)/$$D/" > $$T; \
 				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
 				rm -f $$T; \
 			done; \
