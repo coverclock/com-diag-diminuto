@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	41# API changes that may require that applications be modified.
 MINOR				:=	7# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -563,8 +563,8 @@ endif
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_release.h:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
-	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_' >> $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_RELEASE_GENERATED_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_RELEASE_GENERATED_' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_RELEASE_MAJOR $(MAJOR)' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_RELEASE_MINOR $(MINOR)' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_RELEASE_BUILD $(BUILD)' >> $@
@@ -578,8 +578,8 @@ $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_release.o:	$(OUT)/$(INC_DIR)/com/diag/$(
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_vintage.h:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
-	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_' >> $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_VINTAGE_GENERATED_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_VINTAGE_GENERATED_' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_VINTAGE "$(VINTAGE)"' >> $@
 	echo '#endif' >> $@
 
@@ -590,8 +590,8 @@ $(OUT)/$(OBC_DIR)/$(SRC_DIR)/$(PROJECT)_vintage.o:	$(OUT)/$(INC_DIR)/com/diag/$(
 $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/$(PROJECT)_revision.h:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
-	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
-	echo '#define _H_COM_DIAG_$(SYMBOL)_REVISION_' >> $@
+	echo '#ifndef _H_COM_DIAG_$(SYMBOL)_REVISION_GENERATED_' >> $@
+	echo '#define _H_COM_DIAG_$(SYMBOL)_REVISION_GENERATED_' >> $@
 	echo '#define COM_DIAG_$(SYMBOL)_REVISION "$(REVISION)"' >> $@
 	echo '#endif' >> $@
 
