@@ -22,9 +22,9 @@ default:	all
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	41# API changes that may require that applications be modified.
-MINOR				:=	7# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+MAJOR				:=	42# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -822,18 +822,20 @@ depend:	$(TARGETSYNTHESIZED)
 				rm -f $$T; \
 			done; \
 		fi; \
-	done
-	for S in $(SRC_DIR) $(TST_DIR); do \
-		if [ -d $$S ]; then \
-			for F in $$S/*.cpp; do \
-				D=`dirname $$F`; \
-				T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-				echo -n "$(OUT)/$(OBX_DIR)/$$D/" > $$T; \
-				$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
-				rm -f $$T; \
-			done; \
-		fi; \
-	done
+	done; \
+	if ls $(SRC_DIR)/*.cpp $(TST_DIR)/*.cpp 2> /dev/null; then \
+		for S in $(SRC_DIR) $(TST_DIR); do \
+			if [ -d $$S ]; then \
+				for F in $$S/*.cpp; do \
+					D=`dirname $$F`; \
+					T=`mktemp "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
+					echo -n "$(OUT)/$(OBX_DIR)/$$D/" > $$T; \
+					$(CXX) $(CPPFLAGS) -MM -MG $$F >> $$T && cat $$T >> $(DEPENDENCIES); \
+					rm -f $$T; \
+				done; \
+			fi; \
+		done; \
+	fi
 
 -include $(DEPENDENCIES)
 
