@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <unistd.h>
 #include <errno.h>
+#include <pthread.h>
 
 void diminuto_mux_init(diminuto_mux_t * muxp)
 {
@@ -23,7 +24,7 @@ void diminuto_mux_init(diminuto_mux_t * muxp)
     diminuto_mux_set_init(&muxp->accept);
     diminuto_mux_set_init(&muxp->urgent);
     diminuto_mux_set_init(&muxp->interrupt);
-    sigprocmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
+    pthread_sigmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
 }
 
 static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
