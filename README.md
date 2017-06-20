@@ -209,7 +209,9 @@ to cellular base station routers to in-flight entertainment systems.
 
 There are several other repositories of C or C++ code I maintain that are
 built on top of Diminuto. Diminuto doesn't depend on any of them, but they
-depend on it.
+depend on it. In addition, there are several of my projects in which I just
+cut and pasted a small amount of code, a function here and there, rather
+than create a dependency for the entire library.
 
 ## Repositories
 
