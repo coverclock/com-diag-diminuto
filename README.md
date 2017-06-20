@@ -215,7 +215,7 @@ depend on it.
 
 <https://github.com/coverclock/com-diag-diminuto>
 
-<https://github.com/coverclock/com-diag-assay>>
+<https://github.com/coverclock/com-diag-assay>
 
 <https://github.com/coverclock/com-diag-concha>
 
