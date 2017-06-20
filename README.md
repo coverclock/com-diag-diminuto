@@ -1,9 +1,8 @@
-com-diag-diminuto
-=================
+# com-diag-diminuto
 
 Copyright 2008-2017 by the Digital Aggregates Corporation, Colorado, USA.
 
-LICENSE
+## License
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -38,7 +37,7 @@ License along with this library; if not, contact
     Boston MA 02111-1307 USA
     http://www.gnu.org/copyleft/lesser.txt
 
-ABSTRACT
+## Abstract
 
 This file is part of the Digital Aggregates Corporation Diminuto package.
 Diminuto (Spanish for "tiny") is an open source library of systems
@@ -51,20 +50,20 @@ of unit tests that are used to validate the software when it changes.
 
 This software is an original work of its author.
 
-Information regarding Diminuto can be found here:
+## Web Page
 
-    http://www.diag.com/navigation/downloads/Diminuto.html
+<http://www.diag.com/navigation/downloads/Diminuto.html>
 
-CONTACT
+## Contact
 
-    Chip Overclock
-    Digital Aggregates Corporation
-    3440 Youngfield Street, Suite 209
-    Wheat Ridge CO 80033 USA
-    http://www.diag.com
-    mailto:coverclock@diag.com
+Chip Overclock  
+<mailto:coverclock@diag.com>  
+Digital Aggregates Corporation  
+<http://www.diag.com>  
+3440 Youngfield Street, Suite 209  
+Wheat Ridge CO 80033 USA  
 
-FEATURES
+## Features
 
 * alarm - receive and check for a SIGALRM signal.
 * barrier - acquire and release memory barriers (EXPERIMENTAL).
@@ -126,7 +125,7 @@ FEATURES
 * well - like the pool feature but maintains requested alignment of objects.
 * widthof - macro to return width in bits of a type.
  
-UTILITIES
+## Utilities
  
 * coreable - enable core dumps.
 * datesink - consume verbose timestamp stream.
@@ -155,7 +154,7 @@ UTILITIES
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
  
-DIRECTORIES
+## Directories
  
 * bin - utility source files
 * cfg - configuration makefiles
@@ -168,7 +167,7 @@ DIRECTORIES
 * tst - unit test source files
 * txt - notes and other useful stuff
 
-REMARKS
+## Remarks
 
 Diminuto started out many years ago as a project to build a minimal
 Linux-based embedded system for an ARMv4 processor that seems laughbly
@@ -207,3 +206,21 @@ If you happen upon this repo and find it useful, that's great. If you
 don't, that's great too. Portions of it will still be shipping in a number
 of commercial products, ranging from satellite communications systems
 to cellular base station routers to in-flight entertainment systems.
+
+There are several other repositories of C or C++ code I maintain that are
+built on top of Diminuto. Diminuto doesn't depend on any of them, but they
+depend on it.
+
+## Repositories
+
+<https://github.com/coverclock/com-diag-diminuto>
+
+<https://github.com/coverclock/com-diag-assay>>
+
+<https://github.com/coverclock/com-diag-concha>
+
+<https://github.com/coverclock/com-diag-drover>
+
+<https://github.com/coverclock/com-diag-grandote>
+
+<https://github.com/coverclock/com-diag-hazer>
