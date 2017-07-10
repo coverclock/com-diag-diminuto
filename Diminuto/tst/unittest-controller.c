@@ -34,6 +34,7 @@ static int16_t fdelay(int16_t ms)
 
 static diminuto_controller_output_t fcontrol(const diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp, diminuto_controller_input_t target, diminuto_controller_output_t output, diminuto_controller_input_t threshold, int limit)
 {
+    int done = 0;
     int step = 0;
     diminuto_controller_input_t input;
     diminuto_controller_input_t before;
@@ -64,7 +65,15 @@ static diminuto_controller_output_t fcontrol(const diminuto_controller_parameter
 
         output = prime;
 
-    } while ((abs(offset) > threshold) || (dp->proportional != 0) || (dp->integral != 0) || (dp->differential != 0) || (dp->total != 0) || (dp->delta != 0));
+        if (done) {
+            break;
+        }
+
+        if ((abs(offset) <= threshold) && (dp->proportional == 0) && (dp->integral == 0) && (dp->differential == 0) && (dp->total == 0) && (dp->delta == 0)) {
+            done = !0;
+        }
+
+    } while (!0);
 
     return output;
 }
