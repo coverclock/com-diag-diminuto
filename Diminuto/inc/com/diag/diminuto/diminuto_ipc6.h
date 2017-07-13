@@ -385,7 +385,7 @@ extern int diminuto_ipc6_stream_provider_base(diminuto_ipv6_t address, diminuto_
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog) {
+static inline int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog) {
     return diminuto_ipc6_stream_provider_base(address, port, interface, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 

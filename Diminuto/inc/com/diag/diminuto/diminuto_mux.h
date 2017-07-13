@@ -262,6 +262,15 @@ extern int diminuto_mux_ready_accept(diminuto_mux_t * muxp);
 extern int diminuto_mux_ready_urgent(diminuto_mux_t * muxp);
 
 /**
+ * Return the next registered file descriptor that is ready for interrupting.
+ * @param muxp points to an initialized multiplexer structure. This is the
+ * same from a system point of view as an urgent descriptor, but the
+ * nomenclature differs for certaion I/O operations.
+ * @return a file descriptor ready for accepting, or <0 if none.
+ */
+extern int diminuto_mux_ready_interrupt(diminuto_mux_t * muxp);
+
+/**
  * Unregister a registered file descriptor and close it. The file descriptor
  * is not closed if it is not registered.
  * @param muxp points to an initialized multiplexer structure.

@@ -9,6 +9,7 @@
  */
 
 #include "diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <unistd.h>
