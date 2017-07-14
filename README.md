@@ -52,7 +52,7 @@ This software is an original work of its author.
 
 ## Targets
 
-This code is typically regression tested agaist the following targets and platforms.
+This code is typically regression tested against the following targets and platforms.
 
 "mercury"  
 Intel Core i7-6700T @ 2.80GHz x 8  
@@ -61,7 +61,13 @@ Linux 4.4.0
 gcc 5.4.0  
 
 "lead"  
-ARMv7 rev 4 v7l x 4  
+Broadcom BCM2837 ARM Cortex-A53 ARMv7 @ 1.2GHz x 4  
+Raspbian GNU/Linux 8.0 "jessie"  
+Linux 4.4.34  
+gcc 4.9.2  
+
+"bronze"  
+Broadcom BCM2836 ARM Cortex-A7 ARMv7 @ 900MHz x 4  
 Raspbian GNU/Linux 8.0 "jessie"  
 Linux 4.4.34  
 gcc 4.9.2  
