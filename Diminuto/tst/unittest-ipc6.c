@@ -667,17 +667,19 @@ int main(int argc, char * argv[])
         char buffer[1];
         diminuto_ipv6_t address = TEST_INIT;
         diminuto_port_t port = TEST_PORT;
-        diminuto_ticks_t before;
-        diminuto_ticks_t after;
+        diminuto_sticks_t before;
+        diminuto_sticks_t after;
 
         TEST();
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
         EXPECT(diminuto_alarm_install(0) >= 0);
-        diminuto_timer_oneshot(2000000ULL);
-        before = diminuto_time_elapsed();
+        EXPECT(diminuto_timer_oneshot(2000000ULL) == 0);
+        EXPECT((before = diminuto_time_elapsed()) >= 0);
         EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
-        after = diminuto_time_elapsed();
+        EXPECT((after = diminuto_time_elapsed()) >= 0);
+        diminuto_timer_oneshot(0ULL);
+        CHECKPOINT("elapsed %lld - %lld = %lld\n", after, before, after - before);
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
         EXPECT(errno == EINTR);
@@ -741,6 +743,7 @@ int main(int argc, char * argv[])
              */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
@@ -814,6 +817,7 @@ int main(int argc, char * argv[])
              */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
@@ -887,6 +891,7 @@ int main(int argc, char * argv[])
              */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
@@ -960,6 +965,7 @@ int main(int argc, char * argv[])
              */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
@@ -1010,6 +1016,7 @@ int main(int argc, char * argv[])
              */
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
@@ -1162,6 +1169,7 @@ int main(int argc, char * argv[])
             ASSERT(diminuto_ipc6_close(service) >= 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
