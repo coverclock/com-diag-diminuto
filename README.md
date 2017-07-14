@@ -32,10 +32,10 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, contact
 
-    Free Software Foundation, Inc.
-    59 Temple Place, Suite 330
-    Boston MA 02111-1307 USA
-    http://www.gnu.org/copyleft/lesser.txt
+Free Software Foundation, Inc.  
+59 Temple Place, Suite 330  
+Boston MA 02111-1307 USA  
+<http://www.gnu.org/copyleft/lesser.txt>  
 
 ## Abstract
 
@@ -49,6 +49,22 @@ used legitimately elsewhere in your travels. Diminuto includes a suite
 of unit tests that are used to validate the software when it changes.
 
 This software is an original work of its author.
+
+## Targets
+
+This code is typically regression tested agaist the following targets and platforms.
+
+"mercury"  
+Intel Core i7-6700T @ 2.80GHz x 8  
+Ubuntu 16.04.2 LTS "xenial"  
+Linux 4.4.0  
+gcc 5.4.0  
+
+"lead"  
+ARMv7 rev 4 v7l x 4  
+Raspbian GNU/Linux 8.0 "jessie"  
+Linux 4.4.34  
+gcc 4.9.2  
 
 ## Web Page
 
