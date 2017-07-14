@@ -870,3 +870,18 @@ install-include:
 	mkdir -p $(INSTALL_INC)
 	tar -C $(OUT)/$(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
 	tar -C $(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
+
+########## Sanity
+
+.PHONY:	sanity
+
+sanity:
+	unittest-ipc
+	unittest-ipc4
+	unittest-ipc6
+	unittest-mux4
+	unittest-mux6
+	unittest-mux-eventloop
+	unittest-poll4
+	unittest-poll6
+	unittest-poll-eventloop
