@@ -13,7 +13,6 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <sched.h>
 #include <errno.h>
-/* #define _POSIX_C_SOURCE 199309 */
 #include <time.h>
 
 diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptible)

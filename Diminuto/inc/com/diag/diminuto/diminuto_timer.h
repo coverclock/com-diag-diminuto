@@ -48,7 +48,11 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  * @return the number of ticks remaining in prior timer if a timer was already
  * running.
  */
-extern diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks);
+static inline diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
+{
+    extern diminuto_ticks_t diminuto_itimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_itimer(ticks, 0);
+}
 
 /**
  * Start an periodic timer for the specified number of ticks. When
@@ -62,6 +66,10 @@ extern diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks);
  * @return the number of ticks remaining in the prior timer if a timer was
  * already running.
  */
-extern diminuto_ticks_t diminuto_timer_periodic(diminuto_ticks_t ticks);
+static inline diminuto_ticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
+{
+    extern diminuto_ticks_t diminuto_itimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_itimer(ticks, !0);
+}
 
 #endif

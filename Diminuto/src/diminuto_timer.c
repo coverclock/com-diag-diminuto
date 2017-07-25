@@ -11,9 +11,13 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+
+#include <signal.h>
+#include <time.h>
+
 #include <sys/time.h>
 
-static diminuto_ticks_t diminuto_timer(int which, diminuto_ticks_t ticks, int periodic)
+diminuto_ticks_t diminuto_itimer(diminuto_ticks_t ticks, int periodic)
 {
     struct itimerval timer;
     struct itimerval remaining;
@@ -30,21 +34,11 @@ static diminuto_ticks_t diminuto_timer(int which, diminuto_ticks_t ticks, int pe
 
     remaining = timer;
 
-    if (setitimer(which, &timer, &remaining) < 0) {
+    if (setitimer(ITIMER_REAL, &timer, &remaining) < 0) {
         diminuto_perror("diminuto_timer: setitimer");
     }
 
     ticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_usec, diminuto_timer_frequency());
 
     return ticks;
-}
-
-diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
-{
-    return diminuto_timer(ITIMER_REAL, ticks, 0);
-}
-
-diminuto_ticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
-{
-    return diminuto_timer(ITIMER_REAL, ticks, !0);
 }
