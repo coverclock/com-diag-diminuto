@@ -876,6 +876,9 @@ install-include:
 .PHONY:	sanity
 
 sanity:
+	unittest-store
+	unittest-timer
+	unittest-periodic
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
@@ -885,3 +888,4 @@ sanity:
 	unittest-poll4
 	unittest-poll6
 	unittest-poll-eventloop
+	unittest-controller
