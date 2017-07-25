@@ -19,14 +19,17 @@
 
 int main(int argc, char ** argv)
 {
+    diminuto_sticks_t value;
     diminuto_sticks_t result;
     diminuto_ticks_t hertz;
+    diminuto_ticks_t frequency;
     diminuto_ticks_t then;
     diminuto_ticks_t now;
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
     diminuto_ticks_t remaining;
     diminuto_ticks_t computed;
+    diminuto_sticks_t difference;
     char rs;
     char cs;
     char ms;
@@ -54,26 +57,30 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_frequency();
 
+    frequency = diminuto_timer_frequency();
+    DIMINUTO_LOG_INFORMATION("timer frequency %llu Hz\n", frequency);
+
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
         "requested", "computed", "measured", "error");
 
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
-        diminuto_timer_oneshot(requested);
         result = diminuto_time_elapsed();
         ASSERT(result != (diminuto_sticks_t)-1);
         then = result;
+        ASSERT(diminuto_timer_oneshot(requested) != (diminuto_sticks_t)-1);
         remaining = diminuto_delay(requested * 2, !0);
         result = diminuto_time_elapsed();
         ASSERT(result != (diminuto_sticks_t)-1);
         now = result;
         ASSERT(now >= then);
-        diminuto_timer_oneshot(0);
+        ASSERT(diminuto_timer_oneshot(0) != (diminuto_sticks_t)-1);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
         computed = (requested * 2) - remaining;
         measured = now - then;
-        delta = (100.0 * (measured - requested)) / requested;
+        difference = measured - requested;
+        delta = (100.0 * difference) / requested;
         rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
         cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';

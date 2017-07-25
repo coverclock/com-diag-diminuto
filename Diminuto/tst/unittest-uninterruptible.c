@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -27,10 +27,10 @@ int main(int argc, char ** argv)
     diminuto_alarm_install(0);
     hertz = diminuto_frequency();
 
-    diminuto_timer_periodic(hertz / 20);
+    EXPECT(diminuto_timer_periodic(hertz / 20) >= 0);
     remaining = diminuto_delay(hertz, !0);
     alarmed = diminuto_alarm_check();
-    diminuto_timer_periodic(0);
+    EXPECT(diminuto_timer_periodic(0) >= 0);
     (void)diminuto_alarm_check();
 
     EXPECT(remaining > 0);
@@ -38,10 +38,10 @@ int main(int argc, char ** argv)
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM, SIGALRM, SIGCHLD);
 
-        diminuto_timer_periodic(hertz / 20);
+        EXPECT(diminuto_timer_periodic(hertz / 20) >= 0);
         remaining = diminuto_delay(hertz, !0);
         alarmed = diminuto_alarm_check();
-        diminuto_timer_periodic(0);
+        EXPECT(diminuto_timer_periodic(0) >= 0);
         (void)diminuto_alarm_check();
 
     DIMINUTO_UNINTERRUPTIBLE_SECTION_END;

@@ -5,13 +5,18 @@
 /**
  * @file
  *
- * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+
+/*
+ * This code uses timer_settime(2) etc. which is monotonic. This API
+ * mimics the setitimer(2) semantics. This code is not thread safe.
+ */
 
 /**
  * @def COM_DIAG_DIMINUTO_TIMER_FREQUENCY
@@ -21,7 +26,7 @@
  * for use in those cases where it is useful to have the value at compile time.
  * However, you chould always prefer to use the inline function when possible.
  */
-#define COM_DIAG_DIMINUTO_TIMER_FREQUENCY (1000000LL)
+#define COM_DIAG_DIMINUTO_TIMER_FREQUENCY (1000000000LL)
 
 /**
  * Return the resolution of the Diminuto timer units in ticks per second
@@ -44,14 +49,15 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  * granularity of the system clock and latency in the implementation.
  * The timer fires only once per call. Calling with zero ticks
  * cancels any prior timer.
+ * N.B. This implementation uses a static variable and so is not thread safe.
  * @param ticks is the desired timer duration in ticks.
  * @return the number of ticks remaining in prior timer if a timer was already
- * running.
+ * running, or -1 if an error occurred.
  */
-static inline diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
+static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-    extern diminuto_ticks_t diminuto_itimer(diminuto_ticks_t ticks, int periodic);
-    return diminuto_itimer(ticks, 0);
+    extern diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_ptimer(ticks, 0);
 }
 
 /**
@@ -62,14 +68,15 @@ static inline diminuto_ticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  * on the granularity of the system clock and latency in the implementation.
  * The timer fires repeatedly with a periodicity of the specified ticks
  * until it is cancelled. Calling with zero ticks cancels the timer.
+ * N.B. This implementation uses a static variable and so is not thread safe.
  * @param ticks is the desired period interval in ticks.
  * @return the number of ticks remaining in the prior timer if a timer was
- * already running.
+ * already running, or -1 if an error occurred.
  */
-static inline diminuto_ticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
+static inline diminuto_sticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-    extern diminuto_ticks_t diminuto_itimer(diminuto_ticks_t ticks, int periodic);
-    return diminuto_itimer(ticks, !0);
+    extern diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_ptimer(ticks, !0);
 }
 
 #endif

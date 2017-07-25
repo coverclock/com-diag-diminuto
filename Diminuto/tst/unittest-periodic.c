@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -24,12 +24,14 @@ int main(int argc, char ** argv)
 {
     diminuto_sticks_t result;
     diminuto_ticks_t hertz;
+    diminuto_ticks_t frequency;
     diminuto_ticks_t then;
     diminuto_ticks_t now;
     diminuto_sticks_t measured;
     diminuto_ticks_t remaining;
     diminuto_sticks_t computed;
     diminuto_sticks_t requested;
+    diminuto_sticks_t difference;
     int ii;
     char rs;
     char cs;
@@ -57,14 +59,17 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_frequency();
 
+    frequency = diminuto_timer_frequency();
+    DIMINUTO_LOG_INFORMATION("timer frequency %llu Hz\n", frequency);
+
     diminuto_alarm_install(0);
 
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
         "requested", "computed", "measured", "error");
 
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
-        diminuto_timer_periodic(requested);
         then = diminuto_time_elapsed();
+        ASSERT(diminuto_timer_periodic(requested) != (diminuto_sticks_t)-1);
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
             remaining = diminuto_delay(requested * 2, !0);
@@ -76,7 +81,8 @@ int main(int argc, char ** argv)
             computed = (requested * 2) - remaining;
             measured = now - then;
             ASSERT(measured > 0);
-            delta = (100.0 * (measured - requested)) / requested;
+            difference = measured - requested;
+            delta = (100.0 * difference) / requested;
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
             cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
@@ -88,7 +94,7 @@ int main(int argc, char ** argv)
             );
             then = now;
         }
-        diminuto_timer_periodic(0);
+        ASSERT(diminuto_timer_periodic(0) != (diminuto_sticks_t)-1);
     }
 
     EXIT();

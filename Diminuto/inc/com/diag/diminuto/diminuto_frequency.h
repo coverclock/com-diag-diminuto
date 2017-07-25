@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -90,7 +90,12 @@ static inline diminuto_sticks_t diminuto_frequency(void)
  */
 static inline diminuto_sticks_t diminuto_frequency_ticks2units(diminuto_sticks_t ticks, diminuto_sticks_t hertz)
 {
-    return (hertz > diminuto_frequency()) ? (ticks * (hertz / diminuto_frequency())) : (hertz < diminuto_frequency()) ? (ticks / (diminuto_frequency() / hertz)) : ticks;
+    return
+        (hertz > diminuto_frequency()) ?
+            (ticks * (hertz / diminuto_frequency())) :
+        (hertz < diminuto_frequency()) ?
+            (ticks / (diminuto_frequency() / hertz)) :
+        ticks;
 }
 
 /**
@@ -101,7 +106,12 @@ static inline diminuto_sticks_t diminuto_frequency_ticks2units(diminuto_sticks_t
  */
 static inline diminuto_sticks_t diminuto_frequency_units2ticks(diminuto_sticks_t units, diminuto_sticks_t hertz)
 {
-    return (hertz > diminuto_frequency()) ? (units / (hertz / diminuto_frequency())) : (hertz < diminuto_frequency()) ? (units * (diminuto_frequency() / hertz)) : units;
+    return
+        (hertz > diminuto_frequency()) ?
+            (units / (hertz / diminuto_frequency())) :
+        (hertz < diminuto_frequency()) ?
+            (units * (diminuto_frequency() / hertz)) :
+        units;
 
 }
 
@@ -117,7 +127,7 @@ static inline diminuto_sticks_t diminuto_frequency_ticks2wholeseconds(diminuto_s
 
 /**
  * Convert a value in ticks into a fraction of a second in units of the
- * specified frequency and discard the whole seconds portion of the result.
+ * specified frequency, and discard the whole seconds portion of the result.
  * @param ticks is the value in ticks.
  * @param hertz is the specified frequency.
  * @return the fractional portion of the value in seconds.
