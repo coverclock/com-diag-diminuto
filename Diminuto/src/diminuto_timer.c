@@ -19,8 +19,16 @@
  * but the implementation uses a static variable so is not thread safe.
  */
 
-static int diminuto_ptimer_initialized = 0;
-static timer_t diminuto_ptimer_timerid = 0;
+static int initialized = 0;
+static timer_t timerid = 0;
+
+/*
+ * Exposed just for unit testing.
+ */
+void * diminuto_ptimer_get(void)
+{
+    return initialized ? timerid : (void *)-1;
+}
 
 /*
  * As much as possible this mimics the semantics of the setitimer(2) version
@@ -37,18 +45,18 @@ diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic)
      * the timer.
      */
 
-    if (diminuto_ptimer_initialized) {
+    if (initialized) {
         /* Do nothing: already have the timer. */
     } else if (ticks == 0) {
         /* Do nothing: deleting the timer. */
     } else {
         event.sigev_notify = SIGEV_SIGNAL;
         event.sigev_signo = SIGALRM;
-        if (timer_create(CLOCK_MONOTONIC, &event, &diminuto_ptimer_timerid) < 0) {
+        if (timer_create(CLOCK_MONOTONIC, &event, &timerid) < 0) {
             diminuto_perror("diminuto_ptimer: timer_create");
             return (diminuto_sticks_t)-1;
         } else {
-            diminuto_ptimer_initialized = !0;
+            initialized = !0;
         }
     }
 
@@ -59,15 +67,15 @@ diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic)
 
     if (ticks != 0) {
         /* Do nothing: not deleting the timer. */
-    } else if (timer_gettime(diminuto_ptimer_timerid, &remaining) < 0) {
+    } else if (timer_gettime(timerid, &remaining) < 0) {
         diminuto_perror("diminuto_ptimer: timer_gettime");
         return (diminuto_sticks_t)-1;
-     } else if (timer_delete(diminuto_ptimer_timerid) < 0) {
+     } else if (timer_delete(timerid) < 0) {
         diminuto_perror("diminuto_ptimer: timer_delete");
         return (diminuto_sticks_t)-1;
     } else {
         ticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_nsec, diminuto_timer_frequency());
-        diminuto_ptimer_initialized = 0;
+        initialized = 0;
         return (diminuto_sticks_t)ticks;
     }
 
@@ -87,7 +95,7 @@ diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic)
 
     remaining = timer;
 
-    if (timer_settime(diminuto_ptimer_timerid, 0, &timer, &remaining) < 0) {
+    if (timer_settime(timerid, 0, &timer, &remaining) < 0) {
         diminuto_perror("diminuto_ptimer: timer_settime");
         return (diminuto_sticks_t)-1;
     }
