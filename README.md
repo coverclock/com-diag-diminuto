@@ -56,21 +56,21 @@ This code is typically regression tested against the following targets and platf
 
 "mercury"  
 Dell OptiPlex 7040 (64-bit i7)  
-Intel Core i7-6700T @ 2.80GHz x 8  
+Intel Core i7-6700T Skylake @ 2.80GHz x 8  
 Ubuntu 16.04.2 LTS "xenial"  
 Linux 4.4.0  
 gcc 5.4.0  
 
 "lead"  
 Raspberry Pi 3 Model B (64-bit ARM)  
-Broadcom BCM2837 ARM Cortex-A53 ARMv7 @ 1.2GHz x 4  
+Broadcom BCM2837 Cortex-A53 ARMv7 @ 1.2GHz x 4  
 Raspbian GNU/Linux 8.0 "jessie"  
 Linux 4.4.34  
 gcc 4.9.2  
 
 "bronze"  
 Raspberry Pi 2 Model B (32-bit ARM)  
-Broadcom BCM2836 ARM Cortex-A7 ARMv7 @ 900MHz x 4  
+Broadcom BCM2836 Cortex-A7 ARMv7 @ 900MHz x 4  
 Raspbian GNU/Linux 8.0 "jessie"  
 Linux 4.4.34  
 gcc 4.9.2  
