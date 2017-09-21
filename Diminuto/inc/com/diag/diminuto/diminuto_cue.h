@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -114,5 +114,27 @@ typedef enum DiminutoCueEdge {
  * @return a enumeration indicating low, rising, high, or falling.
  */
 extern diminuto_cue_edge_t diminuto_cue_edge(const diminuto_cue_state_t * statep);
+
+/**
+ * Detect rising edge from the raw input without altering the state.
+ * Necessary for certain time-sensitive modulation schemes.
+ * @param statep points to the cue state structure.
+ * @return true if the raw undebounced input is rising.
+ */
+static inline int diminuto_cue_is_rising(const diminuto_cue_state_t * statep)
+{
+    return (statep->a && !statep->b);
+}
+
+/**
+ * Detect falling edge from the raw input without altering the state.
+ * Necessary for certain time-sensitive modulation schemes.
+ * @param statep points to the cue state structure.
+ * @return true if the raw undebounced input is falling.
+ */
+static inline int diminuto_cue_is_falling(const diminuto_cue_state_t * statep)
+{
+    return (statep->b && !statep->a);
+}
 
 #endif
