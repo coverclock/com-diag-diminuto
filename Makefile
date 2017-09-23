@@ -2,17 +2,17 @@
 # Copyright 2017 Digital Aggregates Corporation
 # author:Chip Overclock
 # mailto:coverclock@diag.com
-# http://www.diag.com/navigation/downloads/Diminuto.html
+# https://github.com/coverclock/com-diag-bin
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 
 .PHONY:	scope
 
 scope:
-	mycscope
+	cscope.sh
 
 .PHONY:	rescope
 
 rescope:
 	rm -f .cscope*
-	mycscope
+	cscope.sh

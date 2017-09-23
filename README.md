@@ -251,3 +251,5 @@ than create a dependency for the entire library.
 <https://github.com/coverclock/com-diag-grandote>
 
 <https://github.com/coverclock/com-diag-hazer>
+
+<https://github.com/coverclock/com-diag-obelisk>
