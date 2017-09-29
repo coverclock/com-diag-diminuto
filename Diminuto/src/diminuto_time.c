@@ -183,19 +183,28 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
      * seem to be an API call to generate epoch seconds in terms of UTC or
      * some other time zone. And mktime(3) doesn't respect the time zone
      * that can optionally be part of the tm structure. So we have to make
-     * our own adjustments to eliminate the effects of time zone and of DST.
+     * our own adjustments to eliminate the effects of the local time zone
+     * and of DST. This is really stupid.
      */
 
-    ticks += diminuto_time_timezone(juliet); 
+    ticks += diminuto_time_timezone(juliet);
     ticks += diminuto_time_daylightsaving(juliet);
 
     /*
-     * Now we adjust back for the time zone, DST, and fractional ticks
-     * that the caller provided.
+     * The caller provides a date and time for some time zone. It might
+     * not have been UTC. So we ask that the caller provides the time
+     * zone and DST offset so we can back them out, since the Epoch is
+     * always in UTC. If the date and time were in local time (juliet),
+     * then we are just undoing what we just did above.
      */
 
     ticks -= timezone;
     ticks -= daylightsaving;
+
+    /*
+     * Finally, we add in the fractional second provided by the caller.
+     */
+
     ticks += tick;
 
     return ticks;

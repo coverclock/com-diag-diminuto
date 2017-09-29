@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-static void sanity(void)
+static void test0(void)
 {
     int rc = -1;
     diminuto_sticks_t now = -1;
@@ -54,6 +54,47 @@ static void sanity(void)
     printf("zulu           %04d-%02d-%02dT%02d:%02d:%02d.%09d\n", year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
+    ASSERT(then >= 0);
+    printf("epoch          %lld\n", then);
+
+    delta = then - now;
+    printf("delta          %lld\n", delta);
+    ASSERT(delta == 0);
+}
+
+static void test1(void)
+{
+    int rc = -1;
+    diminuto_sticks_t now = -1;
+    diminuto_sticks_t then = -1;
+    diminuto_sticks_t zone = -1;
+    diminuto_sticks_t dst = -1;
+    diminuto_sticks_t delta = -1;
+    int year = -1;
+    int month = -1;
+    int day = -1;
+    int hour = -1;
+    int minute = -1;
+    int second = -1;
+    int tick = -1;
+
+    now = diminuto_time_clock();
+    printf("clock          %lld\n", now);
+    ASSERT(now >= 0);
+
+    zone = diminuto_time_timezone(now);
+    printf("timezone       %lld\n", zone);
+    /* zone can be positive or negatuve. */
+
+    dst = diminuto_time_daylightsaving(now);
+    printf("daylightsaving %lld\n", dst);
+    ASSERT(dst >= 0);
+
+    rc = diminuto_time_juliet(now, &year, &month, &day, &hour, &minute, &second, &tick);
+    ASSERT(rc >= 0);
+    printf("juliet         %04d-%02d-%02dT%02d:%02d:%02d.%09d\n", year, month, day, hour, minute, second, tick);
+
+    then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, zone, dst);
     ASSERT(then >= 0);
     printf("epoch          %lld\n", then);
 
@@ -177,11 +218,24 @@ int main(int argc, char ** argv)
 
     hertz = diminuto_frequency();
 
-    DIMINUTO_LOG_INFORMATION("TEST 0\n");
+    /*
+     * test0 and test1 are basic sanity tests.
+     * But if they pass, the code is probably
+     * okay. The remaining unit tests are
+     * edge cases but unlikely to occur in
+     * real life. Still, I can't quite bring
+     * myself to remove them.
+     */
 
-    sanity();
+    TEST();
 
-    DIMINUTO_LOG_INFORMATION("TEST 1\n");
+    test0();
+
+    TEST();
+
+    test1();
+
+    TEST();
 
     epoch(0xffffffff80000000LL * hertz, !0);
     ASSERTS(1901, 12, 13, 20, 45, 52, 0);
@@ -213,38 +267,38 @@ int main(int argc, char ** argv)
     epoch(0x000000007fffffffLL * hertz, !0);
     ASSERTS(2038, 1, 19, 3, 14, 7, 0);
 
-    DIMINUTO_LOG_INFORMATION("TEST 2\n");
+    TEST();
 
     epoch(LOW * hertz, !0);
     epoch(-hertz, !0);
     epoch(0, !0);
     epoch(HIGH * hertz, !0);
 
-    DIMINUTO_LOG_INFORMATION("TEST 3\n");
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (365 * 24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    DIMINUTO_LOG_INFORMATION("TEST 4\n");
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    DIMINUTO_LOG_INFORMATION("TEST 5\n");
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    DIMINUTO_LOG_INFORMATION("TEST 6\n");
+    TEST();
 
     for (now = LOW; now <= HIGH; now += 60) {
         epoch(now * hertz, 0);
     }
 
-    DIMINUTO_LOG_INFORMATION("TEST 7\n");
+    TEST();
 
     for (now = LOW; now <= HIGH; now += 1) {
         epoch(now * hertz, 0);
