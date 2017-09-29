@@ -21,6 +21,17 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#define SANITY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
+    do { \
+        ASSERT((1901 <= _YEAR_) && (_YEAR_ <= 2038)); \
+        ASSERT((1 <= _MONTH_) && (_MONTH_ <= 12)); \
+        ASSERT((1 <= _DAY_) && (_DAY_ <= 31)); \
+        ASSERT((0 <= _HOUR_) && (_HOUR_ <= 23)); \
+        ASSERT((0 <= _MINUTE_) && (_MINUTE_ <= 59)); \
+        ASSERT((0 <= _SECOND_) && (_SECOND_ <= 60)); \
+        ASSERT((0 <= _TICK_) && (_TICK_ <= 999999999LL)); \
+    } while (0)
+
 static void test0(void)
 {
     int rc = -1;
@@ -52,6 +63,8 @@ static void test0(void)
     rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
     printf("zulu           %04d-%02d-%02dT%02d:%02d:%02d.%09d\n", year, month, day, hour, minute, second, tick);
+
+    SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
     ASSERT(then >= 0);
@@ -93,6 +106,8 @@ static void test1(void)
     rc = diminuto_time_juliet(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
     printf("juliet         %04d-%02d-%02dT%02d:%02d:%02d.%09d\n", year, month, day, hour, minute, second, tick);
+
+    SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, zone, dst);
     ASSERT(then >= 0);
@@ -170,24 +185,9 @@ static void epoch(diminuto_sticks_t now, int verbose)
     }
     ASSERT(now == zulu);
     ASSERT(now == juliet);
-    ASSERT((1901 <= zyear) && (zyear <= 2038));
-    ASSERT((1 <= zmonth) && (zmonth <= 12));
-    ASSERT((1 <= zday) && (zday <= 31));
-    ASSERT((0 <= zhour) && (zhour <= 23));
-    ASSERT((0 <= zminute) && (zminute <= 59));
-    ASSERT((0 <= zsecond) && (zsecond <= 60)); /* To account for leap seconds. */
-    ASSERT((0 <= ztick) && (ztick <= 999999999LL));
-    ASSERT((1901 <= jyear) && (jyear <= 2038));
-    ASSERT((1 <= jmonth) && (jmonth <= 12));
-    ASSERT((1 <= jday) && (jday <= 31));
-    ASSERT((0 <= jhour) && (jhour <= 23));
-    ASSERT((0 <= jminute) && (jminute <= 59));
-    ASSERT((0 <= jsecond) && (jsecond <= 60)); /* To account for leap seconds. */
-    ASSERT((0 <= jtick) && (jtick <= 999999999LL));
-    ASSERT((0 <= dhour) && (dhour <= 23));
-    ASSERT((0 <= dminute) && (dminute <= 59));
-    ASSERT((0 <= dsecond) && (dsecond <= 60)); /* To account for leap seconds. */
-    ASSERT((0 <= dtick) && (dtick <= 999999999LL));
+    SANITY(zyear, zmonth, zday, zhour, zminute, zsecond, ztick);
+    SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
+    SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
     ASSERT((rc < 0) || (rc > 0));
 
     prior = zyear;
@@ -196,7 +196,7 @@ static void epoch(diminuto_sticks_t now, int verbose)
 static const diminuto_sticks_t LOW = 0xffffffff80000000LL;
 static const diminuto_sticks_t HIGH = 0x000000007fffffffLL - (7 * 3600) - 3600;
 
-#define ASSERTS(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
+#define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
         ASSERT(zyear == (_YEAR_)); \
         ASSERT(zmonth == (_MONTH_)); \
@@ -221,10 +221,8 @@ int main(int argc, char ** argv)
     /*
      * test0 and test1 are basic sanity tests.
      * But if they pass, the code is probably
-     * okay. The remaining unit tests are
-     * edge cases but unlikely to occur in
-     * real life. Still, I can't quite bring
-     * myself to remove them.
+     * okay. Some of the subsequent tests for
+     * edge cases are pretty out there.
      */
 
     TEST();
@@ -238,34 +236,34 @@ int main(int argc, char ** argv)
     TEST();
 
     epoch(0xffffffff80000000LL * hertz, !0);
-    ASSERTS(1901, 12, 13, 20, 45, 52, 0);
+    VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
     epoch(0, !0);
-    ASSERTS(1970, 1, 1, 0, 0, 0, 0);
+    VERIFY(1970, 1, 1, 0, 0, 0, 0);
 
     epoch(1, !0);
-    ASSERTS(1970, 1, 1, 0, 0, 0, 1);
+    VERIFY(1970, 1, 1, 0, 0, 0, 1);
 
     epoch(hertz - 1, !0);
-    ASSERTS(1970, 1, 1, 0, 0, 0, hertz - 1);
+    VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
 
     epoch(hertz, !0);
-    ASSERTS(1970, 1, 1, 0, 0, 1, 0);
+    VERIFY(1970, 1, 1, 0, 0, 1, 0);
 
     epoch(1000000000LL * hertz, !0);
-    ASSERTS(2001, 9, 9, 1, 46, 40, 0);
+    VERIFY(2001, 9, 9, 1, 46, 40, 0);
 
     epoch(1234567890LL * hertz, !0);
-    ASSERTS(2009, 2, 13, 23, 31, 30, 0);
+    VERIFY(2009, 2, 13, 23, 31, 30, 0);
 
     epoch(15000LL * 24LL * 3600LL * hertz, !0);
-    ASSERTS(2011, 1, 26, 0, 0, 0, 0);
+    VERIFY(2011, 1, 26, 0, 0, 0, 0);
 
     epoch(1400000000LL * hertz, !0);
-    ASSERTS(2014, 5, 13, 16, 53, 20, 0);
+    VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
     epoch(0x000000007fffffffLL * hertz, !0);
-    ASSERTS(2038, 1, 19, 3, 14, 7, 0);
+    VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
     TEST();
 
