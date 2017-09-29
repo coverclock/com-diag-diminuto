@@ -78,7 +78,6 @@ int diminuto_lock_lock(const char * file)
 
 int diminuto_lock_unlock(const char * file)
 {
-    int rc;
     int result = 0;
 
     if (unlink(file) < 0) {

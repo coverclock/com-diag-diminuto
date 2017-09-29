@@ -123,7 +123,7 @@ extern diminuto_cue_edge_t diminuto_cue_edge(const diminuto_cue_state_t * statep
  */
 static inline int diminuto_cue_is_rising(const diminuto_cue_state_t * statep)
 {
-    return (statep->a && !statep->b);
+    return ((statep->a != 0) && (statep->b == 0));
 }
 
 /**
@@ -134,7 +134,7 @@ static inline int diminuto_cue_is_rising(const diminuto_cue_state_t * statep)
  */
 static inline int diminuto_cue_is_falling(const diminuto_cue_state_t * statep)
 {
-    return (statep->b && !statep->a);
+    return ((statep->a == 0) && (statep->b != 0));
 }
 
 #endif

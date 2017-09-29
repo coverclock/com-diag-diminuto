@@ -139,6 +139,7 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
      * we'll call it every time.
      */
     tzset();
+
     if (daylight) {
         juliet = diminuto_frequency_ticks2wholeseconds(ticks);
         if (localtime_r(&juliet, &datetime) == (struct tm *)0) {
@@ -166,14 +167,33 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
     datetime.tm_min = minute;
     datetime.tm_sec = second;
     datetime.tm_isdst = 0;
+
     /**
      * mktime(3) indicates that a return of -1 indicates an error. But this
      * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
      * indicates a date and time one second earlier than the Epoch.
      */
+
     juliet = mktime(&datetime);
     ticks = diminuto_frequency_seconds2ticks(juliet, 0, 1);
-    ticks += diminuto_time_timezone(juliet); /* Because mktime(3) assumes local time. */
+
+    /*
+     * mktime(3) assumes the time in the tm structure is local time and
+     * adjusts the number of seconds it returns accordingly. There doesn't
+     * seem to be an API call to generate epoch seconds in terms of UTC or
+     * some other time zone. And mktime(3) doesn't respect the time zone
+     * that can optionally be part of the tm structure. So we have to make
+     * our own adjustments to eliminate the effects of time zone and of DST.
+     */
+
+    ticks += diminuto_time_timezone(juliet); 
+    ticks += diminuto_time_daylightsaving(juliet);
+
+    /*
+     * Now we adjust back for the time zone, DST, and fractional ticks
+     * that the caller provided.
+     */
+
     ticks -= timezone;
     ticks -= daylightsaving;
     ticks += tick;
