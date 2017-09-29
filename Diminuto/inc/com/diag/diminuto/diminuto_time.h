@@ -163,7 +163,7 @@ extern diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int h
  * @param tickp is where the fraction of a second will be returned.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
@@ -179,7 +179,7 @@ extern int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp
  * @param tickp is where the fraction of a second will be returned.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
 /**
  * Convert ticks into individual fields representing a time duration. All of
@@ -193,6 +193,6 @@ extern int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * mont
  * @param tickp is where the number of ticks will be returned.
  * @return >0 if the duration was positive, <0 if the duration was negative.
  */
-extern int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, int * tickp);
+extern int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
 #endif

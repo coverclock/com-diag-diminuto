@@ -38,17 +38,17 @@ int main(int argc, char ** argv)
     int rhour;
     int rminute;
     int rsecond;
-    int rtick;
+    diminuto_ticks_t rtick;
     int cday;
     int chour;
     int cminute;
     int csecond;
-    int ctick;
+    diminuto_ticks_t ctick;
     int mday;
     int mhour;
     int mminute;
     int msecond;
-    int mtick;
+    diminuto_ticks_t mtick;
     double delta;
     void * is;
     void * was;
@@ -91,7 +91,7 @@ int main(int argc, char ** argv)
         rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
         cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
-        DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %10.3lf%%\n"
+        DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
         	, rs, rday, rhour, rminute, rsecond, rtick
         	, cs, cday, chour, cminute, csecond, ctick
         	, ms, mday, mhour, mminute, msecond, mtick

@@ -45,14 +45,14 @@ int main(int argc, char ** argv)
     int dhour;
     int dminute;
     int dsecond;
-    int dtick;
+    diminuto_ticks_t dtick;
     int zyear;
     int zmonth;
     int zday;
     int zhour;
     int zminute;
     int zsecond;
-    int ztick;
+    diminuto_ticks_t ztick;
     int zh;
     int zm;
     int jyear;
@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
     int jhour;
     int jminute;
     int jsecond;
-    int jtick;
+    diminuto_ticks_t jtick;
     char ss;
 
     SETLOGMASK();
@@ -116,33 +116,33 @@ int main(int argc, char ** argv)
         dday = -1; dhour = -1; dminute = -1; dsecond = -1; dtick = -1;
         ss = (diminuto_time_duration(elapsed, &dday, &dhour, &dminute, &dsecond, &dtick) < 0) ? '-' : '+';
         zyear = -1; zmonth = -1; zday = -1; zhour = -1; zminute = -1; zsecond = -1; ztick = -1;
-        rc = diminuto_time_zulu(after, &zyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, &zyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_zulu(after, (int *)0, &zmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, &zmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, &zday,    (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, &zday,    (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, &zhour,   (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, &zhour,   (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, &zminute, (int *)0, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, &zminute, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &zsecond, (int *)0);
+        rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &zsecond, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
         rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &ztick);
         ASSERT(rc >= 0);
         zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
         jyear = -1; jmonth = -1; jday = -1; jhour = -1; jminute = -1; jsecond = -1; jtick = -1;
-        rc = diminuto_time_juliet(after, &jyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, &jyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_juliet(after, (int *)0, &jmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, &jmonth,  (int *)0, (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, &jday,    (int *)0, (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, &jday,    (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, &jhour,   (int *)0, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, &jhour,   (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &jminute, (int *)0, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, &jminute, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
-        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jsecond, (int *)0);
+        rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jsecond, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jtick);
         ASSERT(rc >= 0);
@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
         result = diminuto_time_thread();
         ASSERT(result != (diminuto_sticks_t)-1);
         thread = result;
-        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n"
+        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
             , logical, first ? 0 : logical - logicalprime
             , requested, remaining
             , claimed

@@ -36,7 +36,7 @@ int main(int argc, char ** argv)
 	int hour;
 	int minute;
 	int second;
-	int fraction;
+	diminuto_ticks_t fraction;
 	int offsethours;
 	int offsetseconds;
 
@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
 		return 3;
 	}
 
-	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
+	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
 
 	return 0;
 }

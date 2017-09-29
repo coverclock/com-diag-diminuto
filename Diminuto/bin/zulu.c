@@ -34,7 +34,7 @@ int main(int argc, char ** argv)
 	int hour;
 	int minute;
 	int second;
-	int fraction;
+	diminuto_ticks_t fraction;
 
 	if ((ticks = diminuto_time_clock()) < 0) {
 		return 2;
@@ -44,7 +44,7 @@ int main(int argc, char ** argv)
 		return 3;
 	}
 
-	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9d+00:00\n", year, month, day, hour, minute, second, fraction);
+	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+00:00\n", year, month, day, hour, minute, second, fraction);
 
 	return 0;
 }

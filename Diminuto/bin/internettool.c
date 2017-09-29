@@ -63,7 +63,7 @@ static void stamp(FILE *fp)
     int hour = 0;
     int minute = 0;
     int second = 0;
-    int ticks = 0;
+    diminuto_ticks_t ticks = 0;
     int rc = -1;
     diminuto_ticks_t microseconds = 0;
 

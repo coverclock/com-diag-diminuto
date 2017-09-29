@@ -113,7 +113,8 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 {
     diminuto_ticks_t now;
-    int year, month, day, hour, minute, second, nanosecond;
+    int year, month, day, hour, minute, second;
+    diminuto_ticks_t nanosecond;
     char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
     int rc;
     char * pointer = buffer;
@@ -123,7 +124,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {

@@ -50,10 +50,11 @@ static diminuto_ticks_t run(int limit)
 
 static void report(diminuto_ticks_t ticks)
 {
-    int day, hour, minute, second, fraction;
+    int day, hour, minute, second;
+    diminuto_ticks_t fraction;
 
     diminuto_time_duration(ticks, &day, &hour, &minute, &second, &fraction);
-    printf("elapsed %luticks %d/%2.2d:%2.2d:%2.2d.%9.9d\n", ticks, day, hour, minute, second, fraction);
+    printf("elapsed %luticks %d/%2.2d:%2.2d:%2.2d.%9.9llu\n", ticks, day, hour, minute, second, fraction);
 }
 
 int main(int argc, char * argv[])
