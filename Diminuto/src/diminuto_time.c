@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -212,13 +213,14 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
 static void diminuto_time_stamp(const struct tm *datetimep, diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
-    if (yearp   != (int *)0) { *yearp   = datetimep->tm_year + 1900;    }
-    if (monthp  != (int *)0) { *monthp  = datetimep->tm_mon + 1;        }
-    if (dayp    != (int *)0) { *dayp    = datetimep->tm_mday;            }
-    if (hourp   != (int *)0) { *hourp   = datetimep->tm_hour;            }
-    if (minutep != (int *)0) { *minutep = datetimep->tm_min;            }
-    if (secondp != (int *)0) { *secondp = datetimep->tm_sec;            }
-    if (tickp   != (diminuto_ticks_t *)0) { *tickp = ticks % diminuto_frequency(); }
+    if (yearp != (int *)0) { *yearp = datetimep->tm_year + 1900; }
+    if (monthp != (int *)0) { *monthp = datetimep->tm_mon + 1; }
+    if (dayp != (int *)0) { *dayp = datetimep->tm_mday; }
+    if (hourp != (int *)0) { *hourp = datetimep->tm_hour; }
+    if (minutep != (int *)0) { *minutep = datetimep->tm_min; }
+    if (secondp != (int *)0) { *secondp = datetimep->tm_sec; }
+    if (tickp != (diminuto_ticks_t *)0) { *tickp = llabs(ticks) % diminuto_frequency();
+    }
 }
 
 /*
