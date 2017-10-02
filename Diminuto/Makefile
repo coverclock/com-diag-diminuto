@@ -853,7 +853,7 @@ install:	install-bin install-lib install-include
 install-bin:
 	mkdir -p $(INSTALL_BIN)
 	for B in $(OUT)/$(BIN_DIR)/*; do \
-		install $$B $(INSTALL_BIN); \
+		install -v $$B $(INSTALL_BIN); \
 	done
 
 install-lib:
@@ -864,7 +864,7 @@ install-lib:
 		( cd $(INSTALL_LIB); ln -s -f $$O.$(MAJOR).$(MINOR) $$O.$(MAJOR) ); \
 		( cd $(INSTALL_LIB); ln -s -f $$O.$(MAJOR) $$O ); \
 	done
-	ldconfig -n $(INSTALL_LIB)
+	ldconfig -v $(INSTALL_LIB)
 
 install-include:
 	mkdir -p $(INSTALL_INC)
