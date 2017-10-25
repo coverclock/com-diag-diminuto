@@ -25,6 +25,14 @@
  * system call circumvents this limit, but alas even though the diminuto_poll
  * feature uses this system call instead, it still uses the fd_set bit mask
  * to manage file descriptors, hence it has the same limitation.
+ *
+ * REFERENCES
+ *
+ * Aivars Kalvans, "Using select(2)", 2017-04-06,
+ * http://aivarsk.github.io/2017/04/06/select/
+ *
+ * Dan Kegel, "The C10K Problem", 2014-02-05,
+ * http://www.kegel.com/c10k.html
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

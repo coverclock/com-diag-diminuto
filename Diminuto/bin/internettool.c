@@ -50,6 +50,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #undef NDEBUG
 #include <assert.h>
 
@@ -611,15 +612,20 @@ int main(int argc, char * argv[])
                 if (fd < 0) {
                     break;
                 }
-                datum4 = DIMINUTO_IPC4_UNSPECIFIED;
-                datum46 = 0;
-                fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
-                assert(fd >= 0);
-                assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
-                assert(datum46 != 0);
-                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
-                rc = diminuto_mux_register_read(&mux, fd);
-                assert(rc >= 0);
+                while (!0) {
+                    datum4 = DIMINUTO_IPC4_UNSPECIFIED;
+                    datum46 = 0;
+                    fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
+                    if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
+                        break;
+                    }
+                    assert(fd >= 0);
+                    assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
+                    assert(datum46 != 0);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, string, sizeof(string)), datum46);
+                    rc = diminuto_mux_register_read(&mux, fd);
+                    assert(rc >= 0);
+                }
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
@@ -669,15 +675,20 @@ int main(int argc, char * argv[])
                 if (fd < 0) {
                     break;
                 }
-                datum6 = DIMINUTO_IPC6_UNSPECIFIED;
-                datum46 = 0;
-                fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
-                assert(fd >= 0);
-                assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
-                assert(datum46 != 0);
-                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
-                rc = diminuto_mux_register_read(&mux, fd);
-                assert(rc >= 0);
+                while (!0) {
+                    datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+                    datum46 = 0;
+                    fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
+                    if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
+                        break;
+                    }
+                    assert(fd >= 0);
+                    assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
+                    assert(datum46 != 0);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, string, sizeof(string)), datum46);
+                    rc = diminuto_mux_register_read(&mux, fd);
+                    assert(rc >= 0);
+                }
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
