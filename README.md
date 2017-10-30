@@ -253,3 +253,14 @@ than create a dependency for the entire library.
 <https://github.com/coverclock/com-diag-hazer>
 
 <https://github.com/coverclock/com-diag-obelisk>
+
+## Build
+Clone, build, and install Diminuto in /usr/local.
+
+    cd ~
+    mkdir -p src
+    cd src
+    git clone https://github.com/coverclock/com-diag-diminuto
+    cd com-diag-diminuto/Diminuto
+    make pristine all
+    sudo make install
