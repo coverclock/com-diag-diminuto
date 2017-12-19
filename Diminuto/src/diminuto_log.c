@@ -11,6 +11,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -19,6 +20,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 /*******************************************************************************
  * LOCALS
@@ -112,6 +114,7 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 
 void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 {
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     diminuto_ticks_t now;
     int year, month, day, hour, minute, second;
     diminuto_ticks_t nanosecond;
@@ -124,7 +127,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ %c [%d] ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ (%c) [%d] {%lu} ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid(), pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
@@ -157,7 +160,10 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     	/* Do nothing. */
     }
 
-    rc = write(fd, buffer, total);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        rc = write(fd, buffer, total);
+    DIMINUTO_CRITICAL_SECTION_END;
+
     if (rc < 0) {
         /* Do nothing: what are we doing to do, log an error message? */
     } else if (rc == 0) {
