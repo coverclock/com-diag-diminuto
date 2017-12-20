@@ -127,6 +127,10 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
 
+    /* Prepending an ISO8601 timestamp allows us to sort-merge logs. */
+    /* Bracketing special fields allows us to more easily filter logs. */
+    /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
+
     rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ <%c> [%d] {%lx} ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid(), pthread_self());
     if (rc < 0) {
         rc = 0;
@@ -161,18 +165,24 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     }
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        rc = write(fd, buffer, total);
+        while (total > 0) {
+            rc = write(fd, buffer, total);
+            if (rc < 0) {
+                /* What are we going to do, log an error message? */
+                break;
+            } else if (rc == 0) {
+                /* Far end closed, which is the caller's problem. */
+                break;
+            } else if (rc > total) {
+                /* Should never happen. */
+                total = 0;
+            } else {
+                /* Nominal case. */
+                total -= rc;
+            }
+        }
     DIMINUTO_CRITICAL_SECTION_END;
 
-    if (rc < 0) {
-        /* Do nothing: what are we doing to do, log an error message? */
-    } else if (rc == 0) {
-        /* Do nothing: far end closed, which is the caller's problem. */
-    } else if (rc < total) {
-        /* Do nothing: accept partial write and proceed. */
-    } else {
-        /* Do nothing: nominal. */
-    }
 }
 
 /*******************************************************************************
