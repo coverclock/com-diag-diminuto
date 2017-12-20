@@ -48,7 +48,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
 
-# Some certification, defense, or intelligence agencies (e.g. the U.S. Federal
+# Some civilian, defense, or intelligence agencies (e.g. the U.S. Federal
 # Aviation Administration or FAA) require that software builds for safety
 # critical or national security applications generate exactly the same binary
 # images bit for bit if the source code has not changed. (This is theoretically
@@ -56,18 +56,14 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # hashes are the same, although in practice it is the same thing.) This allows
 # agency inspectors to verify the integrity of the binary software images. This
 # makes embedding build timestamps inside compiled translation units problematic.
-# If your application has this requirement, you can pass in any fixed string
-# for the value of the VINTAGE make variable, and only use the value of this
-# symbol as a build time stamp, and you should be able to generate identical
-# images with subsequent builds of Diminuto. This string is embedded inside the
-# Diminuto "vintage" application. The default build time stamp is an ISO-8601
-# complaint string with the time specified in UTC with nanosecond resolution.
+# Avoid using the built-in C macros __DATE__ and __TIME__, and consider using the
+# faketime(1) utility to spoof the system time during builds.
 
 # This stuff all gets embedded in the vintage application.
 COPYRIGHT			:=	2008-2017 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
-HOMEPAGE			:=	http://www.diag.com/navigation/downloads/$(TITLE).html
+HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 HOST				:=	$(shell hostname -s)
 BRANCH				:=	$(shell git rev-parse --abbrev-ref HEAD)
 REVISION			:=	$(shell git rev-parse HEAD)
@@ -399,7 +395,9 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBX_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 # into a variety of tools including bash. e.g. eval $(vintage 2> /dev/null) .
 #
 # NOTE: in the generated C code below, whether you should have \\n or \n in the
-# echo statements seems to depend on what version of make you are running.
+# echo statements seems to depend on what version of make you are running. I've
+# tried to automate this - having this Makefile determine your make version - but
+# have not yet discovered the fu necessary to make that work reliably.
 
 SLASHES=2
 
@@ -736,7 +734,7 @@ documentation $(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pd
 # step below, examining the refman.log output file in the output directory,
 # and figuring out what Latex macro packages from CTAN to manually download,
 # install in a subdirectory of /usr/share/texmf/tex/latex, and then run texhash.
-# It was very tedius. Here's a list of what I installed.
+# It was very tedious. Here's a list of what I installed.
 # https://www.ctan.org/tex-archive/macros/latex/contrib/xtab
 # https://www.ctan.org/tex-archive/macros/latex/contrib/multirow
 # https://www.ctan.org/pkg/sectsty
