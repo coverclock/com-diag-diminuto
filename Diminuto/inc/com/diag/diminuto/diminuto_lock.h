@@ -36,7 +36,9 @@
  * "/var/run/foo.pid") using an exclusive open such that if the file
  * already exists the function fails. The file will contain the PID
  * of the calling process. This only works reliabily if the file is
- * in the local file system.
+ * in the local file system. This function may create a temporary
+ * file whose name is the file name appended with ".tmp", for example
+ * "/var/run/foo.pid.tmp".
  * @param file is the path and name of the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
@@ -44,7 +46,8 @@ extern int diminuto_lock_lock(const char * file);
 
 /**
  * Remove a lock file with the specified path and name (e.g.
- * "/var/run/foo.pid".
+ * "/var/run/foo.pid". It is an error to call this function with
+ * a lock file that does not exist.
  * @param file is the path and name of the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */

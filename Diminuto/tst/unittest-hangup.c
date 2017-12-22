@@ -8,6 +8,7 @@
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_hangup.h"
@@ -18,39 +19,58 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
 
-static const char LOGNAME[] = "unittest-hangup";
-static const char LOCKFILE[] = "/tmp/unittest-hangup.pid";
+static const char LOCKNAME[] = "/tmp/unittest-hangup.pid";
 
 int main(int argc, char ** argv)
 {
 	int rc;
 	diminuto_ticks_t hertz;
+	pid_t pid;
+	char buffer[256];
 
 	diminuto_core_enable();
 
 	hertz = diminuto_frequency();
 
-	if (argc > 1) {
+	if (argc == 1) {
 
-		diminuto_hangup_signal(diminuto_lock_check(LOCKFILE));
+		CHECKPOINT("unittest-hangup PARENT BEGIN\n");
+
+		snprintf(buffer, sizeof(buffer), "%s %s", argv[0], "child");
+
+		rc = diminuto_system(buffer);
+		ASSERT(rc == 0);
+
+		while ((pid = diminuto_lock_check(LOCKNAME)) < 0) {
+			diminuto_delay(hertz, !0);
+		}
+
+		rc = diminuto_hangup_signal(pid);
+		ASSERT(rc == 0);
+
+		CHECKPOINT("unittest-hangup PARENT END\n");
 
 	} else {
 
-		rc = diminuto_daemon(LOGNAME, LOCKFILE);
-		if (rc < 0) { return 2; }
+		CHECKPOINT("unittest-hangup CHILD BEGIN\n");
 
 		rc = diminuto_hangup_install(0);
-		if (rc < 0) { return 3; }
+		ASSERT(rc == 0);
+
+		rc = diminuto_lock_lock(LOCKNAME);
+		ASSERT(rc == 0);
 
 		while (!diminuto_hangup_check()) {
-			diminuto_delay(hertz, 1);
+			diminuto_delay(hertz, !0);
 		}
 
-        rc = diminuto_lock_unlock(LOCKFILE);
-		if (rc < 0) { return 4; }
+		rc = diminuto_lock_unlock(LOCKNAME);
+		ASSERT(rc == 0);
+
+		CHECKPOINT("unittest-hangup CHILD END\n");
 
 	}
 

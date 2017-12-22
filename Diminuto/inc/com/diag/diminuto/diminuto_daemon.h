@@ -13,38 +13,19 @@
 
 /**
  * Daemonize the application so that it cannot be affected by the invoking
- * terminal, parent, session, or process group.
- * Upon success, the parent process automatically exits with a 0 exit code,
- * and the function returns 0 to the daemon child process. Upon failure, the
- * daemon child process (if it exists) exists with a 1 exit code, and the
- * function returns -1 to the parent process. Setting errno is typically not
- * possible since the error is most likely to have occurred in the failed
- * child process. All errors, whether they occurred in the parent or the
- * child, are however unconditionally logged to the system log. This function
- * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
- * @param name is the name used for the system log.
- * @param file if non-null is the absolute path to a lock/pid file to be used.
- * @param timeout is the number of seconds to wait for the child to respond.
- * @param fail if true forces the child to fail (useful for testing).
- * @return 0 to the child upon success, -1 to the parent otherwise.
+ * terminal, parent, session, or process group. Not all errors can be indicated
+ * to the parent or to the child (depending on the process context in which they
+ * occur), but all errors are logged to the system log.
+ * @param name is the name used when opening the system log.
+ * @return 0 to child upon success, -1 to parent if otherwise.
  */
-extern int diminuto_daemon_generic(const char * name, const char * file, unsigned int timeout, int fail);
+extern int diminuto_daemon(const char * name);
 
 /**
- * Daemonize the application so that it cannot be affected by the invoking
- * terminal, parent, session, or process group.
- * Upon success, the parent process automatically exits with a 0 exit code,
- * and the function returns 0 to the daemon child process. Upon failure, the
- * daemon child process (if it exists) exists with a 1 exit code, and the
- * function returns -1 to the parent process. Setting errno is typically not
- * possible since the error is most likely to have occurred in the failed
- * child process. All errors, whether they occurred in the parent or the
- * child, are however unconditionally logged to the system log. This function
- * uses signals SIGUSR1, SIGALRM, and SIGCHLD.
- * @param name is the name used for the system log and the lock file.
- * @param file if non-null is the absolute path to a lock/pid file to be used.
- * @return 0 to the child upon success, -1 to the parent otherwise.
+ * Run the specified shell command in the background detached from the caller.
+ * @param command is the shell command string.
+ * @return 0 upon success, -1 otherwise.
  */
-extern int diminuto_daemon(const char * name, const char * file);
+extern int diminuto_system(const char * command);
 
 #endif

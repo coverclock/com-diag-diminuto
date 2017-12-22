@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
     if (argc > 1) {
         int rc;
         diminuto_log_emit("DAEMONIZING\n");
-        if ((rc = diminuto_daemon(argv[0], (const char *)0)) == 0) {
+        if ((rc = diminuto_daemon(argv[0])) == 0) {
             diminuto_log_emit("DAEMONIZED\n");
         } else {
             diminuto_perror("diminuto_daemon");

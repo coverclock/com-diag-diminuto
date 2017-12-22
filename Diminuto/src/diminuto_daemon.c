@@ -11,8 +11,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_daemon.h"
-#include "com/diag/diminuto/diminuto_lock.h"
-#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
@@ -23,407 +21,339 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 
-static int alarmed = 0;
-
-static void diminuto_daemon_handler(int signum)
-{
-    if (signum == SIGALRM) {
-        alarmed = !0;
-    } else if (signum == SIGUSR1) {
-        exit(0);
-    } else {
-        /* Do nothing. */
-    }
-}
-
-static int diminuto_daemon_install(int signum)
+static int diminuto_daemon_install(int signum, void (*handler)(int))
 {
     struct sigaction action;
 
     memset(&action, 0, sizeof(action));
-    action.sa_handler = diminuto_daemon_handler;
+    action.sa_handler = handler;
 
     if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
-        diminuto_serror("diminuto_daemon_install: sigaction");
+        diminuto_serror("diminuto_daemon: sigaction");
         return -1;
     }
 
     return 0;
 }
 
-static int diminuto_daemon_ignore(int signum)
+static inline int diminuto_daemon_ignore(int signum)
 {
-    struct sigaction action;
-
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = SIG_IGN;
-
-    if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
-        diminuto_serror("diminuto_daemon_ignore: sigaction");
-        return -1;
-    }
-
-    return 0;
+	return diminuto_daemon_install(signum, SIG_IGN);
 }
 
-static int diminuto_daemon_default(int signum)
+static inline int diminuto_daemon_default(int signum)
 {
-    struct sigaction action;
-
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = SIG_DFL;
-
-    if (sigaction(signum, &action, (struct sigaction *)0) < 0) {
-        diminuto_serror("diminuto_daemon_default: sigaction");
-        return -1;
-    }
-
-    return 0;
+	return diminuto_daemon_install(signum, SIG_DFL);
 }
 
-int diminuto_daemon_generic(const char * name, const char * file, unsigned int timeout, int fail)
+static void diminuto_daemon_prepare(void)
 {
-    int signum = SIGALRM;
-    pid_t ppid = -1;
-    pid_t spid = -1;
-    pid_t pid = -1;
-    long fds = 0;
-    int fd = -1;
+    /* Flush output before we mess with it. */
 
-    /*
-     *  PARENT
-     */
+    if (fflush(stdout) == EOF) {
+    	diminuto_serror("diminuto_daemon: fflush(stdout)");
+    }
 
-    do {
+    if (fflush(stderr) == EOF) {
+    	diminuto_serror("diminuto_daemon: fflush(stderr)");
+    }
 
-        /* Make sure we are not already a daemon. */
+}
 
-        if ((ppid = getppid()) < 0) {
-            diminuto_serror("diminuto_daemon: getppid");
-            break;
-        }
+static void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
+{
+	int fd = -1;
 
-        if (ppid == 1) {
-            return 0;
-        }
+	/* Redirect the file descriptor to the path. */
 
-        /* This will be the process that the daemon signals. */
-
-        if ((spid = getpid()) < 0) {
-        	diminuto_serror("diminuto_daemon: getpid");
-        	break;
-        }
-
-        /* Establish a way for the daemon child to notify us. */
-
-        if (diminuto_daemon_install(SIGUSR1) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_install(SIGALRM) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_install(SIGCHLD) < 0) {
-            break;
-        }
-
-        /* Flush output before we mess with it. */
-
-        if (fflush(stdout) == EOF) {
-        	diminuto_serror("diminuto_daemon: fflush(stdout)");
-        }
-
-        if (fflush(stderr) == EOF) {
-        	diminuto_serror("diminuto_daemon: fflush(stderr)");
-        }
-
-        /* Fork off the daemon child. */
-
-        alarmed = 0;
-
-        if ((pid = fork()) < 0) {
-            diminuto_serror("diminuto_daemon: fork");
-            break;
-        }
-
-    } while (0);
-
-	/*
-	 * N.B. We may get a SIGUSR1 (success) or a SIGALRM (failure)
-	 *      from the child at any time, including before we even
-	 *      examine the return code from the fork(). We try not
-	 *      to wait for ten seconds below if the child has already
-	 *      signaled us, but there is no reliable way to be sure.
-	 */
-
-	/* Wait for the daemon child to signal us so our handler exits us. */
-
-    if (pid != 0) {
-        if (pid > 0) {
-            if (!alarmed) {
-                alarm(timeout);
-                while (!alarmed) {
-                    pause();
-                }
-            }
-        }
-        return -1;
+	if ((fd = open(path, flags, 0)) < 0) {
+		diminuto_serror("diminuto_daemon: open");
+	} else if (fd == number) {
+		/* Do nothing. */
+	} else if (dup2(fd, number) < 0) {
+		diminuto_serror("diminuto_daemon: dup2");
+	} else if (close(fd) < 0) {
+		diminuto_serror("diminuto_daemon: close");
+	} else {
+		/* Do nothing. */
 	}
 
-    /*
-     *  CHILD
-     */
+	/* Close the FILE stream if it isn't already the file descriptor. */
 
-    do {
+	if (fd < 0) {
+		/* Do nothing. */
+	} else if (*filep == (FILE *)0) {
+		/* Do nothing. */
+	} else if (fileno(*filep) == number) {
+		/* Do nothing. */
+	} else if (fclose(*filep) == 0) {
+		/* Do nothing. */
+	} else {
+		diminuto_serror("diminuto_daemon: fclose");
+	}
 
-        /* Orphan us from our controlling terminal and process group. */
+	/* Reopen the FILE stream and assign it to the descriptor. */
 
-        if (setsid() < 0) {
-            diminuto_serror("diminuto_daemon: setsid");
-            break;
-        }
+	if (fd < 0) {
+		/* Do nothing. */
+	} else if ((*filep != (FILE *)0) && (fileno(*filep) == number)) {
+		/* Do nothing. */
+	} else if ((*filep = fdopen(number, "r")) != (FILE *)0) {
+		/* Do nothing. */
+	} else {
+		diminuto_serror("diminuto_daemon: fdopen");
+	}
 
-        /* Fork again to abandon any hope of having a controlling terminal. */
-
-        if ((pid = fork()) < 0) {
-            diminuto_serror("diminuto_daemon: fork");
-            break;
-        }
-
-        if (pid > 0) {
-        	exit(0);
-        }
-
-        /* Dissociate ourselves from any problematic signal handlers. */
-
-        if (diminuto_daemon_ignore(SIGUSR1) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_ignore(SIGALRM) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_default(SIGCHLD) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_ignore(SIGTSTP) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_ignore(SIGTTOU) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_ignore(SIGTTIN) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_ignore(SIGHUP) < 0) {
-            break;
-        }
-
-        if (diminuto_daemon_default(SIGTERM) < 0) {
-            break;
-        }
-
-        /* Reset our file mask. */
-
-        umask(0);
-
-        /* Change to a directory that will always be there. */
-
-        if (chdir("/") < 0) {
-            diminuto_serror("diminuto_daemon: chdir");
-            break;
-        }
-
-        /*
-         * So why do we do all this stuff below? I saw an interesting bug
-         * the other day while helping someone else debug their code. The
-         * developer had closed file descriptors 0, 1, and 2, daemonized
-         * using his own technique, and then opened sockets to communicate with
-         * other processes. But a function in an underlying framework continued
-         * to use printf to emit debug messages. The FILE stdout was still
-         * using file descriptor 1, but that was now a socket for some
-         * completely different purpose. The receiver got all confused
-         * because this application was sending it debug output instead of
-         * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
-         * /dev/null, and then we make sure that stdin, stdout, and stderr are
-         * also redirected to /dev/null. And then we close everything else.
-         * We have to be careful not to leave the file descriptor associated
-         * with sending stuff to syslog closed; sure wish there was an API call
-         * to tell what that file descriptor was.
-         */
-
-        /* Redirect the big three descriptors to /dev/null. */
-
-        if ((fd = open("/dev/null", O_RDONLY, 0)) < 0) {
-        	diminuto_serror("diminuto_daemon: open(STDIN_FILENO)");
-        	break;
-        } else if (fd == STDIN_FILENO) {
-        	/* Do nothing. */
-        } else if (dup2(fd, STDIN_FILENO) < 0) {
-        	diminuto_serror("diminuto_daemon: du2(STDIN_FILENO)");
-        	break;
-        } else if (close(fd) < 0) {
-        	diminuto_serror("diminuto_daemon: close(STDIN_FILENO)");
-        	break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        if ((fd = open("/dev/null", O_WRONLY, 0)) < 0) {
-        	diminuto_serror("diminuto_daemon: open(STDOUT_FILENO)");
-        	break;
-        } else if (fd == STDOUT_FILENO) {
-        	/* Do nothing. */
-        } else if (dup2(fd, STDOUT_FILENO) < 0) {
-        	diminuto_serror("diminuto_daemon: du2(STDOUT_FILENO)");
-        	break;
-        } else if (close(fd) < 0) {
-        	diminuto_serror("diminuto_daemon: close(STDOUT_FILENO)");
-        	break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        if ((fd = open("/dev/null", O_WRONLY, 0)) < 0) {
-        	diminuto_serror("diminuto_daemon: open(STDERR_FILENO)");
-        	break;
-        } else if (fd == STDERR_FILENO) {
-        	/* Do nothing. */
-        } else if (dup2(fd, STDERR_FILENO) < 0) {
-        	diminuto_serror("diminuto_daemon: du2(STDERR_FILENO)");
-        	break;
-        } else if (close(fd) < 0) {
-        	diminuto_serror("diminuto_daemon: close(STDERR_FILENO)");
-        	break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        /* Redirect the big three FILEs to /dev/null. */
-
-        if (fileno(stdin) == STDIN_FILENO) {
-        	/* Do nothing. */
-        } else if (freopen("/dev/null", "r", stdin) == (FILE *)0) {
-            diminuto_serror("diminuto_daemon: freopen(stdin)");
-            break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        if (fileno(stdout) == STDOUT_FILENO) {
-        	/* Do nothing. */
-        } else if (freopen("/dev/null", "w", stdout) == (FILE *)0) {
-            diminuto_serror("diminuto_daemon: freopen(stdout)");
-            break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        if (fileno(stdout) == STDOUT_FILENO) {
-        	/* Do nothing. */
-        } else if (freopen("/dev/null", "w", stderr) == (FILE *)0) {
-            diminuto_serror("diminuto_daemon: freopen(stderr)");
-            break;
-        } else {
-        	/* Do nothing. */
-        }
-
-        /* Close the system log socket. */
-
-        diminuto_log_close();
-
-        /* Close all unused file descriptors. */
-
-        fds = diminuto_fd_count();
-        for (fd = 0; fd < fds; ++fd) {
-        	if (fd == STDIN_FILENO) {
-        		/* Do nothing. */
-        	} else if (fd == STDOUT_FILENO) {
-        		/* Do nothing. */
-        	} else if (fd == STDERR_FILENO) {
-        		/* Do nothing. */
-        	} else if (fd == fileno(stdin)) {
-        		/* Do nothing. */
-        	} else if (fd == fileno(stdout)) {
-        		/* Do nothing. */
-        	} else if (fd == fileno(stderr)) {
-        		/* Do nothing. */
-        	} else if (close(fd) < 0) {
-        		/* Do nothing. */
-        	} else {
-        		/* Do nothing. */
-        	}
-        }
-
-        /* Open a new system log socket. */
-
-        diminuto_log_open((name != (const char *)0) ? name : "diminuto_daemon");
-
-        /* If forced to fail, fail now. */
-
-        if (fail) {
-        	errno = 0;
-            diminuto_serror("diminuto_daemon: fail");
-        	break;
-        }
-
-        /* Create a lock file. */
-
-        if (file == (char *)0) {
-            /* Do nothing. */
-        } else if (diminuto_lock_lock(file) < 0) {
-            diminuto_serror("diminuto_daemon: diminuto_lock");
-            break;
-        } else {
-            /* Do nothing. */
-        }
-
-        /* Set signal number to indicate success. */
-
-        signum = SIGUSR1;
-
-    } while (0);
-
-    /*
-     * DAEMON
-     */
-
-    do {
-
-        /* Notify our parent. */
-
-        if (kill(spid, signum) < 0) {
-        	diminuto_serror("diminuto_daemon: kill");
-        	break;
-        }
-
-        /* Force a context switch so it sees it. */
-
-        if (diminuto_yield() < 0) {
-        	diminuto_serror("diminuto_daemon: diminuto_yield");
-        	break;
-        }
-
-        if (signum != SIGUSR1) {
-        	break;
-        }
-
-        return 0;
-
-    } while (0);
-
-    exit(1);
 }
 
-int diminuto_daemon(const char * name, const char * file)
+static void diminuto_daemon_sanitize(const char * name, const char * path)
 {
-	return diminuto_daemon_generic(name, file, 10, 0);
+    long fds = 0;
+    int fd = -1;
+    FILE * file = (FILE *)0;
+
+    /* Orphan ourselves from our original terminal session. */
+
+    if (setsid() < 0) {
+        diminuto_serror("diminuto_daemon: setsid");
+    }
+
+    /* Dissociate ourselves from any problematic signal handlers. */
+
+    diminuto_daemon_ignore(SIGUSR1);
+
+    diminuto_daemon_ignore(SIGALRM);
+
+    diminuto_daemon_default(SIGCHLD);
+
+    diminuto_daemon_ignore(SIGTSTP);
+
+    diminuto_daemon_ignore(SIGTTOU);
+
+    diminuto_daemon_ignore(SIGTTIN);
+
+    diminuto_daemon_ignore(SIGHUP);
+
+    diminuto_daemon_default(SIGTERM);
+
+    /* Reset our file mask (always succeeds). */
+
+    (void)umask(0);
+
+    /* Change to a directory that will always be there. */
+
+    if (chdir("/") < 0) {
+        diminuto_serror("diminuto_daemon: chdir");
+    }
+
+    /*
+     * So why do we do all this FILE stuff? I saw an interesting bug
+     * the other day while helping someone else debug their code. The
+     * developer had closed file descriptors 0, 1, and 2, daemonized
+     * using his own technique, and then opened sockets to communicate with
+     * other processes. But a function in an underlying framework continued
+     * to use printf to emit debug messages. The FILE stdout was still
+     * using file descriptor 1, but that was now a socket for some
+     * completely different purpose. The receiver got all confused
+     * because this application was sending it debug output instead of
+     * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
+     * /dev/null, then we make sure that stdin, stdout, and stderr are
+     * also redirected to 0, 1, and 2. And then we close everything else.
+     * We have to be careful not to leave the file descriptor associated
+     * with sending stuff to syslog closed; sure wish there was an API call
+     * to tell what that file descriptor was.
+     */
+
+    /* Redirect the big three descriptors to /dev/null. */
+
+    diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
+
+    diminuto_daemon_redirect(path, STDOUT_FILENO, O_WRONLY, &stdout, "w");
+
+    diminuto_daemon_redirect(path, STDERR_FILENO, O_WRONLY, &stderr, "w");
+
+    /* Close the system log socket. */
+
+    diminuto_log_close();
+
+    /*
+     * Four years ago I ran into an issue in an Asterisk 11.5.0 system I was
+     * working on for a client. Then, just the other day, when asked to
+     * implement some minor features on this very same product (an Iridium
+     * satellite communications system for business aircraft), I ran into
+     * exactly the same issue in a slightly different context. Deja vu.
+     * While spawning off a child process using the now-ancient version of
+     * the Asterisk function ast_safe_system(), which uses fork(2) and exec(2)
+     * from an equally ancient version of Linux, the resulting child process
+     * was getting hung on the close(2) in a fast user-space mutex. The only fix
+     * a colleague and I could come up with four years ago was not to do the
+     * close. Which is highly troublesome, particularly in light of how many
+     * file descriptors (including sockets and such) Asterisk keeps open.
+     * The only factor that was really questionable is this was multi-
+     * threaded code. I need to go look at the implementation of close(2) in
+     * that old Linux kernel to understand this better.
+     */
+
+    /* Close all unused file descriptors. */
+
+    fds = diminuto_fd_count();
+
+    /*
+     * Another approach to this I thought was interesting is if you know
+     * you are going to do an exec(2), mark all of the file descriptors as
+     * "close on exec" using fcntl(2). The caller could have done this
+     * when using open(2) as well. Of course this is only applicable if you
+     * are doing an exec(2), not just daemonizing.
+     */
+
+    for (fd = 0; fd < fds; ++fd) {
+    	if (fd == STDIN_FILENO) {
+    		/* Do nothing. */
+    	} else if (fd == STDOUT_FILENO) {
+    		/* Do nothing. */
+    	} else if (fd == STDERR_FILENO) {
+    		/* Do nothing. */
+    	} else if (fd == fileno(stdin)) {
+    		/* Do nothing. */
+    	} else if (fd == fileno(stdout)) {
+    		/* Do nothing. */
+    	} else if (fd == fileno(stderr)) {
+    		/* Do nothing. */
+    	} else if (close(fd) < 0) {
+    		/* Do nothing. */
+    	} else {
+    		/* Do nothing. */
+    	}
+    }
+
+    /* Open a new system log socket. */
+
+    if (name != (const char *)0) {
+    	diminuto_log_open(name);
+    }
+}
+
+int diminuto_daemon(const char * name)
+{
+    pid_t pid = -1;
+    int status = -1;
+
+	/*
+	 * PARENT
+	 */
+
+	/* Make sure we are not already a daemon. */
+
+	if ((pid = getppid()) < 0) {
+		diminuto_serror("diminuto_daemon: getppid");
+	} else if (pid == 1) {
+		return 1;
+	} else {
+		/* Do nothing. */
+	}
+
+	/* Flush output before we mess with it. */
+
+	diminuto_daemon_prepare();
+
+    /* Fork the first child and reap it. */
+
+	if ((pid = fork()) < 0) {
+		diminuto_serror("diminuto_daemon: fork 1");
+		return -1;
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else if (waitpid(pid, &status, 0) < 0) {
+		diminuto_serror("diminuto_daemon: waitpid");
+		return -1;
+	} else if (!WIFEXITED(status)) {
+		return -1;
+	} else if (WEXITSTATUS(status) != 0) {
+		return -1;
+	} else {
+		_exit(0);
+	}
+
+	/*
+	 * FIRST CHILD
+	 */
+
+	/* Fork and exit so the second child is inherited by the init process. */
+
+	if ((pid = fork()) < 0) {
+		diminuto_serror("diminuto_daemon: fork 2");
+		_exit(1);
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else {
+		_exit(0);
+	}
+
+	/*
+	 * SECOND CHILD
+	 */
+
+	/* Sanitize the context of the second child. */
+
+	diminuto_daemon_sanitize(name, "/dev/null");
+
+    return 0;
+}
+
+int diminuto_system(const char * command)
+{
+    pid_t pid = -1;
+    int status = -1;
+
+	/*
+	 * PARENT
+	 */
+
+    /* Fork the first child and reap it. */
+
+	if ((pid = fork()) < 0) {
+		diminuto_serror("diminuto_system: fork 1");
+		return -1;
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else if (waitpid(pid, &status, 0) < 0) {
+		diminuto_serror("diminuto_system: waitpid");
+		return -1;
+	} else if (!WIFEXITED(status)) {
+		return -1;
+	} else if (WEXITSTATUS(status) != 0) {
+		return -1;
+	} else {
+		return 0;
+	}
+
+	/*
+	 * FIRST CHILD
+	 */
+
+	/* Fork and exit so the second child is inherited by the init process. */
+
+	if ((pid = fork()) < 0) {
+		diminuto_serror("diminuto_system: fork 2");
+		_exit(1);
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else {
+		_exit(0);
+	}
+
+	/*
+	 * SECOND CHILD
+	 */
+
+	/* Sanitize the context of the second child. */
+
+	diminuto_daemon_sanitize((const char *)0, "/dev/tty");
+
+	execl("/bin/sh", "bin/sh", "-c", command, (char *)0);
+	diminuto_serror("diminuto_system: execl");
+	_exit(1);
 }

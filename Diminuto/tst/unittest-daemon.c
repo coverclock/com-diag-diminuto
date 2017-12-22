@@ -16,86 +16,71 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+
+extern char * get_current_dir_name(void); /* Supposed to be in <unistd.h>? */
 
 static const char LOGNAME[] = "unittest-daemon";
-static const char LOCKFILE[] = COM_DIAG_DIMINUTO_LOCK_ROOT "unittest-daemon.pid";
+static const char COMMAND[] = "ps -l";
 
 int main(int argc, char ** argv)
 {
     int rc;
+    pid_t pid0;
     pid_t pid1;
-    pid_t pid2;
-    pid_t pid3;
-    pid_t pid4;
-    pid_t pid5;
-    pid_t pid6;
-    pid_t pid7;
-    pid_t pid8;
     pid_t ppid;
+    pid_t spid;
     int fds;
     int fd;
     char ch;
     ssize_t ss;
     size_t us;
+    char * path;
 
     diminuto_core_enable();
 
-    pid1 = getpid();
-    ASSERT(pid1 >= 0);
-
-    CHECKPOINT("PARENT1 pid=%d\n", pid1);
-
-    diminuto_lock_unlock(LOCKFILE);
-
-    rc = diminuto_daemon_generic(LOGNAME, LOCKFILE, 10, !0);
-    ASSERT(rc < 0);
-
-    pid8 = getpid();
-    ASSERT(pid8 == pid1);
-
-    CHECKPOINT("PARENT2 pid=%d\n", pid8);
-
-    diminuto_lock_unlock(LOCKFILE);
-
-    rc = diminuto_lock_lock(LOCKFILE);
-    ASSERT(rc == 0);
-
-    rc = diminuto_daemon(LOGNAME, LOCKFILE);
-    ASSERT(rc < 0);
-
-    pid7 = getpid();
-    ASSERT(pid7 == pid1);
-
-    CHECKPOINT("PARENT3 pid=%d\n", pid7);
-
-    rc = diminuto_lock_unlock(LOCKFILE);
-    ASSERT(rc == 0);
-
-    rc = diminuto_daemon(LOGNAME, LOCKFILE);
-    ASSERT(rc == 0);
-
-    pid2 = getpid();
-    ASSERT(pid2 > 0);
-    ASSERT(pid1 != pid2);
+    pid0 = getpid();
+    ASSERT(pid0 > 1);
 
     ppid = getppid();
-    ASSERT(ppid > 0);
+    ASSERT(ppid > 1);
+
+    spid = getsid(pid0);
+    ASSERT(spid >= 0);
+
+    CHECKPOINT("PARENT pid=%d ppid=%d spid=%d\n", pid0, ppid, spid);
+
+    rc = diminuto_system(COMMAND);
+    ASSERT(rc == 0);
+
+    rc = diminuto_daemon(LOGNAME);
+    ASSERT(rc == 0);
+
+    pid1 = getpid();
+    ASSERT(pid1 >= 0);
+    ASSERT(pid1 != pid0);
+
+    ppid = getppid();
     ASSERT(ppid == 1);
 
-    CHECKPOINT("CHILD pid=%d ppid=%d\n", pid2, ppid);
+    spid = getsid(pid1);
+    ASSERT(spid == pid1);
 
-    rc = diminuto_lock_lock(LOCKFILE);
-    ASSERT(rc < 0);
+    CHECKPOINT("CHILD pid=%d ppid=%d spid=%d\n", pid1, ppid, spid);
 
-    pid3 = diminuto_lock_check(LOCKFILE);
-    ASSERT(pid3 > 0);
-    ASSERT(pid2 == pid3);
+    ASSERT(umask(0) == 0);
+
+    path = get_current_dir_name();
+    ASSERT(path != (char *)0);
+    ASSERT(strcmp(path, "/") == 0);
+    free(path);
 
     ASSERT(STDIN_FILENO == 0);
     ss = read(STDIN_FILENO, &ch, sizeof(ch));
@@ -110,29 +95,19 @@ int main(int argc, char ** argv)
     ASSERT(ss == 1);
 
     ASSERT(stdin != (FILE *)0);
+    ASSERT(fileno(stdin) == STDIN_FILENO);
     us = fread(&ch, sizeof(ch), 1, stdin);
     ASSERT(us == 0);
 
     ASSERT(stdout != (FILE *)0);
+    ASSERT(fileno(stdout) == STDOUT_FILENO);
     us = fwrite(&ch, sizeof(ch), 1, stdout);
     ASSERT(us == 1);
 
     ASSERT(stderr != (FILE *)0);
+    ASSERT(fileno(stderr) == STDERR_FILENO);
     us = fwrite(&ch, sizeof(ch), 1, stderr);
     ASSERT(us == 1);
-
-    /*
-     * Can't test all fds because we don't know which one is the syslog
-     * socket and the there is no call in the syslog API to tell us.
-     */
-
-    rc = diminuto_lock_unlock(LOCKFILE);
-    ASSERT(rc == 0);
-
-    rc = diminuto_lock_unlock(LOCKFILE);
-    ASSERT(rc < 0);
-
-    CHECKPOINT("DAEMON\n");
 
     EXIT();
 }
