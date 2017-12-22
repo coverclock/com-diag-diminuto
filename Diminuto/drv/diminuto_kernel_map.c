@@ -6,7 +6,7 @@
  * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Implements functions to map physical memory into kernel virtual memory and
  * to unmap it. This translation unit is only applicable to code in kernel

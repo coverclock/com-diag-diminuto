@@ -8,7 +8,7 @@
  * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This is where the fundamental unit of time is defined for Diminuto, in terms
  * of the duration of a single Diminuto tick, represented as the inverse of this

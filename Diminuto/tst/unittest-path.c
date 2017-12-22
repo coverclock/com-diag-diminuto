@@ -5,7 +5,7 @@
  * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * It is useful to run this under valgrind to insure that it doesn't have
  * any memory leaks.

@@ -8,7 +8,7 @@
  * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Important safety tip: although UNIX (and POSIX) professes to keep the time
  * in Coordinated Universal Time (UTC), it doesn't account for the occasional

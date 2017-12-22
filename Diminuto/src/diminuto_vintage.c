@@ -5,7 +5,7 @@
  * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  * The purpose of this translation unit is to embed the vintage string
  * inside the library or shared object. The object module will be statically
  * linked into an application only if the translation unit makes explicit

@@ -8,7 +8,7 @@
  * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This header file tries to infer the underlying platform. It has been tested
  * on Ubuntu 14.04 for both user-space builds ("glibc") and kernel module builds

@@ -8,7 +8,7 @@
  * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Use two throttles, a throttle being an implementation of the Generic Cell
  * Rate Algorithm (GCRA) using a Virtual Scheduler, to implement a traffic

@@ -8,7 +8,7 @@
  * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Implements a Red-Black Tree. This is intended to be used to build more
  * complex data structures, such as those have associative-memory-like

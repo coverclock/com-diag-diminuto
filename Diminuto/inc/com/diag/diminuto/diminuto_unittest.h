@@ -8,7 +8,7 @@
  * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This is a dirt simple unit testing framework for C programs.
  * If you are using C++ (or even if you are using C but are

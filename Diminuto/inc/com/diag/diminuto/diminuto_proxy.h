@@ -8,7 +8,7 @@
  * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This is an example of how powerful the preprocessor can be for code
  * generation (but with great power comes great responsibility). These macros

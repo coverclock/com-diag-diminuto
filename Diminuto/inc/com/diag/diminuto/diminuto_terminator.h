@@ -8,7 +8,7 @@
  * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * The terminator feature propagates a SIGTERM signal to appropriate processes
  * (children or process group) when it receives one.

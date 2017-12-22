@@ -8,7 +8,7 @@
  * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Provides socket and other interprocess/interprocessor communication
  * capabilities that are agnostic as to whether IPv4 or IPv6 is being used.

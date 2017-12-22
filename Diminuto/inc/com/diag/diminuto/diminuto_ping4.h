@@ -8,7 +8,7 @@
  * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This feature is a programmatic version of ping(1): send an ICMP ECHO REQUEST
  * to an IPv4 address and (hopefully) receive an ICMP ECHO REPLY back. If so,

@@ -8,7 +8,7 @@
  * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Some of the underlying functionality used by this feature is not implemented
  * in uClibc, and implemented with different semantics in bionic (Android).

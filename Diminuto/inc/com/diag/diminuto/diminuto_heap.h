@@ -8,7 +8,7 @@
  * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This simple little dependency injection mechanism allows you to replace
  * malloc() and free() from <stdlib.h> with alternatives. I use this for

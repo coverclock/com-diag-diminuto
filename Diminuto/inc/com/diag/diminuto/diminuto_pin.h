@@ -8,7 +8,7 @@
  * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * If you are reading a GPIO pin that changes in real-time, you will probably
  * need a debouncing algorithm and/or an edge detector. See the cue feature

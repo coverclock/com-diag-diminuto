@@ -8,7 +8,7 @@
  * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Pre-processes and then stringifies a preprocessor symbol. This is
  * a common compiler trick trick to get C to turn the value of a preprocessor

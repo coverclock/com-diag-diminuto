@@ -6,7 +6,7 @@
  * Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Implements get and put operators typically used for memory mapped
  * register operations. May be included by user space applications (just

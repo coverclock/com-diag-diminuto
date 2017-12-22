@@ -5,7 +5,7 @@
  * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  * The purpose of this translation unit is to embed the platform string
  * inside the library or shared object. The resulting object module should
  * never be linked into an application unless the application explicitly

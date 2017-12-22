@@ -8,7 +8,7 @@
  * Copyright 2013 Digital Aggregates Corporation, Arvada CO USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Emits characters to a FILE, encoding non-printable characters as if they
  * were written for a C program. Automatically inserts newlines. When printing

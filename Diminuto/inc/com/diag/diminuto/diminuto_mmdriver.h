@@ -8,7 +8,7 @@
  * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This file describes the user space interface to the Diminuto Generic
  * Memory Mapped Device Driver. At compile or install time, the driver is

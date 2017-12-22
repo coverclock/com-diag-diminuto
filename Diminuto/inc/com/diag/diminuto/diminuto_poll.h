@@ -8,7 +8,7 @@
  * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This is a socket multiplexer that uses the ppoll(2) system call instead of
  * the pselect(2) system call used by the mux feature. This feature exists

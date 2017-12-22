@@ -5,7 +5,7 @@
  * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * If the ASSERTions fail, you've broken the feature. But if the ASSERTions
  * work and the EXPECTations fail, you've learned something interesting about

@@ -5,7 +5,7 @@
  * Copyright 2014-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * There's a lot of duplication here, but I'm paranoid that way. Remarkably,
  * I once worked on an embedded project using a proprietary non-GNU C compiler

@@ -5,7 +5,7 @@
  * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This translation unit is the implementation of the Diminuto Generic Memory
  * Mapped Driver. It is compiled using the standard Linux 2.4 (and 2.6) (and

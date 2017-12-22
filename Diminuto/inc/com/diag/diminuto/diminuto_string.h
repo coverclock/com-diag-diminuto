@@ -8,7 +8,7 @@
  * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * IMPORTANT SAFETY TIP: depending on the implementation, any alternative
  * implementations of malloc(3) et al. used by this strdup may be incompatible.

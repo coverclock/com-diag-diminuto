@@ -8,7 +8,7 @@
  * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
- * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
+ * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This facility was inspired by countless dump programs I have encountered
  * over the years on platforms like the IBM 360 and the PDP-11. Depending on
