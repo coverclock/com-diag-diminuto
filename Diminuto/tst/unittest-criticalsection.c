@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * http://www.diag.com/navigation/downloads/Diminuto.html<BR>
@@ -20,31 +20,18 @@
 int main(void)
 {
 	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-	int state;
 
 	ASSERT(pthread_mutex_trylock(&mutex) == 0);
 	pthread_mutex_unlock(&mutex);
-#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &state);
-	ASSERT(state == PTHREAD_CANCEL_ENABLE);
-#endif
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
 		ASSERT(pthread_mutex_trylock(&mutex) == EBUSY);
-#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &state);
-		ASSERT(state == PTHREAD_CANCEL_DISABLE);
-#endif
 
 	DIMINUTO_CRITICAL_SECTION_END;
 
 	ASSERT(pthread_mutex_trylock(&mutex) == 0);
 	pthread_mutex_unlock(&mutex);
-#if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &state);
-	ASSERT(state == PTHREAD_CANCEL_ENABLE);
-#endif
 
     EXIT();
 }
