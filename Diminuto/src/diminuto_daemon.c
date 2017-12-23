@@ -238,7 +238,8 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
 
 int diminuto_daemon(const char * name)
 {
-    pid_t pid = -1;
+	pid_t pid = -1;
+    pid_t rc = -1;
     int status = -1;
 
 	/*
@@ -266,15 +267,22 @@ int diminuto_daemon(const char * name)
 		return -1;
 	} else if (pid == 0) {
 		/* Do nothing. */
-	} else if (waitpid(pid, &status, 0) < 0) {
-		diminuto_serror("diminuto_daemon: waitpid");
-		return -1;
-	} else if (!WIFEXITED(status)) {
-		return -1;
-	} else if (WEXITSTATUS(status) != 0) {
-		return -1;
 	} else {
-		_exit(0);
+		while (!0) {
+			if (((rc = waitpid(pid, &status, 0)) >= 0) || (errno != EINTR)) {
+				break;
+			}
+		}
+		if (rc < 0) {
+			diminuto_serror("diminuto_daemon: waitpid");
+			return -1;
+		} else if (!WIFEXITED(status)) {
+			return -1;
+		} else if (WEXITSTATUS(status) != 0) {
+			return -1;
+		} else {
+			_exit(0);
+		}
 	}
 
 	/*
@@ -306,6 +314,7 @@ int diminuto_daemon(const char * name)
 int diminuto_system(const char * command)
 {
     pid_t pid = -1;
+    pid_t rc = -1;
     int status = -1;
 
 	/*
@@ -319,15 +328,22 @@ int diminuto_system(const char * command)
 		return -1;
 	} else if (pid == 0) {
 		/* Do nothing. */
-	} else if (waitpid(pid, &status, 0) < 0) {
-		diminuto_serror("diminuto_system: waitpid");
-		return -1;
-	} else if (!WIFEXITED(status)) {
-		return -1;
-	} else if (WEXITSTATUS(status) != 0) {
-		return -1;
 	} else {
-		return 0;
+		while (!0) {
+			if (((rc = waitpid(pid, &status, 0)) >= 0) || (errno != EINTR)) {
+				break;
+			}
+		}
+		if (rc < 0) {
+			diminuto_serror("diminuto_system: waitpid");
+			return -1;
+		} else if (!WIFEXITED(status)) {
+			return -1;
+		} else if (WEXITSTATUS(status) != 0) {
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 
 	/*
