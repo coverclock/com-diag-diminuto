@@ -269,20 +269,31 @@ int diminuto_daemon(const char * name)
 		/* Do nothing. */
 	} else {
 		while (!0) {
-			if (((rc = waitpid(pid, &status, 0)) >= 0) || (errno != EINTR)) {
+			if ((rc = waitpid(pid, &status, 0)) > 0) {
 				break;
+			} else if (rc == 0) {
+				/* Should never happen. */
+				rc = 1;
+			} else if (errno == EINTR) {
+				continue;
+			} else if (errno == ECHILD) {
+				/* Caller probably handles SIGCHLD. */
+				diminuto_serror("diminuto_daemon: waitpid");
+				rc = 0;
+			} else {
+				diminuto_serror("diminuto_daemon: waitpid");
+				rc = 1;
 			}
+			_exit(rc);
 		}
-		if (rc < 0) {
-			diminuto_serror("diminuto_daemon: waitpid");
-			return -1;
-		} else if (!WIFEXITED(status)) {
-			return -1;
+		if (!WIFEXITED(status)) {
+			rc = 1;
 		} else if (WEXITSTATUS(status) != 0) {
-			return -1;
+			rc = 1;
 		} else {
-			_exit(0);
+			rc = 0;
 		}
+		_exit(rc);
 	}
 
 	/*
@@ -330,20 +341,31 @@ int diminuto_system(const char * command)
 		/* Do nothing. */
 	} else {
 		while (!0) {
-			if (((rc = waitpid(pid, &status, 0)) >= 0) || (errno != EINTR)) {
+			if ((rc = waitpid(pid, &status, 0)) > 0) {
 				break;
+			} else if (rc == 0) {
+				/* Should never happen. */
+				rc = -1;
+			} else if (errno == EINTR) {
+				continue;
+			} else if (errno == ECHILD) {
+				/* Caller probably handles SIGCHLD. */
+				diminuto_serror("diminuto_system: waitpid");
+				rc = 0;
+			} else {
+				diminuto_serror("diminuto_system: waitpid");
+				rc = -1;
 			}
+			return rc;
 		}
-		if (rc < 0) {
-			diminuto_serror("diminuto_system: waitpid");
-			return -1;
-		} else if (!WIFEXITED(status)) {
-			return -1;
+		if (!WIFEXITED(status)) {
+			rc = -1;
 		} else if (WEXITSTATUS(status) != 0) {
-			return -1;
+			rc = -1;
 		} else {
-			return 0;
+			rc = 0;
 		}
+		return rc;
 	}
 
 	/*
