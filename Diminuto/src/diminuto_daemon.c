@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include "diminuto_daemon.h"
 
 static int diminuto_daemon_install(int signum, void (*handler)(int))
 {
@@ -61,6 +62,64 @@ static void diminuto_daemon_prepare(void)
     	diminuto_serror("diminuto_daemon: fflush(stderr)");
     }
 
+}
+
+static pid_t diminuto_daemon_verify(void)
+{
+	int rc = -1;
+	pid_t pid = -1;
+
+	if ((pid = getppid()) < 0) {
+		diminuto_perror("diminuto_daemon: getppid");
+		rc = -1;
+	} else if (pid == 1) {
+		rc = !0;
+	} else {
+		rc = 0;
+	}
+
+	return rc;
+}
+
+static pid_t diminuto_daemon_fork(void)
+{
+	pid_t pid = -1;
+	int rc = -1;
+	int status = -1;
+
+	if ((pid = fork()) < 0) {
+		diminuto_perror("diminuto_daemon: fork");
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else {
+		while (!0) {
+			if ((rc = waitpid(pid, &status, 0)) > 0) {
+				break; /* Nominal. */
+			} else if (rc == 0) {
+				break; /* Should never happen. */
+			} else if (errno == EINTR) {
+				continue; /* Ignore. */
+			} else if (errno == ECHILD) {
+				break; /* Caller probably handled SIGCHLD. */
+			} else {
+				diminuto_serror("diminuto_daemon: waitpid");
+				break; /* Error. */
+			}
+		}
+	}
+
+	return pid;
+}
+
+static pid_t diminuto_daemon_refork(void)
+{
+	pid_t pid = -1;
+
+	if ((pid = fork()) < 0) {
+		diminuto_serror("diminuto_daemon: refork");
+	}
+
+	return pid;
 }
 
 static void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
@@ -148,6 +207,16 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
     if (chdir("/") < 0) {
         diminuto_serror("diminuto_daemon: chdir");
     }
+
+    /*
+     * It's possible the application *wants* to pass some file descriptors to
+     * the daemon child. This implementation doesn't support that model. The
+     * child is responsible for opening its own damn file descriptors. I think
+     * if you have that kind of model, a better approach is to implement a
+     * multi-threaded application, rather than an old school multi-process
+     * application; or maybe a single threaded state machine that handles many
+     * connections.
+     */
 
     /*
      * So why do we do all this FILE stuff? I saw an interesting bug
@@ -239,8 +308,7 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
 int diminuto_daemon(const char * name)
 {
 	pid_t pid = -1;
-    pid_t rc = -1;
-    int status = -1;
+	int rc = -1;
 
 	/*
 	 * PARENT
@@ -248,10 +316,10 @@ int diminuto_daemon(const char * name)
 
 	/* Make sure we are not already a daemon. */
 
-	if ((pid = getppid()) < 0) {
-		diminuto_serror("diminuto_daemon: getppid");
-	} else if (pid == 1) {
-		return 1;
+	if ((rc = diminuto_daemon_verify()) < 0) {
+		_exit(1);
+	} else if (rc) {
+		return 0;
 	} else {
 		/* Do nothing. */
 	}
@@ -262,38 +330,12 @@ int diminuto_daemon(const char * name)
 
     /* Fork the first child and reap it. */
 
-	if ((pid = fork()) < 0) {
-		diminuto_serror("diminuto_daemon: fork 1");
-		return -1;
+	if ((pid = diminuto_daemon_fork()) < 0) {
+		_exit(1);
 	} else if (pid == 0) {
 		/* Do nothing. */
 	} else {
-		while (!0) {
-			if ((rc = waitpid(pid, &status, 0)) > 0) {
-				break;
-			} else if (rc == 0) {
-				/* Should never happen. */
-				rc = 1;
-			} else if (errno == EINTR) {
-				continue;
-			} else if (errno == ECHILD) {
-				/* Caller probably handles SIGCHLD. */
-				diminuto_serror("diminuto_daemon: waitpid");
-				rc = 0;
-			} else {
-				diminuto_serror("diminuto_daemon: waitpid");
-				rc = 1;
-			}
-			_exit(rc);
-		}
-		if (!WIFEXITED(status)) {
-			rc = 1;
-		} else if (WEXITSTATUS(status) != 0) {
-			rc = 1;
-		} else {
-			rc = 0;
-		}
-		_exit(rc);
+		_exit(0);
 	}
 
 	/*
@@ -302,8 +344,7 @@ int diminuto_daemon(const char * name)
 
 	/* Fork and exit so the second child is inherited by the init process. */
 
-	if ((pid = fork()) < 0) {
-		diminuto_serror("diminuto_daemon: fork 2");
+	if ((pid = diminuto_daemon_refork()) < 0) {
 		_exit(1);
 	} else if (pid == 0) {
 		/* Do nothing. */
@@ -325,8 +366,6 @@ int diminuto_daemon(const char * name)
 int diminuto_system(const char * command)
 {
     pid_t pid = -1;
-    pid_t rc = -1;
-    int status = -1;
 
 	/*
 	 * PARENT
@@ -334,38 +373,12 @@ int diminuto_system(const char * command)
 
     /* Fork the first child and reap it. */
 
-	if ((pid = fork()) < 0) {
-		diminuto_serror("diminuto_system: fork 1");
+	if ((pid = diminuto_daemon_fork()) < 0) {
 		return -1;
 	} else if (pid == 0) {
 		/* Do nothing. */
 	} else {
-		while (!0) {
-			if ((rc = waitpid(pid, &status, 0)) > 0) {
-				break;
-			} else if (rc == 0) {
-				/* Should never happen. */
-				rc = -1;
-			} else if (errno == EINTR) {
-				continue;
-			} else if (errno == ECHILD) {
-				/* Caller probably handles SIGCHLD. */
-				diminuto_serror("diminuto_system: waitpid");
-				rc = 0;
-			} else {
-				diminuto_serror("diminuto_system: waitpid");
-				rc = -1;
-			}
-			return rc;
-		}
-		if (!WIFEXITED(status)) {
-			rc = -1;
-		} else if (WEXITSTATUS(status) != 0) {
-			rc = -1;
-		} else {
-			rc = 0;
-		}
-		return rc;
+		return 0;
 	}
 
 	/*
@@ -374,8 +387,7 @@ int diminuto_system(const char * command)
 
 	/* Fork and exit so the second child is inherited by the init process. */
 
-	if ((pid = fork()) < 0) {
-		diminuto_serror("diminuto_system: fork 2");
+	if ((pid = diminuto_daemon_refork()) < 0) {
 		_exit(1);
 	} else if (pid == 0) {
 		/* Do nothing. */
