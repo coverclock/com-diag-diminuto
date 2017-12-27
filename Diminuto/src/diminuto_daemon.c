@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include "diminuto_daemon.h"
 
+diminuto_daemon_test_t diminuto_daemon_testing = DIMINUTO_DAEMON_TEST_NONE;
+
 static int diminuto_daemon_install(int signum, void (*handler)(int))
 {
     struct sigaction action;
@@ -52,8 +54,6 @@ static inline int diminuto_daemon_default(int signum)
 
 static void diminuto_daemon_prepare(void)
 {
-    /* Flush output before we mess with it. */
-
     if (fflush(stdout) == EOF) {
     	diminuto_serror("diminuto_daemon: fflush(stdout)");
     }
@@ -81,6 +81,9 @@ static pid_t diminuto_daemon_verify(void)
 	return rc;
 }
 
+/*
+ * Using strace(1), grep(1) for "clone" not "fork" in the output of script(1).
+ */
 static pid_t diminuto_daemon_fork(void)
 {
 	pid_t pid = -1;
@@ -111,6 +114,9 @@ static pid_t diminuto_daemon_fork(void)
 	return pid;
 }
 
+/*
+ * Using strace(1), grep(1) for "clone" not "fork" in the output of script(1).
+ */
 static pid_t diminuto_daemon_refork(void)
 {
 	pid_t pid = -1;
@@ -122,6 +128,23 @@ static pid_t diminuto_daemon_refork(void)
 	return pid;
 }
 
+/*
+ * So why do we do all this FILE stuff? I saw an interesting bug
+ * the other day while helping someone else debug their code. The
+ * developer had closed file descriptors 0, 1, and 2, daemonized
+ * using his own technique, and then opened sockets to communicate with
+ * other processes. But a function in an underlying framework continued
+ * to use printf to emit debug messages. The FILE stdout was still
+ * using file descriptor 1, but that was now a socket for some
+ * completely different purpose. The receiver got all confused
+ * because this application was sending it debug output instead of
+ * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
+ * /dev/null, then we make sure that stdin, stdout, and stderr are
+ * also redirected to 0, 1, and 2. And then we close everything else.
+ * We have to be careful not to leave the file descriptor associated
+ * with sending stuff to syslog closed; sure wish there was an API call
+ * to tell what that file descriptor was.
+ */
 static void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
 {
 	int fd = -1;
@@ -208,34 +231,6 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
         diminuto_serror("diminuto_daemon: chdir");
     }
 
-    /*
-     * It's possible the application *wants* to pass some file descriptors to
-     * the daemon child. This implementation doesn't support that model. The
-     * child is responsible for opening its own damn file descriptors. I think
-     * if you have that kind of model, a better approach is to implement a
-     * multi-threaded application, rather than an old school multi-process
-     * application; or maybe a single threaded state machine that handles many
-     * connections.
-     */
-
-    /*
-     * So why do we do all this FILE stuff? I saw an interesting bug
-     * the other day while helping someone else debug their code. The
-     * developer had closed file descriptors 0, 1, and 2, daemonized
-     * using his own technique, and then opened sockets to communicate with
-     * other processes. But a function in an underlying framework continued
-     * to use printf to emit debug messages. The FILE stdout was still
-     * using file descriptor 1, but that was now a socket for some
-     * completely different purpose. The receiver got all confused
-     * because this application was sending it debug output instead of
-     * messages. Wackiness ensued. So here we redirect 0, 1, and 2 to
-     * /dev/null, then we make sure that stdin, stdout, and stderr are
-     * also redirected to 0, 1, and 2. And then we close everything else.
-     * We have to be careful not to leave the file descriptor associated
-     * with sending stuff to syslog closed; sure wish there was an API call
-     * to tell what that file descriptor was.
-     */
-
     /* Redirect the big three descriptors to /dev/null. */
 
     diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
@@ -247,24 +242,6 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
     /* Close the system log socket. */
 
     diminuto_log_close();
-
-    /*
-     * Four years ago I ran into an issue in an Asterisk 11.5.0 system I was
-     * working on for a client. Then, just the other day, when asked to
-     * implement some minor features on this very same product (an Iridium
-     * satellite communications system for business aircraft), I ran into
-     * exactly the same issue in a slightly different context. Deja vu.
-     * While spawning off a child process using the now-ancient version of
-     * the Asterisk function ast_safe_system(), which uses fork(2) and exec(2)
-     * from an equally ancient version of Linux, the resulting child process
-     * was getting hung on the close(2) in a fast user-space mutex. The only fix
-     * a colleague and I could come up with four years ago was not to do the
-     * close. Which is highly troublesome, particularly in light of how many
-     * file descriptors (including sockets and such) Asterisk keeps open.
-     * The only factor that was really questionable is this was multi-
-     * threaded code. I need to go look at the implementation of close(2) in
-     * that old Linux kernel to understand this better.
-     */
 
     /* Close all unused file descriptors. */
 
@@ -298,13 +275,22 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
     	}
     }
 
-    /* Open a new system log socket. */
+    /* Open a new system log socket which will probably be fileno 3. */
 
     if (name != (const char *)0) {
     	diminuto_log_open(name);
     }
 }
 
+/*
+ * It's possible the application *wants* to pass some file descriptors to
+ * the daemon child. This implementation doesn't support that model. The
+ * child is responsible for opening its own damn file descriptors. I think
+ * if you have that kind of model, a better approach is to implement a
+ * multi-threaded application, rather than an old school multi-process
+ * application; or maybe a single threaded state machine that handles many
+ * connections. Or use diminuto_service() instead of diminuto_daemon().
+ */
 int diminuto_daemon(const char * name)
 {
 	pid_t pid = -1;
@@ -363,6 +349,69 @@ int diminuto_daemon(const char * name)
     return 0;
 }
 
+/*
+ * Four years ago I ran into an issue in an Asterisk 11.5.0 system I was
+ * working on for a client. Then, just the other day, when asked to
+ * implement some minor features on this very same product (an Iridium
+ * satellite communications system for business aircraft), I ran into
+ * exactly the same issue in a slightly different context. Deja vu.
+ * While spawning off a child process using the now-ancient version of
+ * the Asterisk function ast_safe_system(), which uses fork(2) and exec(2)
+ * from an equally ancient version of Linux, the resulting child process
+ * was getting hung on the close(2) in a fast user-space mutex. The only fix
+ * a colleague and I could come up with four years ago was not to do the
+ * close. Which is highly troublesome, particularly in light of how many
+ * file descriptors (including sockets and such) Asterisk keeps open.
+ * The only factor that was really questionable is this was multi-
+ * threaded code. I need to go look at the implementation of close(2) in
+ * that old Linux kernel to understand this better. Anyway, this function
+ * doesn't do any sanitization, so the daemon child inherits all the parents
+ * context.
+ */
+int diminuto_service(void)
+{
+	pid_t pid = -1;
+
+	/*
+	 * PARENT
+	 */
+
+    /* Fork the first child and reap it. */
+
+	if ((pid = diminuto_daemon_fork()) < 0) {
+		return -1;
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else {
+		return !0;
+	}
+
+	/*
+	 * FIRST CHILD
+	 */
+
+	/* Fork and exit so the second child is inherited by the init process. */
+
+	if ((pid = diminuto_daemon_refork()) < 0) {
+		_exit(1);
+	} else if (pid == 0) {
+		/* Do nothing. */
+	} else {
+		_exit(0);
+	}
+
+	/*
+	 * SECOND CHILD
+	 */
+
+	/* This seems necessary for the service to use the system log. */
+
+    diminuto_log_close();
+	diminuto_log_open((char *)0);
+
+    return 0;
+}
+
 int diminuto_system(const char * command)
 {
     pid_t pid = -1;
@@ -402,6 +451,8 @@ int diminuto_system(const char * command)
 	/* Sanitize the context of the second child. */
 
 	diminuto_daemon_sanitize((const char *)0, "/dev/tty");
+
+	/* Run the command; if successful, the execl(2) never returns. */
 
 	execl("/bin/sh", "bin/sh", "-c", command, (char *)0);
 	diminuto_serror("diminuto_system: execl");

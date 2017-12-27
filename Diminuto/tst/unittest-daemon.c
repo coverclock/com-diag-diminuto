@@ -35,6 +35,7 @@ int main(int argc, char ** argv)
     int rc;
     pid_t pid0;
     pid_t pid1;
+    pid_t pid2;
     pid_t ppid;
     pid_t spid;
     int fds;
@@ -60,6 +61,8 @@ int main(int argc, char ** argv)
     rc = diminuto_system(COMMAND);
     ASSERT(rc == 0);
 
+    ASSERT(getpid() == pid0);
+
     rc = diminuto_daemon(LOGNAME);
     ASSERT(rc == 0);
 
@@ -73,7 +76,7 @@ int main(int argc, char ** argv)
     spid = getsid(pid1);
     ASSERT(spid == pid1);
 
-    CHECKPOINT("CHILD pid=%d ppid=%d spid=%d\n", pid1, ppid, spid);
+    CHECKPOINT("DAEMON pid=%d ppid=%d spid=%d\n", pid1, ppid, spid);
 
     ASSERT(umask(0) == 0);
 
@@ -83,31 +86,54 @@ int main(int argc, char ** argv)
     free(path);
 
     ASSERT(STDIN_FILENO == 0);
+    ASSERT(STDOUT_FILENO == 1);
+    ASSERT(STDERR_FILENO == 2);
+
     ss = read(STDIN_FILENO, &ch, sizeof(ch));
     ASSERT(ss == 0);
 
-    ASSERT(STDOUT_FILENO == 1);
     ss = write(STDOUT_FILENO, &ch, sizeof(ch));
     ASSERT(ss == 1);
 
-    ASSERT(STDERR_FILENO == 2);
     ss = write(STDERR_FILENO, &ch, sizeof(ch));
     ASSERT(ss == 1);
 
     ASSERT(stdin != (FILE *)0);
+    ASSERT(stdout != (FILE *)0);
+    ASSERT(stderr != (FILE *)0);
+
     ASSERT(fileno(stdin) == STDIN_FILENO);
+    ASSERT(fileno(stdout) == STDOUT_FILENO);
+    ASSERT(fileno(stderr) == STDERR_FILENO);
+
     us = fread(&ch, sizeof(ch), 1, stdin);
     ASSERT(us == 0);
 
-    ASSERT(stdout != (FILE *)0);
-    ASSERT(fileno(stdout) == STDOUT_FILENO);
     us = fwrite(&ch, sizeof(ch), 1, stdout);
     ASSERT(us == 1);
 
-    ASSERT(stderr != (FILE *)0);
-    ASSERT(fileno(stderr) == STDERR_FILENO);
     us = fwrite(&ch, sizeof(ch), 1, stderr);
     ASSERT(us == 1);
+
+    rc = diminuto_service();
+    ASSERT(rc >= 0);
+
+    if (rc > 0) {
+    	ASSERT(getpid() == pid1);
+    	EXIT();
+    }
+
+    pid2 = getpid();
+    ASSERT(pid2 > 1);
+    ASSERT(pid2 != pid1);
+
+    ppid = getppid();
+    ASSERT(ppid == 1);
+
+    spid = getsid(pid2);
+    ASSERT(spid > 0);
+
+    CHECKPOINT("SERVICE pid=%d ppid=%d spid=%d\n", pid2, ppid, spid);
 
     EXIT();
 }
