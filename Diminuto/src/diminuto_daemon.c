@@ -69,9 +69,13 @@ static pid_t diminuto_daemon_verify(void)
 	int rc = -1;
 	pid_t pid = -1;
 
-	if ((pid = getppid()) < 0) {
+	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_GETPPID) {
+		/* Do nothing. */
+	} else if ((pid = getppid()) < 0) {
 		diminuto_perror("diminuto_daemon: getppid");
 		rc = -1;
+	} else if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_INIT) {
+		rc = !0;
 	} else if (pid == 1) {
 		rc = !0;
 	} else {
@@ -90,13 +94,17 @@ static pid_t diminuto_daemon_fork(void)
 	int rc = -1;
 	int status = -1;
 
-	if ((pid = fork()) < 0) {
+	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_FORK) {
+		/* Do nothing. */
+	} else if ((pid = fork()) < 0) {
 		diminuto_perror("diminuto_daemon: fork");
 	} else if (pid == 0) {
 		/* Do nothing. */
 	} else {
 		while (!0) {
-			if ((rc = waitpid(pid, &status, 0)) > 0) {
+			if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_WAITPID) {
+				break;
+			} else if ((rc = waitpid(pid, &status, 0)) > 0) {
 				break; /* Nominal. */
 			} else if (rc == 0) {
 				break; /* Should never happen. */
@@ -108,6 +116,15 @@ static pid_t diminuto_daemon_fork(void)
 				diminuto_serror("diminuto_daemon: waitpid");
 				break; /* Error. */
 			}
+		}
+		if (rc <= 0) {
+			pid = -1;
+		} else if (!WIFEXITED(status)) {
+			pid = -1;
+		} else if (WEXITSTATUS(status) != 0) {
+			pid = -1;
+		} else {
+			/* Do nothing. */
 		}
 	}
 
@@ -121,8 +138,12 @@ static pid_t diminuto_daemon_refork(void)
 {
 	pid_t pid = -1;
 
-	if ((pid = fork()) < 0) {
+	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_REFORK) {
+		/* Do nothing. */
+	} else if ((pid = fork()) < 0) {
 		diminuto_serror("diminuto_daemon: refork");
+	} else {
+		/* Do nothing. */
 	}
 
 	return pid;
@@ -204,8 +225,6 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
     }
 
     /* Dissociate ourselves from any problematic signal handlers. */
-
-    diminuto_daemon_ignore(SIGUSR1);
 
     diminuto_daemon_ignore(SIGALRM);
 

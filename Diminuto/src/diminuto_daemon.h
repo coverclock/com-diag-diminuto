@@ -15,7 +15,11 @@
 
 typedef enum DiminutoDaemonTest {
 	DIMINUTO_DAEMON_TEST_NONE = 0,
-	/* TODO: add fork etc. failure unit tests. */
+	DIMINUTO_DAEMON_TEST_GETPPID,
+	DIMINUTO_DAEMON_TEST_INIT,
+	DIMINUTO_DAEMON_TEST_FORK,
+	DIMINUTO_DAEMON_TEST_WAITPID,
+	DIMINUTO_DAEMON_TEST_REFORK,
 } diminuto_daemon_test_t;
 
 extern diminuto_daemon_test_t diminuto_daemon_testing;
