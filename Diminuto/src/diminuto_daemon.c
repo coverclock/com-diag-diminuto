@@ -13,21 +13,28 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include "diminuto_daemon.h"
 
 diminuto_daemon_test_t diminuto_daemon_testing = DIMINUTO_DAEMON_TEST_NONE;
 
-static int diminuto_daemon_install(int signum, void (*handler)(int))
+diminuto_daemon_test_t diminuto_daemon_test(diminuto_daemon_test_t test)
+{
+	int tested;
+
+	tested = diminuto_daemon_testing;
+	diminuto_daemon_testing = test;
+
+	return tested;
+}
+
+int diminuto_daemon_install(int signum, void (*handler)(int))
 {
     struct sigaction action;
 
@@ -42,17 +49,7 @@ static int diminuto_daemon_install(int signum, void (*handler)(int))
     return 0;
 }
 
-static inline int diminuto_daemon_ignore(int signum)
-{
-	return diminuto_daemon_install(signum, SIG_IGN);
-}
-
-static inline int diminuto_daemon_default(int signum)
-{
-	return diminuto_daemon_install(signum, SIG_DFL);
-}
-
-static void diminuto_daemon_prepare(void)
+void diminuto_daemon_prepare(void)
 {
     if (fflush(stdout) == EOF) {
     	diminuto_serror("diminuto_daemon: fflush(stdout)");
@@ -64,7 +61,7 @@ static void diminuto_daemon_prepare(void)
 
 }
 
-static pid_t diminuto_daemon_verify(void)
+int diminuto_daemon_verify(void)
 {
 	int rc = -1;
 	pid_t pid = -1;
@@ -73,11 +70,10 @@ static pid_t diminuto_daemon_verify(void)
 		/* Do nothing. */
 	} else if ((pid = getppid()) < 0) {
 		diminuto_perror("diminuto_daemon: getppid");
-		rc = -1;
 	} else if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_INIT) {
-		rc = !0;
+		rc = 1;
 	} else if (pid == 1) {
-		rc = !0;
+		rc = 1;
 	} else {
 		rc = 0;
 	}
@@ -88,7 +84,7 @@ static pid_t diminuto_daemon_verify(void)
 /*
  * Using strace(1), grep(1) for "clone" not "fork" in the output of script(1).
  */
-static pid_t diminuto_daemon_fork(void)
+pid_t diminuto_daemon_fork(void)
 {
 	pid_t pid = -1;
 	int rc = -1;
@@ -134,7 +130,7 @@ static pid_t diminuto_daemon_fork(void)
 /*
  * Using strace(1), grep(1) for "clone" not "fork" in the output of script(1).
  */
-static pid_t diminuto_daemon_refork(void)
+pid_t diminuto_daemon_refork(void)
 {
 	pid_t pid = -1;
 
@@ -166,7 +162,7 @@ static pid_t diminuto_daemon_refork(void)
  * with sending stuff to syslog closed; sure wish there was an API call
  * to tell what that file descriptor was.
  */
-static void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
+void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
 {
 	int fd = -1;
 
@@ -212,7 +208,7 @@ static void diminuto_daemon_redirect(const char * path, int number, int flags, F
 
 }
 
-static void diminuto_daemon_sanitize(const char * name, const char * path)
+void diminuto_daemon_sanitize(const char * name, const char * path)
 {
     long fds = 0;
     int fd = -1;
@@ -250,13 +246,13 @@ static void diminuto_daemon_sanitize(const char * name, const char * path)
         diminuto_serror("diminuto_daemon: chdir");
     }
 
-    /* Redirect the big three descriptors to /dev/null. */
+    /* Redirect the big three descriptors. */
 
-    diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
-
-    diminuto_daemon_redirect(path, STDOUT_FILENO, O_WRONLY, &stdout, "w");
-
-    diminuto_daemon_redirect(path, STDERR_FILENO, O_WRONLY, &stderr, "w");
+    if (path != (const char *)0) {
+    	diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
+    	diminuto_daemon_redirect(path, STDOUT_FILENO, O_WRONLY, &stdout, "w");
+    	diminuto_daemon_redirect(path, STDERR_FILENO, O_WRONLY, &stderr, "w");
+    }
 
     /* Close the system log socket. */
 
@@ -469,7 +465,7 @@ int diminuto_system(const char * command)
 
 	/* Sanitize the context of the second child. */
 
-	diminuto_daemon_sanitize((const char *)0, "/dev/tty");
+	diminuto_daemon_sanitize((const char *)0, (const char *)0);
 
 	/* Run the command; if successful, the execl(2) never returns. */
 
