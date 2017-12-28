@@ -109,8 +109,8 @@ extern void diminuto_daemon_redirect(const char * path, int number, int flags, F
  * Sanitize a process by fixing up problematic signals, setting its user mask,
  * setting its home directory to one guaranteed to exist, closing all of its
  * file descriptors, and redirecting the big three descriptors and FILEs. If
- * name is NULL, the system log is reopened. If path is NULL, the big three are
- * not redirected.
+ * name is NULL, the system log is not reopened. If path is NULL, the big three
+ * are not redirected.
  * @param name is the system log tag to be used for this process.
  * @param path is the path to which descriptors and FILEs will be redirected.
  */
