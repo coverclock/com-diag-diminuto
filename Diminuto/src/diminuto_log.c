@@ -26,8 +26,19 @@
  * LOCALS
  *****************************************************************************/
 
-static const char LEVELS[] = "01234567";
+static const char * PRIORITIES[] = {
+    "EMER",
+    "ALRT",
+    "CRIT",
+    "ERRR",
+    "WARN",
+    "NOTE",
+    "INFO",
+    "DBUG",
+};
+
 static const char ALL[] = "~0";
+
 static uint8_t initialized = 0;
 
 /*******************************************************************************
@@ -131,7 +142,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     /* Bracketing special fields allows us to more easily filter logs. */
     /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ <%c> [%d] {%lx} ", year, month, day, hour, minute, second, nanosecond / 1000, LEVELS[priority & 0x7], getpid(), pthread_self());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ <%s> [%d] {%lx} ", year, month, day, hour, minute, second, nanosecond / 1000, PRIORITIES[priority & 0x7], getpid(), pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
