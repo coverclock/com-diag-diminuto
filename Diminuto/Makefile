@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	46# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -605,7 +605,7 @@ $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 $(OUT)/$(BIN_DIR)/setup:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'export PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$PATH' >> $@
+	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
@@ -615,7 +615,7 @@ $(OUT)/$(BIN_DIR)/setup:	Makefile
 $(OUT)/$(SYM_DIR)/setup:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $${BASH_ARGV[0]}`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'export PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$PATH' >> $@
+	echo 'export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
@@ -627,7 +627,7 @@ $(OUT)/$(SYM_DIR)/setup:	Makefile
 $(OUT)/$(BIN_DIR)/generate:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'echo export PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$PATH' >> $@
+	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
@@ -637,7 +637,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 $(OUT)/$(SYM_DIR)/generate:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'echo export PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$PATH' >> $@
+	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
