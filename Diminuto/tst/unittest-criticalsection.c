@@ -25,18 +25,22 @@ int main(void)
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex1);
 
-		ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
+		int error = EBUSY;
+
+		ASSERT(pthread_mutex_trylock(&mutex1) == error);
 		ASSERT(pthread_mutex_trylock(&mutex2) == 0);
 		pthread_mutex_unlock(&mutex2);
 
 		DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex2);
 
-			ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
-			ASSERT(pthread_mutex_trylock(&mutex2) == EBUSY);
+			int error = EBUSY;
+
+			ASSERT(pthread_mutex_trylock(&mutex1) == error);
+			ASSERT(pthread_mutex_trylock(&mutex2) == error);
 
 		DIMINUTO_CRITICAL_SECTION_END;
 
-		ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
+		ASSERT(pthread_mutex_trylock(&mutex1) == error);
 		ASSERT(pthread_mutex_trylock(&mutex2) == 0);
 		pthread_mutex_unlock(&mutex2);
 

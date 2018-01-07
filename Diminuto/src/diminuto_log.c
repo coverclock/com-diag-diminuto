@@ -30,7 +30,7 @@ static const char * PRIORITIES[] = {
     "EMER",
     "ALRT",
     "CRIT",
-    "ERRR",
+    "EROR",
     "WARN",
     "NOTE",
     "INFO",
@@ -134,6 +134,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     char * pointer = buffer;
     size_t space = sizeof(buffer);
     size_t total = 0;
+    char * bufferp = buffer;
 
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
@@ -176,22 +177,20 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     }
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        while (total > 0) {
-            rc = write(fd, buffer, total);
+
+    	for (pointer = buffer; total > 0; total -= rc) {
+            rc = write(fd, pointer, total);
             if (rc < 0) {
-                /* What are we going to do, log an error message? */
-                break;
+                break; /* What are we going to do, log an error message? */
             } else if (rc == 0) {
-                /* Far end closed, which is the caller's problem. */
-                break;
+                break; /* Far end closed, which is the caller's problem. */
             } else if (rc > total) {
-                /* Should never happen. */
-                total = 0;
+                break; /* Should never happen. */
             } else {
-                /* Nominal case. */
-                total -= rc;
+            	pointer += rc; /* Nominal. */
             }
         }
+
     DIMINUTO_CRITICAL_SECTION_END;
 
 }

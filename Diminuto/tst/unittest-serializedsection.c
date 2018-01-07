@@ -15,19 +15,34 @@ int main(void)
 {
     diminuto_serialized_section_spinlock_t lock1 = 0;
     diminuto_serialized_section_spinlock_t lock2 = 0;
-    ASSERT(lock1 == 0);
-    ASSERT(lock2 == 0);
+    int zero = 0;
+
+    ASSERT(lock1 == zero);
+    ASSERT(lock2 == zero);
+
     DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock1);
-        ASSERT(lock1 != 0);
-        ASSERT(lock2 == 0);
+
+    	int zero = 0;
+
+    	ASSERT(lock1 != zero);
+        ASSERT(lock2 == zero);
+
         DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock2);
-            ASSERT(lock1 != 0);
-            ASSERT(lock2 != 0);
+
+        	int zero = 0;
+
+        	ASSERT(lock1 != zero);
+            ASSERT(lock2 != zero);
+
         DIMINUTO_SERIALIZED_SECTION_END;
-        ASSERT(lock1 != 0);
-        ASSERT(lock2 == 0);
+
+        ASSERT(lock1 != zero);
+        ASSERT(lock2 == zero);
+
     DIMINUTO_SERIALIZED_SECTION_END;
-    ASSERT(lock1 == 0);
-    ASSERT(lock2 == 0);
+
+    ASSERT(lock1 == zero);
+    ASSERT(lock2 == zero);
+
     EXIT();
 }
