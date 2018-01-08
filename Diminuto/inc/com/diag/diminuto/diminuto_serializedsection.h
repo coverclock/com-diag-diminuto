@@ -53,4 +53,6 @@ typedef volatile int diminuto_serialized_section_spinlock_t;
 #   defined DIMINUTO_SERIALIZED_SECTION_END } while (0)
 #endif
 
+typedef volatile int diminuto_spinlock_t;
+
 #endif

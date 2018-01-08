@@ -15,35 +15,37 @@
 #include <pthread.h>
 #include <stdint.h>
 
+/*
+ * This really isn't an adequate test. At best it just tests that the feature
+ * doesn't break a simple algorithm.
+ */
+
+static int shared = 0;
+static const int LIMIT = 100;
 
 static void * body(void * arg)
 {
-	static int shared = 0;
+	int done = 0;
 
-	do {
-
-		int temporary;
+	while (!done) {
 
 		DIMINUTO_COHERENT_SECTION_BEGIN;
 
-			temporary = shared;
-
-			if ((shared % 2) == (intptr_t)arg) {
-				diminuto_log_emit("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+			if (shared >= LIMIT) {
+				COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+				done = !0;
+			} else if ((shared % 2) == (intptr_t)arg) {
+				COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
 				++shared;
+			} else {
+				diminuto_yield();
 			}
 
 		DIMINUTO_COHERENT_SECTION_END;
 
-		if (temporary >= 100) {
-			break;
-		}
+	}
 
-		diminuto_delay(diminuto_frequency() / 10, !0);
-
-	} while (!0);
-
-	return (void *)0;
+	return (void *)arg;
 }
 
 int main(void)
@@ -83,19 +85,25 @@ int main(void)
 
 		TEST();
 
+		ASSERT(shared == 0);
+
 		rc = pthread_create(&odd, 0, body, (void *)1);
 		ASSERT(rc == 0);
 
 		rc = pthread_create(&even, 0, body, (void *)0);
 		ASSERT(rc == 0);
 
+		final = (void *)~0;
 		rc = pthread_join(odd, &final);
 		ASSERT(rc == 0);
-		ASSERT(final == (void *)0);
+		ASSERT(final == (void *)1);
 
+		final = (void *)~0;
 		rc = pthread_join(even, &final);
 		ASSERT(rc == 0);
 		ASSERT(final == (void *)0);
+
+		ASSERT(shared == LIMIT);
 
 		STATUS();
 	}
