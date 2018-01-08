@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -15,6 +15,9 @@
  * or exit statuses. This prevents a forking application from being infested
  * with zombie processes (although most applications will likely choose to do
  * the waitpid(2) themselves).
+ *
+ * N.B. The use of the same signal handler within multiple threads is
+ * problematic anyway, and this code is not guaranteed to be thread safe.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

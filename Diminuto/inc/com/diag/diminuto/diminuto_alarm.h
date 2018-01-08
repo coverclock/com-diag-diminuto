@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2009 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * N.B. The use of the same signal handler within multiple threads is
+ * problematic anyway, and this code is not guaranteed to be thread safe.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

@@ -5,13 +5,16 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * The terminator feature propagates a SIGTERM signal to appropriate processes
  * (children or process group) when it receives one.
+ *
+ * N.B. The use of the same signal handler within multiple threads is
+ * problematic anyway, and this code is not guaranteed to be thread safe.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

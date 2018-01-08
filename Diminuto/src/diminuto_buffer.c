@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -12,10 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 #include "diminuto_buffer_pool.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 
 /*******************************************************************************
  * OPTIONS
@@ -28,6 +30,8 @@ static int fail = 0;
 /*******************************************************************************
  * POOL
  ******************************************************************************/
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * These are the sizes I chose for each quanta in the buffer pool, but you
@@ -61,7 +65,11 @@ void * diminuto_buffer_malloc(size_t size)
 {
     void * ptr;
 
-    ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+    	ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
+
+    DIMINUTO_CRITICAL_SECTION_END;
 
     if (debug) {
         DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
@@ -76,7 +84,11 @@ void diminuto_buffer_free(void * ptr)
         DIMINUTO_LOG_DEBUG("diminuto_buffer_free: ptr=%p\n", ptr);
     }
 
-    diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+    	diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
+
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void * diminuto_buffer_realloc(void * ptr, size_t size)
@@ -94,16 +106,21 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
         size_t actual;
         size_t requested;
 
-        buffer = containerof(diminuto_buffer_t, payload, ptr);
-        actual = buffer_pool_effective(&meta, buffer->header.item);
-        (void)buffer_pool_hash(&meta, size, &requested);
+    	buffer = containerof(diminuto_buffer_t, payload, ptr);
+
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+        	actual = buffer_pool_effective(&meta, buffer->header.item);
+        	(void)buffer_pool_hash(&meta, size, &requested);
+
+        DIMINUTO_CRITICAL_SECTION_END;
+
         if (actual == requested) {
             ptrprime = ptr;
         } else {
             ptrprime = diminuto_buffer_malloc(size);
             if (ptrprime != (void *)0) {
                 size_t length;
-
                 length = actual - sizeof(diminuto_buffer_t);
                 memcpy(ptrprime, ptr, size < length ? size : length);
             }
@@ -175,35 +192,59 @@ char * diminuto_buffer_strndup(const char * s, size_t n)
 
 void diminuto_buffer_fini(void)
 {
-    diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+    	diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
+
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 {
-    return diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&meta, nmemb, size);
+	size_t result;
+
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+		result = diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&meta, nmemb, size);
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return result;
 }
 
 size_t diminuto_buffer_log(void)
 {
-    return diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&meta);
+	size_t result;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+    	result = diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&meta);
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return result;
 }
 
 int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 {
-    int rc;
+    int result;
 
-    rc = (poolp != (diminuto_buffer_pool_t *)0);
-    if (rc) {
-        meta.count = poolp->count;
-        meta.sizes = poolp->sizes;
-        meta.pool = (diminuto_buffer_t **)(poolp->pool);
-    } else {
-        meta.count = countof(POOL);
-        meta.sizes = POOL;
-        meta.pool = pool;
-    }
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    return rc;
+		result = (poolp != (diminuto_buffer_pool_t *)0);
+		if (result) {
+			meta.count = poolp->count;
+			meta.sizes = poolp->sizes;
+			meta.pool = (diminuto_buffer_t **)(poolp->pool);
+		} else {
+			meta.count = countof(POOL);
+			meta.sizes = POOL;
+			meta.pool = pool;
+		}
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return result;
 }
 
 int diminuto_buffer_debug(int after)
@@ -227,7 +268,7 @@ int diminuto_buffer_nomalloc(int after)
 }
 
 /*******************************************************************************
- * PRIVATE FUNCTIONS EXPOSED FOR UNIT TESTING
+ * EXPOSED FOR UNIT TESTING - NOT THREAD SAFE
  ******************************************************************************/
 
 size_t diminuto_buffer_hash(size_t requested, size_t * actualp)
