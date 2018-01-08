@@ -41,16 +41,24 @@ static const char ALL[] = "~0";
 
 static uint8_t initialized = 0;
 
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /*******************************************************************************
  * GLOBALS
  *****************************************************************************/
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+
 const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
+
 int diminuto_log_option = DIMINUTO_LOG_OPTION_DEFAULT;
+
 int diminuto_log_facility = DIMINUTO_LOG_FACILITY_DEFAULT;
+
 int diminuto_log_descriptor = DIMINUTO_LOG_DESCRIPTOR_DEFAULT;
+
 FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
+
 const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
 /*******************************************************************************
@@ -61,26 +69,35 @@ void diminuto_log_setmask(void)
 {
     const char * mask;
 
-    if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
-        /* Do nothing. */
-    } else if (strcmp(mask, ALL) == 0) {
-        DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
-    } else {
-        DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
-    }
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+		if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
+			/* Do nothing. */
+		} else if (strcmp(mask, ALL) == 0) {
+			DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
+		} else {
+			DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
+		}
+
+	DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
-    if (name != (const char *)0) {
-        diminuto_log_ident = name;
-    }
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+		if (name != (const char *)0) {
+			diminuto_log_ident = name;
+		}
+
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-    if (!initialized) {
-        openlog(diminuto_log_ident, option, facility);
-        initialized = !0;
-    }
+		if (!initialized) {
+			openlog(diminuto_log_ident, option, facility);
+			initialized = !0;
+		}
 #endif
+
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void diminuto_log_open(const char * name)
@@ -90,25 +107,33 @@ void diminuto_log_open(const char * name)
 
 void diminuto_log_close(void)
 {
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-    if (initialized) {
-        closelog();
-        initialized = 0;
-    }
+		if (initialized) {
+			closelog();
+			initialized = 0;
+		}
 #endif
+
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 FILE * diminuto_log_stream(void)
 {
-    if (diminuto_log_file != (FILE *)0) {
-        /* Do nothing. */
-    } else if (diminuto_log_descriptor == STDOUT_FILENO) {
-        diminuto_log_file = stdout;
-    } else if (diminuto_log_descriptor == STDERR_FILENO) {
-        diminuto_log_file = stderr;
-    } else {
-        diminuto_log_file = fdopen(diminuto_log_descriptor, "a");
-    }
+	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+		if (diminuto_log_file != (FILE *)0) {
+			/* Do nothing. */
+		} else if ((diminuto_log_descriptor == STDOUT_FILENO) && (fileno(stdout) == STDOUT_FILENO)) {
+			diminuto_log_file = stdout;
+		} else if ((diminuto_log_descriptor == STDERR_FILENO) && (fileno(stderr) == STDERR_FILENO)) {
+			diminuto_log_file = stderr;
+		} else {
+			diminuto_log_file = fdopen(diminuto_log_descriptor, "a");
+		}
+
+    DIMINUTO_CRITICAL_SECTION_END;
 
     return diminuto_log_file;
 }
@@ -125,7 +150,6 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 
 void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 {
-    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     diminuto_ticks_t now;
     int year, month, day, hour, minute, second;
     diminuto_ticks_t nanosecond;
