@@ -10,12 +10,15 @@
 
 #include "com/diag/diminuto/diminuto_hangup.h"
 #include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <pthread.h>
 
 static int signaled = 0;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void diminuto_hangup_handler(int signum)
 {
@@ -26,29 +29,30 @@ static void diminuto_hangup_handler(int signum)
 
 pid_t diminuto_hangup_signal(pid_t pid)
 {
-    if (pid < 0) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_hangup_signal: pid");
-    } else if (kill(pid, SIGHUP) < 0) {
+	int rc = 0;
+
+    if (kill(pid, SIGHUP) < 0) {
         diminuto_perror("diminuto_hangup_kill: kill");
-        pid = -1;
+        rc = -1;
     }
 
-    return pid;
+    return rc;
 }
 
 int diminuto_hangup_check(void)
 {
-    int result;
+    int mysignaled;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGHUP);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGHUP);
 
-    	result = signaled;
-    	signaled = 0;
+    		mysignaled = signaled;
+    		signaled = 0;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    DIMINUTO_CRITICAL_SECTION_END;
 
-    return result;
+    return mysignaled;
 }
 
 int diminuto_hangup_install(int restart)

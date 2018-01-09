@@ -9,19 +9,17 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * N.B. The use of the same signal handler within multiple threads is
- * problematic anyway, and this code is not guaranteed to be thread safe.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * Send a process a SIGHUP signal.
- * @param pid is the process identifier.
- * @return pid or <0 if an error occurred.
+ * @param pid is the process identifier, or 0 for process group, or -1 for all
+ * processes for whom the sender has permissions to send a signal.
+ * @return 0 or <0 if an error occurred.
  */
-extern pid_t diminuto_hangup_signal(pid_t pid);
+extern int diminuto_hangup_signal(pid_t pid);
 
 /**
  * Return true if the caller received a SIGHUP, false otherwise.

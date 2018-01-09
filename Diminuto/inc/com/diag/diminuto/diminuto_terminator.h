@@ -12,9 +12,6 @@
  *
  * The terminator feature propagates a SIGTERM signal to appropriate processes
  * (children or process group) when it receives one.
- *
- * N.B. The use of the same signal handler within multiple threads is
- * problematic anyway, and this code is not guaranteed to be thread safe.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

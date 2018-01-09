@@ -11,6 +11,7 @@
 
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
@@ -18,8 +19,10 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pthread.h>
 
 int diminuto_terminator_debug = 0; /* Not part of the public API. */
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int signaled = 0;
 
@@ -57,12 +60,14 @@ int diminuto_terminator_check(void)
 {
     int mysignaled;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM);
 
-        mysignaled = signaled;
-        signaled = 0;
+        	mysignaled = signaled;
+        	signaled = 0;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    DIMINUTO_CRITICAL_SECTION_END;
 
     if (!mysignaled) {
         /* Do nothing. */

@@ -35,6 +35,8 @@ int main(int argc, char ** argv)
 
 	hertz = diminuto_frequency();
 
+	TEST();
+
 	if (argc == 1) {
 
 		CHECKPOINT("unittest-hangup PARENT BEGIN\n");
@@ -48,6 +50,8 @@ int main(int argc, char ** argv)
 			diminuto_delay(hertz, !0);
 		}
 
+        CHECKPOINT("unittest-hangup PARENT %d\n", pid);
+
 		rc = diminuto_hangup_signal(pid);
 		ASSERT(rc == 0);
 
@@ -56,6 +60,8 @@ int main(int argc, char ** argv)
 	} else {
 
 		CHECKPOINT("unittest-hangup CHILD BEGIN\n");
+
+        CHECKPOINT("unittest-hangup CHILD %d\n", getpid());
 
 		rc = diminuto_hangup_install(0);
 		ASSERT(rc == 0);
@@ -74,5 +80,7 @@ int main(int argc, char ** argv)
 
 	}
 
-    return 0;
+	STATUS();
+
+    EXIT();
 }

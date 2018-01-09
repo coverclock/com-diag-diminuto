@@ -10,15 +10,18 @@
 
 #include "com/diag/diminuto/diminuto_reaper.h"
 #include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <pthread.h>
 
 int diminuto_reaper_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int diminuto_reaper_signal(pid_t pid)
 {
@@ -66,12 +69,14 @@ int diminuto_reaper_check(void)
 {
     int mysignaled;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGCHLD);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGCHLD);
 
-        mysignaled = signaled;
-        signaled = 0;
+    		mysignaled = signaled;
+    		signaled = 0;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    DIMINUTO_CRITICAL_SECTION_END;
 
     if (!mysignaled) {
         /* Do nothing. */

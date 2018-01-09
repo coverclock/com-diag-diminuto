@@ -10,14 +10,17 @@
 
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <pthread.h>
 
 int diminuto_alarm_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int diminuto_alarm_signal(pid_t pid)
 {
@@ -46,12 +49,14 @@ int diminuto_alarm_check(void)
 {
     int mysignaled;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
 
-        mysignaled = signaled;
-        signaled = 0;
+        	mysignaled = signaled;
+        	signaled = 0;
 
-    DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+    DIMINUTO_CRITICAL_SECTION_END;
 
     if (!mysignaled) {
         /* Do nothing. */
