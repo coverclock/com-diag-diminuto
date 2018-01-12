@@ -52,8 +52,8 @@ static void * body(void * arg)
 int main(void)
 {
 	{
-		diminuto_serialized_section_spinlock_t lock1 = 0;
-		diminuto_serialized_section_spinlock_t lock2 = 0;
+		diminuto_spinlock_t lock1 = 0;
+		diminuto_spinlock_t lock2 = 0;
 		int zero = 0;
 
 		TEST();

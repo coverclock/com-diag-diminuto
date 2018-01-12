@@ -12,6 +12,8 @@
  * This is largely experimental.
  */
 
+typedef volatile int diminuto_spinlock_t;
+
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
 #       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
@@ -38,7 +40,7 @@
              * Use a gcc built-in function (if it exists) to create an acquire
              * (read) memory barrier. (The barrier is a side-effect.)
              */
-#           define diminuto_acquire() do { volatile int _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
+#           define diminuto_acquire() do { diminuto_spinlock_t _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
 #       endif
 #   endif
 #endif
@@ -56,7 +58,7 @@
              * Use a gcc built-in function (if it exists) to create a release
              * (write) memory barrier. (The barrier is a side-effect.)
              */
-#           define diminuto_release() do { volatile int _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
+#           define diminuto_release() do { diminuto_spinlock_t _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
 #       endif
 #   endif
 #endif

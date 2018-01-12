@@ -37,6 +37,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include <unistd.h>
 
 /******************************************************************************/
 
@@ -204,6 +205,16 @@ extern const char * diminuto_log_mask_name;
 extern diminuto_log_mask_t diminuto_log_mask;
 
 /******************************************************************************/
+
+/**
+ * Returns true if the calling process is not the session leader. This suggests
+ * that the caller has a controlling terminal.
+ * @return !0 if interactive, 0 otherwise.
+ */
+static inline int diminuto_log_interactive()
+{
+	return (getpid() != getsid(0));
+}
 
 /**
  * Set the global default log mask from the environment. By default, the name

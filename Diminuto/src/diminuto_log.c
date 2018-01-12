@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -225,10 +224,10 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-    if (getppid() == 1) {
-        diminuto_log_vsyslog(priority, format, ap);
-    } else {
+    if (diminuto_log_interactive()) {
         diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
+    } else {
+        diminuto_log_vsyslog(priority, format, ap);
     }
 }
 

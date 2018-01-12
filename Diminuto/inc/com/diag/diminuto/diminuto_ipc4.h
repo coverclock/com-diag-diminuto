@@ -450,7 +450,7 @@ extern ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, siz
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc4_datagram_receive(int fd, void * buffer, size_t size) {
-    return diminuto_ipc4_datagram_receive_generic(fd, buffer, size, (diminuto_ipv4_t *)0, (diminuto_port_t)0, 0);
+    return diminuto_ipc4_datagram_receive_generic(fd, buffer, size, (diminuto_ipv4_t *)0, (diminuto_port_t *)0, 0);
 }
 
 /**

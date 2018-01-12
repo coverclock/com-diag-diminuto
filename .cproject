@@ -40,17 +40,45 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.1364016248.523449013" name="/" resourcePath="Diminuto">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1116043566" name="cdt.managedbuild.toolchain.gnu.cross.base" superClass="cdt.managedbuild.toolchain.gnu.cross.base" unusedChildren="">
+							<option id="cdt.managedbuild.option.gnu.cross.prefix.375147374.1369470951" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix.375147374"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.1793210310.1438966043" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path.1793210310"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1309470837" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler.462741655">
+								<option id="gnu.c.compiler.option.include.paths.1519593799" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/com-diag-diminuto/Diminuto/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/com-diag-diminuto/Diminuto/src}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.594499286" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.911618859" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.62627476">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1280269365" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.602083508" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker.1534930468"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1184912111" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker.1943726541"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.223193775" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver.1808746801"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.693034535" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler.1627162073">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2116998831" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
-	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="Diminuto.null.1325796959" name="Diminuto"/>
 	</storageModule>
 	<storageModule moduleId="refreshScope"/>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1364016248;cdt.managedbuild.toolchain.gnu.cross.base.1364016248.615868727;cdt.managedbuild.tool.gnu.cross.c.compiler.462741655;cdt.managedbuild.tool.gnu.c.compiler.input.543803086">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1364016248;cdt.managedbuild.toolchain.gnu.cross.base.1364016248.615868727;cdt.managedbuild.tool.gnu.cross.cpp.compiler.62627476;cdt.managedbuild.tool.gnu.cpp.compiler.input.1791431199">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>

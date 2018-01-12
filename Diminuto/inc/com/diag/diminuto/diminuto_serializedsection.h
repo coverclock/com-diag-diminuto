@@ -12,7 +12,7 @@
  * This is largely experimental.
  */
 
-typedef volatile int diminuto_serialized_section_spinlock_t;
+#include "com/diag/diminuto/diminuto_barrier.h"
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
@@ -26,7 +26,7 @@ typedef volatile int diminuto_serialized_section_spinlock_t;
  */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                    volatile int * _diminuto_serialized_section_spinlock_p_ = (_INTP_); \
+                	diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p_ = (_INTP_); \
                     while (__sync_lock_test_and_set(_diminuto_serialized_section_spinlock_p_, 1)); \
                     do { \
                         (void)0
@@ -52,7 +52,5 @@ typedef volatile int diminuto_serialized_section_spinlock_t;
 #   undef DIMINUTO_SERIALIZED_SECTION_END
 #   defined DIMINUTO_SERIALIZED_SECTION_END } while (0)
 #endif
-
-typedef volatile int diminuto_spinlock_t;
 
 #endif
