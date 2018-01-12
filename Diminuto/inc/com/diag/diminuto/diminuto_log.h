@@ -38,6 +38,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 #include <unistd.h>
+#include <stdbool.h>
 
 /******************************************************************************/
 
@@ -204,6 +205,13 @@ extern const char * diminuto_log_mask_name;
  */
 extern diminuto_log_mask_t diminuto_log_mask;
 
+/**
+ * If this variable is true (!0), log output is forced to syslog. Otherwise,
+ * log output will be written to stderr if the process is interactive, or to
+ * syslog if it is not. The default is false (0).
+ */
+extern bool diminuto_log_forced;
+
 /******************************************************************************/
 
 /**
@@ -213,7 +221,7 @@ extern diminuto_log_mask_t diminuto_log_mask;
  */
 static inline int diminuto_log_interactive()
 {
-	return (getpid() != getsid(0));
+	return ((!diminuto_log_forced) && (getpid() != getsid(0)));
 }
 
 /**
@@ -293,7 +301,7 @@ extern void diminuto_log_vwrite(int fd, int priority, const char * format, va_li
 extern void diminuto_log_write(int fd, int priority, const char * format, ...);
 
 /**
- * If the parent PID of the calling process is not 1, format and print
+ * If the calling process is interactive, format and print
  * the argument list to stderr; if it is, format and log the argument
  * list to syslog. This behavior is useful when unit testing daemons.
  * @param priority is the log priority level.
@@ -303,7 +311,7 @@ extern void diminuto_log_write(int fd, int priority, const char * format, ...);
 extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
 
 /**
- * If the parent PID of the calling process is not 1, format and print
+ * If the calling process is interactive, format and print
  * to stderr; if it is, format and log to syslog. This behavior is useful when
  * unit testing daemons.
  * @param priority is the log priority level.
@@ -312,7 +320,7 @@ extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
 extern void diminuto_log_log(int priority, const char * format, ...);
 
 /**
- * If the parent PID of the calling process is not 1, format and print
+ * If the calling process is interactive, format and print
  * the argument list to stderr; if it is, format and log the argument
  * list to syslog. The message is logged at the default priority.
  * @param format points to a printf-style format string.
@@ -328,7 +336,7 @@ extern void diminuto_log_emit(const char * format, ...);
 extern void diminuto_serror(const char * s);
 
 /**
- * If the parent PID of the calling process is not 1, emulate the stdio
+ * If the calling process is interactive, emulate the stdio
  * function perror(); if it is, still emulate perror() but instead of writing
  * the prefixed error string to standard error, log it to the system log.
  * @param s points to a nul-terminated string prepended to the error string.

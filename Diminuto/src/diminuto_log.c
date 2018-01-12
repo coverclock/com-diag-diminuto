@@ -60,6 +60,8 @@ FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
 
 const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
+bool diminuto_log_forced = false;
+
 /*******************************************************************************
  * BASE FUNCTIONS
  *****************************************************************************/

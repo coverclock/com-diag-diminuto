@@ -14,6 +14,7 @@
 #include "unittest-log.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int main(int argc, char ** argv)
 {
@@ -66,7 +67,9 @@ int main(int argc, char ** argv)
     	STATUS();
     }
 
-    if (argc > 1) {
+    if (argc < 2) {
+    	/* Do nothing. */
+    } else if (strcmp(argv[1], "daemon") == 0) {
         int rc;
         diminuto_log_emit("DAEMONIZING\n");
         if ((rc = diminuto_daemon(argv[0])) == 0) {
@@ -75,6 +78,12 @@ int main(int argc, char ** argv)
             diminuto_perror("diminuto_daemon");
             exit(1);
         }
+    } else if (strcmp(argv[1], "force") == 0) {
+        diminuto_log_emit("FORCING\n");
+    	diminuto_log_forced = true;
+    } else {
+    	fprintf(stderr, "usage: %s [ daemon | force | ]\n", argv[0]);
+    	exit(1);
     }
 
     {
