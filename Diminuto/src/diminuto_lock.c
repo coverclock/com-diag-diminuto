@@ -18,8 +18,40 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/syscall.h>>
 #include <linux/fs.h>
+
+#if defined(RENAME_NOREPLACE)
+
+#include <sys/syscall.h>
+
+/**
+ * Atomically change the name of a file providing it does not
+ * already exist. (N.B. This is a system call provided by the
+ * Linux kernel starting in 3.15; it is not (yet) supported by
+ * glibc. I do not believe there is any other way to accomplish
+ * this reliably.)
+ * @param olddirfd is a descriptor referring to the old directory.
+ * @param oldpath points to the old file system path.
+ * @param newdirfd is a descriptor referring to the new directory.
+ * @param newpath points to the new file system path.
+ * @param flags is a set of flags modifying behavior.
+ * @return 0 if successful, <0 with errno set otherwise.
+ */
+static inline renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
+        return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
+}
+
+#else
+
+#warning renameat2 not implemented!
+
+static inline renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
+    return -1;
+}
+
+#define RENAME_NOREPLACE 0
+
+#endif
 
 int diminuto_lock_lock(const char * file)
 {
@@ -73,9 +105,7 @@ int diminuto_lock_lock(const char * file)
         fp = (FILE *)0;
         fd = -1;
 
-        /* renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE) */
-
-        if (syscall(SYS_renameat2, AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE) >= 0) {
+        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE) >= 0) {
         	/* Do nothing. */
         } else if (errno == EEXIST) {
         	break;
