@@ -22,8 +22,8 @@
 extern int diminuto_alarm_signal(pid_t pid);
 
 /**
- * Return true if the caller received a SIGALRM, false otherwise.
- * @return true if the caller received a SIGALRM, false otherwise.
+ * Return the number of SIGALRM signals received since the previous call.
+ * @return the number of SIGALRM signals received since the previous call.
  */
 extern int diminuto_alarm_check(void);
 

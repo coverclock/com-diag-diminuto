@@ -9,9 +9,8 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_core.h"
-#include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_hangup.h"
+#include "com/diag/diminuto/diminuto_reaper.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_time.h"
@@ -22,38 +21,56 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+extern int diminuto_hangup_debug;
+
 static const char LOCKNAME[] = "/tmp/unittest-hangup.pid";
 
 int main(int argc, char ** argv)
 {
 	int rc;
-	diminuto_ticks_t hertz;
 	pid_t pid;
-	char buffer[256];
+    pid_t id;
 
-	diminuto_core_enable();
+    SETLOGMASK();
 
-	hertz = diminuto_frequency();
+    diminuto_hangup_debug = !0;
 
 	TEST();
 
-	if (argc == 1) {
+    CHECKPOINT("unittest-hangup PARENT BEGIN\n");
 
-		CHECKPOINT("unittest-hangup PARENT BEGIN\n");
+    (void)unlink(LOCKNAME);
 
-		snprintf(buffer, sizeof(buffer), "%s %s", argv[0], "child");
+    rc = diminuto_reaper_install(!0);
+    ASSERT(rc == 0);
 
-		rc = diminuto_system(buffer);
-		ASSERT(rc == 0);
+    ASSERT(!diminuto_reaper_check());
+    ASSERT(!diminuto_reaper_check());
 
-		while ((pid = diminuto_lock_check(LOCKNAME)) < 0) {
-			diminuto_delay(hertz, !0);
+    pid = fork();
+    ASSERT(pid >= 0);
+
+	if (pid > 0) {
+
+        CHECKPOINT("unittest-hangup PARENT child=%d\n", pid);
+
+		while ((id = diminuto_lock_check(LOCKNAME)) < 0) {
+			diminuto_yield();
 		}
 
-        CHECKPOINT("unittest-hangup PARENT %d\n", pid);
+        EXPECT(id == pid);
 
 		rc = diminuto_hangup_signal(pid);
 		ASSERT(rc == 0);
+
+		while ((id = diminuto_lock_check(LOCKNAME)) > 0) {
+			diminuto_yield();
+		}
+
+        diminuto_delay(diminuto_frequency(), 0);
+
+        ASSERT(diminuto_reaper_check());
+        ASSERT(!diminuto_reaper_check());
 
 		CHECKPOINT("unittest-hangup PARENT END\n");
 
@@ -61,16 +78,14 @@ int main(int argc, char ** argv)
 
 		CHECKPOINT("unittest-hangup CHILD BEGIN\n");
 
-        CHECKPOINT("unittest-hangup CHILD %d\n", getpid());
-
-		rc = diminuto_hangup_install(0);
+		rc = diminuto_hangup_install(!0);
 		ASSERT(rc == 0);
 
 		rc = diminuto_lock_lock(LOCKNAME);
 		ASSERT(rc == 0);
 
 		while (!diminuto_hangup_check()) {
-			diminuto_delay(hertz, !0);
+			diminuto_yield();;
 		}
 
 		rc = diminuto_lock_unlock(LOCKNAME);
@@ -79,8 +94,6 @@ int main(int argc, char ** argv)
 		CHECKPOINT("unittest-hangup CHILD END\n");
 
 	}
-
-	STATUS();
 
     EXIT();
 }

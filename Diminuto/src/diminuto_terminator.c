@@ -22,8 +22,8 @@
 #include <pthread.h>
 
 int diminuto_terminator_debug = 0; /* Not part of the public API. */
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int signaled = 0;
 
 int diminuto_terminator_signal(pid_t pid)
@@ -42,17 +42,15 @@ int diminuto_terminator_signal(pid_t pid)
     return rc;
 }
 
+
 static void diminuto_terminator_handler(int signum)
 {
     if (signum != SIGTERM) {
         /* Do nothing. */
-    } else if (signaled) {
-        /* Do nothing. */
+    } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
+       	signaled += 1;
     } else {
-        pid_t pid;
-        signaled = !0;
-        pid = (getpid() == 1) ? -1 : 0;
-        (void)diminuto_terminator_signal(pid);
+        /* Do nothing. */
     }
 }
 
@@ -71,10 +69,10 @@ int diminuto_terminator_check(void)
 
     if (!mysignaled) {
         /* Do nothing. */
-    } else if (!diminuto_terminator_debug) {
-        /* Do nothing. */
-    } else {
+    } else if (diminuto_terminator_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_terminator_check: SIGTERM");
+    } else {
+        /* Do nothing. */
     }
 
     return mysignaled;

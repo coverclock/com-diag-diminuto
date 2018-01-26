@@ -40,8 +40,12 @@ int diminuto_alarm_signal(pid_t pid)
 
 static void diminuto_alarm_handler(int signum)
 {
-    if (signum == SIGALRM) {
-        signaled = !0;
+    if (signum != SIGALRM) {
+    	/* Do nothing. */
+    } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
+        signaled += 1;
+    } else {
+    	/* Do nothing. */
     }
 }
 
@@ -60,10 +64,10 @@ int diminuto_alarm_check(void)
 
     if (!mysignaled) {
         /* Do nothing. */
-    } else if (!diminuto_alarm_debug) {
-        /* Do nothing. */
-    } else {
+    } else if (diminuto_alarm_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_alarm_check: SIGALRM");
+    } else {
+        /* Do nothing. */
     }
 
     return mysignaled;

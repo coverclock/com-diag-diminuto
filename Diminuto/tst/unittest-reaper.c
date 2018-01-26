@@ -17,13 +17,16 @@
 #include <unistd.h>
 #include <signal.h>
 
+extern int diminuto_reaper_debug;
+
 int main(int argc, char ** argv)
 {
     pid_t pid;
     int ii;
-    extern int diminuto_reaper_debug;
 
     SETLOGMASK();
+
+    TEST();
 
     diminuto_reaper_debug = !0;
 

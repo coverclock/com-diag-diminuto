@@ -22,8 +22,8 @@
 extern int diminuto_hangup_signal(pid_t pid);
 
 /**
- * Return true if the caller received a SIGHUP, false otherwise.
- * @return true if the caller received a SIGHUP, false otherwise.
+ * Return the number of SIGHUP signals received since the previous call.
+ * @return the number of SIGHUP signals received since the previous call.
  */
 extern int diminuto_hangup_check(void);
 

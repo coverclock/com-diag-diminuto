@@ -17,14 +17,20 @@
 #include <errno.h>
 #include <pthread.h>
 
+int diminuto_hangup_debug = 0; /* Not part of the public API. */
+
 static int signaled = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void diminuto_hangup_handler(int signum)
 {
-	if (signum == SIGHUP) {
-		signaled = !0;
-	}
+    if (signum != SIGHUP) {
+    	/* Do nothing. */
+    } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
+        signaled += 1;
+    } else {
+    	/* Do nothing. */
+    }
 }
 
 pid_t diminuto_hangup_signal(pid_t pid)
@@ -34,6 +40,10 @@ pid_t diminuto_hangup_signal(pid_t pid)
     if (kill(pid, SIGHUP) < 0) {
         diminuto_perror("diminuto_hangup_kill: kill");
         rc = -1;
+    } else if (diminuto_hangup_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_hangup_signal: SIGHUP");
+    } else {
+        /* Do nothing. */
     }
 
     return rc;
@@ -52,6 +62,14 @@ int diminuto_hangup_check(void)
     	DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
     DIMINUTO_CRITICAL_SECTION_END;
 
+    if (!mysignaled) {
+        /* Do nothing. */
+    } else if (diminuto_hangup_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_hangup_check: SIGHUP");
+    } else {
+        /* Do nothing. */
+    }
+
     return mysignaled;
 }
 
@@ -66,6 +84,10 @@ int diminuto_hangup_install(int restart)
     if (sigaction(SIGHUP, &hangup, (struct sigaction *)0) < 0) {
         diminuto_perror("diminuto_hangup_install: sigaction");
         return -1;
+    } else if (diminuto_hangup_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_hangup_install: SIGHUP");
+    } else {
+        /* Do nothing. */
     }
 
     return 0;

@@ -15,6 +15,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
 
@@ -41,26 +42,14 @@ int diminuto_reaper_signal(pid_t pid)
 
 static void diminuto_reaper_handler(int signum)
 {
-    pid_t pid;
     int status;
 
     if (signum == SIGCHLD) {
-        while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-            signaled = !0;
-            if (WIFEXITED(status)) {
-                DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d exit=%d", pid, WEXITSTATUS(status));
-            } else if (WIFSIGNALED(status)) {
-                DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d signal=%d", pid, WTERMSIG(status));
-            } else {
-                DIMINUTO_LOG_DEBUG("diminuto_reaper_handler: SIGCHLD pid=%d status=0x%x", pid, status);
-            }
-        }
-        if (pid >= 0) {
-            /* Do nothing. */
-        } else if (errno == ECHILD) {
-            /* Do nothing. */
-        } else {
-            diminuto_perror("diminuto_reaper_signal: waitpid");
+    	if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
+    		signaled += 1;
+    	}
+        while (waitpid(-1, &status, WNOHANG) > 0) {
+            ((void)0);
         }
     }
 }
@@ -80,10 +69,10 @@ int diminuto_reaper_check(void)
 
     if (!mysignaled) {
         /* Do nothing. */
-    } else if (!diminuto_reaper_debug) {
-        /* Do nothing. */
-    } else {
+    } else if (diminuto_reaper_debug) {
         DIMINUTO_LOG_DEBUG("diminuto_reaper_check: SIGCHLD");
+   } else {
+        /* Do nothing. */
     }
 
     return mysignaled;

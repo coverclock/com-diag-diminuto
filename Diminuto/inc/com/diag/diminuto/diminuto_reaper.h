@@ -28,8 +28,8 @@
 extern int diminuto_reaper_signal(pid_t pid);
 
 /**
- * Return true if the caller received a SIGCHLD, false otherwise.
- * @return true if the caller received a SIGCHLD, false otherwise.
+ * Return the number of SIGCHLD signals received since the previous call.
+ * @return the number of SIGCHLD signals received since the previous call.
  */
 extern int diminuto_reaper_check(void);
 
