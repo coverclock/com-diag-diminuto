@@ -76,7 +76,7 @@ static void stamp(FILE *fp)
     microseconds *= 1000000;
     microseconds /= diminuto_time_frequency();
     ticks = microseconds;
-    fprintf(fp, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6dZ ", year, month, day, hour, minute, second, ticks);
+    fprintf(fp, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6ldZ ", year, month, day, hour, minute, second, ticks);
 }
 
 static void emit(FILE * fp, const void * buffer, size_t length)

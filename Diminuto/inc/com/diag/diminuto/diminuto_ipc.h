@@ -255,4 +255,32 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
  */
 extern char ** diminuto_ipc_interfaces(void);
 
+/**
+ * This type defines the structure that is populated when an endpoint string
+ * is parsed. If the parsed endpoint was an IPv6 address, the IPv4 field will
+ * be all zeros, and vice versa. If no port was specified, the port field will
+ * be all zeros. If the host name or fully qualified domain name failed to
+ * resolve, both IPv4 and IPv6 fields will be all zeros. If the service name
+ * lookup failed, the port field will be zeros.
+ *
+ */
+typedef struct DiminutoIpcParse {
+	diminuto_ipv4_t ipv4;
+	diminuto_ipv6_t ipv6;
+	diminuto_port_t port;
+} diminuto_ipc_parse_t;
+
+/**
+ * Try to parse an endpoint string that has some combination of host name, fully
+ * qualified domain name, IPv4 address string, IPv6 address string, port number
+ * string, or service name, into a usable IPv4 or IPv6 binary address and a
+ * binary port number. Here are some examples: "80", ":80", ":http",
+ * "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
+ * "[::ffff:172.217.1.206]:80", and "[2607:f8b0:400f:805::200e]:80".
+ * @param endpoint points to the endpoint string.
+ * @param parse points to the structure in which the results are stored.
+ * @return 0 if no really obvious syntax errors were encountered, -1 otherwise.
+ */
+extern int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse);
+
 #endif
