@@ -1,41 +1,14 @@
 # com-diag-diminuto
 
-Copyright 2008-2017 by the Digital Aggregates Corporation, Colorado, USA.
+Linux systems programming library in C.
+
+## Copyright
+
+Copyright 2008-2018 by the Digital Aggregates Corporation, Colorado, USA.
 
 ## License
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-As a special exception, if other files instantiate templates or
-use macros or inline functions from this file, or you compile
-this file and link it with other works to produce a work based on
-this file, this file does not by itself cause the resulting work
-to be covered by the GNU Lesser General Public License. However
-the source code for this file must still be made available in
-accordance with the GNU Lesser General Public License.
-
-This exception does not invalidate any other reasons why a work
-based on this file might be covered by the GNU Lesser General
-Public License.
-
-Alternative commercial licensing terms are available from the copyright
-holder. Contact Digital Aggregates Corporation for more information.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, contact
-
-Free Software Foundation, Inc.  
-59 Temple Place, Suite 330  
-Boston MA 02111-1307 USA  
-<http://www.gnu.org/copyleft/lesser.txt>  
+Licensed under the terms in LICENSE.txt. 
 
 ## Abstract
 
@@ -232,7 +205,7 @@ don't, that's great too. Portions of it will still be shipping in a number
 of commercial products, ranging from satellite communications systems
 to cellular base station routers to in-flight entertainment systems.
 
-There are several other repositories of C or C++ code I maintain that are
+There are several other repositories of C or C++ code that I wrote that are
 built on top of Diminuto. Diminuto doesn't depend on any of them, but they
 depend on it. In addition, there are several of my projects in which I just
 cut and pasted a small amount of code, a function here and there, rather
@@ -262,5 +235,5 @@ Clone, build, and install Diminuto in /usr/local.
     cd src
     git clone https://github.com/coverclock/com-diag-diminuto
     cd com-diag-diminuto/Diminuto
-    make pristine all
+    make pristine depend all
     sudo make install

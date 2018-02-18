@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -277,7 +277,7 @@ typedef struct DiminutoIpcEndpoint {
  * "[::ffff:172.217.1.206]:80", and "[2607:f8b0:400f:805::200e]:80".
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
- * @return 0 if no really obvious syntax errors were encountered, -1 otherwise.
+ * @return 0 if no really obvious syntax errors were encountered, <0 otherwise.
  */
 extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
 

@@ -9,13 +9,34 @@
  * Ported from the Desperado::Service class.
  */
 
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdlib.h>
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_log.h"
+
+static int debug = 0;
+
+int diminuto_ipc_endpoint_debug(int now)
+{
+	int was;
+
+	was = debug;
+	debug = now;
+
+	return was;
+}
+
+static inline const char * pc(const char * str)
+{
+	return (*str == '\0') ? "" : (*str == '\t') ? " " : str;
+}
+
+static inline const char * ps(const char * str)
+{
+	return (str == (const char *)0) ? "" : str;
+}
 
 /*
  * 80
@@ -40,16 +61,6 @@
  * [2607:f8b0:400f:805::200e]:80
  * [2607:f8b0:400f:805::200e]:http
  */
-
-static inline const char * pc(const char * str)
-{
-	return (*str == '\0') ? "" : (*str == '\t') ? " " : str;
-}
-
-static inline const char * ps(const char * str)
-{
-	return (str == (const char *)0) ? "" : str;
-}
 
 typedef enum State {
 	S_START		= '<',
@@ -92,9 +103,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
 		do {
 
-#if 0
-			DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
-#endif
+			if (debug) {
+				DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+			}
 
 			switch (state) {
 
@@ -295,9 +306,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
 		} while (state != S_STOP);
 
-#if 0
-		DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
-#endif
+		if (debug) {
+			DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+		}
 
 		if (ipv4 != (char *)0) {
 			endpoint->ipv4 = diminuto_ipc4_address(ipv4);
@@ -320,9 +331,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 			/* Do nothing. */
 		}
 
-#if 0
-		DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", string, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
-#endif
+		if (debug) {
+			DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", string, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+		}
 
 	} while (0);
 
