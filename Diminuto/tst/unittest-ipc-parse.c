@@ -173,13 +173,13 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof(endpoint = "255.255.255.255")];
+    	char ipv4buffer[sizeof("255.255.255.255")];
     	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
     	diminuto_ipc_parse_t parse;
     	int rc;
 
     	TEST();
-    	rc = diminuto_ipc_parse("172.217.1.206:http", &parse);
+    	rc = diminuto_ipc_parse(endpoint = "172.217.1.206:http", &parse);
     	EXPECT(rc == 0);
 		COMMENT("diminuto_ipc_parse: endpoint=\"%s\" ipv4=%s ipv6=%s tcp=%d udp=%d\n", endpoint, diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp);
     	STATUS();
