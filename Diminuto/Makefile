@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2017 Digital Aggregates Corporation
+# Copyright 2008-2018 Digital Aggregates Corporation
 # Licensed under the terms in README.h
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	48# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -60,7 +60,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # faketime(1) utility to spoof the system time during builds.
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2017 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2018 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
@@ -112,7 +112,7 @@ ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
 
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
-GENERATED			:=	vintage setup generate
+GENERATED			:=	vintage generate setup
 SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h $(PROJECT)_revision.h
 
 ALIASES				:=	hex oct ntohs htons ntohl htonl
@@ -611,7 +611,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
-	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
+	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
 	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xffff' >> $@
 	chmod 755 $@
@@ -623,7 +623,7 @@ $(OUT)/$(SYM_DIR)/generate:	Makefile
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
 	echo 'echo export PATH=$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
-	echo 'echo export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
+	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
 	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xffff' >> $@
 	chmod 755 $@
@@ -634,7 +634,7 @@ $(OUT)/$(BIN_DIR)/setup:	$(OUT)/$(BIN_DIR)/generate
 	chmod 664 $@
 
 # For sourcing into a bash shell (for example, ". setup").
-$(OUT)/$(SYM_DIR)/setup:	$(OUT)/$(BIN_DIR)/generate
+$(OUT)/$(SYM_DIR)/setup:	$(OUT)/$(SYM_DIR)/generate
 	$< > $@
 	chmod 664 $@
 
