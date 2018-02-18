@@ -40,8 +40,6 @@ int main(int argc, char **argv)
 
 	diminuto_log_setmask();
 
-	printf("%zu %zu\n", sizeof(ipv4buffer), sizeof(ipv6buffer));
-
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
 	for (ii = 1; ii < argc; ++ii) {
