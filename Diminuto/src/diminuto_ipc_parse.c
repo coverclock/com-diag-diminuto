@@ -78,8 +78,6 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 	char * ipv6 = (char *)0;
 	char * port = (char *)0;
 	char * service = (char *)0;
-	char ipv4buffer[sizeof("255.255.255.255")] = { 0 };
-	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")] = { 0 };
 
 	parse->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
 	memcpy(&(parse->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(parse->ipv6));
@@ -318,7 +316,7 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 			/* Do nothing. */
 		}
 
-		DIMINUTO_LOG_INFORMATION("diminuto_ipc_parse: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", endpoint, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc, diminuto_ipc4_address2string(parse->ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse->ipv6, ipv6buffer, sizeof(ipv6buffer)), parse->tcp, parse->udp);
+		DIMINUTO_LOG_INFORMATION("diminuto_ipc_parse: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", endpoint, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
 
 	} while (0);
 
