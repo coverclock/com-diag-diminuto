@@ -23,6 +23,7 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,9 +34,13 @@ int main(int argc, char **argv)
 	const char * program;
 	int ii;
 	diminuto_ipc_endpoint_t endpoint;
-	char ipv4buffer[sizeof("255.255.255.255")];
-	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+	diminuto_ipv4_buffer_t ipv4buffer;
+	diminuto_ipv6_buffer_t ipv6buffer;
 	extern int diminuto_ipc_endpoint_debug(int);
+
+	diminuto_log_setmask();
+
+	printf("%zu %zu\n", sizeof(ipv4buffer), sizeof(ipv6buffer));
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 

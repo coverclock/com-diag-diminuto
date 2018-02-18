@@ -16,8 +16,6 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-#include <bits/sockaddr.h>
-#include <linux/limits.h>
 
 /**
  * Defines the prototype of a function used for dependency injection.

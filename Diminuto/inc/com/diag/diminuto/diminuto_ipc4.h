@@ -153,7 +153,7 @@ static inline diminuto_port_t diminuto_ipc4_port(const char * service, const cha
  * Convert an IPv4 address in host byte order into a printable IP address
  * string in dot notation.
  * @param address is the IPv4 address in host byte order.
- * @param buffer points to the buffer into to whcih the string is stored.
+ * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
  */
 extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
@@ -162,7 +162,7 @@ extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * bu
  * Convert an IPv4 address in host byte order into a printable IP address
  * string in dot notation.
  * @param address is the IPv4 address in host byte order.
- * @param buffer points to the buffer into to whcih the string is stored.
+ * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
  */
 static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address, char * buffer, size_t length) {

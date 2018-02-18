@@ -60,8 +60,8 @@ int main(int argc, char * argv[])
 
     {
     	const char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -75,8 +75,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -91,8 +91,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -106,8 +106,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -121,8 +121,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -136,8 +136,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -151,8 +151,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -166,8 +166,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -181,8 +181,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -196,8 +196,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -211,8 +211,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -226,8 +226,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -241,8 +241,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -256,8 +256,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -271,8 +271,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -286,8 +286,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -301,8 +301,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -316,8 +316,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -331,8 +331,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -346,8 +346,8 @@ int main(int argc, char * argv[])
 
     {
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
@@ -362,8 +362,8 @@ int main(int argc, char * argv[])
     {
     	TEST();
     	char * endpoint;
-    	char ipv4buffer[sizeof("255.255.255.255")];
-    	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")];
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
     	diminuto_ipc_endpoint_t parse;
     	int rc;
 
