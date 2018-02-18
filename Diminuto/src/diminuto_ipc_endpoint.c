@@ -66,7 +66,7 @@ typedef enum State {
 	S_STOP		= '>',
 } state_t;
 
-int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
+int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint)
 {
 	int rc = -1;
 	state_t state = S_START;
@@ -79,20 +79,22 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 	char * port = (char *)0;
 	char * service = (char *)0;
 
-	parse->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
-	memcpy(&(parse->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(parse->ipv6));
-	parse->tcp = 0;
-	parse->udp = 0;
+	endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
+	memcpy(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(endpoint->ipv6));
+	endpoint->tcp = 0;
+	endpoint->udp = 0;
 
 	do {
 
-		buffer = strdup(endpoint);
+		buffer = strdup(string);
 		if (buffer == (char *)0) { break; }
 		here = buffer;
 
 		do {
 
-			DIMINUTO_LOG_DEBUG("diminuto_ipc_parse: ch='%.1s' st=%c\n", pc(here), state);
+#if 0
+			DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+#endif
 
 			switch (state) {
 
@@ -293,30 +295,34 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 
 		} while (state != S_STOP);
 
-		DIMINUTO_LOG_DEBUG("diminuto_ipc_parse: ch='%.1s' st=%c\n", pc(here), state);
+#if 0
+		DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+#endif
 
 		if (ipv4 != (char *)0) {
-			parse->ipv4 = diminuto_ipc4_address(ipv4);
+			endpoint->ipv4 = diminuto_ipc4_address(ipv4);
 		} else if (ipv6 != (char *)0) {
-			parse->ipv6 = diminuto_ipc6_address(ipv6);
+			endpoint->ipv6 = diminuto_ipc6_address(ipv6);
 		} else if (host != (char *)0) {
-			parse->ipv4 = diminuto_ipc4_address(host);
-			parse->ipv6 = diminuto_ipc6_address(host);
+			endpoint->ipv4 = diminuto_ipc4_address(host);
+			endpoint->ipv6 = diminuto_ipc6_address(host);
 		} else {
 			/* Do nothing. */
 		}
 
 		if (service != (char *)0) {
-			parse->tcp = diminuto_ipc_port(service, "tcp");
-			parse->udp = diminuto_ipc_port(service, "udp");
+			endpoint->tcp = diminuto_ipc_port(service, "tcp");
+			endpoint->udp = diminuto_ipc_port(service, "udp");
 		} else if (port != (char *)0) {
-			parse->tcp = atoi(port);
-			parse->udp = parse->tcp;
+			endpoint->tcp = atoi(port);
+			endpoint->udp = endpoint->tcp;
 		} else {
 			/* Do nothing. */
 		}
 
-		DIMINUTO_LOG_INFORMATION("diminuto_ipc_parse: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", endpoint, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+#if 0
+		DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", string, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+#endif
 
 	} while (0);
 

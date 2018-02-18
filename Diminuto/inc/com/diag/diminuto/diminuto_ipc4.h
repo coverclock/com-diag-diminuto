@@ -42,6 +42,20 @@ extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK;
 extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2;
 
 /*******************************************************************************
+ * COMPARATORS
+ ******************************************************************************/
+
+/**
+ * Compares two IPv4 addresses in a manner similar to diminuto_ipc6_compare().
+ * @param address1p points to the first IPv4 address.
+ * @param address2p points to the second IPv4 address.
+ * @return 0 if equal, <0 if less than, >0 if greater than.
+ */
+static inline int diminuto_ipc4_compare(const diminuto_ipv4_t * address1p, const diminuto_ipv4_t * address2p) {
+    return (*address1p < *address2p) ? -1 : (*address1p > *address2p) ? 1 : 0;
+}
+
+/*******************************************************************************
  * CLASSIFIERS
  ******************************************************************************/
 

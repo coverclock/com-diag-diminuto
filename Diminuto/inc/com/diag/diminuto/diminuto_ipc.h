@@ -261,12 +261,12 @@ extern char ** diminuto_ipc_interfaces(void);
  * For example, it is possible that a fully qualified domain name will have
  * both IPv4 and IPv6 addresses. Fields that are not used will be zero.
  */
-typedef struct DiminutoIpcParse {
+typedef struct DiminutoIpcEndpoint {
 	diminuto_ipv4_t ipv4;
 	diminuto_ipv6_t ipv6;
 	diminuto_port_t tcp;
 	diminuto_port_t udp;
-} diminuto_ipc_parse_t;
+} diminuto_ipc_endpoint_t;
 
 /**
  * Try to parse an endpoint string that has some combination of host name, fully
@@ -275,10 +275,10 @@ typedef struct DiminutoIpcParse {
  * binary port number. Here are some examples: "80", ":80", ":http",
  * "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
  * "[::ffff:172.217.1.206]:80", and "[2607:f8b0:400f:805::200e]:80".
- * @param endpoint points to the endpoint string.
- * @param parse points to the structure in which the results are stored.
+ * @param string points to the endpoint string.
+ * @param endpoint points to the structure in which the results are stored.
  * @return 0 if no really obvious syntax errors were encountered, -1 otherwise.
  */
-extern int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse);
+extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
 
 #endif

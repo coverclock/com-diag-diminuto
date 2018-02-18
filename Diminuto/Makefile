@@ -206,13 +206,13 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 TARGETLIBRARIES		:=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	:=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
 TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
-TARGETALL		:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
+TARGETALL			:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETMOST			:=	$(TARGETALL) $(TARGETMODULES)
 TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 ########## Main Entry Points
 
-.PHONY:	all most plus dist clean pristine clobber
+.PHONY:	all most plus dist tidy clean pristine clobber
 
 all:	$(TARGETALL)
 
@@ -222,15 +222,18 @@ plus:	$(TARGETPLUS)
 
 dist:	distribution
 
+tidy:
+	rm -rf $(OUT)/arc $(OUT)/bin $(OUT)/dep $(OUT)/gen $(OUT)/inc $(OUT)/lib $(OUT)/obc $(OUT)/sym $(OUT)/tst
+
 clean:
 	rm -rf $(OUT)
-	rm -rf *.gcda *.gcno *.gcov
 
 pristine:	clean
 	rm -rf $(OUT_DIR)
 
 clobber:	pristine
 	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po
+	rm -rf *.gcda *.gcno *.gcov
 
 ########## Packaging and Distribution
 

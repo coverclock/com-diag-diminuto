@@ -77,6 +77,12 @@ extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
  * COMPARATORS
  ******************************************************************************/
 
+/**
+ * Compares two IPv6 addresses using memcmp(3).
+ * @param address1p points to the first IPv6 address.
+ * @param address2p points to the second IPv6 address.
+ * @return 0 if equal, <0 if less than, >0 if greater than.
+ */
 static inline int diminuto_ipc6_compare(const diminuto_ipv6_t * address1p, const diminuto_ipv6_t * address2p) {
     return memcmp(address1p, address2p, sizeof(diminuto_ipv6_t));
 }
