@@ -23,15 +23,15 @@ int main(int argc, char * argv[])
 
     rc = diminuto_ipc_parse("80", &parse);
 
+    rc = diminuto_ipc_parse(":80", &parse);
+
     rc = diminuto_ipc_parse(":http", &parse);
 
     rc = diminuto_ipc_parse("localhost", &parse);
 
-    rc = diminuto_ipc_parse("49152", &parse);
+    rc = diminuto_ipc_parse("localhost:80", &parse);
 
-    rc = diminuto_ipc_parse(":49152", &parse);
-
-    rc = diminuto_ipc_parse("localhost:49152", &parse);
+    rc = diminuto_ipc_parse("localhost:http", &parse);
 
     rc = diminuto_ipc_parse("google.com", &parse);
 
@@ -45,13 +45,21 @@ int main(int argc, char * argv[])
 
     rc = diminuto_ipc_parse("172.217.1.206:http", &parse);
 
-    rc = diminuto_ipc_parse("[0:0:0:0:ffff:172.217.1.206]:49152", &parse);
+    rc = diminuto_ipc_parse("[::]", &parse);
 
-    rc = diminuto_ipc_parse("[::ffff:172.217.1.206]:49152", &parse);
+    rc = diminuto_ipc_parse("[::]:80", &parse);
+
+    rc = diminuto_ipc_parse("[::]:http", &parse);
+
+    rc = diminuto_ipc_parse("[::ffff:172.217.1.206]", &parse);
+
+    rc = diminuto_ipc_parse("[::ffff:172.217.1.206]:80", &parse);
 
     rc = diminuto_ipc_parse("[::ffff:172.217.1.206]:http", &parse);
 
-    rc = diminuto_ipc_parse("[2607:f8b0:400f:805::200e]:49152", &parse);
+    rc = diminuto_ipc_parse("[2607:f8b0:400f:805::200e]", &parse);
+
+    rc = diminuto_ipc_parse("[2607:f8b0:400f:805::200e]:80", &parse);
 
     rc = diminuto_ipc_parse("[2607:f8b0:400f:805::200e]:http", &parse);
 

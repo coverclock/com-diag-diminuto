@@ -19,23 +19,31 @@
 
 /*
  * 80
+ * :80
  * :http
  * localhost
- * 49162
- * :49162
- * localhost:49152
+ * localhost:80
+ * localhost:http
  * google.com
  * google.com:80
  * google.com:http
+ * 172.217.1.206
  * 172.217.1.206:80
- * [0:0:0:0:ffff:172.217.1.206]:49152
- * [::ffff:172.217.1.206]:49152
- * [2607:f8b0:400f:805::200e]:49152
+ * 172.217.1.206:http
+ * [::]
+ * [::]:80
+ * [::]:http
+ * [::ffff:172.217.1.206]
+ * [::ffff:172.217.1.206]:80
+ * [::ffff:172.217.1.206]:http
+ * [2607:f8b0:400f:805::200e]
+ * [2607:f8b0:400f:805::200e]:80
+ * [2607:f8b0:400f:805::200e]:http
  */
 
 static inline const char * pc(const char * str)
 {
-	return (*str == '\0') ? "" : str;
+	return (*str == '\0') ? "" : (*str == '\t') ? " " : str;
 }
 
 static inline const char * ps(const char * str)
@@ -70,10 +78,13 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 	char * ipv6 = (char *)0;
 	char * port = (char *)0;
 	char * service = (char *)0;
+	char ipv4buffer[sizeof("255.255.255.255")] = { 0 };
+	char ipv6buffer[sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")] = { 0 };
 
 	parse->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
 	memcpy(&(parse->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(parse->ipv6));
-	parse->port = 0;
+	parse->tcp = 0;
+	parse->udp = 0;
 
 	do {
 
@@ -284,7 +295,30 @@ int diminuto_ipc_parse(const char * endpoint, diminuto_ipc_parse_t * parse)
 
 		} while (state != S_STOP);
 
-		DIMINUTO_LOG_INFORMATION("diminuto_ipc_parse: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d\n", endpoint, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+		DIMINUTO_LOG_DEBUG("diminuto_ipc_parse: ch='%.1s' st=%c\n", pc(here), state);
+
+		if (ipv4 != (char *)0) {
+			parse->ipv4 = diminuto_ipc4_address(ipv4);
+		} else if (ipv6 != (char *)0) {
+			parse->ipv6 = diminuto_ipc6_address(ipv6);
+		} else if (host != (char *)0) {
+			parse->ipv4 = diminuto_ipc4_address(host);
+			parse->ipv6 = diminuto_ipc6_address(host);
+		} else {
+			/* Do nothing. */
+		}
+
+		if (service != (char *)0) {
+			parse->tcp = diminuto_ipc_port(service, "tcp");
+			parse->udp = diminuto_ipc_port(service, "udp");
+		} else if (port != (char *)0) {
+			parse->tcp = atoi(port);
+			parse->udp = parse->tcp;
+		} else {
+			/* Do nothing. */
+		}
+
+		DIMINUTO_LOG_INFORMATION("diminuto_ipc_parse: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d IPV4=%s IPv6=%s TCP=%d UDP=%d\n", endpoint, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc, diminuto_ipc4_address2string(parse->ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse->ipv6, ipv6buffer, sizeof(ipv6buffer)), parse->tcp, parse->udp);
 
 	} while (0);
 

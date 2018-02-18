@@ -257,17 +257,15 @@ extern char ** diminuto_ipc_interfaces(void);
 
 /**
  * This type defines the structure that is populated when an endpoint string
- * is parsed. If the parsed endpoint was an IPv6 address, the IPv4 field will
- * be all zeros, and vice versa. If no port was specified, the port field will
- * be all zeros. If the host name or fully qualified domain name failed to
- * resolve, both IPv4 and IPv6 fields will be all zeros. If the service name
- * lookup failed, the port field will be zeros.
- *
+ * is parsed. The parser (such as it is) tries to fill in all of the fields.
+ * For example, it is possible that a fully qualified domain name will have
+ * both IPv4 and IPv6 addresses. Fields that are not used will be zero.
  */
 typedef struct DiminutoIpcParse {
 	diminuto_ipv4_t ipv4;
 	diminuto_ipv6_t ipv6;
-	diminuto_port_t port;
+	diminuto_port_t tcp;
+	diminuto_port_t udp;
 } diminuto_ipc_parse_t;
 
 /**
