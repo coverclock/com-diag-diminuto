@@ -97,6 +97,21 @@ int main(int argc, char * argv[])
     	int rc;
 
     	TEST();
+    	rc = diminuto_ipc_endpoint(endpoint = "http", &parse);
+    	EXPECT(rc == 0);
+		COMMENT("endpoint=\"%s\" ipv4=%s ipv6=%s tcp=%d udp=%d\n", endpoint, diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp);
+		VERIFY(unspecified4, unspecified6, httptcp, httpudp);
+    	STATUS();
+    }
+
+    {
+    	char * endpoint;
+    	diminuto_ipv4_buffer_t ipv4buffer;
+    	diminuto_ipv6_buffer_t ipv6buffer;
+    	diminuto_ipc_endpoint_t parse;
+    	int rc;
+
+    	TEST();
     	rc = diminuto_ipc_endpoint(endpoint = ":http", &parse);
     	EXPECT(rc == 0);
 		COMMENT("endpoint=\"%s\" ipv4=%s ipv6=%s tcp=%d udp=%d\n", endpoint, diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp);

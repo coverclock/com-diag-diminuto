@@ -41,6 +41,7 @@ static inline const char * ps(const char * str)
 /*
  * 80
  * :80
+ * http
  * :http
  * localhost
  * localhost:80
@@ -71,7 +72,7 @@ typedef enum State {
 	S_IPV6		= '6',
 	S_IPV4		= '4',
 	S_PORT		= 'P',
-	S_HOST		= 'H',
+	S_FQDN		= 'D',
 	S_SERVICE	= 'S',
 	S_NEXT		= '-',
 	S_STOP		= '>',
@@ -84,7 +85,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 	char * buffer = (char *)0;
 	char * here = (char *)0;
 	char * mark = (char *)0;
-	char * host = (char *)0;
+	char * name = (char *)0;
+	char * fqdn = (char *)0;
 	char * ipv4 = (char *)0;
 	char * ipv6 = (char *)0;
 	char * port = (char *)0;
@@ -158,7 +160,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 					here += 1;
 				} else if (*here == '-') {
 					here += 1;
-					state = S_HOST;
+					state = S_FQDN;
 				} else if (*here == ':') {
 					ipv4 = mark;
 					*here = '\0';
@@ -181,12 +183,12 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 			case S_LETTER:
 				if (*here == '.') {
 					here += 1;
-					state = S_HOST;
+					state = S_FQDN;
 				} else if (*here == '-') {
 					here += 1;
-					state = S_HOST;
+					state = S_FQDN;
 				} else if (*here == ':') {
-					host = mark;
+					fqdn = mark;
 					*here = '\0';
 					here += 1;
 					state = S_COLON;
@@ -195,7 +197,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 				} else if ((('a' <= *here) && (*here <= 'z')) || (('A' <= *here) && (*here <= 'Z'))) {
 					here += 1;
 				} else if (*here == '\0') {
-					host = mark;
+					name = mark;
 					state = S_STOP;
 					rc = 0;
 				} else {
@@ -203,7 +205,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 				}
 				break;
 
-			case S_HOST:
+			case S_FQDN:
 				if (*here == '-') {
 					here += 1;
 				} else if (*here == '.') {
@@ -214,10 +216,10 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 					here += 1;
 				} else if (*here == ':') {
 					*(here++) = '\0';
-					host = mark;
+					fqdn = mark;
 					state = S_COLON;
 				} else if (*here == '\0') {
-					host = mark;
+					fqdn = mark;
 					state = S_STOP;
 					rc = 0;
 				} else {
@@ -311,18 +313,50 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 		}
 
 		if (debug) {
-			DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" host=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d\n", string, ps(host), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+			DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
 		}
 
-		if (ipv4 != (char *)0) {
+		if (fqdn != (char *)0) {
+			endpoint->ipv4 = diminuto_ipc4_address(fqdn);
+			endpoint->ipv6 = diminuto_ipc6_address(fqdn);
+		} else if (ipv4 != (char *)0) {
 			endpoint->ipv4 = diminuto_ipc4_address(ipv4);
 		} else if (ipv6 != (char *)0) {
 			endpoint->ipv6 = diminuto_ipc6_address(ipv6);
-		} else if (host != (char *)0) {
-			endpoint->ipv4 = diminuto_ipc4_address(host);
-			endpoint->ipv6 = diminuto_ipc6_address(host);
 		} else {
 			/* Do nothing. */
+		}
+
+		/*
+		 * Something that looks like it might be a service name could also be
+		 * a host name that is not a domain name, e.g. "localhost". We first
+		 * try to resolve such names as host names unless it's really clear
+		 * that they were meant as service names.
+		 */
+
+		if (fqdn != (char *)0) {
+			/* Do nothing. */
+		} else if (ipv4 != (char *)0) {
+			/* Do nothing. */
+		} else if (ipv6 != (char *)0) {
+			/* Do nothing. */
+		} else if (name == (char *)0) {
+			/* Do nothing. */
+		} else {
+			endpoint->ipv4 = diminuto_ipc4_address(name);
+			endpoint->ipv6 = diminuto_ipc6_address(name);
+			if (service != (char *)0) {
+				/* Do nothing. */
+			} else if (port != (char *)0) {
+				/* Do nothing. */
+			} else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+				/* Do nothing. */
+			} else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+				/* Do nothing. */
+			} else {
+				endpoint->tcp = diminuto_ipc_port(name, "tcp");
+				endpoint->udp = diminuto_ipc_port(name, "udp");
+			}
 		}
 
 		if (service != (char *)0) {
