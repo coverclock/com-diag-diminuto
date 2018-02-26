@@ -93,7 +93,7 @@ typedef struct { diminuto_ipv6_base_t u16[128 / 8 / sizeof(diminuto_ipv6_base_t)
 typedef uint16_t diminuto_port_t;
 
 /**
- * @COM_DIMINUTO_IPV4_BUFSIZE
+ * @def COM_DIMINUTO_IPV4_BUFSIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv4 address string.
  */
@@ -106,7 +106,7 @@ typedef uint16_t diminuto_port_t;
 typedef char (diminuto_ipv4_buffer_t)[COM_DIMINUTO_IPV4_BUFSIZE];
 
 /**
- * @COM_DIMINUTO_IPV6_BUFSIZE
+ * @def COM_DIMINUTO_IPV6_BUFSIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv6 address string.
  */
