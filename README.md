@@ -74,7 +74,7 @@ Wheat Ridge CO 80033 USA
 * countof - macro to compute array positions using sizeof operator.
 * criticalsection - macros calls to implement pthread serialization.
 * cue - logic level debouncer and edge detector.
-* daemon - deamonizer that reports back to the parent on success.
+* daemon - process deamonizer.
 * datum - memory mapped register operators for device drivers.
 * delay - time delay and execution yield.
 * dump - a variety of formatted memory dump functions.
