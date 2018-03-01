@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -140,6 +140,29 @@ int main(int argc, char * argv[])
          * a.k.a. "search5.comcast.com". That's not helpful!
          */
         ADVISE(address == 0UL);
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv4_t * addresses;
+        size_t ii;
+
+        TEST();
+
+        addresses = diminuto_ipc4_addresses("localhost");
+        ASSERT(addresses != (diminuto_ipv4_t *)0);
+
+        for (ii = 0; ii < LIMIT; ++ii) {
+            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", addresses[ii], 0UL);
+            if (addresses[ii] == 0UL) {
+                break;
+            }
+        }
+        EXPECT(ii > 0);
+        EXPECT(ii < LIMIT);
+
+        free(addresses);
 
         STATUS();
     }

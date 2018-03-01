@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -153,6 +153,7 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 #define DIMINUTO_LOG_DESCRIPTOR_DEFAULT      STDERR_FILENO
 #define DIMINUTO_LOG_STREAM_DEFAULT          ((FILE *)0)
 #define DIMINUTO_LOG_MASK_NAME_DEFAULT       "COM_DIAG_DIMINUTO_LOG_MASK"
+#define DIMINUTO_LOG_MASK_VALUE_ALL          "~0"
 
 #define DIMINUTO_LOG_BUFFER_MAXIMUM          (1024)
 
@@ -211,6 +212,21 @@ extern diminuto_log_mask_t diminuto_log_mask;
  * syslog if it is not. The default is false (0).
  */
 extern bool diminuto_log_forced;
+
+/**
+ * Calling getpid() and getsid() every time we log something is not
+ * without overhead. But once a process becomes daemonized, and hence
+ * becomes a session leader, it's not likely to go back (in fact, I'm
+ * not even sure how that might be done). So we cache the result of the
+ * comparison between the process identifier and the session identifier,
+ * and once they are the same, we don't check it again. Since this is
+ * checking a process-level quality, the result of the comparison should
+ * be the same for all threads. So if this variable is true (!0), log
+ * output will go to syslog; otherwise it will be written to stderr.
+ * This variable is initialized to false (0), which causes it to be recomputed
+ * with every log statement until it becomes true.
+ */
+extern bool diminuto_log_cached;
 
 /******************************************************************************/
 

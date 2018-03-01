@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -36,7 +36,7 @@ static const char * PRIORITIES[] = {
     "DBUG",
 };
 
-static const char ALL[] = "~0";
+static const char ALL[] = DIMINUTO_LOG_MASK_VALUE_ALL;
 
 static uint8_t initialized = 0;
 
@@ -61,6 +61,8 @@ FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
 const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
 bool diminuto_log_forced = false;
+
+bool diminuto_log_cached = false;
 
 /*******************************************************************************
  * BASE FUNCTIONS
@@ -226,10 +228,10 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-    if (diminuto_log_interactive()) {
-        diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
-    } else {
+	if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0)))) {
         diminuto_log_vsyslog(priority, format, ap);
+	} else {
+        diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
     }
 }
 

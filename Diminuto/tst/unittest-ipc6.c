@@ -332,6 +332,32 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        addresses = diminuto_ipc6_addresses("localhost");
+        ASSERT(addresses != (diminuto_ipv6_t *)0);
+
+        for (ii = 0; ii < LIMIT; ++ii) {
+            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "localhost", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
+                break;
+            }
+            EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
+        }
+        EXPECT(ii > 0);
+        EXPECT(ii < LIMIT);
+
+        free(addresses);
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipv6_t * addresses;
+        size_t ii;
+        char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
+
+        TEST();
+
         addresses = diminuto_ipc6_addresses("google.com");
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
