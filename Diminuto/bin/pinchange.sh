@@ -30,10 +30,10 @@ elif [[ $# -eq 1 ]]; then
     pintool -p ${PIN} -x -i -H
     exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -S -M
 elif [[ $# -eq 3 ]]; then
-    PIN=${1:-"-"}
-    STATE=${2:-"-"}
-    PRIOR=${3:-"-"}
-    exec ${ROOT}/log -n "${PROGRAM} ${PIN} ${STATE} ${PRIOR}" 1>&2
+    CHANGED="${1}"
+    STATE="${2}"
+    PRIOR="${3}"
+    exec ${ROOT}/log -U -n "${PROGRAM} ${CHANGED} ${STATE} ${PRIOR}" 1>&2
 else
     echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
     exit 1
