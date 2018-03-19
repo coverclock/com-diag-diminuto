@@ -6,6 +6,12 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * An unfortunate side-effect of implementing a command line log utility for
+ * use in (for example) a bash script is that the usual mechanisms for
+ * determining if you are a daemon don't work. This utility allows you to
+ * force the use of syslog(3) using the "-S" option. But I'm still pondering
+ * a way to automate this.
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
@@ -23,13 +29,15 @@ int main(int argc, char * argv[])
     int facility = DIMINUTO_LOG_FACILITY_DEFAULT;
     diminuto_log_mask_t mask = DIMINUTO_LOG_MASK_DEFAULT;
     int priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
-    int opt;
+    int unconditional = 0;
+    char * endptr = (char *)0;
+    int opt = '\0';
     extern char * optarg;
 
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "N:O:F:SEacewnid?")) >= 0) {
+    while ((opt = getopt(argc, argv, "N:O:F:SUEacewnid?")) >= 0) {
 
         switch (opt) {
 
@@ -38,15 +46,19 @@ int main(int argc, char * argv[])
         	break;
 
         case 'O':
-        	option = atoi(optarg);
+        	option = strtol(optarg, &endptr, 0);
         	break;
 
         case 'F':
-        	facility = atoi(optarg);
+        	facility = strtol(optarg, &endptr, 0);
         	break;
 
         case 'S':
         	diminuto_log_forced = true;
+        	break;
+
+        case 'U':
+            unconditional = !0;
         	break;
 
         case 'E':
@@ -90,7 +102,7 @@ int main(int argc, char * argv[])
         	break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] ... \n", program);
+            fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -U ] MESSAGE ... \n", program);
             return 1;
             break;
 
@@ -100,7 +112,7 @@ int main(int argc, char * argv[])
 
     diminuto_log_setmask();
 
-    if ((diminuto_log_mask & mask) != 0) {
+    if (unconditional || ((diminuto_log_mask & mask) != 0)) {
 
     	diminuto_log_open_syslog(name, option, facility);
 
