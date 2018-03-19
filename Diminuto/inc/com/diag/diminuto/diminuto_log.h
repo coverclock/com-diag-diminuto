@@ -231,13 +231,14 @@ extern bool diminuto_log_cached;
 /******************************************************************************/
 
 /**
- * Returns true if the calling process is not the session leader. This suggests
- * that the caller has a controlling terminal.
+ * Returns true if the calling process is not the session leader (this suggests
+ * it has a controlling terminal) and its parent is not INIT (this suggests
+ * it is not a daemon).
  * @return !0 if interactive, 0 otherwise.
  */
 static inline int diminuto_log_interactive()
 {
-	return ((!diminuto_log_forced) && (getpid() != getsid(0)));
+	return ((getpid() != getsid(0)) && (getppid() != 1));
 }
 
 /**

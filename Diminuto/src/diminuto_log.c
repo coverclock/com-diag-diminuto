@@ -228,7 +228,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-	if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0)))) {
+	if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0))) || (diminuto_log_cached = (getppid() == 1))) {
         diminuto_log_vsyslog(priority, format, ap);
 	} else {
         diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
