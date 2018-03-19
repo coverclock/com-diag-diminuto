@@ -1,4 +1,8 @@
 #!/bin/bash
+# Copyright 2018 Digital Aggregates Corporation, Colorado, USA
+# Licensed under the terms in README.h
+# Chip Overclock <coverclock@diag.com>
+# https://github.com/coverclock/com-diag-diminuto
 
 # This is built for a specific test fixture I breadboarded up.
 # After the values of input pins 22 and 27 are read and displayed,
