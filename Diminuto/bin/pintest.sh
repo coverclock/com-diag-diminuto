@@ -5,15 +5,21 @@
 # and the LEDs on output pins 16, 20, and 21 cycle on and off,
 # press the button on pin 27 to advance the 3-bit binary counter
 # displayed on the LEDs, or press the button pn pin 22 simultaneously
-# with pin 27 to exit.
+# with pin 27 to exit. You will probably have to run this as root.
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-pintool -p 16 -n -x -o
-pintool -p 20 -n -x -o
-pintool -p 21 -n -x -o
-pintool -p 22 -n -x -i -L
-pintool -p 27 -n -x -i -H
+pintool -p 16 -n 2> /dev/null
+pintool -p 20 -n 2> /dev/null
+pintool -p 21 -n 2> /dev/null
+pintool -p 22 -n 2> /dev/null
+pintool -p 27 -n 2> /dev/null
+
+pintool -p 16 -x -o
+pintool -p 20 -x -o
+pintool -p 21 -x -o
+pintool -p 22 -x -i -L
+pintool -p 27 -x -i -H
 
 PIN22=$(pintool -p 22 -r)
 echo PIN22=${PIN22}
