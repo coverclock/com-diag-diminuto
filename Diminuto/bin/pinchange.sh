@@ -10,7 +10,10 @@
 # when such a change occurs. So you run this script *without*
 # arguments, it runs pintool, and when pintool detects an
 # edge change on pin 22, it runs this script *with* arguments.
-# You will probably have to run this as root.
+# You will probably have to run this as root. (You can add
+# an argument - anything will work, e.g. "pinchange daemon"
+# - when you run this command and it will run as a daemon;
+# you'll need to kill it explicitly to get rid of it.)
 
 PROGRAM=$(basename $0)
 ROOT=$(readlink -e $(dirname ${0})/../bin)
@@ -19,23 +22,19 @@ PIN=22
 . ${ROOT}/setup
 
 if [[ $# -eq 0 ]]; then
-	pintool -p ${PIN} -n 2> /dev/null
-	pintool -p ${PIN} -x -i -H
-	exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -M
+    pintool -p ${PIN} -n 2> /dev/null
+    pintool -p ${PIN} -x -i -H
+    exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -M
 elif [[ $# -eq 1 ]]; then
-    echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
-    exit 0
-elif [[ $# -eq 2 ]]; then
     pintool -p ${PIN} -n 2> /dev/null
     pintool -p ${PIN} -x -i -H
     exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -S -M
 elif [[ $# -eq 3 ]]; then
-	PIN=${1:-"-"}
-	STATE=${2:-"-"}
-	PRIOR=${3:-"-"}
-	echo ${PROGRAM} ${PIN} ${STATE} ${PRIOR} 1>&2
-	exit 0
+    PIN=${1:-"-"}
+    STATE=${2:-"-"}
+    PRIOR=${3:-"-"}
+    exec ${ROOT}/log -n "${PROGRAM} ${PIN} ${STATE} ${PRIOR}" 1>&2
 else
-	echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
-	exit 1
+    echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
+    exit 1
 fi
