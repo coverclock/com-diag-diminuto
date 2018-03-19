@@ -30,6 +30,7 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_poll.h"
 #include "com/diag/diminuto/diminuto_cue.h"
+#include "com/diag/diminuto/diminuto_daemon.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b ] [ -X COMMAND ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
     fprintf(stderr, "       -1            Read PIN initially when multiplexing.\n");
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
@@ -47,7 +48,9 @@ static void usage(const char * program)
     fprintf(stderr, "       -M            Multiplex upon PIN edge.\n");
     fprintf(stderr, "       -N            Set PIN edge to none.\n");
     fprintf(stderr, "       -R            Set PIN edge to rising.\n");
+    fprintf(stderr, "       -S            Daemonize.\n");
     fprintf(stderr, "       -U            Filter out non-unique edge changes.\n");
+    fprintf(stderr, "       -X COMMAND    Execute COMMAND PIN STATE PRIOR in shell when multiplexed edge changes.\n");
     fprintf(stderr, "       -b USECONDS   Poll with debounce every USECONDS (try 10000) microseconds.\n");
     fprintf(stderr, "       -c            Clear PIN by writing 0.\n");
     fprintf(stderr, "       -d            Enable debug mode.\n");
@@ -70,7 +73,7 @@ static void usage(const char * program)
 
 int main(int argc, char * argv[])
 {
-    int rc = 0;
+    int xc = 0;
     const char * program = "pintool";
     int done = 0;
     int fail = 0;
@@ -81,24 +84,28 @@ int main(int argc, char * argv[])
     int pin = -1;
     int state = 0;
     int prior = 0;
+    int act = 0;
     FILE * fp = (FILE *)0;
     const char * path = "/sys";
+    const char * command = (const char *)0;
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
-    diminuto_mux_t mux;
-    diminuto_ticks_t ticks;
+    diminuto_mux_t mux = { 0 };
+    diminuto_ticks_t ticks = 0;
     diminuto_sticks_t sticks = -2;
-    diminuto_cue_state_t cue;
-    diminuto_pin_edge_t edge;
-    int fd;
-    int nfds;
+    diminuto_cue_state_t cue = { 0 };
+    diminuto_pin_edge_t edge = DIMINUTO_PIN_EDGE_NONE;
+    int fd = -1;
+    int nfds = 0;
+    int rc = -1;
     char opts[2] = { '\0', '\0' };
-    int opt;
+	char buffer[1024] = { '\0' };
+    int opt = '\0';
     extern char * optarg;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1BD:FHLMNRUb:cdfhilm:nop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1BD:FHLMNRSUX:b:cdfhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
 
@@ -210,9 +217,22 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'S':
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            rc = diminuto_daemon(program);
+            if (rc < 0) {
+            	fail = !0;
+            }
+            break;
+
         case 'U':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             unique = !0;
+            break;
+
+        case 'X':
+            if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
+            command = optarg;
             break;
 
         case 'b':
@@ -355,7 +375,7 @@ int main(int argc, char * argv[])
             } else {
                 sticks = svalue;
             }
-            /* Fall through. */
+            /* no break */
 
         case 'M':
             if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, svalue); }
@@ -406,17 +426,20 @@ int main(int argc, char * argv[])
                             break;
                         } else {
                             state = !!state;
-                            if (!unique) {
-                                printf("%d\n", state);
-                                fflush(stdout);
-                            } else if (prior < 0) {
-                                printf("%d\n", state);
-                                fflush(stdout);
-                            } else if (prior != state) {
-                                printf("%d\n", state);
-                                fflush(stdout);
+                            act = (!unique) || (prior < 0) || (prior != state);
+                            if (!act) {
+                            	/* Do nothing. */
+                            } else if (command != (const char *)0) {
+                            	snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
+                            	buffer[sizeof(buffer) - 1] = '\0';
+                            	rc = diminuto_system(buffer);
+                            	if (rc < 0) {
+                            		fail = !0;
+                            		break;
+                            	}
                             } else {
-                                /* Do nothing. */
+                            	printf("%d\n", state);
+                            	fflush(stdout);
                             }
                             prior = state;
                         }
@@ -429,8 +452,22 @@ int main(int argc, char * argv[])
                     break;
                 } else {
                     state = !!state;
-                    printf("%d\n", state);
-                    fflush(stdout);
+                    act = (!unique) || (prior < 0) || (prior != state);
+                    if (!act) {
+                    	/* Do nothing. */
+                    } else if (command != (const char *)0) {
+                    	snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
+                    	buffer[sizeof(buffer) - 1] = '\0';
+                    	rc = diminuto_system(buffer);
+                    	if (rc < 0) {
+                    		fail = !0;
+                    		break;
+                    	}
+                    } else {
+                    	printf("%d\n", state);
+                    	fflush(stdout);
+                    }
+                    prior = state;
                 }
             }
             if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
@@ -620,12 +657,12 @@ int main(int argc, char * argv[])
 
         if (error) {
             usage(program);
-            rc = 1;
+            xc = 1;
             break;
         }
 
         if (fail) {
-            rc = 2;
+            xc = 2;
             break;
         }
 
@@ -637,5 +674,5 @@ int main(int argc, char * argv[])
 
     diminuto_pin_close(fp);
 
-    return rc;
+    return xc;
 }
