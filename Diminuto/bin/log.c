@@ -29,7 +29,7 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "N:O:F:Eacewnid?")) >= 0) {
+    while ((opt = getopt(argc, argv, "N:O:F:SEacewnid?")) >= 0) {
 
         switch (opt) {
 
@@ -43,6 +43,10 @@ int main(int argc, char * argv[])
 
         case 'F':
         	facility = atoi(optarg);
+        	break;
+
+        case 'S':
+        	diminuto_log_forced = true;
         	break;
 
         case 'E':
@@ -86,7 +90,7 @@ int main(int argc, char * argv[])
         	break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -E | -a | -c | -e | -w | -n | -i | -d ] ... \n", program);
+            fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] ... \n", program);
             return 1;
             break;
 
