@@ -18,6 +18,7 @@
 PROGRAM=$(basename $0)
 ROOT=$(readlink -e $(dirname ${0})/../bin)
 PIN=22
+#PIN=27
 
 . ${ROOT}/setup
 
