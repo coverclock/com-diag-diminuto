@@ -9,7 +9,10 @@
  *
  * Displays on standard output the calling processes' process id,
  * its session id, it's parent's process id, and it's parents's
- * session id.
+ * session id. Here is a useful command line in a script (yes,
+ * both less-than signs are necessary; I'm not sure why).
+ * 
+ *  read MYPID MYSID MYPPID MYPSID < <(printids)
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
