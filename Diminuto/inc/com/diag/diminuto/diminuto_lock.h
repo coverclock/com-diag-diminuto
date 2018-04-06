@@ -34,8 +34,32 @@
 /**
  * Create a lock file with the specified path and name (e.g.
  * "/var/run/foo.pid") using an exclusive open such that if the file
- * already exists the function fails. The file will contain the PID
- * of the calling process. This only works reliabily if the file is
+ * already exists the function fails. The file will contain a zero PID text
+ * string. This only works reliabily if the file is in the local file system.
+ * This function may create a temporary file whose name is the file name
+ * appended with ".tmp", for example "/var/run/foo.pid.tmp". This function can
+ * be used, for example, by a parent process to determine if the child is
+ * already running; the child can populate the file with its own PID using
+ * diminuto_lock_postlock() as a mechanism to inform the parent that it is
+ * running.
+ * @param file is the path and name of the lock file.
+ * @return 0 if successful, <0 with errno set otherwise.
+ */
+extern int diminuto_lock_prelock(const char * file);
+
+/**
+ * If and only if the lock file with the specified path and name already
+ * exists, write the PID text string of the current process into the file.
+ * @param file is the path and name of the lock file.
+ * @return 0 if successful, <0 with errno set otherwise.
+ */
+extern int diminuto_lock_postlock(const char * file);
+
+/**
+ * Create a lock file with the specified path and name (e.g.
+ * "/var/run/foo.pid") using an exclusive open such that if the file
+ * already exists the function fails. The file will contain the PID text
+ * string of the calling process. This only works reliabily if the file is
  * in the local file system. This function may create a temporary
  * file whose name is the file name appended with ".tmp", for example
  * "/var/run/foo.pid.tmp".
@@ -57,7 +81,7 @@ extern int diminuto_lock_unlock(const char * file);
  * Read the PID from a lock file with the specified path and name
  * (e.g. "/var/run/foo.pid") and return it.
  * @param file is the path and name of the lock file.
- * @return a PID if successful, <0 with errno set otherwise.
+ * @return a PID if successful, 0 if invalid, <0 with errno set if error.
  */
 extern pid_t diminuto_lock_check(const char * file);
 

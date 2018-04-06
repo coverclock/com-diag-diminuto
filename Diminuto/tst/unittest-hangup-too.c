@@ -47,6 +47,9 @@ int main(int argc, char ** argv)
     ASSERT(!diminuto_reaper_check());
     ASSERT(!diminuto_reaper_check());
 
+	rc = diminuto_lock_prelock(LOCKNAME);
+	ASSERT(rc == 0);
+
     pid = fork();
     ASSERT(pid >= 0);
 
@@ -54,18 +57,16 @@ int main(int argc, char ** argv)
 
         CHECKPOINT("unittest-hangup PARENT child=%d\n", pid);
 
-		while ((id = diminuto_lock_check(LOCKNAME)) < 0) {
+		while ((id = diminuto_lock_check(LOCKNAME)) <= 0) {
 			diminuto_yield();
 		}
 
-        EXPECT(id == pid);
+		EXPECT(id == pid);
 
 		rc = diminuto_hangup_signal(pid);
 		ASSERT(rc == 0);
 
-		while ((id = diminuto_lock_check(LOCKNAME)) > 0) {
-			diminuto_yield();
-		}
+		CHECKPOINT("unittest-hangup PARENT READY\n");
 
         diminuto_delay(diminuto_frequency(), 0);
 
@@ -81,7 +82,9 @@ int main(int argc, char ** argv)
 		rc = diminuto_hangup_install(!0);
 		ASSERT(rc == 0);
 
-		rc = diminuto_lock_lock(LOCKNAME);
+		CHECKPOINT("unittest-hangup CHILD READY\n");
+
+		rc = diminuto_lock_postlock(LOCKNAME);
 		ASSERT(rc == 0);
 
 		while (!diminuto_hangup_check()) {
