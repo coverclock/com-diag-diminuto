@@ -22,11 +22,6 @@
 #include <string.h>
 #include "../src/diminuto_daemon.h"
 
-extern char * get_current_dir_name(void); /* Supposed to be in <unistd.h>? */
-
-static const char LOGNAME[] = "unittest-daemon";
-static const char COMMAND[] = "ps -l";
-
 int main(int argc, char ** argv)
 {
     int rc;

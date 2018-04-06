@@ -102,6 +102,7 @@ int main(int argc, char * argv[])
         	break;
 
         case '?':
+        default:
             fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -U ] MESSAGE ... \n", program);
             return 1;
             break;

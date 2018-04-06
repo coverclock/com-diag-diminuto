@@ -46,8 +46,15 @@ int diminuto_core_enable(void)
 
 void diminuto_core_fatal(void)
 {
-    abort();
-    (void)kill(getpid(), SIGSEGV);
-    *((volatile char *)0);
+	int rc = -1;
+	char datum = 0;
+
+	abort();
+    diminuto_perror("diminuto_core_fatal: abort");
+    rc = kill(getpid(), SIGSEGV);
+    diminuto_perror("diminuto_core_fatal: kill");
+	datum = *((volatile char *)0); /* Remarkably, I have worked on hardware where this succeeds. */
+	errno = EINVAL;
+	diminuto_perror("diminuto_core_fatal: nullptr");
     _exit(1);
 }
