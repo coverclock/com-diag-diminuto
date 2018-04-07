@@ -201,11 +201,7 @@ int diminuto_lock_postlock(const char * file)
          * N.B. atomic.
          */
 
-        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE) >= 0) {
-        	/* Do nothing. */
-        } else if (errno == EEXIST) {
-        	break;
-        } else {
+        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE) < 0) {
         	diminuto_perror("diminuto_lock_postlock: renameat2");
         	break;
         }
