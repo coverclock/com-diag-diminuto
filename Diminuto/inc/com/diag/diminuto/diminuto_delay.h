@@ -86,9 +86,15 @@ static inline diminuto_ticks_t diminuto_delay_uninterruptible(diminuto_ticks_t t
 }
 
 /**
- * Force a context switch without otherwise blocking.
+ * Force a context switch using sched_yield(2) without otherwise blocking.
  * @return 0 if successful, <0 with errno set otherwise.
  */
 extern int diminuto_yield(void);
+
+/**
+ * Call pause(2) which blocks the caller until a signal arrives and is handled.
+ * @return 0 if a signal arrived, <0 with errno set otherwise.
+ */
+extern int diminuto_pause(void);
 
 #endif

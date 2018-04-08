@@ -14,6 +14,7 @@
 #include <sched.h>
 #include <errno.h>
 #include <time.h>
+#include <unistd.h>
 
 diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptible)
 {
@@ -47,12 +48,31 @@ diminuto_ticks_t diminuto_delay(diminuto_ticks_t ticks, int interruptible)
     return ticks;
 }
 
-int diminuto_yield(void) {
+int diminuto_yield(void)
+{
     int rc;
 
     rc = sched_yield();
     if (rc < 0) {
         diminuto_perror("diminuto_yield: sched_yield");
+    }
+
+    return rc;
+}
+
+int diminuto_pause(void)
+{
+	int rc;
+
+	rc = pause();
+	if (rc >= 0) {
+		rc = -1;
+		errno = EINVAL;
+        diminuto_perror("diminuto_pause: pause");
+	} else if (errno == EINTR) {
+    	rc = 0;
+    } else {
+        diminuto_perror("diminuto_pause: pause");
     }
 
     return rc;
