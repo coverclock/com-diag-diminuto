@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
