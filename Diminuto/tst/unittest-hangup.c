@@ -6,6 +6,9 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * Model: parent forks child, waits for child to create lock file, signals
+ * child to exit with SIGHUP, waits for child to remove lock file.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"

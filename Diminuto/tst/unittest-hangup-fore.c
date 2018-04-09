@@ -6,6 +6,11 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * Model: parent creates lock file, parent forks child, parent delays
+ * indefinitely until interrupted by any signal, child populates lock
+ * file and signals parent with SIGHUP, parent checks lock file, parent waits
+ * for child to exit, parent verifies child status is zero.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -65,7 +70,10 @@ int main(int argc, char ** argv)
 
         CHECKPOINT("unittest-hangup PARENT child=%d\n", pid);
 
-        diminuto_delay(diminuto_frequency(), 0);
+        diminuto_delay(diminuto_frequency() * 60 * 60 * 24, !0);
+
+        ASSERT(diminuto_hangup_check());
+		ASSERT(!diminuto_hangup_check());
 
 		id = diminuto_lock_check(LOCKNAME);
 		EXPECT(id == pid);
@@ -78,6 +86,7 @@ int main(int argc, char ** argv)
 		ASSERT(status == 0);
 
 		ASSERT(diminuto_reaper_check());
+		ASSERT(!diminuto_reaper_check());
 
 		id = diminuto_lock_check(LOCKNAME);
 		EXPECT(id < 0);

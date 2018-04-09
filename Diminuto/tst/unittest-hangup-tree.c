@@ -6,6 +6,11 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * Model: parent creates lock file, parent forks child, parent waits for SIGHUP
+ * signal from child indicating successful initialization, child populates lock
+ * file and signals parent with SIGHUP, parent checks lock file, parent waits
+ * for child to exit, parent verifies child status is zero.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -68,6 +73,9 @@ int main(int argc, char ** argv)
         rc = diminuto_pause();
         ASSERT(rc == 0);
 
+        ASSERT(diminuto_hangup_check());
+		ASSERT(!diminuto_hangup_check());
+
 		id = diminuto_lock_check(LOCKNAME);
 		EXPECT(id == pid);
 
@@ -79,6 +87,7 @@ int main(int argc, char ** argv)
 		ASSERT(status == 0);
 
 		ASSERT(diminuto_reaper_check());
+		ASSERT(!diminuto_reaper_check());
 
 		id = diminuto_lock_check(LOCKNAME);
 		EXPECT(id < 0);
