@@ -9,6 +9,7 @@
  */
 
 #include "diminuto_renameat2.h"
+#include "diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <fcntl.h>
@@ -20,10 +21,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-int diminuto_lock_lock(const char * file)
+int diminuto_lock_lock_generic(const char * file, pid_t pid)
 {
 	int rc = -1;
-    pid_t pid = -1;
 	int fd = -1;
     FILE * fp = (FILE *)0;
     char * path = (char *)0;
@@ -31,14 +31,9 @@ int diminuto_lock_lock(const char * file)
 
     do {
 
-        if ((pid = getpid()) < 0) {
-            diminuto_perror("diminuto_lock_lock: getpid");
-            break;
-        }
-
     	path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
     	if (path == (char *)0) {
-    		diminuto_perror("diminuto_lock_lock: malloc");
+    		diminuto_perror("diminuto_lock_lock_generic: malloc");
     		break;
     	}
 
@@ -50,22 +45,22 @@ int diminuto_lock_lock(const char * file)
         } else if (errno == EEXIST) {
         	break;
         } else {
-            diminuto_perror("diminuto_lock_lock: mkstemp");
+            diminuto_perror("diminuto_lock_lock_generic: mkstemp");
             break;
         }
 
         if ((fp = fdopen(fd, "w")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_lock: fdopen");
+            diminuto_perror("diminuto_lock_lock_generic: fdopen");
             break;
         }
 
         if (fprintf(fp, "%d\n", pid) < 0) {
-           diminuto_perror("diminuto_lock_lock: fprintf");
+           diminuto_perror("diminuto_lock_lock_generic: fprintf");
            break;
         }
 
         if (fclose(fp) == EOF) {
-        	diminuto_perror("diminuto_lock_lock: fclose");
+        	diminuto_perror("diminuto_lock_lock_generic: fclose");
         	break;
         }
 
@@ -81,7 +76,7 @@ int diminuto_lock_lock(const char * file)
         } else if (errno == EEXIST) {
         	break;
         } else {
-        	diminuto_perror("diminuto_lock_lock: renameat2");
+        	diminuto_perror("diminuto_lock_lock_generic: renameat2");
         	break;
         }
 
@@ -95,7 +90,7 @@ int diminuto_lock_lock(const char * file)
         fp = (FILE *)0;
         fd = -1;
     } else {
-        diminuto_perror("diminuto_lock_lock: fclose");
+        diminuto_perror("diminuto_lock_lock_generic: fclose");
     }
 
     if (fd < 0) {
@@ -103,13 +98,27 @@ int diminuto_lock_lock(const char * file)
     } else if (close(fd) == 0) {
         /* Do nothing. */
      } else {
-        diminuto_perror("diminuto_lock_lock: close");
+        diminuto_perror("diminuto_lock_lock_generic: close");
     }
 
     if (path != (char *)0) {
     	(void)unlink(path);
     	free(path);
         path = (char *)0;
+    }
+
+    return rc;
+}
+
+int diminuto_lock_lock(const char * file)
+{
+	int rc = -1;
+    pid_t pid = -1;
+
+    if ((pid = getpid()) < 0) {
+        diminuto_perror("diminuto_lock_lock: getpid");
+    } else {
+    	rc = diminuto_lock_lock_generic(file, pid);
     }
 
     return rc;
@@ -145,10 +154,9 @@ int diminuto_lock_prelock(const char * file)
     return rc;
 }
 
-int diminuto_lock_postlock(const char * file)
+int diminuto_lock_postlock_generic(const char * file, pid_t pid)
 {
 	int rc = -1;
-    pid_t pid = -1;
 	int fd = -1;
     FILE * fp = (FILE *)0;
     char * path = (char *)0;
@@ -156,14 +164,9 @@ int diminuto_lock_postlock(const char * file)
 
     do {
 
-        if ((pid = getpid()) < 0) {
-            diminuto_perror("diminuto_lock_postlock: getpid");
-            break;
-        }
-
     	path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
     	if (path == (char *)0) {
-    		diminuto_perror("diminuto_lock_postlock: malloc");
+    		diminuto_perror("diminuto_lock_postlock_generic: malloc");
     		break;
     	}
 
@@ -175,22 +178,22 @@ int diminuto_lock_postlock(const char * file)
         } else if (errno == EEXIST) {
         	break;
         } else {
-            diminuto_perror("diminuto_lock_postlock: mkstemp");
+            diminuto_perror("diminuto_lock_postlock_generic: mkstemp");
             break;
         }
 
         if ((fp = fdopen(fd, "w")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_postlock: fdopen");
+            diminuto_perror("diminuto_lock_postlock_generic: fdopen");
             break;
         }
 
         if (fprintf(fp, "%d\n", pid) < 0) {
-           diminuto_perror("diminuto_lock_postlock: fprintf");
+           diminuto_perror("diminuto_lock_postlock_generic: fprintf");
            break;
         }
 
         if (fclose(fp) == EOF) {
-        	diminuto_perror("diminuto_lock_postlock: fclose");
+        	diminuto_perror("diminuto_lock_postlock_generic: fclose");
         	break;
         }
 
@@ -202,7 +205,7 @@ int diminuto_lock_postlock(const char * file)
          */
 
         if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE) < 0) {
-        	diminuto_perror("diminuto_lock_postlock: renameat2");
+        	diminuto_perror("diminuto_lock_postlock_generic: renameat2");
         	break;
         }
 
@@ -216,7 +219,7 @@ int diminuto_lock_postlock(const char * file)
         fp = (FILE *)0;
         fd = -1;
     } else {
-        diminuto_perror("diminuto_lock_postlock: fclose");
+        diminuto_perror("diminuto_lock_postlock_generic: fclose");
     }
 
     if (fd < 0) {
@@ -224,7 +227,7 @@ int diminuto_lock_postlock(const char * file)
     } else if (close(fd) == 0) {
         /* Do nothing. */
      } else {
-        diminuto_perror("diminuto_lock_postlock: close");
+        diminuto_perror("diminuto_lock_postlock_generic: close");
     }
 
     if (path != (char *)0) {
@@ -232,6 +235,20 @@ int diminuto_lock_postlock(const char * file)
     	free(path);
     	path = (char *)0;
     }
+
+    return rc;
+}
+
+int diminuto_lock_postlock(const char * file)
+{
+	int rc = -1;
+    pid_t pid = -1;
+
+	if ((pid = getpid()) < 0) {
+		diminuto_perror("diminuto_lock_postlock: getpid");
+	} else {
+		rc = diminuto_lock_postlock_generic(file, pid);
+	}
 
     return rc;
 }

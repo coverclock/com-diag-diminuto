@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in README.h<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -45,7 +45,8 @@
 extern int diminuto_lock_prelock(const char * file);
 
 /**
- * Atomically write the PID text string of the current process into the file.
+ * Atomically write the PID text string of the current process into the
+ * specified file.
  * @param file is the path and name of the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
@@ -54,7 +55,7 @@ extern int diminuto_lock_postlock(const char * file);
 /**
  * Atomically create a lock file with the specified path and name (e.g.
  * "/var/run/foo.pid") using an exclusive open such that if the file
- * already exists the function fails. The file will contain the PID text
+ * already exists the function fails, and containing the PID text
  * string of the calling process. This only works reliably if the file is
  * in the local file system.
  * @param file is the path and name of the lock file.
