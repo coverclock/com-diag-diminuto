@@ -15,13 +15,12 @@
 #include "com/diag/diminuto/diminuto_platform.h"
 
 /*
- * This is just a suggestion, but it is useful for unit testing.
- * See unittest-daemon.c for an example of how this is used. In
+ * This is just a suggestion, but it is useful for unit testing. In
  * practice, you should probably use a dedicated directory. On most
  * server systems this would be under something like "/var/run/lock/".
  * But non-root processes like unit tests can write to the directories below.
- * You must use an absolute path because when the daemon tries to instantiate
- * the lock file it's current directory will have already been changed to "/".
+ * You must use an absolute path because when a daemon tries to instantiate
+ * the lock file its current directory may have already been changed to "/".
  */
 #if defined(COM_DIAG_DIMINUTO_LOCK_ROOT)
 	/* Do nothing. */

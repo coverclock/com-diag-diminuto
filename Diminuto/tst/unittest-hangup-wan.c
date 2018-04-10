@@ -26,7 +26,7 @@
 
 extern int diminuto_hangup_debug;
 
-static const char LOCKNAME[] = "/tmp/unittest-hangup.pid";
+static const char LOCKNAME[] = "/tmp/unittest-hangup-wan.pid";
 
 int main(int argc, char ** argv)
 {
@@ -38,11 +38,11 @@ int main(int argc, char ** argv)
 
     diminuto_hangup_debug = !0;
 
+    (void)unlink(LOCKNAME);
+
 	TEST();
 
-    CHECKPOINT("unittest-hangup PARENT BEGIN\n");
-
-    (void)unlink(LOCKNAME);
+    CHECKPOINT("unittest-hangup-wan PARENT BEGIN\n");
 
     rc = diminuto_reaper_install(!0);
     ASSERT(rc == 0);
@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
 
 	if (pid > 0) {
 
-        CHECKPOINT("unittest-hangup PARENT child=%d\n", pid);
+        CHECKPOINT("unittest-hangup-wan PARENT child=%d\n", pid);
 
 		while ((id = diminuto_lock_check(LOCKNAME)) < 0) {
 			diminuto_yield();
@@ -75,11 +75,11 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_reaper_check());
         ASSERT(!diminuto_reaper_check());
 
-		CHECKPOINT("unittest-hangup PARENT END\n");
+		CHECKPOINT("unittest-hangup-wan PARENT END\n");
 
 	} else {
 
-		CHECKPOINT("unittest-hangup CHILD BEGIN\n");
+		CHECKPOINT("unittest-hangup-wan CHILD BEGIN\n");
 
 		rc = diminuto_hangup_install(!0);
 		ASSERT(rc == 0);
@@ -94,7 +94,7 @@ int main(int argc, char ** argv)
 		rc = diminuto_lock_unlock(LOCKNAME);
 		ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup CHILD END\n");
+		CHECKPOINT("unittest-hangup-wan CHILD END\n");
 
 	}
 

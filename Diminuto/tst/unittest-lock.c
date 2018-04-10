@@ -28,6 +28,8 @@ int main(int argc, char ** argv)
 		pid_t pid3;
 		pid_t pid4;
 
+		(void)unlink(LOCKFILE);
+
 		TEST();
 
 		pid1 = getpid();
@@ -66,6 +68,8 @@ int main(int argc, char ** argv)
 		pid_t pid2;
 		pid_t pid3;
 		pid_t pid4;
+
+		(void)unlink(LOCKFILE);
 
 		TEST();
 

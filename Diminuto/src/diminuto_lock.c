@@ -6,6 +6,10 @@
  * Licensed under the terms in README.h<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * See the unit tests unittest-lock.c, unittest-hangup-wan.c,
+ * unittest-hangup-too.c, unittest-hangup-tree.c, and unittest-hangup-fore.c
+ * for examples of patterns in how this feature might be used.
  */
 
 #include "diminuto_renameat2.h"
