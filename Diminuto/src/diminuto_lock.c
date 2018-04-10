@@ -138,14 +138,12 @@ int diminuto_lock_prelock(const char * file)
      */
 
 	if ((fd = open(file, O_CREAT | O_EXCL, 0600)) >= 0) {
-		/* Do nothing. */
+		rc = 0;
 	} else if (errno == EEXIST) {
 		/* Do nothing. */
 	} else {
 		diminuto_perror("diminuto_lock_prelock: open");
 	}
-
-	rc = 0;
 
     if (fd < 0) {
         /* Do nothing. */
@@ -276,23 +274,13 @@ int diminuto_lock_unlock(const char * file)
 pid_t diminuto_lock_check(const char * file)
 {
     pid_t pid = -1;
-    int fd = -1;
     FILE * fp = (FILE *)0;
     int rc = -1;
 
     do {
 
-        if ((fd = open(file, O_RDONLY, 0)) >= 0) {
-        	/* Do nothing. */
-        } else if (errno == ENOENT) {
-        	break;
-        } else {
-            diminuto_perror("diminuto_lock_check: open");
-            break;
-        }
-
-        if ((fp = fdopen(fd, "r")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_check: fdopen");
+        if ((fp = fopen(file, "r")) == (FILE *)0) {
+            diminuto_perror("diminuto_lock_check: fopen");
             break;
         }
 
@@ -317,15 +305,6 @@ pid_t diminuto_lock_check(const char * file)
         diminuto_perror("diminuto_lock_postlock: fclose");
     } else {
         fp = (FILE *)0;
-        fd = -1;
-    }
-
-    if (fd < 0) {
-        /* Do nothing. */
-    } else if (close(fd) < 0) {
-        diminuto_perror("diminuto_lock_postlock: close");
-    } else {
-        fd = -1;
     }
 
     return pid;

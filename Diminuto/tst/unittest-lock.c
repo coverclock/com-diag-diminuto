@@ -17,7 +17,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-
 int main(int argc, char ** argv)
 {
 	{
@@ -68,6 +67,8 @@ int main(int argc, char ** argv)
 		pid_t pid2;
 		pid_t pid3;
 		pid_t pid4;
+		pid_t pid5;
+		pid_t pid6;
 
 		(void)unlink(LOCKFILE);
 
@@ -85,21 +86,31 @@ int main(int argc, char ** argv)
 		pid3 = diminuto_lock_check(LOCKFILE);
 		ASSERT(pid3 == 0);
 
+		rc = diminuto_lock_prelock(LOCKFILE);
+		ASSERT(rc < 0);
+
+		pid3 = diminuto_lock_check(LOCKFILE);
+		ASSERT(pid3 == 0);
+
 		rc = diminuto_lock_postlock(LOCKFILE);
 		ASSERT(rc == 0);
 
-		pid3 = diminuto_lock_check(LOCKFILE);
-		ASSERT(pid3 > 0);
-		ASSERT(pid1 == pid3);
+		pid4 = diminuto_lock_check(LOCKFILE);
+		ASSERT(pid4 > 0);
+		ASSERT(pid1 == pid4);
 
-		rc = diminuto_lock_lock(LOCKFILE);
-		ASSERT(rc < 0);
+		rc = diminuto_lock_postlock(LOCKFILE);
+		ASSERT(rc == 0);
+
+		pid5 = diminuto_lock_check(LOCKFILE);
+		ASSERT(pid5 > 0);
+		ASSERT(pid1 == pid5);
 
 		rc = diminuto_lock_unlock(LOCKFILE);
 		ASSERT(rc == 0);
 
-		pid4 = diminuto_lock_check(LOCKFILE);
-		ASSERT(pid4 < 0);
+		pid6 = diminuto_lock_check(LOCKFILE);
+		ASSERT(pid6 < 0);
 
 		rc = diminuto_lock_unlock(LOCKFILE);
 		ASSERT(rc < 0);
