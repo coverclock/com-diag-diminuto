@@ -18,6 +18,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/fs.h>
 #define _GNU_SOURCE
@@ -53,6 +54,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
  * @return -1 for failure always.
  */
 static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
+	errno = EIO;
     return -1;
 }
 
@@ -69,7 +71,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
 #endif
 
 #if !defined(AT_FDCWD)
-#define AT_FDCWD
+#define AT_FDCWD 0
 #endif
 
 #endif

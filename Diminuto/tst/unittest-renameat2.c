@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/fs.h>
 #define _GNU_SOURCE
@@ -27,6 +28,31 @@
 static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
 	return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
 }
+
+#else
+
+#if !defined(RENAME_NOREPLACE)
+#define RENAME_NOREPLACE 0
+#endif
+
+#if !defined(RENAME_EXCHANGE)
+#define RENAME_EXCHANGE 0
+#endif
+
+#if !defined(RENAME_WHITEOUT)
+#define RENAME_WHITEOUT 0
+#endif
+
+#if !defined(AT_FDCWD)
+#define AT_FDCWD 0
+#endif
+
+static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
+	errno = EIO;
+	return -1;
+}
+
+#endif
 
 static int my_lock(const char * file)
 {
@@ -47,7 +73,7 @@ static int my_lock(const char * file)
 
 static int my_prelock(const char * file)
 {
-	int fd = open(file, O_CREAT | O_EXCL, 0600);
+	int fd = open(file, O_CREAT | O_EXCL | O_WRONLY, 0600);
 	if (fd < 0) { return -1; }
 	close(fd);
     return 0;
@@ -157,5 +183,3 @@ int main(void)
 	assert(0);
 #endif
 }
-
-#endif

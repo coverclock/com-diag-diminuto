@@ -137,7 +137,7 @@ int diminuto_lock_prelock(const char * file)
      * N.B. atomic.
      */
 
-	if ((fd = open(file, O_CREAT | O_EXCL, 0600)) >= 0) {
+	if ((fd = open(file, O_CREAT | O_EXCL | O_WRONLY, 0600)) >= 0) {
 		rc = 0;
 	} else if (errno == EEXIST) {
 		/* Do nothing. */
@@ -280,20 +280,12 @@ pid_t diminuto_lock_check(const char * file)
     do {
 
         if ((fp = fopen(file, "r")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_check: fopen");
             break;
         }
 
         rc = fscanf(fp, "%d\n", &pid);
         if (rc != 1) {
         	pid = 0;
-            break;
-        }
-
-        if (pid <= 0) {
-        	pid = -1;
-        	errno = EINVAL;
-            diminuto_perror("diminuto_lock_check: fscanf");
             break;
         }
 
