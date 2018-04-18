@@ -12,7 +12,7 @@
  * swap names of two existing files. If renameat2(2) does its job, there should
  * be no window during which a partial result of either operation can be
  * observed PROVIDING both the first and the second files are both in the same
- * file system (renametool does not verify this).
+ * file system (the underlying renameat2(2) system call checks for this.
  *
  * This is particularly useful when used in conjunction with mktemp(1).
  *
