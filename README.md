@@ -133,16 +133,22 @@ Wheat Ridge CO 80033 USA
 * dump - display a file in a formatted hexidecimal dump.
 * elapsedsleep - sleep for monotonic duration to specified resolution.
 * elapsedtime - display monotonic elapsed time to specified resolution.
+* epochtime - display POSIX epoch to higher resolution than just seconds.
+* endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
 * hex - display an argument number in hexidecimal.
 * internettool - test internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the local time in ISO 8601 format.
+* log - log from a script using Diminuto log functions.
+* loopback - provide a configurable serial port loopback.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
+* pinchange - execute a command when a GPIO pin changes state.
 * pintool - manipulate GPIO pins.
+* renametool - atomically rename or swap files in the same file system.
 * serialtool - test serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
