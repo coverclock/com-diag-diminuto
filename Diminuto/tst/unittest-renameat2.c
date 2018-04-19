@@ -47,72 +47,73 @@ static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const cha
 #define AT_FDCWD 0
 #endif
 
-static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
+static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags)
+{
 	errno = EIO;
 	return -1;
 }
 
 #endif
 
-static int my_lock(const char * file)
-{
+static int my_lock(const char * file) {
 	static const char SUFFIX[] = "-lock-XXXXXX";
-    pid_t pid = getpid();
-    char * path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
-    strcpy(path, file);
-    strcat(path, SUFFIX);
-    int fd = mkstemp(path);
-    FILE * fp = fdopen(fd, "w");
-    fprintf(fp, "%d\n", pid);
-    fclose(fp);
-    int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE);
-    if (rc < 0) { unlink(path); }
-    free(path);
-    return rc;
+	pid_t pid = getpid();
+	char * path = (char *) malloc(strlen(file) + sizeof(SUFFIX));
+	strcpy(path, file);
+	strcat(path, SUFFIX);
+	int fd = mkstemp(path);
+	FILE * fp = fdopen(fd, "w");
+	fprintf(fp, "%d\n", pid);
+	fclose(fp);
+	int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE);
+	if (rc < 0) {
+		unlink(path);
+	}
+	free(path);
+	return rc;
 }
 
-static int my_prelock(const char * file)
-{
+static int my_prelock(const char * file) {
 	int fd = open(file, O_CREAT | O_EXCL | O_WRONLY, 0600);
-	if (fd < 0) { return -1; }
+	if (fd < 0) {
+		return -1;
+	}
 	close(fd);
-    return 0;
+	return 0;
 }
 
-static int my_postlock(const char * file)
-{
-    static const char SUFFIX[] = "-post-XXXXXX";
-    pid_t pid = getpid();
-    char * path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
-    strcpy(path, file);
-    strcat(path, SUFFIX);
-    int fd = mkstemp(path);
-    FILE * fp = fdopen(fd, "w");
-    fprintf(fp, "%d\n", pid);
-    fclose(fp);
-    int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE);
-    unlink(path);
-    free(path);
-    return rc;
+static int my_postlock(const char * file) {
+	static const char SUFFIX[] = "-post-XXXXXX";
+	pid_t pid = getpid();
+	char * path = (char *) malloc(strlen(file) + sizeof(SUFFIX));
+	strcpy(path, file);
+	strcat(path, SUFFIX);
+	int fd = mkstemp(path);
+	FILE * fp = fdopen(fd, "w");
+	fprintf(fp, "%d\n", pid);
+	fclose(fp);
+	int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE);
+	unlink(path);
+	free(path);
+	return rc;
 }
 
-static int my_unlock(const char * file)
-{
+static int my_unlock(const char * file) {
 	return unlink(file);
 }
 
-static pid_t my_locked(const char * file)
-{
+static pid_t my_locked(const char * file) {
 	FILE * fp = fopen(file, "r");
-	if (fp == NULL) { return -1; }
+	if (fp == NULL) {
+		return -1;
+	}
 	pid_t pid = 0;
-    fscanf(fp, "%d\n", &pid);
-    fclose(fp);
-    return pid;
+	fscanf(fp, "%d\n", &pid);
+	fclose(fp);
+	return pid;
 }
 
-static void test_lock()
-{
+static void test_lock() {
 	static const char * LOCKFILE = "/tmp/unittest-renameat2-lock.pid";
 	pid_t pid1 = getpid();
 	assert(pid1 >= 0);
@@ -136,8 +137,7 @@ static void test_lock()
 	assert(pid5 < 0);
 }
 
-static void test_prepostlock()
-{
+static void test_prepostlock() {
 	static const char * LOCKFILE = "/tmp/unittest-renameat2-prepostlock.pid";
 	pid_t pid1 = getpid();
 	assert(pid1 >= 0);
@@ -175,8 +175,7 @@ static void test_prepostlock()
 	assert(pid8 < 0);
 }
 
-int main(void)
-{
+int main(void) {
 	test_lock();
 	test_prepostlock();
 #if 0
