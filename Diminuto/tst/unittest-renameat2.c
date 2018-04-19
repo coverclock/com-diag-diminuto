@@ -47,8 +47,7 @@ static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const cha
 #define AT_FDCWD 0
 #endif
 
-static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags)
-{
+static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
 	errno = EIO;
 	return -1;
 }
