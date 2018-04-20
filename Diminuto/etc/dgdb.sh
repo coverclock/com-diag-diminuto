@@ -1,6 +1,6 @@
 #! /bin/sh
 # Copyright 2008 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
-# Licensed under the terms in README.h
+# Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 
 . `which diminuto`

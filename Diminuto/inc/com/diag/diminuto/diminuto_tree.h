@@ -6,7 +6,7 @@
  * @file
  *
  * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in README.h<BR>
+ * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
@@ -29,7 +29,7 @@
  * Andrea Arcangeli et al., Linux kernel, include/linux/rbtree.h and
  * lib/rbtree.c
  *
- * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/RedÐblack_tree
+ * Wikipedia, "Red-black tree", http://en.wikipedia.org/wiki/Redï¿½black_tree
  *
  * Thomas H. Cormen et al., Introduction to Algorithms, MIT Press, 1992,
  * pp. 263-280
