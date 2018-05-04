@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -14,6 +14,8 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/serial.h>
 
 int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol, int xonxoff, int rtscts)
 {
@@ -293,4 +295,64 @@ int diminuto_serial_unbuffered(FILE * fp)
     } while (0);
 
     return rc;
+}
+
+int diminuto_serial_wait(int fd)
+{
+	int rc = -1;
+
+	do {
+
+	    if (!isatty(fd)) {
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_wait: isatty");
+            break;
+        }
+
+	    if (ioctl(fd, TIOCMIWAIT, TIOCM_CD) < 0) {
+            diminuto_perror("diminuto_serial_wait: ioctl(TIOCMIWAIT)");
+            break;
+	    }
+
+	    /*
+	     * Ubuntu 16.04.4 "xenial"
+	     * Linux 4.13.0-39
+	     * Navisys GR-701W
+	     * U-Blox 7
+	     * Prolific pl2303
+	     * ioctl TIOCMIWAIT TIOCM_CD requires HUPCL modem control be enabled.
+	     * ioctl TIOCMIWAIT TIOCM_CD appears to work on a /dev/ttyUSB serial device.
+	     * ioctl TIOCGICOUNT fails errno=25 ENOTTY "Inappropriate ioctl for device".
+	     */
+
+		rc = 0;
+
+	} while (0);
+
+	return rc;
+}
+
+int diminuto_serial_available(int fd)
+{
+	int rc = -1;
+	int bytes = -2;
+
+	do {
+
+		if (!isatty(fd)) {
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_available: isatty");
+            break;
+        }
+
+	    if (ioctl(fd, FIONREAD, &bytes) < 0) {
+            diminuto_perror("diminuto_serial_available: ioctl(FIONREAD)");
+            break;
+	    }
+
+	    rc = bytes;
+
+	} while (0);
+
+	return rc;
 }

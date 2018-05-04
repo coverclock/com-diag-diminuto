@@ -120,4 +120,22 @@ extern int diminuto_serial_raw(int fd);
  */
 extern int diminuto_serial_unbuffered(FILE * fp);
 
+/**
+ * If the specified file descriptor identifies a device that is a terminal
+ * (whatever the operating system thinks that means), block until the Data
+ * Carrier Detect (DCD or sometimes just CD) line is asserted.
+ * @param fd is the file descriptor.
+ * @return >=0 for DCD asserted, <0 if an error occurred.
+ */
+extern int diminuto_serial_wait(int fd);
+
+/**
+ * If the specified file descriptor identifies a device that is a terminal
+ * (whatever the operating system thinks that means), return the number of
+ * bytes available to be read.
+ * @param fd is the file descriptor.
+ * @return >=0 for bytes available to be read, <0 if an error occurred.
+ */
+extern int diminuto_serial_available(int fd);
+
 #endif
