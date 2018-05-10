@@ -25,7 +25,7 @@
 extern int diminuto_terminator_signal(pid_t pid);
 
 /**
- * Return the number of SIGATERM signals received since the previous call.
+ * Return the number of SIGTERM signals received since the previous call.
  * @return the number of SIGTERM signals received since the previous call.
  */
 extern int diminuto_terminator_check(void);
