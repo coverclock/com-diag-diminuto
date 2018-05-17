@@ -23,7 +23,7 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	48# API changes that may require that applications be modified.
-MINOR				:=	11# Only functionality or features added with no legacy API changes.
+MINOR				:=	12# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
