@@ -332,6 +332,32 @@ int diminuto_serial_wait(int fd)
 	return rc;
 }
 
+int diminuto_serial_status(int fd)
+{
+	int rc = -1;
+	int status = -2;
+
+	do {
+
+	    if (!isatty(fd)) {
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_status: isatty");
+            break;
+        }
+
+	    if (ioctl(fd, TIOCMGET, &status) < 0) {
+            diminuto_perror("diminuto_serial_status: ioctl(TIOCMGET)");
+            break;
+	    }
+
+		rc = !!(status & TIOCM_CD);
+
+	} while (0);
+
+	return rc;
+
+}
+
 int diminuto_serial_available(int fd)
 {
 	int rc = -1;

@@ -131,6 +131,15 @@ extern int diminuto_serial_wait(int fd);
 
 /**
  * If the specified file descriptor identifies a device that is a terminal
+ * (whatever the operating system thinks that means), return the status of the
+ * Data Carrier Detect (DCD or sometimes just CD) line.
+ * @param fd is the file descriptor.
+ * @return >0 if DCD is asserted, 0 if deasserted, <0 if an error occurred.
+ */
+extern int diminuto_serial_status(int fd);
+
+/**
+ * If the specified file descriptor identifies a device that is a terminal
  * (whatever the operating system thinks that means), return the number of
  * bytes available to be read.
  * @param fd is the file descriptor.
