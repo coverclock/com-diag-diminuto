@@ -40,6 +40,7 @@
 #include "com/diag/diminuto/diminuto_phex.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -91,6 +92,7 @@ int main(int argc, char * argv[])
     int modemcontrol = 0;
     int xonxoff = 0;
     int rtscts = 0;
+    int carrierdetect = 0;
     const char * device = "/dev/null";
     FILE * fp = (FILE *)0;
     int input = 0;
@@ -125,7 +127,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:b:dehilmnopst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:b:cdehilmnopst:v")) >= 0) {
 
         switch (opt) {
 
@@ -172,6 +174,11 @@ int main(int argc, char * argv[])
         case 'b':
             bitspersecond = strtoul(optarg, (char **)0, 0);
             break;
+
+        case 'c':
+        	modemcontrol = !0;
+        	carrierdetect = !0;
+        	break;
 
         case 'd':
             debug = !0;
@@ -222,7 +229,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i ] [ -v ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i ] [ -v ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -234,6 +241,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
+            fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
             fprintf(stderr, "       -e          Even parity.\n");
             fprintf(stderr, "       -o          Odd parity.\n");
@@ -263,7 +271,7 @@ int main(int argc, char * argv[])
     assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %useconds %ubytes\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %useconds %ubytes\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", carrierdetect ? "dcd" : "nodcd", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum);
 
     fd = open(device, O_RDWR);
     assert(fd >= 0);
@@ -420,6 +428,17 @@ int main(int argc, char * argv[])
             fds = diminuto_mux_wait(&mux, -1);
             assert(fds > 0);
             while (!done) {
+            	if (carrierdetect) {
+            		while (!0) {
+            			rc = diminuto_serial_status(fd);
+            			assert(rc >= 0);
+            			if (rc) {
+            				break;
+            			}
+            			rc = diminuto_serial_wait(fd);
+            			assert(rc >= 0);
+            		}
+            	}
                 ready = diminuto_mux_ready_read(&mux);
                 if (ready < 0) {
                     break;
