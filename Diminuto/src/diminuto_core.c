@@ -51,10 +51,20 @@ void diminuto_core_fatal(void)
 
 	abort();
     diminuto_perror("diminuto_core_fatal: abort");
-    rc = kill(getpid(), SIGSEGV);
-    diminuto_perror("diminuto_core_fatal: kill");
-	datum = *((volatile char *)0); /* Remarkably, I have worked on hardware where this succeeds. */
+
+    rc = kill(getpid(), SIGKILL);
+    diminuto_perror("diminuto_core_fatal: kill(SIGKILL)");
+
+    /*
+     * Remarkably, I have worked on hardware where deferencing
+     * a null pointer in C succeeds.
+     */
+	datum = *((volatile char *)0);
 	errno = EINVAL;
-	diminuto_perror("diminuto_core_fatal: nullptr");
+	diminuto_perror("diminuto_core_fatal: *nullptr");
+
+    rc = kill(getpid(), SIGSEGV);
+    diminuto_perror("diminuto_core_fatal: kill(SIGSEGV)");
+
     _exit(1);
 }
