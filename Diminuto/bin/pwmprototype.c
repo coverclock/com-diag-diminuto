@@ -16,8 +16,10 @@
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_pin.h"
+#include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_types.h"
 
@@ -26,40 +28,32 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 #include <unistd.h>
 
-static const diminuto_ticks_t HERTZ = 100;
-
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-typedef struct Modulation {
-    int pin;
-    int duty;
-} modulation_t;
+static const diminuto_ticks_t HERTZ = 1000;
 
 static const char * program = (const char *)0;
 
-static void * modulator(void * ap)
+int main(int argc, char * argv[])
 {
-    void * xc = (void *)1;
-    int rc = 0;
-    modulation_t * mp = (modulation_t *)0;
+    int xc = 0;
     int pin = -1;
+    int duty = 0;
+    int rc = 0;
     FILE * fp = (FILE *)0;
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     int cycle = 0;
-    int duty = 0;
+    int was = 0;
+    int now = 0;
 
-    mp = (modulation_t *)ap;
-    assert(mp != (modulation_t *)0);
-
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        pin = mp->pin;
-        duty = mp->duty;
-    DIMINUTO_CRITICAL_SECTION_END;
-
-    (void)diminuto_pin_unexport(pin);
+    assert(argc == 3);
+  
+    program = argv[0]; 
+    pin = atoi(argv[1]);
+    duty = atoi(argv[2]);
 
     fp = diminuto_pin_output(pin);
     assert(fp != (FILE *)0);
@@ -70,12 +64,21 @@ static void * modulator(void * ap)
     rc = diminuto_alarm_install(!0);
     assert(rc >= 0);
 
+    rc = diminuto_terminator_install(!0);
+    assert(rc >= 0);
+
+    rc = diminuto_interrupter_install(!0);
+    assert(rc >= 0);
+
     frequency = diminuto_frequency();
     assert(frequency > 0);
 
     ticks = frequency / HERTZ;
     assert(ticks > 0);
     printf("%s: pin=%d duty=%d hertz=%lld\n", program, pin, duty, frequency / ticks);
+
+    rc = setpriority(PRIO_PROCESS, 0, -20);
+    assert(rc >= 0);
 
     ticks = diminuto_timer_periodic(ticks);
     assert(ticks >= 0);
@@ -85,31 +88,22 @@ static void * modulator(void * ap)
         rc = pause();
         assert(rc == -1);
 
-        if (duty < 0) {
+        if (diminuto_terminator_check()) {
+            break;
+        } else if (diminuto_interrupter_check()) {
             break;
         } else if (!diminuto_alarm_check()) {
             continue;
-        } else if (duty == 0) {
-            /* Do nothing. */
-        } else if (cycle == 0) {
-            rc = diminuto_pin_set(fp);
-            assert(rc >= 0);
-            printf("%s: pin=%d duty=%d cycle=%d state=%d\n", pin, duty, cycle, !0);
-        } else if (duty >= HERTZ) {
-            /* Do nothing. */
-        } else if (cycle == duty) {
-            rc = diminuto_pin_clear(fp);
-            assert(rc >= 0);
-            printf("%s: pin=%d duty=%d cycle=%d state=%d\n", pin, duty, cycle, 0);
         } else {
-            /* Do nothing. */
+            now = (duty > 0) && ((cycle % duty) == 0);
+            if (was != now) {
+                rc = diminuto_pin_put(fp, now);
+                assert(rc >= 0);
+                was = now;
+            }
         }
 
         cycle = (cycle + 1) % HERTZ;
-
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-            duty = mp->duty;
-        DIMINUTO_CRITICAL_SECTION_END;
 
     }
 
@@ -119,29 +113,5 @@ static void * modulator(void * ap)
     fp = diminuto_pin_unused(fp, pin);
     assert(fp == (FILE *)0);
 
-    xc = (void *)0;
-
     return xc;
-}
-
-int main(int argc, char * argv[])
-{
-    void * xc = (void *)0;
-    int rc = 0;
-    modulation_t modulation = { 0 };
-    pthread_t thread;
-
-    assert(argc == 3);
-  
-    program = argv[0]; 
-    modulation.pin = atoi(argv[1]);
-    modulation.duty = atoi(argv[2]);
-
-    rc = pthread_create(&thread, 0, modulator, &modulation);
-    assert(rc == 0);
-
-    rc = pthread_join(thread, &xc);
-    assert(rc == 0);
-
-    return (int)xc;
 }
