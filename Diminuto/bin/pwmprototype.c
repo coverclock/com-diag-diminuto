@@ -7,6 +7,8 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * USAGE
+ *
  * EXAMPLES
  *
  * ABSTRACT
@@ -40,25 +42,44 @@ int main(int argc, char * argv[])
 {
     int xc = 0;
     int pin = -1;
-    int duty = 0;
+    int on = 0;
+    int off = 0;
     int rc = 0;
     FILE * fp = (FILE *)0;
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     int cycle = 0;
-    int was = 0;
-    int now = 0;
+    int state = 0;
+    float duty = 0.0;
 
-    assert(argc == 3);
+    assert(argc == 4);
   
     program = argv[0]; 
     pin = atoi(argv[1]);
-    duty = atoi(argv[2]);
+    on = atoi(argv[2]);
+    off = atoi(argv[3]);
+
+    assert(pin >= 0);
+    assert(on >= 0);
+    assert(off >= 0);
+
+    duty = on;
+    if (on > 0) { duty /= on + off; }
+    duty *= 100;
 
     fp = diminuto_pin_output(pin);
     assert(fp != (FILE *)0);
 
-    rc = diminuto_pin_clear(fp);
+    if (on == 0) {
+        rc = diminuto_pin_clear(fp);
+        state = 0;
+    } else if (off == 0) {
+        rc = diminuto_pin_set(fp);
+        state = !0;
+    } else {
+        rc = diminuto_pin_clear(fp);
+        state = 0;
+    }
     assert(rc >= 0);
 
     rc = diminuto_alarm_install(!0);
@@ -75,7 +96,7 @@ int main(int argc, char * argv[])
 
     ticks = frequency / HERTZ;
     assert(ticks > 0);
-    printf("%s: pin=%d duty=%d hertz=%lld\n", program, pin, duty, frequency / ticks);
+    printf("%s: pin=%d duty=%3.2f hertz=%lld\n", program, pin, duty, frequency / ticks);
 
     rc = setpriority(PRIO_PROCESS, 0, -20);
     assert(rc >= 0);
@@ -95,15 +116,24 @@ int main(int argc, char * argv[])
         } else if (!diminuto_alarm_check()) {
             continue;
         } else {
-            now = (duty > 0) && ((cycle % duty) == 0);
-            if (was != now) {
-                rc = diminuto_pin_put(fp, now);
-                assert(rc >= 0);
-                was = now;
-            }
+            /* Fall through. */
         }
 
-        cycle = (cycle + 1) % HERTZ;
+        if (cycle > 0) {
+            cycle -= 1;
+        } else if (state && (off > 0)) {
+            state = 0;
+            rc = diminuto_pin_clear(fp);
+            assert(rc >= 0);
+            cycle = off - 1;
+        } else if (!state && (on > 0)) {
+            state = !0;
+            rc = diminuto_pin_set(fp);
+            assert(rc >= 0);
+            cycle = on - 1;
+        } else {
+            /* Do nothing. */
+        }
 
     }
 
