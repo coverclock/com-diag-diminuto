@@ -97,6 +97,8 @@ int main(int argc, char * argv[])
         }
     }
 
+    assert((100 % (on + off)) == 0);
+
     if (on > 0) {
         percentage = on;
         percentage /= on + off;

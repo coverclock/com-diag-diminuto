@@ -8,10 +8,10 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-PIN=${1:-16}
+SEC=${1:-1}
+PIN=${2:-16}
 DUTY=0;
 PCT=100;
-SEC=2
 
 while [[ ${DUTY} -le ${PCT} ]]; do
 	pwmtest ${PIN} ${DUTY} &
