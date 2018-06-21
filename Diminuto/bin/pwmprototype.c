@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
 {
     int xc = 0;
     int pin = -1;
+    int duty = 0;
     int on = 0;
     int off = 0;
     int rc = 0;
@@ -50,22 +51,45 @@ int main(int argc, char * argv[])
     diminuto_sticks_t ticks = 0;
     int cycle = 0;
     int state = 0;
-    float duty = 0.0;
+    float percentage = 0.0;
 
-    assert(argc == 4);
+    /*
+     * Process arguments from the command line.
+     */
+
+    assert(argc == 3);
   
     program = argv[0]; 
     pin = atoi(argv[1]);
-    on = atoi(argv[2]);
-    off = atoi(argv[3]);
 
     assert(pin >= 0);
-    assert(on >= 0);
-    assert(off >= 0);
+    assert(duty >= 0);
 
-    duty = on;
-    if (on > 0) { duty /= on + off; }
-    duty *= 100;
+    /*
+     * Compute the on and off durations from the duty cycle.
+     */
+
+    if (duty <= 0) {
+        duty = 0;
+        on = 0;
+        off = 0;
+    } else if (duty >= 100) {
+        duty = 100;
+        on = 1;
+        off = 0;
+    } else {
+
+    }
+
+    if (on > 0) {
+        percentage = on;
+        percentage /= on + off;
+        percentage *= 100;
+    }
+
+    /*
+     * Initialize the output pin.
+     */
 
     fp = diminuto_pin_output(pin);
     assert(fp != (FILE *)0);
@@ -82,6 +106,10 @@ int main(int argc, char * argv[])
     }
     assert(rc >= 0);
 
+    /*
+     * Set up the work loop.
+     */
+
     rc = diminuto_alarm_install(!0);
     assert(rc >= 0);
 
@@ -96,7 +124,7 @@ int main(int argc, char * argv[])
 
     ticks = frequency / HERTZ;
     assert(ticks > 0);
-    printf("%s: pin=%d duty=%3.2f hertz=%lld\n", program, pin, duty, frequency / ticks);
+    printf("%s: pin=%d duty=%d=%3.2f=(%d,%d) hertz=%lld\n", program, pin, duty, percentage, on, off, frequency / ticks);
 
     rc = setpriority(PRIO_PROCESS, 0, -20);
     assert(rc >= 0);
@@ -104,10 +132,22 @@ int main(int argc, char * argv[])
     ticks = diminuto_timer_periodic(ticks);
     assert(ticks >= 0);
 
+    /*
+     * Enter the work loop.
+     */
+
     while (!0) {
+
+        /*
+         * Wait for a signal.
+         */
 
         rc = pause();
         assert(rc == -1);
+
+        /*
+         * Process the signal.
+         */
 
         if (diminuto_terminator_check()) {
             break;
@@ -118,6 +158,10 @@ int main(int argc, char * argv[])
         } else {
             /* Fall through. */
         }
+
+        /*
+         * Module the output pin.
+         */
 
         if (cycle > 0) {
             cycle -= 1;
@@ -137,11 +181,19 @@ int main(int argc, char * argv[])
 
     }
 
+    /*
+     * Tear down the work loop.
+     */
+
     ticks = diminuto_timer_periodic(0);
     assert(ticks >= 0);
 
     fp = diminuto_pin_unused(fp, pin);
     assert(fp == (FILE *)0);
+
+    /*
+     * Exit.
+     */
 
     return xc;
 }
