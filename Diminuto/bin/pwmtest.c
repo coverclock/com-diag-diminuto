@@ -35,7 +35,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-static const diminuto_ticks_t HERTZ = 1000;
+static const diminuto_ticks_t HERTZ = 10000; /* 100us */
 
 static const int PRIMES[] = {
     7, 5, 3, 2
