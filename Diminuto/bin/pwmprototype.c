@@ -60,25 +60,45 @@ int main(int argc, char * argv[])
     assert(argc == 3);
   
     program = argv[0]; 
-    pin = atoi(argv[1]);
+    assert(program != (const char *)0);
 
+    pin = atoi(argv[1]);
     assert(pin >= 0);
-    assert(duty >= 0);
+
+    duty = atoi(argv[2]);
+    if (duty <= 0) {
+        duty = 0;
+    } else if (duty >= 100) {
+        duty = 100;
+    } else {
+        /* Do nothing. */
+    }
 
     /*
      * Compute the on and off durations from the duty cycle.
      */
 
-    if (duty <= 0) {
-        duty = 0;
-        on = 0;
-        off = 0;
-    } else if (duty >= 100) {
-        duty = 100;
-        on = 1;
-        off = 0;
-    } else {
+    on = duty;
+    off = 100 - duty;
 
+    while (((on / 7) > 0) && ((on % 7) == 0) && ((off / 7) > 0) && ((off % 7) == 0)) {
+        on /= 7;
+        off /= 7;
+    }
+
+    while (((on / 5) > 0) && ((on % 5) == 0) && ((off / 5) > 0) && ((off % 5) == 0)) {
+        on /= 5;
+        off /= 5;
+    }
+
+    while (((on / 3) > 0) && ((on % 3) == 0) && ((off / 3) > 0) && ((off % 3) == 0)) {
+        on /= 3;
+        off /= 3;
+    }
+
+    while (((on / 2) > 0) && ((on % 2) == 0) && ((off / 2) > 0) && ((off % 2) == 0)) {
+        on /= 2;
+        off /= 2;
     }
 
     if (on > 0) {
@@ -86,6 +106,18 @@ int main(int argc, char * argv[])
         percentage /= on + off;
         percentage *= 100;
     }
+
+    /*
+     * Compute the period in ticks based on the frequency in Hertz.
+     */
+
+    frequency = diminuto_frequency();
+    assert(frequency > 0);
+
+    ticks = frequency / HERTZ;
+    assert(ticks > 0);
+
+    printf("%s: pin=%d duty=%d=%3.2f=(%d,%d) hertz=%lld\n", program, pin, duty, percentage, on, off, frequency / ticks);
 
     /*
      * Initialize the output pin.
@@ -118,13 +150,6 @@ int main(int argc, char * argv[])
 
     rc = diminuto_interrupter_install(!0);
     assert(rc >= 0);
-
-    frequency = diminuto_frequency();
-    assert(frequency > 0);
-
-    ticks = frequency / HERTZ;
-    assert(ticks > 0);
-    printf("%s: pin=%d duty=%d=%3.2f=(%d,%d) hertz=%lld\n", program, pin, duty, percentage, on, off, frequency / ticks);
 
     rc = setpriority(PRIO_PROCESS, 0, -20);
     assert(rc >= 0);
