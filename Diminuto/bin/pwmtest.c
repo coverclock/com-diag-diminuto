@@ -104,9 +104,9 @@ int main(int argc, char * argv[])
     }
 
     if (on == 0) {
-        ratio = 0.0;
+        ratio = 100.0;
     } else if (off == 0) {
-        ratio = 0.0;
+        ratio = 100.0;
     } else if (on > off) {
         ratio = on;
         ratio /= off;
