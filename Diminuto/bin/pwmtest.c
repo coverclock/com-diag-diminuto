@@ -195,7 +195,7 @@ int main(int argc, char * argv[])
         }
 
         /*
-         * Module the output pin.
+         * Modulate the output pin.
          */
 
         if (cycle > 0) {
