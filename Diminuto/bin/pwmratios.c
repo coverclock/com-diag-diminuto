@@ -8,35 +8,44 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <assert.h>
 #include <stdio.h>
+
+static const int PRIMES[] = {
+    7, 5, 3, 2
+};
 
 int main(int argc, char * argv[])
 {
     int duty;
+    int index;
+    int prime;
     int on;
     int off;
+    float percentage;
 
     for (duty = 0; duty <= 100; ++duty) {
+
         on = duty;
         off = 100 - duty;
-        while (((on / 7) > 0) && ((on % 7) == 0) && ((off / 7) > 0) && ((off % 7) == 0)) {
-            on /= 7;
-            off /= 7;
+
+        for (index = 0; index < countof(PRIMES); ++index) {
+            prime = PRIMES[index];
+            while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
+                on /= prime;
+                off /= prime;
+            }
         }
-        while (((on / 5) > 0) && ((on % 5) == 0) && ((off / 5) > 0) && ((off % 5) == 0)) {
-            on /= 5;
-            off /= 5;
+
+        if (on > 0) {
+            percentage = on;
+            percentage /= on + off;
+            percentage *= 100;
         }
-        while (((on / 3) > 0) && ((on % 3) == 0) && ((off / 3) > 0) && ((off % 3) == 0)) {
-            on /= 3;
-            off /= 3;
-        }
-        while (((on / 2) > 0) && ((on % 2) == 0) && ((off / 2) > 0) && ((off % 2) == 0)) {
-            on /= 2;
-            off /= 2;
-        }
-        printf("duty=%d=(%d,%d) on=%d off=%d\n", duty, duty, 100 - duty, on, off);
+
+        printf("%s: duty=%d=(%d,%d)=%.2f=<%d,%d>\n", argv[0], duty, duty, 100 - duty, percentage, on, off);
+
     }
 
     return 0;

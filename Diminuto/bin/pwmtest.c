@@ -16,6 +16,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_alarm.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
@@ -36,6 +37,10 @@
 
 static const diminuto_ticks_t HERTZ = 1000;
 
+static const int PRIMES[] = {
+    7, 5, 3, 2
+};
+
 static const char * program = (const char *)0;
 
 int main(int argc, char * argv[])
@@ -43,6 +48,8 @@ int main(int argc, char * argv[])
     int xc = 0;
     int pin = -1;
     int duty = 0;
+    int prime = 0;
+    int index = 0;
     int on = 0;
     int off = 0;
     int rc = 0;
@@ -52,6 +59,7 @@ int main(int argc, char * argv[])
     int cycle = 0;
     int state = 0;
     float percentage = 0.0;
+    float ratio = 0.0;
 
     /*
      * Process arguments from the command line.
@@ -81,30 +89,32 @@ int main(int argc, char * argv[])
     on = duty;
     off = 100 - duty;
 
-    while (((on / 7) > 0) && ((on % 7) == 0) && ((off / 7) > 0) && ((off % 7) == 0)) {
-        on /= 7;
-        off /= 7;
-    }
-
-    while (((on / 5) > 0) && ((on % 5) == 0) && ((off / 5) > 0) && ((off % 5) == 0)) {
-        on /= 5;
-        off /= 5;
-    }
-
-    while (((on / 3) > 0) && ((on % 3) == 0) && ((off / 3) > 0) && ((off % 3) == 0)) {
-        on /= 3;
-        off /= 3;
-    }
-
-    while (((on / 2) > 0) && ((on % 2) == 0) && ((off / 2) > 0) && ((off % 2) == 0)) {
-        on /= 2;
-        off /= 2;
+    for (index = 0; index < countof(PRIMES); ++index) {
+        prime = PRIMES[index];
+        while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
+            on /= prime;
+            off /= prime;
+        }
     }
 
     if (on > 0) {
         percentage = on;
         percentage /= on + off;
         percentage *= 100;
+    }
+
+    if (on == 0) {
+        ratio = 0.0;
+    } else if (off == 0) {
+        ratio = 0.0;
+    } else if (on > off) {
+        ratio = on;
+        ratio /= off;
+    } else if (off > on) {
+        ratio = off;
+        ratio /= on;
+    } else {
+        ratio = 1.0;
     }
 
     /*
@@ -117,7 +127,7 @@ int main(int argc, char * argv[])
     ticks = frequency / HERTZ;
     assert(ticks > 0);
 
-    printf("%s: pin=%d duty=%d=%3.2f=(%d,%d) hertz=%lld\n", program, pin, duty, percentage, on, off, frequency / ticks);
+    printf("%s: pin=%d duty=%d=%.2f=(%d,%d)=%.2f hertz=%lld\n", program, pin, duty, percentage, on, off, ratio, frequency / ticks);
 
     /*
      * Initialize the output pin.
