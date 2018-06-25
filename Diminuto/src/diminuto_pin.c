@@ -40,7 +40,7 @@ const char * diminuto_pin_debug(const char * tmp)
 	return prior;
 }
 
-static int diminuto_pin_configure(const char * format, int pin, const char * string, const char * name)
+static int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, const char * name, int ignore)
 {
 	int rc = -1;
 	char filename[PATH_MAX];
@@ -59,11 +59,23 @@ static int diminuto_pin_configure(const char * format, int pin, const char * str
 			break;
 		}
 
-		if (fputs(string, fp) < 0) {
+		if (fputs(string, fp) >= 0) {
+			/* Do nothing. */
+		} else if (errno != EINVAL) {
+			break;
+		} else if (ignore) {
+			/* Do nothing. */
+		} else {
 			break;
 		}
 
-		if (fflush(fp) == EOF) {
+		if (fflush(fp) != EOF) {
+			/* Do nothing. */
+		} else if (errno != EINVAL) {
+			break;
+		} else if (ignore) {
+			/* Do nothing. */
+		} else {
 			break;
 		}
 
@@ -86,11 +98,21 @@ static int diminuto_pin_configure(const char * format, int pin, const char * str
 	return rc;
 }
 
-static int diminuto_pin_port(const char * format, int pin, const char * name)
+static inline int diminuto_pin_configure(const char * format, int pin, const char * string, const char * name)
+{
+	return diminuto_pin_configure_conditional(format, pin, string, name, 0);
+}
+
+static int diminuto_pin_port_conditional(const char * format, int pin, const char * name, int ignore)
 {
 	char buffer[sizeof("-9223372036854775807\n")];
 	snprintf(buffer, sizeof(buffer), "%d\n", pin);
-	return diminuto_pin_configure(format, pin, buffer, name);
+	return diminuto_pin_configure_conditional(format, pin, buffer, name, ignore);
+}
+
+static int diminuto_pin_port(const char * format, int pin, const char * name)
+{
+	return diminuto_pin_port_conditional(format, pin, name, 0);
 }
 
 int diminuto_pin_export(int pin)
@@ -100,7 +122,7 @@ int diminuto_pin_export(int pin)
 
 int diminuto_pin_unexport(int pin)
 {
-	return diminuto_pin_port(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport");
+	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport", !0);
 }
 
 int diminuto_pin_active(int pin, int high)

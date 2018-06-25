@@ -35,6 +35,8 @@ int main(int argc, char ** argv)
 
     ASSERT(diminuto_timer_periodic(diminuto_frequency()) == 0);
 
+    COMMENT("delaying 10 seconds.");
+
     diminuto_delay(diminuto_frequency() * 10, 0);
 
     ASSERT(diminuto_timer_periodic(0) >= 0);
