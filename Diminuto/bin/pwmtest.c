@@ -35,7 +35,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-static const diminuto_ticks_t HERTZ = 1000;
+static const diminuto_ticks_t HERTZ = 10000; /* 100us */
 
 static const int PRIMES[] = {
     7, 5, 3, 2
@@ -97,6 +97,8 @@ int main(int argc, char * argv[])
         }
     }
 
+    assert((100 % (on + off)) == 0);
+
     if (on > 0) {
         percentage = on;
         percentage /= on + off;
@@ -104,9 +106,9 @@ int main(int argc, char * argv[])
     }
 
     if (on == 0) {
-        ratio = 0.0;
+        ratio = 100.0;
     } else if (off == 0) {
-        ratio = 0.0;
+        ratio = 100.0;
     } else if (on > off) {
         ratio = on;
         ratio /= off;
