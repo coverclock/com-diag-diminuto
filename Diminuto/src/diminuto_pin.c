@@ -122,7 +122,12 @@ int diminuto_pin_export(int pin)
 
 int diminuto_pin_unexport(int pin)
 {
-	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport", !0);
+	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport", 0);
+}
+
+int diminuto_pin_unexport_ignore(int pin)
+{
+	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport_ignore", !0);
 }
 
 int diminuto_pin_active(int pin, int high)

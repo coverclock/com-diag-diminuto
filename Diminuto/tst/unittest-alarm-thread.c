@@ -29,7 +29,7 @@ static int wokes = 0;
 
 static void * body(void * arg)
 {
-	int xc = 0;
+	void * xc = 0;
 	int rc = 0;
 	int ready = 0;
 
@@ -43,7 +43,7 @@ static void * body(void * arg)
 				continue;
 			} else if (done) {
 				COMMENT("thread: unexpected.");
-				xc = 1;
+				xc = (void *)1;
 				break;
 			} else {
 				COMMENT("thread: awoke.");
@@ -63,7 +63,7 @@ static void * body(void * arg)
 		}
 	}
 
-	return (void *)0;
+	return xc;
 }
 
 int main(int argc, char ** argv)

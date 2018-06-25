@@ -80,13 +80,21 @@ extern int diminuto_pin_export(int pin);
 
 /**
  * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
- * system. (It is not an error to unexport a pin that has not been exported;
- * the error message is suppressed from a common application initialization
- * or error recovery code path.)
+ * system.
  * @param pin identifies the pin by number from the data sheet.
  * @return >=0 for success, <0 for error.
  */
 extern int diminuto_pin_unexport(int pin);
+
+/**
+ * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
+ * system. It is not an error to unexport a pin that has not been exported;
+ * the error message is suppressed from a common application initialization
+ * or error recovery code path.
+ * @param pin identifies the pin by number from the data sheet.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_pin_unexport_ignore(int pin);
 
 /**
  * Ask that the specified GPIO pin be configured to be active low or high.
