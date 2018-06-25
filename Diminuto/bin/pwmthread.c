@@ -202,18 +202,9 @@ static int demodulate(modulator_t * mp)
 
 	do {
 
-		DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
-			if (mp->done) {
-				break;
-			}
-			mp->done = !0;
-		DIMINUTO_CRITICAL_SECTION_END;
-
-		rc = pthread_kill(mp->thread, SIGALRM);
-		if (rc != 0) {
-			errno = rc;
-			diminuto_perror("demodulation: pthread_kill");
-			xc = -1;
+    	if (!mp->done) {
+            xc = -1;
+			break;
 		}
 
 		rc = pthread_join(mp->thread, &final);
@@ -228,11 +219,6 @@ static int demodulate(modulator_t * mp)
 			diminuto_perror("demodulation: thread");
 			xc = -1;
 		}
-
-        rc = diminuto_pin_clear(mp->fp);
-        if (rc < 0) {
-            xc = -1;
-        }
 
 		mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
 		if (mp->fp != (FILE *)0) {
@@ -327,22 +313,17 @@ int main(int argc, char * argv[])
     while (!0) {
 
         /*
-         * Wait for a signal.
+         * Check for a signal.
          */
 
-        rc = pause();
-        assert(rc == -1);
-
-        /*
-         * Process the signal.
-         */
+        (void)pause();
 
         if (diminuto_terminator_check()) {
             break;
         } else if (diminuto_interrupter_check()) {
             break;
         } else {
-            /* Fall through. */
+            continue;
         }
 
     }
@@ -353,6 +334,12 @@ int main(int argc, char * argv[])
 
     ticks = diminuto_timer_periodic(0);
     assert(ticks >= 0);
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&modulation.mutex);
+        modulation.done = !0;
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    diminuto_alarm_broadcast();
 
     rc = demodulate(&modulation);
     assert(rc == 0);
