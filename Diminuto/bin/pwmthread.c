@@ -64,6 +64,7 @@ static void * modulator(void * ap)
 	int off = 0;
 	int rc = 0;
 	int cycle = 0;
+    int done = 0;
 
 	mp = (modulator_t *)ap;
 
@@ -82,17 +83,12 @@ static void * modulator(void * ap)
 		off = mp->off;
 	DIMINUTO_CRITICAL_SECTION_END;
 
-	while (!0) {
+	while (!done) {
 		rc = diminuto_alarm_wait();
 		if (rc < 0) {
 			xc = errno;
 			break;
 		}
-		DIMINUTO_COHERENT_SECTION_BEGIN;
-			if (mp->done) {
-				break;
-			}
-		DIMINUTO_COHERENT_SECTION_END;
 		if (cycle > 0) {
 			cycle -= 1;
 		} else if (state && (off > 0)) {
@@ -104,6 +100,7 @@ static void * modulator(void * ap)
 			}
 			DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
 				off = mp->off;
+                done = mp->done;
 			DIMINUTO_CRITICAL_SECTION_END;
 			cycle = off - 1;
 		} else if (!state && (on > 0)) {
@@ -115,6 +112,7 @@ static void * modulator(void * ap)
 			}
 			DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
 				on = mp->on;
+                done = mp->done;
 			DIMINUTO_CRITICAL_SECTION_END;
 			cycle = on - 1;
 		} else {
@@ -231,6 +229,11 @@ static int demodulate(modulator_t * mp)
 			xc = -1;
 		}
 
+        rc = diminuto_pin_clear(mp->fp);
+        if (rc < 0) {
+            xc = -1;
+        }
+
 		mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
 		if (mp->fp != (FILE *)0) {
 			xc = -1;
@@ -258,8 +261,6 @@ int main(int argc, char * argv[])
     modulator_t modulation = { 0 };
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
-    float percentage = 0.0;
-    float ratio = 0.0;
 
     /*
      * Process arguments from the command line.
@@ -277,6 +278,19 @@ int main(int argc, char * argv[])
     assert((0 <= duty) && (duty <= 100));
 
     /*
+     * Install signal handlers.
+     */
+
+    rc = diminuto_alarm_install(!0);
+    assert(rc >= 0);
+
+    rc = diminuto_terminator_install(!0);
+    assert(rc >= 0);
+
+    rc = diminuto_interrupter_install(!0);
+    assert(rc >= 0);
+
+    /*
      * Compute the on and off durations from the duty cycle.
      */
 
@@ -289,26 +303,6 @@ int main(int argc, char * argv[])
     assert(modulation.duty == duty);
     assert((100 % (modulation.on + modulation.off)) == 0);
 
-    if (modulation.on > 0) {
-        percentage = modulation.on;
-        percentage /= modulation.on + modulation.off;
-        percentage *= 100;
-    }
-
-    if (modulation.on == 0) {
-        ratio = 100.0;
-    } else if (modulation.off == 0) {
-        ratio = 100.0;
-    } else if (modulation.on > modulation.off) {
-        ratio = modulation.on;
-        ratio /= modulation.off;
-    } else if (modulation.off > modulation.on) {
-        ratio = modulation.off;
-        ratio /= modulation.on;
-    } else {
-        ratio = 1.0;
-    }
-
     /*
      * Compute the period in ticks based on the frequency in Hertz.
      */
@@ -319,20 +313,9 @@ int main(int argc, char * argv[])
     ticks = frequency / HERTZ;
     assert(ticks > 0);
 
-    printf("%s: pin=%d duty=%d=%.2f=(%d,%d)=%.2f hertz=%lld\n", program, pin, duty, percentage, modulation.on, modulation.off, ratio, frequency / ticks);
-
     /*
      * Set up the work loop.
      */
-
-    rc = diminuto_alarm_install(!0);
-    assert(rc >= 0);
-
-    rc = diminuto_terminator_install(!0);
-    assert(rc >= 0);
-
-    rc = diminuto_interrupter_install(!0);
-    assert(rc >= 0);
 
     ticks = diminuto_timer_periodic(ticks);
     assert(ticks >= 0);
