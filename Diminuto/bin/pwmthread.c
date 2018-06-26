@@ -220,6 +220,11 @@ static int demodulate(modulator_t * mp)
 			xc = -1;
 		}
 
+        rc = diminuto_pin_clear(mp->fp);
+        if (rc < 0) {
+            xc = -1;
+        }
+
 		mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
 		if (mp->fp != (FILE *)0) {
 			xc = -1;
