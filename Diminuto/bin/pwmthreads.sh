@@ -17,6 +17,7 @@ while [[ ${DUTY} -le ${PCT} ]]; do
 	pwmthread ${PIN} ${DUTY} &
 	sleep ${SEC}
 	kill $!
+	wait $!
 	DUTY=$((${DUTY} + 1))
 done
 

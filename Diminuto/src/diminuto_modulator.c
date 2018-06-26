@@ -28,10 +28,11 @@ static void * diminuto_modulator(void * ap)
 	FILE * fp = (FILE *)0;
 	diminuto_modulator_state_t state = DIMINUTO_MODULATOR_ZERO;
 	int on = 0;
-	int off = 0;
+	int off = 100;
 	int rc = 0;
 	int cycle = 0;
-    int done = 0;
+    int condition = !0;
+    int total = 100;
 
 	mp = (diminuto_modulator_t *)ap;
 
@@ -44,59 +45,58 @@ static void * diminuto_modulator(void * ap)
 	}
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
-
-		fp = mp->fp;
-		on = mp->on;
-		off = mp->off;
-
+	    fp = mp->fp;
+        state = mp->state;
 	DIMINUTO_CRITICAL_SECTION_END;
 
-    if (on == 0) {
-    	rc = diminuto_pin_clear(fp);
-    	state = 0;
-    } else if (off == 0) {
-    	rc = diminuto_pin_set(fp);
-    	state = !0;
-    } else {
-    	rc = diminuto_pin_clear(fp);
-    	state = 0;
-    }
+	while (state == DIMINUTO_MODULATOR_RUNNING) {
 
-	while (!done) {
 		rc = diminuto_alarm_wait();
 		if (rc < 0) {
-			xc = errno;
+		    xc = errno;
 			break;
 		}
+
 		if (cycle > 0) {
 			cycle -= 1;
-		} else if (state && (off > 0)) {
-			state = 0;
-			rc = diminuto_pin_clear(fp);
-			if (rc < 0) {
-				xc = errno;
-				break;
-			}
-			DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
-				off = mp->off;
-                state = mp->state;
-			DIMINUTO_CRITICAL_SECTION_END;
-			cycle = off - 1;
-		} else if (!state && (on > 0)) {
-			state = !0;
-			rc = diminuto_pin_set(fp);
-			if (rc < 0) {
-				xc = errno;
-				break;
-			}
-			DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
-				on = mp->on;
-                state = mp->state;
-			DIMINUTO_CRITICAL_SECTION_END;
-			cycle = on - 1;
-		} else {
-			/* Do nothing. */
-		}
+            continue;
+        }
+
+        if (condition) {
+            if (off > 0) {
+			    rc = diminuto_pin_clear(fp);
+                condition = 0;
+                cycle = off; 
+            } else {
+                cycle = on; /* 100% */
+            }
+        } else {
+            if (on > 0) {
+			    rc = diminuto_pin_set(fp);
+                condition = !0;
+                cycle = on;
+            } else {
+                cycle = off; /* 0% */
+            }
+        }
+        if (rc < 0) {
+		    xc = errno;
+            break;
+        }
+
+        if (total < 100) {
+            total += 1;
+            continue;
+        }
+
+		DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
+			on = mp->on;
+			off = mp->off;
+            state = mp->state;
+		DIMINUTO_CRITICAL_SECTION_END;
+
+        total = 0;
+
 	}
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(&mp->mutex);
@@ -187,6 +187,7 @@ int diminuto_modulator_start(diminuto_modulator_t * mp)
     		if (rc != 0) {
     			errno = rc;
     			diminuto_perror("diminuto_modulator_start: pthread_create");
+                rc = -1;
     		} else {
     			mp->state = DIMINUTO_MODULATOR_RUNNING;
     			rc = 0;

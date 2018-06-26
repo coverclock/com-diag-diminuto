@@ -51,7 +51,6 @@ int main(int argc, char * argv[])
     diminuto_modulator_t modulator = { 0 };
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
-    unsigned int seconds = 0;
 
     /*
      * Process arguments from the command line.
@@ -65,8 +64,8 @@ int main(int argc, char * argv[])
     pin = atoi(argv[1]);
     assert(pin >= 0);
 
-    seconds = atoi(argv[2]);
-    assert(seconds > 0);
+    duty = atoi(argv[2]);
+    assert(duty >= 0);
 
     /*
      * Install signal handlers.
@@ -85,7 +84,27 @@ int main(int argc, char * argv[])
      * Initialize the modulator.
      */
 
+    printf("%s: initializing\n", program);
+
     rc = diminuto_modulator_init(&modulator, pin, duty);
+
+    printf("%s: rc=%d state='%c' pin=%d fp=%p duty=%d on=%d off=%d\n", program, rc, modulator.state, modulator.pin, modulator.fp, modulator.duty, modulator.on, modulator.off);
+
+    assert(rc == 0);
+    assert(modulator.pin == pin);
+    assert(modulator.fp != (FILE *)0);
+    assert(modulator.state == DIMINUTO_MODULATOR_READY);
+    assert(modulator.duty == duty);
+    assert((100 % (modulator.on + modulator.off)) == 0);
+
+    /*
+     * Start the modulator.
+     */
+
+    printf("%s: starting\n", program);
+
+    rc = diminuto_modulator_start(&modulator);
+    assert(rc == 0);
 
     /*
      * Start up the periodic timer.
@@ -101,38 +120,24 @@ int main(int argc, char * argv[])
     assert(ticks >= 0);
 
     /*
-     * Start the modulator.
-     */
-
-    rc = diminuto_modulator_start(&modulator);
-    assert(rc == 0);
-
-    /*
      * Enter the work loop.
      */
 
-    for (duty = 1; duty <= 100; ++duty) {
+    printf("%s: working\n", program);
 
-        sleep(seconds);
+    while (!0) {
+
+        pause();
 
         if (diminuto_terminator_check()) {
+            printf("%s: terminated\n", program);
             break;
         } else if (diminuto_interrupter_check()) {
+            printf("%s: interrupted\n", program);
             break;
         } else {
-            /* Fall through. */
+            continue;
         }
-
-        diminuto_modulator_set(&modulator, duty);
-
-        printf("%s: state='%c' pin=%d fp=%p duty=%d on=%d off=%d\n", program, modulator.state, modulator.pin, modulator.fp, modulator.duty, modulator.on, modulator.off);
-
-        assert(rc == 0);
-        assert(modulator.pin == pin);
-        assert(modulator.fp != (FILE *)0);
-        assert(modulator.state == DIMINUTO_MODULATOR_RUNNING);
-        assert(modulator.duty == duty);
-        assert((100 % (modulator.on + modulator.off)) == 0);
 
     }
 
@@ -140,12 +145,16 @@ int main(int argc, char * argv[])
      * Stop the modulator.
      */
 
+    printf("%s: stopping\n", program);
+
     rc = diminuto_modulator_stop(&modulator);
     assert(rc == 0);
 
     /*
      * Tear down the modulator and stop the timer.
      */
+
+    printf("%s: finishing\n", program);
 
     rc = diminuto_modulator_fini(&modulator);
     assert(rc == 0);
@@ -156,6 +165,8 @@ int main(int argc, char * argv[])
     /*
      * Exit.
      */
+
+    printf("%s: exiting\n", program);
 
     return xc;
 }
