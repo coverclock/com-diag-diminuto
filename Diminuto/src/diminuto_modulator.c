@@ -16,12 +16,10 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "../src/diminuto_timer.h"
 #include <errno.h>
-#include <signal.h>
 #include <stdlib.h>
-#include <sys/resource.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <string.h>
+#include <sched.h>
 
 int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 {
@@ -69,7 +67,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 	return 0;
 }
 
-static void diminuto_modulator_notification(union sigval arg)
+static void diminuto_modulator_function(union sigval arg)
 {
 	diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
 
@@ -150,23 +148,52 @@ int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, int duty) {
 
 int diminuto_modulator_start(diminuto_modulator_t * mp)
 {
-	struct sigevent event = { 0 };
 	diminuto_sticks_t ticks = 0;
+    int rc = 0;
+    struct sched_param param = { 0 };
+	struct sigevent event = { 0 };
+
+    if ((rc = pthread_attr_init(&(mp->attributes))) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_modulator_stop: pthread_attr_init");
+    } else if ((rc = pthread_attr_setschedpolicy(&(mp->attributes), SCHED_FIFO)) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_modulator_stop: pthread_attr_setsched_policy");
+    } else if ((param.sched_priority = sched_get_priority_max(SCHED_FIFO)) < 0) {
+        diminuto_perror("diminuto_modulator_stop: sched_get_priority_max");
+        param.sched_priority = 0;
+    } else if ((rc = pthread_attr_setschedparam(&(mp->attributes), &param)) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_modulator_stop: pthread_attr_setschedparam");
+    } else {
+        /* Do nothing. */
+    }
+
+    event.sigev_notify = SIGEV_THREAD;
+    event.sigev_value.sival_ptr = (void *)mp;
+    event.sigev_notify_function = diminuto_modulator_function;
+    event.sigev_notify_attributes = &(mp->attributes);
 
 	ticks = diminuto_frequency() / diminuto_modulator_frequency();
 	ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
 
-    return (ticks >= 0);
+    return (ticks >= 0) ? 0 : -1;
 }
 
 int diminuto_modulator_stop(diminuto_modulator_t * mp)
 {
-	struct sigevent event = { 0 };
 	diminuto_sticks_t ticks = 0;
+	struct sigevent event = { 0 };
+    int rc = 0;
 
 	ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
 
-    return (ticks >= 0);
+    rc = pthread_attr_destroy(&(mp->attributes));
+    if (rc != 0) {
+        diminuto_perror("diminuto_modulator_stop: pthread_attr_init");
+    }
+
+    return (ticks >= 0) ? 0 : -1;
 }
 
 int diminuto_modulator_fini(diminuto_modulator_t * mp)
