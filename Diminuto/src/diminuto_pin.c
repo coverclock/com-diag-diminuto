@@ -18,6 +18,8 @@
 #include <errno.h>
 #include <sys/param.h>
 #include <sys/select.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static const char ROOT[] = "/sys";
 
@@ -303,6 +305,7 @@ int diminuto_pin_put(FILE * fp, int assert)
 
 	do {
 
+#if 0
 		if (fseek(fp, 0L, SEEK_SET) < 0) {
 			diminuto_perror("diminuto_pin_put: fseek");
 			break;
@@ -317,7 +320,21 @@ int diminuto_pin_put(FILE * fp, int assert)
 			diminuto_perror("diminuto_pin_put: fflush");
 			break;
 		}
+#else
+		int fd = -1;
 
+		fd = fileno(fp);
+
+		if (lseek(fd, 0, SEEK_SET) < 0) {
+			diminuto_perror("diminuto_pin_put: lseek");
+			break;
+		}
+
+		if (write(fd, assert ? "1\n" : "0\n", sizeof("X\n") - 1) < 0) {
+			diminuto_perror("diminuto_pin_put: write");
+			break;
+		}
+#endif
 		rc = 0;
 
 	} while (0);
@@ -328,10 +345,11 @@ int diminuto_pin_put(FILE * fp, int assert)
 int diminuto_pin_get(FILE * fp)
 {
 	int value = -1;
-	int rc;
+	int rc = -1;
 
 	do {
 
+#if 0
 		if (fseek(fp, 0, SEEK_SET) < 0) {
 			diminuto_perror("diminuto_pin_get: fseek");
 			break;
@@ -349,6 +367,38 @@ int diminuto_pin_get(FILE * fp)
 		}
 
 		value = !!value;
+#else
+		int fd = -1;
+		char buffer[3] = { 0 };
+		ssize_t size = 0;
+
+		fd = fileno(fp);
+
+		if (lseek(fd, 0, SEEK_SET) < 0) {
+			diminuto_perror("diminuto_pin_get: lseek");
+			break;
+		}
+
+		if ((size = read(fd, buffer, sizeof(buffer) - 1)) < 0) {
+			diminuto_perror("diminuto_pin_get: read");
+			break;
+		}
+
+		if (size == 0) {
+			errno = EAGAIN;
+			diminuto_perror("diminuto_pin_get: read");
+			break;
+		}
+
+		if (buffer[0] == '0') {
+			value = 0;
+		} else if (buffer[0] == '1') {
+			value = !0;
+		} else {
+			errno = EBADMSG;
+			diminuto_perror("diminuto_pin_get: read");
+		}
+#endif
 
 		rc = 0;
 
