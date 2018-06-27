@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2017-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -20,6 +20,6 @@
  * (void *)-1 will be returned.
  * @return the timer identifier or -1.
  */
-extern void * diminuto_ptimer_get(void);
+extern void * diminuto_timer_singleton_get(void);
 
 #endif

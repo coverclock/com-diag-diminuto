@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -42,9 +42,9 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
 }
 
 /**
- * Start a timer for the specified number of ticks. When the timer
- * expires, the calling process will receive a SIGALRM. If a timer is already
- * running, the amount of time left in the prior timer will be returned.
+ * Start a singleton one-shot timer for the specified number of ticks. When the
+ * timer expires, the calling process will receive a SIGALRM. If a timer is
+ * already running, the amount of time left in the prior timer will be returned.
  * The actual timer duration will be approximate depending on the
  * granularity of the system clock and latency in the implementation.
  * The timer fires only once per call. Calling with zero ticks
@@ -56,12 +56,12 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  */
 static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic);
-    return diminuto_ptimer(ticks, 0);
+	extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
+    return diminuto_timer_singleton(ticks, 0);
 }
 
 /**
- * Start an periodic timer for the specified number of ticks. When
+ * Start a singleton periodic timer for the specified number of ticks. When
  * the timer expires, the calling process will receive a SIGALRM. If a
  * timer is already running, the amount of time left in the prior timer
  * will be returned. The actual timer period will be approximate depending
@@ -75,8 +75,8 @@ static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  */
 static inline diminuto_sticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_ptimer(diminuto_ticks_t ticks, int periodic);
-    return diminuto_ptimer(ticks, !0);
+	extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
+    return diminuto_timer_singleton(ticks, !0);
 }
 
 #endif
