@@ -102,14 +102,12 @@ int main(int argc, char * argv[])
     printf("%s: initializing\n", program);
 
     rc = diminuto_modulator_init(&modulator, pin, duty);
-
     dump(stderr, &modulator);
-
     assert(rc == 0);
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
     assert(modulator.duty == duty);
-    assert((100 % (modulator.on + modulator.off)) == 0);
+    assert((100 % (modulator.ton + modulator.toff)) == 0);
 
     /*
      * Start the modulator.

@@ -15,9 +15,11 @@ PCT=100;
 
 while [[ ${DUTY} -le ${PCT} ]]; do
 	pwmthread ${PIN} ${DUTY} &
+	PID=$!
+	trap "kill ${PID}; exit" 1 2 3 15
 	sleep ${SEC}
-	kill $!
-	wait $!
+	kill ${PID}
+	wait ${PID}
 	DUTY=$((${DUTY} + 1))
 done
 

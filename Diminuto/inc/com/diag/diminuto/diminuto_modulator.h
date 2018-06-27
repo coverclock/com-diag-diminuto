@@ -14,8 +14,10 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_pin.h"
-#include <pthread.h>
 #include <stdio.h>
+#include <signal.h>
+#include <time.h>
+#include <pthread.h>
 
 #define COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY (10000LL)
 
@@ -27,6 +29,7 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
 typedef struct DiminutoModulator {
 	/* Fields initialized by timer at start. */
 	timer_t timer;
+    pthread_attr_t attributes;
 	int initialized;
 	/* Fields initialized by API at init. */
 	int pin;
