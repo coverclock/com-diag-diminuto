@@ -299,6 +299,17 @@ FILE * diminuto_pin_unused(FILE * fp, int pin)
 	return fp;
 }
 
+/*
+ * The put/get functions below were altered from using the buffered
+ * standard I/O library function calls (which are right out of the
+ * examples in the documentation for the /proc GPIO interface at
+ * the time I originally wrote this code) to using straight system
+ * calls. The former, when used at very high calling frequency in
+ * the modulator feature, sometimes produced an EINVAL error. I have
+ * yet to see the system calls do this under the same test load. The
+ * new implementation also passes the pintest functional test.
+ */
+
 int diminuto_pin_put(FILE * fp, int assert)
 {
 	int rc = -1;

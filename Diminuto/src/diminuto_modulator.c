@@ -98,8 +98,8 @@ static void diminuto_modulator_function(union sigval arg)
             }
         }
 
+        mp->total += 1;
         if (mp->total < 100) {
-        	mp->total += 1;
             continue;
         }
 
