@@ -9,14 +9,15 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * This code uses the real-time POSIX timer_create(2), timer_settime(2) feature,
+ * to mimic the setitimer(2) semantics, but with a monotonic clock. The
+ * resulting one-shot or periodic timer is, like setitimer(2), a singleton.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
-
-/*
- * This code uses timer_settime(2) etc. which is monotonic. This API
- * mimics the setitimer(2) semantics. This code is not thread safe.
- */
+#include <signal.h>
+#include <time.h>
 
 /**
  * @def COM_DIAG_DIMINUTO_TIMER_FREQUENCY
@@ -24,7 +25,7 @@
  * operates. The inverse of this value is the smallest unit of time in fractions
  * of a second that this feature can express or use. This constant is provided
  * for use in those cases where it is useful to have the value at compile time.
- * However, you chould always prefer to use the inline function when possible.
+ * However, you should always prefer to use the inline function when possible.
  */
 #define COM_DIAG_DIMINUTO_TIMER_FREQUENCY (1000000000LL)
 

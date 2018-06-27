@@ -12,14 +12,12 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "../src/diminuto_timer.h"
 #include <pthread.h>
-#include <signal.h>
-#include <time.h>
 
-diminuto_sticks_t diminuto_timer_generic(timer_t * timeridp, int * initializedp, diminuto_ticks_t ticks, int periodic)
+diminuto_sticks_t diminuto_timer_generic(int * initializedp, timer_t * timeridp, struct sigevent * eventp, diminuto_ticks_t ticks, int periodic)
 {
 	diminuto_sticks_t sticks = 0;
-    struct sigevent event = { 0 };
     struct itimerspec timer = { 0 };
     struct itimerspec remaining = { 0 };
 
@@ -27,14 +25,11 @@ diminuto_sticks_t diminuto_timer_generic(timer_t * timeridp, int * initializedp,
      * If we don't have a timer, and are not deleting it, create the timer.
      */
 
-    event.sigev_notify = SIGEV_SIGNAL;
-	event.sigev_signo = SIGALRM;
-
 	if (*initializedp) {
 		/* Do nothing: already have the timer. */
 	} else if (ticks == 0) {
 		/* Do nothing: deleting the timer. */
-	} else if (timer_create(CLOCK_MONOTONIC, &event, timeridp) < 0) {
+	} else if (timer_create(CLOCK_MONOTONIC, eventp, timeridp) < 0) {
 		diminuto_perror("diminuto_timer_generic: timer_create");
 		sticks = (diminuto_sticks_t)-1;
 	} else {
@@ -94,29 +89,35 @@ diminuto_sticks_t diminuto_timer_generic(timer_t * timeridp, int * initializedp,
     return sticks;
 }
 
+/*******************************************************************************
+ * As much as possible the code below mimics the semantics of setitimer(2)
+ * but uses a monotonic POSIX real-time timer to do so. The timer is a
+ * singleton and sends a SIGALRM to the calling process, just like setitimer(2).
+ ******************************************************************************/
+
 static timer_t timerid = 0;
 static int initialized = 0;
 
 /*
  * Exposed just for unit testing.
  */
-void * diminuto_timer_singleton_get(void)
+timer_t diminuto_timer_singleton_get(void)
 {
-    return initialized ? timerid : (void *)-1;
+    return initialized ? timerid : (timer_t)-1;
 }
 
-/*
- * As much as possible this mimics the semantics of the setitimer(2) version
- * of this API but uses a monotonic timer to do so.
- */
 diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic)
 {
 	diminuto_sticks_t sticks = 0;
+    struct sigevent event = { 0 };
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    event.sigev_notify = SIGEV_SIGNAL;
+	event.sigev_signo = SIGALRM;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	sticks = diminuto_timer_generic(&timerid, &initialized, ticks, periodic);
+    	sticks = diminuto_timer_generic(&initialized, &timerid, &event, ticks, periodic);
 
     DIMINUTO_CRITICAL_SECTION_END;
 
