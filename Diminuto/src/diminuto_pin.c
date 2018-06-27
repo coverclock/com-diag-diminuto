@@ -40,7 +40,7 @@ const char * diminuto_pin_debug(const char * tmp)
 	return prior;
 }
 
-static int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, const char * name, int ignore)
+static int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, int ignore)
 {
 	int rc = -1;
 	char filename[PATH_MAX];
@@ -50,6 +50,7 @@ static int diminuto_pin_configure_conditional(const char * format, int pin, cons
 
 		if (pin < 0) {
 			errno = EINVAL;
+			diminuto_perror("diminuto_pin_configure_conditional: pin");
 			break;
 		}
 
@@ -62,20 +63,24 @@ static int diminuto_pin_configure_conditional(const char * format, int pin, cons
 		if (fputs(string, fp) >= 0) {
 			/* Do nothing. */
 		} else if (errno != EINVAL) {
+			diminuto_perror("diminuto_pin_configure_conditional: fputs");
 			break;
 		} else if (ignore) {
 			/* Do nothing. */
 		} else {
+			diminuto_perror("diminuto_pin_configure_conditional: fputs");
 			break;
 		}
 
 		if (fflush(fp) != EOF) {
 			/* Do nothing. */
 		} else if (errno != EINVAL) {
+			diminuto_perror("diminuto_pin_configure_conditional: fflush");
 			break;
 		} else if (ignore) {
 			/* Do nothing. */
 		} else {
+			diminuto_perror("diminuto_pin_configure_conditional: fflush");
 			break;
 		}
 
@@ -88,74 +93,121 @@ static int diminuto_pin_configure_conditional(const char * format, int pin, cons
 	} else if (fclose(fp) == 0) {
 		/* Do nothing. */
 	} else {
+		diminuto_perror("diminuto_pin_configure_conditional: fclose");
 		rc = -1;
-	}
-
-	if (rc != 0) {
-		diminuto_perror(name);
 	}
 
 	return rc;
 }
 
-static inline int diminuto_pin_configure(const char * format, int pin, const char * string, const char * name)
+static inline int diminuto_pin_configure(const char * format, int pin, const char * string)
 {
-	return diminuto_pin_configure_conditional(format, pin, string, name, 0);
+	return diminuto_pin_configure_conditional(format, pin, string, 0);
 }
 
-static int diminuto_pin_port_conditional(const char * format, int pin, const char * name, int ignore)
+static int diminuto_pin_port_conditional(const char * format, int pin, int ignore)
 {
 	char buffer[sizeof("-9223372036854775807\n")];
 	snprintf(buffer, sizeof(buffer), "%d\n", pin);
-	return diminuto_pin_configure_conditional(format, pin, buffer, name, ignore);
+	return diminuto_pin_configure_conditional(format, pin, buffer, ignore);
 }
 
-static int diminuto_pin_port(const char * format, int pin, const char * name)
+static int diminuto_pin_port(const char * format, int pin)
 {
-	return diminuto_pin_port_conditional(format, pin, name, 0);
+	return diminuto_pin_port_conditional(format, pin, 0);
 }
 
 int diminuto_pin_export(int pin)
 {
-	return diminuto_pin_port(ROOT_CLASS_GPIO_EXPORT, pin, "diminuto_pin_export");
+	int rc = 0;
+
+	rc = diminuto_pin_port(ROOT_CLASS_GPIO_EXPORT, pin);
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_export");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_unexport(int pin)
 {
-	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport", 0);
+	int rc = 0;
+
+	rc = diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, 0);
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_unexport");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_unexport_ignore(int pin)
 {
-	return diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, "diminuto_pin_unexport_ignore", !0);
+	int rc = 0;
+
+	rc = diminuto_pin_port_conditional(ROOT_CLASS_GPIO_UNEXPORT, pin, !0);
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_unexport_ignore");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_active(int pin, int high)
 {
-	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_ACTIVELOW, pin, high ? "0\n" : "1\n", "diminuto_pin_active");
+	int rc = 0;
+
+	rc = diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_ACTIVELOW, pin, high ? "0\n" : "1\n");
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_active");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
 {
-	const char * string;
+	int rc = 0;
+	const char * string = (const char *)0;
+
 	switch (edge) {
 	case DIMINUTO_PIN_EDGE_NONE:	string = "none\n";		break;
-	case DIMINUTO_PIN_EDGE_RISING:	string = "rising\n";		break;
+	case DIMINUTO_PIN_EDGE_RISING:	string = "rising\n";	break;
 	default:
 	case DIMINUTO_PIN_EDGE_FALLING:	string = "falling\n";	break;
 	case DIMINUTO_PIN_EDGE_BOTH:	string = "both\n";		break;
 	}
-	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_EDGE, pin, string, "diminuto_pin_edge");
+
+	rc = diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_EDGE, pin, string);
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_edge");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_direction(int pin, int output)
 {
-	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, output ? "out\n" : "in\n", "diminuto_pin_direction");
+	int rc = 0;
+
+	rc = diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, output ? "out\n" : "in\n");
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_direction");
+	}
+
+	return rc;
 }
 
 int diminuto_pin_initialize(int pin, int high)
 {
-	return diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, high ? "high\n" : "low\n", "diminuto_pin_initialize");
+	int rc = 0;
+
+	rc = diminuto_pin_configure(ROOT_CLASS_GPIO_PIN_DIRECTION, pin, high ? "high\n" : "low\n");
+	if (rc < 0) {
+		diminuto_perror("diminuto_pin_initialize");
+	}
+
+	return rc;
 }
 
 FILE * diminuto_pin_open(int pin)
@@ -167,20 +219,18 @@ FILE * diminuto_pin_open(int pin)
 
 		if (pin < 0) {
 			errno = EINVAL;
+			diminuto_perror("diminuto_pin_open: pin");
 			break;
 		}
 
 		snprintf(filename, sizeof(filename), ROOT_CLASS_GPIO_PIN_VALUE, root, pin);
 
 		if ((fp = fopen(filename, "r+")) == (FILE *)0) {
+			diminuto_perror("diminuto_pin_open: fopen");
 			break;
 		}
 
 	} while (0);
-
-	if (fp == (FILE *)0) {
-		diminuto_perror("diminuto_pin_open");
-	}
 
 	return fp;
 }
@@ -254,24 +304,23 @@ int diminuto_pin_put(FILE * fp, int assert)
 	do {
 
 		if (fseek(fp, 0L, SEEK_SET) < 0) {
+			diminuto_perror("diminuto_pin_put: fseek");
 			break;
 		}
 
 		if (fputs(assert ? "1\n" : "0\n", fp) == EOF) {
+			diminuto_perror("diminuto_pin_put: fputs");
 			break;
 		}
 
 		if (fflush(fp) == EOF) {
+			diminuto_perror("diminuto_pin_put: fflush");
 			break;
 		}
 
 		rc = 0;
 
 	} while (0);
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_put");
-	}
 
 	return rc;
 }
@@ -284,15 +333,18 @@ int diminuto_pin_get(FILE * fp)
 	do {
 
 		if (fseek(fp, 0, SEEK_SET) < 0) {
+			diminuto_perror("diminuto_pin_get: fseek");
 			break;
 		}
 
 		if ((rc = fscanf(fp, "%d\n", &value)) == EOF) {
+			diminuto_perror("diminuto_pin_get: fscanf");
 			break;
 		}
 
 		if (rc < 1) {
 			errno = EAGAIN;
+			diminuto_perror("diminuto_pin_get: fscanf");
 			break;
 		}
 
@@ -301,10 +353,6 @@ int diminuto_pin_get(FILE * fp)
 		rc = 0;
 
 	} while (0);
-
-	if (rc != 0) {
-		diminuto_perror("diminuto_pin_get");
-	}
 
 	return value;
 }
