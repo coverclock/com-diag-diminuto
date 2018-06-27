@@ -24,82 +24,6 @@ int diminuto_alarm_debug = 0; /* Not part of the public API. */
 
 static int signaled = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t condition = PTHREAD_COND_INITIALIZER;
-
-int diminuto_alarm_timedwait(diminuto_sticks_t timeout)
-{
-	int rc = 0;
-	struct timeval val = { 0 };
-	struct timespec spec = { 0 };
-
-	do {
-
-		/*
-		 * Whoever decided that the timeout on the condition timed wait should
-		 * be an absolute clock time has some 'splaining to do. (I very dimly
-		 * recall learning why this must be the case some eons ago.)
-		 */
-
-		if (timeout < 0) {
-			/* Do nothing. */
-		} else if ((rc = gettimeofday(&val, (struct timezone *)0)) < 0) {
-			diminuto_perror("diminuto_alarm_timedwait: gettimeofday");
-			break;
-		} else {
-			spec.tv_sec = val.tv_sec;
-			spec.tv_nsec = val.tv_usec * 1000;
-			spec.tv_sec += diminuto_frequency_ticks2wholeseconds(timeout);
-			spec.tv_nsec += diminuto_frequency_ticks2fractionalseconds(timeout, 1000000000);
-		}
-
-		if (timeout < 0) {
-			/* Do nothing. */
-		} else if (!diminuto_alarm_debug) {
-			/* Do nothing. */
-		} else {
-			DIMINUTO_LOG_DEBUG("diminuto_alarm_timedwait: timeout=%lldticks val=<%lds,%ldus> spec=<%lds,%ldns>", timeout, val.tv_sec, val.tv_usec, spec.tv_sec, spec.tv_nsec);
-		}
-
-		DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-
-			rc = (timeout < 0) ? pthread_cond_wait(&condition, &mutex) : pthread_cond_timedwait(&condition, &mutex, &spec);
-
-		DIMINUTO_CRITICAL_SECTION_END;
-
-		if (rc == 0) {
-			/* Do nothing. */
-		} else if (timeout < 0) {
-			errno = rc;
-			diminuto_perror("diminuto_alarm_wait: pthread_cond_wait");
-			rc = -1;
-		} else if (rc == ETIMEDOUT) {
-			errno = rc;
-			rc = -1;
-		} else {
-			errno = rc;
-			diminuto_perror("diminuto_alarm_timedwait: pthread_cond_timedwait");
-			rc = -1;
-		}
-
-	} while (0);
-
-	return rc;
-}
-
-int diminuto_alarm_broadcast(void)
-{
-	int rc = 0;
-
-	rc = pthread_cond_broadcast(&condition);
-
-	if (rc != 0) {
-		errno = rc;
-		diminuto_perror("diminuto_alarm_broadcast: pthread_cond_broadcast");
-		rc = -1;
-	}
-
-	return rc;
-}
 
 int diminuto_alarm_signal(pid_t pid)
 {
@@ -125,10 +49,6 @@ static void diminuto_alarm_handler(int signum)
     	/* Do nothing. */
     } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
         signaled += 1;
-    	rc = pthread_cond_broadcast(&condition);
-    	if (rc != 0) {
-    		DIMINUTO_LOG_ERROR("diminuto_alarm_handler: pthread_cond_broadcast: %s", strerror(rc));
-    	}
     } else {
     	/* Do nothing. */
     }

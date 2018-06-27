@@ -51,7 +51,7 @@ static void * diminuto_modulator(void * ap)
 
 	while (state == DIMINUTO_MODULATOR_RUNNING) {
 
-		rc = diminuto_alarm_wait();
+		rc = -1; // diminuto_alarm_wait();
 		if (rc < 0) {
 		    xc = errno;
 			break;
