@@ -38,9 +38,27 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-static const diminuto_ticks_t HERTZ = 10000; /* 100us */
-
 static const char * program = (const char *)0;
+
+void dump(FILE * fp, const diminuto_modulator_t * mp)
+{
+    printf("modulator@%p: timer=%p initialized=%d pin=%d duty=%d fp=%p on=%d off=%d set=%d total=%d cycle=%d ton=%d toff=%d condition=%d\n",
+    	mp,
+		(void *)(mp->timer),
+		mp->initialized,
+		mp->pin,
+		mp->duty,
+		mp->fp,
+		mp->on,
+		mp->off,
+		mp->set,
+		mp->total,
+		mp->cycle,
+		mp->ton,
+		mp->toff,
+		mp->condition
+	);
+}
 
 int main(int argc, char * argv[])
 {
@@ -71,9 +89,6 @@ int main(int argc, char * argv[])
      * Install signal handlers.
      */
 
-    rc = diminuto_alarm_install(!0);
-    assert(rc >= 0);
-
     rc = diminuto_terminator_install(!0);
     assert(rc >= 0);
 
@@ -88,12 +103,11 @@ int main(int argc, char * argv[])
 
     rc = diminuto_modulator_init(&modulator, pin, duty);
 
-    printf("%s: rc=%d state='%c' pin=%d fp=%p duty=%d on=%d off=%d\n", program, rc, modulator.state, modulator.pin, modulator.fp, modulator.duty, modulator.on, modulator.off);
+    dump(stderr, &modulator);
 
     assert(rc == 0);
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
-    assert(modulator.state == DIMINUTO_MODULATOR_READY);
     assert(modulator.duty == duty);
     assert((100 % (modulator.on + modulator.off)) == 0);
 
@@ -107,19 +121,6 @@ int main(int argc, char * argv[])
     assert(rc == 0);
 
     /*
-     * Start up the periodic timer.
-     */
-
-    frequency = diminuto_frequency();
-    assert(frequency > 0);
-
-    ticks = frequency / HERTZ;
-    assert(ticks > 0);
-
-    ticks = diminuto_timer_periodic(ticks);
-    assert(ticks >= 0);
-
-    /*
      * Enter the work loop.
      */
 
@@ -127,7 +128,7 @@ int main(int argc, char * argv[])
 
     while (!0) {
 
-        pause();
+        (void)pause();
 
         if (diminuto_terminator_check()) {
             printf("%s: terminated\n", program);
@@ -151,16 +152,13 @@ int main(int argc, char * argv[])
     assert(rc == 0);
 
     /*
-     * Tear down the modulator and stop the timer.
+     * Tear down the modulator.
      */
 
     printf("%s: finishing\n", program);
 
     rc = diminuto_modulator_fini(&modulator);
     assert(rc == 0);
-
-    ticks = diminuto_timer_periodic(0);
-    assert(ticks >= 0);
 
     /*
      * Exit.
