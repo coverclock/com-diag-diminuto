@@ -69,6 +69,7 @@ int main(int argc, char * argv[])
     diminuto_modulator_t modulator = { 0 };
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
+    unsigned int seconds = 0;
 
     /*
      * Process arguments from the command line.
@@ -82,8 +83,8 @@ int main(int argc, char * argv[])
     pin = atoi(argv[1]);
     assert(pin >= 0);
 
-    duty = atoi(argv[2]);
-    assert(duty >= 0);
+    seconds = atoi(argv[2]);
+    assert(seconds > 0);
 
     /*
      * Install signal handlers.
@@ -101,13 +102,12 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: initializing\n", program);
 
-    rc = diminuto_modulator_init(&modulator, pin, duty);
+    rc = diminuto_modulator_init(&modulator, pin, 0);
     dump(stderr, &modulator);
     assert(rc == 0);
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
-    assert(modulator.duty == duty);
-    assert((100 % (modulator.ton + modulator.toff)) == 0);
+    assert(modulator.duty == 0);
 
     /*
      * Start the modulator.
@@ -124,9 +124,9 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: working\n", program);
 
-    while (!0) {
+    for (duty = 1; duty <= 100; ++duty) {
 
-        if (sleep(1) > 0) {
+        if (sleep(seconds) > 0) {
             fprintf(stderr, "%s: awoke\n", program);
         }
 
@@ -137,8 +137,13 @@ int main(int argc, char * argv[])
             fprintf(stderr, "%s: interrupted\n", program);
             break;
         } else {
+            diminuto_modulator_set(&modulator, duty);
+    	    dump(stderr, &modulator);
+    	    assert(modulator.duty == duty);
+    	    assert((100 % (modulator.ton + modulator.toff)) == 0);
             continue;
         }
+
 
     }
 
@@ -168,3 +173,4 @@ int main(int argc, char * argv[])
 
     return xc;
 }
+

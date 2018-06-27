@@ -301,8 +301,8 @@ FILE * diminuto_pin_unused(FILE * fp, int pin)
 
 /*
  * The put/get functions below were altered from using the buffered
- * standard I/O library function calls (which are right out of the
- * examples in the documentation for the /proc GPIO interface at
+ * standard I/O library function calls (which are based on the
+ * examples in the documentation for the sysfs GPIO interface at
  * the time I originally wrote this code) to using straight system
  * calls. The former, when used at very high calling frequency in
  * the modulator feature, sometimes produced an EINVAL error. I have

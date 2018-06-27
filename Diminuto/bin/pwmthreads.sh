@@ -8,19 +8,26 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-SEC=${1:-1}
-PIN=${2:-16}
+PGM=$(basename $0)
+PIN=${1:-16}
+SEC=${2:-3}
 DUTY=0;
 PCT=100;
+DIR="tmp"
+
+mkdir -p ${DIR}
 
 while [[ ${DUTY} -le ${PCT} ]]; do
-	pwmthread ${PIN} ${DUTY} &
+	strace -o ${DIR}/${PGM}-${DUTY} -f pwmthread ${PIN} ${DUTY} &
 	PID=$!
 	trap "kill ${PID}; exit" 1 2 3 15
+	echo ${PGM}: ${PIN} ${SEC} ${DUTY} ${PID} 1>&2
 	sleep ${SEC}
-	kill ${PID}
+	kill -15 ${PID}
 	wait ${PID}
 	DUTY=$((${DUTY} + 1))
 done
+
+pintool -p ${PIN} -n
 
 exit 0
