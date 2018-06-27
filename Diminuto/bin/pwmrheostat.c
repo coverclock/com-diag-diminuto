@@ -70,6 +70,7 @@ int main(int argc, char * argv[])
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     unsigned int seconds = 0;
+    int reverse = 0;
 
     /*
      * Process arguments from the command line.
@@ -124,7 +125,7 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: working\n", program);
 
-    for (duty = 1; duty <= 100; ++duty) {
+    while (!0) {
 
         if (sleep(seconds) > 0) {
             fprintf(stderr, "%s: awoke\n", program);
@@ -137,13 +138,24 @@ int main(int argc, char * argv[])
             fprintf(stderr, "%s: interrupted\n", program);
             break;
         } else {
+            if (!reverse) {
+                duty += 1;
+                if (duty > 100) {
+                    duty = 99;
+                    reverse = !0;
+                }
+            } else {
+                duty -= 1;
+                if (duty < 0) {
+                    break;
+                }
+            }
             diminuto_modulator_set(&modulator, duty);
     	    dump(stderr, &modulator);
     	    assert(modulator.duty == duty);
     	    assert((100 % (modulator.ton + modulator.toff)) == 0);
             continue;
         }
-
 
     }
 
