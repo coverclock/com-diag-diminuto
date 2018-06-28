@@ -63,29 +63,47 @@ void dump(FILE * fp, const diminuto_modulator_t * mp)
 int main(int argc, char * argv[])
 {
     int xc = 0;
-    int pin = -1;
-    int duty = 0;
+    int pin[3] = { -1, -1, -1 };
+    int duty[3] = { 0 };
     int rc = 0;
-    diminuto_modulator_t modulator = { 0 };
+    diminuto_modulator_t modulator[3] = { { 0 } };
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     unsigned int seconds = 0;
     int reverse = 0;
+    int ii = 0;
 
     /*
      * Process arguments from the command line.
      */
 
-    assert(argc == 3);
-  
-    program = argv[0]; 
+    program = argv[0];
     assert(program != (const char *)0);
 
-    pin = atoi(argv[1]);
-    assert(pin >= 0);
+    if (argc == 1) {
+    	fprintf(stderr, "usage: %s SECONDS PIN1 [ PIN2 [ PIN3 ] ]\n", program);
+    	exit(1);
+    }
 
-    seconds = atoi(argv[2]);
+    assert(argc >= 3);
+
+    seconds = atoi(argv[1]);
     assert(seconds > 0);
+
+    pin[0] = atoi(argv[2]);
+    assert(pin[0] >= 0);
+
+    if (argc >= 4) {
+        pin[1] = atoi(argv[3]);
+        assert(pin[1] >= 0);
+    }
+
+    if (argc >= 5) {
+        pin[2] = atoi(argv[4]);
+        assert(pin[2] >= 0);
+    }
+
+    fprintf(stderr, "%s: %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2]);
 
     /*
      * Install signal handlers.
@@ -103,12 +121,20 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: initializing\n", program);
 
-    rc = diminuto_modulator_init(&modulator, pin, 0);
-    dump(stderr, &modulator);
-    assert(rc == 0);
-    assert(modulator.pin == pin);
-    assert(modulator.fp != (FILE *)0);
-    assert(modulator.duty == 0);
+    duty[0] = 0;
+    duty[1] = (duty[0] + 33) % 101;
+    duty[2] = (duty[1] + 33) % 101;
+
+    for (ii = 0; ii < countof(pin); ++ii) {
+    	if (pin[ii] >= 0) {
+    		rc = diminuto_modulator_init(&(modulator[ii]), pin[ii], duty[ii]);
+    		dump(stderr, &(modulator[ii]));
+    		assert(rc == 0);
+    		assert(modulator[ii].pin == pin[ii]);
+    		assert(modulator[ii].fp != (FILE *)0);
+    		assert(modulator[ii].duty == duty[ii]);
+    	}
+    }
 
     /*
      * Start the modulator.
@@ -116,8 +142,13 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: starting\n", program);
 
-    rc = diminuto_modulator_start(&modulator);
-    assert(rc == 0);
+    for (ii = 0; ii < countof(pin); ++ii) {
+    	if (pin[ii] >= 0) {
+    		rc = diminuto_modulator_start(&(modulator[ii]));
+    		dump(stderr, &(modulator[ii]));
+    		assert(rc == 0);
+    	}
+    }
 
     /*
      * Enter the work loop.
@@ -139,21 +170,27 @@ int main(int argc, char * argv[])
             break;
         } else {
             if (!reverse) {
-                duty += 1;
-                if (duty > 100) {
-                    duty = 99;
+                duty[0] += 1;
+                if (duty[0] > 100) {
+                    duty[0] = 99;
                     reverse = !0;
                 }
             } else {
-                duty -= 1;
-                if (duty < 0) {
+                duty[0] -= 1;
+                if (duty[0] < 0) {
                     break;
                 }
             }
-            diminuto_modulator_set(&modulator, duty);
-    	    dump(stderr, &modulator);
-    	    assert(modulator.duty == duty);
-    	    assert((100 % (modulator.ton + modulator.toff)) == 0);
+            duty[1] = (duty[0] + 33) % 101;
+            duty[2] = (duty[1] + 33) % 101;
+            for (ii = 0; ii < countof(pin); ++ii) {
+            	if (pin[ii] >= 0) {
+            		diminuto_modulator_set(&(modulator[ii]), duty[ii]);
+            		dump(stderr, &(modulator[ii]));
+            		assert(modulator[ii].duty == duty[ii]);
+            		assert((100 % (modulator[ii].ton + modulator[ii].toff)) == 0);
+            	}
+            }
             continue;
         }
 
@@ -165,8 +202,13 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: stopping\n", program);
 
-    rc = diminuto_modulator_stop(&modulator);
-    assert(rc == 0);
+    for (ii = 0; ii < countof(pin); ++ii) {
+    	if (pin[ii] >= 0) {
+    		rc = diminuto_modulator_stop(&(modulator[ii]));
+    		dump(stderr, &(modulator[ii]));
+    		assert(rc == 0);
+    	}
+    }
 
     /*
      * Tear down the modulator.
@@ -174,8 +216,13 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: finishing\n", program);
 
-    rc = diminuto_modulator_fini(&modulator);
-    assert(rc == 0);
+    for (ii = 0; ii < countof(pin); ++ii) {
+    	if (pin[ii] >= 0) {
+    		rc = diminuto_modulator_fini(&(modulator[ii]));
+    		dump(stderr, &(modulator[ii]));
+    		assert(rc == 0);
+    	}
+    }
 
     /*
      * Exit.

@@ -7,10 +7,10 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 #
-#	make all TARGET=<target>		# Build libraries, unit tests, executable programs.
-#	make most TARGET=<target>		# Build all plus user-space loadable modules.
-#	make plus TARGET=<target>		# Build most plus kernel-space loadable modules.
-#
+#	make all						# Build libraries, unit tests, executable programs.
+#	make clean						# Remove OUT directory for current TARGET.
+#	make pristine					# Remove all OUT directories.
+#	sudo make install				# Install libraries, binaries, headers under /usr/local.
 #	. out/host/bin/setup			# Sets up PATH and LD_LIBRARY_PATH after build.
 #
 
@@ -23,7 +23,7 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	48# API changes that may require that applications be modified.
-MINOR				:=	14# Only functionality or features added with no legacy API changes.
+MINOR				:=	15# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
