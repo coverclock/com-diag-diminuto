@@ -17,7 +17,7 @@
  * cycle can be modified as the PWM generator runs. Multiple PWM generators can
  * be active concurrently up to the limit of the CPU. Each generator runs a
  * thread-ish function every 100us (100000ns) i.e. 10000Hz. Has been
- * successfully run on a HW test fixture controlling three LEDs simultaneously.
+ * successfully run on a HW test fixture controlling four LEDs simultaneously.
  * No guarantees as to jitter, equivalent output voltage, or how it scales as
  * generators are added. See the functional test bin/pwmrheostat.c for a
  * working example.

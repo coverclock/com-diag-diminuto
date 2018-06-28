@@ -36,10 +36,10 @@ static const char * program = (const char *)0;
 int main(int argc, char * argv[])
 {
     int xc = 0;
-    int pin[3] = { -1, -1, -1 };
-    int duty[3] = { 0 };
+    int pin[4] = { -1, -1, -1, -1 };
+    int duty[4] = { 0 };
     int rc = 0;
-    diminuto_modulator_t modulator[3] = { { 0 } };
+    diminuto_modulator_t modulator[4] = { { 0 } };
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     unsigned int seconds = 0;
@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
     assert(program != (const char *)0);
 
     if (argc == 1) {
-    	fprintf(stderr, "usage: %s SECONDS PIN1 [ PIN2 [ PIN3 ] ]\n", program);
+    	fprintf(stderr, "usage: %s SECONDS PIN1 [ PIN2 [ PIN3 [ PIN4 ] ] ]\n", program);
     	exit(1);
     }
 
@@ -76,7 +76,12 @@ int main(int argc, char * argv[])
         assert(pin[2] >= 0);
     }
 
-    fprintf(stderr, "%s: using %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2]);
+    if (argc >= 6) {
+        pin[3] = atoi(argv[5]);
+        assert(pin[3] >= 0);
+    }
+
+    fprintf(stderr, "%s: using %d %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2], pin[3] );
 
     /*
      * Install signal handlers.
@@ -93,8 +98,9 @@ int main(int argc, char * argv[])
      */
 
     duty[0] = 0;
-    duty[1] = (duty[0] + 33) % 101;
-    duty[2] = (duty[1] + 33) % 101;
+    duty[1] = duty[0] + 33;
+    duty[2] = duty[1] + 33;
+    duty[3] = duty[2] + 33;
 
     for (ii = 0; ii < countof(pin); ++ii) {
     	if (pin[ii] >= 0) {
@@ -149,11 +155,13 @@ int main(int argc, char * argv[])
             } else {
                 duty[0] -= 1;
                 if (duty[0] < 0) {
+                    duty[0] = 0;
                     break;
                 }
             }
             duty[1] = (duty[0] + 33) % 101;
             duty[2] = (duty[1] + 33) % 101;
+            duty[3] = (duty[2] + 33) % 101;
             for (ii = 0; ii < countof(pin); ++ii) {
             	if (pin[ii] >= 0) {
                     fprintf(stderr, "%s: setting %d %d\n", program, pin[ii], duty[ii]);
