@@ -57,29 +57,36 @@ i2cset -y ${BUS} ${DEV} ${ADR}
 DAT=0x10
 i2cset -y ${BUS} ${DEV} ${DAT}
 
-# Wait.
+while true; do
 
-sleep 1
+	# Wait.
 
-VAL=$(pintool -p 26 -r)
-echo ${PGM}: ${PIN} ${VAL}
+	while true; do
+		VAL=$(pintool -p 26 -r)
+		echo ${PGM}: ${PIN} ${VAL}
+		if [[ ${VAL} -eq 1 ]]; then
+			break
+		fi
+	done
 
-# Sense.
+	# Sense.
 
-ADR=0x8C
-i2cset -y ${BUS} ${DEV} ${ADR}
-V0L=$(i2cget -y ${BUS} ${DEV})
-ADR=0x8D
-i2cset -y ${BUS} ${DEV} ${ADR}
-V0H=$(i2cget -y ${BUS} ${DEV})
-echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V0H},${V0L}
+	ADR=0x8C
+	i2cset -y ${BUS} ${DEV} ${ADR}
+	V0L=$(i2cget -y ${BUS} ${DEV})
+	ADR=0x8D
+	i2cset -y ${BUS} ${DEV} ${ADR}
+	V0H=$(i2cget -y ${BUS} ${DEV})
+	echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V0H},${V0L}
 
-ADR=0x8E
-i2cset -y ${BUS} ${DEV} ${ADR}
-V1L=$(i2cget -y ${BUS} ${DEV})
-ADR=0x8F
-i2cset -y ${BUS} ${DEV} ${ADR}
-V1H=$(i2cget -y ${BUS} ${DEV})
-echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V1H},${V1L}
+	ADR=0x8E
+	i2cset -y ${BUS} ${DEV} ${ADR}
+	V1L=$(i2cget -y ${BUS} ${DEV})
+	ADR=0x8F
+	i2cset -y ${BUS} ${DEV} ${ADR}
+	V1H=$(i2cget -y ${BUS} ${DEV})
+	echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V1H},${V1L}
+
+done
 
 exit 0
