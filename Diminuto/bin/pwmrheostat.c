@@ -6,13 +6,6 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * USAGE
- *
- * EXAMPLES
- *
- * ABSTRACT
- *
  */
 
 #include "com/diag/diminuto/diminuto_alarm.h"
@@ -39,26 +32,6 @@
 #include <unistd.h>
 
 static const char * program = (const char *)0;
-
-void dump(FILE * fp, const diminuto_modulator_t * mp)
-{
-    fprintf(stderr, "modulator@%p: timer=%p initialized=%d pin=%d duty=%d fp=%p on=%d off=%d set=%d total=%d cycle=%d ton=%d toff=%d condition=%d\n",
-    	mp,
-		(void *)(mp->timer),
-		mp->initialized,
-		mp->pin,
-		mp->duty,
-		mp->fp,
-		mp->on,
-		mp->off,
-		mp->set,
-		mp->total,
-		mp->cycle,
-		mp->ton,
-		mp->toff,
-		mp->condition
-	);
-}
 
 int main(int argc, char * argv[])
 {
@@ -103,7 +76,7 @@ int main(int argc, char * argv[])
         assert(pin[2] >= 0);
     }
 
-    fprintf(stderr, "%s: %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2]);
+    fprintf(stderr, "%s: using %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2]);
 
     /*
      * Install signal handlers.
@@ -119,16 +92,15 @@ int main(int argc, char * argv[])
      * Initialize the modulator.
      */
 
-    fprintf(stderr, "%s: initializing\n", program);
-
     duty[0] = 0;
     duty[1] = (duty[0] + 33) % 101;
     duty[2] = (duty[1] + 33) % 101;
 
     for (ii = 0; ii < countof(pin); ++ii) {
     	if (pin[ii] >= 0) {
+    	    fprintf(stderr, "%s: initializing %d %d\n", program, pin[ii], duty[ii]);
     		rc = diminuto_modulator_init(&(modulator[ii]), pin[ii], duty[ii]);
-    		dump(stderr, &(modulator[ii]));
+    		diminuto_modulator_print(stderr, &(modulator[ii]));
     		assert(rc == 0);
     		assert(modulator[ii].pin == pin[ii]);
     		assert(modulator[ii].fp != (FILE *)0);
@@ -140,12 +112,11 @@ int main(int argc, char * argv[])
      * Start the modulator.
      */
 
-    fprintf(stderr, "%s: starting\n", program);
-
     for (ii = 0; ii < countof(pin); ++ii) {
     	if (pin[ii] >= 0) {
+    	    fprintf(stderr, "%s: starting %d %d\n", program, pin[ii], duty[ii]);
     		rc = diminuto_modulator_start(&(modulator[ii]));
-    		dump(stderr, &(modulator[ii]));
+    		diminuto_modulator_print(stderr, &(modulator[ii]));
     		assert(rc == 0);
     	}
     }
@@ -185,8 +156,9 @@ int main(int argc, char * argv[])
             duty[2] = (duty[1] + 33) % 101;
             for (ii = 0; ii < countof(pin); ++ii) {
             	if (pin[ii] >= 0) {
+                    fprintf(stderr, "%s: setting %d %d\n", program, pin[ii], duty[ii]);
             		diminuto_modulator_set(&(modulator[ii]), duty[ii]);
-            		dump(stderr, &(modulator[ii]));
+            		diminuto_modulator_print(stderr, &(modulator[ii]));
             		assert(modulator[ii].duty == duty[ii]);
             		assert((100 % (modulator[ii].ton + modulator[ii].toff)) == 0);
             	}
@@ -200,12 +172,11 @@ int main(int argc, char * argv[])
      * Stop the modulator.
      */
 
-    fprintf(stderr, "%s: stopping\n", program);
-
     for (ii = 0; ii < countof(pin); ++ii) {
     	if (pin[ii] >= 0) {
+            fprintf(stderr, "%s: stopping %d %d\n", program, pin[ii], duty[ii]);
     		rc = diminuto_modulator_stop(&(modulator[ii]));
-    		dump(stderr, &(modulator[ii]));
+    		diminuto_modulator_print(stderr, &(modulator[ii]));
     		assert(rc == 0);
     	}
     }
@@ -214,12 +185,11 @@ int main(int argc, char * argv[])
      * Tear down the modulator.
      */
 
-    fprintf(stderr, "%s: finishing\n", program);
-
     for (ii = 0; ii < countof(pin); ++ii) {
     	if (pin[ii] >= 0) {
-    		rc = diminuto_modulator_fini(&(modulator[ii]));
-    		dump(stderr, &(modulator[ii]));
+            fprintf(stderr, "%s: finishing %d %d\n", program, pin[ii], duty[ii]);
+   		rc = diminuto_modulator_fini(&(modulator[ii]));
+    		diminuto_modulator_print(stderr, &(modulator[ii]));
     		assert(rc == 0);
     	}
     }

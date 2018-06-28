@@ -21,6 +21,42 @@
 #include <string.h>
 #include <sched.h>
 
+void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
+{
+    fprintf(stderr,	"modulator@%p:"
+    				" function=%p"
+    				" fp=%p"
+    				" pin=%d"
+    				" duty=%d"
+    				" on=%d"
+    				" off=%d"
+    				" set=%d"
+    				" timer=%p"
+    				" initialized=%d"
+    				" total=%d"
+    				" cycle=%d"
+    				" ton=%d"
+    				" toff=%d"
+    				" condition=%d"
+    				"\n",
+    	mp,
+		mp->function,
+		mp->fp,
+		mp->pin,
+		mp->duty,
+		mp->on,
+		mp->off,
+		mp->set,
+		(void *)(mp->timer),
+		mp->initialized,
+		mp->total,
+		mp->cycle,
+		mp->ton,
+		mp->toff,
+		mp->condition
+	);
+}
+
 int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 {
 	int rc = -1;
@@ -67,7 +103,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 	return 0;
 }
 
-static void diminuto_modulator_function(union sigval arg)
+void diminuto_modulator_function(union sigval arg)
 {
 	diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
 
@@ -120,13 +156,15 @@ static void diminuto_modulator_function(union sigval arg)
 	return;
 }
 
-int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, int duty) {
+int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * fp, int pin, int duty)
+{
 	int rc = -1;
 
 	do {
 
 		memset(mp, 0, sizeof(*mp));
 
+		mp->function = fp;
 	    mp->pin = pin;
 	    mp->toff = 100;
 
@@ -171,7 +209,7 @@ int diminuto_modulator_start(diminuto_modulator_t * mp)
 
     event.sigev_notify = SIGEV_THREAD;
     event.sigev_value.sival_ptr = (void *)mp;
-    event.sigev_notify_function = diminuto_modulator_function;
+    event.sigev_notify_function = mp->function;
     event.sigev_notify_attributes = &(mp->attributes);
 
 	ticks = diminuto_frequency() / diminuto_modulator_frequency();
