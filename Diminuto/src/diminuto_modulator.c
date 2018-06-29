@@ -38,6 +38,7 @@ void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
     				" ton=%d"
     				" toff=%d"
     				" condition=%d"
+                    " data=%p"
     				"\n",
     	mp,
 		mp->function,
@@ -53,7 +54,8 @@ void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
 		mp->cycle,
 		mp->ton,
 		mp->toff,
-		mp->condition
+		mp->condition,
+        mp->data
 	);
 }
 

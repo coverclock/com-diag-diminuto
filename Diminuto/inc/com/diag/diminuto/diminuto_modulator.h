@@ -71,6 +71,8 @@ typedef struct DiminutoModulator {
 	int ton;
 	int toff;
 	int condition;
+    /* Fields for use by the application, otherwise unused. */
+    void * data;
 } diminuto_modulator_t;
 
 /**

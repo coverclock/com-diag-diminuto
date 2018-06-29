@@ -69,23 +69,29 @@ done
 
 # Start.
 
-pintool -p ${PIN} -b 10000 | while read BIT; do
-	echo ${PGM}: ${PIN} ${BIT}
-	if [[ ${BIT} -eq 1 ]]; then
+#pintool -p ${PIN} -M | while read BIT; do
+#pintool -p ${PIN} -b 10000 | while read BIT; do
+while BIT=$(pintool -p ${PIN} -r); do
+	if [[ ${BIT} -eq 0 ]]; then
+		echo ${PGM}: ${PIN} ${BIT}
+	else
 		ADR=0x8C
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V0L=$(i2cget -y ${BUS} ${DEV})
+		N0L=${V0L:2:2}
 		ADR=0x8D
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V0H=$(i2cget -y ${BUS} ${DEV})
-		echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V0H},${V0L}
+		N0H=${V0H:2:2}
 		ADR=0x8E
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V1L=$(i2cget -y ${BUS} ${DEV})
+		N1L=${V1L:2:2}
 		ADR=0x8F
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V1H=$(i2cget -y ${BUS} ${DEV})
-		echo ${PGM}: ${BUS} ${DEV} ${ADR} .... ${V1H},${V1L}
+		N1H=${V1H:2:2}
+		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L}
 	fi
 done
 
