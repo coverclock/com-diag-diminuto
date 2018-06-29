@@ -16,7 +16,7 @@ PIN=${3:-26}
 # Setup GPIO.
 
 pintool -p ${PIN} -n 2> /dev/null
-pintool -p ${PIN} -x -i -L -B
+pintool -p ${PIN} -x -i -L -R
 trap "pintool -p ${PIN} -n 2> /dev/null; echo ${PGM}: exit;  exit 0" 1 2 3 15
 
 # Scan.
@@ -69,13 +69,10 @@ done
 
 # Start.
 
-#pintool -p ${PIN} -M | while read BIT; do
-#pintool -p ${PIN} -b 10000 | while read BIT; do
-while BIT=$(pintool -p ${PIN} -r); do
-	if [[ ${BIT} -eq 0 ]]; then
-		echo ${PGM}: ${PIN} ${BIT}
-	else
-		ADR=0x8C
+TM0=$(usectime)
+pintool -p ${PIN} -M | while read BIT; do
+	if [[ ${BIT} -ne 0 ]]; then
+		ADR=0xCC
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V0L=$(i2cget -y ${BUS} ${DEV})
 		N0L=${V0L:2:2}
@@ -91,7 +88,10 @@ while BIT=$(pintool -p ${PIN} -r); do
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V1H=$(i2cget -y ${BUS} ${DEV})
 		N1H=${V1H:2:2}
-		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L}
+		TM1=$(usectime)
+		TMD=$((${TM1} - ${TM0}))
+		TM0=${TM1}
+		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L} ${TMD}us
 	fi
 done
 
