@@ -8,6 +8,11 @@
 # with the Avago APDS 9301 lux sensor chip that is part of
 # my breadboarded HW test fixture.
 
+# REFERENCES
+#
+# Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
+# (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
+
 PGM=$(basename $0 .sh)
 BUS=${1:-1}
 DEV=${2:-0x39}
@@ -47,7 +52,7 @@ echo ${PGM}: ${BUS} ${DEV} ${ADR} "...." ${VAL} ${MSG}
 
 ADR=0x81
 i2cset -y ${BUS} ${DEV} ${ADR}
-DAT=0x02
+DAT=0x12
 i2cset -y ${BUS} ${DEV} ${DAT}
 echo ${PGM}: ${BUS} ${DEV} ${ADR} ${DAT}
 
@@ -69,15 +74,20 @@ done
 
 # Start.
 
-TM0=$(usectime)
+TM0=$(elapsedtime 1000)
 pintool -p ${PIN} -M | while read BIT; do
 	if [[ ${BIT} -ne 0 ]]; then
+		TM1=$(elapsedtime 1000)
+		TMD=$((${TM1} - ${TM0}))
+		TM0=${TM1}
+		# First read also clears interrupt.
 		ADR=0xCC
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V0L=$(i2cget -y ${BUS} ${DEV})
 		N0L=${V0L:2:2}
 		ADR=0x8D
 		i2cset -y ${BUS} ${DEV} ${ADR}
+		# Visible + Infrared
 		V0H=$(i2cget -y ${BUS} ${DEV})
 		N0H=${V0H:2:2}
 		ADR=0x8E
@@ -86,12 +96,10 @@ pintool -p ${PIN} -M | while read BIT; do
 		N1L=${V1L:2:2}
 		ADR=0x8F
 		i2cset -y ${BUS} ${DEV} ${ADR}
+		# Infrared
 		V1H=$(i2cget -y ${BUS} ${DEV})
 		N1H=${V1H:2:2}
-		TM1=$(usectime)
-		TMD=$((${TM1} - ${TM0}))
-		TM0=${TM1}
-		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L} ${TMD}us
+		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L} ${TMD}ms
 	fi
 done
 

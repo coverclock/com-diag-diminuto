@@ -4,4 +4,4 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 
-elapsedtime 1000
+elapsedtime 1000000

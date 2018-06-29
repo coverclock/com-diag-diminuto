@@ -4,4 +4,4 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 
-elapsedsleep ${1:-"0"} 1000
+elapsedsleep ${1:-"0"} 1000000
