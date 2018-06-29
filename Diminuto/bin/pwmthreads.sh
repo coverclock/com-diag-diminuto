@@ -18,16 +18,17 @@ DIR="tmp"
 mkdir -p ${DIR}
 
 while [[ ${DUTY} -le ${PCT} ]]; do
-	strace -o ${DIR}/${PGM}-${DUTY} -f pwmthread ${PIN} ${DUTY} &
+	pwmthread ${PIN} ${DUTY} &
 	PID=$!
 	trap "kill ${PID}; exit" 1 2 3 15
 	echo ${PGM}: ${PIN} ${SEC} ${DUTY} ${PID} 1>&2
 	sleep ${SEC}
 	kill -15 ${PID}
-	wait ${PID}
+	#wait ${PID}
+	wait
 	DUTY=$((${DUTY} + 1))
 done
 
-pintool -p ${PIN} -n
+pintool -p ${PIN} -n 2> /dev/null
 
 exit 0
