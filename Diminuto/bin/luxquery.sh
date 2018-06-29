@@ -90,6 +90,7 @@ pintool -p ${PIN} -M | while read BIT; do
 		# Visible + Infrared
 		V0H=$(i2cget -y ${BUS} ${DEV})
 		N0H=${V0H:2:2}
+		N0V="0x${N0H}${N0L}"
 		ADR=0x8E
 		i2cset -y ${BUS} ${DEV} ${ADR}
 		V1L=$(i2cget -y ${BUS} ${DEV})
@@ -99,7 +100,10 @@ pintool -p ${PIN} -M | while read BIT; do
 		# Infrared
 		V1H=$(i2cget -y ${BUS} ${DEV})
 		N1H=${V1H:2:2}
-		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... 0x${N0H}${N0L} 0x${N1H}${N1L} ${TMD}ms
+		N1V="0x${N1H}${N1L}"
+		# Compute.
+		LUX=$(luxcompute ${N0V} ${N1V})
+		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... ${N0V} ${N1V} ${TMD} ms ${LUX} lx
 	fi
 done
 

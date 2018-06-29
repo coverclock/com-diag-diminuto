@@ -53,12 +53,10 @@ int main(int argc, char * argv[])
     program = argv[0];
     assert(program != (const char *)0);
 
-    if (argc == 1) {
+    if (argc < 3) {
     	fprintf(stderr, "usage: %s SECONDS PIN1 [ PIN2 [ PIN3 [ PIN4 ] ] ]\n", program);
     	exit(1);
     }
-
-    assert(argc >= 3);
 
     seconds = atoi(argv[1]);
     assert(seconds > 0);

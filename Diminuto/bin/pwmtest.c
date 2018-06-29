@@ -64,11 +64,14 @@ int main(int argc, char * argv[])
     /*
      * Process arguments from the command line.
      */
-
-    assert(argc == 3);
   
     program = argv[0]; 
     assert(program != (const char *)0);
+
+    if (argc != 3) {
+        fprintf(stderr, "usage: %s PIN DUTY\n", program);
+        exit(1);
+    }
 
     pin = atoi(argv[1]);
     assert(pin >= 0);
