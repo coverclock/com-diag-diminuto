@@ -112,12 +112,6 @@ int main(int argc, char ** argv) {
     assert(rc >= 0);
     assert(datum == 0x03);
 
-    rc = diminuto_i2c_set(fd, device, 0x81, 0x12);
-    assert(rc >= 0);
-
-    rc = diminuto_i2c_set(fd, device, 0x86, 0x10);
-    assert(rc >= 0);
-
     {
         static int registers[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x8, 0xa };
         int ii = 0;
@@ -128,6 +122,16 @@ int main(int argc, char ** argv) {
             printf("%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
         }
     }
+
+    /* Some bits apparently persist despite a software power down above. */
+
+    rc = diminuto_i2c_get_set(fd, device, 0x81, &datum, 0x12);
+    assert(rc >= 0);
+    assert((datum == 0x02) || (datum == 0x12));
+
+    rc = diminuto_i2c_get_set(fd, device, 0x86, &datum, 0x10);
+    assert(rc >= 0);
+    assert((datum == 0x00) || (datum == 0x10));
 
     /*
      * GPIO interrupt pin.
