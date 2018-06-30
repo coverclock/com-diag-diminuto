@@ -15,7 +15,6 @@
  * Wikipedia, "Lux", 2018-03-17
  */
 
-#include "com/diag/diminuto/diminuto_controller.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -97,8 +96,6 @@ int main(int argc, char ** argv) {
     diminuto_modulator_t modulator = { 0 };
     int duty = 0;
     int gain = !0;
-    diminuto_controller_parameters_t parameters = { 0 };
-    diminuto_controller_state_t state = { 0 };
     int increment = 1;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
@@ -173,12 +170,6 @@ int main(int argc, char ** argv) {
 
     rc = diminuto_modulator_init(&modulator, led, duty);
     assert(rc >= 0);
-
-    /*
-     * Proporational integral derivative controller.
-     */
-
-    diminuto_controller_init(&parameters, &state);
 
     /*
      * Signal handlers.
