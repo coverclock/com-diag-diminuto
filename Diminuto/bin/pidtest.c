@@ -66,9 +66,8 @@ static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
     }
 
     /*
-     * Running "luxcompute -p" suggests that the range of the lux
-     * value is about [ 0.0 .. 1992.264 ]. Maybe [ 0 .. 2000 ] is
-     * a reasonable range of round numbers.
+     * $ luxcompute -p
+     * luxcompute: 0x0 0x0 0.000000 0xffff 0x0 1992.264000
      */
 
     return lux;
@@ -98,6 +97,8 @@ int main(int argc, char ** argv) {
     diminuto_modulator_t modulator = { 0 };
     int duty = 50;
     int gain = !0;
+    diminuto_controller_parameters_t parameters = { 0 };
+    diminuto_controller_state_t state = { 0 };
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -171,6 +172,12 @@ int main(int argc, char ** argv) {
 
     rc = diminuto_modulator_init(&modulator, led, duty);
     assert(rc >= 0);
+
+    /*
+     * Proporational integral derivative controller.
+     */
+
+    diminuto_controller_init(&parameters, &state);
 
     /*
      * Signal handlers.

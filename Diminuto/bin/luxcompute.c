@@ -84,26 +84,31 @@ int main(int argc, char ** argv)
     } else if (strncmp(argv[1], "-p", sizeof("-p")) != 0) {
         /* Do nothing. */
     } else {
+        uint16_t minraw0 = 0;
+        uint16_t maxraw0 = 0;
+        uint16_t minraw1 = 0;
+        uint16_t maxraw1 = 0;
         double min = MAXDOUBLE;
         double max = MINDOUBLE;
-        raw0 = 0x0001;
+        raw0 = 0x0000;
         while (!0) {
             raw1 = 0x0000;
             while (!0) {
                 lux = apds_9310_chan2lux(raw0, raw1);
-                if (lux < min) { min = lux; }
-                if (lux > max) { max = lux; }
-                if (raw1 == 0xffff) { break; }
+                if (lux < min) { min = lux; minraw0 = raw0; minraw1 = raw1; }
+                if (lux > max) { max = lux; maxraw0 = raw0; maxraw1 = raw1; }
+                if (raw1 >= 0xffff) { break; }
                 raw1 += 1;
             }
-            if (raw0 == 0xffff) { break; }
+            if (raw0 >= 0xffff) { break; }
             raw0 += 1;
         }
-        fprintf(stderr, "%s: %f %f\n", program, min, max);
+        fprintf(stderr, "%s: 0x%x 0x%x %f 0x%x 0x%x %f\n", program, minraw0, minraw1,  min, maxraw0, maxraw1, max);
+        return 0;
     }
 
     if (argc < 3) {
-        fprintf(stderr, "usage: %s [ -d ] CHAN0 CHAN1\n", program);
+        fprintf(stderr, "usage: %s [ -p | [ -d ] CHAN0 CHAN1 ]\n", program);
         return 1;
     }
 
