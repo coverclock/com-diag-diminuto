@@ -158,7 +158,7 @@ void diminuto_modulator_function(union sigval arg)
 	return;
 }
 
-int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * fp, int pin, int duty)
+int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, int duty)
 {
 	int rc = -1;
 
@@ -166,7 +166,7 @@ int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulato
 
 		memset(mp, 0, sizeof(*mp));
 
-		mp->function = fp;
+		mp->function = funp;
 	    mp->pin = pin;
 	    mp->toff = 100;
 

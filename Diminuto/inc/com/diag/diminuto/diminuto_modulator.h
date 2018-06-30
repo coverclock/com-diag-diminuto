@@ -86,12 +86,12 @@ extern void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
  * Initializes a modulator structure with a given function, a pin number, and
  * a duty cycle.
  * @param mp points to the modulator structure.
- * @param fp points to the modulator function.
+ * @param funp points to the modulator function.
  * @param pin is the GPIO pin number.
  * @param duty is the duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.
  */
-extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * fp, int pin, int duty);
+extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, int duty);
 
 /**
  * Initializes a modulator structure with the default function, a pin number,

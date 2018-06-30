@@ -65,6 +65,12 @@ static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
         lux = 0.0;
     }
 
+    /*
+     * Running "luxcompute -p" suggests that the range of the lux
+     * value is about [ 0.0 .. 1992.264 ]. Maybe [ 0 .. 2000 ] is
+     * a reasonable range of round numbers.
+     */
+
     return lux;
 }
 
@@ -90,6 +96,8 @@ int main(int argc, char ** argv) {
     diminuto_ticks_t elapsed = 0;
     int bit = 0;
     diminuto_modulator_t modulator = { 0 };
+    int duty = 50;
+    int gain = !0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -125,7 +133,7 @@ int main(int argc, char ** argv) {
 
     /* Some bits apparently persist despite a software power down above. */
 
-    rc = diminuto_i2c_get_set(fd, device, 0x81, &datum, 0x12);
+    rc = diminuto_i2c_get_set(fd, device, 0x81, &datum, gain ? 0x12 : 0x02);
     assert(rc >= 0);
     assert((datum == 0x02) || (datum == 0x12));
 
@@ -161,6 +169,9 @@ int main(int argc, char ** argv) {
      * Pulse width moddulator.
      */
 
+    rc = diminuto_modulator_init(&modulator, led, duty);
+    assert(rc >= 0);
+
     /*
      * Signal handlers.
      */
@@ -175,6 +186,9 @@ int main(int argc, char ** argv) {
      * Work loop.
      */
 
+    rc = diminuto_modulator_start(&modulator);
+    assert(rc >= 0);
+
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
@@ -182,24 +196,20 @@ int main(int argc, char ** argv) {
 
         rc = diminuto_mux_wait(&mux, -1);
 
-        if (rc >= 0) {
-            /* Do nothing. */
-        } else if (errno != EINTR) {
-            break;
-        } else if (diminuto_terminator_check()) {
+        if (diminuto_terminator_check()) {
+            fprintf(stderr, "%s: terminated\n", program);
             break;
         } else if (diminuto_interrupter_check()) {
+            fprintf(stderr, "%s: interrupted\n", program);
             break;
+        } else if (rc < 0) {
+            break;
+        } else if (rc == 0) {
+            ticks = diminuto_delay(delay, !0);
+            assert(ticks >= 0);
+            continue;
         } else {
-            ticks = diminuto_delay(delay, !0);
-            assert(ticks >= 0);
-            continue;
-        }
-
-        if (rc == 0) {
-            ticks = diminuto_delay(delay, !0);
-            assert(ticks >= 0);
-            continue;
+            /* Do nothing. */
         }
 
         while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
@@ -236,7 +246,7 @@ int main(int argc, char ** argv) {
             elapsed = (now - was) * 1000 / diminuto_frequency();
             was = now;
 
-            printf("%s: 0x%04x 0x%04x %.2flx %dms\n", program, chan0, chan1, lux, elapsed);
+            printf("%s: 0x%04x 0x%04x %dms %.2flx\n", program, chan0, chan1, elapsed, lux);
 
         }
 
@@ -246,7 +256,14 @@ int main(int argc, char ** argv) {
      * Done.
      */
 
-    diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    rc = diminuto_modulator_stop(&modulator);
+    assert(rc >= 0);
+
+    rc = diminuto_modulator_fini(&modulator);
+    assert(rc >= 0);
+
+    rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    assert(rc >= 0);
 
     diminuto_mux_fini(&mux);
 
@@ -255,6 +272,8 @@ int main(int argc, char ** argv) {
 
     fd = diminuto_i2c_close(fd);
     assert(fd < 0);
+
+    printf("%s: exiting\n", program);
 
     return xc;
 }
