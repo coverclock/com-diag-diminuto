@@ -27,6 +27,7 @@
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
+#include "com/diag/diminuto/diminuto_time.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -82,7 +83,11 @@ int main(int argc, char ** argv) {
     uint16_t chan1 = 0;
     double lux = 0.0;
     diminuto_mux_t mux;
-    diminuto_ticks_t ticks = 0;
+    diminuto_ticks_t delay = 0;
+    diminuto_sticks_t now = 0;
+    diminuto_sticks_t was = 0;
+    diminuto_ticks_t elapsed = 0;
+    int bit = 0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -129,7 +134,10 @@ int main(int argc, char ** argv) {
     fp = diminuto_pin_input(interrupt);
     assert(fp != (FILE *)0);
 
-    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_FALLING);
+    rc = diminuto_pin_active(interrupt, 0);
+    assert(rc == 0);
+
+    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
     assert(rc == 0);
 
     /*
@@ -140,6 +148,10 @@ int main(int argc, char ** argv) {
 
     rc = diminuto_mux_register_interrupt(&mux, fileno(fp));
     assert(rc >= 0);
+
+    /*
+     * Pulse width moddulator.
+     */
 
     /*
      * Signal handlers.
@@ -155,7 +167,10 @@ int main(int argc, char ** argv) {
      * Work loop.
      */
 
-    ticks = diminuto_frequency() / 2;
+    delay = diminuto_frequency() / 2;
+
+    was = diminuto_time_elapsed();
+    assert(was >= 0);
 
     while (!0) {
 
@@ -170,39 +185,52 @@ int main(int argc, char ** argv) {
         } else if (diminuto_interrupter_check()) {
             break;
         } else {
-            diminuto_delay(ticks, !0);
+            diminuto_delay(delay, !0);
             continue;
         }
 
         if (rc == 0) {
-            diminuto_delay(ticks, !0);
+            diminuto_delay(delay, !0);
             continue;
         }
 
-        if (diminuto_mux_ready_interrupt(&mux) != fileno(fp)) {
-            diminuto_delay(ticks, !0);
-            continue;
+        while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
+
+            if (rc != fileno(fp)) {
+                continue;
+            }
+
+            bit = diminuto_pin_get(fp);
+            if (bit == 0) {
+                continue;
+            }
+
+            rc = diminuto_i2c_get(fd, device, 0xcc, &datum);
+            assert(rc >= 0);
+            chan0 = datum;
+
+            rc = diminuto_i2c_get(fd, device, 0x8d, &datum);
+            assert(rc >= 0);
+            chan0 = ((uint16_t)datum << 8) | chan0;
+
+            rc = diminuto_i2c_get(fd, device, 0x8e, &datum);
+            assert(rc >= 0);
+            chan1 = datum;
+
+            rc = diminuto_i2c_get(fd, device, 0x8f, &datum);
+            assert(rc >= 0);
+            chan1 = ((uint16_t)datum << 8) | chan1;
+
+            lux = apds_9310_chan2lux(chan0, chan1);
+
+            now = diminuto_time_elapsed();
+            assert(now >= 0);
+            elapsed = (now - was) * 1000 / diminuto_frequency();
+            was = now;
+
+            printf("%s: 0x%04x 0x%04x %.2flx %dms\n", program, chan0, chan1, lux, elapsed);
+
         }
-
-        rc = diminuto_i2c_get(fd, device, 0xcc, &datum);
-        assert(rc >= 0);
-        chan0 = datum;
-
-        rc = diminuto_i2c_get(fd, device, 0x8d, &datum);
-        assert(rc >= 0);
-        chan0 = ((uint16_t)datum << 8) | chan0;
-
-        rc = diminuto_i2c_get(fd, device, 0x8e, &datum);
-        assert(rc >= 0);
-        chan1 = datum;
-
-        rc = diminuto_i2c_get(fd, device, 0x8f, &datum);
-        assert(rc >= 0);
-        chan1 = ((uint16_t)datum << 8) | chan1;
-
-        lux = apds_9310_chan2lux(chan0, chan1);
-
-        printf("%s: 0x%04x 0x%04x %.2f\n", program, chan0, chan1, lux);
 
     }
 
