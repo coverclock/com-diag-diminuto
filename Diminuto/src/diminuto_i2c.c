@@ -148,3 +148,45 @@ int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, uint8_t data)
 
     return rc;
 }
+
+int diminuto_i2c_set_get(int fd, uint8_t addr, uint8_t reg, uint8_t data, uint8_t * datap)
+{
+    int rc = -1;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_i2c_mutex);
+
+        if (diminuto_i2c_use(fd, addr) < 0) {
+            /* Do nothing. */
+        } else if (diminuto_i2c_write(fd, &reg, sizeof(reg)) < 0) {
+            /* Do nothing. */
+        } else if ((rc = diminuto_i2c_write(fd, &data, sizeof(data))) < 0) {
+            /* Do nothing. */
+        } else {
+            rc = diminuto_i2c_read(fd, datap, sizeof(*datap));
+        }
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return rc;
+}
+
+int diminuto_i2c_get_set(int fd, uint8_t addr, uint8_t reg, uint8_t * datap, uint8_t data)
+{
+    int rc = -1;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_i2c_mutex);
+
+        if (diminuto_i2c_use(fd, addr) < 0) {
+            /* Do nothing. */
+        } else if (diminuto_i2c_write(fd, &reg, sizeof(reg)) < 0) {
+            /* Do nothing. */
+        } else if ((rc = diminuto_i2c_read(fd, datap, sizeof(*datap))) < 0) {
+            /* Do nothing. */
+        } else {
+            rc = diminuto_i2c_write(fd, &data, sizeof(data));
+        }
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return rc;
+}

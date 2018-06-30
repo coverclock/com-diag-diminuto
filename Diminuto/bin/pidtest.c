@@ -83,13 +83,17 @@ int main(int argc, char ** argv) {
     uint16_t chan1 = 0;
     double lux = 0.0;
     diminuto_mux_t mux;
+    diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
     diminuto_sticks_t now = 0;
     diminuto_sticks_t was = 0;
     diminuto_ticks_t elapsed = 0;
     int bit = 0;
+    diminuto_modulator_t modulator = { 0 };
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
+    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
     /*
      * I2C light sensor.
@@ -101,10 +105,10 @@ int main(int argc, char ** argv) {
     rc = diminuto_i2c_set(fd, device, 0x80, 0x00); 
     assert(rc >= 0);
 
-    rc = diminuto_i2c_set(fd, device, 0x80, 0x03);
-    assert(rc >= 0);
+    ticks = diminuto_delay(delay, !0);
+    assert(ticks >= 0);
 
-    rc = diminuto_i2c_get(fd, device, 0x80, &datum);
+    rc = diminuto_i2c_set_get(fd, device, 0x80, 0x03, &datum);
     assert(rc >= 0);
     assert(datum == 0x03);
 
@@ -167,8 +171,6 @@ int main(int argc, char ** argv) {
      * Work loop.
      */
 
-    delay = diminuto_frequency() / 2;
-
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
@@ -185,12 +187,14 @@ int main(int argc, char ** argv) {
         } else if (diminuto_interrupter_check()) {
             break;
         } else {
-            diminuto_delay(delay, !0);
+            ticks = diminuto_delay(delay, !0);
+            assert(ticks >= 0);
             continue;
         }
 
         if (rc == 0) {
-            diminuto_delay(delay, !0);
+            ticks = diminuto_delay(delay, !0);
+            assert(ticks >= 0);
             continue;
         }
 

@@ -9,6 +9,10 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * This is not a general purpose I2C API. It implements an API on top
+ * of the Linux I2C ioctl(2) API that is useful for the kinds of I2C
+ * devices I tend to work with.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -26,5 +30,9 @@ extern ssize_t diminuto_i2c_write(int fd, const void *  bufferp, size_t size);
 extern int diminuto_i2c_get(int fd, uint8_t addr, uint8_t reg, uint8_t * datap);
 
 extern int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, uint8_t data);
+
+extern int diminuto_i2c_set_get(int fd, uint8_t addr, uint8_t reg, uint8_t data, uint8_t * datap);
+
+extern int diminuto_i2c_get_set(int fd, uint8_t addr, uint8_t reg, uint8_t * datap, uint8_t data);
 
 #endif
