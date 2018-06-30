@@ -21,160 +21,25 @@
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
+#include "com/diag/diminuto/diminuto_i2c.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
-#include "com/diag/diminuto/diminuto_types.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/i2c-dev.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-/*********************************************************************************
- * I2C
- ********************************************************************************/
-
-const char DIMINUTO_I2C_FILENAME[] = "/dev/i2c-%d";
-
-pthread_mutex_t diminuto_i2c_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-int diminuto_i2c_open(int bus)
-{
-    int fd = -1;
-    char buffer[sizeof(DIMINUTO_I2C_FILENAME)] = { '\0' };
-
-    snprintf(buffer, sizeof(buffer), DIMINUTO_I2C_FILENAME, bus);
-    buffer[sizeof(buffer) - 1] = '\0';
-
-    fd = open(buffer, O_RDWR);
-    if (fd < 0) {
-        diminuto_perror("diminuto_i2c_open: open");
-    }
-
-    return fd;
-}
-
-int diminuto_i2c_use(int fd, uint8_t addr)
-{
-    int rc = -1;
-
-    rc = ioctl(fd, I2C_SLAVE, addr);
-    if (rc < 0) {
-        diminuto_perror("diminuto_i2c_use: ioctl");
-    }
-
-    return rc;
-}
-
-ssize_t diminuto_i2c_read(int fd, void * bufferp, size_t size)
-{
-    ssize_t rc = -1;
-
-    rc = read(fd, bufferp, size);
-    if (rc < 0) {
-        diminuto_perror("diminuto_i2c_read: read");
-    } else if (rc > size) {
-        errno = E2BIG; /* Should be impossible. */
-        diminuto_perror("diminuto_i2c_read: read");
-        rc = -1;
-    } else if (rc == 0) {
-        errno = ENODEV;
-        diminuto_perror("diminuto_i2c_read: read");
-        rc = -1;
-    } else {
-        /* Do nothing. */
-    }
-
-    return rc;
-}
-
-ssize_t diminuto_i2c_write(int fd, const void *  bufferp, size_t size)
-{
-    ssize_t rc = -1;
-
-    rc = write(fd, bufferp, size);
-    if (rc < 0) {
-        diminuto_perror("diminuto_i2c_write: write");
-    } else if (rc > size) {
-        errno = E2BIG; /* Should be impossible. */
-        diminuto_perror("diminuto_i2c_write: write");
-        rc = -1;
-    } else if (rc == 0) {
-        errno = ENODEV;
-        diminuto_perror("diminuto_i2c_write: write");
-        rc = -1;
-    } else {
-        /* Do nothing. */
-    }
-
-    return rc;
-}
-
-int diminuto_i2c_close(int fd)
-{
-    if (close(fd) < 0) {
-        diminuto_perror("close");
-    } else {
-        fd = -1;
-    }
-
-    return fd;
-}
-
-int diminuto_i2c_get(int fd, uint8_t addr, uint8_t reg, uint8_t * datap)
-{
-    int rc = -1;
-
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_i2c_mutex);
-
-        if (diminuto_i2c_use(fd, addr) < 0) {
-            /* Do nothing. */
-        } else if (diminuto_i2c_write(fd, &reg, sizeof(reg)) < 0) {
-            /* Do nothing. */
-        } else {
-            rc = diminuto_i2c_read(fd, datap, sizeof(*datap));
-        }
-
-    DIMINUTO_CRITICAL_SECTION_END;
-
-    return rc;
-}
-
-int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, uint8_t data)
-{
-    int rc = -1;
-
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_i2c_mutex);
-
-        if (diminuto_i2c_use(fd, addr) < 0) {
-            /* Do nothing. */
-        } else if (diminuto_i2c_write(fd, &reg, sizeof(reg)) < 0) {
-            /* Do nothing. */
-        } else {
-            rc = diminuto_i2c_write(fd, &data, sizeof(data));
-        }
-
-    DIMINUTO_CRITICAL_SECTION_END;
-
-    return rc;
-}
-
-/*********************************************************************************
- * Avago APDS 9310
- ********************************************************************************/
-
-static double apds_9310_raw2lux(uint16_t raw0, uint16_t raw1)
+static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
 {
     double lux = 0.0;
     double chan0 = 0.0;
@@ -201,10 +66,6 @@ static double apds_9310_raw2lux(uint16_t raw0, uint16_t raw1)
     return lux;
 }
 
-/*********************************************************************************
- * Main
- ********************************************************************************/
-
 int main(int argc, char ** argv) {
     int xc = 0;
     const char * program = (const char *)0;
@@ -213,6 +74,9 @@ int main(int argc, char ** argv) {
     uint8_t datum = 0;
     int bus = 1;
     int device = 0x39;
+    uint16_t chan0 = 0;
+    uint16_t chan1 = 0;
+    double lux = 0.0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -242,9 +106,32 @@ int main(int argc, char ** argv) {
         for (ii = 0; ii < countof(registers); ++ii) {
             rc = diminuto_i2c_get(fd, device, 0x80 | registers[ii], &datum);
             assert(rc >= 0);
-            printf("%s: [0x%02x] = 0x%02x\n", program,  registers[ii], datum);
+            printf("%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
         }
     }
+
+    rc = diminuto_i2c_get(fd, device, 0xcc, &datum);
+    assert(rc >= 0);
+    chan0 = datum;
+
+    rc = diminuto_i2c_get(fd, device, 0x8d, &datum);
+    assert(rc >= 0);
+    chan0 = ((uint16_t)datum << 8) | chan0;
+
+    rc = diminuto_i2c_get(fd, device, 0x8e, &datum);
+    assert(rc >= 0);
+    chan1 = datum;
+
+    rc = diminuto_i2c_get(fd, device, 0x8f, &datum);
+    assert(rc >= 0);
+    chan1 = ((uint16_t)datum << 8) | chan1;
+
+    lux = apds_9310_chan2lux(chan0, chan1);
+
+    printf("%s: 0x%04x 0x%04x %.2f\n", program, chan0, chan1, lux);
+
+    fd = diminuto_i2c_close(fd);
+    assert(fd < 0);
 
     return xc;
 }

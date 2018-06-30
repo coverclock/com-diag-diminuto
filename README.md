@@ -13,9 +13,9 @@ Licensed under the terms in LICENSE.txt.
 ## Abstract
 
 This file is part of the Digital Aggregates Corporation Diminuto package.
-Diminuto (Spanish for "tiny") is an open source library of systems
-programming functions and tools written in C to simplify the writing of
-device drivers, daemons, and systems applications for the Linux operating
+Diminuto ("tiny") is an open source library of systems programming
+functions and tools written in C to simplify the writing of device
+drivers, daemons, and systems applications for the Linux operating
 system. It has found its way into a number of commercial products of the
 Corporation's clients, so don't be surprised if you find this code being
 used legitimately elsewhere in your travels. Diminuto includes a suite
@@ -28,7 +28,7 @@ This software is an original work of its author.
 This code is typically regression tested against one or more of the following
 hardware targets and software platforms depending on the feature.
 
-"Mmercury"  
+"Mercury"  
 Dell OptiPlex 7040  
 Intel x86_64 64-bit    
 Intel Core i7-6700T Skylake @ 2.80GHz x 8  
@@ -62,7 +62,7 @@ gcc 4.9.2
 
 "Zinc"    
 Raspberry Pi 3B with special HW test fixture    
-ARMv7 64-bit
+ARMv7 64-bit    
 Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4    
 Raspbian 8.0 "jessie"    
 Linux 4.4.34    
