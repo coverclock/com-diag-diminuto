@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_i2c.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
 #include <assert.h>
