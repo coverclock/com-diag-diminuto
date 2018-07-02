@@ -30,42 +30,13 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "apds_9301.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include <math.h>
 #include <values.h>
-
-static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
-{
-    double lux = 0.0;
-    double chan0 = 0.0;
-    double chan1 = 0.0;
-    double ratio = 0.0;
-
-    chan0 = raw0;
-    chan1 = raw1;
-
-    ratio = chan1 / chan0;
-
-    if (chan0 <= 0.0) {
-        lux = 0.0;
-    } else if (ratio <= 0.50) {
-        lux = (0.0304 * chan0) - (0.062 * chan1 * pow(ratio, 1.4));
-    } else if ((0.50 < ratio) && (ratio <= 0.61)) {
-        lux = (0.0224 * chan0) - (0.031 * chan1);
-    } else if ((0.61 < ratio) && (ratio <= 0.80)) {
-        lux = (0.0128 * chan0) - (0.0153 * chan1);
-    } else if ((0.80 < ratio) && (ratio <= 1.30)) {
-        lux = (0.00146 * chan0) - (0.00112 * chan1);
-    } else {
-        lux = 0.0;
-    }
-
-    return lux;
-}
 
 int main(int argc, char ** argv)
 {
