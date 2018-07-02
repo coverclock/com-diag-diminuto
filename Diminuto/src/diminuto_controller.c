@@ -13,21 +13,17 @@
 #include "com/diag/diminuto/diminuto_controller.h"
 #include <stdlib.h>
 
-static const diminuto_controller_value_t MAXIMUM_VALUE = (diminuto_controller_value_t)~(1 << ((sizeof(diminuto_controller_value_t) * 8) - 1));
-static const diminuto_controller_output_t MINIMUM_OUTPUT = (diminuto_controller_output_t)(1 << ((sizeof(diminuto_controller_output_t) * 8) - 1));
-static const diminuto_controller_output_t MAXIMUM_OUTPUT = (diminuto_controller_output_t)~(1 << ((sizeof(diminuto_controller_output_t) * 8) - 1));
-
 void diminuto_controller_init(
     diminuto_controller_parameters_t * sp,
     diminuto_controller_state_t * dp
 ) {
 
     if (sp != (diminuto_controller_parameters_t *)0) {
-        sp->windup = MAXIMUM_VALUE;
-        sp->minimum = MINIMUM_OUTPUT;
-        sp->maximum = MAXIMUM_OUTPUT;
-        sp->lower = MINIMUM_OUTPUT;
-        sp->upper = MAXIMUM_OUTPUT;
+        sp->windup = DIMINUTO_CONTROLLER_MAXIMUM_VALUE;
+        sp->minimum = DIMINUTO_CONTROLLER_MINIMUM_OUTPUT;
+        sp->maximum = DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT;
+        sp->lower = DIMINUTO_CONTROLLER_MINIMUM_OUTPUT;
+        sp->upper = DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT;
         sp->kp.numerator = 1;
         sp->kp.denominator = 1;
         sp->ki.numerator = 1;
@@ -50,6 +46,60 @@ void diminuto_controller_init(
         dp->initialized = 0;
     }
 
+}
+
+void diminuto_controller_parameters_print(FILE * fp, const diminuto_controller_parameters_t * sp)
+{
+    fprintf(fp, "controller.parameters@0x%p[%zu]:"
+                " windup=%d"
+                " minimum=%d"
+                " maximum=%d"
+                " lower=%d"
+                " upper=%d"
+                " Kp=%d/%d"
+                " Ki=%d/%d"
+                " Kd=%d/%d"
+                " Kc=%d/%d"
+                " filter=%d"
+                "\n",
+        sp,
+        sizeof(*sp),
+        sp->windup,
+        sp->minimum,
+        sp->maximum,
+        sp->lower,
+        sp->upper,
+        sp->kp.numerator, sp->kp.denominator,
+        sp->ki.numerator, sp->ki.denominator,
+        sp->kd.numerator, sp->kd.denominator,
+        sp->kc.numerator, sp->kc.denominator,
+        sp->filter
+    );
+}
+
+void diminuto_controller_state_print(FILE * fp, const diminuto_controller_state_t * dp)
+{
+    fprintf(fp, "controller.state@0x%p[%zu]:"
+                " sample=%d"
+                " proportional=%d"
+                " integral=%d"
+                " differential=%d"
+                " total=%d"
+                " delta=%d"
+                " previous=%d"
+                " initialized=%d"
+                "\n",
+        dp,
+        sizeof(dp),
+        dp->sample,
+        dp->proportional,
+        dp->integral,
+        dp->differential,
+        dp->total,
+        dp->delta,
+        dp->previous,
+        dp->initialized
+    );
 }
 
 diminuto_controller_output_t diminuto_controller(

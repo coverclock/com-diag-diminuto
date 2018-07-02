@@ -23,7 +23,7 @@
 
 void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
 {
-    fprintf(stderr,	"modulator@%p:"
+    fprintf(stderr,	"modulator@%p[%zu]:"
     				" function=%p"
     				" fp=%p"
     				" pin=%d"
@@ -41,6 +41,7 @@ void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
                     " data=%p"
     				"\n",
     	mp,
+        sizeof(*mp),
 		mp->function,
 		mp->fp,
 		mp->pin,

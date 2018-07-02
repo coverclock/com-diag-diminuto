@@ -7,6 +7,8 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * "Test what you fly, fly what you test." - NASA axiom
+ *
  * REFERENCES
  *
  * Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
@@ -41,6 +43,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+static const int INPUT_I2C_BUS = 1;
+static const int INPUT_I2C_DEVICE = 0x39;
+static const int INPUT_GAIN = !0;
+static const int INPUT_GPIO_PIN = 26;
+static const int OUTPUT_GPIO_PIN = 12;
+
+/*
+ * APDS-9301 data sheet, p. 4.
+ */
 static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
 {
     double lux = 0.0;
@@ -79,10 +90,11 @@ int main(int argc, char ** argv) {
     int fd = -1;
     int rc = -1;
     uint8_t datum = 0;
-    int led = 12;
-    int bus = 1;
-    int device = 0x39;
-    int interrupt = 26;
+    int led = OUTPUT_GPIO_PIN;
+    int bus = INPUT_I2C_BUS;
+    int device = INPUT_I2C_DEVICE;
+    int interrupt = INPUT_GPIO_PIN;
+    int gain = INPUT_GAIN;;
     FILE * fp = (FILE *)0;
     uint16_t chan0 = 0;
     uint16_t chan1 = 0;
@@ -96,12 +108,15 @@ int main(int argc, char ** argv) {
     int bit = 0;
     diminuto_modulator_t modulator = { 0 };
     int duty = 0;
-    int gain = !0;
     diminuto_controller_parameters_t parameters = { 0 };
     diminuto_controller_state_t state = { 0 };
     int increment = 1;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
+    /*
+     * Command line arguments.
+     */
 
     delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 

@@ -5,11 +5,10 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- * WORK IN PROGRESS!
  *
  * ABSTRACT
  *
@@ -29,24 +28,47 @@
  * 2nd ed., Instrumentation, Systems and Automation Society, 1995-01-01
  *
  * P. Albertos, I. Mareels, "Feedback and Control for Everyone", Springer, 2010
+ *
+ * Wikipedia, "PID controller", 2018-06-27
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <stdio.h>
 
 /**
- * This is the type of the input value (for example, a A/D sensor).
+ * This is the type of input values (for example, a A/D sensor).
  */
 typedef int16_t diminuto_controller_input_t;
 
 /**
- * This is the type of the output value (for example, a D/A actuator).
+ * This is the type of output values (for example, a D/A actuator).
  */
 typedef int16_t diminuto_controller_output_t;
 
 /**
- * This is the type used for persistent dynamic state variables.
+ * This is the type used for intermediate computation variables.
  */
 typedef int32_t diminuto_controller_value_t;
+
+/**
+ * This is the type used for numerator and denominator gain values.
+ */
+typedef int8_t diminuto_controller_factor_t;
+
+/**
+ * This is the maximum value the value type can assume.
+ */
+static const diminuto_controller_value_t DIMINUTO_CONTROLLER_MAXIMUM_VALUE = (diminuto_controller_value_t)(~(((diminuto_controller_value_t)1) << ((sizeof(diminuto_controller_value_t) * 8) - 1)));
+
+/**
+ * This is the minimum value the output type can assume.
+ */
+static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MINIMUM_OUTPUT = (diminuto_controller_output_t)((((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1)));
+
+/**
+ * This is the maximum value the output type can assume.
+ */
+static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT = (diminuto_controller_output_t)(~(((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1)));
 
 /**
  * This is the structure used for using ratios as gains (numerator greater than
@@ -61,12 +83,12 @@ typedef struct DiminutoControllerGain {
 	 * applied is eliminated. If it is negative (and the denominator is not),
 	 * the effect of the term is inverted.
 	 */
-	int8_t numerator;
+	diminuto_controller_factor_t  numerator;
 
 	/**
 	 * This is the denominator.
 	 */
-	int8_t denominator;
+	diminuto_controller_factor_t  denominator;
 
 } diminuto_controller_gain_t;
 
@@ -154,6 +176,13 @@ typedef struct DiminutoControllerParameters {
 } diminuto_controller_parameters_t;
 
 /**
+ * Print a static parameters structure.
+ * @param fp points to a FILE object.
+ * @param sp points to a parameters structure.
+ */
+extern void diminuto_controller_parameters_print(FILE * fp, const diminuto_controller_parameters_t * sp);
+
+/**
  * This is the dynamic state of the controller. The application initializes one
  * of these for every individual controller, and each iteration of that
  * controller may change one or more of these values. The application can zero
@@ -209,15 +238,19 @@ typedef struct DiminutoControllerState {
 } diminuto_controller_state_t;
 
 /**
+ * Print a dynamic state structure.
+ * @param fp points to a FILE object.
+ * @param sp points to a state structure.
+ */
+extern void diminuto_controller_state_print(FILE * fp, const diminuto_controller_state_t * dp);
+
+/**
  * Initialize a parameter structure and a state structure to useful default
  * values.
  * @param sp points to the static parameters structure or null if none.
  * @param dp points to the dynamic state structure or null if none.
  */
-void diminuto_controller_init(
-    diminuto_controller_parameters_t * sp,
-    diminuto_controller_state_t * dp
-);
+void diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp);
 
 /**
  * Advance the controller by one time step, recalculating the new output based
@@ -232,12 +265,6 @@ void diminuto_controller_init(
  * @param output is the output value that generated the input value.
  * @return the next output value.
  */
-diminuto_controller_output_t diminuto_controller(
-    const diminuto_controller_parameters_t * sp,
-    diminuto_controller_state_t * dp,
-    diminuto_controller_input_t target,
-    diminuto_controller_input_t input,
-    diminuto_controller_output_t output
-);
+diminuto_controller_output_t diminuto_controller(const diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp, diminuto_controller_input_t target, diminuto_controller_input_t input, diminuto_controller_output_t output);
 
 #endif
