@@ -189,11 +189,19 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_init(&modulator, led, duty);
     assert(rc >= 0);
 
+    printf("%s: ", program);
+    diminuto_modulator_print(stdout, &modulator);
+
     /*
      * Proporational integral derivative controller.
      */
 
     diminuto_controller_init(&parameters, &state);
+
+    printf("%s: ", program);
+    diminuto_controller_parameters_print(stdout, &parameters);
+    printf("%s: ", program);
+    diminuto_controller_state_print(stdout, &state);
 
     /*
      * Signal handlers.
@@ -220,10 +228,10 @@ int main(int argc, char ** argv) {
         rc = diminuto_mux_wait(&mux, -1);
 
         if (diminuto_terminator_check()) {
-            fprintf(stderr, "%s: terminated\n", program);
+            printf("%s: terminated\n", program);
             break;
         } else if (diminuto_interrupter_check()) {
-            fprintf(stderr, "%s: interrupted\n", program);
+            printf("%s: interrupted\n", program);
             break;
         } else if (rc < 0) {
             break;

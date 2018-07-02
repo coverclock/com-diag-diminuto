@@ -191,14 +191,14 @@ Wheat Ridge CO 80033 USA
  
 ## Directories
  
-* bin - utility source files
+* bin - utility and functional test source files
 * cfg - configuration makefiles
 * drv - kernel space loadable module source files
 * etc - miscellaneous occasionally useful files
 * inc - public header files
 * mod - user space dynamically linkable module source files
 * out - build artifacts
-* src - feature source files
+* src - feature implementation and private header source files
 * tst - unit test source files
 * txt - notes and other useful stuff
 
