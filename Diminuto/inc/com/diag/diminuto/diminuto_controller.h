@@ -35,6 +35,14 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 
+/*
+ * You can change these data types as you see fit. I chose them to
+ * deliberately limit the dynamic range supported by the PID algorithm,
+ * and to reduce the chances of overflowing an intermediate variable.
+ * Using other types (including floating point) requires some serious
+ * systems engineering thinking.
+ */
+
 /**
  * This is the type of input values (for example, a A/D sensor).
  */

@@ -41,16 +41,26 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+static const int LED = 12;
+static const int DUTY = 0;
+static const int BUS = 1;
+static const int DEVICE = 0x39;
+static const int INTERRUPT = 26;
+static const int GAIN = !0;
+static const int SUSTAIN = 3;
+
 int main(int argc, char ** argv) {
     int xc = 0;
     const char * program = (const char *)0;
     int fd = -1;
     int rc = -1;
     uint8_t datum = 0;
-    int led = 12;
-    int bus = 1;
-    int device = 0x39;
-    int interrupt = 26;
+    int led = LED;
+    int duty = DUTY;
+    int bus = BUS;
+    int device = DEVICE;
+    int interrupt = INTERRUPT;
+    int gain = GAIN;
     FILE * fp = (FILE *)0;
     uint16_t chan0 = 0;
     uint16_t chan1 = 0;
@@ -61,11 +71,10 @@ int main(int argc, char ** argv) {
     diminuto_sticks_t now = 0;
     diminuto_sticks_t was = 0;
     diminuto_ticks_t elapsed = 0;
-    int bit = 0;
+    int value = 0;
     diminuto_modulator_t modulator = { 0 };
-    int duty = 0;
-    int gain = !0;
     int increment = 1;
+    int sustain = SUSTAIN;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -186,8 +195,8 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            bit = diminuto_pin_get(fp);
-            if (bit == 0) {
+            value = diminuto_pin_get(fp);
+            if (value == 0) {
                 continue;
             }
 
@@ -214,24 +223,35 @@ int main(int argc, char ** argv) {
             elapsed = (now - was) * 1000 / diminuto_frequency();
             was = now;
 
-            printf("%s: PWM %d%% Lux %.2flx Period %dms\n", program, duty, lux, elapsed);
-
-            if (!modulator.set) {
-
-                duty += increment;
-                if (duty < 0) {
-                    duty = 1;
-                    increment = 1;
-                } else if (duty > 100) {
-                    duty = 99;
-                    increment = -1;
-                } else {
-                    /* Do nothing. */
-                }
-
-                diminuto_modulator_set(&modulator, duty);
-
+            if (modulator.set) {
+                continue;
             }
+
+            if (sustain > 0) {
+                sustain -= 1;
+                continue;
+            }
+
+            sustain = SUSTAIN;
+
+            printf("%s: PWM %d %% chan0 0x%x %d chan1 0x%x %d Lux %.2f %d lx Period %lld ms\n", program, duty, chan0, chan0, chan1, chan1, lux, value = lux, elapsed);
+
+            duty += increment;
+            if (duty > 100) {
+                duty = 99;
+                increment = -1;
+            } else if (duty < 0) {
+                break;
+            } else {
+                /* Do nothing. */
+            }
+
+            diminuto_modulator_set(&modulator, duty);
+
+        }
+
+        if (duty < 0) {
+            break;
         }
 
     }

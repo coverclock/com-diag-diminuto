@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock<BR>
  * mailto:coverclock@diag.com<BR>
@@ -102,6 +102,26 @@ void diminuto_controller_state_print(FILE * fp, const diminuto_controller_state_
     );
 }
 
+static inline diminuto_controller_value_t apply_gain(diminuto_controller_value_t value, const diminuto_controller_gain_t * gp)
+{
+    if (gp->denominator == 0) {
+        value = DIMINUTO_CONTROLLER_MAXIMUM_VALUE;
+    } else if (gp->numerator == 0) {
+        value = 0;
+    } else if (gp->numerator == gp->denominator) {
+        /* Do nothing. */
+    } else if (gp->denominator == 1) {
+        value *= gp->numerator;
+    } else if (gp->numerator == 1) {
+        value /= gp->denominator;
+    } else {
+        value *= gp->numerator;
+        value /= gp->denominator;
+    }
+
+    return value;
+}
+
 diminuto_controller_output_t diminuto_controller(
     const diminuto_controller_parameters_t * sp,
     diminuto_controller_state_t * dp,
@@ -109,8 +129,6 @@ diminuto_controller_output_t diminuto_controller(
     diminuto_controller_input_t input,
     diminuto_controller_output_t output
 ) {
-    diminuto_controller_value_t value;
-
     /*
      * If this is the first time through, initialize the PID controller.
      * Regarding the elapsed time since the last computation: dt here a constant
@@ -149,11 +167,7 @@ diminuto_controller_output_t diminuto_controller(
     dp->proportional = target;
     dp->proportional -= dp->sample;
 
-    value = dp->proportional;
-    value *= sp->kp.numerator;
-    value /= sp->kp.denominator;
-
-    dp->total = value;
+    dp->total = apply_gain(dp->proportional, &(sp->kp));
 
     /*
      * Compute the I term. We sum the integral post-gain instead of pre-gain to
@@ -162,11 +176,7 @@ diminuto_controller_output_t diminuto_controller(
      * typically a loss.
      */
 
-    value = dp->proportional;
-    value *= sp->ki.numerator;
-    value /= sp->ki.denominator;
-
-    dp->integral += value;
+    dp->integral += apply_gain(dp->proportional, &(sp->ki));
 
     if (dp->integral > sp->windup) {
         dp->integral = sp->windup;
@@ -188,27 +198,19 @@ diminuto_controller_output_t diminuto_controller(
 
     dp->differential = dp->sample - dp->previous;
 
-    value = dp->differential;
-    value *= sp->kd.numerator;
-    value /= sp->kd.denominator;
-
-    dp->total -= value;
+    dp->total -= apply_gain(dp->differential, &(sp->kd));
 
     dp->previous = dp->sample;
 
     /*
-     * It's important that we do the conversion shift here on the delta and not
+     * It's important that we do the conversion here on the delta and not
      * on the individual terms, because doing so the individual terms could have
      * reduced them each to zero, where as the sum of the three terms may not
      * be reduced to zero. Even this gain/loss can be disabled, effectively
      * disabling the entire controller.
      */
 
-    value = dp->total;
-    value *= sp->kc.numerator;
-    value /= sp->kc.denominator;
-
-    dp->delta = value;
+    dp->delta = apply_gain(dp->total, &(sp->kc));
 
     output += dp->delta;
 
