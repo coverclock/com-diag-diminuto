@@ -90,10 +90,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 
     DIMINUTO_COHERENT_SECTION_BEGIN;
 
-    	if (mp->set) {
-    		errno = EAGAIN;
-    		diminuto_perror("diminuto_modulator_set");
-    	} else {
+    	if (!mp->set) {
     		mp->duty = duty;
     		mp->ton = on;
     		mp->toff = off;
@@ -103,7 +100,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 
 	DIMINUTO_COHERENT_SECTION_END;
 
-	return 0;
+	return rc;
 }
 
 void diminuto_modulator_function(union sigval arg)

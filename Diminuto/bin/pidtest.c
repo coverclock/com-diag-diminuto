@@ -44,11 +44,31 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+static const int LUX_TARGET= 1000;
+static const int PWM_DUTY = 50;
+
 static const int INPUT_I2C_BUS = 1;
 static const int INPUT_I2C_DEVICE = 0x39;
 static const int INPUT_GAIN = !0;
 static const int INPUT_GPIO_PIN = 26;
 static const int OUTPUT_GPIO_PIN = 12;
+
+static const int PID_INPUT_WINDUP = 2147483647;
+static const int PID_OUTPUT_MINIMUM = 0;
+static const int PID_OUTPUT_MAXIMUM = 100;
+static const int PID_OUTPUT_LOWER = 0;
+static const int PID_OUTPUT_UPPER = 100;
+static const int PID_KP_NUMERATOR = 1;
+static const int PID_KP_DENOMINATOR = 1;
+static const int PID_KI_NUMERATOR = 1;
+static const int PID_KI_DENOMINATOR = 1;
+static const int PID_KD_NUMERATOR = 1;
+static const int PID_KD_DENOMINATOR = 1;
+static const int PID_KC_NUMERATOR = 1;
+static const int PID_KC_DENOMINATOR = 20;
+static const int PID_FILTER = 0;
+
+static const int MODULO = 24;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -73,10 +93,14 @@ int main(int argc, char ** argv) {
     diminuto_ticks_t elapsed = 0;
     int bit = 0;
     diminuto_modulator_t modulator = { 0 };
-    int duty = 0;
     diminuto_controller_parameters_t parameters = { 0 };
     diminuto_controller_state_t state = { 0 };
     int increment = 1;
+    diminuto_controller_input_t target = 0;
+    diminuto_controller_input_t input = 0;
+    diminuto_controller_output_t output = 0;
+    char * end = (char *)0;
+    int step = 0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -84,11 +108,36 @@ int main(int argc, char ** argv) {
      * Command line arguments.
      */
 
-    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
+
+    if (argc < 2) {
+        target = LUX_TARGET;
+    } else {
+        end = (char *)0;
+        target = strtoul(argv[1], &end, 0);
+        if ((end == (char *)0) || (*end != '\0') || (target > PID_OUTPUT_MAXIMUM)) {
+            errno = EINVAL;
+            diminuto_perror(argv[1]);
+            exit(1);
+        }
+    }
+
+    if (argc < 3) {
+        output = PWM_DUTY;
+    } else {
+        end = (char *)0;
+        output = strtoul(argv[2], &end, 0);
+        if ((end == (char *)0) || (*end != '\0') || (output > 100)) {
+            errno = EINVAL;
+            diminuto_perror(argv[2]);
+            exit(1);
+        }
+    }
 
     /*
      * I2C light sensor.
      */
+
+    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
     fd = diminuto_i2c_open(bus);
     assert(fd >= 0);
@@ -110,7 +159,7 @@ int main(int argc, char ** argv) {
         for (ii = 0; ii < countof(registers); ++ii) {
             rc = diminuto_i2c_get(fd, device, 0x80 | registers[ii], &datum);
             assert(rc >= 0);
-            printf("%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
+            fprintf(stderr, "%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
         }
     }
 
@@ -149,25 +198,41 @@ int main(int argc, char ** argv) {
     assert(rc >= 0);
 
     /*
-     * Pulse width moddulator.
-     */
-
-    rc = diminuto_modulator_init(&modulator, led, duty);
-    assert(rc >= 0);
-
-    printf("%s: ", program);
-    diminuto_modulator_print(stdout, &modulator);
-
-    /*
      * Proporational integral derivative controller.
      */
 
     diminuto_controller_init(&parameters, &state);
 
-    printf("%s: ", program);
-    diminuto_controller_parameters_print(stdout, &parameters);
-    printf("%s: ", program);
-    diminuto_controller_state_print(stdout, &state);
+    parameters.windup = PID_INPUT_WINDUP;
+    parameters.minimum = PID_OUTPUT_MINIMUM;
+    parameters.maximum = PID_OUTPUT_MAXIMUM;
+    parameters.lower = PID_OUTPUT_LOWER;
+    parameters.upper = PID_OUTPUT_UPPER;
+    parameters.kp.numerator = PID_KP_NUMERATOR;
+    parameters.kp.denominator = PID_KP_DENOMINATOR;;
+    parameters.ki.numerator = PID_KI_NUMERATOR;
+    parameters.ki.numerator = PID_KI_NUMERATOR;
+    parameters.kd.numerator = PID_KD_NUMERATOR;
+    parameters.kd.denominator = PID_KD_DENOMINATOR;;
+    parameters.kc.denominator = PID_KC_DENOMINATOR;;
+    parameters.kc.denominator = PID_KC_DENOMINATOR;;
+    parameters.filter = PID_FILTER;
+
+    fprintf(stderr, "%s: ", program);
+    diminuto_controller_parameters_print(stderr, &parameters);
+
+    fprintf(stderr, "%s: ", program);
+    diminuto_controller_state_print(stderr, &state);
+
+    /*
+     * Pulse width moddulator.
+     */
+
+    rc = diminuto_modulator_init(&modulator, led, output);
+    assert(rc >= 0);
+
+    fprintf(stderr, "%s: ", program);
+    diminuto_modulator_print(stderr, &modulator);
 
     /*
      * Signal handlers.
@@ -194,10 +259,10 @@ int main(int argc, char ** argv) {
         rc = diminuto_mux_wait(&mux, -1);
 
         if (diminuto_terminator_check()) {
-            printf("%s: terminated\n", program);
+            fprintf(stderr, "%s: terminated\n", program);
             break;
         } else if (diminuto_interrupter_check()) {
-            printf("%s: interrupted\n", program);
+            fprintf(stderr, "%s: interrupted\n", program);
             break;
         } else if (rc < 0) {
             break;
@@ -237,30 +302,26 @@ int main(int argc, char ** argv) {
             chan1 = ((uint16_t)datum << 8) | chan1;
 
             lux = apds_9310_chan2lux(chan0, chan1);
+            input = lux;
 
             now = diminuto_time_elapsed();
             assert(now >= 0);
             elapsed = (now - was) * 1000 / diminuto_frequency();
             was = now;
 
-            printf("%s: PWM %d%% Lux %.2flx Period %dms\n", program, duty, lux, elapsed);
-
-            if (!modulator.set) {
-
-                duty += increment;
-                if (duty < 0) {
-                    duty = 1;
-                    increment = 1;
-                } else if (duty > 100) {
-                    duty = 99;
-                    increment = -1;
-                } else {
-                    /* Do nothing. */
-                }
-
-                diminuto_modulator_set(&modulator, duty);
-
+            if ((step % MODULO) == 0) {
+                printf("%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %4s\n", "STEP", "OUTPUT", "TARGET", "INPUT", "SAMPLE", "PROPOR", "INTEG", "DIFFER", "TOTAL", "DELTA", "MS");
             }
+            printf("%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %4llu\n", step, output, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, elapsed);
+            step += 1;
+
+            output = diminuto_controller(&parameters, &state, target, input, output);
+
+            while (diminuto_modulator_set(&modulator, output) != 0) {
+                ticks = diminuto_delay(delay, !0);
+                assert(ticks >= 0);
+            }
+
         }
 
     }
@@ -286,7 +347,7 @@ int main(int argc, char ** argv) {
     fd = diminuto_i2c_close(fd);
     assert(fd < 0);
 
-    printf("%s: exiting\n", program);
+    fprintf(stderr, "%s: exiting\n", program);
 
     return xc;
 }
