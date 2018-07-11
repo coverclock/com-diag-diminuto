@@ -7,7 +7,24 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
- * "Test what you fly, fly what you test." - NASA axiom
+ * ABSTRACT
+ *
+ * This is a functional test of the PID controller, using the PWM
+ * modulator to control the brighness on an LED, and a light sensor
+ * to implement a feedback loop. The parameters work for the hardware
+ * text fixture I use to exercise a number of Diminuto functional tests.
+ *
+ * The PWM modulator duty cycle ranges from 0 (off) to 100 (on).
+ *
+ * The light sensor output ranges from 0 to about 1992 lux.
+ *
+ * USAGE
+ *
+ * pidtest [ LUXTARGET [ DUTYCYCLE ] ]
+ *
+ * EXAMPLE
+ *
+ * pidtest 1500 10
  *
  * REFERENCES
  *
@@ -15,6 +32,13 @@
  * (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
  *
  * Wikipedia, "Lux", 2018-03-17
+ *
+ * Sparkfun, "SparkFun Ambient Light Sensor Breakout - APDS-9301",
+ * SEN-14350, https://www.sparkfun.com/products/14350
+ *
+ * QUOTE
+ *
+ * "Test what you fly, fly what you test." - NASA aphorism
  */
 
 #include "com/diag/diminuto/diminuto_controller.h"
@@ -59,11 +83,11 @@ static const int PID_OUTPUT_MAXIMUM = 100;
 static const int PID_OUTPUT_LOWER = 0;
 static const int PID_OUTPUT_UPPER = 100;
 static const int PID_KP_NUMERATOR = 1;
-static const int PID_KP_DENOMINATOR = 8;
+static const int PID_KP_DENOMINATOR = 4;
 static const int PID_KI_NUMERATOR = 1;
-static const int PID_KI_DENOMINATOR = 8;
+static const int PID_KI_DENOMINATOR = 4;
 static const int PID_KD_NUMERATOR = 1;
-static const int PID_KD_DENOMINATOR = 8;
+static const int PID_KD_DENOMINATOR = 4;
 static const int PID_KC_NUMERATOR = 1;
 static const int PID_KC_DENOMINATOR = 20;
 static const int PID_FILTER = 0;
@@ -117,7 +141,7 @@ int main(int argc, char ** argv) {
     } else {
         end = (char *)0;
         target = strtoul(argv[1], &end, 0);
-        if ((end == (char *)0) || (*end != '\0') || (target > PID_OUTPUT_MAXIMUM)) {
+        if ((end == (char *)0) || (*end != '\0') || (target > 2000)) {
             errno = EINVAL;
             diminuto_perror(argv[1]);
             exit(1);

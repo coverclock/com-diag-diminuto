@@ -92,12 +92,12 @@ Wheat Ridge CO 80033 USA
 ## Features
 
 * alarm - receive and check for a SIGALRM signal.
-* barrier - acquire and release memory barriers (EXPERIMENTAL).
+* barrier - acquire and release memory barriers.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
 * comparator - prototype of comparator function for search feartures.
 * containerof - macro just like in the Linux kernel.
-* controller - proportional/integral/derivative (PID) controller (EXPERIMENTAL).
+* controller - proportional/integral/derivative (PID) controller.
 * core - enable core dumps.
 * coherentsection - macros to implement scoped acquire/release memory barriers.
 * countof - macro to compute array positions using sizeof operator.

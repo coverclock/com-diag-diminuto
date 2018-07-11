@@ -16,7 +16,9 @@
  * This implementation goes to great lengths NOT to use floating point. It
  * does however use integer multiply and divide, unlike the similar feature
  * from which it was ported in the Telegraph library of features intended for
- * smaller microcontrollers.
+ * smaller microcontrollers. This is a work in progress, but it has been
+ * functionally tested using a feedback loop consisting of a PWM controlled
+ * LED and a light sensor.
  *
  * REFERENCES
  *
