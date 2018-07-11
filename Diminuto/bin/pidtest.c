@@ -59,16 +59,17 @@ static const int PID_OUTPUT_MAXIMUM = 100;
 static const int PID_OUTPUT_LOWER = 0;
 static const int PID_OUTPUT_UPPER = 100;
 static const int PID_KP_NUMERATOR = 1;
-static const int PID_KP_DENOMINATOR = 1;
+static const int PID_KP_DENOMINATOR = 8;
 static const int PID_KI_NUMERATOR = 1;
-static const int PID_KI_DENOMINATOR = 1;
+static const int PID_KI_DENOMINATOR = 8;
 static const int PID_KD_NUMERATOR = 1;
-static const int PID_KD_DENOMINATOR = 1;
+static const int PID_KD_DENOMINATOR = 8;
 static const int PID_KC_NUMERATOR = 1;
 static const int PID_KC_DENOMINATOR = 20;
 static const int PID_FILTER = 0;
 
-static const int MODULO = 24;
+static const int INPUT_MODULO = 4;
+static const int OUTPUT_MODULO = 24;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -99,8 +100,10 @@ int main(int argc, char ** argv) {
     diminuto_controller_input_t target = 0;
     diminuto_controller_input_t input = 0;
     diminuto_controller_output_t output = 0;
+    diminuto_controller_output_t prime = 0;
     char * end = (char *)0;
-    int step = 0;
+    int inputs = 0;
+    int outputs = 0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -309,18 +312,28 @@ int main(int argc, char ** argv) {
             elapsed = (now - was) * 1000 / diminuto_frequency();
             was = now;
 
-            if ((step % MODULO) == 0) {
-                printf("%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %4s\n", "STEP", "OUTPUT", "TARGET", "INPUT", "SAMPLE", "PROPOR", "INTEG", "DIFFER", "TOTAL", "DELTA", "MS");
-            }
-            printf("%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %4llu\n", step, output, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, elapsed);
-            step += 1;
+            inputs += 1;
 
-            output = diminuto_controller(&parameters, &state, target, input, output);
+            if ((inputs % INPUT_MODULO) != 0) {
+                continue;
+            }
+
+            if ((outputs % OUTPUT_MODULO) == 0) {
+                printf("%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %4s\n", "STEP", "DUTY", "NEXT", "TARGET", "ACTUAL", "SAMPLE", "PROPOR", "INTEG", "DIFFER", "TOTAL", "DELTA", "MS");
+            }
+
+            prime = diminuto_controller(&parameters, &state, target, input, output);
+
+            printf("%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %4llu\n", outputs, output, prime, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, elapsed);
+
+            output = prime;
 
             while (diminuto_modulator_set(&modulator, output) != 0) {
                 ticks = diminuto_delay(delay, !0);
                 assert(ticks >= 0);
             }
+
+            outputs += 1;
 
         }
 
