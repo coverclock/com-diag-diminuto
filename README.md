@@ -264,6 +264,10 @@ than create a dependency for the entire library.
 
 <https://github.com/coverclock/com-diag-obelisk>
 
+## Images
+
+<https://www.flickr.com/photos/johnlsloan/albums/72157680352449986>
+
 ## Build
 Clone, build, and install Diminuto in /usr/local.
 
