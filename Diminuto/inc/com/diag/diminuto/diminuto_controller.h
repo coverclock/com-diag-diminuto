@@ -23,6 +23,7 @@
  * REFERENCES
  *
  * T. Wescott, "PID without a PhD", Embedded Systems Programming, 2000-10-01
+ * (RECOMMENDED)
  *
  * B. Beauregard, "Improving the Beginner's PID", Project Blog, 2011-04
  *
@@ -56,14 +57,14 @@ typedef int16_t diminuto_controller_input_t;
 typedef int16_t diminuto_controller_output_t;
 
 /**
+ * This is the type used for numerator and denominator gain values.
+ */
+typedef int16_t diminuto_controller_factor_t;
+
+/**
  * This is the type used for intermediate computation variables.
  */
 typedef int32_t diminuto_controller_value_t;
-
-/**
- * This is the type used for numerator and denominator gain values.
- */
-typedef int8_t diminuto_controller_factor_t;
 
 /**
  * This is the maximum value the value type can assume.
@@ -233,7 +234,7 @@ typedef struct DiminutoControllerState {
      * This is the change in the output. It is persistent only to aid in
      * debugging.
      */
-    diminuto_controller_output_t delta;
+    diminuto_controller_value_t delta;
 
     /**
      * This is the previous output term.

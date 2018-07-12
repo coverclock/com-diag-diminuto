@@ -13,10 +13,8 @@
 #include "com/diag/diminuto/diminuto_controller.h"
 #include <stdlib.h>
 
-void diminuto_controller_init(
-    diminuto_controller_parameters_t * sp,
-    diminuto_controller_state_t * dp
-) {
+void diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp)
+{
 
     if (sp != (diminuto_controller_parameters_t *)0) {
         sp->windup = DIMINUTO_CONTROLLER_MAXIMUM_VALUE;
@@ -122,13 +120,8 @@ static inline diminuto_controller_value_t apply_gain(diminuto_controller_value_t
     return value;
 }
 
-diminuto_controller_output_t diminuto_controller(
-    const diminuto_controller_parameters_t * sp,
-    diminuto_controller_state_t * dp,
-    diminuto_controller_input_t target,
-    diminuto_controller_input_t input,
-    diminuto_controller_output_t output
-) {
+diminuto_controller_output_t diminuto_controller(const diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp, diminuto_controller_input_t target, diminuto_controller_input_t input, diminuto_controller_output_t output)
+{
     /*
      * If this is the first time through, initialize the PID controller.
      * Regarding the elapsed time since the last computation: dt here a constant

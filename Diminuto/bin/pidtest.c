@@ -20,7 +20,7 @@
  *
  * USAGE
  *
- * pidtest [ LUXTARGET [ DUTYCYCLE ] ]
+ * pidtest [ -d ] [ LUXTARGET [ DUTYCYCLE ] ]
  *
  * EXAMPLE
  *
@@ -68,8 +68,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static const int LUX_TARGET= 1000;
-static const int PWM_DUTY = 50;
+/*
+ * These parameters control the setttling time of the software PWM control
+ * of the LED (INPUT), and how often we print headers on the report (OUTPUT).
+ */
+
+static const int INPUT_MODULO = 4;
+static const int OUTPUT_MODULO = 24;
+
+/*
+ * These parameters describe the configuration of the hardware test fixture
+ * that I built.
+ */
 
 static const int INPUT_I2C_BUS = 1;
 static const int INPUT_I2C_DEVICE = 0x39;
@@ -77,23 +87,42 @@ static const int INPUT_GAIN = !0;
 static const int INPUT_GPIO_PIN = 26;
 static const int OUTPUT_GPIO_PIN = 12;
 
-static const int PID_INPUT_WINDUP = 2147483647;
+/*
+ * These parameters tune the PID controller. Choosing good values are in
+ * my personal experience a bit of an art and require some experimentation.
+ */
+
+static const int PID_INPUT_WINDUP = 20000;
 static const int PID_OUTPUT_MINIMUM = 0;
 static const int PID_OUTPUT_MAXIMUM = 100;
 static const int PID_OUTPUT_LOWER = 0;
 static const int PID_OUTPUT_UPPER = 100;
 static const int PID_KP_NUMERATOR = 1;
-static const int PID_KP_DENOMINATOR = 4;
+static const int PID_KP_DENOMINATOR = 8;
 static const int PID_KI_NUMERATOR = 1;
-static const int PID_KI_DENOMINATOR = 4;
+static const int PID_KI_DENOMINATOR = 8;
 static const int PID_KD_NUMERATOR = 1;
-static const int PID_KD_DENOMINATOR = 4;
+static const int PID_KD_DENOMINATOR = 8;
 static const int PID_KC_NUMERATOR = 1;
-static const int PID_KC_DENOMINATOR = 20;
+static const int PID_KC_DENOMINATOR = 200;
 static const int PID_FILTER = 0;
 
-static const int INPUT_MODULO = 4;
-static const int OUTPUT_MODULO = 24;
+/*
+ * These are the beginning PWM duty cycle (OUTPUT) in percent [0..100],
+ * and the default sensor target value (INPUT) in decilux [0..19922].
+ */
+
+static const int PWM_DUTY = 50;
+static const int TARGET_DECILUX= 10000;
+static const int DEBUG = 0;
+
+/*
+ * These are the maximum allowable values for the input parameters.
+ * (Neither is allowed to be negative.)
+ */
+
+static const int MAXIMUM_DUTY = 100;
+static const int MAXIMUM_DECILUX = 20000;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -128,36 +157,50 @@ int main(int argc, char ** argv) {
     char * end = (char *)0;
     int inputs = 0;
     int outputs = 0;
-
-    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+    int debug = 0;
 
     /*
      * Command line arguments.
      */
 
+    program = ((program = strrchr(*argv, '/')) == (char *)0) ? *argv : program + 1;
+    argv += 1;
+    argc -= 1;
 
-    if (argc < 2) {
-        target = LUX_TARGET;
-    } else {
-        end = (char *)0;
-        target = strtoul(argv[1], &end, 0);
-        if ((end == (char *)0) || (*end != '\0') || (target > 2000)) {
-            errno = EINVAL;
-            diminuto_perror(argv[1]);
-            exit(1);
-        }
+    if (argc < 1) {
+        debug = DEBUG;
+    } else if (strncmp(*argv, "-d", sizeof("-d")) == 0) {
+        debug = !0;
+        argv += 1;
+        argc -= 1;
     }
 
-    if (argc < 3) {
+    if (argc < 1) {
+        target = TARGET_DECILUX;
+    } else {
+        end = (char *)0;
+        target = strtoul(*argv, &end, 0);
+        if ((end == (char *)0) || (*end != '\0') || (target > MAXIMUM_DECILUX)) {
+            errno = EINVAL;
+            diminuto_perror(*argv);
+            exit(1);
+        }
+        argv += 1;
+        argc -= 1;
+    }
+
+    if (argc < 1) {
         output = PWM_DUTY;
     } else {
         end = (char *)0;
-        output = strtoul(argv[2], &end, 0);
-        if ((end == (char *)0) || (*end != '\0') || (output > 100)) {
+        output = strtoul(*argv, &end, 0);
+        if ((end == (char *)0) || (*end != '\0') || (output > MAXIMUM_DUTY)) {
             errno = EINVAL;
-            diminuto_perror(argv[2]);
+            diminuto_perror(*argv);
             exit(1);
         }
+        argv += 1;
+        argc -= 1;
     }
 
     /*
@@ -179,7 +222,7 @@ int main(int argc, char ** argv) {
     assert(rc >= 0);
     assert(datum == 0x03);
 
-    {
+    if (debug) {
         static int registers[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x8, 0xa };
         int ii = 0;
 
@@ -245,11 +288,13 @@ int main(int argc, char ** argv) {
     parameters.kc.denominator = PID_KC_DENOMINATOR;;
     parameters.filter = PID_FILTER;
 
-    fprintf(stderr, "%s: ", program);
-    diminuto_controller_parameters_print(stderr, &parameters);
+    if (debug) {
+        fprintf(stderr, "%s: ", program);
+        diminuto_controller_parameters_print(stderr, &parameters);
+        fprintf(stderr, "%s: ", program);
+        diminuto_controller_state_print(stderr, &state);
+    }
 
-    fprintf(stderr, "%s: ", program);
-    diminuto_controller_state_print(stderr, &state);
 
     /*
      * Pulse width moddulator.
@@ -258,8 +303,10 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_init(&modulator, led, output);
     assert(rc >= 0);
 
-    fprintf(stderr, "%s: ", program);
-    diminuto_modulator_print(stderr, &modulator);
+    if (debug) {
+        fprintf(stderr, "%s: ", program);
+        diminuto_modulator_print(stderr, &modulator);
+    }
 
     /*
      * Signal handlers.
@@ -329,7 +376,7 @@ int main(int argc, char ** argv) {
             chan1 = ((uint16_t)datum << 8) | chan1;
 
             lux = apds_9310_chan2lux(chan0, chan1);
-            input = lux;
+            input = (lux + 0.5) * 10.0;
 
             now = diminuto_time_elapsed();
             assert(now >= 0);
@@ -343,12 +390,12 @@ int main(int argc, char ** argv) {
             }
 
             if ((outputs % OUTPUT_MODULO) == 0) {
-                printf("%6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %4s\n", "STEP", "DUTY", "NEXT", "TARGET", "ACTUAL", "SAMPLE", "PROPOR", "INTEG", "DIFFER", "TOTAL", "DELTA", "MS");
+                printf("%6s %4s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s\n", "STEP", "MS", "DUTY", "TARGET", "ACTUAL", "SAMPLE", "PROPOR", "INTEG", "DIFFER", "TOTAL", "DELTA", "NEXT");
             }
 
             prime = diminuto_controller(&parameters, &state, target, input, output);
 
-            printf("%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %4llu\n", outputs, output, prime, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, elapsed);
+            printf("%6d %4llu %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", outputs, elapsed, output, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, prime);
 
             output = prime;
 
@@ -364,7 +411,7 @@ int main(int argc, char ** argv) {
     }
 
     /*
-     * Done.
+     * Fini.
      */
 
     rc = diminuto_modulator_stop(&modulator);
@@ -384,7 +431,9 @@ int main(int argc, char ** argv) {
     fd = diminuto_i2c_close(fd);
     assert(fd < 0);
 
-    fprintf(stderr, "%s: exiting\n", program);
+    if (debug) {
+        fprintf(stderr, "%s: exiting\n", program);
+    }
 
     return xc;
 }
