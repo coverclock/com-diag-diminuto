@@ -21,8 +21,13 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <math.h>
 
-/*
- * APDS-9301 data sheet, p. 4.
+/**
+ * Compute the measured brightness floating point value in Lux
+ * given the raw channel 0 and channel 1 values from the APDS 9301
+ * light sensor.
+ * @param raw0 is the raw value from channel 0.
+ * @param raw1 is the raw value from channel 1.
+ * @return the measured brightness in Lux.
  */
 static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
 {
@@ -33,6 +38,10 @@ static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
 
     chan0 = raw0;
     chan1 = raw1;
+
+    /*
+     * APDS-9301 data sheet, p. 4.
+     */
 
     ratio = chan1 / chan0;
 
@@ -55,5 +64,15 @@ static double apds_9310_chan2lux(uint16_t raw0, uint16_t raw1)
 
     return lux;
 }
+
+/**
+ * This is the minimum value in Lux.
+ */
+static const double APDS_9301_MINIMUM_LUX = 0.0;
+
+/**
+ * This is the maximum value in Lux (actually around 1992.264).
+ */
+static const double APDS_9301_MAXIMUM_LUX = 2000.0;
 
 #endif

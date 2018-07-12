@@ -21,6 +21,13 @@
  * No guarantees as to jitter, equivalent output voltage, or how it scales as
  * generators are added. See the functional test bin/pwmrheostat.c for a
  * working example.
+ *
+ * Important safety tip: I've worked with microcontrollers whose hardware
+ * PWM generators had duty cycles in the range [0..255]. I thought about
+ * implementing Modulator this way (it would have been easy). But using
+ * the range [0..100] not only seems more intuitive (it's clearly a
+ * percentage), but the value 100 yields more prime factors than 255,
+ * which turns out to be useful in the implementation.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -42,6 +49,16 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
 {
     return COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY; /* 100us or 100000ns */
 }
+
+/**
+ * This is the smallest duty cycle value.
+ */
+static const int DIMINUTO_MODULATOR_MINIMUM_DUTY = 0;
+
+/**
+ * This is the largest duty cycle value.
+ */
+static const int DIMINUTO_MODULATOR_MAXIMUM_DUTY = 100;
 
 /**
  * Defines the prototype for a PWM generator function.

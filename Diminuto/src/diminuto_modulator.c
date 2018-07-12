@@ -69,16 +69,16 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
 	int prime = 0;
 	static const int PRIMES[] = { 7, 5, 3, 2 };
 
-    if (duty <= 0) {
-        duty = 0;
-    } else if (duty >= 100) {
-        duty = 100;
+    if (duty <= DIMINUTO_MODULATOR_MINIMUM_DUTY) {
+        duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;;
+    } else if (duty >= DIMINUTO_MODULATOR_MAXIMUM_DUTY) {
+        duty = DIMINUTO_MODULATOR_MAXIMUM_DUTY;;
     } else {
        /* Do nothing. */
     }
 
     on = duty;
-    off = 100 - duty;
+    off = DIMINUTO_MODULATOR_MAXIMUM_DUTY - duty;
 
     for (index = 0; index < countof(PRIMES); ++index) {
     	prime = PRIMES[index];
@@ -135,7 +135,7 @@ void diminuto_modulator_function(union sigval arg)
         }
 
         mp->total += 1;
-        if (mp->total < 100) {
+        if (mp->total < DIMINUTO_MODULATOR_MAXIMUM_DUTY) {
             continue;
         }
 
@@ -166,7 +166,7 @@ int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulato
 
 		mp->function = funp;
 	    mp->pin = pin;
-	    mp->toff = 100;
+	    mp->toff = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
 
 	    (void)diminuto_pin_unexport_ignore(pin);
 
