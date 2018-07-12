@@ -39,6 +39,13 @@
  * QUOTE
  *
  * "Test what you fly, fly what you test." - NASA aphorism
+ *
+ * NOTE
+ *
+ * One weird thing about my hardware test fixture: the ADPS 9301 sensor
+ * does *not* measure the highest reading with the duty cycle of the LED
+ * is 100%, where the LED is fully on and not modulated at all.. It's moreu
+ * like 74%. Still trying to figure that one out.
  */
 
 #include "com/diag/diminuto/diminuto_controller.h"
@@ -163,9 +170,20 @@ int main(int argc, char ** argv) {
      * Command line arguments.
      */
 
-    program = ((program = strrchr(*argv, '/')) == (char *)0) ? *argv : program + 1;
-    argv += 1;
-    argc -= 1;
+    if (argc < 1) {
+        program = "pidtest";
+    } else {
+        program = ((program = strrchr(*argv, '/')) == (char *)0) ? *argv : program + 1;
+        argv += 1;
+        argc -= 1;
+    }
+
+    if (argc < 1) {
+        /* Do nothing. */
+    } else if (strncmp(*argv, "-?", sizeof("-?")) == 0) {
+        fprintf(stderr, "usage: %s [ -? | [ -d ] [ DECILUX [ DUTYCYCLE ] ] ]\n", program);
+        exit(0);
+    }
 
     if (argc < 1) {
         debug = DEBUG;
