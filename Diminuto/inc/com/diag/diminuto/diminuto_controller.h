@@ -182,7 +182,7 @@ typedef struct DiminutoControllerParameters {
      * If true, this applies a low pass filter to the initial input value to
      * smooth sudden brief transients.
      */
-    uint8_t filter;
+    bool filter;
 
 } diminuto_controller_parameters_t;
 
@@ -244,7 +244,7 @@ typedef struct DiminutoControllerState {
     /**
      * If false this causes the dynamic state structure to be reinitialized.
      */
-    uint8_t initialized;
+    bool initialized;
 
 } diminuto_controller_state_t;
 

@@ -24,7 +24,7 @@
  *
  * Important safety tip: I've worked with microcontrollers whose hardware
  * PWM generators had duty cycles in the range [0..255]. I thought about
- * implementing Modulator this way (it would have been easy). But using
+ * implementing Modulator this way; it would have been easy. But using
  * the range [0..100] not only seems more intuitive (it's clearly a
  * percentage), but the value 100 yields more prime factors than 255,
  * which turns out to be useful in the implementation.
@@ -38,6 +38,14 @@
 #include <time.h>
 #include <pthread.h>
 
+/**
+ * @def COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY
+ * This manifest constant is the frequency in Hertz at which this feature
+ * operates. The inverse of this value is the smallest unit of time in fractions
+ * of a second that this feature can express or use. This constant is provided
+ * for use in those cases where it is useful to have the value at compile time.
+ * However, you chould always prefer to use the inline function when possible.
+ */
 #define COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY (10000LL)
 
 /**
@@ -50,15 +58,17 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
     return COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY; /* 100us or 100000ns */
 }
 
+typedef uint8_t diminuto_modulator_cycle_t;
+
 /**
  * This is the smallest duty cycle value.
  */
-static const int DIMINUTO_MODULATOR_MINIMUM_DUTY = 0;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_MINIMUM_DUTY = 0;
 
 /**
- * This is the largest duty cycle value.
+ * This is the largest uty cycle value.
  */
-static const int DIMINUTO_MODULATOR_MAXIMUM_DUTY = 100;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_MAXIMUM_DUTY = 100;
 
 /**
  * Defines the prototype for a PWM generator function.
@@ -69,27 +79,27 @@ typedef void (diminuto_modulator_function_t)(union sigval);
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-	/* Fields computed at Init or Fini. */
+    /* Fields for use by the application, otherwise unused. */
+    void * data;
+	/* Fields computed at Initialization or Finish. */
 	diminuto_modulator_function_t * function;
 	FILE * fp;
 	int pin;
-	/* Fields computed at Set. */
-	int duty;
-	int on;
-	int off;
-	int set;
 	/* Fields computed at Start or Stop. */
 	timer_t timer;
     pthread_attr_t attributes;
 	int initialized;
+	/* Fields computed at Set. */
+	diminuto_modulator_cycle_t duty;
+	diminuto_modulator_cycle_t on;
+	diminuto_modulator_cycle_t off;
+	bool set;
 	/* Fields computed at Run. */
-	int total;
-	int cycle;
-	int ton;
-	int toff;
-	int condition;
-    /* Fields for use by the application, otherwise unused. */
-    void * data;
+	diminuto_modulator_cycle_t total;
+	diminuto_modulator_cycle_t cycle;
+	diminuto_modulator_cycle_t ton;
+	diminuto_modulator_cycle_t toff;
+	bool condition;
 } diminuto_modulator_t;
 
 /**
@@ -108,7 +118,7 @@ extern void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
  * @param duty is the duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.
  */
-extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, int duty);
+extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, diminuto_modulator_cycle_t duty);
 
 /**
  * Initializes a modulator structure with the default function, a pin number,
@@ -119,7 +129,7 @@ extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_m
  * @param duty is the initial duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.
  */
-static inline int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, int duty) {
+static inline int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty) {
 	extern void diminuto_modulator_function(union sigval arg);
 	return diminuto_modulator_init_generic(mp, diminuto_modulator_function, pin, duty);
 }
@@ -140,7 +150,7 @@ extern int diminuto_modulator_start(diminuto_modulator_t * mp);
  * @param duty is the new duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.
  */
-extern int diminuto_modulator_set(diminuto_modulator_t * mp, int duty);
+extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty);
 
 /**
  * Stops a modulator

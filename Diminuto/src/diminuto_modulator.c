@@ -60,14 +60,14 @@ void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
 	);
 }
 
-int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
+int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty)
 {
 	int rc = -1;
-	int on = 0;
-	int off = 0;
-	int index = 0;
-	int prime = 0;
-	static const int PRIMES[] = { 7, 5, 3, 2 };
+	diminuto_modulator_cycle_t on = 0;
+	diminuto_modulator_cycle_t off = 0;
+	diminuto_modulator_cycle_t prime = 0;
+	static const diminuto_modulator_cycle_t PRIMES[] = { 7, 5, 3, 2 };
+	int ii = 0;
 
     if (duty <= DIMINUTO_MODULATOR_MINIMUM_DUTY) {
         duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;;
@@ -80,8 +80,8 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, int duty)
     on = duty;
     off = DIMINUTO_MODULATOR_MAXIMUM_DUTY - duty;
 
-    for (index = 0; index < countof(PRIMES); ++index) {
-    	prime = PRIMES[index];
+    for (ii = 0; ii < countof(PRIMES); ++ii) {
+    	prime = PRIMES[ii];
     	while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
     		on /= prime;
     		off /= prime;
@@ -156,7 +156,7 @@ void diminuto_modulator_function(union sigval arg)
 	return;
 }
 
-int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, int duty)
+int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, diminuto_modulator_cycle_t duty)
 {
 	int rc = -1;
 
