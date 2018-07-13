@@ -58,6 +58,10 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
     return COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY; /* 100us or 100000ns */
 }
 
+/**
+ * This is the data type large enough to hold a PWM duty cycle and
+ * variables related to it. 
+ */
 typedef uint8_t diminuto_modulator_cycle_t;
 
 /**

@@ -99,37 +99,37 @@ static const int OUTPUT_GPIO_PIN = 12;
  * my personal experience a bit of an art and require some experimentation.
  */
 
-static const int PID_INPUT_WINDUP = 20000;
-static const int PID_OUTPUT_MINIMUM = 0;
-static const int PID_OUTPUT_MAXIMUM = 100;
-static const int PID_OUTPUT_LOWER = 0;
-static const int PID_OUTPUT_UPPER = 100;
-static const int PID_KP_NUMERATOR = 1;
-static const int PID_KP_DENOMINATOR = 4;
-static const int PID_KI_NUMERATOR = 1;
-static const int PID_KI_DENOMINATOR = 8;
-static const int PID_KD_NUMERATOR = 1;
-static const int PID_KD_DENOMINATOR = 4;
-static const int PID_KC_NUMERATOR = 1;
-static const int PID_KC_DENOMINATOR = 200;
-static const int PID_FILTER = 0;
+static const diminuto_controller_value_t PID_INPUT_WINDUP = 20000;
+static const diminuto_controller_output_t PID_OUTPUT_MINIMUM = 0;
+static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 100;
+static const diminuto_controller_output_t PID_OUTPUT_LOWER = 0;
+static const diminuto_controller_output_t PID_OUTPUT_UPPER = 100;
+static const diminuto_controller_factor_t PID_KP_NUMERATOR = 1;
+static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 4;
+static const diminuto_controller_factor_t PID_KI_NUMERATOR = 1;
+static const diminuto_controller_factor_t PID_KI_DENOMINATOR = 8;
+static const diminuto_controller_factor_t PID_KD_NUMERATOR = 1;
+static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 4;
+static const diminuto_controller_factor_t PID_KC_NUMERATOR = 1;
+static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 200;
+static const bool PID_FILTER = 0;
 
 /*
  * These are the beginning PWM duty cycle (OUTPUT) in percent [0..100],
  * and the default sensor target value (INPUT) in decilux [0..19922].
  */
 
-static const int PWM_DUTY = 50;
-static const int TARGET_DECILUX= 10000;
-static const int DEBUG = 0;
+static const diminuto_controller_output_t PWM_DUTY = 50;
+static const diminuto_controller_input_t TARGET_DECILUX= 10000;
+static const bool DEBUG = 0;
 
 /*
  * These are the maximum allowable values for the input parameters.
  * (Neither is allowed to be negative.)
  */
 
-static const int MAXIMUM_DUTY = 100;
-static const int MAXIMUM_DECILUX = 20000;
+static const diminuto_controller_output_t MAXIMUM_DUTY = 100;
+static const diminuto_controller_input_t MAXIMUM_DECILUX = 20000;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -164,7 +164,7 @@ int main(int argc, char ** argv) {
     char * end = (char *)0;
     int inputs = 0;
     int outputs = 0;
-    int debug = 0;
+    bool debug = 0;
 
     /*
      * Command line arguments.
