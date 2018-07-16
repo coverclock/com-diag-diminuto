@@ -79,20 +79,21 @@ HOME_DIR			:=	$(HOME)/Projects
 ########## Directories
 
 ARC_DIR				:=	arc# Archive files for static linking
-BIN_DIR				:=	bin# Utility source files or stripped executable binaries
+BIN_DIR				:=	bin# Utilities or stripped binaries
 CFG_DIR				:=	cfg# Build configuration files
 DEP_DIR				:=	dep# Generated dependencies and other make files
 DOC_DIR				:=	doc# Documentation
 DRV_DIR				:=	drv# Loadable kernel modules
 ETC_DIR				:=	etc# Miscellaneous files
-GEN_DIR				:=	gen# Generated source files
+FUN_DIR				:=	fun# Functional tests
+GEN_DIR				:=	gen# Generated files
 INC_DIR				:=	inc# Header files
 LIB_DIR				:=	lib# Shared objects for dynamic linking
 MOD_DIR				:=	mod# Loadable user modules
 OBC_DIR				:=	obc# C object modules
 OBX_DIR				:=	obx# C++ object modules
 OUT_DIR				:=	out# Build artifacts
-SRC_DIR				:=	src# Library source files
+SRC_DIR				:=	src# Library components
 SYM_DIR				:=	sym# Unstripped executable binaries
 SYS_DIR				:=	sys# Kernel module build directory
 TGZ_DIR				:=	tgz# Compressed tarballs
@@ -122,7 +123,7 @@ OLD					:=	dummy
 
 PACKAGE				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
 
-MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR)
+MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR) $(FUN_DIR)
 
 DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
 
@@ -188,11 +189,12 @@ TARGETSCRIPTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.sh)))
 TARGETBINARIES		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(BIN_DIR)/*.c)))
 TARGETGENERATED		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(GENERATED)) $(addprefix $(OUT)/$(SYM_DIR)/,$(GENERATED))
 TARGETSYNTHESIZED	:=	$(addprefix $(OUT)/$(INC_DIR)/com/diag/$(PROJECT)/,$(SYNTHESIZED))
-
 TARGETALIASES		:=	$(addprefix $(OUT)/$(BIN_DIR)/,$(ALIASES))
 TARGETUNITTESTS		:=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.c)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.cpp)))
 TARGETUNITTESTS		+=	$(addprefix $(OUT)/,$(basename $(wildcard $(TST_DIR)/*.sh)))
+TARGETFUNCTIONALS	:=	$(addprefix $(OUT)/,$(basename $(wildcard $(FUN_DIR)/*.c)))
+TARGETFUNCTIONALS	+=	$(addprefix $(OUT)/,$(basename $(wildcard $(FUN_DIR)/*.sh)))
 
 TARGETARCHIVE		:=	$(OUT)/$(ARC_DIR)/$(PROJECT_A)
 TARGETARCHIVEXX		:=	$(OUT)/$(ARC_DIR)/$(PROJECTXX_A)
@@ -205,7 +207,7 @@ TARGETSHAREDXX		+=	$(OUT)/$(LIB_DIR)/$(PROJECTXX_SO)
 
 TARGETLIBRARIES		:=	$(TARGETARCHIVE) $(TARGETSHARED)
 TARGETLIBRARIESXX	:=	$(TARGETARCHIVEXX) $(TARGETSHAREDXX)
-TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETGENERATED) $(TARGETSCRIPTS)
+TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGETFUNCTIONALS) $(TARGETGENERATED) $(TARGETSCRIPTS)
 TARGETALL			:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETMOST			:=	$(TARGETALL) $(TARGETMODULES)
 TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
@@ -376,6 +378,20 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBC_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIES)
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	
 $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBX_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
+
+########## Functional Tests
+
+# Most (perhaps all) functional tests require a special hardware test
+# fixture to run them. That's why they are functional tests instead of
+# unit tests.
+
+$(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBC_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIES)
+	D=`dirname $@`; mkdir -p $$D
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	
+$(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBX_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
 
@@ -609,7 +625,7 @@ $(OUT)/$(SYM_DIR)/vintage:	$(OUT)/$(GEN_DIR)/vintage.c
 $(OUT)/$(BIN_DIR)/generate:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'echo export PATH=\\$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
+	echo 'echo export PATH=\\$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(FUN_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
@@ -621,7 +637,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 $(OUT)/$(SYM_DIR)/generate:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo 'COM_DIAG_$(SYMBOL)_PATH=`dirname $$0`; COM_DIAG_$(SYMBOL)_ROOT=`cd $$COM_DIAG_$(SYMBOL)_PATH; pwd`' > $@
-	echo 'echo export PATH=\\$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR)' >> $@
+	echo 'echo export PATH=\\$$PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(SYM_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(BIN_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(TST_DIR):$$COM_DIAG_$(SYMBOL)_ROOT/../$(FUN_DIR)' >> $@
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
@@ -660,7 +676,7 @@ $(OUT)/$(SYS_DIR)/Makefile:	Makefile
 	D=`dirname $@`; mkdir -p $$D
 	echo "# GENERATED FILE! DO NOT EDIT!" > $@
 	echo "obj-m := $(OBJ_M)" >> $@
-	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR)" >> $@
+	echo "EXTRA_CFLAGS := -iquote $(HERE)/$(INC_DIR) -iquote $(HERE)/$(TST_DIR) -iquote $(HERE)/$(FUN_DIR)" >> $@
 
 $(OUT)/$(SYS_DIR)/%.c:	$(DRV_DIR)/%.c
 	D=`dirname $@`; mkdir -p $$D
@@ -793,7 +809,7 @@ DEPENDENCIES := $(OUT)/$(DEP_DIR)/dependencies.mk
 depend:	$(TARGETSYNTHESIZED)
 	M=`dirname $(DEPENDENCIES)`; mkdir -p $$M
 	cp /dev/null $(DEPENDENCIES)
-	for S in $(BIN_DIR) $(MOD_DIR) $(SRC_DIR) $(TST_DIR); do \
+	for S in $(BIN_DIR) $(MOD_DIR) $(SRC_DIR) $(TST_DIR) $(FUN_DIR); do \
 		if [ -d $$S ]; then \
 			for F in $$S/*.c; do \
 				D=`dirname $$F`; \

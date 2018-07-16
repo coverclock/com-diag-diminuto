@@ -76,10 +76,6 @@ Raspbian 9.4 "stretch"
 Linux 4.14.34    
 gcc 6.3.0    
 
-## Web Page
-
-<http://www.diag.com/navigation/downloads/Diminuto.html>
-
 ## Contact
 
 Chip Overclock  
@@ -191,16 +187,18 @@ Wheat Ridge CO 80033 USA
  
 ## Directories
  
-* bin - utility and functional test source files
-* cfg - configuration makefiles
-* drv - kernel space loadable module source files
-* etc - miscellaneous occasionally useful files
-* inc - public header files
-* mod - user space dynamically linkable module source files
-* out - build artifacts
-* src - feature implementation and private header source files
-* tst - unit test source files
-* txt - notes and other useful stuff
+* bin - utility source files.
+* cfg - configuration makefiles.
+* drv - kernel space loadable module source files.
+* etc - miscellaneous occasionally useful files.
+* fun - functional test source files (may require special hardware).
+* inc - public header files.
+* log - captures of some unit and functional test utility output.
+* mod - user space dynamically linkable module source files.
+* out - build artifacts.
+* src - feature implementation and private header source files.
+* tst - unit test source files.
+* txt - notes and other useful stuff.
 
 ## Remarks
 
@@ -269,7 +267,10 @@ than create a dependency for the entire library.
 <https://www.flickr.com/photos/johnlsloan/albums/72157680352449986>
 
 ## Build
-Clone, build, and install Diminuto in /usr/local.
+
+Clone, build, and play with Diminuto (some unit and functional tests
+may require you be root).
+
 
     cd ~
     mkdir -p src
@@ -277,4 +278,8 @@ Clone, build, and install Diminuto in /usr/local.
     git clone https://github.com/coverclock/com-diag-diminuto
     cd com-diag-diminuto/Diminuto
     make pristine depend all
+    . out/host/bin/setup
+
+Install Diminuto library and utilities in /usr/local.
+
     sudo make install

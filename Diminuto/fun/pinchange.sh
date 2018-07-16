@@ -15,26 +15,27 @@
 # - when you run this command and it will run as a daemon;
 # you'll need to kill it explicitly to get rid of it.)
 
-PROGRAM=$(basename $0)
-ROOT=$(readlink -e $(dirname ${0})/../bin)
+PROGRAM=$(basename ${0})
 PIN=22
 #PIN=27
 
-. ${ROOT}/setup
+. $(readlink -e $(dirname ${0})/../bin)/setup
+
+PINCHANGE=$(which pinchange)
 
 if [[ $# -eq 0 ]]; then
     pintool -p ${PIN} -n 2> /dev/null
     pintool -p ${PIN} -x -i -H
-    exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -M
+    exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -M
 elif [[ $# -eq 1 ]]; then
     pintool -p ${PIN} -n 2> /dev/null
     pintool -p ${PIN} -x -i -H
-    exec pintool -p ${PIN} -X ${ROOT}/pinchange -B -U -S -M
+    exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -S -M
 elif [[ $# -eq 3 ]]; then
     CHANGED="${1}"
     STATE="${2}"
     PRIOR="${3}"
-    exec ${ROOT}/log -U -n "${PROGRAM} ${CHANGED} ${STATE} ${PRIOR}" 1>&2
+    exec log -U -n "${PROGRAM} ${CHANGED} ${STATE} ${PRIOR}" 1>&2
 else
     echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
     exit 1
