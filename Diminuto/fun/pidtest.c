@@ -49,7 +49,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_controller.h"
-#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
@@ -61,9 +60,7 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
-
-#include "apds_9301.h"
-
+#include "avago/apds9301.h"
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -89,7 +86,7 @@ static const int OUTPUT_MODULO = 24;
  */
 
 static const int INPUT_I2C_BUS = 1;
-static const int INPUT_I2C_DEVICE = 0x39;
+static const int INPUT_I2C_DEVICE = AVAGO_APDS9301_ADDRESS_FLOAT;
 static const int INPUT_GAIN = !0;
 static const int INPUT_GPIO_PIN = 26;
 static const int OUTPUT_GPIO_PIN = 12;
@@ -136,15 +133,12 @@ int main(int argc, char ** argv) {
     const char * program = (const char *)0;
     int fd = -1;
     int rc = -1;
-    uint8_t datum = 0;
     int led = OUTPUT_GPIO_PIN;
     int bus = INPUT_I2C_BUS;
     int device = INPUT_I2C_DEVICE;
     int interrupt = INPUT_GPIO_PIN;
     int gain = INPUT_GAIN;;
     FILE * fp = (FILE *)0;
-    uint16_t chan0 = 0;
-    uint16_t chan1 = 0;
     double lux = 0.0;
     diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
@@ -165,6 +159,8 @@ int main(int argc, char ** argv) {
     int inputs = 0;
     int outputs = 0;
     bool debug = 0;
+
+    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
     /*
      * Command line arguments.
@@ -225,41 +221,19 @@ int main(int argc, char ** argv) {
      * I2C light sensor.
      */
 
-    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
-
     fd = diminuto_i2c_open(bus);
     assert(fd >= 0);
 
-    rc = diminuto_i2c_set(fd, device, 0x80, 0x00); 
+    rc = avago_apds9301_reset(fd, device); 
     assert(rc >= 0);
 
-    ticks = diminuto_delay(delay, !0);
-    assert(ticks >= 0);
-
-    rc = diminuto_i2c_set_get(fd, device, 0x80, 0x03, &datum);
+    rc = avago_apds9301_configure(fd, device, gain);
     assert(rc >= 0);
-    assert(datum == 0x03);
 
     if (debug) {
-        static int registers[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x8, 0xa };
-        int ii = 0;
-
-        for (ii = 0; ii < countof(registers); ++ii) {
-            rc = diminuto_i2c_get(fd, device, 0x80 | registers[ii], &datum);
-            assert(rc >= 0);
-            fprintf(stderr, "%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
-        }
+        rc = avago_apds9301_print(fd, device, stderr);
+        assert(rc >= 0);
     }
-
-    /* Some bits apparently persist despite a software power down above. */
-
-    rc = diminuto_i2c_get_set(fd, device, 0x81, &datum, gain ? 0x12 : 0x02);
-    assert(rc >= 0);
-    assert((datum == 0x02) || (datum == 0x12));
-
-    rc = diminuto_i2c_get_set(fd, device, 0x86, &datum, 0x10);
-    assert(rc >= 0);
-    assert((datum == 0x00) || (datum == 0x10));
 
     /*
      * GPIO interrupt pin.
@@ -377,23 +351,8 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            rc = diminuto_i2c_get(fd, device, 0xcc, &datum);
-            assert(rc >= 0);
-            chan0 = datum;
-
-            rc = diminuto_i2c_get(fd, device, 0x8d, &datum);
-            assert(rc >= 0);
-            chan0 = ((uint16_t)datum << 8) | chan0;
-
-            rc = diminuto_i2c_get(fd, device, 0x8e, &datum);
-            assert(rc >= 0);
-            chan1 = datum;
-
-            rc = diminuto_i2c_get(fd, device, 0x8f, &datum);
-            assert(rc >= 0);
-            chan1 = ((uint16_t)datum << 8) | chan1;
-
-            lux = apds_9310_chan2lux(chan0, chan1);
+            lux = avago_apds9301_sense(fd, device);
+            assert(lux >= 0.0);
             input = (lux + 0.5) * 10.0;
 
             now = diminuto_time_elapsed();

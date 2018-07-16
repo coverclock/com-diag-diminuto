@@ -31,7 +31,7 @@
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
 
-#include "apds_9301.h"
+#include "avago/apds9301.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -219,7 +219,7 @@ int main(int argc, char ** argv) {
             assert(rc >= 0);
             chan1 = ((uint16_t)datum << 8) | chan1;
 
-            lux = apds_9310_chan2lux(chan0, chan1);
+            lux = avago_apds9301_chan2lux(chan0, chan1);
 
             now = diminuto_time_elapsed();
             assert(now >= 0);

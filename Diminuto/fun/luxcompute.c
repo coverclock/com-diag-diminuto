@@ -33,7 +33,7 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_types.h"
-#include "apds_9301.h"
+#include "avago/apds9301.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
         while (!0) {
             raw1 = 0x0000;
             while (!0) {
-                lux = apds_9310_chan2lux(raw0, raw1);
+                lux = avago_apds9301_chan2lux(raw0, raw1);
                 if (lux < min) { min = lux; minraw0 = raw0; minraw1 = raw1; }
                 if (lux > max) { max = lux; maxraw0 = raw0; maxraw1 = raw1; }
                 if (raw1 >= 0xffff) { break; }
@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
 		return 1;
     }
 
-    lux = apds_9310_chan2lux(raw0, raw1);
+    lux = avago_apds9301_chan2lux(raw0, raw1);
 
     if (debug) {
         fprintf(stderr, "%s: 0x%x %d 0x%x %d %f\n", program, raw0, raw0, raw1, raw1, lux);
