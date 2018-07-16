@@ -7,12 +7,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
- * USAGE
- *
- * EXAMPLES
- *
- * ABSTRACT
- *
+ * SEE ALSO fun/pwmthreads.sh
  */
 
 #include "com/diag/diminuto/diminuto_alarm.h"
