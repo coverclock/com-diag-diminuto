@@ -60,6 +60,7 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "hardware_test_fixture.h"
 #include "avago/apds9301.h"
 #include <assert.h>
 #include <errno.h>
@@ -85,11 +86,11 @@ static const int OUTPUT_MODULO = 24;
  * that I built.
  */
 
-static const int INPUT_I2C_BUS = 1;
+static const int INPUT_I2C_BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int INPUT_I2C_DEVICE = AVAGO_APDS9301_ADDRESS_FLOAT;
 static const int INPUT_GAIN = !0;
-static const int INPUT_GPIO_PIN = 26;
-static const int OUTPUT_GPIO_PIN = 12;
+static const int INPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
+static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
 
 /*
  * These parameters tune the PID controller. Choosing good values are in

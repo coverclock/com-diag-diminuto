@@ -30,9 +30,8 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
-
+#include "hardware_test_fixture.h"
 #include "avago/apds9301.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -44,11 +43,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static const int LED = 12;
+static const int LED = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
 static const int DUTY = 0;
-static const int BUS = 1;
+static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = AVAGO_APDS9301_ADDRESS_FLOAT;
-static const int INTERRUPT = 26;
+static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
 static const int GAIN = !0;
 static const int SUSTAIN = 3;
 

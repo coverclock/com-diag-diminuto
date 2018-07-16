@@ -6,10 +6,12 @@
 
 # This is built for a specific test fixture I breadboarded up.
 
+. $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
+
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
 SEC=${1:-1}
-PIN=${2:-16}
+PIN=${2:-${HARDWARE_TEST_FIXTURE_PIN_LED_PWM}}
 DUTY=0;
 PCT=100;
 

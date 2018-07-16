@@ -13,10 +13,12 @@
 # Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
 # (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
 
+. $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
+
 PGM=$(basename $0 .sh)
-BUS=${1:-1}
-DEV=${2:-0x39}
-PIN=${3:-26}
+BUS=${1:-${HARDWARE_TEST_FIXTURE_BUS_I2C}}
+DEV=${2:-${HARDWARE_TEST_FIXTURE_DEV_I2C_LUX}}
+PIN=${3:-${HARDWARE_TEST_FIXTURE_PIN_INT_LUX}}
 
 # Setup GPIO.
 

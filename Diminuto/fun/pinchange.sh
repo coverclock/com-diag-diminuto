@@ -15,9 +15,11 @@
 # - when you run this command and it will run as a daemon;
 # you'll need to kill it explicitly to get rid of it.)
 
+. $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
+
 PROGRAM=$(basename ${0})
-PIN=22
-#PIN=27
+PIN=${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW}
+#PIN=${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH}
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 

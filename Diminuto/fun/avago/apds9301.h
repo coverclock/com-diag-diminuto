@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_APDS_9301_
-#define _H_COM_DIAG_DIMINUTO_APDS_9301_
+#ifndef _H_COM_DIAG_DIMINUTO_AVAGO_APDS9301_
+#define _H_COM_DIAG_DIMINUTO_AVAGO_APDS9301_
 
 /**
  * @file
@@ -10,8 +10,7 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
- * Implements a simple API to the Avago APDS-9301 light sensor.
- *
+ * Implements a simple API to the Avago APDS-9301 ambient light sensor.
  * In a normal application these functions would be outlined into
  * their own library. For the functional tests, I just inline them.
  *
