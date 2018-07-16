@@ -137,7 +137,7 @@ int main(int argc, char ** argv) {
     int bus = INPUT_I2C_BUS;
     int device = INPUT_I2C_DEVICE;
     int interrupt = INPUT_GPIO_PIN;
-    int gain = INPUT_GAIN;;
+    int gain = INPUT_GAIN;
     FILE * fp = (FILE *)0;
     double lux = 0.0;
     diminuto_mux_t mux;
@@ -271,13 +271,13 @@ int main(int argc, char ** argv) {
     parameters.lower = PID_OUTPUT_LOWER;
     parameters.upper = PID_OUTPUT_UPPER;
     parameters.kp.numerator = PID_KP_NUMERATOR;
-    parameters.kp.denominator = PID_KP_DENOMINATOR;;
+    parameters.kp.denominator = PID_KP_DENOMINATOR;
     parameters.ki.numerator = PID_KI_NUMERATOR;
     parameters.ki.numerator = PID_KI_NUMERATOR;
     parameters.kd.numerator = PID_KD_NUMERATOR;
-    parameters.kd.denominator = PID_KD_DENOMINATOR;;
-    parameters.kc.denominator = PID_KC_DENOMINATOR;;
-    parameters.kc.denominator = PID_KC_DENOMINATOR;;
+    parameters.kd.denominator = PID_KD_DENOMINATOR;
+    parameters.kc.denominator = PID_KC_DENOMINATOR;
+    parameters.kc.denominator = PID_KC_DENOMINATOR;
     parameters.filter = PID_FILTER;
 
     if (debug) {
@@ -311,18 +311,32 @@ int main(int argc, char ** argv) {
     assert(rc >= 0);
 
     /*
-     * Work loop.
+     * Start.
      */
 
     rc = diminuto_modulator_start(&modulator);
     assert(rc >= 0);
+
+    /*
+     * Retire pending.
+     */
+
+    bit = diminuto_pin_get(fp);
+    assert(bit >= 0);
+
+    lux = avago_apds9301_sense(fd, device);
+    assert(lux >= 0.0);
+
+    /*
+     * Work loop.
+     */
 
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
     while (!0) {
 
-        rc = diminuto_mux_wait(&mux, -1);
+        rc = diminuto_mux_wait(&mux, delay);
 
         if (diminuto_terminator_check()) {
             fprintf(stderr, "%s: terminated\n", program);
@@ -330,14 +344,14 @@ int main(int argc, char ** argv) {
         } else if (diminuto_interrupter_check()) {
             fprintf(stderr, "%s: interrupted\n", program);
             break;
-        } else if (rc < 0) {
-            break;
+        } else if (rc > 0) {
+            /* Do nothing. */
         } else if (rc == 0) {
-            ticks = diminuto_delay(delay, !0);
-            assert(ticks >= 0);
+            fprintf(stderr, "%s: timeout\n", program);
             continue;
         } else {
-            /* Do nothing. */
+            fprintf(stderr, "%s: failed\n", program);
+            break;
         }
 
         while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
@@ -347,6 +361,8 @@ int main(int argc, char ** argv) {
             }
 
             bit = diminuto_pin_get(fp);
+            assert(bit >= 0);
+
             if (bit == 0) {
                 continue;
             }

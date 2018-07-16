@@ -219,7 +219,10 @@ static int avago_apds9301_configure(int fd, int device, int gain)
         rc = diminuto_i2c_get_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_TIMING, &datum, value);
         if (rc < 0) { break; }
 
-        rc = diminuto_i2c_get_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, &datum, AVAGO_APDS9301_INTERRUPT_INTR_ENABLE);
+        value = AVAGO_APDS9301_INTERRUPT_INTR_ENABLE;
+        value |= AVAGO_APDS9301_INTERRUPT_PERSIST_EVERY;
+
+        rc = diminuto_i2c_get_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, &datum, value);
         if (rc < 0) { break; }
 
     } while (0);
@@ -274,6 +277,8 @@ static double avago_apds9301_chan2lux(uint16_t raw0, uint16_t raw1)
 /**
  * Extract the raw data from the device on the I2C bus and convert
  * it into units of Lux. This assumes an integration has been completed.
+ * As a side effect, it clears the pending interrupt, which is necessary
+ * to get another interrupt.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
  * @return the value in Lux.
@@ -294,7 +299,7 @@ static double avago_apds9301_sense(int fd, int device)
          * sheet p. 13.
          */
 
-        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA0LOW, &datum);
+        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_COMMAND_CLEAR | AVAGO_APDS9301_REGISTER_DATA0LOW, &datum);
         if (rc < 0) { break; }
         chan0 = datum;
 
