@@ -47,7 +47,7 @@
 static const int LED = 12;
 static const int DUTY = 0;
 static const int BUS = 1;
-static const int DEVICE = 0x39;
+static const int DEVICE = AVAGO_APDS9301_ADDRESS_FLOAT;
 static const int INTERRUPT = 26;
 static const int GAIN = !0;
 static const int SUSTAIN = 3;
@@ -90,36 +90,14 @@ int main(int argc, char ** argv) {
     fd = diminuto_i2c_open(bus);
     assert(fd >= 0);
 
-    rc = diminuto_i2c_set(fd, device, 0x80, 0x00); 
+    rc = avago_apds9301_reset(fd, device); 
     assert(rc >= 0);
 
-    ticks = diminuto_delay(delay, !0);
-    assert(ticks >= 0);
-
-    rc = diminuto_i2c_set_get(fd, device, 0x80, 0x03, &datum);
+    rc = avago_apds9301_print(fd, device, stdout);
     assert(rc >= 0);
-    assert(datum == 0x03);
 
-    {
-        static int registers[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x8, 0xa };
-        int ii = 0;
-
-        for (ii = 0; ii < countof(registers); ++ii) {
-            rc = diminuto_i2c_get(fd, device, 0x80 | registers[ii], &datum);
-            assert(rc >= 0);
-            printf("%s: %d@0x%02x[0x%02x] = 0x%02x\n", program, bus, device, registers[ii], datum);
-        }
-    }
-
-    /* Some bits apparently persist despite a software power down above. */
-
-    rc = diminuto_i2c_get_set(fd, device, 0x81, &datum, gain ? 0x12 : 0x02);
+    rc = avago_apds9301_configure(fd, device, gain);
     assert(rc >= 0);
-    assert((datum == 0x02) || (datum == 0x12));
-
-    rc = diminuto_i2c_get_set(fd, device, 0x86, &datum, 0x10);
-    assert(rc >= 0);
-    assert((datum == 0x00) || (datum == 0x10));
 
     /*
      * GPIO interrupt pin.
@@ -172,6 +150,9 @@ int main(int argc, char ** argv) {
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
+    lux = avago_apds9301_sense(fd,device);
+    assert(lux >= 0.0);
+
     while (!0) {
 
         rc = diminuto_mux_wait(&mux, -1);
@@ -203,23 +184,8 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            rc = diminuto_i2c_get(fd, device, 0xcc, &datum);
-            assert(rc >= 0);
-            chan0 = datum;
-
-            rc = diminuto_i2c_get(fd, device, 0x8d, &datum);
-            assert(rc >= 0);
-            chan0 = ((uint16_t)datum << 8) | chan0;
-
-            rc = diminuto_i2c_get(fd, device, 0x8e, &datum);
-            assert(rc >= 0);
-            chan1 = datum;
-
-            rc = diminuto_i2c_get(fd, device, 0x8f, &datum);
-            assert(rc >= 0);
-            chan1 = ((uint16_t)datum << 8) | chan1;
-
-            lux = avago_apds9301_chan2lux(chan0, chan1);
+            lux = avago_apds9301_sense(fd, device);
+            assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
             now = diminuto_time_elapsed();
             assert(now >= 0);
@@ -237,7 +203,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% chan0 0x%x %d chan1 0x%x %d Lux %.2f %d lx Period %lld ms\n", program, duty, chan0, chan0, chan1, chan1, lux, value = lux, elapsed);
+            printf("%s: PWM %d %% chan0 0x%x %d chan1 0x%x %d Lux %.2f lx %d Period %lld ms\n", program, duty, chan0, chan0, chan1, chan1, lux, value = lux, elapsed);
 
             duty += increment;
             if (duty > 100) {

@@ -281,7 +281,7 @@ static double avago_apds9301_chan2lux(uint16_t raw0, uint16_t raw1)
  * to get another interrupt.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
- * @return the value in Lux.
+ * @return the value in Lux or <0.0 if an error occurred.
  */ 
 static double avago_apds9301_sense(int fd, int device)
 {

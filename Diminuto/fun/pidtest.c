@@ -368,7 +368,7 @@ int main(int argc, char ** argv) {
             }
 
             lux = avago_apds9301_sense(fd, device);
-            assert(lux >= 0.0);
+            assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
             input = (lux + 0.5) * 10.0;
 
             now = diminuto_time_elapsed();
