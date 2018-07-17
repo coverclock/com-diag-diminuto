@@ -289,7 +289,7 @@ Install Diminuto library and utilities in /usr/local.
 
 ## Acknowledgements
 
-I own a debt of gratitude to my mentors, particularly at Bell Labs and its
+I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
 various spin-offs, who were so generous with their time and expertise over
 the years, and to my various clients, who both inspired and sometimes even
 shipped this software.
