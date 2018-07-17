@@ -10,6 +10,8 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * UNTESTED
+ *
  * Implements a simple API to the Texas Instruments (TI) ADS1115 Analog to
  * Digital Convertor (ADC). In a normal application these functions would
  * be outlined into their own library. For the functional tests, I just
@@ -134,7 +136,7 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
     };
 
     for (ii = 0; ii < countof(REGISTERS); ++ii) {
-        rc = diminuto_i2c_get16(fd, device, REGISTERS[ii], &datum);
+        rc = diminuto_i2c_get_word(fd, device, REGISTERS[ii], &datum);
         if (rc < 0) { break; }
         fprintf(fp, "APDS9310: 0x%02x[0x%02x] = 0x%04x\n", device, REGISTERS[ii], datum);
     }
@@ -143,26 +145,30 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
 }
 
 /**
- * Configure the device to its default configuration. This is what I
- * use; your mileage may vary.
+ * Start an Analog to Digital Conversion.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
- * @param gain is false for low gain, true for hish gain.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int ti_ads1115_configure(int fd, int device, int gain)
+static int ti_ads1115_start(int fd, int device)
 {
     int rc = -1;
-    uint16_t value = 0x0000;
+    uint16_t datum = 0x0000;
 
     do {
 
-        value = TI_ADS1115_CONFIG_MUX_AIN0_GND;
-        value |= TI_ADS1115_CONFIG_PGA_2_048V;
-        value |= TI_ADS1115_CONFIG_MODE_CONTINUOUS;
-        value |= TI_ADS1115_CONFIG_DR_128SPS;
-        
-        rc = diminuto_i2c_set(fd, device, TI_ADS1115_REGISTER_CONFIG, value);
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
+        if (rc < 0) { break; }
+
+        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
+
+        datum = TI_ADS1115_CONFIG_OS_START;
+        datum |= TI_ADS1115_CONFIG_MUX_AIN0_GND;
+        datum |= TI_ADS1115_CONFIG_PGA_2_048V;
+        datum |= TI_ADS1115_CONFIG_MODE_SINGLE;
+        datum |= TI_ADS1115_CONFIG_DR_128SPS;
+
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, datum);
         if (rc < 0) { break; }
         
     } while (0);
@@ -171,27 +177,55 @@ static int ti_ads1115_configure(int fd, int device, int gain)
 };
 
 /**
- * Extract the raw data from the device on the I2C bus and convert
- * it into units of Lux. This assumes an integration has been completed.
- * As a side effect, it clears the pending interrupt, which is necessary
- * to get another interrupt.
+ * Check if an Analog to Digital Conversion is in progress.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
- * @return the value in Lux or <0.0 if an error occurred.
- */ 
-static uint16_t ti_ads1115_convert(int fd, int device)
+ * @return 0 if not busy, >0 if busy, <0 if an error occurred.
+ */
+static int ti_ads1115_check(int fd, int device)
 {
-    uint16_t datum = 0x0000;
     int rc = -1;
+    uint16_t datum = 0x0000;
+
+    do {
+
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
+        if (rc < 0) { break; }
+
+        rc = ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0);
+
+    } while (0);
+
+    return rc;
+};
+
+/**
+ * Read an Analog to Digital Conversion value.
+ * @param fd is the open file descriptor to the appropriate I2C bus.
+ * @param device is the device address.
+ * @param bufferp is the buffer into which the conversion is placed.
+ * @return 0 if successful, <0 if an error occurred.
+ */ 
+static int ti_ads1115_sense(int fd, int device, uint16_t * bufferp)
+{
+    int rc = -1;
+    uint16_t datum = 0x0000;
 
     while (0) {
 
-        rc = diminuto_i2c_get(fd, device, TI_ADS1115_REGISTER_CONVERSION, &datum);
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
         if (rc < 0) { break; }
+
+        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
+
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, &datum);
+        if (rc < 0) { break; }
+
+        *bufferp = datum;
 
     }
 
-    return lux;
+    return rc;
 }
 
 #endif
