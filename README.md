@@ -19,7 +19,9 @@ drivers, daemons, and systems applications for the Linux operating
 system. It has found its way into a number of commercial products of the
 Corporation's clients, so don't be surprised if you find this code being
 used legitimately elsewhere in your travels. Diminuto includes a suite
-of unit tests that are used to validate the software when it changes.
+of unit tests that are used to validate features when they change, and
+a suite of functional tests that require a purpose-built hardware test
+fixture used to validate features that depend on hardware (like GPIO).
 
 This software is an original work of its author.
 
@@ -111,6 +113,7 @@ Wheat Ridge CO 80033 USA
 * frequency - determine common library time frequency.
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
+* i2c - Simplified thread-safe API around Linux I2C API.
 * ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
 * list - doubly linked list implementation.
@@ -283,3 +286,10 @@ may require you be root).
 Install Diminuto library and utilities in /usr/local.
 
     sudo make install
+
+## Acknowledgements
+
+I own a debt of gratitude to my mentors, particularly at Bell Labs and its
+various spin-offs, who were so generous with their time and expertise over
+the years, and to my various clients, who both inspired and sometimes even
+shipped this software.
