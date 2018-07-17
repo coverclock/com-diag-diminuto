@@ -296,15 +296,15 @@ static const double AVAGO_APDS9301_LUX_MAXIMUM = 2000.0;
  * to get another interrupt.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
- * @return the value in Lux or <0.0 if an error occurred.
+ * @param bufferp points to the buffer into which the value is stored.
+ * @return 0 if successful, <0 if an error occurred.
  */ 
-static double avago_apds9301_sense(int fd, int device)
+static int avago_apds9301_sense(int fd, int device, double * bufferp)
 {
-    double lux = -1.0;
+    int rc = -1;
     uint8_t datum = 0x00;
     uint16_t chan0 = 0x0000;
     uint16_t chan1 = 0x0000;
-    int rc = -1;
 
     do {
 
@@ -316,25 +316,29 @@ static double avago_apds9301_sense(int fd, int device)
 
         rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_COMMAND_CLEAR | AVAGO_APDS9301_REGISTER_DATA0LOW, &datum);
         if (rc < 0) { break; }
+
         chan0 = datum;
 
         rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA0HIGH, &datum);
         if (rc < 0) { break; }
+
         chan0 = ((uint16_t)datum << 8) | chan0;
 
         rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1LOW, &datum);
         if (rc < 0) { break; }
+
         chan1 = datum;
 
         rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1HIGH, &datum);
         if (rc < 0) { break; }
+
         chan1 = ((uint16_t)datum << 8) | chan1;
 
-        lux = avago_apds9301_chan2lux(chan0, chan1);
+        *bufferp = avago_apds9301_chan2lux(chan0, chan1);
 
     } while (0);
 
-    return lux;
+    return rc;
 }
 
 #endif

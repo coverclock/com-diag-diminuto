@@ -149,8 +149,10 @@ int main(int argc, char ** argv) {
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
-    lux = avago_apds9301_sense(fd,device);
-    assert(lux >= 0.0);
+    rc = avago_apds9301_sense(fd, device, &lux);
+    assert(rc >= 0);
+
+    assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
     while (!0) {
 
@@ -183,7 +185,9 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            lux = avago_apds9301_sense(fd, device);
+            rc = avago_apds9301_sense(fd, device, &lux);
+            assert(rc >= 0);
+
             assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
             now = diminuto_time_elapsed();
