@@ -418,6 +418,8 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_fini(&modulator);
     assert(rc >= 0);
 
+    diminuto_controller_fini(&parameters, &state);
+
     rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
     assert(rc >= 0);
 
