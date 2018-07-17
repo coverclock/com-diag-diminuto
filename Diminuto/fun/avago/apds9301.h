@@ -140,17 +140,23 @@ static int avago_apds9301_reset(int fd, int device)
 
     do {
 
-        rc = diminuto_i2c_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_CONTROL, AVAGO_APDS9301_CONTROL_POWER_OFF); 
+        rc = diminuto_i2c_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_CONTROL, AVAGO_APDS9301_CONTROL_POWER_OFF); 
         if (rc < 0) { break; }
 
         ticks = diminuto_delay(diminuto_frequency() / 2, !0);
         if (ticks < 0) { rc = -2; break; }
 
-        rc = diminuto_i2c_set_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_CONTROL, AVAGO_APDS9301_CONTROL_POWER_ON, &datum);
+        rc = diminuto_i2c_set_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_CONTROL, AVAGO_APDS9301_CONTROL_POWER_ON, &datum);
         if (rc < 0) { break; }
 
         datum &= AVAGO_APDS9301_CONTROL_POWER;
         if (datum != AVAGO_APDS9301_CONTROL_POWER_ON) { rc = -3; break; }
+
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_ID, &datum); 
+        if (rc < 0) { break; }
+
+        datum &= AVAGO_APDS9301_ID_PARTNO;
+        if (datum != AVAGO_APDS9301_ID_PARTNO_EXPECTED) { rc = -4; break; }
 
     } while (0);
 
@@ -182,7 +188,7 @@ static int avago_apds9301_print(int fd, int device, FILE * fp)
     };
 
     for (ii = 0; ii < countof(REGISTERS); ++ii) {
-        rc = diminuto_i2c_get(fd, device, 0x80 | REGISTERS[ii], &datum);
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | REGISTERS[ii], &datum);
         if (rc < 0) { break; }
         fprintf(fp, "APDS9310: 0x%02x[0x%02x] = 0x%02x\n", device, REGISTERS[ii], datum);
     }
@@ -215,13 +221,13 @@ static int avago_apds9301_configure(int fd, int device, int gain)
         value = gain ? AVAGO_APDS9301_TIMING_GAIN_HIGH : AVAGO_APDS9301_TIMING_GAIN_LOW;
         value |= AVAGO_APDS9301_TIMING_INTEG_402MS;
 
-        rc = diminuto_i2c_get_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_TIMING, &datum, value);
+        rc = diminuto_i2c_get_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_TIMING, &datum, value);
         if (rc < 0) { break; }
 
         value = AVAGO_APDS9301_INTERRUPT_INTR_ENABLE;
         value |= AVAGO_APDS9301_INTERRUPT_PERSIST_EVERY;
 
-        rc = diminuto_i2c_get_set(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, &datum, value);
+        rc = diminuto_i2c_get_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, &datum, value);
         if (rc < 0) { break; }
 
     } while (0);
@@ -274,6 +280,16 @@ static double avago_apds9301_chan2lux(uint16_t raw0, uint16_t raw1)
 }
 
 /**
+ * This is the minimum value in Lux.
+ */
+static const double AVAGO_APDS9301_LUX_MINIMUM = 0.0;
+
+/**
+ * This is the maximum value in Lux (actually around 1992.264).
+ */
+static const double AVAGO_APDS9301_LUX_MAXIMUM = 2000.0;
+
+/**
  * Extract the raw data from the device on the I2C bus and convert
  * it into units of Lux. This assumes an integration has been completed.
  * As a side effect, it clears the pending interrupt, which is necessary
@@ -298,19 +314,19 @@ static double avago_apds9301_sense(int fd, int device)
          * sheet p. 13.
          */
 
-        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_COMMAND_CLEAR | AVAGO_APDS9301_REGISTER_DATA0LOW, &datum);
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_COMMAND_CLEAR | AVAGO_APDS9301_REGISTER_DATA0LOW, &datum);
         if (rc < 0) { break; }
         chan0 = datum;
 
-        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA0HIGH, &datum);
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA0HIGH, &datum);
         if (rc < 0) { break; }
         chan0 = ((uint16_t)datum << 8) | chan0;
 
-        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1LOW, &datum);
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1LOW, &datum);
         if (rc < 0) { break; }
         chan1 = datum;
 
-        rc = diminuto_i2c_get(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1HIGH, &datum);
+        rc = diminuto_i2c_get_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_DATA1HIGH, &datum);
         if (rc < 0) { break; }
         chan1 = ((uint16_t)datum << 8) | chan1;
 
@@ -320,15 +336,5 @@ static double avago_apds9301_sense(int fd, int device)
 
     return lux;
 }
-
-/**
- * This is the minimum value in Lux.
- */
-static const double AVAGO_APDS9301_LUX_MINIMUM = 0.0;
-
-/**
- * This is the maximum value in Lux (actually around 1992.264).
- */
-static const double AVAGO_APDS9301_LUX_MAXIMUM = 2000.0;
 
 #endif

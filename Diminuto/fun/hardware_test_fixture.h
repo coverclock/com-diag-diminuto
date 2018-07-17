@@ -16,8 +16,11 @@
  * SEE ALSO: hardware_test_fixture.sh
  */
 
+#include "avago/apds9301.h"
+
 enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_BUS_I2C           = 1,
+    HARDWARE_TEST_FIXTURE_DEV_I2C_LUX       = AVAGO_APDS9301_ADDRESS_FLOAT,
     HARDWARE_TEST_FIXTURE_PIN_LED_1         = 16,
     HARDWARE_TEST_FIXTURE_PIN_LED_2         = 20,
     HARDWARE_TEST_FIXTURE_PIN_LED_3         = 21,

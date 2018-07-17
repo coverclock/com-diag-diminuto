@@ -46,7 +46,7 @@
 static const int LED = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
 static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
-static const int DEVICE = AVAGO_APDS9301_ADDRESS_FLOAT;
+static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
 static const int GAIN = !0;
 static const int SUSTAIN = 3;

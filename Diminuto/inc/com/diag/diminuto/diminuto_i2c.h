@@ -26,9 +26,9 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-/*********************************************************************************
- * Basic Operations
- ********************************************************************************/
+/*******************************************************************************
+ * WRAPPER OPERATIONS
+ ******************************************************************************/
 
 /**
  * Open the I2C device for the specified bus and return its file descriptor.
@@ -70,54 +70,102 @@ extern ssize_t diminuto_i2c_read(int fd, void * bufferp, size_t size);
  */
 extern ssize_t diminuto_i2c_write(int fd, const void *  bufferp, size_t size);
 
-/*********************************************************************************
- * Composite Operations
- ********************************************************************************/
+/*******************************************************************************
+ * COMPOSITE OPERATIONS
+ ******************************************************************************/
 
 /**
- * Read a byte from the specified register of the specified I2C device.
+ * Get data from the specified register of the specified I2C device.
  * @param fd is an open file descriptor.
  * @param addr identifies the device address.
  * @param reg identifies the device register.
- * @param datap points to the buffer into which the byte will be gotten.
+ * @param bufferp points to the buffer into which the data will be gotten.
+ * @param size is the number of bytes to get.
  * @return 0 for success, <0 if an error occurred.
  */
-extern int diminuto_i2c_get(int fd, uint8_t addr, uint8_t reg, uint8_t * datap);
+extern int diminuto_i2c_get(int fd, uint8_t addr, uint8_t reg, void * bufferp, size_t size);
 
 /**
- * Write a byte to the specified register of the specified I2C device.
+ * Set data to the specified register of the specified I2C device.
  * @param fd is an open file descriptor.
  * @param addr identifies the device address.
  * @param reg identifies the device register.
- * @param data is the byte to set.
+ * @param datap points to the data to set.
+ * @param size is the number of bytes to set.
  * @return 0 for success, <0 if an error occurred.
  */
-extern int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, uint8_t data);
+extern int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, const void * datap, size_t size);
 
-/*********************************************************************************
- * Multiple Operations
- ********************************************************************************/
+/*******************************************************************************
+ * MULTIPLE OPERATIONS
+ ******************************************************************************/
 
 /**
  * Perform a set followed by a get to the same register of the same I2C device.
  * @param fd is an open file descriptor.
  * @param addr identifies the device address.
  * @param reg identifies the device register.
- * @param data is the byte to set.
- * @param datap points to the buffer into which the byte will be gotten.
+ * @param datap points to the data to set.
+ * @param bufferp points to the buffer into which the data will be gotten.
+ * @param size is the number of bytes to both set and get.
  * @return 0 for success, <0 if an error occurred.
  */
-extern int diminuto_i2c_set_get(int fd, uint8_t addr, uint8_t reg, uint8_t data, uint8_t * datap);
+extern int diminuto_i2c_set_get(int fd, uint8_t addr, uint8_t reg, const void * datap, void * bufferp, size_t size);
 
 /**
  * Perform a get followed by a set to the same register of the same I2C device.
  * @param fd is an open file descriptor.
  * @param addr identifies the device address.
  * @param reg identifies the device register.
- * @param datap points to the buffer into which the byte will be gotten.
- * @param data is the byte to set.
+ * @param bufferp points to the buffer into which the data will be gotten.
+ * @param datap points to the data to set.
+ * @param size is the number of bytes to both set and get.
  * @return 0 for success, <0 if an error occurred.
  */
-extern int diminuto_i2c_get_set(int fd, uint8_t addr, uint8_t reg, uint8_t * datap, uint8_t data);
+extern int diminuto_i2c_get_set(int fd, uint8_t addr, uint8_t reg, void * bufferp, const void * datap, size_t size);
+
+/*******************************************************************************
+ * DERIVED OPERATIONS (not adequately tested IMO)
+ ******************************************************************************/
+
+static inline int diminuto_i2c_get_byte(int fd, uint8_t addr, uint8_t reg, uint8_t * bufferp)
+{
+    return diminuto_i2c_get(fd, addr, reg, bufferp, sizeof(*bufferp));
+}
+
+static inline diminuto_i2c_get_word(int fd, uint8_t addr, uint8_t reg, uint16_t * bufferp)
+{
+    return diminuto_i2c_get(fd, addr, reg, bufferp, sizeof(*bufferp));
+}
+
+static inline int diminuto_i2c_set_byte(int fd, uint8_t addr, uint8_t reg, uint8_t datum)
+{
+    return diminuto_i2c_set(fd, addr, reg, &datum, sizeof(datum));;
+}
+
+static inline int diminuto_i2c_set_word(int fd, uint8_t addr, uint8_t reg, uint16_t datum)
+{
+    return diminuto_i2c_set(fd, addr, reg, &datum, sizeof(datum));
+}
+
+static inline int diminuto_i2c_set_get_byte(int fd, uint8_t addr, uint8_t reg, uint8_t datum, uint8_t * bufferp)
+{
+    return diminuto_i2c_set_get(fd, addr, reg, &datum, bufferp, sizeof(datum));
+}
+
+static inline int diminuto_i2c_set_get_word(int fd, uint8_t addr, uint8_t reg, uint16_t datum, uint16_t * bufferp)
+{
+    return diminuto_i2c_set_get(fd, addr, reg, &datum, bufferp, sizeof(datum));
+}
+
+static inline int diminuto_i2c_get_set_byte(int fd, uint8_t addr, uint8_t reg, uint8_t * bufferp, uint8_t datum)
+{
+    return diminuto_i2c_get_set(fd, addr, reg, bufferp, &datum, sizeof(datum));
+}
+
+static inline int diminuto_i2c_get_set_word(int fd, uint8_t addr, uint8_t reg, uint16_t * bufferp, uint16_t datum)
+{
+    return diminuto_i2c_get_set(fd, addr, reg, bufferp, &datum, sizeof(datum));
+}
 
 #endif
