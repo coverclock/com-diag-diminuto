@@ -166,7 +166,7 @@ Wheat Ridge CO 80033 USA
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
 * hex - display an argument number in hexidecimal.
-* internettool - test internet connectectivity.
+* internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the local time in ISO 8601 format.
 * log - log from a script using Diminuto log functions.
@@ -178,7 +178,7 @@ Wheat Ridge CO 80033 USA
 * pinchange - execute a command when a GPIO pin changes state.
 * pintool - manipulate GPIO pins.
 * renametool - atomically rename or swap files in the same file system.
-* serialtool - test serial ports.
+* serialtool - manipulate serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
 * timesink - consume concise timestamp stream.
