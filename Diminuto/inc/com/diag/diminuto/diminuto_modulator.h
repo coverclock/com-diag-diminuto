@@ -128,7 +128,6 @@ extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_m
  * Initializes a modulator structure with the default function, a pin number,
  * and a duty cycle.
  * @param mp points to the modulator structure.
- * @param fp points to the modulator function.
  * @param pin is the GPIO pin number.
  * @param duty is the initial duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.

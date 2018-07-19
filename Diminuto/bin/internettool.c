@@ -19,7 +19,9 @@
  * the data to the server, and receives from the server and writes the data
  * to standard output. It can bind its socket to a specific interface (-i) or
  * address (-a).
- *
+ */
+
+/*
  * EXAMPLES
  *
  * server:      internettool -v -6 -t -p 5555

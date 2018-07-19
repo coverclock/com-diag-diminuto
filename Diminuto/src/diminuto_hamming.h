@@ -45,7 +45,7 @@
 /**
  * Encode the four data bits (D1, D2, D3, D4) in a nibble into the four symbol
  * bits (S1, S2, S3, S4) in a symbol byte and return the symbol byte.
- * @param dat is the data nibble.
+ * @param nib is the data nibble.
  * @return the symbol byte.
  */
 static inline uint8_t diminuto_hamming84_dat2sym(uint8_t nib) {

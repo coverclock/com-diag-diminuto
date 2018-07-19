@@ -251,7 +251,7 @@ typedef struct DiminutoControllerState {
 /**
  * Print a dynamic state structure.
  * @param fp points to a FILE object.
- * @param sp points to a state structure.
+ * @param dp points to a state structure.
  */
 extern void diminuto_controller_state_print(FILE * fp, const diminuto_controller_state_t * dp);
 

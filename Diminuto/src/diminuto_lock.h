@@ -20,7 +20,7 @@
  * provided value. This only works reliably if the file is in the local
  * file system.
  * @param file is the path and name of the lock file.
- * @oaram pid is the value to write into the lock file.
+ * @param pid is the value to write into the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
 extern int diminuto_lock_lock_generic(const char * file, pid_t pid);
@@ -29,7 +29,7 @@ extern int diminuto_lock_lock_generic(const char * file, pid_t pid);
  * Atomically write the text string of the provided value into the specified
  * file.
  * @param file is the path and name of the lock file.
- * @oaram pid is the value to write into the lock file.
+ * @param pid is the value to write into the lock file.
  * @return 0 if successful, <0 with errno set otherwise.
  */
 extern int diminuto_lock_postlock_generic(const char * file, pid_t pid);
