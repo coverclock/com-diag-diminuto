@@ -216,7 +216,8 @@ int main(int argc, char ** argv) {
                 /* Do nothing. */
             }
 
-            diminuto_modulator_set(&modulator, duty);
+            rc = diminuto_modulator_set(&modulator, duty);
+            assert(rc >= 0);
 
         }
 

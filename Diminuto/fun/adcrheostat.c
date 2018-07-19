@@ -84,6 +84,9 @@ int main(int argc, char ** argv) {
     fd = diminuto_i2c_open(bus);
     assert(fd >= 0);
 
+    rc = ti_ads1115_configure_default(fd, device);
+    assert(rc >= 0);
+
     rc = ti_ads1115_print(fd, device, stdout);
     assert(rc >= 0);
 
@@ -137,7 +140,7 @@ int main(int argc, char ** argv) {
 
         sustain = SUSTAIN;
 
-        rc = ti_ads1115_configure_default(fd, device);
+        rc = ti_ads1115_start(fd, device);
         assert(rc >= 0);
 
         while (!0) {
@@ -168,7 +171,8 @@ int main(int argc, char ** argv) {
             /* Do nothing. */
         }
 
-        diminuto_modulator_set(&modulator, duty);
+        rc = diminuto_modulator_set(&modulator, duty);
+        assert(rc >= 0);
 
     }
 

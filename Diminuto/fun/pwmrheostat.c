@@ -163,7 +163,8 @@ int main(int argc, char * argv[])
             for (ii = 0; ii < countof(pin); ++ii) {
             	if (pin[ii] >= 0) {
                     fprintf(stderr, "%s: setting %d %d\n", program, pin[ii], duty[ii]);
-            		diminuto_modulator_set(&(modulator[ii]), duty[ii]);
+            		rc = diminuto_modulator_set(&(modulator[ii]), duty[ii]);
+                    assert(rc == 0);
             		diminuto_modulator_print(stderr, &(modulator[ii]));
             		assert(modulator[ii].duty == duty[ii]);
             		assert((100 % (modulator[ii].ton + modulator[ii].toff)) == 0);

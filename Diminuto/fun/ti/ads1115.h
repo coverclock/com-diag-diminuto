@@ -185,6 +185,36 @@ static inline int ti_ads1115_configure_default(int fd, int device)
 }
 
 /**
+ * Start a conversion using the existing configuration. If a conversion is
+ * already running, this operation will fail.
+ * @param fd is the open file descriptor to the appropriate I2C bus.
+ * @param device is the device address.
+ * @param config is the desired value of the config register.
+ * @return 0 if successful, <0 if an error occurred.
+ */
+static int ti_ads1115_start(int fd, int device)
+{
+    int rc = -1;
+    uint16_t datum = 0x0000;
+
+    do {
+
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
+        if (rc < 0) { break; }
+
+        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
+
+        datum |= TI_ADS1115_CONFIG_OS_START;
+
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, datum);
+        if (rc < 0) { break; }
+        
+    } while (0);
+
+    return rc;
+};
+
+/**
  * Check if an Analog to Digital Conversion is in progress.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
