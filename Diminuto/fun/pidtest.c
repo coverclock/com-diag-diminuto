@@ -88,7 +88,6 @@ static const int OUTPUT_MODULO = 24;
 
 static const int INPUT_I2C_BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int INPUT_I2C_DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
-static const int INPUT_GAIN = !0;
 static const int INPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
 static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
 
@@ -138,7 +137,6 @@ int main(int argc, char ** argv) {
     int bus = INPUT_I2C_BUS;
     int device = INPUT_I2C_DEVICE;
     int interrupt = INPUT_GPIO_PIN;
-    int gain = INPUT_GAIN;
     FILE * fp = (FILE *)0;
     double lux = 0.0;
     diminuto_mux_t mux;
@@ -228,7 +226,7 @@ int main(int argc, char ** argv) {
     rc = avago_apds9301_reset(fd, device); 
     assert(rc >= 0);
 
-    rc = avago_apds9301_configure(fd, device, gain);
+    rc = avago_apds9301_configure_default(fd, device);
     assert(rc >= 0);
 
     if (debug) {

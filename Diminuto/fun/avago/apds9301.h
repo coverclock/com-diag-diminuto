@@ -197,43 +197,40 @@ static int avago_apds9301_print(int fd, int device, FILE * fp)
 }
 
 /**
- * Configure the device to its default configuration. This is what I
- * use; your mileage may vary.
+ * Configure the device.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
- * @param gain is false for low gain, true for hish gain.
+ * @param timing is the desired value of the timing register.
+ * @param interrupt is the desired value of the interrupt register.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int avago_apds9301_configure(int fd, int device, int gain)
+static int avago_apds9301_configure(int fd, int device, uint8_t timing, uint8_t interrupt)
 {
     int rc = -1;
-    uint8_t datum = 0x00;
-    uint8_t value = 0x00;
 
     do {
 
-        /*
-         * Some bits apparently persist despite a software power down above.
-         * I'm doing a get_set here mostly just to test it; but it does
-         * verify we can access the registers before we try to write to them.
-         */
-
-        value = gain ? AVAGO_APDS9301_TIMING_GAIN_HIGH : AVAGO_APDS9301_TIMING_GAIN_LOW;
-        value |= AVAGO_APDS9301_TIMING_INTEG_402MS;
-
-        rc = diminuto_i2c_get_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_TIMING, &datum, value);
+        rc = diminuto_i2c_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_TIMING, timing);
         if (rc < 0) { break; }
 
-        value = AVAGO_APDS9301_INTERRUPT_INTR_ENABLE;
-        value |= AVAGO_APDS9301_INTERRUPT_PERSIST_EVERY;
-
-        rc = diminuto_i2c_get_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, &datum, value);
+        rc = diminuto_i2c_set_byte(fd, device, AVAGO_APDS9301_COMMAND_CMD | AVAGO_APDS9301_REGISTER_INTERRUPT, interrupt);
         if (rc < 0) { break; }
 
     } while (0);
 
     return rc;
 };
+
+/**
+ * Configure the device with default values.
+ * @param fd is the open file descriptor to the appropriate I2C bus.
+ * @param device is the device address.
+ * @return 0 if successful, <0 if an error occurred.
+ */
+static inline int avago_apds9301_configure_default(int fd, int device)
+{
+    return avago_apds9301_configure(fd, device, AVAGO_APDS9301_TIMING_GAIN_HIGH | AVAGO_APDS9301_TIMING_INTEG_402MS, AVAGO_APDS9301_INTERRUPT_INTR_ENABLE | AVAGO_APDS9301_INTERRUPT_PERSIST_EVERY);
+}
 
 /**
  * Compute the measured brightness floating point value in Lux

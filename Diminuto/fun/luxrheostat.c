@@ -48,7 +48,6 @@ static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
-static const int GAIN = !0;
 static const int SUSTAIN = 3;
 
 int main(int argc, char ** argv) {
@@ -62,7 +61,6 @@ int main(int argc, char ** argv) {
     int bus = BUS;
     int device = DEVICE;
     int interrupt = INTERRUPT;
-    int gain = GAIN;
     FILE * fp = (FILE *)0;
     uint16_t chan0 = 0;
     uint16_t chan1 = 0;
@@ -95,7 +93,7 @@ int main(int argc, char ** argv) {
     rc = avago_apds9301_print(fd, device, stdout);
     assert(rc >= 0);
 
-    rc = avago_apds9301_configure(fd, device, gain);
+    rc = avago_apds9301_configure_default(fd, device);
     assert(rc >= 0);
 
     /*
