@@ -58,8 +58,16 @@ enum TiAds1115Command {
 enum TiAds1115Register {
     TI_ADS1115_REGISTER_CONVERSION  = 0x0,
     TI_ADS1115_REGISTER_CONFIG      = 0x1,
-    TI_ADS1115_REGISTER_LO_THRESH   = 0x2,
-    TI_ADS1115_REGISTER_HI_THRESH   = 0x3,
+    TI_ADS1115_REGISTER_LOTHRESH    = 0x2,
+    TI_ADS1115_REGISTER_HITHRESH    = 0x3,
+};
+
+/**
+ * Conversion register.
+ */
+enum TiAds1115Conversion {
+    TI_ADS1115_CONVERSION_MINUMUM = 0x8000, /* -FS */
+    TI_ADS1115_CONVERSION_MAXIMUM = 0x7fff, /* +FS */
 };
 
 /**
@@ -117,6 +125,22 @@ enum TiAds1115Config {
 };
 
 /**
+ * Low Threshold register.
+ */
+enum TiAds1115LoThresh {
+    TI_ADS1115_LOTHRESH_DEFAULT = 0x8000,
+    TI_ADS1115_LOTHRESH_READY   = 0x0000,
+};
+
+/**
+ * Low Threshold register.
+ */
+enum TiAds1115HiThresh {
+    TI_ADS1115_HITHRESH_DEFAULT = 0x7fff,
+    TI_ADS1115_HITHRESH_READY   = 0x8000,
+};
+
+/**
  * Dump most device registers to the specified FILE stream.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
@@ -131,8 +155,8 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
     static int REGISTERS[] = {
         TI_ADS1115_REGISTER_CONVERSION,
         TI_ADS1115_REGISTER_CONFIG,
-        TI_ADS1115_REGISTER_LO_THRESH,
-        TI_ADS1115_REGISTER_HI_THRESH,
+        TI_ADS1115_REGISTER_LOTHRESH,
+        TI_ADS1115_REGISTER_HITHRESH,
     };
 
     for (ii = 0; ii < countof(REGISTERS); ++ii) {
@@ -150,10 +174,12 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
  * operation will fail.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
+ * @param lothresh is the desired value of the low threshold register.
+ * @param hithresh is the desired value of the high threshold register.
  * @param config is the desired value of the config register.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int ti_ads1115_configure(int fd, int device, uint16_t config)
+static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t hithresh, uint16_t config)
 {
     int rc = -1;
     uint16_t datum = 0x0000;
@@ -164,6 +190,13 @@ static int ti_ads1115_configure(int fd, int device, uint16_t config)
         if (rc < 0) { break; }
 
         if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
+
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_LOTHRESH, lothresh);
+        if (rc < 0) { break; }
+
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_HITHRESH, hithresh);
+        if (rc < 0) { break; }
+        
 
         rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, config);
         if (rc < 0) { break; }
@@ -181,9 +214,10 @@ static int ti_ads1115_configure(int fd, int device, uint16_t config)
  */
 static inline int ti_ads1115_configure_default(int fd, int device)
 {
-    return ti_ads1115_configure(fd, device, TI_ADS1115_CONFIG_OS_START | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_2_048V | TI_ADS1115_CONFIG_MODE_SINGLE | TI_ADS1115_CONFIG_DR_128SPS);
+    return ti_ads1115_configure(fd, device, TI_ADS1115_LOTHRESH_READY, TI_ADS1115_HITHRESH_READY, TI_ADS1115_CONFIG_OS_IDLE | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_8SPS);
 }
 
+#if 0
 /**
  * Start a conversion using the existing configuration. If a conversion is
  * already running, this operation will fail.
@@ -236,6 +270,7 @@ static int ti_ads1115_check(int fd, int device)
 
     return rc;
 };
+#endif
 
 /**
  * Read an Analog to Digital Conversion value.
@@ -247,19 +282,11 @@ static int ti_ads1115_check(int fd, int device)
 static int ti_ads1115_sense(int fd, int device, uint16_t * bufferp)
 {
     int rc = -1;
-    uint16_t datum = 0x0000;
 
     while (0) {
 
-        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, bufferp);
         if (rc < 0) { break; }
-
-        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
-
-        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, &datum);
-        if (rc < 0) { break; }
-
-        *bufferp = datum;
 
     }
 

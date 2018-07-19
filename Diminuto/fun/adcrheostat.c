@@ -7,15 +7,16 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * UNTESTED
+ *
  * REFERENCES
  *
- * Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
- * (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
+ * TI, "Ultra-Small, Low-Power, 16-Bit Analog-to-Digital Converter with
+ * Internal Reference", (ADS1113, ADS1114, ADS1115), SBAS4448, Texas
+ * Instruments, 2009-10
  *
- * Wikipedia, "Lux", 2018-03-17
- *
- * Sparkfun, "SparkFun Ambient Light Sensor Breakout - APDS-9301",
- * SEN-14350, https://www.sparkfun.com/products/14350
+ * Adafruit, "ADS1115 16-Bit ADC - 4 Channel with Programmable Gain
+ * Amplifier, P/N 1085, https://www.adafruit.com/product/1085
  */
 
 #include "com/diag/diminuto/diminuto_countof.h"
@@ -47,6 +48,7 @@ static const int LED = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
 static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
+static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_ADC;
 static const int SUSTAIN = 3;
 
 int main(int argc, char ** argv) {
@@ -59,10 +61,10 @@ int main(int argc, char ** argv) {
     int duty = DUTY;
     int bus = BUS;
     int device = DEVICE;
+    int interrupt = INTERRUPT;
     FILE * fp = (FILE *)0;
-    uint16_t chan0 = 0;
-    uint16_t chan1 = 0;
-    uint16_t adc = 0.0;
+    uint16_t adc = 0;
+    diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
     diminuto_sticks_t now = 0;
@@ -75,7 +77,7 @@ int main(int argc, char ** argv) {
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
+    delay = diminuto_frequency() / 4; /* 250ms > 125ms conversion time. */
 
     /*
      * I2C light sensor.
@@ -88,6 +90,30 @@ int main(int argc, char ** argv) {
     assert(rc >= 0);
 
     rc = ti_ads1115_print(fd, device, stdout);
+    assert(rc >= 0);
+
+    /*
+     * GPIO interrupt pin.
+     */
+
+    (void)diminuto_pin_unexport_ignore(interrupt); 
+
+    fp = diminuto_pin_input(interrupt);
+    assert(fp != (FILE *)0);
+
+    rc = diminuto_pin_active(interrupt, 0);
+    assert(rc == 0);
+
+    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
+    assert(rc == 0);
+
+    /*
+     * Multiplexer.
+     */
+
+    diminuto_mux_init(&mux);
+
+    rc = diminuto_mux_register_interrupt(&mux, fileno(fp));
     assert(rc >= 0);
 
     /*
@@ -119,60 +145,76 @@ int main(int argc, char ** argv) {
 
     while (!0) {
 
+        rc = diminuto_mux_wait(&mux, -1);
+
         if (diminuto_terminator_check()) {
             fprintf(stderr, "%s: terminated\n", program);
             break;
         } else if (diminuto_interrupter_check()) {
             fprintf(stderr, "%s: interrupted\n", program);
             break;
-        } else {
-            /* Do nothing. */
-        }
-
-        if (modulator.set) {
-            continue;
-        }
-
-        if (sustain > 0) {
-            sustain -= 1;
-            continue;
-        }
-
-        sustain = SUSTAIN;
-
-        rc = ti_ads1115_start(fd, device);
-        assert(rc >= 0);
-
-        while (!0) {
-            rc = ti_ads1115_check(fd, device);
-            assert(rc >= 0);
-            if (rc == 0) { break; };
+        } else if (rc < 0) {
+            break;
+        } else if (rc == 0) {
             ticks = diminuto_delay(delay, !0);
             assert(ticks >= 0);
-        }
-
-        rc = ti_ads1115_sense(fd, device, &adc);
-        assert(rc >= 0);
-
-        now = diminuto_time_elapsed();
-        assert(now >= 0);
-        elapsed = (now - was) * 1000 / diminuto_frequency();
-        was = now;
-
-        printf("%s: PWM %d %% chan0 0x%x %d chan1 0x%x %d ADC %d Period %lld ms\n", program, duty, chan0, chan0, chan1, chan1, adc, elapsed);
-
-        duty += increment;
-        if (duty > 100) {
-            duty = 99;
-            increment = -1;
-        } else if (duty < 0) {
-            break;
+            continue;
         } else {
             /* Do nothing. */
         }
 
-        rc = diminuto_modulator_set(&modulator, duty);
-        assert(rc >= 0);
+        while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
+
+            if (rc != fileno(fp)) {
+                continue;
+            }
+
+            value = diminuto_pin_get(fp);
+            if (value == 0) {
+                continue;
+            }
+
+            rc = ti_ads1115_sense(fd, device, &adc);
+            assert(rc >= 0);
+
+            assert((TI_ADS1115_CONVERSION_MINUMUM <= adc) && (adc <= TI_ADS1115_CONVERSION_MAXIMUM));
+
+            now = diminuto_time_elapsed();
+            assert(now >= 0);
+            elapsed = (now - was) * 1000 / diminuto_frequency();
+            was = now;
+
+            if (modulator.set) {
+                continue;
+            }
+
+            if (sustain > 0) {
+                sustain -= 1;
+                continue;
+            }
+
+            sustain = SUSTAIN;
+
+            printf("%s: PWM %d %% ADC %d Period %lld ms\n", program, duty, adc, elapsed);
+
+            duty += increment;
+            if (duty > 100) {
+                duty = 99;
+                increment = -1;
+            } else if (duty < 0) {
+                break;
+            } else {
+                /* Do nothing. */
+            }
+
+            rc = diminuto_modulator_set(&modulator, duty);
+            assert(rc >= 0);
+
+        }
+
+        if (duty < 0) {
+            break;
+        }
 
     }
 
@@ -186,6 +228,14 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_fini(&modulator);
     assert(rc >= 0);
 
+    rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    assert(rc >= 0);
+
+    diminuto_mux_fini(&mux);
+
+    fp = diminuto_pin_unused(fp, interrupt);
+    assert(fp == (FILE *)0);
+
     fd = diminuto_i2c_close(fd);
     assert(fd < 0);
 
@@ -193,3 +243,4 @@ int main(int argc, char ** argv) {
 
     return xc;
 }
+
