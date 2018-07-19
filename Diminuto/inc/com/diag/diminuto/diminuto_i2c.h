@@ -149,7 +149,7 @@ static inline int diminuto_i2c_get_byte(int fd, uint8_t addr, uint8_t reg, uint8
  * @param bufferp points to the buffer into which the word will be gotten.
  * @return 0 for success, <0 if an error occurred.
  */
-static inline diminuto_i2c_get_word(int fd, uint8_t addr, uint8_t reg, uint16_t * bufferp)
+static inline int diminuto_i2c_get_word(int fd, uint8_t addr, uint8_t reg, uint16_t * bufferp)
 {
     return diminuto_i2c_get(fd, addr, reg, bufferp, sizeof(*bufferp));
 }
