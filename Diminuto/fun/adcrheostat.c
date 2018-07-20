@@ -8,6 +8,7 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * UNTESTED
+ * BUILDS
  *
  * REFERENCES
  *
@@ -49,7 +50,8 @@ static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_ADC;
-static const int SUSTAIN = 3;
+static const int SUSTAIN = 4;
+static const int MEASURE = 5;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -74,6 +76,7 @@ int main(int argc, char ** argv) {
     diminuto_modulator_t modulator = { 0 };
     int increment = 1;
     int sustain = SUSTAIN;
+    int measure = MEASURE;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -188,7 +191,11 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            if (sustain > 0) {
+            /*
+             * Sustain allows the voltage to stabilize for a bit.
+             */
+
+            if (sustain > 1) {
                 sustain -= 1;
                 continue;
             }
@@ -196,6 +203,17 @@ int main(int argc, char ** argv) {
             sustain = SUSTAIN;
 
             printf("%s: PWM %d %% ADC %d Period %lld ms\n", program, duty, adc, elapsed);
+
+            /*
+             * Measure allows us to read the voltage more than once.
+             */
+
+            if (measure > 1) {
+                measure -= 1;
+                continue;
+            }
+
+            measure = MEASURE;
 
             duty += increment;
             if (duty > 100) {
