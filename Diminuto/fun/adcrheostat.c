@@ -65,7 +65,7 @@ int main(int argc, char ** argv) {
     int device = DEVICE;
     int interrupt = INTERRUPT;
     FILE * fp = (FILE *)0;
-    uint16_t adc = 0;
+    double volts = 0.0;
     diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
@@ -177,10 +177,8 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            rc = ti_ads1115_sense(fd, device, &adc);
+            rc = ti_ads1115_sense(fd, device, &volts);
             assert(rc >= 0);
-
-            assert((TI_ADS1115_CONVERSION_MINUMUM <= adc) && (adc <= TI_ADS1115_CONVERSION_MAXIMUM));
 
             now = diminuto_time_elapsed();
             assert(now >= 0);
@@ -202,7 +200,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% ADC %d Period %lld ms\n", program, duty, adc, elapsed);
+            printf("%s: PWM %d %% ADC %.3f v Period %lld ms\n", program, duty, volts, elapsed);
 
             /*
              * Measure allows us to read the voltage more than once.

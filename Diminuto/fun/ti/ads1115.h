@@ -272,6 +272,56 @@ static int ti_ads1115_check(int fd, int device)
 };
 #endif
 
+static int ti_ads1115_rawtovolts(uint16_t config, int16_t raw, double * voltsp)
+{
+    int rc = -1;
+    double pga = 0.0;
+
+    /*
+     * ADS1115 data sheet, p. 13, t. 3.
+     * ADS1115 data sheet, p. 18, t. 9.
+     * ADS1115 data sheet, p. 19,
+     */
+
+    switch (config & TI_ADS1115_CONFIG_PGA) {
+    case TI_ADS1115_CONFIG_PGA_6_144V:
+        pga = 6.144;
+        break;
+    case TI_ADS1115_CONFIG_PGA_4_096V:
+        pga = 4.096;
+        break;
+    case TI_ADS1115_CONFIG_PGA_2_048V:
+        pga = 2.048;
+        break;
+    case TI_ADS1115_CONFIG_PGA_1_024V:
+        pga = 1.024;
+        break;
+    case TI_ADS1115_CONFIG_PGA_0_512V:
+        pga = 0.512;
+        break;
+    case TI_ADS1115_CONFIG_PGA_0_256V:
+    case TI_ADS1115_CONFIG_PGA_0_256BV:
+    case TI_ADS1115_CONFIG_PGA_0_256CV:
+        pga = 0.256;
+        break;
+    default:
+        break;
+    }
+
+    /*
+     * ADS1115 data sheet, p. 14, t, 4.
+     */
+
+    if (pga > 0.0) {
+        *voltsp = raw;
+        *voltsp *= pga;
+        *voltsp /= 32767.0;
+        rc = 0;
+    }
+
+    return rc;
+}
+
 /**
  * Read an Analog to Digital Conversion value.
  * @param fd is the open file descriptor to the appropriate I2C bus.
@@ -279,14 +329,21 @@ static int ti_ads1115_check(int fd, int device)
  * @param bufferp is the buffer into which the conversion is placed.
  * @return 0 if successful, <0 if an error occurred.
  */ 
-static int ti_ads1115_sense(int fd, int device, uint16_t * bufferp)
+static int ti_ads1115_sense(int fd, int device, double * bufferp)
 {
     int rc = -1;
+    uint16_t config = 0x0000;
+    int16_t raw = 0x0000;
 
     while (0) {
 
-        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, bufferp);
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &config);
         if (rc < 0) { break; }
+
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, &raw);
+        if (rc < 0) { break; }
+
+        rc = ti_ads1115_rawtovolts(config, raw, bufferp);
 
     }
 

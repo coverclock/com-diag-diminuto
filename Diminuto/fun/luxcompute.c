@@ -43,6 +43,7 @@
 
 int main(int argc, char ** argv)
 {
+    int rc = -1;
     int offset = 0;
     int debug = 0;
     const char * program = (const char *)0;
@@ -68,7 +69,8 @@ int main(int argc, char ** argv)
         while (!0) {
             raw1 = 0x0000;
             while (!0) {
-                lux = avago_apds9301_chan2lux(raw0, raw1);
+                rc = avago_apds9301_rawtolux(raw0, raw1, &lux);
+                assert(rc >= 0);
                 if (lux < min) { min = lux; minraw0 = raw0; minraw1 = raw1; }
                 if (lux > max) { max = lux; maxraw0 = raw0; maxraw1 = raw1; }
                 if (raw1 >= 0xffff) { break; }
@@ -105,7 +107,8 @@ int main(int argc, char ** argv)
 		return 1;
     }
 
-    lux = avago_apds9301_chan2lux(raw0, raw1);
+    rc = avago_apds9301_rawtolux(raw0, raw1, &lux);
+    assert(rc >= 0);
 
     if (debug) {
         fprintf(stderr, "%s: 0x%x %d 0x%x %d %f\n", program, raw0, raw0, raw1, raw1, lux);

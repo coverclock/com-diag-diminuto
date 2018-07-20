@@ -238,9 +238,10 @@ static inline int avago_apds9301_configure_default(int fd, int device)
  * light sensor.
  * @param raw0 is the raw value from channel 0.
  * @param raw1 is the raw value from channel 1.
- * @return the measured brightness in Lux.
+ * @param luxp points to where the result is stored.
+ * @return 0 if successful, <0 otherwise.
  */
-static double avago_apds9301_chan2lux(uint16_t raw0, uint16_t raw1)
+static int avago_apds9301_rawtolux(uint16_t raw0, uint16_t raw1, double * luxp)
 {
     double lux = 0.0;
     double chan0 = 0.0;
@@ -268,12 +269,14 @@ static double avago_apds9301_chan2lux(uint16_t raw0, uint16_t raw1)
         lux = 0.0;
     }
 
+    *luxp = lux;
+
     /*
      * $ luxcompute -p
      * luxcompute: 0x0 0x0 0.000000 0xffff 0x0 1992.264000
      */
 
-    return lux;
+    return 0;
 }
 
 /**
@@ -331,7 +334,7 @@ static int avago_apds9301_sense(int fd, int device, double * bufferp)
 
         chan1 = ((uint16_t)datum << 8) | chan1;
 
-        *bufferp = avago_apds9301_chan2lux(chan0, chan1);
+        rc = avago_apds9301_rawtolux(chan0, chan1, bufferp);
 
     } while (0);
 
