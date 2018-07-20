@@ -31,7 +31,8 @@ enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_PIN_LED_3         = 21,
     HARDWARE_TEST_FIXTURE_PIN_BUT_LOW       = 22, /* Active low, pulled high. */
     HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH      = 27, /* Active high. */
-    HARDWARE_TEST_FIXTURE_PIN_LED_PWM       = 12, /* But usable elsewhere. */
+    HARDWARE_TEST_FIXTURE_PIN_PWM_LED       = 12,
+    HARDWARE_TEST_FIXTURE_PIN_PWM_ADC       = 13,
     HARDWARE_TEST_FIXTURE_PIN_INT_LUX       = 26, 
     HARDWARE_TEST_FIXTURE_PIN_INT_ADC       = 19, 
 };

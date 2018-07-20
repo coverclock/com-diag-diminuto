@@ -11,7 +11,7 @@
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
 SEC=${1:-1}
-PIN=${2:-${HARDWARE_TEST_FIXTURE_PIN_LED_PWM}}
+PIN=${2:-${HARDWARE_TEST_FIXTURE_PIN_PWM_LED}}
 DUTY=0;
 PCT=100;
 

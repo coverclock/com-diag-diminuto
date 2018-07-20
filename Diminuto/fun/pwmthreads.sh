@@ -11,7 +11,7 @@
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
 PGM=$(basename $0)
-PIN=${1:-${HARDWARE_TEST_FIXTURE_PIN_LED_PWM}}
+PIN=${1:-${HARDWARE_TEST_FIXTURE_PIN_PWM_LED}}
 SEC=${2:-3}
 DUTY=0;
 PCT=100;
