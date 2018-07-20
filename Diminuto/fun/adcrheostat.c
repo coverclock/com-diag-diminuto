@@ -45,7 +45,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static const int LED = HARDWARE_TEST_FIXTURE_PIN_LED_PWM;
+static const int LED = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
 static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
