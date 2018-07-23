@@ -1,8 +1,3 @@
-# adcrheostat
-APDS9310: 0x48[0x00] = 0x0016
-APDS9310: 0x48[0x01] = 0x409c
-APDS9310: 0x48[0x02] = 0x0000
-APDS9310: 0x48[0x03] = 0x8000
 adcrheostat: PWM 0 % ADC -0.003 v Period 6 ms
 adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
 adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
@@ -1008,5 +1003,3 @@ adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
 adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
 adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
 adcrheostat: PWM 0 % ADC -0.003 v Period 8 ms
-adcrheostat: exiting
-#
