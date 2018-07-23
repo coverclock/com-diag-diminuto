@@ -45,7 +45,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static const int LED = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
+static const int PWM = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
 static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
@@ -59,7 +59,7 @@ int main(int argc, char ** argv) {
     int fd = -1;
     int rc = -1;
     uint8_t datum = 0;
-    int led = LED;
+    int pwm = PWM;
     int duty = DUTY;
     int bus = BUS;
     int device = DEVICE;
@@ -95,6 +95,9 @@ int main(int argc, char ** argv) {
     rc = ti_ads1115_print(fd, device, stdout);
     assert(rc >= 0);
 
+    rc = ti_ads1115_sense(fd, device, &volts);
+    assert(rc >= 0);
+
     /*
      * GPIO interrupt pin.
      */
@@ -110,6 +113,9 @@ int main(int argc, char ** argv) {
     rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
     assert(rc == 0);
 
+    value = diminuto_pin_get(fp);
+    assert(value >= 0);
+
     /*
      * Multiplexer.
      */
@@ -123,7 +129,7 @@ int main(int argc, char ** argv) {
      * Pulse width moddulator.
      */
 
-    rc = diminuto_modulator_init(&modulator, led, duty);
+    rc = diminuto_modulator_init(&modulator, pwm, duty);
     assert(rc >= 0);
 
     /*
@@ -173,6 +179,7 @@ int main(int argc, char ** argv) {
             }
 
             value = diminuto_pin_get(fp);
+            assert(value >= 0);
             if (value == 0) {
                 continue;
             }

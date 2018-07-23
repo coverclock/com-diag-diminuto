@@ -96,6 +96,15 @@ extern int diminuto_i2c_get(int fd, uint8_t addr, uint8_t reg, void * bufferp, s
  */
 extern int diminuto_i2c_set(int fd, uint8_t addr, uint8_t reg, const void * datap, size_t size);
 
+/**
+ * Send a datagram to the specified I2C device.
+ * @param fd is an open file descriptor.
+ * @param addr identifies the device address.
+ * @param datap points to the data to set.
+ * @param size is the number of bytes to set.
+ */
+extern int diminuto_i2c_send(int fd, uint8_t addr, const void * datap, size_t size);
+
 /*******************************************************************************
  * MULTIPLE OPERATIONS
  ******************************************************************************/

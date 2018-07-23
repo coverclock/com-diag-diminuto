@@ -49,7 +49,6 @@ enum TiAds1115Address {
  * Commands.
  */
 enum TiAds1115Command {
-    TI_ADS1115_COMMAND_ZEROES   = 0xfc,
     TI_ADS1115_COMMAND_POINTER  = 0x03,
 };
 
@@ -57,10 +56,10 @@ enum TiAds1115Command {
  * Register addresses.
  */
 enum TiAds1115Register {
-    TI_ADS1115_REGISTER_CONVERSION  = 0x0,
-    TI_ADS1115_REGISTER_CONFIG      = 0x1,
-    TI_ADS1115_REGISTER_LOTHRESH    = 0x2,
-    TI_ADS1115_REGISTER_HITHRESH    = 0x3,
+    TI_ADS1115_REGISTER_CONVERSION  = 0x00,
+    TI_ADS1115_REGISTER_CONFIG      = 0x01,
+    TI_ADS1115_REGISTER_LOTHRESH    = 0x02,
+    TI_ADS1115_REGISTER_HITHRESH    = 0x03,
 };
 
 /**
@@ -131,7 +130,7 @@ enum TiAds1115Config {
  */
 enum TiAds1115LoThresh {
     TI_ADS1115_LOTHRESH_DEFAULT = 0x8000,
-    TI_ADS1115_LOTHRESH_READY   = 0x0000,
+    TI_ADS1115_LOTHRESH_RDY     = 0x0000,
 };
 
 /**
@@ -139,7 +138,7 @@ enum TiAds1115LoThresh {
  */
 enum TiAds1115HiThresh {
     TI_ADS1115_HITHRESH_DEFAULT = 0x7fff,
-    TI_ADS1115_HITHRESH_READY   = 0x8000,
+    TI_ADS1115_HITHRESH_RDY     = 0x8000,
 };
 
 /**
@@ -204,20 +203,31 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
 static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t hithresh, uint16_t config)
 {
     int rc = -1;
-
-fprintf(stderr, "lothresh=0x%04x hithresh=0x%04x config=0x%04x\n", lothresh, hithresh, config);
+    uint8_t buffer[sizeof(uint8_t) + sizeof(uint16_t)];
 
     do {
 
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_LOTHRESH, ti_ads1115_htod(lothresh));
+        buffer[0] = TI_ADS1115_REGISTER_LOTHRESH;
+        buffer[1] = lothresh >> 8;
+        buffer[2] = lothresh & 0xff;
+
+        rc = diminuto_i2c_send(fd, device, buffer, sizeof(buffer));
         if (rc < 0) { break; }
 
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_HITHRESH, ti_ads1115_htod(hithresh));
+        buffer[0] = TI_ADS1115_REGISTER_HITHRESH;
+        buffer[1] = hithresh >> 8;
+        buffer[2] = hithresh & 0xff;
+
+        rc = diminuto_i2c_send(fd, device, buffer, sizeof(buffer));
         if (rc < 0) { break; }
-        
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, ti_ads1115_htod(config));
+
+        buffer[0] = TI_ADS1115_REGISTER_CONFIG;
+        buffer[1] = config >> 8;
+        buffer[2] = config & 0xff;
+
+        rc = diminuto_i2c_send(fd, device, buffer, sizeof(buffer));
         if (rc < 0) { break; }
-        
+
     } while (0);
 
     return rc;
@@ -231,7 +241,7 @@ fprintf(stderr, "lothresh=0x%04x hithresh=0x%04x config=0x%04x\n", lothresh, hit
  */
 static inline int ti_ads1115_configure_default(int fd, int device)
 {
-    return ti_ads1115_configure(fd, device, TI_ADS1115_LOTHRESH_DEFAULT, TI_ADS1115_HITHRESH_DEFAULT, TI_ADS1115_CONFIG_OS_NOP | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_128SPS | TI_ADS1115_CONFIG_COMP_MODE_HYSTERESIS | TI_ADS1115_CONFIG_COMP_POL_HIGH | TI_ADS1115_CONFIG_COMP_LAT_ON | TI_ADS1115_CONFIG_COMP_QUE_1);
+    return ti_ads1115_configure(fd, device, 0, 0, TI_ADS1115_CONFIG_OS_NOP | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_128SPS | TI_ADS1115_CONFIG_COMP_MODE_WINDOW | TI_ADS1115_CONFIG_COMP_POL_HIGH | TI_ADS1115_CONFIG_COMP_LAT_ON | TI_ADS1115_CONFIG_COMP_QUE_1);
 }
 
 #if defined(COM_DIAG_DIMINUTO_TI_ADS1115_UNTESTED)
@@ -354,7 +364,8 @@ static int ti_ads1115_sense(int fd, int device, double * bufferp)
     uint16_t config = 0x0000;
     int16_t raw = 0x0000;
 
-    while (0) {
+
+    do {
 
         rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &config);
         if (rc < 0) { break; }
@@ -364,7 +375,7 @@ static int ti_ads1115_sense(int fd, int device, double * bufferp)
 
         rc = ti_ads1115_rawtovolts(ti_ads1115_dtoh(config), ti_ads1115_dtoh(raw), bufferp);
 
-    }
+    } while (0);
 
     return rc;
 }
