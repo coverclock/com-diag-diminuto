@@ -33,6 +33,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include <stdio.h>
+#include <arpa/inet.h>
 
 /**
  * Possible I2C addresses depending on hardware configuration.
@@ -76,8 +77,9 @@ enum TiAds1115Conversion {
 enum TiAds1115Config {
     TI_ADS1115_CONFIG_OS                    = 0x8000,
     TI_ADS1115_CONFIG_OS_START              = 0x8000,
-    TI_ADS1115_CONFIG_OS_BUSY               = 0x8000,
-    TI_ADS1115_CONFIG_OS_IDLE               = 0x0000,
+    TI_ADS1115_CONFIG_OS_NOP                = 0x0000,
+    TI_ADS1115_CONFIG_OS_BUSY               = 0x0000,
+    TI_ADS1115_CONFIG_OS_IDLE               = 0x8000,
     TI_ADS1115_CONFIG_MUX                   = 0x7000,
     TI_ADS1115_CONFIG_MUX_AIN0_AIN1         = 0x0000,
     TI_ADS1115_CONFIG_MUX_AIN0_AIN3         = 0x1000,
@@ -141,6 +143,26 @@ enum TiAds1115HiThresh {
 };
 
 /**
+ * Convert from device byte order (big endian) to host byte order.
+ * @param datum to convert.
+ * @return converted datum.
+ */
+static inline uint16_t ti_ads1115_dtoh(uint16_t datum)
+{
+    return ntohs(datum);
+}
+
+/**
+ * Convert from host byte order to device byte order (big endian).
+ * @param datum to convert.
+ * @return converted datum.
+ */
+static inline uint16_t ti_ads1115_htod(uint16_t datum)
+{
+    return htons(datum);
+}
+
+/**
  * Dump most device registers to the specified FILE stream.
  * @param fd is the open file descriptor to the appropriate I2C bus.
  * @param device is the device address.
@@ -162,7 +184,7 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
     for (ii = 0; ii < countof(REGISTERS); ++ii) {
         rc = diminuto_i2c_get_word(fd, device, REGISTERS[ii], &datum);
         if (rc < 0) { break; }
-        fprintf(fp, "APDS9310: 0x%02x[0x%02x] = 0x%04x\n", device, REGISTERS[ii], datum);
+        fprintf(fp, "APDS9310: 0x%02x[0x%02x] = 0x%04x\n", device, REGISTERS[ii], ti_ads1115_dtoh(datum));
     }
 
     return rc;
@@ -182,23 +204,18 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
 static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t hithresh, uint16_t config)
 {
     int rc = -1;
-    uint16_t datum = 0x0000;
+
+fprintf(stderr, "lothresh=0x%04x hithresh=0x%04x config=0x%04x\n", lothresh, hithresh, config);
 
     do {
 
-        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_LOTHRESH, ti_ads1115_htod(lothresh));
         if (rc < 0) { break; }
 
-        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
-
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_LOTHRESH, lothresh);
-        if (rc < 0) { break; }
-
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_HITHRESH, hithresh);
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_HITHRESH, ti_ads1115_htod(hithresh));
         if (rc < 0) { break; }
         
-
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, config);
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, ti_ads1115_htod(config));
         if (rc < 0) { break; }
         
     } while (0);
@@ -214,10 +231,10 @@ static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t 
  */
 static inline int ti_ads1115_configure_default(int fd, int device)
 {
-    return ti_ads1115_configure(fd, device, TI_ADS1115_LOTHRESH_READY, TI_ADS1115_HITHRESH_READY, TI_ADS1115_CONFIG_OS_IDLE | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_8SPS);
+    return ti_ads1115_configure(fd, device, TI_ADS1115_LOTHRESH_DEFAULT, TI_ADS1115_HITHRESH_DEFAULT, TI_ADS1115_CONFIG_OS_NOP | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_128SPS | TI_ADS1115_CONFIG_COMP_MODE_HYSTERESIS | TI_ADS1115_CONFIG_COMP_POL_HIGH | TI_ADS1115_CONFIG_COMP_LAT_ON | TI_ADS1115_CONFIG_COMP_QUE_1);
 }
 
-#if 0
+#if defined(COM_DIAG_DIMINUTO_TI_ADS1115_UNTESTED)
 /**
  * Start a conversion using the existing configuration. If a conversion is
  * already running, this operation will fail.
@@ -235,12 +252,13 @@ static int ti_ads1115_start(int fd, int device)
 
         rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
         if (rc < 0) { break; }
+        datum = ti_ads1115_dtoh(datum);
 
-        if ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0) { rc = -2; break; }
+        if ((datum & TI_ADS1115_CONFIG_OS) != TI_ADS1115_CONFIG_OS_IDLE) { rc = -2; break; }
 
         datum |= TI_ADS1115_CONFIG_OS_START;
 
-        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, datum);
+        rc = diminuto_i2c_set_word(fd, device, TI_ADS1115_REGISTER_CONFIG, ti_ads1115_htod(datum));
         if (rc < 0) { break; }
         
     } while (0);
@@ -263,8 +281,9 @@ static int ti_ads1115_check(int fd, int device)
 
         rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &datum);
         if (rc < 0) { break; }
+        datum = ti_ads1115_dtoh(datum);
 
-        rc = ((datum & TI_ADS1115_CONFIG_OS_BUSY) != 0);
+        rc = ((datum & TI_ADS1115_CONFIG_OS) != TI_ADS1115_CONFIG_OS_IDLE);
 
     } while (0);
 
@@ -343,7 +362,7 @@ static int ti_ads1115_sense(int fd, int device, double * bufferp)
         rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, &raw);
         if (rc < 0) { break; }
 
-        rc = ti_ads1115_rawtovolts(config, raw, bufferp);
+        rc = ti_ads1115_rawtovolts(ti_ads1115_dtoh(config), ti_ads1115_dtoh(raw), bufferp);
 
     }
 

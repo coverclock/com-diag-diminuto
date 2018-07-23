@@ -89,7 +89,7 @@ static const int OUTPUT_MODULO = 24;
 static const int INPUT_I2C_BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int INPUT_I2C_DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
 static const int INPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
-static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
+static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
 
 /*
  * These parameters tune the PID controller. Choosing good values are in

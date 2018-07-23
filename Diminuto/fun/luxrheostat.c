@@ -62,8 +62,6 @@ int main(int argc, char ** argv) {
     int device = DEVICE;
     int interrupt = INTERRUPT;
     FILE * fp = (FILE *)0;
-    uint16_t chan0 = 0;
-    uint16_t chan1 = 0;
     double lux = 0.0;
     diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
@@ -204,7 +202,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% chan0 0x%x %d chan1 0x%x %d Lux %.2f lx %d Period %lld ms\n", program, duty, chan0, chan0, chan1, chan1, lux, value = lux, elapsed);
+            printf("%s: PWM %d %% Lux %.2f lx %d Period %lld ms\n", program, duty, lux, value = lux, elapsed);
 
             duty += increment;
             if (duty > 100) {
