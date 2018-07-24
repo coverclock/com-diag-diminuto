@@ -10,42 +10,37 @@
  * ABSTRACT
  *
  * This is a functional test of the PID controller, using the PWM
- * modulator to control the brighness on an LED, and a light sensor
- * to implement a feedback loop. The parameters work for the hardware
- * text fixture I use to exercise a number of Diminuto functional tests.
+ * modulator to control the voltage on a pin, and an analog-to-digital
+ * converter to implement a feedback loop. The parameters work for the
+ * hardware text fixture I use to exercise a number of Diminuto functional
+ * tests.
  *
  * The PWM modulator duty cycle ranges from 0 (off) to 100 (on).
  *
- * The light sensor output ranges from 0 to about 1992 lux.
+ * The ADC output ranges functionally from approximately -6.14V to 6.14V,
+ * and emperically with this test fixture from approximately -0.003V to
+ * 3.289V (nominally 3.3V).
  *
  * USAGE
  *
- * pidtest [ -d ] [ LUXTARGET [ DUTYCYCLE ] ]
+ * adccontroller [ -d ] [ ADCTARGET [ DUTYCYCLE ] ]
  *
  * EXAMPLE
  *
- * pidtest 1500 10
+ * adccontroller 1500 10
  *
  * REFERENCES
  *
- * Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
- * (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
+ * TI, "Ultra-Small, Low-Power, 16-Bit Analog-to-Digital Converter with
+ * Internal Reference", (ADS1113, ADS1114, ADS1115), SBAS4448, Texas
+ * Instruments, 2009-10
  *
- * Wikipedia, "Lux", 2018-03-17
- *
- * Sparkfun, "SparkFun Ambient Light Sensor Breakout - APDS-9301",
- * SEN-14350, https://www.sparkfun.com/products/14350
+ * Adafruit, "ADS1115 16-Bit ADC - 4 Channel with Programmable Gain
+ * Amplifier, P/N 1085, https://www.adafruit.com/product/1085
  *
  * QUOTE
  *
  * "Test what you fly, fly what you test." - NASA aphorism
- *
- * NOTE
- *
- * One weird thing about my hardware test fixture: the ADPS 9301 sensor
- * does *not* measure the highest reading with the duty cycle of the LED
- * is 100%, where the LED is fully on and not modulated at all.. It's moreu
- * like 74%. Still trying to figure that one out.
  */
 
 #include "com/diag/diminuto/diminuto_controller.h"
@@ -61,7 +56,7 @@
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "hardware_test_fixture.h"
-#include "avago/apds9301.h"
+#include "ti/ads1115.h"
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -75,7 +70,7 @@
 
 /*
  * These parameters control the setttling time of the software PWM control
- * of the LED (INPUT), and how often we print headers on the report (OUTPUT).
+ * of the ADC (INPUT), and how often we print headers on the report (OUTPUT).
  */
 
 static const int INPUT_MODULO = 4;
@@ -87,9 +82,9 @@ static const int OUTPUT_MODULO = 24;
  */
 
 static const int INPUT_I2C_BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
-static const int INPUT_I2C_DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
-static const int INPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
-static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
+static const int INPUT_I2C_DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
+static const int INPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_INT_ADC;
+static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
 
 /*
  * These parameters tune the PID controller. Choosing good values are in
@@ -108,16 +103,16 @@ static const diminuto_controller_factor_t PID_KI_DENOMINATOR = 8;
 static const diminuto_controller_factor_t PID_KD_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 4;
 static const diminuto_controller_factor_t PID_KC_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 200;
+static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 33;
 static const bool PID_FILTER = 0;
 
 /*
  * These are the beginning PWM duty cycle (OUTPUT) in percent [0..100],
- * and the default sensor target value (INPUT) in decilux [0..19922].
+ * and the default ADC target value (INPUT) in millivolts [-6144..6144].
  */
 
 static const diminuto_controller_output_t PWM_DUTY = 50;
-static const diminuto_controller_input_t TARGET_DECILUX= 10000;
+static const diminuto_controller_input_t TARGET_MILLIVOLTS = 2475;
 static const bool DEBUG = 0;
 
 /*
@@ -126,7 +121,7 @@ static const bool DEBUG = 0;
  */
 
 static const diminuto_controller_output_t MAXIMUM_DUTY = 100;
-static const diminuto_controller_input_t MAXIMUM_DECILUX = 20000;
+static const diminuto_controller_input_t MAXIMUM_MILLIVOLTS = 6144;
 
 int main(int argc, char ** argv) {
     int xc = 0;
@@ -138,7 +133,7 @@ int main(int argc, char ** argv) {
     int device = INPUT_I2C_DEVICE;
     int interrupt = INPUT_GPIO_PIN;
     FILE * fp = (FILE *)0;
-    double lux = 0.0;
+    double adc = 0.0;
     diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
@@ -166,7 +161,7 @@ int main(int argc, char ** argv) {
      */
 
     if (argc < 1) {
-        program = "pidtest";
+        program = "adccontroller";
     } else {
         program = ((program = strrchr(*argv, '/')) == (char *)0) ? *argv : program + 1;
         argv += 1;
@@ -176,7 +171,7 @@ int main(int argc, char ** argv) {
     if (argc < 1) {
         /* Do nothing. */
     } else if (strncmp(*argv, "-?", sizeof("-?")) == 0) {
-        fprintf(stderr, "usage: %s [ -? | [ -d ] [ DECILUX [ DUTYCYCLE ] ] ]\n", program);
+        fprintf(stderr, "usage: %s [ -? | [ -d ] [ MILLIVOLTS [ DUTYCYCLE ] ] ]\n", program);
         exit(0);
     }
 
@@ -189,11 +184,11 @@ int main(int argc, char ** argv) {
     }
 
     if (argc < 1) {
-        target = TARGET_DECILUX;
+        target = TARGET_MILLIVOLTS;
     } else {
         end = (char *)0;
         target = strtoul(*argv, &end, 0);
-        if ((end == (char *)0) || (*end != '\0') || (target > MAXIMUM_DECILUX)) {
+        if ((end == (char *)0) || (*end != '\0') || (target > MAXIMUM_MILLIVOLTS)) {
             errno = EINVAL;
             diminuto_perror(*argv);
             exit(1);
@@ -223,14 +218,11 @@ int main(int argc, char ** argv) {
     fd = diminuto_i2c_open(bus);
     assert(fd >= 0);
 
-    rc = avago_apds9301_reset(fd, device); 
-    assert(rc >= 0);
-
-    rc = avago_apds9301_configure_default(fd, device);
+    rc = ti_ads1115_configure_default(fd, device);
     assert(rc >= 0);
 
     if (debug) {
-        rc = avago_apds9301_print(fd, device, stderr);
+        rc = ti_ads1115_print(fd, device, stderr);
         assert(rc >= 0);
     }
 
@@ -323,10 +315,8 @@ int main(int argc, char ** argv) {
     bit = diminuto_pin_get(fp);
     assert(bit >= 0);
 
-    rc = avago_apds9301_sense(fd, device, &lux);
+    rc = ti_ads1115_sense(fd, device, &adc);
     assert(rc >= 0);
-
-    assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
     /*
      * Work loop.
@@ -368,11 +358,10 @@ int main(int argc, char ** argv) {
                 continue;
             }
 
-            rc = avago_apds9301_sense(fd, device, &lux);
+            rc = ti_ads1115_sense(fd, device, &adc);
             assert(rc >= 0);
 
-            assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
-            input = (lux + 0.5) * 10.0;
+            input = (adc + 0.5) * 1000.0;
 
             now = diminuto_time_elapsed();
             assert(now >= 0);
