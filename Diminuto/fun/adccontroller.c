@@ -73,7 +73,7 @@
  * of the ADC (INPUT), and how often we print headers on the report (OUTPUT).
  */
 
-static const int INPUT_MODULO = 4;
+static const int INPUT_MODULO = 8;
 static const int OUTPUT_MODULO = 24;
 
 /*
@@ -91,17 +91,17 @@ static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
  * my personal experience a bit of an art and require some experimentation.
  */
 
-static const diminuto_controller_value_t PID_INPUT_WINDUP = 20000;
+static const diminuto_controller_value_t PID_INPUT_WINDUP = 3300;
 static const diminuto_controller_output_t PID_OUTPUT_MINIMUM = 0;
 static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 100;
 static const diminuto_controller_output_t PID_OUTPUT_LOWER = 0;
 static const diminuto_controller_output_t PID_OUTPUT_UPPER = 100;
 static const diminuto_controller_factor_t PID_KP_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 4;
+static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 8;
 static const diminuto_controller_factor_t PID_KI_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KI_DENOMINATOR = 8;
 static const diminuto_controller_factor_t PID_KD_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 4;
+static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 8;
 static const diminuto_controller_factor_t PID_KC_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 33;
 static const bool PID_FILTER = 0;
