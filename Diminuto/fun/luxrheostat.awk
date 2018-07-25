@@ -1,3 +1,4 @@
+# Copyright 2018 Digital Aggregates Corporation, Colorado, USA
 BEGIN { was = 0; }
 ($1!="luxrheostat:") { next; }
 ($2!="PWM") { next; }
