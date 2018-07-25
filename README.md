@@ -187,7 +187,21 @@ Wheat Ridge CO 80033 USA
 * usectime - display the elapsed monotonic time in microseconds.
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
- 
+
+## Examples
+
+* adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
+* adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
+* dcdtest - DCD support on serial port (Serial).
+* lbktest - Loopback on serial port (Serial).
+* luxcontroller - LED and lux sensor PID loop (Pin, Modulator, I2C, Controller).
+* luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
+* pinchange - Multiplexing of GPIO pins (Pin).
+* pintest - Setting and getting GPIO pins (Pin).
+
+(These are functional tests that use hardware test fixtures I cobbled
+together specifically for this purpose.)
+
 ## Directories
  
 * bin - utility source files.
