@@ -70,9 +70,9 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
 	int ii = 0;
 
     if (duty <= DIMINUTO_MODULATOR_MINIMUM_DUTY) {
-        duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;;
+        duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;
     } else if (duty >= DIMINUTO_MODULATOR_MAXIMUM_DUTY) {
-        duty = DIMINUTO_MODULATOR_MAXIMUM_DUTY;;
+        duty = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
     } else {
        /* Do nothing. */
     }
