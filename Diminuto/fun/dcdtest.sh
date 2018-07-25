@@ -18,4 +18,4 @@
 DEVICE=${1:-"/dev/ttyUSB0"}
 RATE=${2:-9600}
 
-exec serialtool -D ${DEVICE} -b ${RATE} -8 -1 -n -l -m -c
+exec serialtool -D ${DEVICE} -b ${RATE} -8 -n -1 -m -c
