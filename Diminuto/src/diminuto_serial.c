@@ -211,14 +211,14 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
         tios.c_cc[VTIME] = 0;
         tios.c_cc[VMIN] = 1;
 
-        if (tcflush(fd, TCIFLUSH) < 0) {
-        	diminuto_perror("diminuto_serial_set: tcflush");
-        	/* Not fatal. */
-        }
-
         if (tcsetattr(fd, TCSANOW, &tios) < 0) {
         	diminuto_perror("diminuto_serial_set: tcsetattr");
         	break;
+        }
+
+        if (tcflush(fd, TCIOFLUSH) < 0) {
+        	diminuto_perror("diminuto_serial_set: tcflush");
+        	/* Not fatal. */
         }
 
         rc = 0;
@@ -256,14 +256,14 @@ int diminuto_serial_raw(int fd)
         tios.c_cc[VTIME] = 0;
         tios.c_cc[VMIN] = 1;
 
-        if (tcflush(fd, TCIFLUSH) < 0) {
-            diminuto_perror("diminuto_serial_raw: tcflush");
-            /* Proceed anyway. */
-        }
-
         if (tcsetattr(fd, TCSANOW, &tios) < 0) {
             diminuto_perror("diminuto_serial_raw: tcsetattr");
             break;
+        }
+
+        if (tcflush(fd, TCIOFLUSH) < 0) {
+            diminuto_perror("diminuto_serial_raw: tcflush");
+            /* Proceed anyway. */
         }
 
         rc = 0;
