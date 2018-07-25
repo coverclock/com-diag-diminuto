@@ -452,20 +452,20 @@ int main(int argc, char * argv[])
             assert(rc >= 0);
         }
         while (!done) {
+            if (carrierdetect) {
+            	while (!0) {
+            		rc = diminuto_serial_status(fd);
+            		assert(rc >= 0);
+            		if (rc) {
+            			break;
+            		}
+            		rc = diminuto_serial_wait(fd);
+            		assert(rc >= 0);
+            	}
+            }
             fds = diminuto_mux_wait(&mux, -1);
             assert(fds > 0);
             while (!done) {
-            	if (carrierdetect) {
-            		while (!0) {
-            			rc = diminuto_serial_status(fd);
-            			assert(rc >= 0);
-            			if (rc) {
-            				break;
-            			}
-            			rc = diminuto_serial_wait(fd);
-            			assert(rc >= 0);
-            		}
-            	}
                 ready = diminuto_mux_ready_read(&mux);
                 if (ready < 0) {
                     break;
