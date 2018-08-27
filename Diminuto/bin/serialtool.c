@@ -464,7 +464,9 @@ int main(int argc, char * argv[])
             	}
             }
             fds = diminuto_mux_wait(&mux, -1);
-            assert(fds > 0);
+            if (fds <= 0) {
+                done = !0;
+            }
             while (!done) {
                 ready = diminuto_mux_ready_read(&mux);
                 if (ready < 0) {
