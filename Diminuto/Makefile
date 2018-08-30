@@ -175,9 +175,11 @@ MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
 SOXXFLAGS			:=	$(SOXXARCH) $(LDXXLIBRARIES)
 
-#BROWSER			:=	firefox
+GRIP				:=	grip
+
+BROWSER				:=	firefox
 #BROWSER			:=	epiphany
-BROWSER				:=	evince
+#BROWSER			:=	evince
 
 ########## Build Artifacts
 
@@ -725,7 +727,7 @@ isystems:
 
 ########## Documentation
 
-.PHONY:	documentation browse refman manpages
+.PHONY:	documentation browse refman manpages readme
 
 DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
 
@@ -763,6 +765,13 @@ refman:
 
 manpages:
 	$(BROWSER) file:$(OUT)/$(DOC_DIR)/pdf/manpages.pdf
+
+$(OUT)/$(DOC_DIR)/html/README.html:	../README.md
+	mkdir -p $(OUT)/$(DOC_DIR)/html
+	$(GRIP) ../README.md --export $(OUT)/$(DOC_DIR)/html/README.html
+
+readme:	$(OUT)/$(DOC_DIR)/html/README.html
+	$(BROWSER) file:$(OUT)/$(DOC_DIR)/html/README.html
 
 ########## Diffs and Patches
 
