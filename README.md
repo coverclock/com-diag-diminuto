@@ -2,6 +2,8 @@
 
 Linux systems programming library in C.
 
+[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
+
 ## Copyright
 
 Copyright 2008-2018 by the Digital Aggregates Corporation, Colorado, USA.
