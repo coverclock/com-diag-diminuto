@@ -48,6 +48,14 @@ Ubuntu 16.04.4 "xenial"
 Linux 4.13.0     
 gcc 5.4.0    
 
+"Nickel" (updated)    
+Intel NUC5i7RYH    
+Intel x86_64 64-bit    
+Intel Core i7-5557U @ 3.10GHz x 8    
+Ubuntu 18.04 "bionic"    
+Linux 4.15.0    
+gcc 7.3.0    
+
 "Lead"  
 Raspberry Pi 3 Model B  
 ARMv7 64-bit    
