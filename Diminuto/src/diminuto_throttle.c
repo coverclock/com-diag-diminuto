@@ -9,7 +9,33 @@
  */
 
 #include "com/diag/diminuto/diminuto_throttle.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+
+diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator)
+{
+    diminuto_ticks_t increment;
+
+    /* i = f / (n / d) = f * d / n */
+
+    increment = diminuto_frequency();
+    if (denominator > 1) {
+    	increment *= denominator;
+    }
+    if (numerator > 1) {
+    	increment /= numerator;
+    	if ((increment % numerator) > 0) {
+    		increment += 1;
+    	}
+    }
+
+	return increment;
+}
+
+diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize)
+{
+    return (maximumburstsize > 1) ? (maximumburstsize - 1) * increment : 0;
+}
 
 diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {

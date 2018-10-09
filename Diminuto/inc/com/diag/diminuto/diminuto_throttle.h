@@ -219,6 +219,19 @@ static inline int diminuto_throttle_update(diminuto_throttle_t * throttlep, dimi
  ******************************************************************************/
 
 /**
+ * Returns the delay in ticks that would be required for the event to be
+ * admissable without relying on the limit. This is simply the expected
+ * interarrival time of the next event, and is extracted directly from the
+ * corresponding throttle field without any state change in the throttle.
+ * @param throttlep is a pointer to the throttle.
+ * @return the requisite delay in ticks for the event to be expected.
+ */
+static inline diminuto_ticks_t diminuto_throttle_getexpected(diminuto_throttle_t * throttlep)
+{
+	return throttlep->expected;
+}
+
+/**
  * Returns true if the leaky bucket is empty.
  * @param throttlep is a pointer to the throttle.
  * @return true if the throttle is clear.
@@ -295,6 +308,25 @@ static inline int diminuto_throttle_cleared(diminuto_throttle_t * throttlep)
 /*******************************************************************************
  * ANCILLARY
  ******************************************************************************/
+
+/**
+ * Compute an interarrival time in ticks given the rate as a numerator and a
+ * denominator. The use of a fraction allows rates of less than one event per
+ * second, or fractional rates, to be specified.
+ * @param numerator is the numerator portion of the rate.
+ * @param denominator is the denominator portion of the rate.
+ * @return the interarrival time in ticks.
+ */
+extern diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator);
+
+/**
+ * Compute a jitter tolerance in ticks given the interarrival time (increment),
+ * and the largest packet size (maximum burst size).
+ * @param increment is the interarrival time in ticks corresponding to the rate.
+ * @param maximimburstsize is the largest packet size in events (e.g. bytes).
+ * @return the jitter tolerance in ticks.
+ */
+extern diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize);
 
 /**
  * Log the state of a throttle.

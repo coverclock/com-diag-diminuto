@@ -41,6 +41,19 @@ typedef struct DiminutoShaper {
     diminuto_throttle_t sustained;
 } diminuto_shaper_t;
 
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
+
+/**
+ * Return the current time from a monotonically increasing clock.
+ * @return the current time from a monotonically increasing clock in ticks.
+ */
+static inline diminuto_ticks_t diminuto_shaper_now(void)
+{
+    return diminuto_throttle_now();
+}
+
 /**
  * Reset a shaper to the beginning of time such that all past sins are
  * forgotten and the traffic stream is in compliance with its contract with
@@ -68,14 +81,9 @@ static inline diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shap
  */
 extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t peakrate, diminuto_ticks_t jittertolerance, size_t sustainedrate, size_t maximumburstsize, diminuto_ticks_t now);
 
-/**
- * Return the current time from a monotonically increasing clock.
- * @return the current time from a monotonically increasing clock in ticks.
- */
-static inline diminuto_ticks_t diminuto_shaper_now(void)
-{
-    return diminuto_throttle_now();
-}
+/*******************************************************************************
+ * STATE CHANGE
+ ******************************************************************************/
 
 /**
  * Ask if an event emitted now would conform to the contract. If it does, the
@@ -175,6 +183,173 @@ static inline int diminuto_shaper_admit(diminuto_shaper_t * shaperp, diminuto_ti
 {
     return diminuto_shaper_admitn(shaperp, now, 1);
 }
+
+/**
+ * Combine a request with a commit of zero events to indicate that time has
+ * passed without an event occurring, updating the state of the shaper.
+ * @param shaperp is a pointer to the shaper.
+ * @param now is the current time on a monotonically increasing clock.
+ * @return true if the leaky bucket is full, false otherwise.
+ */
+static inline int diminuto_shaper_update(diminuto_shaper_t * shaperp, diminuto_ticks_t now)
+{
+    return diminuto_shaper_admitn(shaperp, now, 0);
+}
+
+/*******************************************************************************
+ * STABLE STATE
+ ******************************************************************************/
+
+/**
+ * Returns the delay in ticks that would be required for the event to be
+ * admissable without relying on the limit. This is simply the expected
+ * interarrival time of the next event, and is extracted directly from the
+ * corresponding throttle field without any state change in the throttle.
+ * @param shaperp is a pointer to the throttle.
+ * @return the requisite delay in ticks for the event to be expected.
+ */
+static inline diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
+{
+	diminuto_ticks_t peak;
+	diminuto_ticks_t sustained;
+
+	peak = diminuto_throttle_getexpected(&(shaperp->peak));
+	sustained = diminuto_throttle_getexpected(&(shaperp->sustained));
+
+	return (peak > sustained) ? peak : sustained;
+}
+
+/**
+ * Returns true if the leaky bucket is empty.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_shaper_isempty(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_isempty(&(shaperp->peak));
+	sustained = diminuto_throttle_isempty(&(shaperp->sustained));
+
+    return peak && sustained;
+}
+
+/**
+ * Returns true if the leaky bucket is full.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_shaper_isfull(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_isfull(&(shaperp->peak));
+	sustained = diminuto_throttle_isfull(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/**
+ * Returns true if the throttle is alarmed.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the throttle is clear.
+ */
+static inline int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_isalarmed(&(shaperp->peak));
+	sustained = diminuto_throttle_isalarmed(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/*******************************************************************************
+ * TRANSITION STATE
+ ******************************************************************************/
+
+/**
+ * Returns true if the leaky bucket just filled.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the leaky bucket just filled.
+ */
+static inline int diminuto_shaper_emptied(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_emptied(&(shaperp->peak));
+	sustained = diminuto_throttle_emptied(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/**
+ * Returns true if the leaky bucket just filled.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the leaky bucket just filled.
+ */
+static inline int diminuto_shaper_filled(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_filled(&(shaperp->peak));
+	sustained = diminuto_throttle_filled(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/**
+ * Returns true if the throttle just alarmed.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the throttle just alarmed.
+ */
+static inline int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_alarmed(&(shaperp->peak));
+	sustained = diminuto_throttle_alarmed(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/**
+ * Returns true if the throttle just cleared.
+ * @param shaperp is a pointer to the throttle.
+ * @return true if the throttle just cleared.
+ */
+static inline int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
+{
+	int peak;
+	int sustained;
+
+	peak = diminuto_throttle_cleared(&(shaperp->peak));
+	sustained = diminuto_throttle_cleared(&(shaperp->sustained));
+
+    return peak || sustained;
+}
+
+/*******************************************************************************
+ * ANCILLARY
+ ******************************************************************************/
+
+/**
+ * Compute the burst tolerance given the peak increment (minimum interarrival
+ * time) in ticks, the jitter tolerance in ticks, the sustained increment
+ * (mean interarrival time), and the maximum burst size (maximum packet size)
+ * in events (e.g bytes).
+ * @param peakincrement is the minimum interarrival in ticks.
+ * @param jittertolerance is the jitter tolerance in ticks.
+ * @param sustainedincrement in mean interarrival time in ticks.
+ * @param maximumburstsize is the maximum burst or packet size in events.
+ */
+extern diminuto_ticks_t diminuto_shaper_bursttolerance(diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, size_t maximumburstsize);
 
 /**
  * Log the state of a shaper.

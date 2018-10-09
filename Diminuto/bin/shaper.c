@@ -368,7 +368,16 @@ int main(int argc, char * argv[])
 
     epoch = then = diminuto_time_elapsed();
     if (shaped) {
-        diminuto_shaper_init(&shaper, peakrate, diminuto_frequency_units2ticks(jittertolerance, 1000000LL), sustainedrate, maximumburstsize, then);
+    	diminuto_ticks_t peakincrement;
+    	diminuto_ticks_t jittertolerance;
+    	diminuto_ticks_t sustainedincrement;
+    	diminuto_ticks_t bursttolerance;
+    	peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1);
+    	jittertolerance = diminuto_throttle_jittertolerance(peakincrement, maximumburstsize);
+    	jittertolerance += diminuto_frequency_units2ticks(jittertolerance, 1000000LL);
+    	sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1);
+    	bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
+        diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
     }
 
     while (!0) {
@@ -441,6 +450,19 @@ int main(int argc, char * argv[])
             }
         }
 
+    }
+
+    if (shaped) {
+    	interval = diminuto_shaper_getexpected(&shaper);
+        if (interval <= 0) {
+            /* Do nothing. */
+        } else if (interval < minimum) {
+            diminuto_yield();
+        } else {
+            diminuto_delay_uninterruptible(interval);
+        }
+        now = diminuto_time_elapsed();
+        diminuto_shaper_update(&shaper, now);
     }
 
     report();
