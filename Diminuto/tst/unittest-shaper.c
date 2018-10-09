@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 static const size_t BLOCKSIZE = 32768;
 
@@ -41,23 +42,25 @@ int main(int argc, char ** argv)
         int admissable;
         uint64_t total = 0;
         diminuto_ticks_t duration = 0;
-        int64_t peak = 0;
-        int64_t sustained;
-        int64_t rate;
+        double peak = 0.0;
+        double sustained;
+        double rate;
         diminuto_ticks_t frequency;
     	diminuto_ticks_t peakincrement;
     	diminuto_ticks_t jittertolerance;
     	diminuto_ticks_t sustainedincrement;
     	diminuto_ticks_t bursttolerance;
+    	/**/
         frequency = diminuto_frequency();
 		peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1);
-		jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST);
+		jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST) + TOLERANCE;
 		sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1);
 		bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
 		sp = diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);
         diminuto_shaper_log(sp);
         srand(diminuto_time_clock());
+        /**/
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
             ASSERT(delay >= 0);
@@ -68,7 +71,9 @@ int main(int argc, char ** argv)
             } else if (delay <= 0) {
             	/* Do nothing. */
             } else {
-				rate = size * frequency / delay;
+				rate = size;
+				rate *= frequency;
+				rate /= delay;
 				if (rate > peak) { peak = rate; }
             }
             delay = diminuto_shaper_request(sp, now);
@@ -80,18 +85,22 @@ int main(int argc, char ** argv)
             admissable = !diminuto_shaper_commitn(sp, size);
             ASSERT(admissable);
         }
+        /**/
         delay = diminuto_shaper_getexpected(sp);
         ASSERT(delay >= 0);
         now += delay;
         duration += delay;
         diminuto_shaper_update(sp, now);
+        /**/
         ASSERT(total > 0);
         ASSERT(duration > frequency);
         diminuto_shaper_log(sp);
-        sustained = total * frequency / duration;
-        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lldbytes/second sustained=%zubytes/second measured=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
-        ASSERT(llabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
-        ASSERT(llabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
+        sustained = total;
+        sustained *= frequency;
+        sustained /= duration;
+        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
+        ASSERT(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
+        ASSERT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
      }
 
     EXIT();

@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 static const size_t BLOCKSIZE = 32768;
 
@@ -641,10 +642,10 @@ int main(int argc, char ** argv)
         int admissable;
         uint64_t total = 0;
         diminuto_ticks_t duration = 0;
-        uint64_t sustained;
         diminuto_ticks_t frequency;
-        uint64_t rate;
-        uint64_t peak = 0;
+        double sustained;
+        double rate;
+        double peak = 0;
         /**/
         TEST();
         /**/
@@ -653,6 +654,7 @@ int main(int argc, char ** argv)
         ASSERT(tp == &throttle);
         diminuto_throttle_log(tp);
         srand(diminuto_time_clock());
+        /**/
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_throttle_request(tp, now);
             ASSERT(delay >= 0);
@@ -663,7 +665,9 @@ int main(int argc, char ** argv)
             } else if (delay <= 0) {
             	/* Do nothing. */
             } else {
-            	rate = size * frequency / delay;
+            	rate = size;
+            	rate *= frequency;
+            	rate /= delay;
             	if (rate > peak) { peak = rate; }
             }
             delay = diminuto_throttle_request(tp, now);
@@ -675,6 +679,7 @@ int main(int argc, char ** argv)
             admissable = !diminuto_throttle_commitn(tp, size);
             ASSERT(admissable);
         }
+        /**/
         delay = diminuto_throttle_getexpected(tp);
         ASSERT(delay >= 0);
         now += delay;
@@ -684,10 +689,12 @@ int main(int argc, char ** argv)
         ASSERT(total > 0);
         ASSERT(duration > frequency);
         diminuto_throttle_log(tp);
-        sustained = total * frequency / duration;
-        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds requested=%zubytes/second sustained=%lldbytes/second peak=%lldbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, sustained, peak);
-        ASSERT(llabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
-        ASSERT(llabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
+        sustained = total;
+        sustained *= frequency;
+        sustained /= duration;
+        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds requested=%zubytes/second sustained=%lfbytes/second peak=%lfbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, sustained, peak);
+        ASSERT(fabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
+        ASSERT(fabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         /**/
         STATUS();
      }

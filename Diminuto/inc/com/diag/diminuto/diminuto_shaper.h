@@ -62,12 +62,7 @@ static inline diminuto_ticks_t diminuto_shaper_now(void)
  * @param now is the current time from a monotonically increasing clock.
  * @return a pointer to the shaper.
  */
-static inline diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, diminuto_ticks_t now)
-{
-    diminuto_throttle_reset(&(shaperp->peak), now);
-    diminuto_throttle_reset(&(shaperp->sustained), now);
-    return shaperp;
-}
+extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, diminuto_ticks_t now);
 
 /**
  * Initialize a shaper.
@@ -94,16 +89,7 @@ extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, siz
  * @param now is the current time on a monotonically increasing clock.
  * @return the requisite delay in ticks for the event to be admissable.
  */
-static inline diminuto_ticks_t diminuto_shaper_request(diminuto_shaper_t * shaperp, diminuto_ticks_t now)
-{
-    diminuto_ticks_t peak;
-    diminuto_ticks_t sustained;
-
-    peak = diminuto_throttle_request(&(shaperp->peak), now);
-    sustained = diminuto_throttle_request(&(shaperp->sustained), now);
-
-    return (peak > sustained) ? peak : sustained;
-}
+extern diminuto_ticks_t diminuto_shaper_request(diminuto_shaper_t * shaperp, diminuto_ticks_t now);
 
 /**
  * Tell the shaper that the previously requested event has been emitted
@@ -120,16 +106,7 @@ static inline diminuto_ticks_t diminuto_shaper_request(diminuto_shaper_t * shape
  * @param events is the number of events (nominally one).
  * @return true if the shaper is alarmed, false otherwise.
  */
-static inline int diminuto_shaper_commitn(diminuto_shaper_t * shaperp, size_t events)
-{
-    int peak;
-    int sustained;
-
-    peak = diminuto_throttle_commitn(&(shaperp->peak), events);
-    sustained = diminuto_throttle_commitn(&(shaperp->sustained), events);
-
-    return (peak || sustained);
-}
+extern int diminuto_shaper_commitn(diminuto_shaper_t * shaperp, size_t events);
 
 /**
  * Tell the shaper that the previously requested event has been emitted
@@ -157,16 +134,7 @@ static inline int diminuto_shaper_commit(diminuto_shaper_t * shaperp)
  * @param events is the number of events (nominally one).
  * @return true if the shaper is alarmed, false otherwise.
  */
-static inline int diminuto_shaper_admitn(diminuto_shaper_t * shaperp, diminuto_ticks_t now, size_t events)
-{
-    int peak;
-    int sustained;
-
-    peak = diminuto_throttle_admitn(&(shaperp->peak), now, events);
-    sustained = diminuto_throttle_admitn(&(shaperp->sustained), now, events);
-
-    return (peak || sustained);
-}
+extern int diminuto_shaper_admitn(diminuto_shaper_t * shaperp, diminuto_ticks_t now, size_t events);
 
 /**
  * Tell the shaper that the previously requested event has been emitted after
@@ -208,64 +176,28 @@ static inline int diminuto_shaper_update(diminuto_shaper_t * shaperp, diminuto_t
  * @param shaperp is a pointer to the throttle.
  * @return the requisite delay in ticks for the event to be expected.
  */
-static inline diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
-{
-	diminuto_ticks_t peak;
-	diminuto_ticks_t sustained;
-
-	peak = diminuto_throttle_getexpected(&(shaperp->peak));
-	sustained = diminuto_throttle_getexpected(&(shaperp->sustained));
-
-	return (peak > sustained) ? peak : sustained;
-}
+extern diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket is empty.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle is clear.
  */
-static inline int diminuto_shaper_isempty(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_isempty(&(shaperp->peak));
-	sustained = diminuto_throttle_isempty(&(shaperp->sustained));
-
-    return peak && sustained;
-}
+extern int diminuto_shaper_isempty(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket is full.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle is clear.
  */
-static inline int diminuto_shaper_isfull(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_isfull(&(shaperp->peak));
-	sustained = diminuto_throttle_isfull(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_isfull(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle is alarmed.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle is clear.
  */
-static inline int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_isalarmed(&(shaperp->peak));
-	sustained = diminuto_throttle_isalarmed(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp);
 
 /*******************************************************************************
  * TRANSITION STATE
@@ -276,64 +208,28 @@ static inline int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-static inline int diminuto_shaper_emptied(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_emptied(&(shaperp->peak));
-	sustained = diminuto_throttle_emptied(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_emptied(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket just filled.
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-static inline int diminuto_shaper_filled(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_filled(&(shaperp->peak));
-	sustained = diminuto_throttle_filled(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_filled(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle just alarmed.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle just alarmed.
  */
-static inline int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_alarmed(&(shaperp->peak));
-	sustained = diminuto_throttle_alarmed(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle just cleared.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle just cleared.
  */
-static inline int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
-{
-	int peak;
-	int sustained;
-
-	peak = diminuto_throttle_cleared(&(shaperp->peak));
-	sustained = diminuto_throttle_cleared(&(shaperp->sustained));
-
-    return peak || sustained;
-}
+extern int diminuto_shaper_cleared(diminuto_shaper_t * shaperp);
 
 /*******************************************************************************
  * ANCILLARY
