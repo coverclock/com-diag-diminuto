@@ -372,10 +372,10 @@ int main(int argc, char * argv[])
     	diminuto_ticks_t jittertolerance;
     	diminuto_ticks_t sustainedincrement;
     	diminuto_ticks_t bursttolerance;
-    	peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1);
+    	peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
     	jittertolerance = diminuto_throttle_jittertolerance(peakincrement, maximumburstsize);
     	jittertolerance += diminuto_frequency_units2ticks(jittertolerance, 1000000LL);
-    	sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1);
+    	sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
     	bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
         diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
     }

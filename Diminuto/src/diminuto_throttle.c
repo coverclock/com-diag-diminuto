@@ -12,21 +12,23 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
-diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator)
+diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator, diminuto_ticks_t frequency)
 {
     diminuto_ticks_t increment;
 
     /* i = f / (n / d) = f * d / n */
 
-    increment = diminuto_frequency();
+    increment = frequency;
     if (denominator > 1) {
     	increment *= denominator;
     }
-    if (numerator > 1) {
+    if (numerator <= 1) {
+    	/* Do nothing. */
+    } else if ((increment % numerator) > 0) {
     	increment /= numerator;
-    	if ((increment % numerator) > 0) {
-    		increment += 1;
-    	}
+    	increment += 1;
+    } else {
+    	increment /= numerator;
     }
 
 	return increment;

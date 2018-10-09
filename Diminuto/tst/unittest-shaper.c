@@ -28,6 +28,19 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+    	TEST();
+
+        ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 5) == 23);
+        ASSERT(diminuto_shaper_bursttolerance(2, 0, 7, 5) == 20);
+        ASSERT(diminuto_shaper_bursttolerance(0, 0, 2, 5) == 8);
+        ASSERT(diminuto_shaper_bursttolerance(7, 3, 7, 5) == 3);
+        ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 1) == 3);
+        ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 0) == 3);
+
+    	STATUS();
+    }
+
+    {
         static const size_t PEAK = 2048;
         static const diminuto_ticks_t TOLERANCE = 0;
         static const size_t SUSTAINED = 1024;
@@ -52,9 +65,9 @@ int main(int argc, char ** argv)
     	diminuto_ticks_t bursttolerance;
     	/**/
         frequency = diminuto_frequency();
-		peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1);
+		peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1, frequency);
 		jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST) + TOLERANCE;
-		sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1);
+		sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
 		bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
 		sp = diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);

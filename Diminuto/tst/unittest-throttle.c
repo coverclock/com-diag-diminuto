@@ -28,6 +28,28 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+    	TEST();
+
+    	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 4) == 2);
+    	ASSERT(diminuto_throttle_interarrivaltime(1, 2, 4) == 8);
+    	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 5) == 3);
+    	ASSERT(diminuto_throttle_interarrivaltime(1, 2, 5) == 10);
+
+    	STATUS();
+    }
+
+    {
+    	TEST();
+
+    	ASSERT(diminuto_throttle_jittertolerance(2, 3) == 4);
+    	ASSERT(diminuto_throttle_jittertolerance(2, 0) == 0);
+    	ASSERT(diminuto_throttle_jittertolerance(2, 1) == 0);
+    	ASSERT(diminuto_throttle_jittertolerance(3, 2) == 3);
+
+    	STATUS();
+    }
+
+    {
         static const diminuto_ticks_t II = 0x123456789abcdef0LL;
         static const diminuto_ticks_t LL = 0x9abcdef012345678LL;
         static const diminuto_ticks_t TT = 0xfedcba9876543210LL;
@@ -650,7 +672,7 @@ int main(int argc, char ** argv)
         TEST();
         /**/
         frequency = diminuto_frequency();
-        tp = diminuto_throttle_init(&throttle, diminuto_throttle_interarrivaltime(BANDWIDTH * 3, 3), 0, now);
+        tp = diminuto_throttle_init(&throttle, diminuto_throttle_interarrivaltime(BANDWIDTH * 3, 3, frequency), 0, now);
         ASSERT(tp == &throttle);
         diminuto_throttle_log(tp);
         srand(diminuto_time_clock());

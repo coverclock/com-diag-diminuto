@@ -315,9 +315,10 @@ static inline int diminuto_throttle_cleared(diminuto_throttle_t * throttlep)
  * second, or fractional rates, to be specified.
  * @param numerator is the numerator portion of the rate.
  * @param denominator is the denominator portion of the rate.
+ * @param frequency is the value returned by diminuto_frequency().
  * @return the interarrival time in ticks.
  */
-extern diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator);
+extern diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator, diminuto_ticks_t frequency);
 
 /**
  * Compute a jitter tolerance in ticks given the interarrival time (increment),
