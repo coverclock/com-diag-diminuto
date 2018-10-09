@@ -105,7 +105,7 @@ static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t 
 {
     throttlep->now = now;
     throttlep->then = now - throttlep->increment;
-    throttlep->expected = throttlep->increment;
+    throttlep->expected = 0;
     throttlep->actual = 0;
     throttlep->full0 = throttlep->full1 = throttlep->full2 = 0;
     throttlep->empty0 = throttlep->empty1 = throttlep->empty2 = !0;

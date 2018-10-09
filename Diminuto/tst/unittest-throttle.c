@@ -42,7 +42,7 @@ int main(int argc, char ** argv)
         ASSERT(throttle.limit == LL);
         ASSERT(throttle.now == TT);
         ASSERT(throttle.then == (TT - II));
-        ASSERT(throttle.expected == II);
+        ASSERT(throttle.expected == 0);
         ASSERT(throttle.actual == 0);
         ASSERT(throttle.full0 == 0);
         ASSERT(throttle.full1 == 0);
@@ -73,7 +73,7 @@ int main(int argc, char ** argv)
         ASSERT(throttle.limit == LL);
         ASSERT(throttle.now == TT);
         ASSERT(throttle.then == (TT - II));
-        ASSERT(throttle.expected == II);
+        ASSERT(throttle.expected == 0);
         ASSERT(throttle.actual == 0);
         ASSERT(throttle.full0 == 0);
         ASSERT(throttle.full1 == 0);
@@ -104,7 +104,7 @@ int main(int argc, char ** argv)
         ASSERT(throttle.limit == LL);
         ASSERT(throttle.now == TT);
         ASSERT(throttle.then == (TT - II));
-        ASSERT(throttle.expected == II);
+        ASSERT(throttle.expected == 0);
         ASSERT(throttle.actual == 0);
         ASSERT(throttle.full0 == 0);
         ASSERT(throttle.full1 == 0);
