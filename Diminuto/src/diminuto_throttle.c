@@ -36,7 +36,14 @@ diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t den
 
 diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize)
 {
-    return (maximumburstsize > 1) ? (maximumburstsize - 1) * increment : 0;
+	diminuto_ticks_t limit = 0;
+
+	if (maximumburstsize > 1) {
+		limit = maximumburstsize - 1;
+		limit *= increment;
+	}
+
+	return limit;
 }
 
 diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now)

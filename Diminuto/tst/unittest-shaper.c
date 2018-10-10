@@ -16,11 +16,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-static const size_t BLOCKSIZE = 32768;
-
-static inline size_t blocksize(void)
+static inline size_t blocksize(size_t maximum)
 {
-    return (rand() % BLOCKSIZE) + 1;
+    return (rand() % maximum) + 1;
 }
 
 int main(int argc, char ** argv)
@@ -65,11 +63,13 @@ int main(int argc, char ** argv)
     	diminuto_ticks_t bursttolerance;
     	/**/
         frequency = diminuto_frequency();
+        /**/
 		peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1, frequency);
 		jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST) + TOLERANCE;
 		sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
 		bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
-		sp = diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, now);
+		/**/
+		sp = diminuto_shaper_init(&shaper, peakincrement, 0 /* jittertolerance */, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);
         diminuto_shaper_log(sp);
         srand(diminuto_time_clock());
@@ -91,9 +91,9 @@ int main(int argc, char ** argv)
             }
             delay = diminuto_shaper_request(sp, now);
             ASSERT(delay == 0);
-            size = blocksize();
+            size = blocksize(BURST);
             ASSERT(size > 0);
-            ASSERT(size <= BLOCKSIZE);
+            ASSERT(size <= BURST);
             total += size;
             admissable = !diminuto_shaper_commitn(sp, size);
             ASSERT(admissable);

@@ -203,6 +203,13 @@ extern int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp);
  * TRANSITION STATE
  ******************************************************************************/
 
+/*
+ * These functions aren't very useful with a shaper since it consists of
+ * two throttles (GCRAs) run in parallel. It is unlikely that *both* throttles
+ * would transition states at the same time, so these are coded as ORs instead
+ * of ANDs.
+ */
+
 /**
  * Returns true if the leaky bucket just filled.
  * @param shaperp is a pointer to the throttle.

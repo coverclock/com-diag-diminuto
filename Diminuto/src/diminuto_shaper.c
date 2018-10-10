@@ -14,18 +14,22 @@
 
 diminuto_ticks_t diminuto_shaper_bursttolerance(diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, size_t maximumburstsize)
 {
-    diminuto_ticks_t sustainedlimit;
+    diminuto_ticks_t limit = 0;
+    diminuto_ticks_t increment;
 
-    sustainedlimit = jittertolerance;
     if (maximumburstsize <= 1) {
         /* Do nothing. */
     } else if (sustainedincrement <= peakincrement) {
         /* Do nothing. */
     } else {
-    	sustainedlimit += (maximumburstsize - 1) * (sustainedincrement - peakincrement);
+    	limit = maximumburstsize - 1;
+    	increment = sustainedincrement;
+    	increment -= peakincrement;
+    	limit *= increment;
     }
+    limit += jittertolerance;
 
-    return sustainedlimit;
+    return limit;
 }
 
 diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, diminuto_ticks_t bursttolerance, diminuto_ticks_t now)
@@ -168,9 +172,8 @@ int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
 void diminuto_shaper_log(diminuto_shaper_t * shaperp)
 {
     if (shaperp != (diminuto_shaper_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]:\n", shaperp, sizeof(*shaperp));
-        diminuto_throttle_log(&(shaperp->peak));
-        diminuto_throttle_log(&(shaperp->sustained));
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: peak:\n", shaperp, sizeof(*shaperp)); diminuto_throttle_log(&(shaperp->peak));
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: sustained:\n", shaperp, sizeof(*shaperp)); diminuto_throttle_log(&(shaperp->sustained));
     } else {
         DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]\n", shaperp, sizeof(*shaperp));
     }
