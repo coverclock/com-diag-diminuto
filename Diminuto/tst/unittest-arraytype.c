@@ -14,6 +14,12 @@
  * that it's semantics as a variable in main() differs from its use as a
  * parameter in a function. This is why I ended up making the IPv6 address
  * type a struct: structs can be passed by value into functions.
+ *
+ * It is my goal that this is the only translation unit in Diminuto that
+ * generates on the two platforms I typically build on: x86_64 and ARMv7.
+ * The gcc compiler really does NOT like doing sizeof() on an array passed
+ * as an argument to a function parameter. But the whole point of this unit
+ * test is to experimentally determine exactly what the semantics of that are.
  */
 
 #include <stdio.h>
