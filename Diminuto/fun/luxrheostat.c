@@ -202,7 +202,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% Lux %.2f lx Period %lld ms\n", program, duty, lux, elapsed);
+            printf("%s: PWM %d %% Lux %.2f lx Period %lld ms\n", program, duty, lux, (long long int)elapsed);
 
             duty += increment;
             if (duty > 100) {

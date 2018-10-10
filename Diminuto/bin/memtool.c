@@ -49,7 +49,7 @@ static int debug = 0;
         _datap = (_TYPE_ *)datap; \
         _mask = mask; \
         _value = *valuep; \
-        if (debug && (opt != 'r')) { fprintf(stderr, "%s: before t=%s v=0x%llx\n", program, # _TYPE_, islower(opt) ? (diminuto_unsigned_t)_value : (diminuto_unsigned_t)_datum); } \
+        if (debug && (opt != 'r')) { fprintf(stderr, "%s: before t=%s v=0x%llx\n", program, # _TYPE_, islower(opt) ? (long long unsigned int)_value : (long long unsigned int)_datum); } \
         diminuto_barrier(); \
         switch (opt) { \
         case 'C': _datum <<= (*valuep); *_datap &= ~_datum;							break; \
@@ -60,8 +60,8 @@ static int debug = 0;
         case 'w': *_datap = _value;													break; \
         } \
         diminuto_barrier(); \
-        if (debug && (opt == 'r')) { fprintf(stderr, "%s: after t=%s v=0x%llx\n", program, # _TYPE_, (diminuto_unsigned_t)_value); } \
-        if (opt == 'r') { printf("%llu\n", (diminuto_unsigned_t)_value); } \
+        if (debug && (opt == 'r')) { fprintf(stderr, "%s: after t=%s v=0x%llx\n", program, # _TYPE_, (long long unsigned int)_value); } \
+        if (opt == 'r') { printf("%llu\n", (long long unsigned int)_value); } \
         *valuep = _value; \
     } while (0)
 
@@ -93,7 +93,7 @@ static int operate(
 
     if (debug) {
         fprintf(stderr, "%s: address=%p length=%zu offset=%p size=%zu effective=%p base=%p data=%p mask=0x%llx value=%p option=%c\n",
-            program, (void *)address, length, (void *)offset, size, (void *)effective, *basep, datap, mask, valuep, opt);
+            program, (void *)address, length, (void *)offset, size, (void *)effective, *basep, datap, (long long unsigned int)mask, valuep, opt);
     }
 
     if (*basep == (void *)0) {
@@ -219,7 +219,7 @@ int main(int argc, char * argv[])
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, (long long unsigned int)value); }
                 error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;
@@ -248,7 +248,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
             } else {
                 mask = value;
-                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, mask); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, (long long unsigned int)mask); }
             }
             break;
 
@@ -267,7 +267,7 @@ int main(int argc, char * argv[])
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, (long long unsigned int)value); }
                 error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, mask, &value) != 0);
             }
             break;
@@ -281,7 +281,7 @@ int main(int argc, char * argv[])
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (long long unsigned int)value); }
                 value *= diminuto_delay_frequency();
                 value /= 1000000;
                 diminuto_delay(value, 0);
@@ -292,7 +292,7 @@ int main(int argc, char * argv[])
             if ((error = (*diminuto_number(optarg, &value) != '\0'))) {
                 perror(optarg);
             } else {
-                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, value); }
+                if (debug) { fprintf(stderr, "%s -%c 0x%llx\n", program, opt, (long long unsigned int)value); }
                 error = (operate(&base, opt, address, length, offset, size, &unaddress, &unlength, 0, &value) != 0);
             }
             break;

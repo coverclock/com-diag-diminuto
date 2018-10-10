@@ -44,7 +44,7 @@ int main(int argc, char ** argv)
 		return 3;
 	}
 
-	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+00:00\n", year, month, day, hour, minute, second, fraction);
+	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+00:00\n", year, month, day, hour, minute, second, (long long unsigned int)fraction);
 
 	return 0;
 }

@@ -211,7 +211,7 @@ int main(int argc, char ** argv)
         printf("%s: blocksize %zu bytes\n", program, blocksize);
 
         modulo = ((modulo + blocksize - 1) / blocksize) * blocksize;
-        printf("%s: modulo %llu bytes\n", program, modulo);
+        printf("%s: modulo %llu bytes\n", program, (long long unsigned int)modulo);
 
         if ((posix_memalign(&buffer, pagesize, blocksize) != 0) || (buffer == 0)) {
             perror("posix_memalign: ERROR");
@@ -252,7 +252,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                    	fprintf(stderr, "write: progress %llu bytes\n", total);
+                    	fprintf(stderr, "write: progress %llu bytes\n", (long long unsigned int)total);
                     }
                     pointer += rc;
                     size -= rc;
@@ -279,7 +279,7 @@ int main(int argc, char ** argv)
             ++errors;
         }
 
-        printf("%s: written %llu bytes\n", program, total);
+        printf("%s: written %llu bytes\n", program, (long long unsigned int)total);
         printf("%s: elapsed %lu seconds\n", program, end - start);
 
         fd = close(fd);
@@ -315,7 +315,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                    	fprintf(stderr, "read: progress %llu bytes\n", total);
+                    	fprintf(stderr, "read: progress %llu bytes\n", (long long unsigned int)total);
                     }
                     pointer += rc;
                     size -= rc;
@@ -341,7 +341,7 @@ int main(int argc, char ** argv)
             count = (blocksize - size) / sizeof(datum);
             while ((count--) > 0) {
                 if (*(data++) != datum) {
-                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", total - (blocksize - size) + ((count + 1) * sizeof(datum)));
+                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", (long long unsigned int)(total - (blocksize - size) + ((count + 1) * sizeof(datum))));
                     ++mismatches;
                     ++errors;
                 }
@@ -361,9 +361,9 @@ int main(int argc, char ** argv)
             ++errors;
         }
 
-        printf("%s: read %llu bytes\n", program, total);
+        printf("%s: read %llu bytes\n", program, (long long unsigned int)total);
         printf("%s: elapsed %lu seconds\n", program, end - start);
-        printf("%s: mismatches %llu\n", program, mismatches);
+        printf("%s: mismatches %llu\n", program, (long long unsigned int)mismatches);
 
         fd = close(fd);
         if (fd < 0) {
@@ -382,7 +382,7 @@ int main(int argc, char ** argv)
         /* Do nothing. */
     }
 
-    printf("%s: errors %llu\n", program, errors);
+    printf("%s: errors %llu\n", program, (long long unsigned int)errors);
 
     return (errors > 0) ? 1 : 0;
 }

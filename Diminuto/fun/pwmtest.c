@@ -127,7 +127,7 @@ int main(int argc, char * argv[])
     ticks = frequency / HERTZ;
     assert(ticks > 0);
 
-    printf("%s: pin=%d duty=%d=%.2f=(%d,%d)=%.2f hertz=%lld\n", program, pin, duty, percentage, on, off, ratio, frequency / ticks);
+    printf("%s: pin=%d duty=%d=%.2f=(%d,%d)=%.2f hertz=%lld\n", program, pin, duty, percentage, on, off, ratio, (long long int)(frequency / ticks));
 
     /*
      * Initialize the output pin.

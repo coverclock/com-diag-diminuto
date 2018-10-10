@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
 		return 2;
 	}
 
-	printf("%lld\n", diminuto_frequency_ticks2units(ticks, units));
+	printf("%lld\n", (long long int)diminuto_frequency_ticks2units(ticks, units));
 
     return 0;
 }

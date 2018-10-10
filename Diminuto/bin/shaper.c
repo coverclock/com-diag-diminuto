@@ -93,9 +93,9 @@ static int debug = 0;
 static void report(void)
 {
     fprintf(stderr, "shaper[%d]: total=%zu bytes\n", pid, total);
-    fprintf(stderr, "shaper[%d]: elapsed=%lld seconds\n", pid, duration / frequency);
-    fprintf(stderr, "shaper[%d]: peak=%lld bytes per second\n", pid, peak);
-    fprintf(stderr, "shaper[%d]: sustained=%lld bytes per second\n", pid, sustained);
+    fprintf(stderr, "shaper[%d]: elapsed=%lld seconds\n", pid, (long long int)(duration / frequency));
+    fprintf(stderr, "shaper[%d]: peak=%lld bytes per second\n", pid, (long long int)peak);
+    fprintf(stderr, "shaper[%d]: sustained=%lld bytes per second\n", pid, (long long int)sustained);
     fprintf(stderr, "shaper[%d]: burst=%zu bytes\n", pid, burst);
 }
 
@@ -290,7 +290,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -b BYTES             Use an I/O buffer of size BYTES instead of %zu bytes.\n", blocksize);
             fprintf(stderr, "       -c                   Do character I/O instead of block I/O.\n");
             fprintf(stderr, "       -d                   Enable debugging output.\n");
-            fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", jittertolerance);
+            fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", (long long int)jittertolerance);
             fprintf(stderr, "       -l                   Do line I/O instead of block I/O.\n");
             fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes.\n");
@@ -331,7 +331,7 @@ int main(int argc, char * argv[])
         }
         fprintf(stderr, "shaper[%d]: -b %zu\n", pid, blocksize);
         fprintf(stderr, "shaper[%d]: -p %zu\n", pid, peakrate);
-        fprintf(stderr, "shaper[%d]: -j %lld\n", pid, jittertolerance);
+        fprintf(stderr, "shaper[%d]: -j %lld\n", pid, (long long int)jittertolerance);
         fprintf(stderr, "shaper[%d]: -s %zu\n", pid, sustainedrate);
         fprintf(stderr, "shaper[%d]: -m %zu\n", pid, maximumburstsize);
     }

@@ -50,29 +50,29 @@ static void test0(void)
     diminuto_ticks_t tick = (diminuto_ticks_t)-1;
 
     now = diminuto_time_clock();
-    printf("clock          %lld\n", now);
+    printf("clock          %lld\n", (long long int)now);
     ASSERT(now >= 0);
 
     zone = diminuto_time_timezone(now);
-    printf("timezone       %lld\n", zone);
+    printf("timezone       %lld\n", (long long int)zone);
     /* zone can be positive or negatuve. */
 
     dst = diminuto_time_daylightsaving(now);
-    printf("daylightsaving %lld\n", dst);
+    printf("daylightsaving %lld\n", (long long int)dst);
     ASSERT(dst >= 0);
 
     rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
-    printf("zulu           %04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, tick);
+    printf("zulu           %04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (long long int)tick);
 
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
     ASSERT(then >= 0);
-    printf("epoch          %lld\n", then);
+    printf("epoch          %lld\n", (long long int)then);
 
     delta = then - now;
-    printf("delta          %lld\n", delta);
+    printf("delta          %lld\n", (long long int)delta);
     ASSERT(delta == 0);
 }
 
@@ -93,29 +93,29 @@ static void test1(void)
     diminuto_ticks_t tick = (diminuto_ticks_t)-1;
 
     now = diminuto_time_clock();
-    printf("clock          %lld\n", now);
+    printf("clock          %lld\n", (long long int)now);
     ASSERT(now >= 0);
 
     zone = diminuto_time_timezone(now);
-    printf("timezone       %lld\n", zone);
+    printf("timezone       %lld\n", (long long int)zone);
     /* zone can be positive or negatuve. */
 
     dst = diminuto_time_daylightsaving(now);
-    printf("daylightsaving %lld\n", dst);
+    printf("daylightsaving %lld\n", (long long int)dst);
     ASSERT(dst >= 0);
 
     rc = diminuto_time_juliet(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
-    printf("juliet         %04d-%02d-%02dT%02d:%02d:%02d.%09llu\n", year, month, day, hour, minute, second, tick);
+    printf("juliet         %04d-%02d-%02dT%02d:%02d:%02d.%09llu\n", year, month, day, hour, minute, second, (long long int)tick);
 
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, zone, dst);
     ASSERT(then >= 0);
-    printf("epoch          %lld\n", then);
+    printf("epoch          %lld\n", (long long int)then);
 
     delta = then - now;
-    printf("delta          %lld\n", delta);
+    printf("delta          %lld\n", (long long int)delta);
     ASSERT(delta == 0);
 }
 
@@ -174,10 +174,10 @@ static void epoch(diminuto_sticks_t now, int verbose)
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
         DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15d %15d\n"
-            , now, zulu, juliet, offset
-            , zyear, zmonth, zday, zhour, zminute, zsecond, ztick
-            , jyear, jmonth, jday, jhour, jminute, jsecond, jtick
-            , dday, dhour, dminute, dsecond, dtick
+            , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
+            , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
+            , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
+            , dday, dhour, dminute, dsecond, (long long unsigned int)dtick
             , timezone, daylightsaving
         );
     }

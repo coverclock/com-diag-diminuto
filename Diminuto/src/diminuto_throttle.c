@@ -39,6 +39,27 @@ diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, s
     return (maximumburstsize > 1) ? (maximumburstsize - 1) * increment : 0;
 }
 
+diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
+{
+    throttlep->now = now;
+    throttlep->then = now - throttlep->increment;
+    throttlep->expected = 0;
+    throttlep->actual = 0;
+    throttlep->full0 = throttlep->full1 = throttlep->full2 = 0;
+    throttlep->empty0 = throttlep->empty1 = throttlep->empty2 = !0;
+    throttlep->alarmed1 = throttlep->alarmed2 = 0;
+
+    return throttlep;
+}
+
+diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, diminuto_ticks_t increment, diminuto_ticks_t limit, diminuto_ticks_t now)
+{
+    throttlep->increment = increment;
+    throttlep->limit = limit;
+
+    return diminuto_throttle_reset(throttlep, now);
+}
+
 diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
     diminuto_ticks_t delay;

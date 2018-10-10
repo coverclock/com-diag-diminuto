@@ -241,7 +241,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             }
-            if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
+            if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (long long unsigned int)uvalue); }
             ticks = uvalue;
             ticks *= diminuto_frequency();
             ticks /= 1000000;
@@ -378,7 +378,7 @@ int main(int argc, char * argv[])
             /* no break */
 
         case 'M':
-            if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, svalue); }
+            if (debug) { fprintf(stderr, "%s -%c %lld\n", program, opt, (long long int)svalue); }
             if (fp != (FILE *)0) {
                 /* Do nothing. */
             } else if (pin < 0) {
@@ -592,7 +592,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 error = !0;
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, uvalue); }
+                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (long long unsigned int)uvalue); }
                 ticks = uvalue;
                 ticks *= diminuto_frequency();
                 ticks /= 1000000;

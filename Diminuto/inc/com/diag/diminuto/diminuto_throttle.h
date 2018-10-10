@@ -101,17 +101,7 @@ static inline diminuto_ticks_t diminuto_throttle_now(void)
  * @param now is the current time from a monotonically increasing clock.
  * @return a pointer to the throttle.
  */
-static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
-{
-    throttlep->now = now;
-    throttlep->then = now - throttlep->increment;
-    throttlep->expected = 0;
-    throttlep->actual = 0;
-    throttlep->full0 = throttlep->full1 = throttlep->full2 = 0;
-    throttlep->empty0 = throttlep->empty1 = throttlep->empty2 = !0;
-    throttlep->alarmed1 = throttlep->alarmed2 = 0;
-    return throttlep;
-}
+extern diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now);
 
 /**
  * Initialize a throttle.
@@ -121,12 +111,7 @@ static inline diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t 
  * @param now is the current time on a monotonically increasing clock.
  * @return a pointer to the throttle.
  */
-static inline diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, diminuto_ticks_t increment, diminuto_ticks_t limit, diminuto_ticks_t now)
-{
-    throttlep->increment = increment;
-    throttlep->limit = limit;
-    return diminuto_throttle_reset(throttlep, now);
-}
+extern diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, diminuto_ticks_t increment, diminuto_ticks_t limit, diminuto_ticks_t now);
 
 /*******************************************************************************
  * STATE CHANGE
@@ -186,6 +171,7 @@ static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
 static inline int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
 {
     diminuto_throttle_request(throttlep, now);
+
     return diminuto_throttle_commitn(throttlep, events);
 }
 

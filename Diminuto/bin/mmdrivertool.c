@@ -195,7 +195,7 @@ int main(int argc, char * argv[])
                     case DIMINUTO_DATUM_WIDTH8:		printf("%u\n",		op.datum.value8);	break;
                     case DIMINUTO_DATUM_WIDTH16:	printf("%u\n",		op.datum.value16);	break;
                     case DIMINUTO_DATUM_WIDTH32:	printf("%u\n",		op.datum.value32);	break;
-                    case DIMINUTO_DATUM_WIDTH64:	printf("%llu\n",	op.datum.value64);	break;
+                    case DIMINUTO_DATUM_WIDTH64:	printf("%llu\n",	(long long unsigned int)op.datum.value64);	break;
                     }
                 }
             }

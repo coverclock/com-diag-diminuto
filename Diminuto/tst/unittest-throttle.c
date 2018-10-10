@@ -30,6 +30,17 @@ int main(int argc, char ** argv)
     {
     	TEST();
 
+    	ASSERT(sizeof(size_t) == 8);
+    	ASSERT(((size_t)(~(size_t)0)) > 0);
+    	ASSERT(sizeof(diminuto_ticks_t) == 8);
+    	ASSERT(((diminuto_ticks_t)(~(diminuto_ticks_t)0)) > 0);
+
+    	STATUS();
+    }
+
+    {
+    	TEST();
+
     	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 4) == 2);
     	ASSERT(diminuto_throttle_interarrivaltime(1, 2, 4) == 8);
     	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 5) == 3);

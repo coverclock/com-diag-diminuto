@@ -207,7 +207,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% ADC %.3f v Period %lld ms\n", program, duty, volts, elapsed);
+            printf("%s: PWM %d %% ADC %.3f v Period %lld ms\n", program, duty, volts, (long long int)elapsed);
 
             /*
              * Measure allows us to read the voltage more than once.
