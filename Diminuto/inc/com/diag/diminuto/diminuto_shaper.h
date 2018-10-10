@@ -67,14 +67,14 @@ extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, di
 /**
  * Initialize a shaper.
  * @param shaperp is a pointer to the shaper.
- * @param peakrate is the peak rate in events per second.
- * @param jittertolerance is the jitter tolerance in ticks.
- * @param sustainedrate is the sustained rate in events per second.
- * @param maximumburstsize is the maximum burst size in events per burst.
+ * @param peakincrement is the minimum interarrival time in ticks.
+ * @param jittertolerance is the jitter tolerance in ticks for the peak rate.
+ * @param sustainedincrement is the average interarrival time in ticks.
+ * @param bursttolerance is the burst tolerance in ticks for the sustained rate.
  * @param now is the current time on a monotonically increasing clock.
  * @return a pointer to the shaper.
  */
-extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, size_t peakrate, diminuto_ticks_t jittertolerance, size_t sustainedrate, size_t maximumburstsize, diminuto_ticks_t now);
+extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, diminuto_ticks_t bursttolerance, diminuto_ticks_t now);
 
 /*******************************************************************************
  * STATE CHANGE
