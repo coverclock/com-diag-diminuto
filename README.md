@@ -35,7 +35,7 @@ hardware targets and software platforms depending on the feature.
 "Mercury"  
 Dell OptiPlex 7040  
 Intel x86_64 64-bit    
-Intel Core i7-6700T Skylake @ 2.80GHz x 8  
+Intel Core i7-6700T Skylake @ 2.80GHz x 4 x 2  
 Ubuntu 16.04.2 "xenial"  
 Linux 4.4.0  
 gcc 5.4.0    
@@ -43,7 +43,7 @@ gcc 5.4.0
 "Nickel"    
 Intel NUC5i7RYH    
 Intel x86_64 64-bit    
-Intel Core i7-5557U @ 3.10GHz x 8    
+Intel Core i7-5557U @ 3.10GHz x 2 x 2   
 Ubuntu 16.04.4 "xenial"    
 Linux 4.13.0     
 gcc 5.4.0    
@@ -51,7 +51,7 @@ gcc 5.4.0
 "Nickel" (updated)    
 Intel NUC5i7RYH    
 Intel x86_64 64-bit    
-Intel Core i7-5557U @ 3.10GHz x 8    
+Intel Core i7-5557U @ 3.10GHz x 2 x 2    
 Ubuntu 18.04 "bionic"    
 Linux 4.15.0    
 gcc 7.3.0    
