@@ -398,7 +398,7 @@ int main(int argc, char * argv[])
 
     /* CONTRACT */
 
-    epoch = then = diminuto_time_elapsed();
+    epoch = diminuto_time_elapsed();
     if (shaped) {
     	peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
     	sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
@@ -409,6 +409,22 @@ int main(int argc, char * argv[])
     /* WORKLOOP */
 
     while (!0) {
+
+        /* PEAK */
+
+        now = diminuto_time_elapsed();
+		if (count > 1) {
+	        elapsed = now - then;
+			if (elapsed > 0) {
+				rate = size;
+				rate *= frequency;
+				rate /= elapsed;
+				if (rate > peak) {
+					peak = rate;
+				}
+			}
+		}
+        then = now;
 
         /* INPUT */
 
@@ -456,32 +472,13 @@ int main(int argc, char * argv[])
             fprintf(stderr, "shaper[%d]: count=%zuio size=%zuB total=%zuB delay=%lfs fletcher16=0x%4.4x\n", pid, count, size, total, delay, fletcher16c);
         }
 
-        /* PEAK */
-
-        interval = now - then;
-		elapsed = interval;
-		if (count <= 1) {
-			/* Do nothing. */
-		} else if (elapsed <= 0) {
-			/* Do nothing. */
-		} else {
-			rate = size;
-			rate *= frequency;
-			rate /= elapsed;
-			if (rate > peak) {
-				peak = rate;
-			}
-		}
-        then = now;
-
 		/* SUSTAINED */
 
 	    duration = now - epoch;
-	    elapsed = duration;
-	    if (elapsed > 0) {
+	    if (duration > 0) {
 	        rate = total;
 	        rate *= frequency;
-	        rate /= elapsed;
+	        rate /= duration;
 	        sustained = rate;
 	    }
 
@@ -515,11 +512,10 @@ int main(int argc, char * argv[])
     /* SUSTAINED */
 
     duration = now - epoch;
-    elapsed = duration;
     if (elapsed > 0) {
         rate = total;
         rate *= frequency;
-        rate /= elapsed;
+        rate /= duration;
         sustained = rate;
     }
 
