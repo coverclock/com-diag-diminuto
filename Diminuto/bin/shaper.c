@@ -21,7 +21,7 @@
  *
  * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink
  *
- * dd if=/dev/urandom bs=512 count=100 | shaper | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper > /dev/null
+ * dd if=/dev/urandom bs=512 count=100 | shaper -b 512 | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper -b 512 > /dev/null
  *
  * ABSTRACT
  *
