@@ -21,6 +21,8 @@
  *
  * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink
  *
+ * dd if=/dev/urandom bs=512 count=100 | shaper | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper > /dev/null
+ *
  * ABSTRACT
  *
  * Implements both a traffic shaper and a traffic throughput measurer.
@@ -386,7 +388,7 @@ int main(int argc, char * argv[])
         return 2;
     }
     if (sigaction(SIGQUIT, &action, (struct sigaction *)0) < 0) {
-        perror("sigaction(SIGTERM)");
+        perror("sigaction(SIGQUIT)");
         return 2;
     }
     if (sigaction(SIGTERM, &action, (struct sigaction *)0) < 0) {
