@@ -99,13 +99,13 @@ static int verbose = 0;
 static void report(void)
 {
     fprintf(stderr, "shaper[%d]: count=%zuio\n", pid, count);
+    fprintf(stderr, "shaper[%d]: elapsed=%lfs\n", pid, (float)duration / (float)frequency);
     fprintf(stderr, "shaper[%d]: total=%zuB\n", pid, total);
     fprintf(stderr, "shaper[%d]: mean=%lfB/io\n", pid, (float)total / (float)count);
-    fprintf(stderr, "shaper[%d]: fletcher16=0x%4.4x\n", pid, fletcher16c);
-    fprintf(stderr, "shaper[%d]: elapsed=%lfs\n", pid, (float)duration / (float)frequency);
-    fprintf(stderr, "shaper[%d]: peak=%lfBps\n", pid, peak);
-    fprintf(stderr, "shaper[%d]: sustained=%lfBps\n", pid, sustained);
+    fprintf(stderr, "shaper[%d]: peak=%lfB/s\n", pid, peak);
+    fprintf(stderr, "shaper[%d]: sustained=%lfB/s\n", pid, sustained);
     fprintf(stderr, "shaper[%d]: burst=%zuB\n", pid, burst);
+    fprintf(stderr, "shaper[%d]: fletcher16=0x%4.4x\n", pid, fletcher16c);
 }
 
 static void handler(int signum)
@@ -357,9 +357,9 @@ int main(int argc, char * argv[])
             break;
         }
         fprintf(stderr, "shaper[%d]: -b %zuB\n", pid, blocksize);
-        fprintf(stderr, "shaper[%d]: -p %zuBps\n", pid, peakrate);
+        fprintf(stderr, "shaper[%d]: -p %zuB/s\n", pid, peakrate);
         fprintf(stderr, "shaper[%d]: -j %lldticks\n", pid, (long long int)jittertolerance);
-        fprintf(stderr, "shaper[%d]: -s %zuBps\n", pid, sustainedrate);
+        fprintf(stderr, "shaper[%d]: -s %zuB/s\n", pid, sustainedrate);
         fprintf(stderr, "shaper[%d]: -m %zuB\n", pid, maximumburstsize);
         if (verbose) {
         	fprintf(stderr, "shaper[%d]: -v\n", pid);
