@@ -7,6 +7,10 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * This unit test toys with the ability to declare arrays as a type. IT
+ * WILL GENERATE WARNINGS because the compiler thinks I don't know what
+ * I'm doing. The compiler may have a point.
+ *
  * Originally from a program I wrote outside of Diminuto, hence it doesn't use
  * the unit test framework.
  *
@@ -16,7 +20,7 @@
  * type a struct: structs can be passed by value into functions.
  *
  * It is my goal that this is the only translation unit in Diminuto that
- * generates on the two platforms I typically build on: x86_64 and ARMv7.
+ * generates warnings on the two platforms I typically build on: x86_64 and ARMv7.
  * The gcc compiler really does NOT like doing sizeof() on an array passed
  * as an argument to a function parameter. But the whole point of this unit
  * test is to experimentally determine exactly what the semantics of that are.
