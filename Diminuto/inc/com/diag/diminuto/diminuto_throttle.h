@@ -152,7 +152,7 @@ extern int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t eve
  * becomes alarmed. The throttle remains alarmed until the traffic stream once
  * again conforms to the contract. Only a single event is emitted.
  * @param throttlep is a pointer to the throttle.
- * @return true if the leaky bucket is full, false otherwise.
+ * @return true if the throttle is alarmed, false otherwise.
  */
 static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
 {
@@ -166,7 +166,7 @@ static inline int diminuto_throttle_commit(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
  * @param events is the number of events (nominally one).
- * @return true if the leaky bucket is full, false otherwise.
+ * @return true if the throttle is alarmed, false otherwise.
  */
 static inline int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, diminuto_ticks_t now, size_t events)
 {
@@ -181,7 +181,7 @@ static inline int diminuto_throttle_admitn(diminuto_throttle_t * throttlep, dimi
  * This function can be used after the caller has delayed following a request.
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
- * @return true if the leaky bucket is full, false otherwise.
+ * @return true if the throttle is alarmed, false otherwise.
  */
 static inline int diminuto_throttle_admit(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
@@ -193,7 +193,7 @@ static inline int diminuto_throttle_admit(diminuto_throttle_t * throttlep, dimin
  * passed without an event occurring, updating the state of the throttle.
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time on a monotonically increasing clock.
- * @return true if the leaky bucket is full, false otherwise.
+ * @return true if the throttle is alarmed, false otherwise.
  */
 static inline int diminuto_throttle_update(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
@@ -230,7 +230,7 @@ static inline int diminuto_throttle_isempty(diminuto_throttle_t * throttlep)
 /**
  * Returns true if the leaky bucket is full.
  * @param throttlep is a pointer to the throttle.
- * @return true if the throttle is clear.
+ * @return true if the leaky bucket is full.
  */
 static inline int diminuto_throttle_isfull(diminuto_throttle_t * throttlep)
 {
@@ -240,7 +240,7 @@ static inline int diminuto_throttle_isfull(diminuto_throttle_t * throttlep)
 /**
  * Returns true if the throttle is alarmed.
  * @param throttlep is a pointer to the throttle.
- * @return true if the throttle is clear.
+ * @return true if the throttle is alarmed.
  */
 static inline int diminuto_throttle_isalarmed(diminuto_throttle_t * throttlep)
 {

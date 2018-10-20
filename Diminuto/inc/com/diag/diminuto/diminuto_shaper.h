@@ -157,7 +157,7 @@ static inline int diminuto_shaper_admit(diminuto_shaper_t * shaperp, diminuto_ti
  * passed without an event occurring, updating the state of the shaper.
  * @param shaperp is a pointer to the shaper.
  * @param now is the current time on a monotonically increasing clock.
- * @return true if the leaky bucket is full, false otherwise.
+ * @return true if the shaper is alarmed, false otherwise.
  */
 static inline int diminuto_shaper_update(diminuto_shaper_t * shaperp, diminuto_ticks_t now)
 {
@@ -181,21 +181,21 @@ extern diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
 /**
  * Returns true if the leaky bucket is empty.
  * @param shaperp is a pointer to the throttle.
- * @return true if the throttle is clear.
+ * @return true if the leaky bucket is empty.
  */
 extern int diminuto_shaper_isempty(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket is full.
  * @param shaperp is a pointer to the throttle.
- * @return true if the throttle is clear.
+ * @return true if the leaky bucket is full.
  */
 extern int diminuto_shaper_isfull(diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle is alarmed.
  * @param shaperp is a pointer to the throttle.
- * @return true if the throttle is clear.
+ * @return true if the throttle is alarmed.
  */
 extern int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp);
 
