@@ -108,7 +108,7 @@ int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events)
         /* Do nothing. */
     }
 
-    return throttlep->full1;
+    return throttlep->alarmed1;
 }
 
 void diminuto_throttle_log(diminuto_throttle_t * throttlep)

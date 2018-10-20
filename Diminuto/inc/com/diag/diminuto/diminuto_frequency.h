@@ -83,6 +83,14 @@ static inline diminuto_sticks_t diminuto_frequency(void)
 }
 
 /**
+ * Return the fundamental Diminuto frequency in ticks per second (Hertz).
+ * This is merely an outline version of diminuto_frequency() provided as an
+ * API for non-C applications.
+ * @return the number of ticks per second.
+ */
+extern diminuto_sticks_t diminuto_frequency_f(void);
+
+/**
  * Convert a value in ticks into units of the specified frequency.
  * @param ticks is the value in ticks.
  * @param hertz is the specified frequency.
