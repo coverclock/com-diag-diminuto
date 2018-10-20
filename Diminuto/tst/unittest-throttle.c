@@ -285,7 +285,6 @@ int main(int argc, char ** argv)
         now += increment + 1;
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(diminuto_throttle_commit(tp));
-diminuto_throttle_log(tp);
         /**/
         ASSERT(!diminuto_throttle_isempty(tp));
         ASSERT(!diminuto_throttle_isfull(tp));
