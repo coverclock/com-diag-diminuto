@@ -29,8 +29,8 @@ void diminuto_dump_generic(
     const char * lineend
 )
 {
-    const char * eight;
-    const char * two;
+    const char * addressformat;
+    const char * datumformat;
     uintptr_t first;
     uintptr_t last;
     uintptr_t begin;
@@ -45,11 +45,11 @@ void diminuto_dump_generic(
     uintptr_t mask;
 
     if (upper) {
-        eight = "%8.8X";
-        two = "%2.2X";
+        addressformat = "%16.16X";
+        datumformat = "%2.2X";
     } else {
-        eight = "%8.8x";
-        two = "%2.2x";
+        addressformat = "%16.16x";
+        datumformat = "%2.2x";
     }
 
     pointer = (const unsigned char *)data;
@@ -73,7 +73,7 @@ void diminuto_dump_generic(
             fputc(' ', fp);
         }
 
-        fprintf(fp, eight, here);
+        fprintf(fp, addressformat, here);
         fputs(addrsep, fp);
 
         pp = pointer;
@@ -90,7 +90,7 @@ void diminuto_dump_generic(
                     fputc(byteskip, fp);
                     fputc(byteskip, fp);
                 } else {
-                    fprintf(fp, two, *pp);
+                    fprintf(fp, datumformat, *pp);
                     ++pp;
                 }
                 ++hh;
