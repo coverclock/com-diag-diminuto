@@ -97,7 +97,7 @@ extern diminuto_sticks_t diminuto_time_thread(void);
 
 /**
  * Return the logical clock, which is a simple incrementing sixty-four bit
- * unsigned counter value that is guaranteed to be unique for any thead in
+ * unsigned counter value that is guaranteed to be unique for any thread in
  * the same process until the counter reaches its maximum possible value of
  * ~(uint64_t)0, after which it wraps around back to zero.
  * @return a unique logical clock value.
