@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -118,8 +118,8 @@ diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks)
 
     /*
      * POSIX specifies the number of seconds WEST of UTC, while this function
-     * returns the ISO-8601 sense of seconds (or ticks) ahead (>0) or behind
-     * (<0) UTC.
+     * returns the ISO-8601 sense of seconds in ticks AHEAD (>0) or BEHIND
+     * (<0) UTC. West will be behind UTC, East ahead of UTC.
      */
 
     west = -timezone;
@@ -169,6 +169,8 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
     datetime.tm_sec = second;
     datetime.tm_isdst = 0;
 
+#if 0
+
     /**
      * mktime(3) indicates that a return of -1 indicates an error. But this
      * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
@@ -190,6 +192,18 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
     ticks += diminuto_time_timezone(juliet);
     ticks += diminuto_time_daylightsaving(juliet);
+
+#else
+
+    /*
+     * timegm(3) is a GNU extension since 2.19. It might be non-standard
+     * but it sure solves a thorny problem.
+     */
+
+    juliet = timegm(&datetime);
+    ticks = diminuto_frequency_seconds2ticks(juliet, 0, 1);
+
+#endif
 
     /*
      * The caller provides a date and time for some time zone. It might

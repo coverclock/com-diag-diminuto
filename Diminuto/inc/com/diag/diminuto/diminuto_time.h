@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -115,7 +115,8 @@ extern uint64_t diminuto_time_logical(void);
  * twenty-four hours apart. (Since the offset of the time zone doesn't shift
  * over the span of a year like Daylight Saving Time does, the argument to this
  * function can probably always be zero.) Note that this is an ISO-8601 sense
- * of time zone offset, NOT the seconds west offset that is used by POSIX.
+ * of time zone offset AHEAD (>0) or BEHIND (<0) of UTC, NOT the offset WEST
+ * that is used by POSIX (it will be the negative of the POSIX value).
  * @param ticks is the number of ticks since the Epoch.
  * @return the number of ticks west of UTC.
  */
@@ -143,7 +144,7 @@ extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
  * @param minute is the minute of the hour in the range [0..59].
  * @param second is the second of the minute in the range [0..59].
  * @param tick is the fraction of a second in the range [0..(resolution-1)].
- * @param offset is the number of ticks east of the time zone (0 if UTC).
+ * @param offset is the number of ticks AHEAD (>0) or BEHIND (<0) of UTC.
  * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
  * @return the number of ticks since the Epoch.
  */
