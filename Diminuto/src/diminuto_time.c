@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -261,6 +262,7 @@ int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int *
     return rc;
 }
 
+
 int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
     int rc = 0;
@@ -277,6 +279,33 @@ int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int
     }
 
     return rc;
+}
+
+/*
+ * https://en.wikipedia.org/wiki/List_of_military_time_zones, 2018-04-26
+ */
+char diminuto_time_zonename(diminuto_sticks_t ticks) {
+	char name = 'J';
+	diminuto_sticks_t factor;
+	static char NAMES[] = {
+		'Y', 'X', 'W', 'V', 'U',
+		'T', 'S', 'R', 'Q', 'P',
+		'O', 'N', 'Z', 'A', 'B',
+		'C', 'D', 'E', 'F', 'G',
+		'H', 'I', 'K', 'L', 'M'
+	};
+
+	factor = diminuto_frequency();
+	factor *= 3600;
+	if ((ticks % factor) == 0) {
+		ticks /= factor;
+		ticks += 12;
+		if ((0 <= ticks) && (ticks < countof(NAMES))) {
+			name = NAMES[ticks];
+		}
+	}
+
+	return name;
 }
 
 int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)

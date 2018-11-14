@@ -183,6 +183,16 @@ extern int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp
 extern int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
 /**
+ * Return the character used as the military time zone name given the time zone
+ * offset, positive or negative, in ticks. If the time zone offset it not an
+ * even number of hours (some aren't), or if it is invalid, "J" (Juliet), the
+ * unspecified local time zone, is returned.
+ * @param ticks is the time zone offset in ticks since the Epoch.
+ * @return the military time zone name.
+ */
+extern char diminuto_time_zonename(diminuto_sticks_t ticks);
+
+/**
  * Convert ticks into individual fields representing a time duration. All of
  * the field values will be positive; the value returned by the function
  * indicates whether the duration was positive or negative.
