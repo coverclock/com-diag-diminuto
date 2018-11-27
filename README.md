@@ -179,7 +179,7 @@ Wheat Ridge CO 80033 USA
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the local time in ISO 8601 format.
-* log - log from a script using Diminuto log functions.
+* log - log from command line and/or stdin using Diminuto log functions.
 * loopback - provide a configurable serial port loopback.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
