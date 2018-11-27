@@ -7,6 +7,18 @@
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * If you want to pipe stderr to a log command, here is one way using bash:
+ *
+ *	YOUR_COMMAND 2> >(./out/host/bin/log)
+ *
+ * Here are some test cases:
+ *
+ *	echo "message 1" 2> >(log) 1>&2
+ *
+ *	echo "message 2" 2> >(log -S) 1>&2
+ *
+ *	cat /dev/null 2> >(log -S "message 3") 1>&2
+ *
  * An unfortunate side-effect of implementing a command line log utility for
  * use in (for example) a bash script is that the usual mechanisms for
  * determining if you are a daemon don't work. This utility allows you to
@@ -30,6 +42,8 @@ int main(int argc, char * argv[])
     diminuto_log_mask_t mask = DIMINUTO_LOG_MASK_DEFAULT;
     int priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
     int unconditional = 0;
+    char * buffer = (char *)0;
+    size_t length = 256;
     char * endptr = (char *)0;
     int opt = '\0';
     extern char * optarg;
@@ -37,20 +51,29 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "N:O:F:SUEacewnid?")) >= 0) {
+    while ((opt = getopt(argc, argv, "B:N:O:F:SUEacewnid?")) >= 0) {
 
         switch (opt) {
+
+        case 'E':
+            mask = DIMINUTO_LOG_MASK_EMERGENCY;
+            priority = DIMINUTO_LOG_PRIORITY_EMERGENCY;
+            break;
+
+        case 'F':
+        	facility = strtoul(optarg, &endptr, 0);
+        	break;
+
+        case 'B':
+        	length = strtoul(optarg, &endptr, 0);
+        	break;
 
         case 'N':
         	name = optarg;
         	break;
 
         case 'O':
-        	option = strtol(optarg, &endptr, 0);
-        	break;
-
-        case 'F':
-        	facility = strtol(optarg, &endptr, 0);
+        	option = strtoul(optarg, &endptr, 0);
         	break;
 
         case 'S':
@@ -60,11 +83,6 @@ int main(int argc, char * argv[])
         case 'U':
             unconditional = !0;
         	break;
-
-        case 'E':
-            mask = DIMINUTO_LOG_MASK_EMERGENCY;
-            priority = DIMINUTO_LOG_PRIORITY_EMERGENCY;
-            break;
 
         case 'a':
             mask = DIMINUTO_LOG_MASK_ALERT;
@@ -76,19 +94,14 @@ int main(int argc, char * argv[])
             priority = DIMINUTO_LOG_PRIORITY_CRITICAL;
         	break;
 
+        case 'd':
+            mask = DIMINUTO_LOG_MASK_DEBUG;
+            priority = DIMINUTO_LOG_PRIORITY_DEBUG;
+        	break;
+
         case 'e':
             mask = DIMINUTO_LOG_MASK_ERROR;
             priority = DIMINUTO_LOG_PRIORITY_ERROR;
-        	break;
-
-        case 'w':
-            mask = DIMINUTO_LOG_MASK_WARNING;
-            priority = DIMINUTO_LOG_PRIORITY_WARNING;
-        	break;
-
-        case 'n':
-            mask = DIMINUTO_LOG_MASK_NOTICE;
-            priority = DIMINUTO_LOG_PRIORITY_NOTICE;
         	break;
 
         case 'i':
@@ -96,14 +109,19 @@ int main(int argc, char * argv[])
             priority = DIMINUTO_LOG_PRIORITY_INFORMATION;
         	break;
 
-        case 'd':
-            mask = DIMINUTO_LOG_MASK_DEBUG;
-            priority = DIMINUTO_LOG_PRIORITY_DEBUG;
+        case 'n':
+            mask = DIMINUTO_LOG_MASK_NOTICE;
+            priority = DIMINUTO_LOG_PRIORITY_NOTICE;
+        	break;
+
+        case 'w':
+            mask = DIMINUTO_LOG_MASK_WARNING;
+            priority = DIMINUTO_LOG_PRIORITY_WARNING;
         	break;
 
         case '?':
         default:
-            fprintf(stderr, "usage: %s [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -U ] MESSAGE ... \n", program);
+            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -U ] MESSAGE ... \n", program);
             return 1;
             break;
 
@@ -130,6 +148,25 @@ int main(int argc, char * argv[])
     	}
 
     }
+
+    buffer = (char *)malloc(length);
+    if (buffer == (char *)0) {
+    	diminuto_perror("malloc");
+    	return 1;
+    }
+
+    /*
+     * It's important to consume the standard input stream even if logging
+     * is not enabled so as to not send the upstream pipeline a SIGPIPE.
+     */
+
+    while (fgets(buffer, length, stdin) != (char *)0) {
+    	if (unconditional || ((diminuto_log_mask & mask) != 0)) {
+    		diminuto_log_log(priority, "%s", buffer);
+    	}
+    }
+
+    free(buffer);
 
     return 0;
 }
