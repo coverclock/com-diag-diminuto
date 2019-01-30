@@ -315,6 +315,21 @@ may require you be root).
     make pristine depend all
     . out/host/bin/setup
 
+Important safety tip: on some (but not all) platforms I see the build fail
+because a generated header file (diminuto_release.h, diminuto_revision.h,
+or diminuto_vintage.h) is missing. This is a dependency issue that so far
+has eluded me. But replacing
+
+    make pristine depend all
+
+with
+
+    make pristine
+    make depend
+    make all
+
+always seems to work in those cases.
+
 Install Diminuto library and utilities in /usr/local.
 
     sudo make install
