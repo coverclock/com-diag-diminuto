@@ -1,4 +1,5 @@
-# Copyright 2008-2016 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2019 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -8,7 +9,12 @@
 
 # host: most Linux/GNU systems hosting the native toolchain.
 
+# (I have yet to find a reliable way to determine under what
+# ARCH for which the host Linux kernel was built. You would
+# think uname would do this for you.)
+
 ARCH				:=	x86_64
+#ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
@@ -25,4 +31,4 @@ SOARCH				:=
 SOXXARCH			:=	-L$(OUT)/$(LIB_DIR) -l$(PROJECT)
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES			:=	$(LDLIBRARIES)
+LDXXLIBRARIES		:=	$(LDLIBRARIES)

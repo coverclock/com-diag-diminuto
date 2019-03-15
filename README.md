@@ -301,6 +301,10 @@ how useful Diminuto can be (and how much time it can save you).
 
 <https://www.flickr.com/photos/johnlsloan/albums/72157680352449986>
 
+## References
+
+<https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
+
 ## Build
 
 Clone, build, and play with Diminuto (some unit and functional tests
