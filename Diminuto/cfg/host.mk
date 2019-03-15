@@ -14,7 +14,8 @@ TOOLCHAIN			:=
 KERNELCHAIN			:=
 KERNEL_REV			:=	$(shell uname -r)
 KERNEL_DIR			:=	/lib/modules/$(KERNEL_REV)/build
-# sudo apt-get install linux-headers-$(uname -r)
+# Try: sudo apt-get install linux-headers-$(uname -r)
+# Or:  sudo apt-get install raspberrypi-kernel-headers
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)
 CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
@@ -24,4 +25,4 @@ SOARCH				:=
 SOXXARCH			:=	-L$(OUT)/$(LIB_DIR) -l$(PROJECT)
 KERNELARCH			:=
 LDLIBRARIES			:=	-lpthread -lrt -ldl -lm
-LDXXLIBRARIES		:=	$(LDLIBRARIES)
+LDXXLIBRARIES			:=	$(LDLIBRARIES)
