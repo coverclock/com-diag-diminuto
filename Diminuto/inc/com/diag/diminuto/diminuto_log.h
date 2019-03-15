@@ -37,7 +37,9 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_platform.h"
-#include <unistd.h>
+#if !defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
+#   include <unistd.h>
+#endif
 #include <stdbool.h>
 
 /******************************************************************************/

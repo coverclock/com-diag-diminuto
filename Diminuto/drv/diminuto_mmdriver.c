@@ -73,7 +73,11 @@
 #if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL >= KERNEL_VERSION(3, 10, 0))
 #	include <linux/seq_file.h>
 #endif
-#include <asm/uaccess.h>
+#if (COM_DIAG_DIMINUTO_PLATFORM_KERNEL >= KERNEL_VERSION(4, 12, 8))
+#   include <linux/uaccess.h>
+#else
+#   include <asm/uaccess.h>
+#endif
 
 /*******************************************************************************
  * COMPILE TIME CONFIGURABLE PARAMETERS
