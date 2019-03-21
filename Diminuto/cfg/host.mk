@@ -13,8 +13,13 @@
 # ARCH for which the host Linux kernel was built. You would
 # think uname would do this for you.)
 
+MACHINE				:=	$(shell uname -m)
+ifeq ($(MACHINE),x86_64)
 ARCH				:=	x86_64
-#ARCH				:=	arm
+endif
+ifeq ($(MACHINE),armv7l)
+ARCH				:=	arm
+endif
 OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
