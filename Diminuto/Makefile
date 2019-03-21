@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	54# API changes that may require that applications be modified.
 MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -222,6 +222,8 @@ all:	$(TARGETALL)
 
 most:	$(TARGETMOST)
 
+# On the Raspberry Pi, this is what worked for me:
+# sudo apt-get install raspberrypi-kernel-headers
 plus:	$(TARGETPLUS)
 
 dist:	distribution
