@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -26,7 +26,7 @@ static const int LIMIT = 100;
 
 static void * body(void * arg)
 {
-	static diminuto_spinlock_t lock = 0;
+	static volatile diminuto_spinlock_t lock = 0;
 	int done = 0;
 
 	while (!done) {
@@ -52,8 +52,8 @@ static void * body(void * arg)
 int main(void)
 {
 	{
-		diminuto_spinlock_t lock1 = 0;
-		diminuto_spinlock_t lock2 = 0;
+		volatile diminuto_spinlock_t lock1 = 0;
+		volatile diminuto_spinlock_t lock2 = 0;
 		int zero = 0;
 
 		TEST();

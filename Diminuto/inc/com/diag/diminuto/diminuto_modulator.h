@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2018-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -94,16 +94,16 @@ typedef struct DiminutoModulator {
     pthread_attr_t attributes;
 	int initialized;
 	/* Fields computed at Set. */
-	diminuto_modulator_cycle_t duty;
-	diminuto_modulator_cycle_t on;
-	diminuto_modulator_cycle_t off;
-	bool set;
+	volatile diminuto_modulator_cycle_t duty;
+	volatile diminuto_modulator_cycle_t on;
+	volatile diminuto_modulator_cycle_t off;
+	volatile bool set;
 	/* Fields computed at Run. */
-	diminuto_modulator_cycle_t total;
-	diminuto_modulator_cycle_t cycle;
-	diminuto_modulator_cycle_t ton;
-	diminuto_modulator_cycle_t toff;
-	bool condition;
+	volatile diminuto_modulator_cycle_t total;
+	volatile diminuto_modulator_cycle_t cycle;
+	volatile diminuto_modulator_cycle_t ton;
+	volatile diminuto_modulator_cycle_t toff;
+	volatile bool condition;
 } diminuto_modulator_t;
 
 /**

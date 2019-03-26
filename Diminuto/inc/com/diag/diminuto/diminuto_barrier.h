@@ -5,14 +5,14 @@
 /**
  * @file
  *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  * This is largely experimental.
  */
 
-typedef volatile int diminuto_spinlock_t;
+typedef int diminuto_spinlock_t;
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
@@ -40,7 +40,7 @@ typedef volatile int diminuto_spinlock_t;
              * Use a gcc built-in function (if it exists) to create an acquire
              * (read) memory barrier. (The barrier is a side-effect.)
              */
-#           define diminuto_acquire() do { diminuto_spinlock_t _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
+#           define diminuto_acquire() do { volatile diminuto_spinlock_t _diminuto_acquire_lock_ = 0; __sync_lock_test_and_set(&_diminuto_acquire_lock_, 1); } while (0)
 #       endif
 #   endif
 #endif
@@ -58,7 +58,7 @@ typedef volatile int diminuto_spinlock_t;
              * Use a gcc built-in function (if it exists) to create a release
              * (write) memory barrier. (The barrier is a side-effect.)
              */
-#           define diminuto_release() do { diminuto_spinlock_t _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
+#           define diminuto_release() do { volatile diminuto_spinlock_t _diminuto_release_lock_ = 1; __sync_lock_release(&_diminuto_release_lock_); } while (0)
 #       endif
 #   endif
 #endif
