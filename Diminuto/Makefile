@@ -222,6 +222,8 @@ all:	$(TARGETALL)
 
 most:	$(TARGETMOST)
 
+# On the Raspberry Pi, this is what worked for me:
+# sudo apt-get install raspberrypi-kernel-headers
 plus:	$(TARGETPLUS)
 
 dist:	distribution
