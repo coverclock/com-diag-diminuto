@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -77,7 +77,7 @@ size_t diminuto_escape_collapse(char * to, const char * from, size_t tsize)
             case 'x':                   /* Hexadecimal sequence. */
                 byte = 0;
                 /* ANSI hexadecimal sequences 1 or 2 hexadecimal digits long. */
-                for (ii = 2; ; ++ii) {
+                for (ii = 2; ii <= 3; ++ii) {
                     if (('0' <= *(ff + ii)) && (*(ff + ii) <= '9')) {
                         byte <<= 4;
                         byte |= '\x0' + *(ff + ii) - '0';

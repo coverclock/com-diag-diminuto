@@ -19,6 +19,26 @@ int main(void)
 	SETLOGMASK();
 
 	{
+		/*
+		 * Well this was embarrassing.
+		 * Hoisted by my own petard.
+		 * A day one bug in code I wrote six years ago.
+		 */
+		static const char DATA[] = "\\xb5b";
+		size_t length = 0;
+		char data[sizeof(DATA)] = { '\0', };
+		size_t size = 0;
+
+		length = strlen(DATA) + 1;
+		size = diminuto_escape_collapse(data, DATA, length);
+		diminuto_dump(stdout, data, size);
+		ASSERT(size == 3);
+		ASSERT(data[0] == '\xb5');
+		ASSERT(data[1] == 'b');
+		ASSERT(data[2] == '\0');
+	}
+
+	{
 		char one[1 << (sizeof(char) * 8)];
 		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + 1];
 		char three[sizeof(two)];
