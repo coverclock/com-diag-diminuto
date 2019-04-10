@@ -39,6 +39,36 @@ int main(void)
 	}
 
 	{
+		static const char DATA[] = "\\xb\\x5b";
+		size_t length = 0;
+		char data[sizeof(DATA)] = { '\0', };
+		size_t size = 0;
+
+		length = strlen(DATA) + 1;
+		size = diminuto_escape_collapse(data, DATA, length);
+		diminuto_dump(stdout, data, size);
+		ASSERT(size == 3);
+		ASSERT(data[0] == '\x0b');
+		ASSERT(data[1] == '\x5b');
+		ASSERT(data[2] == '\0');
+	}
+
+	{
+		static const char DATA[] = "\\xBG";
+		size_t length = 0;
+		char data[sizeof(DATA)] = { '\0', };
+		size_t size = 0;
+
+		length = strlen(DATA) + 1;
+		size = diminuto_escape_collapse(data, DATA, length);
+		diminuto_dump(stdout, data, size);
+		ASSERT(size == 3);
+		ASSERT(data[0] == '\x0b');
+		ASSERT(data[1] == 'G');
+		ASSERT(data[2] == '\0');
+	}
+
+	{
 		char one[1 << (sizeof(char) * 8)];
 		char two[(sizeof(one) * (sizeof("\\xff") - 1)) + 1];
 		char three[sizeof(two)];
