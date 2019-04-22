@@ -136,6 +136,7 @@ Wheat Ridge CO 80033 USA
 * module - support for dynamically linked user space modules.
 * mux - file descriptor multiplexer using select(2).
 * number - alternative interfaces to strtol(3) and strtoul(3).
+* observation - atomically instantiate data files from temporary files.
 * offsetof - macro for determining field offset in structures.
 * path - find a file from a list in a PATH-like environmental variable.
 * phex - emit printable and unprintable characters in a printable form.
