@@ -131,6 +131,116 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    {
+        const char * PATH = "/tmp/diminuto-unittest-observation";
+        mode_t MODE = 0765;
+        char * temp = (char *)0;
+        int fd = -1;
+        pid_t pid = 0;
+        pid_t datum = 0;
+        ssize_t size = -1;
+        int rc = -1;
+        struct stat status;
+        FILE * fp = (FILE *)0;
+        size_t count = 0;
+
+        TEST();
+
+        /* FIRST */
+
+        fd = diminuto_observation_create(PATH, MODE, &temp);
+        ASSERT(fd >= 0);
+        ASSERT(temp != (const char *)0);
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
+        ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
+        ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
+
+        rc = stat(temp, &status);
+        ASSERT(rc >= 0);
+        COMMENT("mode=0%o\n", status.st_mode);
+        ASSERT((status.st_mode & 0777) == MODE);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc < 0);
+
+        pid = getpid();
+        ASSERT(pid > 0);
+
+        size = write(fd, &pid, sizeof(pid));
+        ASSERT(size == sizeof(pid));
+
+        rc = diminuto_observation_commit(fd, temp);
+        ASSERT(rc != fd);
+        ASSERT(rc < 0);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc >= 0);
+        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        ASSERT((status.st_mode & 0777) == MODE);
+        ASSERT(status.st_size == sizeof(pid));
+
+        fp = fopen(PATH, "r");
+        ASSERT(fp != (FILE *)0);
+
+        count = fread(&datum, sizeof(datum), 1, fp);
+        ASSERT(count == 1);
+        COMMENT("pid=%d datum=%d\n", pid, datum);
+        ASSERT(datum == pid);
+
+        rc = fclose(fp);
+        ASSERT(rc == 0);
+
+        /* SECOND */
+
+        fd = diminuto_observation_create(PATH, MODE, &temp);
+        ASSERT(fd >= 0);
+        ASSERT(temp != (const char *)0);
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
+        ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
+        ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
+
+        rc = stat(temp, &status);
+        ASSERT(rc >= 0);
+        COMMENT("mode=0%o\n", status.st_mode);
+        ASSERT((status.st_mode & 0777) == MODE);
+
+        pid += 1;
+
+        size = write(fd, &pid, sizeof(pid));
+        ASSERT(size == sizeof(pid));
+
+        rc = diminuto_observation_commit(fd, temp);
+        ASSERT(rc != fd);
+        ASSERT(rc < 0);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc >= 0);
+        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        ASSERT((status.st_mode & 0777) == MODE);
+        ASSERT(status.st_size == sizeof(pid));
+
+        fp = fopen(PATH, "r");
+        ASSERT(fp != (FILE *)0);
+
+        count = fread(&datum, sizeof(datum), 1, fp);
+        ASSERT(count == 1);
+        COMMENT("pid=%d datum=%d\n", pid, datum);
+        ASSERT(datum == pid);
+
+        rc = fclose(fp);
+        ASSERT(rc == 0);
+
+        /* CLEANUP */
+
+        rc = unlink(PATH);
+        ASSERT(rc == 0);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc < 0);
+
+        STATUS();
+    }
+
     /*
      * It's a good idea to run this with valgrind(3) to insure that the
      * feature is releasing memory as promised.
