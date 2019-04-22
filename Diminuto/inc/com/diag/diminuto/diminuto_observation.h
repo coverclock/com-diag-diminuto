@@ -32,7 +32,7 @@ extern int diminuto_observation_create(const char * path, mode_t mode, char ** t
  * temporary file name.
  * @param fd is the open file descriptor.
  * @param temp is the temporary file name returned by the create.
- * @return 0 if successful, <0 if an error occurred.
+ * @return <0 if successful, the original fd if an error occurred.
  */
 extern int diminuto_observation_commit(int fd, char * temp);
 
