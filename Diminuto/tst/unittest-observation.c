@@ -204,6 +204,9 @@ int main(int argc, char ** argv)
         COMMENT("mode=0%o\n", status.st_mode);
         ASSERT((status.st_mode & 0777) == MODE);
 
+        rc = stat(PATH, &status);
+        ASSERT(rc >= 0);
+
         pid += 1;
 
         size = write(fd, &pid, sizeof(pid));
