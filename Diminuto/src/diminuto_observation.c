@@ -50,14 +50,14 @@ int diminuto_observation_create(const char * path, mode_t mode, char ** tempp)
             break;
         }
 
-        *tempp = strcat(temp, SUFFIX);
+        strcpy(temp, path);
+        strcat(temp, SUFFIX);
 
-        fd = mkstemp(*tempp);
+        fd = mkstemp(temp);
         if (fd < 0) {
             fd = -5;
             diminuto_perror("diminuto_observation_create: mkstemp");
-            free(*tempp);
-            *tempp = (char *)0;
+            free(temp);
             break;
         }
 
@@ -66,10 +66,11 @@ int diminuto_observation_create(const char * path, mode_t mode, char ** tempp)
             fd = -6;
             diminuto_perror("diminuto_observation_create: fchmod");
             (void)close(fd);
-            (void)unlink(*tempp);
-            free(*tempp);
-            *tempp = (char *)0;
+            (void)unlink(temp);
+            free(temp);
         }
+
+        *tempp = temp;
 
     } while (0);
 
@@ -98,7 +99,7 @@ int diminuto_observation_commit(int fd, char * temp)
             break;
         }
 
-        path[length - sizeof(SUFFIX)] = '\0';
+        path[length - sizeof(SUFFIX) + 1] = '\0';
 
         rc = close(fd);
         if (rc < 0) {
