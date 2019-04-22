@@ -27,7 +27,6 @@ int main(int argc, char ** argv)
 
     {
         const char * PATH = "/tmp/diminuto-unittest-observation";
-        mode_t MODE = 0765;
         char * temp = (char *)0;
         int fd = -1;
         pid_t pid = 0;
@@ -40,7 +39,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        fd = diminuto_observation_create(PATH, MODE, &temp);
+        fd = diminuto_observation_create(PATH, &temp);
         ASSERT(fd >= 0);
         ASSERT(temp != (const char *)0);
         COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
@@ -50,7 +49,6 @@ int main(int argc, char ** argv)
         rc = stat(temp, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o\n", status.st_mode);
-        ASSERT((status.st_mode & 0777) == MODE);
 
         rc = stat(PATH, &status);
         ASSERT(rc < 0);
@@ -68,7 +66,6 @@ int main(int argc, char ** argv)
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
-        ASSERT((status.st_mode & 0777) == MODE);
         ASSERT(status.st_size == sizeof(pid));
 
         fp = fopen(PATH, "r");
@@ -93,7 +90,6 @@ int main(int argc, char ** argv)
 
     {
         const char * PATH = "diminuto-unittest-observation";
-        mode_t MODE = 0640;
         char * temp = (char *)0;
         int fd = -1;
         pid_t pid = 0;
@@ -106,7 +102,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        fd = diminuto_observation_create(PATH, MODE, &temp);
+        fd = diminuto_observation_create(PATH, &temp);
         ASSERT(fd >= 0);
         ASSERT(temp != (const char *)0);
         COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
@@ -116,7 +112,6 @@ int main(int argc, char ** argv)
         rc = stat(temp, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o\n", status.st_mode);
-        ASSERT((status.st_mode & 0777) == MODE);
 
         rc = stat(PATH, &status);
         ASSERT(rc < 0);
@@ -133,7 +128,6 @@ int main(int argc, char ** argv)
 
     {
         const char * PATH = "/tmp/diminuto-unittest-observation";
-        mode_t MODE = 0765;
         char * temp = (char *)0;
         int fd = -1;
         pid_t pid = 0;
@@ -148,7 +142,7 @@ int main(int argc, char ** argv)
 
         /* FIRST */
 
-        fd = diminuto_observation_create(PATH, MODE, &temp);
+        fd = diminuto_observation_create(PATH, &temp);
         ASSERT(fd >= 0);
         ASSERT(temp != (const char *)0);
         COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
@@ -158,7 +152,6 @@ int main(int argc, char ** argv)
         rc = stat(temp, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o\n", status.st_mode);
-        ASSERT((status.st_mode & 0777) == MODE);
 
         rc = stat(PATH, &status);
         ASSERT(rc < 0);
@@ -176,7 +169,6 @@ int main(int argc, char ** argv)
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
-        ASSERT((status.st_mode & 0777) == MODE);
         ASSERT(status.st_size == sizeof(pid));
 
         fp = fopen(PATH, "r");
@@ -192,7 +184,7 @@ int main(int argc, char ** argv)
 
         /* SECOND */
 
-        fd = diminuto_observation_create(PATH, MODE, &temp);
+        fd = diminuto_observation_create(PATH, &temp);
         ASSERT(fd >= 0);
         ASSERT(temp != (const char *)0);
         COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
@@ -202,7 +194,6 @@ int main(int argc, char ** argv)
         rc = stat(temp, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o\n", status.st_mode);
-        ASSERT((status.st_mode & 0777) == MODE);
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
@@ -219,7 +210,6 @@ int main(int argc, char ** argv)
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
         COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
-        ASSERT((status.st_mode & 0777) == MODE);
         ASSERT(status.st_size == sizeof(pid));
 
         fp = fopen(PATH, "r");

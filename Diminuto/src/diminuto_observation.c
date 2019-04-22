@@ -18,7 +18,7 @@
 
 static const char SUFFIX[] = "XXXXXX";
 
-int diminuto_observation_create(const char * path, mode_t mode, char ** tempp)
+int diminuto_observation_create(const char * path, char ** tempp)
 {
     int fd = -1;
     size_t length = 0;
@@ -59,15 +59,6 @@ int diminuto_observation_create(const char * path, mode_t mode, char ** tempp)
             diminuto_perror("diminuto_observation_create: mkstemp");
             free(temp);
             break;
-        }
-
-        rc = fchmod(fd, mode);
-        if (rc < 0) {
-            fd = -6;
-            diminuto_perror("diminuto_observation_create: fchmod");
-            (void)close(fd);
-            (void)unlink(temp);
-            free(temp);
         }
 
         *tempp = temp;

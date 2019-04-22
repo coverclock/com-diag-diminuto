@@ -20,11 +20,10 @@
  * name and with that mode in the same directory, and return the dynamically
  * allocated temporary file name and and an open file descriptor.
  * @param path is the path name that the file will have once committed.
- * @param mode is the mode of the file.
  * @param tempp points to where a pointer to the temporary file name is stored.
  * @return an open file descriptor if successful, <0 if an error occurred.
  */
-extern int diminuto_observation_create(const char * path, mode_t mode, char ** tempp);
+extern int diminuto_observation_create(const char * path, char ** tempp);
 
 /**
  * Commit the data in the temporary file by closing the open file descriptor,
