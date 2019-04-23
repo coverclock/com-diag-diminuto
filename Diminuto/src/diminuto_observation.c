@@ -14,22 +14,20 @@
 #include <sys/param.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 static const char SUFFIX[] = "XXXXXX";
 
-int diminuto_observation_create(const char * path, char ** tempp)
+FILE * diminuto_observation_create(const char * path, char ** tempp)
 {
-    int fd = -1;
+    FILE * fp = (FILE *)0;
     size_t length = 0;
     char * temp = (char *)0;
-    int rc = -1;
+    int fd = -1;
 
     do {
 
         if (sizeof(SUFFIX) > PATH_MAX) {
             errno = E2BIG;
-            fd = -2;
             diminuto_perror("diminuto_observation_create: sizeof");
             break;
         }
@@ -37,7 +35,6 @@ int diminuto_observation_create(const char * path, char ** tempp)
         length = strlen(path);
         if (length > (PATH_MAX - sizeof(SUFFIX) - 1)) {
             errno = ENAMETOOLONG;
-            fd = -3;
             diminuto_perror("diminuto_observation_create: strlen");
             break;
         }
@@ -45,7 +42,6 @@ int diminuto_observation_create(const char * path, char ** tempp)
         temp = (char *)malloc(length + sizeof(SUFFIX));
         if (temp == (char *)0) {
             errno = EFAULT;
-            fd = -4;
             diminuto_perror("diminuto_observation_create: malloc");
             break;
         }
@@ -55,20 +51,26 @@ int diminuto_observation_create(const char * path, char ** tempp)
 
         fd = mkstemp(temp);
         if (fd < 0) {
-            fd = -5;
             diminuto_perror("diminuto_observation_create: mkstemp");
             free(temp);
             break;
+        }
+
+        fp = fdopen(fd, "r+");
+        if (fp == (FILE *)0) {
+            diminuto_perror("diminuto_observation_create: fdopen");
+            free(temp);
+        	break;
         }
 
         *tempp = temp;
 
     } while (0);
 
-    return fd;
+    return fp;
 }
 
-int diminuto_observation_commit(int fd, char * temp)
+FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
 {
     int rc = -1;
     size_t length = 0;
@@ -76,14 +78,14 @@ int diminuto_observation_commit(int fd, char * temp)
 
     do {
 
-        length = strlen(temp);
+        length = strlen(*tempp);
         if (!((sizeof(SUFFIX) < length) && (length < PATH_MAX))) {
             errno = ENAMETOOLONG;
             diminuto_perror("diminuto_observation_commit: strlen");
             break;
         }
 
-        path = strdup(temp);
+        path = strdup(*tempp);
         if (path == (char *)0) {
             errno = EFAULT;
             diminuto_perror("diminuto_observation_commit: strdup");
@@ -92,14 +94,21 @@ int diminuto_observation_commit(int fd, char * temp)
 
         path[length - sizeof(SUFFIX) + 1] = '\0';
 
-        rc = close(fd);
-        if (rc < 0) {
-            diminuto_perror("diminuto_observation_commit: close");
+        rc = fclose(fp);
+        if (rc != 0) {
+            diminuto_perror("diminuto_observation_commit: fclose");
             free(path);
             break;
         }
 
-        rc = rename(temp, path);
+        /*
+         * If fclose(3) succeeds but rename(2) does not, we still return the
+         * original FILE pointer to indicate failure, even though it is no
+         * longer useful. We must do the fclose(3) prior to the rename(2) to
+         * insure the renamed file is immediately accessible.
+         */
+
+        rc = rename(*tempp, path);
         if (rc < 0) {
             diminuto_perror("diminuto_observation_commit: rename");
             free(path);
@@ -107,40 +116,47 @@ int diminuto_observation_commit(int fd, char * temp)
         }
 
         free(path);
-        free(temp);
+        free(*tempp);
 
-        fd = -1;
+        *tempp = (char *)0;
+        fp = (FILE *)0;
 
     } while (0);
 
-    return fd;
+    return fp;
 }
 
-int diminuto_observation_discard(int fd, char * temp)
+FILE * diminuto_observation_discard(FILE * fp, char ** tempp)
 {
     int rc = -1;
-    size_t length = 0;
-    char * path = (char *)0;
 
     do {
 
-        rc = close(fd);
-        if (rc < 0) {
-            diminuto_perror("diminuto_observation_discard: close");
+        rc = fclose(fp);
+        if (rc != 0) {
+            diminuto_perror("diminuto_observation_discard: fclose");
             break;
         }
 
-        rc = unlink(temp);
+        /*
+         * If fclose(3) succeeds but unlink(2) does not, we still return the
+         * original FILE pointer to indicate failure, even though it is no
+         * longer useful. We must do the fclose(3) prior to the rename(2) to
+         * insure the renamed file is immediately inaccessible.
+         */
+
+        rc = unlink(*tempp);
         if (rc < 0) {
             diminuto_perror("diminuto_observation_discard: unlink");
             break;
         }
 
-        free(temp);
+        free(*tempp);
 
-        fd = -1;
+        *tempp = (char *)0;
+        fp = (FILE *)0;
 
     } while (0);
 
-    return fd;
+    return fp;
 }

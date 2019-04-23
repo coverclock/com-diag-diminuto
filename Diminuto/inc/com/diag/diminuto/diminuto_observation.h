@@ -11,37 +11,35 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <stdio.h>
 
 /**
  * Given a path name and a file mode, create a temporary file with a unique
  * name and with that mode in the same directory, and return the dynamically
- * allocated temporary file name and and an open file descriptor.
+ * allocated temporary file name and and a FILE pointer open for read/write.
  * @param path is the path name that the file will have once committed.
- * @param tempp points to where a pointer to the temporary file name is stored.
- * @return an open file descriptor if successful, <0 if an error occurred.
+ * @param tempp points to where a pointer to the temporary file name is returned.
+ * @return an open FILE pointer if successful, <0 if an error occurred.
  */
-extern int diminuto_observation_create(const char * path, char ** tempp);
+extern FILE * diminuto_observation_create(const char * path, char ** tempp);
 
 /**
- * Commit the data in the temporary file by closing the open file descriptor,
+ * Commit the data in the temporary file by closing the open FILE pointer,
  * renaming the temporary file to the original path name, and deallocating the
  * temporary file name.
- * @param fd is the open file descriptor.
- * @param temp is the temporary file name returned by the create.
- * @return <0 if successful, the original fd if an error occurred.
+ * @param fp is the open FILE pointer.
+ * @param tempp points to where a pointer to the temporary file name is stored.
+ * @return NULL if successful, the original FILE pointer if an error occurred.
  */
-extern int diminuto_observation_commit(int fd, char * temp);
+extern FILE * diminuto_observation_commit(FILE * fp, char ** tempp);
 
 /**
- * Discard the data in the temporary file by closing the open file descriptor,
+ * Discard the data in the temporary file by closing the open FILE pointer,
  * deleting the temporary file, and deallocating the temporary file name.
- * @param fd is the open file descriptor.
- * @param temp is the temporary file name returned by the create.
- * @return <0 if successful, the original fd if an error occurred.
+ * @param fp is the open FILE pointer.
+ * @param tempp points to where a pointer to the temporary file name is stored.
+ * @return NULL if successful, the original FILE pointer if an error occurred.
  */
-extern int diminuto_observation_discard(int fd, char * temp);
+extern FILE * diminuto_observation_discard(FILE * fp, char ** tempp);
 
 #endif

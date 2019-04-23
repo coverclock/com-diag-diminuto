@@ -28,21 +28,20 @@ int main(int argc, char ** argv)
     {
         const char * PATH = "/tmp/diminuto-unittest-observation";
         char * temp = (char *)0;
-        int fd = -1;
+        FILE * fp = (FILE *)0;
         pid_t pid = 0;
         pid_t datum = 0;
-        ssize_t size = -1;
         int rc = -1;
-        struct stat status;
-        FILE * fp = (FILE *)0;
+        struct stat status = { 0, };
         size_t count = 0;
+        char * copy = (char *)0;
 
         TEST();
 
-        fd = diminuto_observation_create(PATH, &temp);
-        ASSERT(fd >= 0);
+        fp = diminuto_observation_create(PATH, &temp);
+        ASSERT(fp != (FILE *)0);
         ASSERT(temp != (const char *)0);
-        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu] fp=%p\n", PATH, strlen(PATH), temp, strlen(temp), fp);
         ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
         ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
 
@@ -56,12 +55,19 @@ int main(int argc, char ** argv)
         pid = getpid();
         ASSERT(pid > 0);
 
-        size = write(fd, &pid, sizeof(pid));
-        ASSERT(size == sizeof(pid));
+        count = fwrite(&pid, sizeof(pid), 1, fp);
+        ASSERT(count == 1);
 
-        rc = diminuto_observation_commit(fd, temp);
-        ASSERT(rc != fd);
+        copy = strdup(temp);
+        ASSERT(copy != (char *)0);
+
+        fp = diminuto_observation_commit(fp, &temp);
+        ASSERT(fp == (FILE *)0);
+        ASSERT(temp == (const char *)0);
+
+        rc = stat(copy, &status);
         ASSERT(rc < 0);
+        free(copy);
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
@@ -91,61 +97,20 @@ int main(int argc, char ** argv)
     {
         const char * PATH = "diminuto-unittest-observation";
         char * temp = (char *)0;
-        int fd = -1;
+        FILE * fp = (FILE *)0;
         pid_t pid = 0;
         pid_t datum = 0;
-        ssize_t size = -1;
         int rc = -1;
-        struct stat status;
-        FILE * fp = (FILE *)0;
+        struct stat status = { 0, };
         size_t count = 0;
+        char * copy = (char *)0;
 
         TEST();
 
-        fd = diminuto_observation_create(PATH, &temp);
-        ASSERT(fd >= 0);
+        fp = diminuto_observation_create(PATH, &temp);
+        ASSERT(fp != (FILE *)0);
         ASSERT(temp != (const char *)0);
-        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
-        ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
-        ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
-
-        rc = stat(temp, &status);
-        ASSERT(rc >= 0);
-        COMMENT("mode=0%o\n", status.st_mode);
-
-        rc = stat(PATH, &status);
-        ASSERT(rc < 0);
-
-        rc = diminuto_observation_discard(fd, temp);
-        ASSERT(rc != fd);
-        ASSERT(rc < 0);
-
-        rc = stat(PATH, &status);
-        ASSERT(rc < 0);
-
-        STATUS();
-    }
-
-    {
-        const char * PATH = "/tmp/diminuto-unittest-observation";
-        char * temp = (char *)0;
-        int fd = -1;
-        pid_t pid = 0;
-        pid_t datum = 0;
-        ssize_t size = -1;
-        int rc = -1;
-        struct stat status;
-        FILE * fp = (FILE *)0;
-        size_t count = 0;
-
-        TEST();
-
-        /* FIRST */
-
-        fd = diminuto_observation_create(PATH, &temp);
-        ASSERT(fd >= 0);
-        ASSERT(temp != (const char *)0);
-        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu] fp=%p\n", PATH, strlen(PATH), temp, strlen(temp), fp);
         ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
         ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
 
@@ -159,12 +124,71 @@ int main(int argc, char ** argv)
         pid = getpid();
         ASSERT(pid > 0);
 
-        size = write(fd, &pid, sizeof(pid));
-        ASSERT(size == sizeof(pid));
+        count = fwrite(&pid, sizeof(pid), 1, fp);
+        ASSERT(count == 1);
 
-        rc = diminuto_observation_commit(fd, temp);
-        ASSERT(rc != fd);
+        copy = strdup(temp);
+        ASSERT(copy != (char *)0);
+
+        fp = diminuto_observation_discard(fp, &temp);
+        ASSERT(fp == (FILE *)0);
+        ASSERT(temp == (char *)0);
+
+        rc = stat(copy, &status);
         ASSERT(rc < 0);
+        free(copy);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc < 0);
+
+        STATUS();
+    }
+
+    {
+        const char * PATH = "/tmp/diminuto-unittest-observation";
+        char * temp = (char *)0;
+        FILE * fp = (FILE *)0;
+        pid_t pid = 0;
+        pid_t datum = 0;
+        int rc = -1;
+        struct stat status = { 0, };
+        size_t count = 0;
+        char * copy = (char *)0;
+
+        TEST();
+
+        /* FIRST */
+
+        fp = diminuto_observation_create(PATH, &temp);
+        ASSERT(fp != (FILE *)0);
+        ASSERT(temp != (const char *)0);
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu] fp=%p\n", PATH, strlen(PATH), temp, strlen(temp), fp);
+        ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
+        ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
+
+        rc = stat(temp, &status);
+        ASSERT(rc >= 0);
+        COMMENT("mode=0%o\n", status.st_mode);
+
+        rc = stat(PATH, &status);
+        ASSERT(rc < 0);
+
+        pid = getpid();
+        ASSERT(pid > 0);
+
+        count = fwrite(&pid, sizeof(pid), 1, fp);
+        ASSERT(count == 1);
+
+        copy = strdup(temp);
+        ASSERT(copy != (char *)0);
+
+        fp = diminuto_observation_commit(fp, &temp);
+        ASSERT(fp == (FILE *)0);
+        ASSERT(temp == (char *)0);
+
+        rc = stat(copy, &status);
+        ASSERT(rc < 0);
+        free(copy);
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
@@ -184,10 +208,10 @@ int main(int argc, char ** argv)
 
         /* SECOND */
 
-        fd = diminuto_observation_create(PATH, &temp);
-        ASSERT(fd >= 0);
+        fp = diminuto_observation_create(PATH, &temp);
+        ASSERT(fp != (FILE *)0);
         ASSERT(temp != (const char *)0);
-        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu]\n", PATH, strlen(PATH), temp, strlen(temp));
+        COMMENT("PATH=\"%s\"[%zu] temp=\"%s\"[%zu] fp=%p\n", PATH, strlen(PATH), temp, strlen(temp), fp);
         ASSERT(strlen(temp) == (strlen(PATH) + strlen("XXXXXX")));
         ASSERT(strncmp(temp, PATH, strlen(PATH)) == 0);
 
@@ -200,12 +224,19 @@ int main(int argc, char ** argv)
 
         pid += 1;
 
-        size = write(fd, &pid, sizeof(pid));
-        ASSERT(size == sizeof(pid));
+        count = fwrite(&pid, sizeof(pid), 1, fp);
+        ASSERT(count == 1);
 
-        rc = diminuto_observation_commit(fd, temp);
-        ASSERT(rc != fd);
+        copy = strdup(temp);
+        ASSERT(copy != (char *)0);
+
+        fp = diminuto_observation_commit(fp, &temp);
+        ASSERT(fp == (FILE *)0);
+        ASSERT(temp == (char *)0);
+
+        rc = stat(copy, &status);
         ASSERT(rc < 0);
+        free(copy);
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
