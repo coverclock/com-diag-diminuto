@@ -724,7 +724,7 @@ int main(int argc, char * argv[])
     }
 
 /*******************************************************************************
- * PROVIDE SERVICE - IPv4 - UCP
+ * PROVIDE SERVICE - IPv4 - UDP
  ******************************************************************************/
 
     else if ((Rendezvous == (const char *)0) && (Layer2 == '4') && (Layer3 == 'u')) {
@@ -748,7 +748,7 @@ int main(int argc, char * argv[])
     }
 
 /*******************************************************************************
- * PROVIDE SERVICE - IPv6 - UCP
+ * PROVIDE SERVICE - IPv6 - UDP
  ******************************************************************************/
 
     else if ((Rendezvous == (const char *)0) && (Layer2 == '6') && (Layer3 == 'u')) {
@@ -796,6 +796,8 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
                     total -= output;
+                    if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
+                    if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
@@ -850,6 +852,8 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
                     total -= output;
+                    if (Verbose) { stamp(tee); fprintf(tee, "%s \"", diminuto_ipc4_address2string(datum4, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
+                    if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
@@ -907,6 +911,8 @@ int main(int argc, char * argv[])
                     output = diminuto_fd_write(sink, buffer, input);
                     assert(output == input);
                     total -= output;
+                    if (Verbose) { stamp(tee); fprintf(tee, "%s \"", diminuto_ipc6_address2string(datum6, string, sizeof(string))); emit(tee, buffer, input); fputs("\"\n", tee); }
+                    if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
                     assert(input >= 0);
