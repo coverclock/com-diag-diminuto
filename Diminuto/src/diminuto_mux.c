@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include <errno.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
@@ -33,9 +34,11 @@ static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * set
     int rc = -1;
 
     if (!((0 <= fd) && (fd < FD_SETSIZE))) {
-        /* Do nothing. */
+        errno = ERANGE;
+        diminuto_perror("diminuto_mux_register");
     } else if (FD_ISSET(fd, &setp->active)) {
-        /* Do nothing. */
+        errno = EINVAL;
+        diminuto_perror("diminuto_mux_register");
     } else {
         FD_SET(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
@@ -126,9 +129,11 @@ static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * s
      */
 
     if (!((0 <= fd) && (fd < FD_SETSIZE))) {
-        /* Do nothing. */
+        errno = ERANGE;
+        diminuto_perror("diminuto_mux_unregister");
     } else if (!FD_ISSET(fd, &setp->active)) {
-        /* Do nothing. */
+        errno = EINVAL;
+        diminuto_perror("diminuto_mux_unregister");
     } else {
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
@@ -173,10 +178,14 @@ int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
 {
     int rc = -1;
 
-    if (sigismember(&muxp->mask, signum) != 0) {
-        /* Do nothing. */
+    if ((rc = sigismember(&muxp->mask, signum)) < 0) {
+        diminuto_perror("diminuto_mux_register_signal: sigismember");
+    } else if (rc > 0) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_mux_register_signal: sigismember");
+        rc = -1;
     } else if (sigaddset(&muxp->mask, signum) < 0) {
-        /* Do nothing. */
+        diminuto_perror("diminuto_mux_register_signal: sigaddset");
     } else {
         rc = signum;
     }
@@ -188,10 +197,14 @@ int diminuto_mux_unregister_signal(diminuto_mux_t * muxp, int signum)
 {
     int rc = -1;
 
-    if (sigismember(&muxp->mask, signum) <= 0) {
-        /* Do nothing. */
+    if ((rc = sigismember(&muxp->mask, signum)) < 0) {
+        diminuto_perror("diminuto_mux_unregister_signal: sigismember");
+    } else if (rc == 0) {
+        errno = EINVAL;
+        diminuto_perror("diminuto_mux_register_signal: sigismember");
+        rc = -1;
     } else if (sigdelset(&muxp->mask, signum) < 0) {
-        /* Do nothing. */
+        diminuto_perror("diminuto_mux_unregister_signal: sigdelset");
     } else {
         rc = 0;
     }
