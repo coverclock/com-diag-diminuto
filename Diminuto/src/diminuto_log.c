@@ -100,6 +100,16 @@ void diminuto_log_open_syslog(const char * name, int option, int facility)
 		}
 #endif
 
+		if (diminuto_log_cached) {
+			/* Do nothing. */
+		} else if (getpid() == getsid(0)) {
+			diminuto_log_cached = true;
+		} else if (getppid() == 1) {
+			diminuto_log_cached = true;
+		} else {
+			/* Do nothing. */
+		}
+
     DIMINUTO_CRITICAL_SECTION_END;
 }
 

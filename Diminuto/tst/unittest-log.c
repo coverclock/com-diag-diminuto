@@ -2,10 +2,21 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * It's useful to run this as
+ *
+ *	setsid unittest-log
+ *
+ * or
+ *
+ *	( ( unittest-log & ) & ) &
+ *
+ * which exercises the code that detects whether or not it's a deamon
+ * by its session identifier or who its parent process is.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
