@@ -20,7 +20,8 @@ int main(int argc, char * argv[])
 	const char * name;
 	FILE * fp;
 	int fd;
-	ssize_t bytes;
+	ssize_t before;
+	ssize_t after;
 	ssize_t maximum;
 	int ch;
 	uint64_t index;
@@ -43,15 +44,17 @@ int main(int argc, char * argv[])
 	maximum = 0;
 
 	while (!0) {
-		bytes = diminuto_file_ready(fp);
-		if (bytes > maximum) { maximum = bytes; }
+		before = diminuto_file_ready(fp);
+		if (before > maximum) { maximum = before; }
 		ch = fgetc(fp);
+		after = diminuto_file_ready(fp);
+		if (after > maximum) { maximum = after; }
 		if (ch == EOF) {
 			break;
 		} else if (isprint(ch)) {
-			fprintf(stderr, "%s: %2d %10lld %4lld %4lld 0x%02x '%c'\n", name, fd, (unsigned long long)index, (long long)maximum, (long long)bytes, ch, ch);
+			fprintf(stderr, "%s: %2d %10lld %4lld %4lld %4lld 0x%02x '%c'\n", name, fd, (unsigned long long)index, (long long)maximum, (long long)before, (long long)after, ch, ch);
 		} else {
-			fprintf(stderr, "%s: %2d %10lld %4lld %4lld 0x%02x\n", name, fd, (unsigned long long)index, (long long)maximum, (long long)bytes, ch);
+			fprintf(stderr, "%s: %2d %10lld %4lld %4lld %4lld 0x%02x\n", name, fd, (unsigned long long)index, (long long)maximum, (long long)before, (long long)after, ch);
 		}
 		fputc(ch, stdout);
 		index += 1;
