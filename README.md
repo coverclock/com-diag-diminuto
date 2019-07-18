@@ -1,18 +1,34 @@
-# com-diag-diminuto
+com-diag-diminuto
+=================
 
 Linux systems programming library in C.
 
+# Thanks
+
 [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
 
-## Copyright
+# Copyright
 
-Copyright 2008-2018 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2019 by the Digital Aggregates Corporation, Colorado, USA.
 
-## License
+# License
 
 Licensed under the terms in LICENSE.txt. 
 
-## Abstract
+# Contact
+
+Chip Overclock  
+Digital Aggregates Corporation  
+3440 Youngfield Street, Suite 209  
+Wheat Ridge CO 80033 USA  
+<http://www.diag.com>    
+<mailto:coverclock@diag.com>    
+
+# Help
+
+<https://stackoverflow.com/questions/tagged/com-diag-diminuto> [com-diag-diminuto]
+
+# Abstract
 
 This file is part of the Digital Aggregates Corporation Diminuto package.
 Diminuto ("tiny") is an open source library of systems programming
@@ -27,7 +43,7 @@ fixture used to validate features that depend on hardware (like GPIO).
 
 This software is an original work of its author.
 
-## Targets
+# Targets
 
 This code is typically regression tested against one or more of the following
 hardware targets and software platforms depending on the feature.
@@ -88,16 +104,7 @@ Raspbian 9.4 "stretch"
 Linux 4.14.34    
 gcc 6.3.0    
 
-## Contact
-
-Chip Overclock  
-<mailto:coverclock@diag.com>  
-Digital Aggregates Corporation  
-<http://www.diag.com>  
-3440 Youngfield Street, Suite 209  
-Wheat Ridge CO 80033 USA  
-
-## Features
+# Features
 
 * alarm - receive and check for a SIGALRM signal.
 * barrier - acquire and release memory barriers.
@@ -164,7 +171,7 @@ Wheat Ridge CO 80033 USA
 * well - like the pool feature but maintains requested alignment of objects.
 * widthof - macro to return width in bits of a type.
  
-## Utilities
+# Utilities
  
 * coreable - enable core dumps.
 * datesink - consume verbose timestamp stream.
@@ -200,7 +207,7 @@ Wheat Ridge CO 80033 USA
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
 
-## Examples
+# Examples
 
 * adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
@@ -214,7 +221,7 @@ Wheat Ridge CO 80033 USA
 (These are functional tests that use hardware test fixtures I cobbled
 together specifically for this purpose.)
 
-## Directories
+# Directories
  
 * bin - utility source files.
 * cfg - configuration makefiles.
@@ -229,7 +236,7 @@ together specifically for this purpose.)
 * tst - unit test source files.
 * txt - notes and other useful stuff.
 
-## Remarks
+# Remarks
 
 Diminuto started out many years ago as a project to build a minimal
 Linux-based embedded system for an ARMv4 processor that seems laughbly
@@ -283,7 +290,7 @@ output from GPS devices. The fact that gpstool can do so much in a single
 file of not much more than a thousand lines of C code is a testimony to
 how useful Diminuto can be (and how much time it can save you).
 
-## Repositories
+# Repositories
 
 <https://github.com/coverclock/com-diag-diminuto>
 
@@ -299,15 +306,15 @@ how useful Diminuto can be (and how much time it can save you).
 
 <https://github.com/coverclock/com-diag-obelisk>
 
-## Images
+# Images
 
 <https://www.flickr.com/photos/johnlsloan/albums/72157680352449986>
 
-## References
+# References
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
 
-## Build
+# Build
 
 Clone, build, and play with Diminuto (some unit and functional tests
 may require you be root).
@@ -340,7 +347,7 @@ Install Diminuto library and utilities in /usr/local.
 
     sudo make install
 
-## Acknowledgements
+# Acknowledgements
 
 I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
 various spin-offs, who were so generous with their time and expertise over
