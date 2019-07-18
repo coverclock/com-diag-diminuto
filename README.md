@@ -24,15 +24,6 @@ Wheat Ridge CO 80033 USA
 <http://www.diag.com>    
 <mailto:coverclock@diag.com>    
 
-# Help
-
-If you have questions about Diminuto, please submit a question to the Stack
-Overflow site and tag it with the name of the repository `com-diag-diminuto`.
-This centralizes the questions and answers in one place, and helps others
-by letting them see everyone's questions and answers.
-
-<https://stackoverflow.com/questions/tagged/com-diag-diminuto> `[com-diag-diminuto]`
-
 # Abstract
 
 This file is part of the Digital Aggregates Corporation Diminuto package.
