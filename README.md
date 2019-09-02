@@ -232,6 +232,10 @@ together specifically for this purpose.)
 * tst - unit test source files.
 * txt - notes and other useful stuff.
 
+# Soundtrack
+
+The Highwomen, "The Chain" (Fleetwood Mac), <https://youtu.be/jVLNB3d-2cA>
+
 # Remarks
 
 Diminuto started out many years ago as a project to build a minimal
