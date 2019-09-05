@@ -252,7 +252,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                    	fprintf(stderr, "write: progress %llu bytes\n", (long long unsigned int)total);
+                        fprintf(stderr, "write: progress %llu bytes\n", (long long unsigned int)total);
                     }
                     pointer += rc;
                     size -= rc;
@@ -315,7 +315,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                    	fprintf(stderr, "read: progress %llu bytes\n", (long long unsigned int)total);
+                        fprintf(stderr, "read: progress %llu bytes\n", (long long unsigned int)total);
                     }
                     pointer += rc;
                     size -= rc;

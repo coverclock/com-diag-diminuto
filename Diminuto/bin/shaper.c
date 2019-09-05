@@ -207,10 +207,10 @@ int main(int argc, char * argv[])
     size_t peakrate = 0;
     size_t sustainedrate = 0;
     size_t maximumburstsize = 0;
-	diminuto_ticks_t peakincrement = 0;
+    diminuto_ticks_t peakincrement = 0;
     diminuto_ticks_t jittertolerance = 0;
-	diminuto_ticks_t sustainedincrement = 0;
-	diminuto_ticks_t bursttolerance = 0;
+    diminuto_ticks_t sustainedincrement = 0;
+    diminuto_ticks_t bursttolerance = 0;
     uint8_t fletcher16a = 0;
     uint8_t fletcher16b = 0;
     int shaped = 0;
@@ -219,7 +219,7 @@ int main(int argc, char * argv[])
     diminuto_ticks_t interval = 0;
     diminuto_ticks_t minimum = 0;
     diminuto_ticks_t elapsed = 0;
-	ssize_t rc = -1;
+    ssize_t rc = -1;
     size_t size = 0;
     double delay = 0.0;
     double rate = 0.0;
@@ -307,8 +307,8 @@ int main(int argc, char * argv[])
             break;
 
         case 'v':
-        	verbose = !0;
-        	break;
+            verbose = !0;
+            break;
 
         default:
             fprintf(stderr, "usage: %s [ -d ] [ -v ] [ -l | -c ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
@@ -362,7 +362,7 @@ int main(int argc, char * argv[])
         fprintf(stderr, "shaper[%d]: -s %zuB/s\n", pid, sustainedrate);
         fprintf(stderr, "shaper[%d]: -m %zuB\n", pid, maximumburstsize);
         if (verbose) {
-        	fprintf(stderr, "shaper[%d]: -v\n", pid);
+            fprintf(stderr, "shaper[%d]: -v\n", pid);
         }
     }
 
@@ -400,9 +400,9 @@ int main(int argc, char * argv[])
 
     epoch = diminuto_time_elapsed();
     if (shaped) {
-    	peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
-    	sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
-    	bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
+        peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
+        sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
+        bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
         diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
     }
 
@@ -413,17 +413,17 @@ int main(int argc, char * argv[])
         /* PEAK */
 
         now = diminuto_time_elapsed();
-		if (count > 1) {
-	        elapsed = now - then;
-			if (elapsed > 0) {
-				rate = size;
-				rate *= frequency;
-				rate /= elapsed;
-				if (rate > peak) {
-					peak = rate;
-				}
-			}
-		}
+        if (count > 1) {
+            elapsed = now - then;
+            if (elapsed > 0) {
+                rate = size;
+                rate *= frequency;
+                rate /= elapsed;
+                if (rate > peak) {
+                    peak = rate;
+                }
+            }
+        }
         then = now;
 
         /* INPUT */
@@ -452,19 +452,19 @@ int main(int argc, char * argv[])
 
         now = diminuto_time_elapsed();
         if (shaped) {
-    		delay = 0.0;
-        	while (!0) {
-        		interval = diminuto_shaper_request(&shaper, now);
-        		if (interval <= 0) {
-        			break;
-        		} else if (interval < minimum) {
-        			diminuto_yield();
-        		} else {
-        			diminuto_delay_uninterruptible(interval);
-        		}
-        		delay += (double)interval / (double)frequency;
-        		now = diminuto_time_elapsed();
-        	}
+            delay = 0.0;
+            while (!0) {
+                interval = diminuto_shaper_request(&shaper, now);
+                if (interval <= 0) {
+                    break;
+                } else if (interval < minimum) {
+                    diminuto_yield();
+                } else {
+                    diminuto_delay_uninterruptible(interval);
+                }
+                delay += (double)interval / (double)frequency;
+                now = diminuto_time_elapsed();
+            }
             diminuto_shaper_commitn(&shaper, size);
         }
 
@@ -472,15 +472,15 @@ int main(int argc, char * argv[])
             fprintf(stderr, "shaper[%d]: count=%zuio size=%zuB total=%zuB delay=%lfs fletcher16=0x%4.4x\n", pid, count, size, total, delay, fletcher16c);
         }
 
-		/* SUSTAINED */
+        /* SUSTAINED */
 
-	    duration = now - epoch;
-	    if (duration > 0) {
-	        rate = total;
-	        rate *= frequency;
-	        rate /= duration;
-	        sustained = rate;
-	    }
+        duration = now - epoch;
+        if (duration > 0) {
+            rate = total;
+            rate *= frequency;
+            rate /= duration;
+            sustained = rate;
+        }
 
         /* OUTPUT */
 
@@ -497,7 +497,7 @@ int main(int argc, char * argv[])
     /* TIMELINE */
 
     if (shaped) {
-    	interval = diminuto_shaper_getexpected(&shaper);
+        interval = diminuto_shaper_getexpected(&shaper);
         if (interval <= 0) {
             /* Do nothing. */
         } else if (interval < minimum) {

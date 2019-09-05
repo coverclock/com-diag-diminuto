@@ -49,12 +49,12 @@
  * @return the symbol byte.
  */
 static inline uint8_t diminuto_hamming84_dat2sym(uint8_t nib) {
-	return	(
-		(((nib & H84_D1_BIT) >> H84_D1_OFF) << H84_S1_OFF) |
-		(((nib & H84_D2_BIT) >> H84_D2_OFF) << H84_S2_OFF) |
-		(((nib & H84_D3_BIT) >> H84_D3_OFF) << H84_S3_OFF) |
-		(((nib & H84_D4_BIT) >> H84_D4_OFF) << H84_S4_OFF)
-	);
+    return	(
+        (((nib & H84_D1_BIT) >> H84_D1_OFF) << H84_S1_OFF) |
+        (((nib & H84_D2_BIT) >> H84_D2_OFF) << H84_S2_OFF) |
+        (((nib & H84_D3_BIT) >> H84_D3_OFF) << H84_S3_OFF) |
+        (((nib & H84_D4_BIT) >> H84_D4_OFF) << H84_S4_OFF)
+    );
 }
 
 /**
@@ -64,12 +64,12 @@ static inline uint8_t diminuto_hamming84_dat2sym(uint8_t nib) {
  * @return the data nibble.
  */
 static inline uint8_t diminuto_hamming84_sym2dat(uint8_t sym) {
-	return	(
-		(((sym & H84_S1_BIT) >> H84_S1_OFF) << H84_D1_OFF) |
-		(((sym & H84_S2_BIT) >> H84_S2_OFF) << H84_D2_OFF) |
-		(((sym & H84_S3_BIT) >> H84_S3_OFF) << H84_D3_OFF) |
-		(((sym & H84_S4_BIT) >> H84_S4_OFF) << H84_D4_OFF)
-	);
+    return	(
+        (((sym & H84_S1_BIT) >> H84_S1_OFF) << H84_D1_OFF) |
+        (((sym & H84_S2_BIT) >> H84_S2_OFF) << H84_D2_OFF) |
+        (((sym & H84_S3_BIT) >> H84_S3_OFF) << H84_D3_OFF) |
+        (((sym & H84_S4_BIT) >> H84_S4_OFF) << H84_D4_OFF)
+    );
 }
 
 /**
@@ -80,11 +80,11 @@ static inline uint8_t diminuto_hamming84_sym2dat(uint8_t sym) {
  * @return the P1 mask.
  */
 static inline uint8_t diminuto_hamming84_sym2par1(uint8_t sym) {
-	return (
-		((sym & H84_S1_BIT) >> H84_S1_OFF) ^
-		((sym & H84_S2_BIT) >> H84_S2_OFF) ^
-		((sym & H84_S4_BIT) >> H84_S4_OFF)
-	) << H84_P1_OFF;
+    return (
+        ((sym & H84_S1_BIT) >> H84_S1_OFF) ^
+        ((sym & H84_S2_BIT) >> H84_S2_OFF) ^
+        ((sym & H84_S4_BIT) >> H84_S4_OFF)
+    ) << H84_P1_OFF;
 }
 
 /**
@@ -95,11 +95,11 @@ static inline uint8_t diminuto_hamming84_sym2par1(uint8_t sym) {
  * @return the P2 mask.
  */
 static inline uint8_t diminuto_hamming84_sym2par2(uint8_t sym) {
-	return (
-		((sym & H84_S1_BIT) >> H84_S1_OFF) ^
-		((sym & H84_S3_BIT) >> H84_S3_OFF) ^
-		((sym & H84_S4_BIT) >> H84_S4_OFF)
-	) << H84_P2_OFF;
+    return (
+        ((sym & H84_S1_BIT) >> H84_S1_OFF) ^
+        ((sym & H84_S3_BIT) >> H84_S3_OFF) ^
+        ((sym & H84_S4_BIT) >> H84_S4_OFF)
+    ) << H84_P2_OFF;
 }
 
 /**
@@ -110,11 +110,11 @@ static inline uint8_t diminuto_hamming84_sym2par2(uint8_t sym) {
  * @return the P3 mask.
  */
 static inline uint8_t diminuto_hamming84_sym2par3(uint8_t sym) {
-	return (
-		((sym & H84_S2_BIT) >> H84_S2_OFF) ^
-		((sym & H84_S3_BIT) >> H84_S3_OFF) ^
-		((sym & H84_S4_BIT) >> H84_S4_OFF)
-	) << H84_P3_OFF;
+    return (
+        ((sym & H84_S2_BIT) >> H84_S2_OFF) ^
+        ((sym & H84_S3_BIT) >> H84_S3_OFF) ^
+        ((sym & H84_S4_BIT) >> H84_S4_OFF)
+    ) << H84_P3_OFF;
 }
 
 /**
@@ -125,15 +125,15 @@ static inline uint8_t diminuto_hamming84_sym2par3(uint8_t sym) {
  * @return the P4 mask.
  */
 static inline uint8_t diminuto_hamming84_sym2par4(uint8_t sym) {
-	return (
-		((sym & H84_P1_BIT) >> H84_P1_OFF) ^
-		((sym & H84_P2_BIT) >> H84_P2_OFF) ^
-		((sym & H84_S1_BIT) >> H84_S1_OFF) ^
-		((sym & H84_P3_BIT) >> H84_P3_OFF) ^
-		((sym & H84_S2_BIT) >> H84_S2_OFF) ^
-		((sym & H84_S3_BIT) >> H84_S3_OFF) ^
-		((sym & H84_S4_BIT) >> H84_S4_OFF)
-	) << H84_P4_OFF;
+    return (
+        ((sym & H84_P1_BIT) >> H84_P1_OFF) ^
+        ((sym & H84_P2_BIT) >> H84_P2_OFF) ^
+        ((sym & H84_S1_BIT) >> H84_S1_OFF) ^
+        ((sym & H84_P3_BIT) >> H84_P3_OFF) ^
+        ((sym & H84_S2_BIT) >> H84_S2_OFF) ^
+        ((sym & H84_S3_BIT) >> H84_S3_OFF) ^
+        ((sym & H84_S4_BIT) >> H84_S4_OFF)
+    ) << H84_P4_OFF;
 }
 
 /**
@@ -148,27 +148,27 @@ static inline uint8_t diminuto_hamming84_sym2par4(uint8_t sym) {
  * @return !0 if valid, 0 otherwise.
  */
 static inline int diminuto_hamming84_sym_is_valid(uint8_t sym) {
-	switch (sym) {
-	case 0x00:
-	case 0xd2:
-	case 0x55:
-	case 0x87:
-	case 0x99:
-	case 0x4b:
-	case 0xcc:
-	case 0x1e:
-	case 0xe1:
-	case 0x33:
-	case 0xb4:
-	case 0x66:
-	case 0x78:
-	case 0xaa:
-	case 0x2d:
-	case 0xff:
-		return !0;
-	default:
-		return 0;
-	}
+    switch (sym) {
+    case 0x00:
+    case 0xd2:
+    case 0x55:
+    case 0x87:
+    case 0x99:
+    case 0x4b:
+    case 0xcc:
+    case 0x1e:
+    case 0xe1:
+    case 0x33:
+    case 0xb4:
+    case 0x66:
+    case 0x78:
+    case 0xaa:
+    case 0x2d:
+    case 0xff:
+        return !0;
+    default:
+        return 0;
+    }
 }
 
 /**
@@ -178,11 +178,11 @@ static inline int diminuto_hamming84_sym_is_valid(uint8_t sym) {
  * @return a bit shift offset identifying the single errored bit.
  */
 static inline uint8_t diminuto_hamming84_sym2off(uint8_t sym) {
-	return (8 - (
-		(((diminuto_hamming84_sym2par1(sym) ^ (sym & H84_P1_BIT)) >> H84_P1_OFF) << H84_O1_OFF) |
-		(((diminuto_hamming84_sym2par2(sym) ^ (sym & H84_P2_BIT)) >> H84_P2_OFF) << H84_O2_OFF) |
-		(((diminuto_hamming84_sym2par3(sym) ^ (sym & H84_P3_BIT)) >> H84_P3_OFF) << H84_O3_OFF)
-	));
+    return (8 - (
+        (((diminuto_hamming84_sym2par1(sym) ^ (sym & H84_P1_BIT)) >> H84_P1_OFF) << H84_O1_OFF) |
+        (((diminuto_hamming84_sym2par2(sym) ^ (sym & H84_P2_BIT)) >> H84_P2_OFF) << H84_O2_OFF) |
+        (((diminuto_hamming84_sym2par3(sym) ^ (sym & H84_P3_BIT)) >> H84_P3_OFF) << H84_O3_OFF)
+    ));
 }
 
 #endif

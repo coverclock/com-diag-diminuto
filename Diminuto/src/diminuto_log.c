@@ -72,43 +72,43 @@ void diminuto_log_setmask(void)
 {
     const char * mask;
 
-	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-		if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
-			/* Do nothing. */
-		} else if (strcmp(mask, ALL) == 0) {
-			DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
-		} else {
-			DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
-		}
+        if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
+            /* Do nothing. */
+        } else if (strcmp(mask, ALL) == 0) {
+            DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
+        } else {
+            DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
+        }
 
-	DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
-	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-		if (name != (const char *)0) {
-			diminuto_log_ident = name;
-		}
+        if (name != (const char *)0) {
+            diminuto_log_ident = name;
+        }
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-		if (!initialized) {
-			openlog(diminuto_log_ident, option, facility);
-			initialized = !0;
-		}
+        if (!initialized) {
+            openlog(diminuto_log_ident, option, facility);
+            initialized = !0;
+        }
 #endif
 
-		if (diminuto_log_cached) {
-			/* Do nothing. */
-		} else if (getpid() == getsid(0)) {
-			diminuto_log_cached = true;
-		} else if (getppid() == 1) {
-			diminuto_log_cached = true;
-		} else {
-			/* Do nothing. */
-		}
+        if (diminuto_log_cached) {
+            /* Do nothing. */
+        } else if (getpid() == getsid(0)) {
+            diminuto_log_cached = true;
+        } else if (getppid() == 1) {
+            diminuto_log_cached = true;
+        } else {
+            /* Do nothing. */
+        }
 
     DIMINUTO_CRITICAL_SECTION_END;
 }
@@ -120,13 +120,13 @@ void diminuto_log_open(const char * name)
 
 void diminuto_log_close(void)
 {
-	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-		if (initialized) {
-			closelog();
-			initialized = 0;
-		}
+        if (initialized) {
+            closelog();
+            initialized = 0;
+        }
 #endif
 
     DIMINUTO_CRITICAL_SECTION_END;
@@ -134,17 +134,17 @@ void diminuto_log_close(void)
 
 FILE * diminuto_log_stream(void)
 {
-	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-		if (diminuto_log_file != (FILE *)0) {
-			/* Do nothing. */
-		} else if ((diminuto_log_descriptor == STDOUT_FILENO) && (fileno(stdout) == STDOUT_FILENO)) {
-			diminuto_log_file = stdout;
-		} else if ((diminuto_log_descriptor == STDERR_FILENO) && (fileno(stderr) == STDERR_FILENO)) {
-			diminuto_log_file = stderr;
-		} else {
-			diminuto_log_file = fdopen(diminuto_log_descriptor, "a");
-		}
+        if (diminuto_log_file != (FILE *)0) {
+            /* Do nothing. */
+        } else if ((diminuto_log_descriptor == STDOUT_FILENO) && (fileno(stdout) == STDOUT_FILENO)) {
+            diminuto_log_file = stdout;
+        } else if ((diminuto_log_descriptor == STDERR_FILENO) && (fileno(stderr) == STDERR_FILENO)) {
+            diminuto_log_file = stderr;
+        } else {
+            diminuto_log_file = fdopen(diminuto_log_descriptor, "a");
+        }
 
     DIMINUTO_CRITICAL_SECTION_END;
 
@@ -205,17 +205,17 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     total += rc;
 
     if (space <= 1) {
-    	buffer[total - 1] = '\n';
+        buffer[total - 1] = '\n';
     } else if (buffer[total - 1] != '\n') {
-    	buffer[total++] = '\n';
-    	buffer[total] = '\0';
+        buffer[total++] = '\n';
+        buffer[total] = '\0';
     } else {
-    	/* Do nothing. */
+        /* Do nothing. */
     }
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	for (pointer = buffer; total > 0; total -= rc) {
+        for (pointer = buffer; total > 0; total -= rc) {
             rc = write(fd, pointer, total);
             if (rc < 0) {
                 break; /* What are we going to do, log an error message? */
@@ -224,7 +224,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
             } else if (rc > total) {
                 break; /* Should never happen. */
             } else {
-            	pointer += rc; /* Nominal. */
+                pointer += rc; /* Nominal. */
             }
         }
 
@@ -238,9 +238,9 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-	if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0))) || (diminuto_log_cached = (getppid() == 1))) {
+    if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0))) || (diminuto_log_cached = (getppid() == 1))) {
         diminuto_log_vsyslog(priority, format, ap);
-	} else {
+    } else {
         diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
     }
 }

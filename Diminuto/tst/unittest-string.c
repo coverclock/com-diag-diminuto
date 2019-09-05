@@ -15,7 +15,7 @@
 
 int main(int argc, char ** argv)
 {
-	SETLOGMASK();
+    SETLOGMASK();
 
     {
         EXPECT(strcmp(diminuto_string_basename("/usr/bin/basename1"), "basename1") == 0);

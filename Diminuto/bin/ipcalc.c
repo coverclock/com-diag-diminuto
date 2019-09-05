@@ -46,7 +46,7 @@ void usage(const char * pgm, FILE * fp)
 int main(int argc, char ** argv)
 {
     uint32_t addr[3];
-	int ii;
+    int ii;
     struct in_addr ip;
 
     if ((argc == 2) && (strcmp(argv[1], "-?") == 0)) {

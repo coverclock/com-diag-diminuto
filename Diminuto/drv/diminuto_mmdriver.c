@@ -84,34 +84,34 @@
  ******************************************************************************/
 
 #if defined(DIMINUTO_MMDRIVER_BEGIN) && defined(DIMINUTO_MMDRIVER_END)
-	/* Defined at compile time probably via the command line. */
+    /* Defined at compile time probably via the command line. */
 #elif defined(CONFIG_MACH_AT91RM9200EK)
-	/* AT91RM9200-EK: Diminuto, Arroyo default to LED control via PIOB. */
+    /* AT91RM9200-EK: Diminuto, Arroyo default to LED control via PIOB. */
 #	include <asm/arch/at91rm9200.h>
 #	define DIMINUTO_MMDRIVER_BEGIN (AT91_BASE_SYS + AT91_PIOB)
 #	define DIMINUTO_MMDRIVER_END (AT91_BASE_SYS + AT91_PIOC)
 #elif defined(CONFIG_MACH_OMAP3_BEAGLE)
-	/* Beagle Board: Cascada, Contraption default to USER BUTTON via GPIO1. */
+    /* Beagle Board: Cascada, Contraption default to USER BUTTON via GPIO1. */
 #	define DIMINUTO_MMDRIVER_BEGIN (0x48310038)
 #	define DIMINUTO_MMDRIVER_END (DIMINUTO_MMDRIVER_BEGIN + sizeof(uint32_t))
 #else
-	/* Presumed to be defined via an insmod parameter at install time. */
+    /* Presumed to be defined via an insmod parameter at install time. */
 #	define DIMINUTO_MMDRIVER_BEGIN (0)
 #	define DIMINUTO_MMDRIVER_END (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_EXCLUSIVE)
-	/* Not exclusive user of the memory range. */
+    /* Not exclusive user of the memory range. */
 #	define DIMINUTO_MMDRIVER_EXCLUSIVE (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_MAJOR)
-	/* Registered as a minor device of the miscellaneous device driver. */
+    /* Registered as a minor device of the miscellaneous device driver. */
 #	define DIMINUTO_MMDRIVER_MAJOR (0)
 #endif
 
 #if !defined(DIMINUTO_MMDRIVER_NAME)
-	/* Change this name if you install more than one instance. */
+    /* Change this name if you install more than one instance. */
 #	define DIMINUTO_MMDRIVER_NAME ("mmdriver")
 #endif
 
@@ -163,7 +163,7 @@ mmdriver_operation_write(
     void * pointer,
     diminuto_mmdriver_op_t * opp
 ) {
-	return diminuto_kernel_put(pointer, opp->width, &(opp->datum));
+    return diminuto_kernel_put(pointer, opp->width, &(opp->datum));
 }
 
 
@@ -274,9 +274,9 @@ mmdriver_ioctl(
 #else
 static long
 mmdriver_unlocked_ioctl(
-	struct file *filp,
-	unsigned int cmd,
-	unsigned long arg
+    struct file *filp,
+    unsigned int cmd,
+    unsigned long arg
 ) {
 #endif
     int rc;
@@ -453,7 +453,7 @@ mmdriver_proc_read(struct seq_file *stream, void *unused)
     seq_printf(stream, "base=0x%08lx\n", (unsigned long)basep);
     seq_printf(stream, "page=0x%08lx\n", (unsigned long)pagep);
     if (regionp) {
-    	seq_printf(stream, "region.start=0x%016llx\n", (unsigned long long)regionp->start);
+        seq_printf(stream, "region.start=0x%016llx\n", (unsigned long long)regionp->start);
         seq_printf(stream, "region.end=0x%016llx\n", (unsigned long long)regionp->end);
         seq_printf(stream, "region.name=\"%s\"\n", regionp->name);
         seq_printf(stream, "region.flags=0x%08lx\n", regionp->flags);
@@ -471,7 +471,7 @@ mmdriver_proc_read(struct seq_file *stream, void *unused)
 static int
 mmdriver_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, mmdriver_proc_read, PDE_DATA(inode));
+    return single_open(file, mmdriver_proc_read, PDE_DATA(inode));
 }
 
 static struct file_operations pops = {
@@ -500,8 +500,8 @@ static struct file_operations fops = {
 };
 
 static struct miscdevice mdev = {
-	.minor			= MISC_DYNAMIC_MINOR,
-	.fops			= &fops
+    .minor			= MISC_DYNAMIC_MINOR,
+    .fops			= &fops
 };
 
 static int
@@ -533,10 +533,10 @@ __init mmdriver_init(
 
         mdev.name = name;
         if ((rc = major ? register_chrdev(major, name, &fops) : misc_register(&mdev))) {
-			pr_err("mmdriver_init: register_chrdev/misc_register failed!\n");
-			diminuto_kernel_unmap(&pagep, regionpp);
-			break;
-		}
+            pr_err("mmdriver_init: register_chrdev/misc_register failed!\n");
+            diminuto_kernel_unmap(&pagep, regionpp);
+            break;
+        }
 
         strncat(proc, name, sizeof(name));
 
@@ -575,7 +575,7 @@ mmdriver_exit(
 
     remove_proc_entry(proc, NULL);
 
-	major ? unregister_chrdev(major, name) : misc_deregister(&mdev);
+    major ? unregister_chrdev(major, name) : misc_deregister(&mdev);
 
     regionpp = exclusive ? &regionp : 0;
 

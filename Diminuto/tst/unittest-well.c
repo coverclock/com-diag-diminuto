@@ -18,15 +18,15 @@
 #include <stdio.h>
 
 typedef struct Object {
-	int a;
-	int b;
-	int c;
+    int a;
+    int b;
+    int c;
 } object_t;
 
 int main(void)
 {
-	ssize_t pagesize;
-	ssize_t linesize;
+    ssize_t pagesize;
+    ssize_t linesize;
     diminuto_well_t * wellp;
     object_t * pa[10];
     size_t ii;
@@ -48,37 +48,37 @@ int main(void)
     for (kk = 0; kk < 4; ++kk) {
 
         ASSERT(diminuto_well_isfull(wellp));
-		for (ii = 0; ii < countof(pa); ++ii) {
-			pa[ii] = (object_t *)diminuto_well_alloc(wellp);
-			ASSERT(pa[ii] != (object_t *)0);
-			ASSERT(!diminuto_well_isfull(wellp));
-		}
-		ASSERT(diminuto_well_isempty(wellp));
+        for (ii = 0; ii < countof(pa); ++ii) {
+            pa[ii] = (object_t *)diminuto_well_alloc(wellp);
+            ASSERT(pa[ii] != (object_t *)0);
+            ASSERT(!diminuto_well_isfull(wellp));
+        }
+        ASSERT(diminuto_well_isempty(wellp));
 
-	    ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
+        ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
 
-		for (ii = 0; ii < (countof(pa) - 1); ++ii) {
-			ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
-		}
+        for (ii = 0; ii < (countof(pa) - 1); ++ii) {
+            ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
+        }
 
-		for (ii = 0; ii < countof(pa); ++ii) {
-			for (jj = 0; jj < countof(pa); ++jj) {
-				if (jj != ii) {
-					ASSERT(pa[ii] != pa[jj]);
-				}
-			}
-		}
+        for (ii = 0; ii < countof(pa); ++ii) {
+            for (jj = 0; jj < countof(pa); ++jj) {
+                if (jj != ii) {
+                    ASSERT(pa[ii] != pa[jj]);
+                }
+            }
+        }
 
-		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
+        ASSERT(diminuto_well_alloc(wellp) == (void *)0);
 
-		ASSERT(diminuto_well_isempty(wellp));
-		for (ii = 0; ii < countof(pa); ++ii) {
-			ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
-			ASSERT(!diminuto_well_isempty(wellp));
-		}
-		ASSERT(diminuto_well_isfull(wellp));
+        ASSERT(diminuto_well_isempty(wellp));
+        for (ii = 0; ii < countof(pa); ++ii) {
+            ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
+            ASSERT(!diminuto_well_isempty(wellp));
+        }
+        ASSERT(diminuto_well_isfull(wellp));
 
-		ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
+        ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
 
     }
 
@@ -93,37 +93,37 @@ int main(void)
     for (kk = 0; kk < 4; ++kk) {
 
         ASSERT(diminuto_well_isfull(wellp));
-		for (ii = 0; ii < countof(pa); ++ii) {
-			pa[ii] = (object_t *)diminuto_well_alloc(wellp);
-			ASSERT(pa[ii] != (object_t *)0);
-			ASSERT(!diminuto_well_isfull(wellp));
-		}
-		ASSERT(diminuto_well_isempty(wellp));
+        for (ii = 0; ii < countof(pa); ++ii) {
+            pa[ii] = (object_t *)diminuto_well_alloc(wellp);
+            ASSERT(pa[ii] != (object_t *)0);
+            ASSERT(!diminuto_well_isfull(wellp));
+        }
+        ASSERT(diminuto_well_isempty(wellp));
 
-	    ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
+        ASSERT((((intptr_t)pa[0]) & (pagesize - 1)) == 0);
 
-		for (ii = 0; ii < (countof(pa) - 1); ++ii) {
-			ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
-		}
+        for (ii = 0; ii < (countof(pa) - 1); ++ii) {
+            ASSERT(((char *)pa[ii + 1] - (char *)pa[ii]) == sizeof(object_t));
+        }
 
-		for (ii = 0; ii < countof(pa); ++ii) {
-			for (jj = 0; jj < countof(pa); ++jj) {
-				if (jj != ii) {
-					ASSERT(pa[ii] != pa[jj]);
-				}
-			}
-		}
+        for (ii = 0; ii < countof(pa); ++ii) {
+            for (jj = 0; jj < countof(pa); ++jj) {
+                if (jj != ii) {
+                    ASSERT(pa[ii] != pa[jj]);
+                }
+            }
+        }
 
-		ASSERT(diminuto_well_alloc(wellp) == (void *)0);
+        ASSERT(diminuto_well_alloc(wellp) == (void *)0);
 
-		ASSERT(diminuto_well_isempty(wellp));
-		for (ii = 0; ii < countof(pa); ++ii) {
-			ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
-			ASSERT(!diminuto_well_isempty(wellp));
-		}
-		ASSERT(diminuto_well_isfull(wellp));
+        ASSERT(diminuto_well_isempty(wellp));
+        for (ii = 0; ii < countof(pa); ++ii) {
+            ASSERT(diminuto_well_free(wellp, pa[ii]) == 0);
+            ASSERT(!diminuto_well_isempty(wellp));
+        }
+        ASSERT(diminuto_well_isfull(wellp));
 
-		ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
+        ASSERT(diminuto_well_free(wellp, (void *)0) < 0);
 
     }
 
@@ -136,12 +136,12 @@ int main(void)
     ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
 
     pa[0] = (object_t *)diminuto_well_alloc(wellp);
-	ASSERT(pa[0] != (object_t *)0);
+    ASSERT(pa[0] != (object_t *)0);
 
     pa[1] = (object_t *)diminuto_well_alloc(wellp);
-	ASSERT(pa[1] != (object_t *)0);
+    ASSERT(pa[1] != (object_t *)0);
 
-	ASSERT(((char *)pa[1] - (char *)pa[0]) == linesize);
+    ASSERT(((char *)pa[1] - (char *)pa[0]) == linesize);
 
     diminuto_well_fini(wellp);
 
@@ -152,12 +152,12 @@ int main(void)
     ASSERT((((intptr_t)wellp) & (pagesize - 1)) == 0);
 
     pa[0] = (object_t *)diminuto_well_alloc(wellp);
-	ASSERT(pa[0] != (object_t *)0);
+    ASSERT(pa[0] != (object_t *)0);
 
     pa[1] = (object_t *)diminuto_well_alloc(wellp);
-	ASSERT(pa[1] != (object_t *)0);
+    ASSERT(pa[1] != (object_t *)0);
 
-	ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_memory_alignment(sizeof(object_t), 8));
+    ASSERT(((char *)pa[1] - (char *)pa[0]) == diminuto_memory_alignment(sizeof(object_t), 8));
 
     diminuto_well_fini(wellp);
 

@@ -77,7 +77,7 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
 
 diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
 {
-	diminuto_ipv4_t * addresses = (diminuto_ipv4_t *)0;
+    diminuto_ipv4_t * addresses = (diminuto_ipv4_t *)0;
     struct  hostent * hostp;
     struct in_addr inaddr;
     size_t index;
@@ -96,13 +96,13 @@ diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
             continue;
         }
         if (limit > 0) {
-        	addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * (limit + 1));
-        	for (index = 0; index < limit; ++index) {
-        		memset(&inaddr, 0, sizeof(inaddr));
-         		memcpy(&inaddr, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(inaddr)) ? hostp->h_length : sizeof(inaddr));
-        		addresses[index] = ntohl(inaddr.s_addr);
-        	}
-        	addresses[index] = 0;
+            addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * (limit + 1));
+            for (index = 0; index < limit; ++index) {
+                memset(&inaddr, 0, sizeof(inaddr));
+                memcpy(&inaddr, hostp->h_addr_list[index], (hostp->h_length < (int)sizeof(inaddr)) ? hostp->h_length : sizeof(inaddr));
+                addresses[index] = ntohl(inaddr.s_addr);
+            }
+            addresses[index] = 0;
         }
     }
 
@@ -111,7 +111,7 @@ diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
 
 diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
 {
-	diminuto_ipv4_t address = (diminuto_ipv4_t)0;
+    diminuto_ipv4_t address = (diminuto_ipv4_t)0;
     struct  hostent * hostp;
     struct in_addr inaddr;
 

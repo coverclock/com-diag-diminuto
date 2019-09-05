@@ -20,30 +20,30 @@ diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t den
 
     increment = frequency;
     if (denominator > 1) {
-    	increment *= denominator;
+        increment *= denominator;
     }
     if (numerator <= 1) {
-    	/* Do nothing. */
+        /* Do nothing. */
     } else if ((increment % numerator) > 0) {
-    	increment /= numerator;
-    	increment += 1;
+        increment /= numerator;
+        increment += 1;
     } else {
-    	increment /= numerator;
+        increment /= numerator;
     }
 
-	return increment;
+    return increment;
 }
 
 diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize)
 {
-	diminuto_ticks_t limit = 0;
+    diminuto_ticks_t limit = 0;
 
-	if (maximumburstsize > 1) {
-		limit = maximumburstsize - 1;
-		limit *= increment;
-	}
+    if (maximumburstsize > 1) {
+        limit = maximumburstsize - 1;
+        limit *= increment;
+    }
 
-	return limit;
+    return limit;
 }
 
 diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now)

@@ -18,34 +18,34 @@
  */
 
 #define DIMINUTO_PROXY_POINTER_H(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	typedef _RESULT_ (diminuto_##_PROXY_##_##_FUNCTION_##_func_t) _PARAMETERS_; \
-	extern diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_func_p;
+    typedef _RESULT_ (diminuto_##_PROXY_##_##_FUNCTION_##_func_t) _PARAMETERS_; \
+    extern diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_func_p;
 
 #define DIMINUTO_PROXY_POINTER_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_func_p = &_FUNCTION_;
+    diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_func_p = &_FUNCTION_;
 
 #define DIMINUTO_PROXY_SETTOR_H(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	extern diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_set(diminuto_##_PROXY_##_##_FUNCTION_##_func_t * now);
+    extern diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_set(diminuto_##_PROXY_##_##_FUNCTION_##_func_t * now);
 
 #define DIMINUTO_PROXY_SETTOR_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_set(diminuto_##_PROXY_##_##_FUNCTION_##_func_t * now) \
-	{ \
-		diminuto_##_PROXY_##_##_FUNCTION_##_func_t * was; \
-		was = diminuto_##_PROXY_##_##_FUNCTION_##_func_p; \
-		diminuto_##_PROXY_##_##_FUNCTION_##_func_p = (now != (diminuto_##_PROXY_##_##_FUNCTION_##_func_t *)0) ? now : &_FUNCTION_; \
-		return was; \
-	}
+    diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_set(diminuto_##_PROXY_##_##_FUNCTION_##_func_t * now) \
+    { \
+        diminuto_##_PROXY_##_##_FUNCTION_##_func_t * was; \
+        was = diminuto_##_PROXY_##_##_FUNCTION_##_func_p; \
+        diminuto_##_PROXY_##_##_FUNCTION_##_func_p = (now != (diminuto_##_PROXY_##_##_FUNCTION_##_func_t *)0) ? now : &_FUNCTION_; \
+        return was; \
+    }
 
 #define DIMINUTO_PROXY_FUNCTION_H(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	extern _RESULT_ diminuto_##_PROXY_##_##_FUNCTION_ _PARAMETERS_;
+    extern _RESULT_ diminuto_##_PROXY_##_##_FUNCTION_ _PARAMETERS_;
 
 #define DIMINUTO_PROXY_FUNCTION_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	_RESULT_ diminuto_##_PROXY_##_##_FUNCTION_ _PARAMETERS_ \
-	{ \
-		_RETURN_ (*diminuto_##_PROXY_##_##_FUNCTION_##_func_p)_ARGUMENTS_; \
-	}
+    _RESULT_ diminuto_##_PROXY_##_##_FUNCTION_ _PARAMETERS_ \
+    { \
+        _RETURN_ (*diminuto_##_PROXY_##_##_FUNCTION_##_func_p)_ARGUMENTS_; \
+    }
 
 #define DIMINUTO_PROXY_FUNCTION_S(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
-	static DIMINUTO_PROXY_FUNCTION_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_)
+    static DIMINUTO_PROXY_FUNCTION_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_)
 
 #endif

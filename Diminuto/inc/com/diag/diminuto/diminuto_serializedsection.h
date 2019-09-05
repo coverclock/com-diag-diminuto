@@ -26,7 +26,7 @@
  */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                	volatile diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p_ = (_INTP_); \
+                    volatile diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p_ = (_INTP_); \
                     while (__sync_lock_test_and_set(_diminuto_serialized_section_spinlock_p_, 1)); \
                     do { \
                         (void)0

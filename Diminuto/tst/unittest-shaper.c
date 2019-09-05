@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
-    	TEST();
+        TEST();
 
         ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 5) == 23);
         ASSERT(diminuto_shaper_bursttolerance(2, 0, 7, 5) == 20);
@@ -35,7 +35,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 1) == 3);
         ASSERT(diminuto_shaper_bursttolerance(2, 3, 7, 0) == 3);
 
-    	STATUS();
+        STATUS();
     }
 
     {
@@ -57,19 +57,19 @@ int main(int argc, char ** argv)
         double sustained;
         double rate;
         diminuto_ticks_t frequency;
-    	diminuto_ticks_t peakincrement;
-    	diminuto_ticks_t jittertolerance;
-    	diminuto_ticks_t sustainedincrement;
-    	diminuto_ticks_t bursttolerance;
-    	/**/
+        diminuto_ticks_t peakincrement;
+        diminuto_ticks_t jittertolerance;
+        diminuto_ticks_t sustainedincrement;
+        diminuto_ticks_t bursttolerance;
+        /**/
         frequency = diminuto_frequency();
         /**/
-		peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1, frequency);
-		jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST) + TOLERANCE;
-		sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
-		bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
-		/**/
-		sp = diminuto_shaper_init(&shaper, peakincrement, 0 /* jittertolerance */, sustainedincrement, bursttolerance, now);
+        peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1, frequency);
+        jittertolerance = diminuto_throttle_jittertolerance(peakincrement, BURST) + TOLERANCE;
+        sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
+        bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
+        /**/
+        sp = diminuto_shaper_init(&shaper, peakincrement, 0 /* jittertolerance */, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);
         diminuto_shaper_log(sp);
         srand(diminuto_time_clock());
@@ -80,14 +80,14 @@ int main(int argc, char ** argv)
             now += delay;
             duration += delay;
             if (iops <= 0) {
-            	/* Do nothing. */
+                /* Do nothing. */
             } else if (delay <= 0) {
-            	/* Do nothing. */
+                /* Do nothing. */
             } else {
-				rate = size;
-				rate *= frequency;
-				rate /= delay;
-				if (rate > peak) { peak = rate; }
+                rate = size;
+                rate *= frequency;
+                rate /= delay;
+                if (rate > peak) { peak = rate; }
             }
             delay = diminuto_shaper_request(sp, now);
             ASSERT(delay == 0);
@@ -104,10 +104,10 @@ int main(int argc, char ** argv)
         now += delay;
         duration += delay;
         if (delay > 0) {
-			rate = size;
-			rate *= frequency;
-			rate /= delay;
-			if (rate > peak) { peak = rate; }
+            rate = size;
+            rate *= frequency;
+            rate /= delay;
+            if (rate > peak) { peak = rate; }
         }
         diminuto_shaper_update(sp, now);
         /**/

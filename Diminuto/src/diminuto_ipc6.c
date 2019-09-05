@@ -79,7 +79,7 @@ int diminuto_ipc6_ipv6toipv4(diminuto_ipv6_t address, diminuto_ipv4_t * addressp
 
 void diminuto_ipc6_ipv4toipv6(diminuto_ipv4_t address, diminuto_ipv6_t * addressp)
 {
-	memcpy(addressp, &DIMINUTO_IPC6_LOOPBACK4, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t));
+    memcpy(addressp, &DIMINUTO_IPC6_LOOPBACK4, sizeof(diminuto_ipv6_t) - sizeof(diminuto_ipv4_t));
     address = htonl(address);
     memcpy(&(addressp->u16[6]), &address, sizeof(diminuto_ipv4_t));
     addressp->u16[6] = ntohs(addressp->u16[6]);

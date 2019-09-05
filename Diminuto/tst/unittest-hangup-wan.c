@@ -30,8 +30,8 @@ static const char LOCKNAME[] = "/tmp/unittest-hangup-wan.pid";
 
 int main(int argc, char ** argv)
 {
-	int rc;
-	pid_t pid;
+    int rc;
+    pid_t pid;
     pid_t id;
 
     SETLOGMASK();
@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
 
     (void)unlink(LOCKNAME);
 
-	TEST();
+    TEST();
 
     CHECKPOINT("unittest-hangup-wan PARENT BEGIN\n");
 
@@ -53,50 +53,50 @@ int main(int argc, char ** argv)
     pid = fork();
     ASSERT(pid >= 0);
 
-	if (pid > 0) {
+    if (pid > 0) {
 
         CHECKPOINT("unittest-hangup-wan PARENT child=%d\n", pid);
 
-		while ((id = diminuto_lock_check(LOCKNAME)) < 0) {
-			diminuto_yield();
-		}
+        while ((id = diminuto_lock_check(LOCKNAME)) < 0) {
+            diminuto_yield();
+        }
 
         EXPECT(id == pid);
 
-		rc = diminuto_hangup_signal(pid);
-		ASSERT(rc == 0);
+        rc = diminuto_hangup_signal(pid);
+        ASSERT(rc == 0);
 
-		while ((id = diminuto_lock_check(LOCKNAME)) > 0) {
-			diminuto_yield();
-		}
+        while ((id = diminuto_lock_check(LOCKNAME)) > 0) {
+            diminuto_yield();
+        }
 
         diminuto_delay(diminuto_frequency(), 0);
 
         ASSERT(diminuto_reaper_check());
         ASSERT(!diminuto_reaper_check());
 
-		CHECKPOINT("unittest-hangup-wan PARENT END\n");
+        CHECKPOINT("unittest-hangup-wan PARENT END\n");
 
-	} else {
+    } else {
 
-		CHECKPOINT("unittest-hangup-wan CHILD BEGIN\n");
+        CHECKPOINT("unittest-hangup-wan CHILD BEGIN\n");
 
-		rc = diminuto_hangup_install(!0);
-		ASSERT(rc == 0);
+        rc = diminuto_hangup_install(!0);
+        ASSERT(rc == 0);
 
-		rc = diminuto_lock_lock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_lock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		while (!diminuto_hangup_check()) {
-			diminuto_yield();
-		}
+        while (!diminuto_hangup_check()) {
+            diminuto_yield();
+        }
 
-		rc = diminuto_lock_unlock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_unlock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup-wan CHILD END\n");
+        CHECKPOINT("unittest-hangup-wan CHILD END\n");
 
-	}
+    }
 
     EXIT();
 }

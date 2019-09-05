@@ -26,12 +26,12 @@ diminuto_daemon_test_t diminuto_daemon_testing = DIMINUTO_DAEMON_TEST_NONE;
 
 diminuto_daemon_test_t diminuto_daemon_test(diminuto_daemon_test_t test)
 {
-	int tested;
+    int tested;
 
-	tested = diminuto_daemon_testing;
-	diminuto_daemon_testing = test;
+    tested = diminuto_daemon_testing;
+    diminuto_daemon_testing = test;
 
-	return tested;
+    return tested;
 }
 
 int diminuto_daemon_install(int signum, void (*handler)(int))
@@ -52,33 +52,33 @@ int diminuto_daemon_install(int signum, void (*handler)(int))
 void diminuto_daemon_prepare(void)
 {
     if (fflush(stdout) == EOF) {
-    	diminuto_serror("diminuto_daemon: fflush(stdout)");
+        diminuto_serror("diminuto_daemon: fflush(stdout)");
     }
 
     if (fflush(stderr) == EOF) {
-    	diminuto_serror("diminuto_daemon: fflush(stderr)");
+        diminuto_serror("diminuto_daemon: fflush(stderr)");
     }
 
 }
 
 int diminuto_daemon_verify(void)
 {
-	int rc = -1;
-	pid_t pid = -1;
+    int rc = -1;
+    pid_t pid = -1;
 
-	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_GETPPID) {
-		/* Do nothing. */
-	} else if ((pid = getppid()) < 0) {
-		diminuto_perror("diminuto_daemon: getppid");
-	} else if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_INIT) {
-		rc = 1;
-	} else if (pid == 1) {
-		rc = 1;
-	} else {
-		rc = 0;
-	}
+    if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_GETPPID) {
+        /* Do nothing. */
+    } else if ((pid = getppid()) < 0) {
+        diminuto_perror("diminuto_daemon: getppid");
+    } else if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_INIT) {
+        rc = 1;
+    } else if (pid == 1) {
+        rc = 1;
+    } else {
+        rc = 0;
+    }
 
-	return rc;
+    return rc;
 }
 
 /*
@@ -86,45 +86,45 @@ int diminuto_daemon_verify(void)
  */
 pid_t diminuto_daemon_fork(void)
 {
-	pid_t pid = -1;
-	int rc = -1;
-	int status = -1;
+    pid_t pid = -1;
+    int rc = -1;
+    int status = -1;
 
-	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_FORK) {
-		/* Do nothing. */
-	} else if ((pid = fork()) < 0) {
-		diminuto_perror("diminuto_daemon: fork");
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		while (!0) {
-			if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_WAITPID) {
-				break;
-			} else if ((rc = waitpid(pid, &status, 0)) > 0) {
-				break; /* Nominal. */
-			} else if (rc == 0) {
-				break; /* Should never happen. */
-			} else if (errno == EINTR) {
-				continue; /* Ignore. */
-			} else if (errno == ECHILD) {
-				break; /* Caller probably handled SIGCHLD. */
-			} else {
-				diminuto_serror("diminuto_daemon: waitpid");
-				break; /* Error. */
-			}
-		}
-		if (rc <= 0) {
-			pid = -1;
-		} else if (!WIFEXITED(status)) {
-			pid = -1;
-		} else if (WEXITSTATUS(status) != 0) {
-			pid = -1;
-		} else {
-			/* Do nothing. */
-		}
-	}
+    if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_FORK) {
+        /* Do nothing. */
+    } else if ((pid = fork()) < 0) {
+        diminuto_perror("diminuto_daemon: fork");
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        while (!0) {
+            if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_WAITPID) {
+                break;
+            } else if ((rc = waitpid(pid, &status, 0)) > 0) {
+                break; /* Nominal. */
+            } else if (rc == 0) {
+                break; /* Should never happen. */
+            } else if (errno == EINTR) {
+                continue; /* Ignore. */
+            } else if (errno == ECHILD) {
+                break; /* Caller probably handled SIGCHLD. */
+            } else {
+                diminuto_serror("diminuto_daemon: waitpid");
+                break; /* Error. */
+            }
+        }
+        if (rc <= 0) {
+            pid = -1;
+        } else if (!WIFEXITED(status)) {
+            pid = -1;
+        } else if (WEXITSTATUS(status) != 0) {
+            pid = -1;
+        } else {
+            /* Do nothing. */
+        }
+    }
 
-	return pid;
+    return pid;
 }
 
 /*
@@ -132,17 +132,17 @@ pid_t diminuto_daemon_fork(void)
  */
 pid_t diminuto_daemon_refork(void)
 {
-	pid_t pid = -1;
+    pid_t pid = -1;
 
-	if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_REFORK) {
-		/* Do nothing. */
-	} else if ((pid = fork()) < 0) {
-		diminuto_serror("diminuto_daemon: refork");
-	} else {
-		/* Do nothing. */
-	}
+    if (diminuto_daemon_testing == DIMINUTO_DAEMON_TEST_REFORK) {
+        /* Do nothing. */
+    } else if ((pid = fork()) < 0) {
+        diminuto_serror("diminuto_daemon: refork");
+    } else {
+        /* Do nothing. */
+    }
 
-	return pid;
+    return pid;
 }
 
 /*
@@ -164,47 +164,47 @@ pid_t diminuto_daemon_refork(void)
  */
 void diminuto_daemon_redirect(const char * path, int number, int flags, FILE ** filep, const char * mode)
 {
-	int fd = -1;
+    int fd = -1;
 
-	/* Redirect the file descriptor to the path. */
+    /* Redirect the file descriptor to the path. */
 
-	if ((fd = open(path, flags, 0)) < 0) {
-		diminuto_serror("diminuto_daemon: open");
-	} else if (fd == number) {
-		/* Do nothing. */
-	} else if (dup2(fd, number) < 0) {
-		diminuto_serror("diminuto_daemon: dup2");
-	} else if (close(fd) < 0) {
-		diminuto_serror("diminuto_daemon: close");
-	} else {
-		/* Do nothing. */
-	}
+    if ((fd = open(path, flags, 0)) < 0) {
+        diminuto_serror("diminuto_daemon: open");
+    } else if (fd == number) {
+        /* Do nothing. */
+    } else if (dup2(fd, number) < 0) {
+        diminuto_serror("diminuto_daemon: dup2");
+    } else if (close(fd) < 0) {
+        diminuto_serror("diminuto_daemon: close");
+    } else {
+        /* Do nothing. */
+    }
 
-	/* Close the FILE stream if it isn't already the file descriptor. */
+    /* Close the FILE stream if it isn't already the file descriptor. */
 
-	if (fd < 0) {
-		/* Do nothing. */
-	} else if (*filep == (FILE *)0) {
-		/* Do nothing. */
-	} else if (fileno(*filep) == number) {
-		/* Do nothing. */
-	} else if (fclose(*filep) == 0) {
-		/* Do nothing. */
-	} else {
-		diminuto_serror("diminuto_daemon: fclose");
-	}
+    if (fd < 0) {
+        /* Do nothing. */
+    } else if (*filep == (FILE *)0) {
+        /* Do nothing. */
+    } else if (fileno(*filep) == number) {
+        /* Do nothing. */
+    } else if (fclose(*filep) == 0) {
+        /* Do nothing. */
+    } else {
+        diminuto_serror("diminuto_daemon: fclose");
+    }
 
-	/* Reopen the FILE stream and assign it to the descriptor. */
+    /* Reopen the FILE stream and assign it to the descriptor. */
 
-	if (fd < 0) {
-		/* Do nothing. */
-	} else if ((*filep != (FILE *)0) && (fileno(*filep) == number)) {
-		/* Do nothing. */
-	} else if ((*filep = fdopen(number, "r")) != (FILE *)0) {
-		/* Do nothing. */
-	} else {
-		diminuto_serror("diminuto_daemon: fdopen");
-	}
+    if (fd < 0) {
+        /* Do nothing. */
+    } else if ((*filep != (FILE *)0) && (fileno(*filep) == number)) {
+        /* Do nothing. */
+    } else if ((*filep = fdopen(number, "r")) != (FILE *)0) {
+        /* Do nothing. */
+    } else {
+        diminuto_serror("diminuto_daemon: fdopen");
+    }
 
 }
 
@@ -249,9 +249,9 @@ void diminuto_daemon_sanitize(const char * name, const char * path)
     /* Redirect the big three descriptors. */
 
     if (path != (const char *)0) {
-    	diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
-    	diminuto_daemon_redirect(path, STDOUT_FILENO, O_WRONLY, &stdout, "w");
-    	diminuto_daemon_redirect(path, STDERR_FILENO, O_WRONLY, &stderr, "w");
+        diminuto_daemon_redirect(path, STDIN_FILENO, O_RDONLY, &stdin, "r");
+        diminuto_daemon_redirect(path, STDOUT_FILENO, O_WRONLY, &stdout, "w");
+        diminuto_daemon_redirect(path, STDERR_FILENO, O_WRONLY, &stderr, "w");
     }
 
     /* Close the system log socket. */
@@ -271,29 +271,29 @@ void diminuto_daemon_sanitize(const char * name, const char * path)
      */
 
     for (fd = 0; fd < fds; ++fd) {
-    	if (fd == STDIN_FILENO) {
-    		/* Do nothing. */
-    	} else if (fd == STDOUT_FILENO) {
-    		/* Do nothing. */
-    	} else if (fd == STDERR_FILENO) {
-    		/* Do nothing. */
-    	} else if (fd == fileno(stdin)) {
-    		/* Do nothing. */
-    	} else if (fd == fileno(stdout)) {
-    		/* Do nothing. */
-    	} else if (fd == fileno(stderr)) {
-    		/* Do nothing. */
-    	} else if (close(fd) < 0) {
-    		/* Do nothing. */
-    	} else {
-    		/* Do nothing. */
-    	}
+        if (fd == STDIN_FILENO) {
+            /* Do nothing. */
+        } else if (fd == STDOUT_FILENO) {
+            /* Do nothing. */
+        } else if (fd == STDERR_FILENO) {
+            /* Do nothing. */
+        } else if (fd == fileno(stdin)) {
+            /* Do nothing. */
+        } else if (fd == fileno(stdout)) {
+            /* Do nothing. */
+        } else if (fd == fileno(stderr)) {
+            /* Do nothing. */
+        } else if (close(fd) < 0) {
+            /* Do nothing. */
+        } else {
+            /* Do nothing. */
+        }
     }
 
     /* Open a new system log socket which will probably be fileno 3. */
 
     if (name != (const char *)0) {
-    	diminuto_log_open(name);
+        diminuto_log_open(name);
     }
 }
 
@@ -308,58 +308,58 @@ void diminuto_daemon_sanitize(const char * name, const char * path)
  */
 int diminuto_daemon(const char * name)
 {
-	pid_t pid = -1;
-	int rc = -1;
+    pid_t pid = -1;
+    int rc = -1;
 
-	/*
-	 * PARENT
-	 */
+    /*
+     * PARENT
+     */
 
-	/* Make sure we are not already a daemon. */
+    /* Make sure we are not already a daemon. */
 
-	if ((rc = diminuto_daemon_verify()) < 0) {
-		_exit(1);
-	} else if (rc) {
-		return 0;
-	} else {
-		/* Do nothing. */
-	}
+    if ((rc = diminuto_daemon_verify()) < 0) {
+        _exit(1);
+    } else if (rc) {
+        return 0;
+    } else {
+        /* Do nothing. */
+    }
 
-	/* Flush output before we mess with it. */
+    /* Flush output before we mess with it. */
 
-	diminuto_daemon_prepare();
+    diminuto_daemon_prepare();
 
     /* Fork the first child and reap it. */
 
-	if ((pid = diminuto_daemon_fork()) < 0) {
-		_exit(1);
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		_exit(0);
-	}
+    if ((pid = diminuto_daemon_fork()) < 0) {
+        _exit(1);
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        _exit(0);
+    }
 
-	/*
-	 * FIRST CHILD
-	 */
+    /*
+     * FIRST CHILD
+     */
 
-	/* Fork and exit so the second child is inherited by the init process. */
+    /* Fork and exit so the second child is inherited by the init process. */
 
-	if ((pid = diminuto_daemon_refork()) < 0) {
-		_exit(1);
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		_exit(0);
-	}
+    if ((pid = diminuto_daemon_refork()) < 0) {
+        _exit(1);
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        _exit(0);
+    }
 
-	/*
-	 * SECOND CHILD
-	 */
+    /*
+     * SECOND CHILD
+     */
 
-	/* Sanitize the context of the second child. */
+    /* Sanitize the context of the second child. */
 
-	diminuto_daemon_sanitize(name, "/dev/null");
+    diminuto_daemon_sanitize(name, "/dev/null");
 
     return 0;
 }
@@ -385,44 +385,44 @@ int diminuto_daemon(const char * name)
  */
 int diminuto_service(void)
 {
-	pid_t pid = -1;
+    pid_t pid = -1;
 
-	/*
-	 * PARENT
-	 */
+    /*
+     * PARENT
+     */
 
     /* Fork the first child and reap it. */
 
-	if ((pid = diminuto_daemon_fork()) < 0) {
-		return -1;
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		return !0;
-	}
+    if ((pid = diminuto_daemon_fork()) < 0) {
+        return -1;
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        return !0;
+    }
 
-	/*
-	 * FIRST CHILD
-	 */
+    /*
+     * FIRST CHILD
+     */
 
-	/* Fork and exit so the second child is inherited by the init process. */
+    /* Fork and exit so the second child is inherited by the init process. */
 
-	if ((pid = diminuto_daemon_refork()) < 0) {
-		_exit(1);
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		_exit(0);
-	}
+    if ((pid = diminuto_daemon_refork()) < 0) {
+        _exit(1);
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        _exit(0);
+    }
 
-	/*
-	 * SECOND CHILD
-	 */
+    /*
+     * SECOND CHILD
+     */
 
-	/* This seems necessary for the service to use the system log. */
+    /* This seems necessary for the service to use the system log. */
 
     diminuto_log_close();
-	diminuto_log_open((char *)0);
+    diminuto_log_open((char *)0);
 
     return 0;
 }
@@ -431,45 +431,45 @@ int diminuto_system(const char * command)
 {
     pid_t pid = -1;
 
-	/*
-	 * PARENT
-	 */
+    /*
+     * PARENT
+     */
 
     /* Fork the first child and reap it. */
 
-	if ((pid = diminuto_daemon_fork()) < 0) {
-		return -1;
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		return 0;
-	}
+    if ((pid = diminuto_daemon_fork()) < 0) {
+        return -1;
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        return 0;
+    }
 
-	/*
-	 * FIRST CHILD
-	 */
+    /*
+     * FIRST CHILD
+     */
 
-	/* Fork and exit so the second child is inherited by the init process. */
+    /* Fork and exit so the second child is inherited by the init process. */
 
-	if ((pid = diminuto_daemon_refork()) < 0) {
-		_exit(1);
-	} else if (pid == 0) {
-		/* Do nothing. */
-	} else {
-		_exit(0);
-	}
+    if ((pid = diminuto_daemon_refork()) < 0) {
+        _exit(1);
+    } else if (pid == 0) {
+        /* Do nothing. */
+    } else {
+        _exit(0);
+    }
 
-	/*
-	 * SECOND CHILD
-	 */
+    /*
+     * SECOND CHILD
+     */
 
-	/* Sanitize the context of the second child. */
+    /* Sanitize the context of the second child. */
 
-	diminuto_daemon_sanitize((const char *)0, (const char *)0);
+    diminuto_daemon_sanitize((const char *)0, (const char *)0);
 
-	/* Run the command; if successful, the execl(2) never returns. */
+    /* Run the command; if successful, the execl(2) never returns. */
 
-	execl("/bin/sh", "bin/sh", "-c", command, (char *)0);
-	diminuto_serror("diminuto_system: execl");
-	_exit(1);
+    execl("/bin/sh", "bin/sh", "-c", command, (char *)0);
+    diminuto_serror("diminuto_system: execl");
+    _exit(1);
 }

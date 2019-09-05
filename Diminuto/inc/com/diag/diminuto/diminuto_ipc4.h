@@ -142,7 +142,7 @@ extern diminuto_ipv4_t diminuto_ipc4_address(const char * hostname);
  * @return the port number or 0 if no such service exists for the protocol.
  */
 static inline diminuto_port_t diminuto_ipc4_port(const char * service, const char * protocol) {
-	return diminuto_ipc_port(service, protocol);
+    return diminuto_ipc_port(service, protocol);
 }
 
 /*******************************************************************************

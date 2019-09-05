@@ -69,6 +69,6 @@ void diminuto_store_log(diminuto_store_t * nodep)
         DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]: { key=%p value=%p }\n", nodep, sizeof(*nodep), nodep->key, nodep->value);
         diminuto_tree_log(diminuto_store_upcast(nodep));
     } else {
-    	DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]\n", nodep, sizeof(*nodep));
+        DIMINUTO_LOG_DEBUG("diminuto_store_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }
 }

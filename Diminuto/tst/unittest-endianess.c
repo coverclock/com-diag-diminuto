@@ -20,20 +20,20 @@ int main(void)
     {
         int littleendian;
 
-	TEST();
+    TEST();
 
         littleendian = diminuto_littleendian();
 
         DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "%s\n", littleendian ? "little-endian" : "big-endian");
 
-	STATUS();
+    STATUS();
     }
 
     {
         diminuto_endianess_t endianess;
         int ii;
 
-	TEST();
+    TEST();
 
         for (ii = 0; ii < sizeof(endianess.bytes); ++ii) {
             endianess.bytes[ii] = ii;
@@ -42,7 +42,7 @@ int main(void)
 
         DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "word=0x%*.*x\n", sizeof(endianess.bytes) * 2, sizeof(endianess.bytes) * 2, endianess.word);
 
-	STATUS();
+    STATUS();
     }
 
 #if !defined(__BYTE_ORDER__)
@@ -56,7 +56,7 @@ int main(void)
         int littleendian;
         littleendian = diminuto_littleendian();
 
-	TEST();
+    TEST();
 
         if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) {
             DIMINUTO_LOG_INFORMATION("%s\n", DIMINUTO_LOG_HERE "little-endian");
@@ -69,7 +69,7 @@ int main(void)
         EXPECT(((littleendian) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)) || ((!littleendian) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)));
         EXPECT(__ORDER_LITTLE_ENDIAN__ != __ORDER_BIG_ENDIAN__);
 
-	STATUS();
+    STATUS();
     }
 #endif
 

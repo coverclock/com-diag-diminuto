@@ -24,50 +24,50 @@
 void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
 {
     fprintf(fp,	"modulator@%p[%zu]:"
-    				" function=%p"
-    				" fp=%p"
-    				" pin=%d"
-    				" duty=%d"
-    				" on=%d"
-    				" off=%d"
-    				" set=%d"
-    				" timer=%p"
-    				" initialized=%d"
-    				" total=%d"
-    				" cycle=%d"
-    				" ton=%d"
-    				" toff=%d"
-    				" condition=%d"
+                    " function=%p"
+                    " fp=%p"
+                    " pin=%d"
+                    " duty=%d"
+                    " on=%d"
+                    " off=%d"
+                    " set=%d"
+                    " timer=%p"
+                    " initialized=%d"
+                    " total=%d"
+                    " cycle=%d"
+                    " ton=%d"
+                    " toff=%d"
+                    " condition=%d"
                     " data=%p"
-    				"\n",
-    	mp,
+                    "\n",
+        mp,
         sizeof(*mp),
-		mp->function,
-		mp->fp,
-		mp->pin,
-		mp->duty,
-		mp->on,
-		mp->off,
-		mp->set,
-		(void *)(mp->timer),
-		mp->initialized,
-		mp->total,
-		mp->cycle,
-		mp->ton,
-		mp->toff,
-		mp->condition,
+        mp->function,
+        mp->fp,
+        mp->pin,
+        mp->duty,
+        mp->on,
+        mp->off,
+        mp->set,
+        (void *)(mp->timer),
+        mp->initialized,
+        mp->total,
+        mp->cycle,
+        mp->ton,
+        mp->toff,
+        mp->condition,
         mp->data
-	);
+    );
 }
 
 int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty)
 {
-	int rc = -1;
-	diminuto_modulator_cycle_t on = 0;
-	diminuto_modulator_cycle_t off = 0;
-	diminuto_modulator_cycle_t prime = 0;
-	static const diminuto_modulator_cycle_t PRIMES[] = { 7, 5, 3, 2 };
-	int ii = 0;
+    int rc = -1;
+    diminuto_modulator_cycle_t on = 0;
+    diminuto_modulator_cycle_t off = 0;
+    diminuto_modulator_cycle_t prime = 0;
+    static const diminuto_modulator_cycle_t PRIMES[] = { 7, 5, 3, 2 };
+    int ii = 0;
 
     if (duty <= DIMINUTO_MODULATOR_MINIMUM_DUTY) {
         duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;
@@ -81,44 +81,44 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     off = DIMINUTO_MODULATOR_MAXIMUM_DUTY - duty;
 
     for (ii = 0; ii < countof(PRIMES); ++ii) {
-    	prime = PRIMES[ii];
-    	while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
-    		on /= prime;
-    		off /= prime;
-    	}
+        prime = PRIMES[ii];
+        while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
+            on /= prime;
+            off /= prime;
+        }
     }
 
     DIMINUTO_COHERENT_SECTION_BEGIN;
 
-    	if (!mp->set) {
-    		mp->duty = duty;
-    		mp->ton = on;
-    		mp->toff = off;
-    		mp->set = !0;
-    		rc = 0;
-    	}
+        if (!mp->set) {
+            mp->duty = duty;
+            mp->ton = on;
+            mp->toff = off;
+            mp->set = !0;
+            rc = 0;
+        }
 
-	DIMINUTO_COHERENT_SECTION_END;
+    DIMINUTO_COHERENT_SECTION_END;
 
-	return rc;
+    return rc;
 }
 
 void diminuto_modulator_function(union sigval arg)
 {
-	diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
+    diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
 
-	mp = (diminuto_modulator_t *)(arg.sival_ptr);
+    mp = (diminuto_modulator_t *)(arg.sival_ptr);
 
-	do {
+    do {
 
-		if (mp->cycle > 0) {
-			mp->cycle -= 1;
+        if (mp->cycle > 0) {
+            mp->cycle -= 1;
             continue;
         }
 
         if (mp->condition) {
             if (mp->off > 0) {
-			    (void)diminuto_pin_clear(mp->fp);
+                (void)diminuto_pin_clear(mp->fp);
                 mp->condition = 0;
                 mp->cycle = mp->off;
             } else {
@@ -126,11 +126,11 @@ void diminuto_modulator_function(union sigval arg)
             }
         } else {
             if (mp->on > 0) {
-			    (void)diminuto_pin_set(mp->fp);
+                (void)diminuto_pin_set(mp->fp);
                 mp->condition = !0;
                 mp->cycle = mp->on;
             } else {
-            	mp->cycle = mp->off; /* 0% */
+                mp->cycle = mp->off; /* 0% */
             }
         }
 
@@ -139,57 +139,57 @@ void diminuto_modulator_function(union sigval arg)
             continue;
         }
 
-		DIMINUTO_COHERENT_SECTION_BEGIN;
+        DIMINUTO_COHERENT_SECTION_BEGIN;
 
-			if (mp->set) {
-				mp->on = mp->ton;
-				mp->off = mp->toff;
-				mp->set = 0;
-			}
+            if (mp->set) {
+                mp->on = mp->ton;
+                mp->off = mp->toff;
+                mp->set = 0;
+            }
 
-		DIMINUTO_COHERENT_SECTION_END;
+        DIMINUTO_COHERENT_SECTION_END;
 
         mp->total = 0;
 
-	} while (0);
+    } while (0);
 
-	return;
+    return;
 }
 
 int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, diminuto_modulator_cycle_t duty)
 {
-	int rc = -1;
+    int rc = -1;
 
-	do {
+    do {
 
-		memset(mp, 0, sizeof(*mp));
+        memset(mp, 0, sizeof(*mp));
 
-		mp->function = funp;
-	    mp->pin = pin;
-	    mp->toff = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
+        mp->function = funp;
+        mp->pin = pin;
+        mp->toff = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
 
-	    (void)diminuto_pin_unexport_ignore(pin);
+        (void)diminuto_pin_unexport_ignore(pin);
 
-	    mp->fp = diminuto_pin_output(pin);
-	    if (mp->fp == (FILE *)0) {
-	    	break;
-	    }
+        mp->fp = diminuto_pin_output(pin);
+        if (mp->fp == (FILE *)0) {
+            break;
+        }
 
-	    diminuto_modulator_set(mp, duty);
+        diminuto_modulator_set(mp, duty);
 
-	    rc = 0;
+        rc = 0;
 
-	} while (0);
+    } while (0);
 
-	return rc;
+    return rc;
 }
 
 int diminuto_modulator_start(diminuto_modulator_t * mp)
 {
-	diminuto_sticks_t ticks = 0;
+    diminuto_sticks_t ticks = 0;
     int rc = 0;
     struct sched_param param = { 0 };
-	struct sigevent event = { 0 };
+    struct sigevent event = { 0 };
 
     if ((rc = pthread_attr_init(&(mp->attributes))) != 0) {
         errno = rc;
@@ -212,19 +212,19 @@ int diminuto_modulator_start(diminuto_modulator_t * mp)
     event.sigev_notify_function = mp->function;
     event.sigev_notify_attributes = &(mp->attributes);
 
-	ticks = diminuto_frequency() / diminuto_modulator_frequency();
-	ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
+    ticks = diminuto_frequency() / diminuto_modulator_frequency();
+    ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
 
     return (ticks >= 0) ? 0 : -1;
 }
 
 int diminuto_modulator_stop(diminuto_modulator_t * mp)
 {
-	diminuto_sticks_t ticks = 0;
-	struct sigevent event = { 0 };
+    diminuto_sticks_t ticks = 0;
+    struct sigevent event = { 0 };
     int rc = 0;
 
-	ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
+    ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &event, ticks, !0);
 
     rc = pthread_attr_destroy(&(mp->attributes));
     if (rc != 0) {
@@ -236,12 +236,12 @@ int diminuto_modulator_stop(diminuto_modulator_t * mp)
 
 int diminuto_modulator_fini(diminuto_modulator_t * mp)
 {
-	int rc = 0;
+    int rc = 0;
 
-	mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
-	if (mp->fp != (FILE *)0) {
-		rc = -1;
-	}
+    mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
+    if (mp->fp != (FILE *)0) {
+        rc = -1;
+    }
 
-	return rc;
+    return rc;
 }

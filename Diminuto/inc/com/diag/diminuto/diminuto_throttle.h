@@ -214,7 +214,7 @@ static inline int diminuto_throttle_update(diminuto_throttle_t * throttlep, dimi
  */
 static inline diminuto_ticks_t diminuto_throttle_getexpected(diminuto_throttle_t * throttlep)
 {
-	return throttlep->expected;
+    return throttlep->expected;
 }
 
 /**

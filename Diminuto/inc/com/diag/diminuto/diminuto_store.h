@@ -98,7 +98,7 @@ static inline int diminuto_store_ismissing(diminuto_store_t * nodep)
  */
 static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
 {
-	return diminuto_tree_isempty(diminuto_store_rootcast(rootp));
+    return diminuto_tree_isempty(diminuto_store_rootcast(rootp));
 }
 
 /*******************************************************************************

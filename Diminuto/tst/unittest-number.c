@@ -15,10 +15,10 @@
 
 int main(int argc, char ** argv)
 {
-	const char * p;
-	diminuto_unsigned_t n;
+    const char * p;
+    diminuto_unsigned_t n;
 
-	SETLOGMASK();
+    SETLOGMASK();
 
     errno = 0;
 
@@ -93,12 +93,12 @@ int main(int argc, char ** argv)
     EXPECT((*diminuto_number("0xffffffff", &n) == '\0') && (n == 4294967295UL) && (errno == 0));
     EXPECT((*diminuto_number("0xffffffffffffffff", &n) == '\0') && (n == 0xffffffffffffffffULL) && (errno == 0));
 
-	--argc;
-	++argv;
-	while ((argc--) > 0) {
-		p = diminuto_number(*(argv++), &n);
-		DIMINUTO_LOG_NOTICE("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
-	}
+    --argc;
+    ++argv;
+    while ((argc--) > 0) {
+        p = diminuto_number(*(argv++), &n);
+        DIMINUTO_LOG_NOTICE("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
+    }
 
-	EXIT();
+    EXIT();
 }

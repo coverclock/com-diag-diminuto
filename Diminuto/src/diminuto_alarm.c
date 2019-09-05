@@ -43,14 +43,14 @@ int diminuto_alarm_signal(pid_t pid)
 
 static void diminuto_alarm_handler(int signum)
 {
-	int rc = 0;
+    int rc = 0;
 
     if (signum != SIGALRM) {
-    	/* Do nothing. */
+        /* Do nothing. */
     } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
         signaled += 1;
     } else {
-    	/* Do nothing. */
+        /* Do nothing. */
     }
 }
 
@@ -59,10 +59,10 @@ int diminuto_alarm_check(void)
     int mysignaled;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
 
-        	mysignaled = signaled;
-        	signaled = 0;
+            mysignaled = signaled;
+            signaled = 0;
 
         DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
     DIMINUTO_CRITICAL_SECTION_END;

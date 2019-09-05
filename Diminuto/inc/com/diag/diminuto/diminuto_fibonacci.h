@@ -43,9 +43,9 @@ typedef uint16_t diminuto_fibonacci_value_t;
  * for this purpose.
  */
 typedef struct DiminutoFibonacci {
-	diminuto_fibonacci_value_t x1;
-	diminuto_fibonacci_value_t x0;
-	diminuto_fibonacci_value_t xm;
+    diminuto_fibonacci_value_t x1;
+    diminuto_fibonacci_value_t x0;
+    diminuto_fibonacci_value_t xm;
 } diminuto_fibonacci_state_t;
 
 /**
@@ -58,10 +58,10 @@ typedef struct DiminutoFibonacci {
  */
 static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init(diminuto_fibonacci_state_t * statep, diminuto_fibonacci_value_t x0, diminuto_fibonacci_value_t x1, diminuto_fibonacci_value_t xm)
 {
-	statep->x0 = x0;
-	statep->x1 = x1;
-	statep->xm = xm;
-	return statep;
+    statep->x0 = x0;
+    statep->x1 = x1;
+    statep->xm = xm;
+    return statep;
 }
 
 /**
@@ -72,7 +72,7 @@ static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init(diminuto_fibo
  */
 static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init_classic(diminuto_fibonacci_state_t * statep)
 {
-	return diminuto_fibonacci_init(statep, 1, 1, ~(diminuto_fibonacci_value_t)0);
+    return diminuto_fibonacci_init(statep, 1, 1, ~(diminuto_fibonacci_value_t)0);
 }
 
 /**
@@ -83,7 +83,7 @@ static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init_classic(dimin
  */
 static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init_modern(diminuto_fibonacci_state_t * statep)
 {
-	return diminuto_fibonacci_init(statep, 0, 1, ~(diminuto_fibonacci_value_t)0);
+    return diminuto_fibonacci_init(statep, 0, 1, ~(diminuto_fibonacci_value_t)0);
 }
 
 /**
@@ -96,9 +96,9 @@ static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init_modern(diminu
  */
 static inline diminuto_fibonacci_value_t diminuto_fibonacci_set_limit(diminuto_fibonacci_state_t * statep, diminuto_fibonacci_value_t xm)
 {
-	xm ^= statep->xm;
-	statep->xm ^= xm;
-	return xm ^= statep->xm;
+    xm ^= statep->xm;
+    statep->xm ^= xm;
+    return xm ^= statep->xm;
 }
 
 /**
@@ -113,13 +113,13 @@ static inline diminuto_fibonacci_value_t diminuto_fibonacci_set_limit(diminuto_f
  */
 static inline diminuto_fibonacci_value_t diminuto_fibonacci_next(diminuto_fibonacci_state_t * statep)
 {
-	diminuto_fibonacci_value_t xn;
+    diminuto_fibonacci_value_t xn;
 
-	xn = statep->x0;
-	statep->x0 = statep->x1;
-	if ((statep->xm - statep->x1) > xn) { statep->x1 += xn; }
+    xn = statep->x0;
+    statep->x0 = statep->x1;
+    if ((statep->xm - statep->x1) > xn) { statep->x1 += xn; }
 
-	return xn;
+    return xn;
 }
 
 #endif

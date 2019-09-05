@@ -20,12 +20,12 @@
 #include <sys/types.h>
 
 typedef enum DiminutoDaemonTest {
-	DIMINUTO_DAEMON_TEST_NONE = 0,
-	DIMINUTO_DAEMON_TEST_GETPPID,
-	DIMINUTO_DAEMON_TEST_INIT,
-	DIMINUTO_DAEMON_TEST_FORK,
-	DIMINUTO_DAEMON_TEST_WAITPID,
-	DIMINUTO_DAEMON_TEST_REFORK,
+    DIMINUTO_DAEMON_TEST_NONE = 0,
+    DIMINUTO_DAEMON_TEST_GETPPID,
+    DIMINUTO_DAEMON_TEST_INIT,
+    DIMINUTO_DAEMON_TEST_FORK,
+    DIMINUTO_DAEMON_TEST_WAITPID,
+    DIMINUTO_DAEMON_TEST_REFORK,
 } diminuto_daemon_test_t;
 
 extern diminuto_daemon_test_t diminuto_daemon_testing;
@@ -54,7 +54,7 @@ extern int diminuto_daemon_install(int signum, void (*handler)(int));
  */
 static inline int diminuto_daemon_ignore(int signum)
 {
-	return diminuto_daemon_install(signum, SIG_IGN);
+    return diminuto_daemon_install(signum, SIG_IGN);
 }
 
 /**
@@ -64,7 +64,7 @@ static inline int diminuto_daemon_ignore(int signum)
  */
 static inline int diminuto_daemon_default(int signum)
 {
-	return diminuto_daemon_install(signum, SIG_DFL);
+    return diminuto_daemon_install(signum, SIG_DFL);
 }
 
 /**

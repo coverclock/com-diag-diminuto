@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
         case 'c':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-            	if (opt == 'C') { value = bit << value; }
+                if (opt == 'C') { value = bit << value; }
                 switch (op.width) {
                 case DIMINUTO_DATUM_WIDTH8:		op.datum.value8		= value; break;
                 case DIMINUTO_DATUM_WIDTH16:	op.datum.value16	= value; break;
@@ -180,12 +180,12 @@ int main(int argc, char * argv[])
             }
             break;
 
-		case 'm':
-			if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
-			if (!(error = (*number(optarg, &value) != '\0'))) {
-				mask = value;
-			}
-			break;
+        case 'm':
+            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            if (!(error = (*number(optarg, &value) != '\0'))) {
+                mask = value;
+            }
+            break;
 
         case 'r':
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
@@ -205,7 +205,7 @@ int main(int argc, char * argv[])
         case 's':
             if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
             if (!(error = (*number(optarg, &value) != '\0'))) {
-            	if (opt == 'S') { value = bit << value; }
+                if (opt == 'S') { value = bit << value; }
                 switch (op.width) {
                 case DIMINUTO_DATUM_WIDTH8:		op.datum.value8		= value; op.mask.value8		= mask; break;
                 case DIMINUTO_DATUM_WIDTH16:	op.datum.value16	= value; op.mask.value16	= mask; break;

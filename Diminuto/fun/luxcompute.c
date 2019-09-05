@@ -93,18 +93,18 @@ int main(int argc, char ** argv)
         offset = 1;
     }
 
-	raw0 = strtoul(argv[offset + 1], &endptr, 0);
+    raw0 = strtoul(argv[offset + 1], &endptr, 0);
     if ((endptr == (char *)0) || (*endptr != '\0')) {
-		errno = EINVAL;
-		diminuto_perror(argv[offset + 1]);
-		return 1;
+        errno = EINVAL;
+        diminuto_perror(argv[offset + 1]);
+        return 1;
     }
 
-	raw1 = strtoul(argv[offset + 2], &endptr, 0);
+    raw1 = strtoul(argv[offset + 2], &endptr, 0);
     if ((endptr == (char *)0) || (*endptr != '\0')) {
-		errno = EINVAL;
-		diminuto_perror(argv[offset + 2]);
-		return 1;
+        errno = EINVAL;
+        diminuto_perror(argv[offset + 2]);
+        return 1;
     }
 
     rc = avago_apds9301_rawtolux(raw0, raw1, &lux);

@@ -14,9 +14,9 @@
 
 int main(int argc, char ** argv)
 {
-	FILE * fp;
-	char command[80] = { '\0' } ;
-	int ii;
+    FILE * fp;
+    char command[80] = { '\0' } ;
+    int ii;
     int ch;
 
     SETLOGMASK();
@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 
     for (ii = 1; ii < argc; ++ii) {
         strncat(command, " ", sizeof(command) - strlen(command) - 1);
-    	strncat(command, argv[ii], sizeof(command) - strlen(command) - 1);
+        strncat(command, argv[ii], sizeof(command) - strlen(command) - 1);
      }
 
     DIMINUTO_LOG_DEBUG("command: \"%s\"\n", command);

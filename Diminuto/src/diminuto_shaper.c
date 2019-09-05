@@ -22,10 +22,10 @@ diminuto_ticks_t diminuto_shaper_bursttolerance(diminuto_ticks_t peakincrement, 
     } else if (sustainedincrement <= peakincrement) {
         /* Do nothing. */
     } else {
-    	limit = maximumburstsize - 1;
-    	increment = sustainedincrement;
-    	increment -= peakincrement;
-    	limit *= increment;
+        limit = maximumburstsize - 1;
+        increment = sustainedincrement;
+        increment -= peakincrement;
+        limit *= increment;
     }
     limit += jittertolerance;
 
@@ -83,88 +83,88 @@ int diminuto_shaper_admitn(diminuto_shaper_t * shaperp, diminuto_ticks_t now, si
 
 diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
 {
-	diminuto_ticks_t peak;
-	diminuto_ticks_t sustained;
+    diminuto_ticks_t peak;
+    diminuto_ticks_t sustained;
 
-	peak = diminuto_throttle_getexpected(&(shaperp->peak));
-	sustained = diminuto_throttle_getexpected(&(shaperp->sustained));
+    peak = diminuto_throttle_getexpected(&(shaperp->peak));
+    sustained = diminuto_throttle_getexpected(&(shaperp->sustained));
 
-	return (peak > sustained) ? peak : sustained;
+    return (peak > sustained) ? peak : sustained;
 }
 
 int diminuto_shaper_isempty(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_isempty(&(shaperp->peak));
-	sustained = diminuto_throttle_isempty(&(shaperp->sustained));
+    peak = diminuto_throttle_isempty(&(shaperp->peak));
+    sustained = diminuto_throttle_isempty(&(shaperp->sustained));
 
     return peak && sustained;
 }
 
 int diminuto_shaper_isfull(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_isfull(&(shaperp->peak));
-	sustained = diminuto_throttle_isfull(&(shaperp->sustained));
+    peak = diminuto_throttle_isfull(&(shaperp->peak));
+    sustained = diminuto_throttle_isfull(&(shaperp->sustained));
 
     return peak || sustained;
 }
 
 int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_isalarmed(&(shaperp->peak));
-	sustained = diminuto_throttle_isalarmed(&(shaperp->sustained));
+    peak = diminuto_throttle_isalarmed(&(shaperp->peak));
+    sustained = diminuto_throttle_isalarmed(&(shaperp->sustained));
 
     return peak || sustained;
 }
 
 int diminuto_shaper_emptied(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_emptied(&(shaperp->peak));
-	sustained = diminuto_throttle_emptied(&(shaperp->sustained));
+    peak = diminuto_throttle_emptied(&(shaperp->peak));
+    sustained = diminuto_throttle_emptied(&(shaperp->sustained));
 
     return peak || sustained;
 }
 
 int diminuto_shaper_filled(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_filled(&(shaperp->peak));
-	sustained = diminuto_throttle_filled(&(shaperp->sustained));
+    peak = diminuto_throttle_filled(&(shaperp->peak));
+    sustained = diminuto_throttle_filled(&(shaperp->sustained));
 
     return peak || sustained;
 }
 
 int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_alarmed(&(shaperp->peak));
-	sustained = diminuto_throttle_alarmed(&(shaperp->sustained));
+    peak = diminuto_throttle_alarmed(&(shaperp->peak));
+    sustained = diminuto_throttle_alarmed(&(shaperp->sustained));
 
     return peak || sustained;
 }
 
 int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
 {
-	int peak;
-	int sustained;
+    int peak;
+    int sustained;
 
-	peak = diminuto_throttle_cleared(&(shaperp->peak));
-	sustained = diminuto_throttle_cleared(&(shaperp->sustained));
+    peak = diminuto_throttle_cleared(&(shaperp->peak));
+    sustained = diminuto_throttle_cleared(&(shaperp->sustained));
 
     return peak || sustained;
 }

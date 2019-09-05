@@ -99,7 +99,7 @@ int main(int argc, char * argv[])
     int nfds = 0;
     int rc = -1;
     char opts[2] = { '\0', '\0' };
-	char buffer[1024] = { '\0' };
+    char buffer[1024] = { '\0' };
     int opt = '\0';
     extern char * optarg;
 
@@ -221,7 +221,7 @@ int main(int argc, char * argv[])
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
             rc = diminuto_daemon(program);
             if (rc < 0) {
-            	fail = !0;
+                fail = !0;
             }
             break;
 
@@ -428,18 +428,18 @@ int main(int argc, char * argv[])
                             state = !!state;
                             act = (!unique) || (prior < 0) || (prior != state);
                             if (!act) {
-                            	/* Do nothing. */
+                                /* Do nothing. */
                             } else if (command != (const char *)0) {
-                            	snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
-                            	buffer[sizeof(buffer) - 1] = '\0';
-                            	rc = diminuto_system(buffer);
-                            	if (rc < 0) {
-                            		fail = !0;
-                            		break;
-                            	}
+                                snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
+                                buffer[sizeof(buffer) - 1] = '\0';
+                                rc = diminuto_system(buffer);
+                                if (rc < 0) {
+                                    fail = !0;
+                                    break;
+                                }
                             } else {
-                            	printf("%d\n", state);
-                            	fflush(stdout);
+                                printf("%d\n", state);
+                                fflush(stdout);
                             }
                             prior = state;
                         }
@@ -454,18 +454,18 @@ int main(int argc, char * argv[])
                     state = !!state;
                     act = (!unique) || (prior < 0) || (prior != state);
                     if (!act) {
-                    	/* Do nothing. */
+                        /* Do nothing. */
                     } else if (command != (const char *)0) {
-                    	snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
-                    	buffer[sizeof(buffer) - 1] = '\0';
-                    	rc = diminuto_system(buffer);
-                    	if (rc < 0) {
-                    		fail = !0;
-                    		break;
-                    	}
+                        snprintf(buffer, sizeof(buffer), "%s %d %d %d", command, pin, state, prior);
+                        buffer[sizeof(buffer) - 1] = '\0';
+                        rc = diminuto_system(buffer);
+                        if (rc < 0) {
+                            fail = !0;
+                            break;
+                        }
                     } else {
-                    	printf("%d\n", state);
-                    	fflush(stdout);
+                        printf("%d\n", state);
+                        fflush(stdout);
                     }
                     prior = state;
                 }

@@ -10,7 +10,7 @@
 
 int main(int argc, char ** argv)
 {
-	int *pointer = (int *)0;
+    int *pointer = (int *)0;
     *pointer = 0;
     return 0;
 }

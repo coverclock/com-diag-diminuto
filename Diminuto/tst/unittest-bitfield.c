@@ -24,7 +24,7 @@ int main(void)
 {
     SETLOGMASK();
 
-	{
+    {
         TEST();
 
         integer.word = 0;

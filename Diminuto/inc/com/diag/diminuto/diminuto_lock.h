@@ -23,7 +23,7 @@
  * the lock file its current directory may have already been changed to "/".
  */
 #if defined(COM_DIAG_DIMINUTO_LOCK_ROOT)
-	/* Do nothing. */
+    /* Do nothing. */
 #elif defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 #	define COM_DIAG_DIMINUTO_LOCK_ROOT "/data/local/tmp/"
 #else

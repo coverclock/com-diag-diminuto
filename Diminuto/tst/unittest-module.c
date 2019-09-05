@@ -29,24 +29,24 @@ const char ALTERNATIVE[] = "unittest-module-example.dll";
 
 int main(int argc, char ** argv)
 {
-	char * file;
-	char * alternative;
-	const char * paths;
-	diminuto_module_handle_t module;
-	diminuto_module_handle_t check;
-	void * functionp;
-	void * variablep;
-	int value = 0xa5a5a5a5;
-	int rc;
+    char * file;
+    char * alternative;
+    const char * paths;
+    diminuto_module_handle_t module;
+    diminuto_module_handle_t check;
+    void * functionp;
+    void * variablep;
+    int value = 0xa5a5a5a5;
+    int rc;
 
-	SETLOGMASK();
+    SETLOGMASK();
 
     diminuto_core_enable();
 
     paths = getenv(KEYWORD);
     file = diminuto_path_find(KEYWORD, NAME);
     alternative = diminuto_path_find(KEYWORD, ALTERNATIVE);
-	CHECKPOINT("NAME=\"%s\" ALTERNATIVE=\"%s\" KEYWORD=\"%s\" paths=\"%s\" file=\"%s\" alternative=\"%s\"\n", NAME, ALTERNATIVE, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "", (alternative != (const char *)0) ? alternative : "");
+    CHECKPOINT("NAME=\"%s\" ALTERNATIVE=\"%s\" KEYWORD=\"%s\" paths=\"%s\" file=\"%s\" alternative=\"%s\"\n", NAME, ALTERNATIVE, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "", (alternative != (const char *)0) ? alternative : "");
     ASSERT((file != (char *)0) || (alternative != (char *)0));
     if (file == (char *)0) {
         file = alternative;

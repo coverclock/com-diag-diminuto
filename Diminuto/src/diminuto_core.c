@@ -20,36 +20,36 @@
 
 int diminuto_core_enable(void)
 {
-	int rc = -1;
-	struct rlimit limit;
+    int rc = -1;
+    struct rlimit limit;
 
     do {
 
-    	if (getrlimit(RLIMIT_CORE, &limit) < 0) {
-		    diminuto_perror("diminuto_core_enable: getrlimit");
+        if (getrlimit(RLIMIT_CORE, &limit) < 0) {
+            diminuto_perror("diminuto_core_enable: getrlimit");
             break;
         }
 
-		limit.rlim_cur = limit.rlim_max;
+        limit.rlim_cur = limit.rlim_max;
 
-		if (setrlimit(RLIMIT_CORE, &limit) < 0) {
-			diminuto_perror("diminuto_core_enable: setrlimit");
+        if (setrlimit(RLIMIT_CORE, &limit) < 0) {
+            diminuto_perror("diminuto_core_enable: setrlimit");
             break;
-		}
+        }
 
         rc = 0;
 
     } while (0);
 
-	return rc;
+    return rc;
 }
 
 void diminuto_core_fatal(void)
 {
-	int rc = -1;
-	char datum = 0;
+    int rc = -1;
+    char datum = 0;
 
-	abort();
+    abort();
     diminuto_perror("diminuto_core_fatal: abort");
 
     rc = kill(getpid(), SIGKILL);
@@ -59,9 +59,9 @@ void diminuto_core_fatal(void)
      * Remarkably, I have worked on hardware where deferencing
      * a null pointer in C succeeds.
      */
-	datum = *((volatile char *)0);
-	errno = EINVAL;
-	diminuto_perror("diminuto_core_fatal: *nullptr");
+    datum = *((volatile char *)0);
+    errno = EINVAL;
+    diminuto_perror("diminuto_core_fatal: *nullptr");
 
     rc = kill(getpid(), SIGSEGV);
     diminuto_perror("diminuto_core_fatal: kill(SIGSEGV)");

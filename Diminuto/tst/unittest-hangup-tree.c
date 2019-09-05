@@ -33,8 +33,8 @@ static const char LOCKNAME[] = "/tmp/unittest-hangup-tree.pid";
 
 int main(int argc, char ** argv)
 {
-	int rc;
-	pid_t pid;
+    int rc;
+    pid_t pid;
     pid_t id;
     int status;
 
@@ -44,7 +44,7 @@ int main(int argc, char ** argv)
 
     (void)unlink(LOCKNAME);
 
-	TEST();
+    TEST();
 
     CHECKPOINT("unittest-hangup-tree PARENT BEGIN\n");
 
@@ -53,20 +53,20 @@ int main(int argc, char ** argv)
 
     ASSERT(!diminuto_reaper_check());
 
-	rc = diminuto_hangup_install(!0);
-	ASSERT(rc == 0);
+    rc = diminuto_hangup_install(!0);
+    ASSERT(rc == 0);
 
     ASSERT(!diminuto_hangup_check());
 
-	rc = diminuto_lock_prelock(LOCKNAME);
-	ASSERT(rc == 0);
+    rc = diminuto_lock_prelock(LOCKNAME);
+    ASSERT(rc == 0);
 
     ASSERT(diminuto_lock_check(LOCKNAME) == 0);
 
     pid = fork();
     ASSERT(pid >= 0);
 
-	if (pid > 0) {
+    if (pid > 0) {
 
         CHECKPOINT("unittest-hangup PARENT child=%d\n", pid);
 
@@ -74,49 +74,49 @@ int main(int argc, char ** argv)
         ASSERT(rc == 0);
 
         ASSERT(diminuto_hangup_check());
-		ASSERT(!diminuto_hangup_check());
+        ASSERT(!diminuto_hangup_check());
 
-		id = diminuto_lock_check(LOCKNAME);
-		EXPECT(id == pid);
+        id = diminuto_lock_check(LOCKNAME);
+        EXPECT(id == pid);
 
-		CHECKPOINT("unittest-hangup-tree PARENT READY\n");
+        CHECKPOINT("unittest-hangup-tree PARENT READY\n");
 
-		id = waitpid(pid, &status, 0);
-		ASSERT(id == pid);
+        id = waitpid(pid, &status, 0);
+        ASSERT(id == pid);
 
-		ASSERT(status == 0);
+        ASSERT(status == 0);
 
-		ASSERT(diminuto_reaper_check());
-		ASSERT(!diminuto_reaper_check());
+        ASSERT(diminuto_reaper_check());
+        ASSERT(!diminuto_reaper_check());
 
-		id = diminuto_lock_check(LOCKNAME);
-		EXPECT(id < 0);
+        id = diminuto_lock_check(LOCKNAME);
+        EXPECT(id < 0);
 
-		CHECKPOINT("unittest-hangup-tree PARENT END\n");
+        CHECKPOINT("unittest-hangup-tree PARENT END\n");
 
-	} else {
+    } else {
 
-		CHECKPOINT("unittest-hangup-tree CHILD BEGIN\n");
+        CHECKPOINT("unittest-hangup-tree CHILD BEGIN\n");
 
-		rc = diminuto_lock_postlock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_postlock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup-tree CHILD READY\n");
+        CHECKPOINT("unittest-hangup-tree CHILD READY\n");
 
-		rc = diminuto_hangup_signal(pid);
-		ASSERT(rc == 0);
+        rc = diminuto_hangup_signal(pid);
+        ASSERT(rc == 0);
 
-		diminuto_delay(diminuto_frequency(), 0);
+        diminuto_delay(diminuto_frequency(), 0);
 
-		rc = diminuto_lock_unlock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_unlock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		rc = diminuto_lock_unlock(LOCKNAME);
-		ASSERT(rc < 0);
+        rc = diminuto_lock_unlock(LOCKNAME);
+        ASSERT(rc < 0);
 
-		CHECKPOINT("unittest-hangup-tree CHILD END\n");
+        CHECKPOINT("unittest-hangup-tree CHILD END\n");
 
-	}
+    }
 
     EXIT();
 }

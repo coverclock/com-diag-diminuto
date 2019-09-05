@@ -60,7 +60,7 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
         if (fp == (FILE *)0) {
             diminuto_perror("diminuto_observation_create: fdopen");
             free(temp);
-        	break;
+            break;
         }
 
         *tempp = temp;

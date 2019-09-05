@@ -61,63 +61,63 @@ int main(int argc, char * argv[])
             break;
 
         case 'F':
-        	facility = strtoul(optarg, &endptr, 0);
-        	break;
+            facility = strtoul(optarg, &endptr, 0);
+            break;
 
         case 'B':
-        	length = strtoul(optarg, &endptr, 0);
-        	break;
+            length = strtoul(optarg, &endptr, 0);
+            break;
 
         case 'N':
-        	name = optarg;
-        	break;
+            name = optarg;
+            break;
 
         case 'O':
-        	option = strtoul(optarg, &endptr, 0);
-        	break;
+            option = strtoul(optarg, &endptr, 0);
+            break;
 
         case 'S':
-        	diminuto_log_forced = true;
-        	break;
+            diminuto_log_forced = true;
+            break;
 
         case 'U':
             unconditional = !0;
-        	break;
+            break;
 
         case 'a':
             mask = DIMINUTO_LOG_MASK_ALERT;
             priority = DIMINUTO_LOG_PRIORITY_ALERT;
-        	break;
+            break;
 
         case 'c':
             mask = DIMINUTO_LOG_MASK_CRITICAL;
             priority = DIMINUTO_LOG_PRIORITY_CRITICAL;
-        	break;
+            break;
 
         case 'd':
             mask = DIMINUTO_LOG_MASK_DEBUG;
             priority = DIMINUTO_LOG_PRIORITY_DEBUG;
-        	break;
+            break;
 
         case 'e':
             mask = DIMINUTO_LOG_MASK_ERROR;
             priority = DIMINUTO_LOG_PRIORITY_ERROR;
-        	break;
+            break;
 
         case 'i':
             mask = DIMINUTO_LOG_MASK_INFORMATION;
             priority = DIMINUTO_LOG_PRIORITY_INFORMATION;
-        	break;
+            break;
 
         case 'n':
             mask = DIMINUTO_LOG_MASK_NOTICE;
             priority = DIMINUTO_LOG_PRIORITY_NOTICE;
-        	break;
+            break;
 
         case 'w':
             mask = DIMINUTO_LOG_MASK_WARNING;
             priority = DIMINUTO_LOG_PRIORITY_WARNING;
-        	break;
+            break;
 
         case '?':
         default:
@@ -133,26 +133,26 @@ int main(int argc, char * argv[])
 
     if (unconditional || ((diminuto_log_mask & mask) != 0)) {
 
-    	diminuto_log_open_syslog(name, option, facility);
+        diminuto_log_open_syslog(name, option, facility);
 
-    	if (optind < argc) {
-    		for (; optind < argc; ++optind) {
-    			if (argv[optind] == (const char *)0) {
-    				/* Do nothing. */
-    			} else if (*argv[optind] == '\0') {
-    				/* Do nothing. */
-    			} else {
-    				diminuto_log_log(priority, "%s\n", argv[optind]);
-    			}
-    		}
-    	}
+        if (optind < argc) {
+            for (; optind < argc; ++optind) {
+                if (argv[optind] == (const char *)0) {
+                    /* Do nothing. */
+                } else if (*argv[optind] == '\0') {
+                    /* Do nothing. */
+                } else {
+                    diminuto_log_log(priority, "%s\n", argv[optind]);
+                }
+            }
+        }
 
     }
 
     buffer = (char *)malloc(length);
     if (buffer == (char *)0) {
-    	diminuto_perror("malloc");
-    	return 1;
+        diminuto_perror("malloc");
+        return 1;
     }
 
     /*
@@ -161,9 +161,9 @@ int main(int argc, char * argv[])
      */
 
     while (fgets(buffer, length, stdin) != (char *)0) {
-    	if (unconditional || ((diminuto_log_mask & mask) != 0)) {
-    		diminuto_log_log(priority, "%s", buffer);
-    	}
+        if (unconditional || ((diminuto_log_mask & mask) != 0)) {
+            diminuto_log_log(priority, "%s", buffer);
+        }
     }
 
     free(buffer);

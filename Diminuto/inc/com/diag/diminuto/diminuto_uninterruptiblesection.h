@@ -22,18 +22,18 @@
  * blocked.
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(...) \
-	do { \
-		sigset_t _diminuto_uninterruptible_section_now_; \
-		sigset_t _diminuto_uninterruptible_section_was_; \
-		sigemptyset(&_diminuto_uninterruptible_section_now_); \
-		int _diminuto_uninterruptible_section_signals_[] = { __VA_ARGS__ }; \
-		int _diminuto_uninterruptible_section_ndx_; \
-		for (_diminuto_uninterruptible_section_ndx_ = 0; _diminuto_uninterruptible_section_ndx_ < diminuto_countof(_diminuto_uninterruptible_section_signals_); ++_diminuto_uninterruptible_section_ndx_) { \
-			sigaddset(&_diminuto_uninterruptible_section_now_, _diminuto_uninterruptible_section_signals_[_diminuto_uninterruptible_section_ndx_]); \
-		} \
-		pthread_sigmask(SIG_BLOCK, &_diminuto_uninterruptible_section_now_, &_diminuto_uninterruptible_section_was_); \
-		do { \
-			(void)0
+    do { \
+        sigset_t _diminuto_uninterruptible_section_now_; \
+        sigset_t _diminuto_uninterruptible_section_was_; \
+        sigemptyset(&_diminuto_uninterruptible_section_now_); \
+        int _diminuto_uninterruptible_section_signals_[] = { __VA_ARGS__ }; \
+        int _diminuto_uninterruptible_section_ndx_; \
+        for (_diminuto_uninterruptible_section_ndx_ = 0; _diminuto_uninterruptible_section_ndx_ < diminuto_countof(_diminuto_uninterruptible_section_signals_); ++_diminuto_uninterruptible_section_ndx_) { \
+            sigaddset(&_diminuto_uninterruptible_section_now_, _diminuto_uninterruptible_section_signals_[_diminuto_uninterruptible_section_ndx_]); \
+        } \
+        pthread_sigmask(SIG_BLOCK, &_diminuto_uninterruptible_section_now_, &_diminuto_uninterruptible_section_was_); \
+        do { \
+            (void)0
 
 /**
  * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_END
@@ -42,8 +42,8 @@
  * original state at the beginning of the block.
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
-		} while (0); \
-		pthread_sigmask(SIG_SETMASK, &_diminuto_uninterruptible_section_was_, (sigset_t *)0); \
-	} while (0)
+        } while (0); \
+        pthread_sigmask(SIG_SETMASK, &_diminuto_uninterruptible_section_was_, (sigset_t *)0); \
+    } while (0)
 
 #endif

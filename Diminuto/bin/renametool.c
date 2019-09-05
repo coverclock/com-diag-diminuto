@@ -28,7 +28,7 @@
 
 int main(int argc, char * argv[])
 {
-	int xc = 0;
+    int xc = 0;
     int rc = -1;
     int exchange = 0;
     const char * program = "renametool";
@@ -38,34 +38,34 @@ int main(int argc, char * argv[])
 
     do {
 
-		program = ((program = strrchr(argv[ndx], '/')) == (char *)0) ? argv[ndx] : program + 1;
-		ndx += 1;
+        program = ((program = strrchr(argv[ndx], '/')) == (char *)0) ? argv[ndx] : program + 1;
+        ndx += 1;
 
-		if (argc < 3) {
-			fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
-			xc = 2;
-			break;
-		}
+        if (argc < 3) {
+            fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
+            xc = 2;
+            break;
+        }
 
-		if (strcmp(argv[ndx], "-x") == 0) {
-			exchange = !0;
-			ndx += 1;
-		}
+        if (strcmp(argv[ndx], "-x") == 0) {
+            exchange = !0;
+            ndx += 1;
+        }
 
-		if (argc != (ndx + 2)) {
-			fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
-			xc = 2;
-			break;
-		}
+        if (argc != (ndx + 2)) {
+            fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
+            xc = 2;
+            break;
+        }
 
-		fromfile = argv[ndx++];
-		tofile = argv[ndx++];
+        fromfile = argv[ndx++];
+        tofile = argv[ndx++];
 
-		if (renameat2(AT_FDCWD, fromfile, AT_FDCWD, tofile, exchange ? RENAME_EXCHANGE : RENAME_NOREPLACE) < 0) {
-			perror("renameat2");
-			xc = 1;
-			break;
-		}
+        if (renameat2(AT_FDCWD, fromfile, AT_FDCWD, tofile, exchange ? RENAME_EXCHANGE : RENAME_NOREPLACE) < 0) {
+            perror("renameat2");
+            xc = 1;
+            break;
+        }
 
     } while (0);
 

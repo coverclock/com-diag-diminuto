@@ -48,7 +48,7 @@ static void diminuto_terminator_handler(int signum)
     if (signum != SIGTERM) {
         /* Do nothing. */
     } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
-       	signaled += 1;
+        signaled += 1;
     } else {
         /* Do nothing. */
     }
@@ -59,10 +59,10 @@ int diminuto_terminator_check(void)
     int mysignaled;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM);
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGTERM);
 
-        	mysignaled = signaled;
-        	signaled = 0;
+            mysignaled = signaled;
+            signaled = 0;
 
         DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
     DIMINUTO_CRITICAL_SECTION_END;

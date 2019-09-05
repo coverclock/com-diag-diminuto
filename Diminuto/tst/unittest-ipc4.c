@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
         }
     }
 
-	hertz = diminuto_frequency();
+    hertz = diminuto_frequency();
 
     {
         const char name[] = "0.0.0.0";

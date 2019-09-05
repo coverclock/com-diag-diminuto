@@ -22,12 +22,12 @@ static char * name[countof(node)] = { "node0", "node1", "node2" };
 static diminuto_list_t * stack[64];
 
 static void dump(const char * prefix, diminuto_list_t * nodep) {
-	diminuto_list_t * nextp = nodep;
-	int ii = 0;
-	do {
-		diminuto_list_log(nextp);
-		nextp = nextp->next;
-	} while (nextp != nodep);
+    diminuto_list_t * nextp = nodep;
+    int ii = 0;
+    do {
+        diminuto_list_log(nextp);
+        nextp = nextp->next;
+    } while (nextp != nodep);
 }
 
 static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
@@ -81,9 +81,9 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
     actual = rootp;
     expected = rootp;
     do {
-    	do {
-    		ASSERT(diminuto_list_aresiblings(actual, expected));
-    	} while ((actual = diminuto_list_next(actual)) != rootp);
+        do {
+            ASSERT(diminuto_list_aresiblings(actual, expected));
+        } while ((actual = diminuto_list_next(actual)) != rootp);
     } while ((expected = diminuto_list_prev(expected)) != rootp);
 
     /* Audit */
@@ -130,19 +130,19 @@ static void initialize(void)
     ASSERT(diminuto_list_dataif((diminuto_list_t *)0) == (void *)0);
 
     for (ii = 0; ii < countof(node); ++ii) {
-    	for (jj = 0; jj < countof(node); ++jj) {
-    		ASSERT(diminuto_list_aresiblings(&node[ii], &node[jj]) == (ii == jj));
-    	}
+        for (jj = 0; jj < countof(node); ++jj) {
+            ASSERT(diminuto_list_aresiblings(&node[ii], &node[jj]) == (ii == jj));
+        }
     }
 
     if (DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG)) {
-    	dump("head", &head);
+        dump("head", &head);
     }
 }
 
 int main(void)
 {
-	SETLOGMASK();
+    SETLOGMASK();
 
     {
         /* Core Operations */
@@ -530,30 +530,30 @@ int main(void)
     }
 
     {
-    	/* Cut/Splice */
+        /* Cut/Splice */
 
-    	diminuto_list_t head1;
-    	diminuto_list_t list1[4];
-    	diminuto_list_t head2;
-    	diminuto_list_t list2[5];
-    	diminuto_list_t * np;
+        diminuto_list_t head1;
+        diminuto_list_t list1[4];
+        diminuto_list_t head2;
+        diminuto_list_t list2[5];
+        diminuto_list_t * np;
 
-    	diminuto_list_datainit(&head1, (void*)0x10);
-    	diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[0], (void *)0x11));
-    	diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[1], (void *)0x12));
-    	diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[2], (void *)0x13));
-    	diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[3], (void *)0x14));
+        diminuto_list_datainit(&head1, (void*)0x10);
+        diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[0], (void *)0x11));
+        diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[1], (void *)0x12));
+        diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[2], (void *)0x13));
+        diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[3], (void *)0x14));
         audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
 
-    	diminuto_list_datainit(&head2, (void*)0x20);
-    	diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[0], (void *)0x21));
-    	diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[1], (void *)0x22));
-    	diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[2], (void *)0x23));
-    	diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[3], (void *)0x24));
-    	diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[4], (void *)0x25));
+        diminuto_list_datainit(&head2, (void*)0x20);
+        diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[0], (void *)0x21));
+        diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[1], (void *)0x22));
+        diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[2], (void *)0x23));
+        diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[3], (void *)0x24));
+        diminuto_list_enqueue(&head2, diminuto_list_datainit(&list2[4], (void *)0x25));
         audit(__FILE__, __LINE__, &head2, &head2, &list2[0], &list2[1], &list2[2], &list2[3], &list2[4], &head2, DIMINUTO_LIST_NULL);
 
-      	np = diminuto_list_cut(&list2[1], &list2[3]);
+        np = diminuto_list_cut(&list2[1], &list2[3]);
         ASSERT(np == &list2[1]);
         audit(__FILE__, __LINE__, &head2, &head2, &list2[0], &list2[4], &head2, DIMINUTO_LIST_NULL);
         audit(__FILE__, __LINE__, &list2[1], &list2[1], &list2[2], &list2[3], &list2[1], DIMINUTO_LIST_NULL);

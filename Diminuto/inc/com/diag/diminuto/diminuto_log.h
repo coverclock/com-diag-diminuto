@@ -240,7 +240,7 @@ extern bool diminuto_log_cached;
  */
 static inline int diminuto_log_interactive()
 {
-	return ((getpid() != getsid(0)) && (getppid() != 1));
+    return ((getpid() != getsid(0)) && (getppid() != 1));
 }
 
 /**

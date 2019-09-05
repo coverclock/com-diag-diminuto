@@ -28,33 +28,33 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_ticks_t ticks;
-	diminuto_ticks_t offset;
-	int year;
-	int month;
-	int day;
-	int hour;
-	int minute;
-	int second;
-	diminuto_ticks_t fraction;
-	int offsethours;
-	int offsetseconds;
+    diminuto_ticks_t ticks;
+    diminuto_ticks_t offset;
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    diminuto_ticks_t fraction;
+    int offsethours;
+    int offsetseconds;
 
-	if ((ticks = diminuto_time_clock()) < 0) {
-		return 2;
-	}
+    if ((ticks = diminuto_time_clock()) < 0) {
+        return 2;
+    }
 
-	offset = diminuto_time_timezone(ticks) + diminuto_time_daylightsaving(ticks);
-	second = diminuto_frequency_ticks2wholeseconds(offset);
-	if (second < 0) { second = -second; }
-	offsethours = second / 3600;
-	offsetseconds = second % 3600;
+    offset = diminuto_time_timezone(ticks) + diminuto_time_daylightsaving(ticks);
+    second = diminuto_frequency_ticks2wholeseconds(offset);
+    if (second < 0) { second = -second; }
+    offsethours = second / 3600;
+    offsetseconds = second % 3600;
 
-	if (diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
-		return 3;
-	}
+    if (diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
+        return 3;
+    }
 
-	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, (long long unsigned int)fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
+    printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, (long long unsigned int)fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
 
-	return 0;
+    return 0;
 }

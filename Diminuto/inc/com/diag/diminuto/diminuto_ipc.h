@@ -260,10 +260,10 @@ extern char ** diminuto_ipc_interfaces(void);
  * both IPv4 and IPv6 addresses. Fields that are not used will be zero.
  */
 typedef struct DiminutoIpcEndpoint {
-	diminuto_ipv4_t ipv4;
-	diminuto_ipv6_t ipv6;
-	diminuto_port_t tcp;
-	diminuto_port_t udp;
+    diminuto_ipv4_t ipv4;
+    diminuto_ipv6_t ipv6;
+    diminuto_port_t tcp;
+    diminuto_port_t udp;
 } diminuto_ipc_endpoint_t;
 
 /**

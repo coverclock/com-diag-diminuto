@@ -19,10 +19,10 @@
  * beginning and a write (release) memory barrier at the end.
  */
 #define DIMINUTO_COHERENT_SECTION_BEGIN \
-	do { \
-		diminuto_acquire(); \
-		do { \
-			(void)0
+    do { \
+        diminuto_acquire(); \
+        do { \
+            (void)0
 
 /**
  * @def DIMINUTO_COHERENT_SECTION_END
@@ -30,8 +30,8 @@
  * beginning and a write (release) memory barrier at the end.
  */
 #define DIMINUTO_COHERENT_SECTION_END \
-		} while (0); \
-		diminuto_release(); \
-	} while (0)
+        } while (0); \
+        diminuto_release(); \
+    } while (0)
 
 #endif

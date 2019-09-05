@@ -44,77 +44,77 @@ int main(int argc, char * argv[])
 
     while ((opt = getopt(argc, argv, "?125678D:b:dehlmnos")) >= 0) {
 
-    	switch (opt) {
+        switch (opt) {
 
-    	case '1':
-    		stopbits = 1;
-    		break;
+        case '1':
+            stopbits = 1;
+            break;
 
-    	case '2':
-    		stopbits = 2;
-    		break;
+        case '2':
+            stopbits = 2;
+            break;
 
-    	case '5':
-    		databits = 5;
-    		break;
+        case '5':
+            databits = 5;
+            break;
 
-    	case '6':
-    		databits = 6;
-    		break;
+        case '6':
+            databits = 6;
+            break;
 
-    	case '7':
-    		databits = 7;
-    		break;
+        case '7':
+            databits = 7;
+            break;
 
-    	case '8':
-    		databits = 8;
-    		break;
+        case '8':
+            databits = 8;
+            break;
 
-    	case 'D':
-    		device = optarg;
-    		break;
+        case 'D':
+            device = optarg;
+            break;
 
-    	case 'b':
-    		bitspersecond = strtoul(optarg, (char **)0, 0);
-    		break;
+        case 'b':
+            bitspersecond = strtoul(optarg, (char **)0, 0);
+            break;
 
         case 'd':
-           	debug = !0;
-           	break;
+            debug = !0;
+            break;
 
-    	case 'e':
-    		paritybit = 2;
-    		break;
+        case 'e':
+            paritybit = 2;
+            break;
 
-    	case 'h':
-    		rtscts = !0;
-    		break;
+        case 'h':
+            rtscts = !0;
+            break;
 
-    	case 'l':
-    		modemcontrol = 0;
-    		break;
+        case 'l':
+            modemcontrol = 0;
+            break;
 
-    	case 'm':
-    		modemcontrol = !0;
-    		break;
+        case 'm':
+            modemcontrol = !0;
+            break;
 
-    	case 'n':
-    		paritybit = 0;
-    		break;
+        case 'n':
+            paritybit = 0;
+            break;
 
-    	case 'o':
-    		paritybit = 1;
-    		break;
+        case 'o':
+            paritybit = 1;
+            break;
 
-    	case 's':
-    		xonxoff = !0;
-    		break;
+        case 's':
+            xonxoff = !0;
+            break;
 
         case '?':
             fprintf(stderr, "usage: %s [ -d ] [ -D DEVICE ] [ -b SPEED ] [ -(5|6|7|8) ] [ -(1|2) ] [ -(o|e|n) ] [ -s ] [ -h ] [ -(l|m) ]\n", program);
             break;
 
-    	}
+        }
 
     }
 

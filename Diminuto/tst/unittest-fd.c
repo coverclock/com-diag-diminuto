@@ -138,7 +138,7 @@ int main(void)
             } else if ((file = open("/system/xbin/bash", O_RDONLY)) >= 0) {
                 /* Do nothing. */
             } else {
-            	file = -1;
+                file = -1;
             }
             ASSERT(file >= 0);
             DIMINUTO_FD_TYPE(file, DIMINUTO_FD_TYPE_FILE);

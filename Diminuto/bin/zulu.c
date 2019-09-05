@@ -27,24 +27,24 @@
 
 int main(int argc, char ** argv)
 {
-	diminuto_ticks_t ticks;
-	int year;
-	int month;
-	int day;
-	int hour;
-	int minute;
-	int second;
-	diminuto_ticks_t fraction;
+    diminuto_ticks_t ticks;
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    diminuto_ticks_t fraction;
 
-	if ((ticks = diminuto_time_clock()) < 0) {
-		return 2;
-	}
+    if ((ticks = diminuto_time_clock()) < 0) {
+        return 2;
+    }
 
-	if (diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
-		return 3;
-	}
+    if (diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &fraction) < 0) {
+        return 3;
+    }
 
-	printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+00:00\n", year, month, day, hour, minute, second, (long long unsigned int)fraction);
+    printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+00:00\n", year, month, day, hour, minute, second, (long long unsigned int)fraction);
 
-	return 0;
+    return 0;
 }

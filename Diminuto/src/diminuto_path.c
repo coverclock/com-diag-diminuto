@@ -19,69 +19,69 @@
 
 char * diminuto_path_scan(const char * string, const char * file)
 {
-	char * path = (char *)0;
-	char * list = (char *)0;
-	char * prefix;
-	char * here;
-	char * context;
-	int size;
-	struct stat status;
+    char * path = (char *)0;
+    char * list = (char *)0;
+    char * prefix;
+    char * here;
+    char * context;
+    int size;
+    struct stat status;
 
-	do {
+    do {
 
-		if (string == (const char *)0) {
-			break;
-		}
+        if (string == (const char *)0) {
+            break;
+        }
 
-		if (file == (const char *)0) {
-			break;
-		}
+        if (file == (const char *)0) {
+            break;
+        }
 
-		if ((list = strdup(string)) == (char *)0) {
-			break;
-		}
+        if ((list = strdup(string)) == (char *)0) {
+            break;
+        }
 
-		here = list;
+        here = list;
 
-		while ((prefix = strtok_r(here, ":", &context)) != (char *)0) {
+        while ((prefix = strtok_r(here, ":", &context)) != (char *)0) {
 
-			char candidate[PATH_MAX];
-			size = snprintf(candidate, sizeof(candidate), "%s/%s", prefix, file);
-			if (size >= sizeof(candidate)) {
-				break;
-			}
+            char candidate[PATH_MAX];
+            size = snprintf(candidate, sizeof(candidate), "%s/%s", prefix, file);
+            if (size >= sizeof(candidate)) {
+                break;
+            }
 
-			if (stat(candidate, &status) == 0) {
-				path = strdup(candidate);
-				break;
-			}
+            if (stat(candidate, &status) == 0) {
+                path = strdup(candidate);
+                break;
+            }
 
-			here = (char *)0;
-		}
+            here = (char *)0;
+        }
 
-	} while (0);
+    } while (0);
 
-	free(list);
+    free(list);
 
-	return path;
+    return path;
 }
 
 char * diminuto_path_find(const char * keyword, const char * file)
 {
-	char * path = (char *)0;
-	const char * value;
+    char * path = (char *)0;
+    const char * value;
 
-	do {
+    do {
 
-		if (keyword == (const char *)0) {
-			break;
-		}
+        if (keyword == (const char *)0) {
+            break;
+        }
 
-		value = getenv(keyword);
+        value = getenv(keyword);
 
-		path = diminuto_path_scan(value, file);
+        path = diminuto_path_scan(value, file);
 
-	} while (0);
+    } while (0);
 
-	return path;
+    return path;
 }

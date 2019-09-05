@@ -37,7 +37,7 @@
  * @return 0 if successful, <0 with errno set otherwise.
  */
 static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-	return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
+    return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
 }
 
 #else
@@ -54,7 +54,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
  * @return -1 for failure always.
  */
 static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-	errno = EIO;
+    errno = EIO;
     return -1;
 }
 

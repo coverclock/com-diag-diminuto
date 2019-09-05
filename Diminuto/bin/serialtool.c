@@ -182,9 +182,9 @@ int main(int argc, char * argv[])
             break;
 
         case 'c':
-        	modemcontrol = !0;
-        	carrierdetect = !0;
-        	break;
+            modemcontrol = !0;
+            carrierdetect = !0;
+            break;
 
         case 'd':
             debug = !0;
@@ -453,15 +453,15 @@ int main(int argc, char * argv[])
         }
         while (!done) {
             if (carrierdetect) {
-            	while (!0) {
-            		rc = diminuto_serial_status(fd);
-            		assert(rc >= 0);
-            		if (rc) {
-            			break;
-            		}
-            		rc = diminuto_serial_wait(fd);
-            		assert(rc >= 0);
-            	}
+                while (!0) {
+                    rc = diminuto_serial_status(fd);
+                    assert(rc >= 0);
+                    if (rc) {
+                        break;
+                    }
+                    rc = diminuto_serial_wait(fd);
+                    assert(rc >= 0);
+                }
             }
             fds = diminuto_mux_wait(&mux, -1);
             if (fds <= 0) {

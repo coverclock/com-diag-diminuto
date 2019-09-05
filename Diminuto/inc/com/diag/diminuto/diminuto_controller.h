@@ -88,18 +88,18 @@ static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT = (
  */
 typedef struct DiminutoControllerGain {
 
-	/**
-	 * This is the numerator. If it is greater than the denominator, this is a
-	 * gain. If it is less, a loss. If it is zero, the term to which it is
-	 * applied is eliminated. If it is negative (and the denominator is not),
-	 * the effect of the term is inverted.
-	 */
-	diminuto_controller_factor_t  numerator;
+    /**
+     * This is the numerator. If it is greater than the denominator, this is a
+     * gain. If it is less, a loss. If it is zero, the term to which it is
+     * applied is eliminated. If it is negative (and the denominator is not),
+     * the effect of the term is inverted.
+     */
+    diminuto_controller_factor_t  numerator;
 
-	/**
-	 * This is the denominator.
-	 */
-	diminuto_controller_factor_t  denominator;
+    /**
+     * This is the denominator.
+     */
+    diminuto_controller_factor_t  denominator;
 
 } diminuto_controller_gain_t;
 
@@ -115,33 +115,33 @@ typedef struct DiminutoControllerParameters {
      * appropriately at the positive or negative end of the range. This limits
      * the memory of the integral term.
      */
-	diminuto_controller_value_t windup;
+    diminuto_controller_value_t windup;
 
     /**
      * This is the minimum value used to clamp the output at the low end. It
      * is the minimum legal output value.
      */
-	diminuto_controller_output_t minimum;
+    diminuto_controller_output_t minimum;
 
     /**
      * This is the maximum value used to clamp the output at the high end. It
      * is the maximum legal output value.
      */
-	diminuto_controller_output_t maximum;
+    diminuto_controller_output_t maximum;
 
     /**
      * Output values below this threshold are reduced to the minimum. Some
      * devices misbehave below a threshold, so if the output is less than this
      * value, it is set to the minimum value.
      */
-	diminuto_controller_output_t lower;
+    diminuto_controller_output_t lower;
 
     /**
      * Output values above this threshold are reduced to the maximum. Some
      * devices misbehave above a threshold, so if the output is more than this
      * value, it is set to the maximum value.
      */
-	diminuto_controller_output_t upper;
+    diminuto_controller_output_t upper;
 
     /**
      * This is the PID proportional ratio value. It is in dimensionless units
@@ -149,7 +149,7 @@ typedef struct DiminutoControllerParameters {
      * GREATER THAN ZERO INDICATING GAIN. The proportional term can be
      * eliminated by setting the numerator of this field to the zero.
      */
-	diminuto_controller_gain_t kp;
+    diminuto_controller_gain_t kp;
 
     /**
      * This is the PID integral ratio value. It is in dimensionless units
@@ -157,7 +157,7 @@ typedef struct DiminutoControllerParameters {
      * LESS THAN ZERO INDICATING LOSS. The integral term can be eliminated by
      * setting the numerator of this field to zero.
      */
-	diminuto_controller_gain_t ki;
+    diminuto_controller_gain_t ki;
 
     /**
      * This is the PID differential ratio value. It is in dimensionless units
@@ -165,7 +165,7 @@ typedef struct DiminutoControllerParameters {
      * GREATER THAN ZERO INDICATING GAIN. The differential term can be
      * eliminated by setting the numerator of this field to zero.
      */
-	diminuto_controller_gain_t kd;
+    diminuto_controller_gain_t kd;
 
     /**
      * This is the input to output conversion ratio value to convert the
@@ -176,7 +176,7 @@ typedef struct DiminutoControllerParameters {
      * to factor common factors out of Kp, Ki and Kd and apply them to the final
      * result. Kc is that common factor.
      */
-	diminuto_controller_gain_t kc;
+    diminuto_controller_gain_t kc;
 
     /**
      * If true, this applies a low pass filter to the initial input value to

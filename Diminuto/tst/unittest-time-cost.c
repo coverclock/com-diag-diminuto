@@ -39,49 +39,49 @@
 
 int main(int argc, char ** argv)
 {
-	int64_t limit = 1000000000ULL;
-	int64_t iterations;
-	diminuto_sticks_t before;
-	diminuto_sticks_t after;
-	diminuto_sticks_t total = 0;
-	typedef diminuto_sticks_t (function_t)(void);
-	function_t * functionp = &diminuto_time_clock;
-	const char * label = "realtime";
+    int64_t limit = 1000000000ULL;
+    int64_t iterations;
+    diminuto_sticks_t before;
+    diminuto_sticks_t after;
+    diminuto_sticks_t total = 0;
+    typedef diminuto_sticks_t (function_t)(void);
+    function_t * functionp = &diminuto_time_clock;
+    const char * label = "realtime";
 
-	SETLOGMASK();
+    SETLOGMASK();
 
-	if (argc > 1) {
-		limit = strtoll(argv[1], (char **)0, 0);
-	}
+    if (argc > 1) {
+        limit = strtoll(argv[1], (char **)0, 0);
+    }
 
-	if (argc > 2) {
-		functionp = &diminuto_time_elapsed;
-		label = "monotonic";
-	}
+    if (argc > 2) {
+        functionp = &diminuto_time_elapsed;
+        label = "monotonic";
+    }
 
-	for (iterations = 0; iterations < limit; ++iterations) {
-		after = (*functionp)();
-		if (after < 0) {
-			break;
-		}
-		if (iterations > 0) {
-			total += (after - before);
-		}
-		before = after;
-	}
+    for (iterations = 0; iterations < limit; ++iterations) {
+        after = (*functionp)();
+        if (after < 0) {
+            break;
+        }
+        if (iterations > 0) {
+            total += (after - before);
+        }
+        before = after;
+    }
 
-	if (iterations <= 0) {
-		errno = EINVAL;
-		diminuto_perror(label);
-		return 1;
-	}
+    if (iterations <= 0) {
+        errno = EINVAL;
+        diminuto_perror(label);
+        return 1;
+    }
 
-	DIMINUTO_LOG_NOTICE("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
+    DIMINUTO_LOG_NOTICE("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
 
-	if (after < 0) {
-		diminuto_perror(label);
-		return 2;
-	}
+    if (after < 0) {
+        diminuto_perror(label);
+        return 2;
+    }
 
-	EXIT();
+    EXIT();
 }

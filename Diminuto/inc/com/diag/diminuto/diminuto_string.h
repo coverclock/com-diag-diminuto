@@ -35,7 +35,7 @@
 extern char * diminuto_string_copy(char * dest, const char * src, size_t n);
 
 static inline char * diminuto_strscpy(char * dest, const char * src, size_t n) {
-	return diminuto_string_copy(dest, src, n);
+    return diminuto_string_copy(dest, src, n);
 }
 
 /**
@@ -46,8 +46,8 @@ static inline char * diminuto_strscpy(char * dest, const char * src, size_t n) {
  * @return a pointer to the basename in the specified pathname.
  */
 static inline const char * diminuto_string_basename(const char * argvzero) {
-	const char * basename;
-	return ((basename = strrchr(argvzero, '/')) == (char *)0) ? argvzero : basename + 1;
+    const char * basename;
+    return ((basename = strrchr(argvzero, '/')) == (char *)0) ? argvzero : basename + 1;
 }
 
 DIMINUTO_PROXY_POINTER_H(string, strdup, char *, (const char * s), return, (s))

@@ -12,6 +12,6 @@
 
 void diminuto_criticalsection_cleanup(void * voidp)
 {
-	pthread_mutex_t * mutexp = (pthread_mutex_t *)voidp;
-	pthread_mutex_unlock(mutexp);
+    pthread_mutex_t * mutexp = (pthread_mutex_t *)voidp;
+    pthread_mutex_unlock(mutexp);
 }

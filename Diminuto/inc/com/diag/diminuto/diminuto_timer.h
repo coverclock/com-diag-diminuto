@@ -57,7 +57,7 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  */
 static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-	extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
+    extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
     return diminuto_timer_singleton(ticks, 0);
 }
 
@@ -76,7 +76,7 @@ static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  */
 static inline diminuto_sticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-	extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
+    extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
     return diminuto_timer_singleton(ticks, !0);
 }
 

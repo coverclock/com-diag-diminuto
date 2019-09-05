@@ -17,7 +17,7 @@
 
 diminuto_sticks_t diminuto_timer_generic(int * initializedp, timer_t * timeridp, struct sigevent * eventp, diminuto_ticks_t ticks, int periodic)
 {
-	diminuto_sticks_t sticks = 0;
+    diminuto_sticks_t sticks = 0;
     struct itimerspec timer = { 0 };
     struct itimerspec remaining = { 0 };
 
@@ -25,42 +25,42 @@ diminuto_sticks_t diminuto_timer_generic(int * initializedp, timer_t * timeridp,
      * If we don't have a timer, and are not deleting it, create the timer.
      */
 
-	if (*initializedp) {
-		/* Do nothing: already have the timer. */
-	} else if (ticks == 0) {
-		/* Do nothing: deleting the timer. */
-	} else if (timer_create(CLOCK_MONOTONIC, eventp, timeridp) < 0) {
-		diminuto_perror("diminuto_timer_generic: timer_create");
-		sticks = (diminuto_sticks_t)-1;
-	} else {
-		*initializedp = !0;
-	}
+    if (*initializedp) {
+        /* Do nothing: already have the timer. */
+    } else if (ticks == 0) {
+        /* Do nothing: deleting the timer. */
+    } else if (timer_create(CLOCK_MONOTONIC, eventp, timeridp) < 0) {
+        diminuto_perror("diminuto_timer_generic: timer_create");
+        sticks = (diminuto_sticks_t)-1;
+    } else {
+        *initializedp = !0;
+    }
 
     if (sticks < 0) {
-    	return sticks;
+        return sticks;
     }
 
     /*
      * If we have a timer, and are deleting it, delete the timer.
      */
 
-	if (ticks != 0) {
-		/* Do nothing: not deleting the timer. */
-	} else if (!(*initializedp)) {
-		/* Do nothing: do not have the timer. */
-	} else if (timer_gettime(*timeridp, &remaining) < 0) {
-		diminuto_perror("diminuto_timer_generic: timer_gettime");
-		sticks = (diminuto_sticks_t)-1;
-	 } else if (timer_delete(*timeridp) < 0) {
-		diminuto_perror("diminuto_timer_generic: timer_delete");
-		sticks = (diminuto_sticks_t)-1;
-	} else {
-		sticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_nsec, diminuto_timer_frequency());
-		*initializedp = 0;
-	}
+    if (ticks != 0) {
+        /* Do nothing: not deleting the timer. */
+    } else if (!(*initializedp)) {
+        /* Do nothing: do not have the timer. */
+    } else if (timer_gettime(*timeridp, &remaining) < 0) {
+        diminuto_perror("diminuto_timer_generic: timer_gettime");
+        sticks = (diminuto_sticks_t)-1;
+     } else if (timer_delete(*timeridp) < 0) {
+        diminuto_perror("diminuto_timer_generic: timer_delete");
+        sticks = (diminuto_sticks_t)-1;
+    } else {
+        sticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_nsec, diminuto_timer_frequency());
+        *initializedp = 0;
+    }
 
     if ((sticks < 0) || (!(*initializedp))) {
-    	return sticks;
+        return sticks;
     }
 
     /*
@@ -83,7 +83,7 @@ diminuto_sticks_t diminuto_timer_generic(int * initializedp, timer_t * timeridp,
         diminuto_perror("diminuto_timer_generic: timer_settime");
         sticks = (diminuto_sticks_t)-1;
     } else {
-    	sticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_nsec, diminuto_timer_frequency());
+        sticks = diminuto_frequency_seconds2ticks(remaining.it_value.tv_sec, remaining.it_value.tv_nsec, diminuto_timer_frequency());
     }
 
     return sticks;
@@ -108,16 +108,16 @@ timer_t diminuto_timer_singleton_get(void)
 
 diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic)
 {
-	diminuto_sticks_t sticks = 0;
+    diminuto_sticks_t sticks = 0;
     struct sigevent event = { 0 };
-	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
     event.sigev_notify = SIGEV_SIGNAL;
-	event.sigev_signo = SIGALRM;
+    event.sigev_signo = SIGALRM;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	sticks = diminuto_timer_generic(&initialized, &timerid, &event, ticks, periodic);
+        sticks = diminuto_timer_generic(&initialized, &timerid, &event, ticks, periodic);
 
     DIMINUTO_CRITICAL_SECTION_END;
 

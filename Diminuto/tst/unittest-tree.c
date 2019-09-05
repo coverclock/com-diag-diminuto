@@ -199,7 +199,7 @@ static diminuto_tree_t ALFABIT[] = {
 
 int main(void)
 {
-	SETLOGMASK();
+    SETLOGMASK();
 
     {
         ASSERT(DIMINUTO_TREE_NULL == (diminuto_tree_t *)0);

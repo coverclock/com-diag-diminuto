@@ -15,7 +15,7 @@ int main(int argc, char ** argv)
 {
     SETLOGMASK();
     TEST();
-	ASSERT(diminuto_core_enable() >= 0);
+    ASSERT(diminuto_core_enable() >= 0);
     diminuto_core_fatal();
     FAILURE();
     EXIT();

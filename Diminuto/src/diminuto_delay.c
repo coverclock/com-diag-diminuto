@@ -62,15 +62,15 @@ int diminuto_yield(void)
 
 int diminuto_pause(void)
 {
-	int rc;
+    int rc;
 
-	rc = pause();
-	if (rc >= 0) {
-		rc = -1;
-		errno = EINVAL;
+    rc = pause();
+    if (rc >= 0) {
+        rc = -1;
+        errno = EINVAL;
         diminuto_perror("diminuto_pause: pause");
-	} else if (errno == EINTR) {
-    	rc = 0;
+    } else if (errno == EINTR) {
+        rc = 0;
     } else {
         diminuto_perror("diminuto_pause: pause");
     }

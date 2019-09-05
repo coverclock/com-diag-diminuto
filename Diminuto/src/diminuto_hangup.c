@@ -25,17 +25,17 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static void diminuto_hangup_handler(int signum)
 {
     if (signum != SIGHUP) {
-    	/* Do nothing. */
+        /* Do nothing. */
     } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
         signaled += 1;
     } else {
-    	/* Do nothing. */
+        /* Do nothing. */
     }
 }
 
 pid_t diminuto_hangup_signal(pid_t pid)
 {
-	int rc = 0;
+    int rc = 0;
 
     if (kill(pid, SIGHUP) < 0) {
         diminuto_perror("diminuto_hangup_kill: kill");
@@ -54,12 +54,12 @@ int diminuto_hangup_check(void)
     int mysignaled;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-    	DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGHUP);
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGHUP);
 
-    		mysignaled = signaled;
-    		signaled = 0;
+            mysignaled = signaled;
+            signaled = 0;
 
-    	DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
+        DIMINUTO_UNINTERRUPTIBLE_SECTION_END;
     DIMINUTO_CRITICAL_SECTION_END;
 
     if (!mysignaled) {

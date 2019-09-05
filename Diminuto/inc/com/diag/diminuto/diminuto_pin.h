@@ -106,10 +106,10 @@ extern int diminuto_pin_unexport_ignore(int pin);
 extern int diminuto_pin_active(int pin, int high);
 
 typedef enum DiminutoPinEdge {
-	DIMINUTO_PIN_EDGE_NONE = 0,
-	DIMINUTO_PIN_EDGE_RISING = 1,
-	DIMINUTO_PIN_EDGE_FALLING = 2,
-	DIMINUTO_PIN_EDGE_BOTH = 3,
+    DIMINUTO_PIN_EDGE_NONE = 0,
+    DIMINUTO_PIN_EDGE_RISING = 1,
+    DIMINUTO_PIN_EDGE_FALLING = 2,
+    DIMINUTO_PIN_EDGE_BOTH = 3,
 } diminuto_pin_edge_t;
 
 /**
@@ -202,7 +202,7 @@ extern FILE * diminuto_pin_output(int pin);
  */
 static inline int diminuto_pin_set(FILE * fp)
 {
-	return diminuto_pin_put(fp, !0);
+    return diminuto_pin_put(fp, !0);
 }
 
 /**
@@ -213,7 +213,7 @@ static inline int diminuto_pin_set(FILE * fp)
  */
 static inline int diminuto_pin_clear(FILE * fp)
 {
-	return diminuto_pin_put(fp, 0);
+    return diminuto_pin_put(fp, 0);
 }
 
 /**

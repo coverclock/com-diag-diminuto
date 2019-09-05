@@ -26,104 +26,104 @@ static const int LIMIT = 100;
 
 static void * body(void * arg)
 {
-	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-	int done = 0;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    int done = 0;
 
-	while (!done) {
+    while (!done) {
 
-		DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-			if (shared >= LIMIT) {
-				COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				done = !0;
-			} else if ((shared % 2) == (intptr_t)arg) {
-				COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				++shared;
-			} else {
-				diminuto_yield();
-			}
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+            } else {
+                diminuto_yield();
+            }
 
-		DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_CRITICAL_SECTION_END;
 
-	}
+    }
 
-	return (void *)arg;
+    return (void *)arg;
 }
 
 int main(void)
 {
-	{
-		pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-		pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
+    {
+        pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+        pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 
-		TEST();
+        TEST();
 
-		ASSERT(pthread_mutex_trylock(&mutex1) == 0);
-		pthread_mutex_unlock(&mutex1);
-		ASSERT(pthread_mutex_trylock(&mutex2) == 0);
-		pthread_mutex_unlock(&mutex2);
+        ASSERT(pthread_mutex_trylock(&mutex1) == 0);
+        pthread_mutex_unlock(&mutex1);
+        ASSERT(pthread_mutex_trylock(&mutex2) == 0);
+        pthread_mutex_unlock(&mutex2);
 
-		DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex1);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex1);
 
-			int error = EBUSY;
+            int error = EBUSY;
 
-			ASSERT(pthread_mutex_trylock(&mutex1) == error);
-			ASSERT(pthread_mutex_trylock(&mutex2) == 0);
-			pthread_mutex_unlock(&mutex2);
+            ASSERT(pthread_mutex_trylock(&mutex1) == error);
+            ASSERT(pthread_mutex_trylock(&mutex2) == 0);
+            pthread_mutex_unlock(&mutex2);
 
-			DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex2);
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex2);
 
-				int error = EBUSY;
+                int error = EBUSY;
 
-				ASSERT(pthread_mutex_trylock(&mutex1) == error);
-				ASSERT(pthread_mutex_trylock(&mutex2) == error);
+                ASSERT(pthread_mutex_trylock(&mutex1) == error);
+                ASSERT(pthread_mutex_trylock(&mutex2) == error);
 
-			DIMINUTO_CRITICAL_SECTION_END;
+            DIMINUTO_CRITICAL_SECTION_END;
 
-			ASSERT(pthread_mutex_trylock(&mutex1) == error);
-			ASSERT(pthread_mutex_trylock(&mutex2) == 0);
-			pthread_mutex_unlock(&mutex2);
+            ASSERT(pthread_mutex_trylock(&mutex1) == error);
+            ASSERT(pthread_mutex_trylock(&mutex2) == 0);
+            pthread_mutex_unlock(&mutex2);
 
-		DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_CRITICAL_SECTION_END;
 
-		ASSERT(pthread_mutex_trylock(&mutex1) == 0);
-		pthread_mutex_unlock(&mutex1);
-		ASSERT(pthread_mutex_trylock(&mutex2) == 0);
-		pthread_mutex_unlock(&mutex2);
+        ASSERT(pthread_mutex_trylock(&mutex1) == 0);
+        pthread_mutex_unlock(&mutex1);
+        ASSERT(pthread_mutex_trylock(&mutex2) == 0);
+        pthread_mutex_unlock(&mutex2);
 
-		STATUS();
-	}
+        STATUS();
+    }
 
-	{
-		int rc;
-		pthread_t odd;
-		pthread_t even;
-		void * final;
+    {
+        int rc;
+        pthread_t odd;
+        pthread_t even;
+        void * final;
 
-		TEST();
+        TEST();
 
-		ASSERT(shared == 0);
+        ASSERT(shared == 0);
 
-		rc = pthread_create(&odd, 0, body, (void *)1);
-		ASSERT(rc == 0);
+        rc = pthread_create(&odd, 0, body, (void *)1);
+        ASSERT(rc == 0);
 
-		rc = pthread_create(&even, 0, body, (void *)0);
-		ASSERT(rc == 0);
+        rc = pthread_create(&even, 0, body, (void *)0);
+        ASSERT(rc == 0);
 
-		final = (void *)~0;
-		rc = pthread_join(odd, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)1);
+        final = (void *)~0;
+        rc = pthread_join(odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
 
-		final = (void *)~0;
-		rc = pthread_join(even, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)0);
+        final = (void *)~0;
+        rc = pthread_join(even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
 
-		ASSERT(shared == LIMIT);
+        ASSERT(shared == LIMIT);
 
-		STATUS();
-	}
+        STATUS();
+    }
 
     EXIT();
 }

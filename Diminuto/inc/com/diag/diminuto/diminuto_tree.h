@@ -311,7 +311,7 @@ static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
  */
 static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
 {
-	return (diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
+    return (diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
 }
 
 /**

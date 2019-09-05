@@ -20,7 +20,7 @@
 
 int
 diminuto_kernel_map(
-	uintptr_t start,
+    uintptr_t start,
     size_t length,
     const char * name,
     struct resource ** regionpp,

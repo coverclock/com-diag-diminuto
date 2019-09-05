@@ -85,25 +85,25 @@ typedef void (diminuto_modulator_function_t)(union sigval);
 typedef struct DiminutoModulator {
     /* Fields for use by the application, otherwise unused. */
     void * data;
-	/* Fields computed at Initialization or Finish. */
-	diminuto_modulator_function_t * function;
-	FILE * fp;
-	int pin;
-	/* Fields computed at Start or Stop. */
-	timer_t timer;
+    /* Fields computed at Initialization or Finish. */
+    diminuto_modulator_function_t * function;
+    FILE * fp;
+    int pin;
+    /* Fields computed at Start or Stop. */
+    timer_t timer;
     pthread_attr_t attributes;
-	int initialized;
-	/* Fields computed at Set. */
-	volatile diminuto_modulator_cycle_t duty;
-	volatile diminuto_modulator_cycle_t on;
-	volatile diminuto_modulator_cycle_t off;
-	volatile bool set;
-	/* Fields computed at Run. */
-	volatile diminuto_modulator_cycle_t total;
-	volatile diminuto_modulator_cycle_t cycle;
-	volatile diminuto_modulator_cycle_t ton;
-	volatile diminuto_modulator_cycle_t toff;
-	volatile bool condition;
+    int initialized;
+    /* Fields computed at Set. */
+    volatile diminuto_modulator_cycle_t duty;
+    volatile diminuto_modulator_cycle_t on;
+    volatile diminuto_modulator_cycle_t off;
+    volatile bool set;
+    /* Fields computed at Run. */
+    volatile diminuto_modulator_cycle_t total;
+    volatile diminuto_modulator_cycle_t cycle;
+    volatile diminuto_modulator_cycle_t ton;
+    volatile diminuto_modulator_cycle_t toff;
+    volatile bool condition;
 } diminuto_modulator_t;
 
 /**
@@ -133,8 +133,8 @@ extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_m
  * @return 0 for success, <0 if an error occured.
  */
 static inline int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty) {
-	extern void diminuto_modulator_function(union sigval arg);
-	return diminuto_modulator_init_generic(mp, diminuto_modulator_function, pin, duty);
+    extern void diminuto_modulator_function(union sigval arg);
+    return diminuto_modulator_init_generic(mp, diminuto_modulator_function, pin, duty);
 }
 
 /**

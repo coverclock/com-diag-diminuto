@@ -21,16 +21,16 @@
 #include <asm/errno.h>
 
 #define DIMINUTO_KERNEL_GET(_WIDTH_) \
-	do { \
+    do { \
         if ((uintptr_t)address & DIMINUTO_DATUM_ALIGNMENT(_WIDTH_)) { \
             rc = -EINVAL; \
         } else { \
             datump->DIMINUTO_DATUM_VALUE(_WIDTH_) = *(const volatile DIMINUTO_DATUM_TYPE(_WIDTH_) __iomem *)address; \
         } \
-	} while (0)
+    } while (0)
 
 #define DIMINUTO_KERNEL_PUT(_WIDTH_) \
-	do { \
+    do { \
         if ((uintptr_t)address & DIMINUTO_DATUM_ALIGNMENT(_WIDTH_)) { \
             rc = -EINVAL; \
         } else { \

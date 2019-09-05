@@ -13,7 +13,7 @@
 
 static void maybe(void)
 {
-	DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
 }
 
 #define DIMINUTO_LOG_DISABLE
@@ -21,7 +21,7 @@ static void maybe(void)
 
 static void no(void)
 {
-	DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: no!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: no!\n", __FILE__, __LINE__);
 }
 
 #undef DIMINUTO_LOG_DISABLE
@@ -29,7 +29,7 @@ static void no(void)
 
 static void yes(void)
 {
-	DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d]: yes.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d]: yes.\n", __FILE__, __LINE__);
 }
 
 static void all(void)

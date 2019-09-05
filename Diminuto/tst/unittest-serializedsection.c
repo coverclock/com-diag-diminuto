@@ -26,98 +26,98 @@ static const int LIMIT = 100;
 
 static void * body(void * arg)
 {
-	static volatile diminuto_spinlock_t lock = 0;
-	int done = 0;
+    static volatile diminuto_spinlock_t lock = 0;
+    int done = 0;
 
-	while (!done) {
+    while (!done) {
 
-		DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock);
+        DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock);
 
-			if (shared >= LIMIT) {
-				COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				done = !0;
-			} else if ((shared % 2) == (intptr_t)arg) {
-				COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				++shared;
-			} else {
-				diminuto_yield();
-			}
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+            } else {
+                diminuto_yield();
+            }
 
-		DIMINUTO_SERIALIZED_SECTION_END;
+        DIMINUTO_SERIALIZED_SECTION_END;
 
-	}
+    }
 
-	return (void *)arg;
+    return (void *)arg;
 }
 int main(void)
 {
-	{
-		volatile diminuto_spinlock_t lock1 = 0;
-		volatile diminuto_spinlock_t lock2 = 0;
-		int zero = 0;
+    {
+        volatile diminuto_spinlock_t lock1 = 0;
+        volatile diminuto_spinlock_t lock2 = 0;
+        int zero = 0;
 
-		TEST();
+        TEST();
 
-		ASSERT(lock1 == zero);
-		ASSERT(lock2 == zero);
+        ASSERT(lock1 == zero);
+        ASSERT(lock2 == zero);
 
-		DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock1);
+        DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock1);
 
-			int zero = 0;
+            int zero = 0;
 
-			ASSERT(lock1 != zero);
-			ASSERT(lock2 == zero);
+            ASSERT(lock1 != zero);
+            ASSERT(lock2 == zero);
 
-			DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock2);
+            DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock2);
 
-				int zero = 0;
+                int zero = 0;
 
-				ASSERT(lock1 != zero);
-				ASSERT(lock2 != zero);
+                ASSERT(lock1 != zero);
+                ASSERT(lock2 != zero);
 
-			DIMINUTO_SERIALIZED_SECTION_END;
+            DIMINUTO_SERIALIZED_SECTION_END;
 
-			ASSERT(lock1 != zero);
-			ASSERT(lock2 == zero);
+            ASSERT(lock1 != zero);
+            ASSERT(lock2 == zero);
 
-		DIMINUTO_SERIALIZED_SECTION_END;
+        DIMINUTO_SERIALIZED_SECTION_END;
 
-		ASSERT(lock1 == zero);
-		ASSERT(lock2 == zero);
+        ASSERT(lock1 == zero);
+        ASSERT(lock2 == zero);
 
-		STATUS();
-	}
+        STATUS();
+    }
 
-	{
-		int rc;
-		pthread_t odd;
-		pthread_t even;
-		void * final;
+    {
+        int rc;
+        pthread_t odd;
+        pthread_t even;
+        void * final;
 
-		TEST();
+        TEST();
 
-		ASSERT(shared == 0);
+        ASSERT(shared == 0);
 
-		rc = pthread_create(&odd, 0, body, (void *)1);
-		ASSERT(rc == 0);
+        rc = pthread_create(&odd, 0, body, (void *)1);
+        ASSERT(rc == 0);
 
-		rc = pthread_create(&even, 0, body, (void *)0);
-		ASSERT(rc == 0);
+        rc = pthread_create(&even, 0, body, (void *)0);
+        ASSERT(rc == 0);
 
-		final = (void *)~0;
-		rc = pthread_join(odd, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)1);
+        final = (void *)~0;
+        rc = pthread_join(odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
 
-		final = (void *)~0;
-		rc = pthread_join(even, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)0);
+        final = (void *)~0;
+        rc = pthread_join(even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
 
-		ASSERT(shared == LIMIT);
+        ASSERT(shared == LIMIT);
 
-		STATUS();
-	}
+        STATUS();
+    }
 
     EXIT();
 }

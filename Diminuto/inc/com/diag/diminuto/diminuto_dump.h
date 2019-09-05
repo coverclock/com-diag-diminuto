@@ -80,16 +80,16 @@ extern void diminuto_dump_generic(
  * @param indent causes each line to be indented by this many spaces.
  */
 static inline void diminuto_dump_general(
-	FILE * fp,
-	const void * data,
-	size_t length,
-	int upper,
-	char dot,
-	int virtualize,
-	uintptr_t address,
-	size_t indent
+    FILE * fp,
+    const void * data,
+    size_t length,
+    int upper,
+    char dot,
+    int virtualize,
+    uintptr_t address,
+    size_t indent
 ) {
-	diminuto_dump_generic(fp, data, length, upper, dot, virtualize, address, indent, sizeof(int32_t), 16 / sizeof(int32_t), ": ", " ", "|", ' ', ' ', "|\n");
+    diminuto_dump_generic(fp, data, length, upper, dot, virtualize, address, indent, sizeof(int32_t), 16 / sizeof(int32_t), ": ", " ", "|", ' ', ' ', "|\n");
 }
 
 /**
@@ -99,11 +99,11 @@ static inline void diminuto_dump_general(
  * @param length is the size of data to dump in bytes.
  */
 static inline void diminuto_dump_bytes(
-	FILE * fp,
-	const void * data,
-	size_t length
+    FILE * fp,
+    const void * data,
+    size_t length
 ) {
-	diminuto_dump_generic(fp, data, length, 0, '.', 0, 0, 0, 1, 2 * sizeof(int64_t), ": ", " ", "|", ' ', ' ', "|\n");
+    diminuto_dump_generic(fp, data, length, 0, '.', 0, 0, 0, 1, 2 * sizeof(int64_t), ": ", " ", "|", ' ', ' ', "|\n");
 }
 
 /**
@@ -115,12 +115,12 @@ static inline void diminuto_dump_bytes(
  * @param address is used as the replacement address to be printed.
  */
 static inline void diminuto_dump_virtual(
-	FILE * fp,
-	const void * data,
-	size_t length,
-	uintptr_t address
+    FILE * fp,
+    const void * data,
+    size_t length,
+    uintptr_t address
 ) {
-	diminuto_dump_general(fp, data, length, 0, '.', !0, address, 0);
+    diminuto_dump_general(fp, data, length, 0, '.', !0, address, 0);
 }
 
 /**
@@ -131,11 +131,11 @@ static inline void diminuto_dump_virtual(
  * @param length is the size of data to dump in bytes.
  */
 static inline void diminuto_dump(
-	FILE * fp,
-	const void * data,
-	size_t length
+    FILE * fp,
+    const void * data,
+    size_t length
 ) {
-	diminuto_dump_general(fp, data, length, 0, '.', 0, 0, 0);
+    diminuto_dump_general(fp, data, length, 0, '.', 0, 0, 0);
 }
 
 #endif

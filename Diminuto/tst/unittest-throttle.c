@@ -26,36 +26,36 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
-    	TEST();
+        TEST();
 
-    	ASSERT(sizeof(size_t) == 8);
-    	ASSERT(((size_t)(~(size_t)0)) > 0);
-    	ASSERT(sizeof(diminuto_ticks_t) == 8);
-    	ASSERT(((diminuto_ticks_t)(~(diminuto_ticks_t)0)) > 0);
+        ASSERT(sizeof(size_t) == 8);
+        ASSERT(((size_t)(~(size_t)0)) > 0);
+        ASSERT(sizeof(diminuto_ticks_t) == 8);
+        ASSERT(((diminuto_ticks_t)(~(diminuto_ticks_t)0)) > 0);
 
-    	STATUS();
+        STATUS();
     }
 
     {
-    	TEST();
+        TEST();
 
-    	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 4) == 2);
-    	ASSERT(diminuto_throttle_interarrivaltime(1, 2, 4) == 8);
-    	ASSERT(diminuto_throttle_interarrivaltime(2, 1, 5) == 3);
-    	ASSERT(diminuto_throttle_interarrivaltime(1, 2, 5) == 10);
+        ASSERT(diminuto_throttle_interarrivaltime(2, 1, 4) == 2);
+        ASSERT(diminuto_throttle_interarrivaltime(1, 2, 4) == 8);
+        ASSERT(diminuto_throttle_interarrivaltime(2, 1, 5) == 3);
+        ASSERT(diminuto_throttle_interarrivaltime(1, 2, 5) == 10);
 
-    	STATUS();
+        STATUS();
     }
 
     {
-    	TEST();
+        TEST();
 
-    	ASSERT(diminuto_throttle_jittertolerance(2, 3) == 4);
-    	ASSERT(diminuto_throttle_jittertolerance(2, 0) == 0);
-    	ASSERT(diminuto_throttle_jittertolerance(2, 1) == 0);
-    	ASSERT(diminuto_throttle_jittertolerance(3, 2) == 3);
+        ASSERT(diminuto_throttle_jittertolerance(2, 3) == 4);
+        ASSERT(diminuto_throttle_jittertolerance(2, 0) == 0);
+        ASSERT(diminuto_throttle_jittertolerance(2, 1) == 0);
+        ASSERT(diminuto_throttle_jittertolerance(3, 2) == 3);
 
-    	STATUS();
+        STATUS();
     }
 
     {
@@ -700,14 +700,14 @@ int main(int argc, char ** argv)
             now += delay;
             duration += delay;
             if (iops <= 0) {
-            	/* Do nothing. */
+                /* Do nothing. */
             } else if (delay <= 0) {
-            	/* Do nothing. */
+                /* Do nothing. */
             } else {
-            	rate = size;
-            	rate *= frequency;
-            	rate /= delay;
-            	if (rate > peak) { peak = rate; }
+                rate = size;
+                rate *= frequency;
+                rate /= delay;
+                if (rate > peak) { peak = rate; }
             }
             delay = diminuto_throttle_request(tp, now);
             ASSERT(delay == 0);
@@ -724,10 +724,10 @@ int main(int argc, char ** argv)
         now += delay;
         duration += delay;
         if (delay > 0) {
-			rate = size;
-			rate *= frequency;
-			rate /= delay;
-			if (rate > peak) { peak = rate; }
+            rate = size;
+            rate *= frequency;
+            rate /= delay;
+            if (rate > peak) { peak = rate; }
         }
         diminuto_throttle_update(tp, now);
         /**/

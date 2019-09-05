@@ -100,7 +100,7 @@ static diminuto_store_t ALFABIT[] = {
 
 int main(void)
 {
-	SETLOGMASK();
+    SETLOGMASK();
 
     {
         ASSERT(DIMINUTO_STORE_NULL == (diminuto_store_t *)0);

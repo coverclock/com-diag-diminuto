@@ -38,21 +38,21 @@ static const char * program = (const char *)0;
 void dump(FILE * fp, const diminuto_modulator_t * mp)
 {
     fprintf(stderr, "modulator@%p: timer=%p initialized=%d pin=%d duty=%d fp=%p on=%d off=%d set=%d total=%d cycle=%d ton=%d toff=%d condition=%d\n",
-    	mp,
-		(void *)(mp->timer),
-		mp->initialized,
-		mp->pin,
-		mp->duty,
-		mp->fp,
-		mp->on,
-		mp->off,
-		mp->set,
-		mp->total,
-		mp->cycle,
-		mp->ton,
-		mp->toff,
-		mp->condition
-	);
+        mp,
+        (void *)(mp->timer),
+        mp->initialized,
+        mp->pin,
+        mp->duty,
+        mp->fp,
+        mp->on,
+        mp->off,
+        mp->set,
+        mp->total,
+        mp->cycle,
+        mp->ton,
+        mp->toff,
+        mp->condition
+    );
 }
 
 int main(int argc, char * argv[])

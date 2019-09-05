@@ -31,8 +31,8 @@ static const char LOCKNAME[] = "/tmp/unittest-hangup-too.pid";
 
 int main(int argc, char ** argv)
 {
-	int rc;
-	pid_t pid;
+    int rc;
+    pid_t pid;
     pid_t id;
 
     SETLOGMASK();
@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
 
     (void)unlink(LOCKNAME);
 
-	TEST();
+    TEST();
 
     CHECKPOINT("unittest-hangup-too PARENT BEGIN\n");
 
@@ -51,56 +51,56 @@ int main(int argc, char ** argv)
     ASSERT(!diminuto_reaper_check());
     ASSERT(!diminuto_reaper_check());
 
-	rc = diminuto_lock_prelock(LOCKNAME);
-	ASSERT(rc == 0);
+    rc = diminuto_lock_prelock(LOCKNAME);
+    ASSERT(rc == 0);
 
     pid = fork();
     ASSERT(pid >= 0);
 
-	if (pid > 0) {
+    if (pid > 0) {
 
         CHECKPOINT("unittest-hangup-too PARENT child=%d\n", pid);
 
-		while ((id = diminuto_lock_check(LOCKNAME)) <= 0) {
-			diminuto_yield();
-		}
+        while ((id = diminuto_lock_check(LOCKNAME)) <= 0) {
+            diminuto_yield();
+        }
 
-		EXPECT(id == pid);
+        EXPECT(id == pid);
 
-		rc = diminuto_hangup_signal(pid);
-		ASSERT(rc == 0);
+        rc = diminuto_hangup_signal(pid);
+        ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup-too PARENT READY\n");
+        CHECKPOINT("unittest-hangup-too PARENT READY\n");
 
         diminuto_delay(diminuto_frequency(), 0);
 
         ASSERT(diminuto_reaper_check());
         ASSERT(!diminuto_reaper_check());
 
-		CHECKPOINT("unittest-hangup-too PARENT END\n");
+        CHECKPOINT("unittest-hangup-too PARENT END\n");
 
-	} else {
+    } else {
 
-		CHECKPOINT("unittest-hangup-too CHILD BEGIN\n");
+        CHECKPOINT("unittest-hangup-too CHILD BEGIN\n");
 
-		rc = diminuto_hangup_install(!0);
-		ASSERT(rc == 0);
+        rc = diminuto_hangup_install(!0);
+        ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup-too CHILD READY\n");
+        CHECKPOINT("unittest-hangup-too CHILD READY\n");
 
-		rc = diminuto_lock_postlock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_postlock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		while (!diminuto_hangup_check()) {
-			diminuto_yield();
-		}
+        while (!diminuto_hangup_check()) {
+            diminuto_yield();
+        }
 
-		rc = diminuto_lock_unlock(LOCKNAME);
-		ASSERT(rc == 0);
+        rc = diminuto_lock_unlock(LOCKNAME);
+        ASSERT(rc == 0);
 
-		CHECKPOINT("unittest-hangup-too CHILD END\n");
+        CHECKPOINT("unittest-hangup-too CHILD END\n");
 
-	}
+    }
 
     EXIT();
 }

@@ -19,158 +19,158 @@
 
 int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, int stopbits, int modemcontrol, int xonxoff, int rtscts)
 {
-	int rc = -1;
-	int error = 0;
-	struct termios tios = { 0 };
-	int speed;
-	int data;
-	int parity;
-	int stop;
-	int clocal;
-	int hupcl;
-	int ixon;
-	int ixoff;
-	int crtscts;
+    int rc = -1;
+    int error = 0;
+    struct termios tios = { 0 };
+    int speed;
+    int data;
+    int parity;
+    int stop;
+    int clocal;
+    int hupcl;
+    int ixon;
+    int ixoff;
+    int crtscts;
 
-	do {
+    do {
 
-		switch (bitspersecond) {
-		case -1:
-			break;
-		case 0:
-			speed = B0;
-			break;
-		case 50:
-			speed = B50;
-			break;
-		case 75:
-			speed = B75;
-			break;
-		case 110:
-			speed = B110;
-			break;
-		case 134:
-			speed = B134;
-			break;
-		case 150:
-			speed = B150;
-			break;
-		case 200:
-			speed = B200;
-			break;
-		case 300:
-			speed = B300;
-			break;
-		case 600:
-			speed = B600;
-			break;
-		case 1200:
-			speed = B1200;
-			break;
-		case 1800:
-			speed = B1800;
-			break;
-		case 2400:
-			speed = B2400;
-			break;
-		case 4800:
-			speed = B4800;
-			break;
-		case 9600:
-			speed = B9600;
-			break;
-		case 19200:
-			speed = B19200;
-			break;
-		case 38400:
-			speed = B38400;
-			break;
-		case 57600:
-			speed = B57600;
-			break;
-		case 115200:
-			speed = B115200;
-			break;
-		case 230400:
-			speed = B230400;
-			break;
-		default:
-			bitspersecond = -1;
-			error = !0;
-			errno = EINVAL;
-			diminuto_perror("diminuto_serial_set: bitspersecond");
-			break;
-		}
+        switch (bitspersecond) {
+        case -1:
+            break;
+        case 0:
+            speed = B0;
+            break;
+        case 50:
+            speed = B50;
+            break;
+        case 75:
+            speed = B75;
+            break;
+        case 110:
+            speed = B110;
+            break;
+        case 134:
+            speed = B134;
+            break;
+        case 150:
+            speed = B150;
+            break;
+        case 200:
+            speed = B200;
+            break;
+        case 300:
+            speed = B300;
+            break;
+        case 600:
+            speed = B600;
+            break;
+        case 1200:
+            speed = B1200;
+            break;
+        case 1800:
+            speed = B1800;
+            break;
+        case 2400:
+            speed = B2400;
+            break;
+        case 4800:
+            speed = B4800;
+            break;
+        case 9600:
+            speed = B9600;
+            break;
+        case 19200:
+            speed = B19200;
+            break;
+        case 38400:
+            speed = B38400;
+            break;
+        case 57600:
+            speed = B57600;
+            break;
+        case 115200:
+            speed = B115200;
+            break;
+        case 230400:
+            speed = B230400;
+            break;
+        default:
+            bitspersecond = -1;
+            error = !0;
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_set: bitspersecond");
+            break;
+        }
 
-		switch (databits) {
-		case 5:
-			data = CS5;
-			break;
-		case 6:
-			data = CS6;
-			break;
-		case 7:
-			data = CS7;
-			break;
-		case 8:
-			data = CS8;
-			break;
-		default:
-			error = !0;
-			errno = EINVAL;
-			diminuto_perror("diminuto_serial_set: databits");
-			break;
-		}
+        switch (databits) {
+        case 5:
+            data = CS5;
+            break;
+        case 6:
+            data = CS6;
+            break;
+        case 7:
+            data = CS7;
+            break;
+        case 8:
+            data = CS8;
+            break;
+        default:
+            error = !0;
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_set: databits");
+            break;
+        }
 
-		if (paritybit == 0) {
-			parity = 0;
-		} else if ((paritybit % 2) != 0) {
-			parity = PARENB | PARODD;
-		} else {
-			parity = PARENB;
-		}
+        if (paritybit == 0) {
+            parity = 0;
+        } else if ((paritybit % 2) != 0) {
+            parity = PARENB | PARODD;
+        } else {
+            parity = PARENB;
+        }
 
-		switch (stopbits) {
-		case 1:
-			stop = 0;
-			break;
-		case 2:
-			stop = CSTOPB;
-			break;
-		default:
-			error = !0;
-			errno = EINVAL;
-			diminuto_perror("diminuto_serial_set: stopbits");
-			break;
-		}
+        switch (stopbits) {
+        case 1:
+            stop = 0;
+            break;
+        case 2:
+            stop = CSTOPB;
+            break;
+        default:
+            error = !0;
+            errno = EINVAL;
+            diminuto_perror("diminuto_serial_set: stopbits");
+            break;
+        }
 
-		if (modemcontrol) {
-			clocal = 0;
-			hupcl = HUPCL;
-		} else {
-			clocal = CLOCAL;
-			hupcl = 0;
-		}
+        if (modemcontrol) {
+            clocal = 0;
+            hupcl = HUPCL;
+        } else {
+            clocal = CLOCAL;
+            hupcl = 0;
+        }
 
-		if (xonxoff) {
-			ixon = IXON;
-			ixoff = IXOFF;
-		} else {
-			ixon = 0;
-			ixoff = 0;
-		}
+        if (xonxoff) {
+            ixon = IXON;
+            ixoff = IXOFF;
+        } else {
+            ixon = 0;
+            ixoff = 0;
+        }
 
-		if (rtscts) {
-			crtscts = CRTSCTS;
-		} else {
-			crtscts = 0;
-		}
+        if (rtscts) {
+            crtscts = CRTSCTS;
+        } else {
+            crtscts = 0;
+        }
 
-		if (error) {
-			break;
-		}
+        if (error) {
+            break;
+        }
 
-	    if (!isatty(fd)) {
+        if (!isatty(fd)) {
             errno = ENOTTY;
             diminuto_perror("diminuto_serial_set: isatty");
             break;
@@ -198,34 +198,34 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
         tios.c_cflag |= crtscts;
 
         if (bitspersecond >= 0) {
-			if (cfsetospeed(&tios, speed) < 0) {
-				diminuto_perror("diminuto_serial_set: cfsetospeed");
-				break;
-			}
-			if (cfsetispeed(&tios, speed) < 0) {
-				diminuto_perror("diminuto_serial_set: cfsetispeed");
-				break;
-			}
+            if (cfsetospeed(&tios, speed) < 0) {
+                diminuto_perror("diminuto_serial_set: cfsetospeed");
+                break;
+            }
+            if (cfsetispeed(&tios, speed) < 0) {
+                diminuto_perror("diminuto_serial_set: cfsetispeed");
+                break;
+            }
         }
 
         tios.c_cc[VTIME] = 0;
         tios.c_cc[VMIN] = 1;
 
         if (tcsetattr(fd, TCSANOW, &tios) < 0) {
-        	diminuto_perror("diminuto_serial_set: tcsetattr");
-        	break;
+            diminuto_perror("diminuto_serial_set: tcsetattr");
+            break;
         }
 
         if (tcflush(fd, TCIOFLUSH) < 0) {
-        	diminuto_perror("diminuto_serial_set: tcflush");
-        	/* Not fatal. */
+            diminuto_perror("diminuto_serial_set: tcflush");
+            /* Not fatal. */
         }
 
         rc = 0;
 
-	} while (0);
+    } while (0);
 
-	return rc;
+    return rc;
 }
 
 int diminuto_serial_raw(int fd)
@@ -235,7 +235,7 @@ int diminuto_serial_raw(int fd)
 
     do {
 
-	    if (!isatty(fd)) {
+        if (!isatty(fd)) {
             errno = EINVAL;
             diminuto_perror("diminuto_serial_raw: isatty");
             break;
@@ -279,7 +279,7 @@ int diminuto_serial_unbuffered(FILE * fp)
 
     do {
 
-	    if (!isatty(fileno(fp))) {
+        if (!isatty(fileno(fp))) {
             errno = EINVAL;
             diminuto_perror("diminuto_serial_unbuffered: isatty");
             break;
@@ -299,86 +299,86 @@ int diminuto_serial_unbuffered(FILE * fp)
 
 int diminuto_serial_wait(int fd)
 {
-	int rc = -1;
+    int rc = -1;
 
-	do {
+    do {
 
-	    if (!isatty(fd)) {
+        if (!isatty(fd)) {
             errno = EINVAL;
             diminuto_perror("diminuto_serial_wait: isatty");
             break;
         }
 
-	    if (ioctl(fd, TIOCMIWAIT, TIOCM_CD) < 0) {
+        if (ioctl(fd, TIOCMIWAIT, TIOCM_CD) < 0) {
             diminuto_perror("diminuto_serial_wait: ioctl(TIOCMIWAIT)");
             break;
-	    }
+        }
 
-	    /*
-	     * Ubuntu 16.04.4 "xenial"
-	     * Linux 4.13.0-39
-	     * Navisys GR-701W
-	     * U-Blox 7
-	     * Prolific pl2303
-	     * ioctl TIOCMIWAIT TIOCM_CD requires HUPCL modem control be enabled.
-	     * ioctl TIOCMIWAIT TIOCM_CD appears to work on a /dev/ttyUSB serial device.
-	     * ioctl TIOCGICOUNT fails errno=25 ENOTTY "Inappropriate ioctl for device".
-	     */
+        /*
+         * Ubuntu 16.04.4 "xenial"
+         * Linux 4.13.0-39
+         * Navisys GR-701W
+         * U-Blox 7
+         * Prolific pl2303
+         * ioctl TIOCMIWAIT TIOCM_CD requires HUPCL modem control be enabled.
+         * ioctl TIOCMIWAIT TIOCM_CD appears to work on a /dev/ttyUSB serial device.
+         * ioctl TIOCGICOUNT fails errno=25 ENOTTY "Inappropriate ioctl for device".
+         */
 
-		rc = 0;
+        rc = 0;
 
-	} while (0);
+    } while (0);
 
-	return rc;
+    return rc;
 }
 
 int diminuto_serial_status(int fd)
 {
-	int rc = -1;
-	int status = -2;
+    int rc = -1;
+    int status = -2;
 
-	do {
+    do {
 
-	    if (!isatty(fd)) {
+        if (!isatty(fd)) {
             errno = EINVAL;
             diminuto_perror("diminuto_serial_status: isatty");
             break;
         }
 
-	    if (ioctl(fd, TIOCMGET, &status) < 0) {
+        if (ioctl(fd, TIOCMGET, &status) < 0) {
             diminuto_perror("diminuto_serial_status: ioctl(TIOCMGET)");
             break;
-	    }
+        }
 
-		rc = !!(status & TIOCM_CD);
+        rc = !!(status & TIOCM_CD);
 
-	} while (0);
+    } while (0);
 
-	return rc;
+    return rc;
 
 }
 
 int diminuto_serial_available(int fd)
 {
-	int rc = -1;
-	int bytes = -2;
+    int rc = -1;
+    int bytes = -2;
 
-	do {
+    do {
 
-		if (!isatty(fd)) {
+        if (!isatty(fd)) {
             errno = EINVAL;
             diminuto_perror("diminuto_serial_available: isatty");
             break;
         }
 
-	    if (ioctl(fd, FIONREAD, &bytes) < 0) {
+        if (ioctl(fd, FIONREAD, &bytes) < 0) {
             diminuto_perror("diminuto_serial_available: ioctl(FIONREAD)");
             break;
-	    }
+        }
 
-	    rc = bytes;
+        rc = bytes;
 
-	} while (0);
+    } while (0);
 
-	return rc;
+    return rc;
 }

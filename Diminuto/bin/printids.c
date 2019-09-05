@@ -21,14 +21,14 @@
 
 int main(int argc, char * argv[])
 {
-	pid_t pid;
-	pid_t sid;
-	pid_t ppid;
-	pid_t psid;
-	pid = getpid();
-	sid = getsid(0);
-	ppid = getppid();
-	psid = getsid(ppid);
-	printf("%d %d %d %d\n", pid, sid, ppid, psid);
-	return ((pid >= 0) && (sid >= 0) && (ppid >= 0) && (psid >= 0)) ? 0 : 1;
+    pid_t pid;
+    pid_t sid;
+    pid_t ppid;
+    pid_t psid;
+    pid = getpid();
+    sid = getsid(0);
+    ppid = getppid();
+    psid = getsid(ppid);
+    printf("%d %d %d %d\n", pid, sid, ppid, psid);
+    return ((pid >= 0) && (sid >= 0) && (ppid >= 0) && (psid >= 0)) ? 0 : 1;
 }

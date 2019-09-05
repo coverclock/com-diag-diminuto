@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
         ASSERT(rc >= 0);
         if (rc > 0) { break; }
 
-	}
+    }
 
     rc = diminuto_pipe_check();
     ASSERT(rc == 0);

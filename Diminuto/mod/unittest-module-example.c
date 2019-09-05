@@ -16,18 +16,18 @@ DIMINUTO_MODULE_DTOR(diminuto_module_example_dtor);
 
 int diminuto_module_example_ctor(void)
 {
-	fputs("diminuto_module_example_ctor\n", stderr);
-	return 0;
+    fputs("diminuto_module_example_ctor\n", stderr);
+    return 0;
 }
 
 int diminuto_module_example_dtor(void)
 {
-	fputs("diminuto_module_example_dtor\n", stderr);
-	return 0;
+    fputs("diminuto_module_example_dtor\n", stderr);
+    return 0;
 }
 
 int diminuto_module_example_function(int input) {
-	return ~input;
+    return ~input;
 }
 
 int diminuto_module_example_variable = 0xc0edbabe;

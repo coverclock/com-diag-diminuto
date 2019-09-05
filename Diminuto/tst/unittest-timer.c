@@ -92,10 +92,10 @@ int main(int argc, char ** argv)
         cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
         DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
-        	, rs, rday, rhour, rminute, rsecond, rtick
-        	, cs, cday, chour, cminute, csecond, ctick
-        	, ms, mday, mhour, mminute, msecond, mtick
-        	, delta
+            , rs, rday, rhour, rminute, rsecond, rtick
+            , cs, cday, chour, cminute, csecond, ctick
+            , ms, mday, mhour, mminute, msecond, mtick
+            , delta
         );
     }
 

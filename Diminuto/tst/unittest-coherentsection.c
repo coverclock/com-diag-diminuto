@@ -25,88 +25,88 @@ static const int LIMIT = 100;
 
 static void * body(void * arg)
 {
-	int done = 0;
+    int done = 0;
 
-	while (!done) {
+    while (!done) {
 
-		DIMINUTO_COHERENT_SECTION_BEGIN;
+        DIMINUTO_COHERENT_SECTION_BEGIN;
 
-			if (shared >= LIMIT) {
-				COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				done = !0;
-			} else if ((shared % 2) == (intptr_t)arg) {
-				COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
-				++shared;
-			} else {
-				diminuto_yield();
-			}
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+            } else {
+                diminuto_yield();
+            }
 
-		DIMINUTO_COHERENT_SECTION_END;
+        DIMINUTO_COHERENT_SECTION_END;
 
-	}
+    }
 
-	return (void *)arg;
+    return (void *)arg;
 }
 
 int main(void)
 {
 
-	{
-		TEST();
+    {
+        TEST();
 
-		DIMINUTO_COHERENT_SECTION_BEGIN;
+        DIMINUTO_COHERENT_SECTION_BEGIN;
 
-			int temp = 0;
+            int temp = 0;
 
-		DIMINUTO_COHERENT_SECTION_END;
+        DIMINUTO_COHERENT_SECTION_END;
 
-		DIMINUTO_COHERENT_SECTION_BEGIN;
+        DIMINUTO_COHERENT_SECTION_BEGIN;
 
-			int temp = 1;
+            int temp = 1;
 
-			DIMINUTO_COHERENT_SECTION_BEGIN;
+            DIMINUTO_COHERENT_SECTION_BEGIN;
 
-				int temp = 2;
+                int temp = 2;
 
-			DIMINUTO_COHERENT_SECTION_END;
+            DIMINUTO_COHERENT_SECTION_END;
 
-			ASSERT(temp == 1);
+            ASSERT(temp == 1);
 
-		DIMINUTO_COHERENT_SECTION_END;
+        DIMINUTO_COHERENT_SECTION_END;
 
-		STATUS();
-	}
+        STATUS();
+    }
 
-	{
-		int rc;
-		pthread_t odd;
-		pthread_t even;
-		void * final;
+    {
+        int rc;
+        pthread_t odd;
+        pthread_t even;
+        void * final;
 
-		TEST();
+        TEST();
 
-		ASSERT(shared == 0);
+        ASSERT(shared == 0);
 
-		rc = pthread_create(&odd, 0, body, (void *)1);
-		ASSERT(rc == 0);
+        rc = pthread_create(&odd, 0, body, (void *)1);
+        ASSERT(rc == 0);
 
-		rc = pthread_create(&even, 0, body, (void *)0);
-		ASSERT(rc == 0);
+        rc = pthread_create(&even, 0, body, (void *)0);
+        ASSERT(rc == 0);
 
-		final = (void *)~0;
-		rc = pthread_join(odd, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)1);
+        final = (void *)~0;
+        rc = pthread_join(odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
 
-		final = (void *)~0;
-		rc = pthread_join(even, &final);
-		ASSERT(rc == 0);
-		ASSERT(final == (void *)0);
+        final = (void *)~0;
+        rc = pthread_join(even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
 
-		ASSERT(shared == LIMIT);
+        ASSERT(shared == LIMIT);
 
-		STATUS();
-	}
+        STATUS();
+    }
 
     EXIT();
 }

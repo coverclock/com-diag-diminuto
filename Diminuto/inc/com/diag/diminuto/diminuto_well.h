@@ -32,9 +32,9 @@ typedef diminuto_list_t diminuto_well_t;
  * Note that the data field of nodes on the USED list have no meaning.
  */
 enum DiminutoWellIndex {
-	DIMINUTO_WELL_FREE = 0,
-	DIMINUTO_WELL_USED = 1,
-	DIMINUTO_WELL_NODE = 2,
+    DIMINUTO_WELL_FREE = 0,
+    DIMINUTO_WELL_USED = 1,
+    DIMINUTO_WELL_NODE = 2,
 };
 
 /**
@@ -95,7 +95,7 @@ extern int diminuto_well_free(diminuto_well_t * wellp, void * pointer);
  * @return !0 if the well is full, 0 otherwise.
  */
 static inline int diminuto_well_isfull(const diminuto_well_t * wellp) {
-	return diminuto_list_isempty(&wellp[DIMINUTO_WELL_USED]);
+    return diminuto_list_isempty(&wellp[DIMINUTO_WELL_USED]);
 }
 
 /**
@@ -104,7 +104,7 @@ static inline int diminuto_well_isfull(const diminuto_well_t * wellp) {
  * @return !0 if the well is empty, 0 otherwise.
  */
 static inline int diminuto_well_isempty(const diminuto_well_t * wellp) {
-	return diminuto_list_isempty(&wellp[DIMINUTO_WELL_FREE]);
+    return diminuto_list_isempty(&wellp[DIMINUTO_WELL_FREE]);
 }
 
 #endif

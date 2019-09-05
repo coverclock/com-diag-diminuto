@@ -67,7 +67,7 @@ void * diminuto_buffer_malloc(size_t size)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
+        ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
 
     DIMINUTO_CRITICAL_SECTION_END;
 
@@ -86,7 +86,7 @@ void diminuto_buffer_free(void * ptr)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
+        diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
 
     DIMINUTO_CRITICAL_SECTION_END;
 }
@@ -106,12 +106,12 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
         size_t actual;
         size_t requested;
 
-    	buffer = containerof(diminuto_buffer_t, payload, ptr);
+        buffer = containerof(diminuto_buffer_t, payload, ptr);
 
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-        	actual = buffer_pool_effective(&meta, buffer->header.item);
-        	(void)buffer_pool_hash(&meta, size, &requested);
+            actual = buffer_pool_effective(&meta, buffer->header.item);
+            (void)buffer_pool_hash(&meta, size, &requested);
 
         DIMINUTO_CRITICAL_SECTION_END;
 
@@ -194,18 +194,18 @@ void diminuto_buffer_fini(void)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
+        diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
 
     DIMINUTO_CRITICAL_SECTION_END;
 }
 
 size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 {
-	size_t result;
+    size_t result;
 
-	DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-		result = diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&meta, nmemb, size);
+        result = diminuto_buffer_pool_prealloc((diminuto_buffer_pool_t *)&meta, nmemb, size);
 
     DIMINUTO_CRITICAL_SECTION_END;
 
@@ -214,11 +214,11 @@ size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 
 size_t diminuto_buffer_log(void)
 {
-	size_t result;
+    size_t result;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    	result = diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&meta);
+        result = diminuto_buffer_pool_log((diminuto_buffer_pool_t *)&meta);
 
     DIMINUTO_CRITICAL_SECTION_END;
 
@@ -231,16 +231,16 @@ int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-		result = (poolp != (diminuto_buffer_pool_t *)0);
-		if (result) {
-			meta.count = poolp->count;
-			meta.sizes = poolp->sizes;
-			meta.pool = (diminuto_buffer_t **)(poolp->pool);
-		} else {
-			meta.count = countof(POOL);
-			meta.sizes = POOL;
-			meta.pool = pool;
-		}
+        result = (poolp != (diminuto_buffer_pool_t *)0);
+        if (result) {
+            meta.count = poolp->count;
+            meta.sizes = poolp->sizes;
+            meta.pool = (diminuto_buffer_t **)(poolp->pool);
+        } else {
+            meta.count = countof(POOL);
+            meta.sizes = POOL;
+            meta.pool = pool;
+        }
 
     DIMINUTO_CRITICAL_SECTION_END;
 

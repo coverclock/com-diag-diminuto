@@ -24,7 +24,7 @@
 
 int main(void)
 {
-	printf("%lld\n", (long long int)diminuto_frequency());
+    printf("%lld\n", (long long int)diminuto_frequency());
 
-	return 0;
+    return 0;
 }

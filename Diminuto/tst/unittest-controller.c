@@ -24,12 +24,12 @@
 
 static int16_t felapsed(void)
 {
-	return diminuto_frequency_ticks2units(diminuto_time_elapsed(), 1000LL);
+    return diminuto_frequency_ticks2units(diminuto_time_elapsed(), 1000LL);
 }
 
 static int16_t fdelay(int16_t ms)
 {
-	return diminuto_delay(diminuto_frequency_units2ticks(ms, 1000LL), 0);
+    return diminuto_delay(diminuto_frequency_units2ticks(ms, 1000LL), 0);
 }
 
 static diminuto_controller_output_t fcontrol(const diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp, diminuto_controller_input_t target, diminuto_controller_output_t output, diminuto_controller_input_t threshold, int limit)

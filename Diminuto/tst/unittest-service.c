@@ -58,8 +58,8 @@ int main(int argc, char ** argv)
     ASSERT(rc >= 0);
 
     if (rc > 0) {
-    	ASSERT(getpid() == pid0);
-    	EXIT();
+        ASSERT(getpid() == pid0);
+        EXIT();
     }
 
     pid2 = getpid();

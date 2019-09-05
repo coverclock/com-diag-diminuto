@@ -14,25 +14,25 @@
 #include "com/diag/diminuto/diminuto_tree.h"
 
 struct Alpha {
-	char * key;
-	char * value;
-	diminuto_list_t list;
+    char * key;
+    char * value;
+    diminuto_list_t list;
 };
 
 struct Beta {
-	char * key;
-	char * value;
-	diminuto_tree_t tree;
+    char * key;
+    char * value;
+    diminuto_tree_t tree;
 };
 
 int main(void)
 {
-	struct Alpha alpha;
-	diminuto_list_t * listp;
-	struct Beta beta;
-	diminuto_tree_t * treep;
-	/**/
-	listp = &(alpha.list);
+    struct Alpha alpha;
+    diminuto_list_t * listp;
+    struct Beta beta;
+    diminuto_tree_t * treep;
+    /**/
+    listp = &(alpha.list);
     ASSERT(diminuto_containerof(struct Alpha, list, listp) == &alpha);
     ASSERT(containerof(struct Alpha, list, listp) == &alpha);
     /**/

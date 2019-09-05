@@ -84,10 +84,10 @@ extern diminuto_log_mask_t diminuto_log_mask;
 
 #if DIMINUTO_LOG_ERROR_ENABLE
 #	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
-		DIMINUTO_LOG_EMIT(\
-				DIMINUTO_LOG_MASK(DIMINUTO_LOG_LAYER, DIMINUTO_PRIORITY_ERROR), \
-				LOG_ERR, _FORMAT_, __VA_ARGS__)
+        DIMINUTO_LOG_EMIT(\
+                DIMINUTO_LOG_MASK(DIMINUTO_LOG_LAYER, DIMINUTO_PRIORITY_ERROR), \
+                LOG_ERR, _FORMAT_, __VA_ARGS__)
 #else
 #	define DIMINUTO_LOG_ERROR(_FORMAT_, ...) \
-		((void)0)
+        ((void)0)
 #endif
