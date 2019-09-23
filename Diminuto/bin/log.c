@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
     diminuto_log_mask_t mask = DIMINUTO_LOG_MASK_DEFAULT;
     int priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
     int unconditional = 0;
+    int suppress = 0;
     char * buffer = (char *)0;
     size_t length = 256;
     char * endptr = (char *)0;
@@ -51,9 +52,13 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "B:N:O:F:SUEacewnid?")) >= 0) {
+    while ((opt = getopt(argc, argv, "B:IN:O:F:SUEacewnid?")) >= 0) {
 
         switch (opt) {
+
+        case 'B':
+            length = strtoul(optarg, &endptr, 0);
+            break;
 
         case 'E':
             mask = DIMINUTO_LOG_MASK_EMERGENCY;
@@ -64,8 +69,8 @@ int main(int argc, char * argv[])
             facility = strtoul(optarg, &endptr, 0);
             break;
 
-        case 'B':
-            length = strtoul(optarg, &endptr, 0);
+        case 'I':
+            suppress = !0;
             break;
 
         case 'N':
@@ -121,7 +126,7 @@ int main(int argc, char * argv[])
 
         case '?':
         default:
-            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -U ] MESSAGE ... \n", program);
+            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -I ] [ -U ] MESSAGE ... \n", program);
             return 1;
             break;
 
@@ -149,24 +154,28 @@ int main(int argc, char * argv[])
 
     }
 
-    buffer = (char *)malloc(length);
-    if (buffer == (char *)0) {
-        diminuto_perror("malloc");
-        return 1;
-    }
+    if (!suppress) {
 
-    /*
-     * It's important to consume the standard input stream even if logging
-     * is not enabled so as to not send the upstream pipeline a SIGPIPE.
-     */
-
-    while (fgets(buffer, length, stdin) != (char *)0) {
-        if (unconditional || ((diminuto_log_mask & mask) != 0)) {
-            diminuto_log_log(priority, "%s", buffer);
+        buffer = (char *)malloc(length);
+        if (buffer == (char *)0) {
+            diminuto_perror("malloc");
+            return 1;
         }
-    }
 
-    free(buffer);
+        /*
+         * It's important to consume the standard input stream even if logging
+         * is not enabled so as to not send the upstream pipeline a SIGPIPE.
+         */
+
+        while (fgets(buffer, length, stdin) != (char *)0) {
+            if (unconditional || ((diminuto_log_mask & mask) != 0)) {
+                diminuto_log_log(priority, "%s", buffer);
+            }
+        }
+
+        free(buffer);
+
+    }
 
     return 0;
 }

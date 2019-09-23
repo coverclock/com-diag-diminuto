@@ -7,10 +7,10 @@
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
 #
-#	make all						# Build libraries, unit tests, executable programs.
-#	make clean						# Remove OUT directory for current TARGET.
-#	make pristine					# Remove all OUT directories.
-#	sudo make install				# Install libraries, binaries, headers under /usr/local.
+#	make all				# Build libraries, unit tests, executable programs.
+#	make clean				# Remove OUT directory for current TARGET.
+#	make pristine				# Remove all OUT directories.
+#	sudo make install			# Install libraries, binaries, headers under /usr/local.
 #	. out/host/bin/setup			# Sets up PATH and LD_LIBRARY_PATH after build.
 #
 
@@ -23,8 +23,8 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	56# API changes that may require that applications be modified.
-MINOR				:=	6# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	7# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
