@@ -180,6 +180,7 @@ gcc 6.3.0
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
+* headless - display contents of an observation file as it changes.
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
