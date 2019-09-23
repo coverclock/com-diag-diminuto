@@ -234,7 +234,8 @@ together specifically for this purpose.)
 
 # Soundtrack
 
-The Highwomen, "The Chain" (Fleetwood Mac), <https://youtu.be/jVLNB3d-2cA>
+The Highwomen, "The Chain" (Fleetwood Mac)
+<https://youtu.be/jVLNB3d-2cA>
 
 # Remarks
 
