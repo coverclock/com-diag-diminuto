@@ -23,9 +23,15 @@
 # The optional LIMIT parameter is to deal with the vagaries of various
 # terminal emulators; I'm lookin' at you, Chromebook's Beagle Term.
 #
+# This script traps SIGHUP and creates a timestamped copy of the next
+# headless file being watched in the same directory. A HUP (hangup)
+# signal can be easily sent from the bash command line by suspending the
+# script (
+#
 # DEPENDENCIES
 #
 # sudo apt-get install inotify-tools
+#
 
 PROGRAM=$(basename ${0})
 HEADLESS=${1:-"/dev/null"}
@@ -35,12 +41,21 @@ CANONICAL=$(readlink -f ${HEADLESS})
 DIRECTORY=$(dirname ${CANONICAL})
 FILE=$(basename ${CANONICAL})
 TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
+CHECKPOINT=N
 
 test -d ${DIRECTORY} || exit 1
+
+trap "CHECKPOINT=Y" SIGHUP
 
 clear
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
   if [[ "${MOVED}" == "${TARGET}" ]]; then
+    if [[ "${CHECKPOINT}" == "Y" ]]; then
+	TEMPORARY=$(mktemp ${CANONICAL}-XXXXXXXXXX)
+	cp ${CANONICAL} ${TEMPORARY}
+	mv ${TEMPORARY} ${CANONICAL}-$(date -u '+%Y%m%dT%H%M%SZ')
+	CHECKPOINT=N
+    fi
     clear
     awk '
       begin   { inp="INP [   ]"; out="OUT [   ]"; arm=1; }
