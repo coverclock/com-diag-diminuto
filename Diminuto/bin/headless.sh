@@ -42,10 +42,13 @@ DIRECTORY=$(dirname ${CANONICAL})
 FILE=$(basename ${CANONICAL})
 TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
 CHECKPOINT=N
+SELF=$$
 
-test -d ${DIRECTORY} || exit 1
+test -d ${DIRECTORY} || exit 2
 
+echo ${HEADLESS} > ${PROGRAM}.${SELF}
 trap "CHECKPOINT=Y" SIGHUP
+trap "rm -f ${PROGRAM}.${SELF}" EXIT
 
 clear
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
@@ -67,4 +70,4 @@ while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
   fi
 done
 
-exit 0
+exit 1
