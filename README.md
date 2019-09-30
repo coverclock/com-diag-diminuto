@@ -181,6 +181,7 @@ gcc 6.3.0
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
 * headless - display contents of an observation file as it changes.
+* headup - sends a SIGHUP (hangup signal) to a running headless script.
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
