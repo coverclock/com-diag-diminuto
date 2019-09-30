@@ -35,7 +35,8 @@
 
 PROGRAM=$(basename ${0})
 HEADLESS=${1:-"/dev/null"}
-LIMIT=${2:-$(($(stty size | cut -d ' ' -f 1) - 2))}
+PIDFIL=${2:-"./${PROGRAM}.pid"}
+LIMIT=${3:-$(($(stty size | cut -d ' ' -f 1) - 2))}
 
 CANONICAL=$(readlink -f ${HEADLESS})
 DIRECTORY=$(dirname ${CANONICAL})
@@ -46,9 +47,9 @@ SELF=$$
 
 test -d ${DIRECTORY} || exit 2
 
-echo ${HEADLESS} > ${PROGRAM}.${SELF}
+echo ${SELF} > ${PIDFIL}
 trap "CHECKPOINT=Y" SIGHUP
-trap "rm -f ${PROGRAM}.${SELF}" EXIT
+trap "rm -f ${PIDFIL}" EXIT
 
 clear
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
