@@ -343,25 +343,12 @@ may require you be root).
     cd src
     git clone https://github.com/coverclock/com-diag-diminuto
     cd com-diag-diminuto/Diminuto
-    make pristine depend all
-    . out/host/bin/setup
-
-Important safety tip: on some (but not all) platforms I see the build fail
-because a generated header file (diminuto_release.h, diminuto_revision.h,
-or diminuto_vintage.h) is missing. This is a dependency issue that so far
-has eluded me. But replacing
-
-    make pristine depend all
-
-with
-
     make pristine
     make depend
     make all
+    . out/host/bin/setup
 
-always seems to work in those cases.
-
-Install Diminuto library and utilities in /usr/local.
+Optionally install Diminuto headers, library, and utilities in /usr/local.
 
     sudo make install
 
