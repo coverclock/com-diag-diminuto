@@ -239,6 +239,21 @@ together specifically for this purpose.)
 The Highwomen, "The Chain" (Fleetwood Mac)
 <https://youtu.be/jVLNB3d-2cA>
 
+Jungle, "Busy Earnin'"
+<https://youtu.be/BcsfftwLUf0>
+
+Swing Out Sister, "Not Gonna Change"
+<https://youtu.be/G4AQIF92slc>
+
+Giffords Lane, "Skyfall" (Adele) and "Kashmir" (Led Zeppelin),
+<https://youtu.be/8HnvhKDXaog>
+
+St. Vincent and Dua Lipa, "Masseducation" and "One Kiss"
+<https://youtu.be/9tw2LMnxvW0>
+
+Heart, "Stairway to Heaven" (Led Zeppelin)
+<https://youtu.be/LFxOaDeJmXk>
+
 # Remarks
 
 Diminuto started out many years ago as a project to build a minimal
