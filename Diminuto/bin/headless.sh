@@ -35,17 +35,21 @@
 
 PROGRAM=$(basename ${0})
 HEADLESS=${1:-"/dev/null"}
-LIMIT=${2:-$(($(stty size | cut -d ' ' -f 1) - 2))}
+PIDFIL=${2:-"./${PROGRAM}.pid"}
+LIMIT=${3:-$(($(stty size | cut -d ' ' -f 1) - 2))}
 
 CANONICAL=$(readlink -f ${HEADLESS})
 DIRECTORY=$(dirname ${CANONICAL})
 FILE=$(basename ${CANONICAL})
 TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
 CHECKPOINT=N
+SELF=$$
 
-test -d ${DIRECTORY} || exit 1
+test -d ${DIRECTORY} || exit 2
 
+echo ${SELF} > ${PIDFIL}
 trap "CHECKPOINT=Y" SIGHUP
+trap "rm -f ${PIDFIL}" EXIT
 
 clear
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
@@ -67,4 +71,4 @@ while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
   fi
 done
 
-exit 0
+exit 1
