@@ -238,6 +238,15 @@ together specifically for this purpose.)
 The Highwomen, "The Chain" (Fleetwood Mac)
 <https://youtu.be/jVLNB3d-2cA>
 
+Michael Kiwanuka, "Love & Hate"
+<https://youtu.be/aMZ4QL0orw0>
+
+Pomplamoose, "Video Killed the Radio Star" (Buggles)
+<https://youtu.be/tk4_SMI0jVc>
+
+Doctor Who Cast and Crew, "500 Miles" (The Proclaimers)
+<https://youtu.be/2c6qENWh2jQ>
+
 # Remarks
 
 Diminuto started out many years ago as a project to build a minimal
