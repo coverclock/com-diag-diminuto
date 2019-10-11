@@ -257,7 +257,7 @@ Swing Out Sister, "Not Gonna Change"
 Giffords Lane, "Skyfall" (Adele) and "Kashmir" (Led Zeppelin),
 <https://youtu.be/8HnvhKDXaog>
 
-St. Vincent and Dua Lipa, "Masseducation" and "One Kiss"
+St. Vincent and Dua Lipa, "Masseducation" (St. Vincent) and "One Kiss" (Dua Lipa)
 <https://youtu.be/9tw2LMnxvW0>
 
 Heart, "Stairway to Heaven" (Led Zeppelin)
