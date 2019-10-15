@@ -239,6 +239,15 @@ together specifically for this purpose.)
 The Highwomen, "The Chain" (Fleetwood Mac)
 <https://youtu.be/jVLNB3d-2cA>
 
+Michael Kiwanuka, "Love & Hate"
+<https://youtu.be/aMZ4QL0orw0>
+
+Pomplamoose, "Video Killed the Radio Star" (Buggles)
+<https://youtu.be/tk4_SMI0jVc>
+
+Doctor Who Cast and Crew, "500 Miles" (The Proclaimers)
+<https://youtu.be/2c6qENWh2jQ>
+
 Jungle, "Busy Earnin'"
 <https://youtu.be/BcsfftwLUf0>
 
@@ -248,7 +257,7 @@ Swing Out Sister, "Not Gonna Change"
 Giffords Lane, "Skyfall" (Adele) and "Kashmir" (Led Zeppelin),
 <https://youtu.be/8HnvhKDXaog>
 
-St. Vincent and Dua Lipa, "Masseducation" and "One Kiss"
+St. Vincent and Dua Lipa, "Masseducation" (St. Vincent) and "One Kiss" (Dua Lipa)
 <https://youtu.be/9tw2LMnxvW0>
 
 Heart, "Stairway to Heaven" (Led Zeppelin)
@@ -343,25 +352,12 @@ may require you be root).
     cd src
     git clone https://github.com/coverclock/com-diag-diminuto
     cd com-diag-diminuto/Diminuto
-    make pristine depend all
-    . out/host/bin/setup
-
-Important safety tip: on some (but not all) platforms I see the build fail
-because a generated header file (diminuto_release.h, diminuto_revision.h,
-or diminuto_vintage.h) is missing. This is a dependency issue that so far
-has eluded me. But replacing
-
-    make pristine depend all
-
-with
-
     make pristine
     make depend
     make all
+    . out/host/bin/setup
 
-always seems to work in those cases.
-
-Install Diminuto library and utilities in /usr/local.
+Optionally install Diminuto headers, library, and utilities in /usr/local.
 
     sudo make install
 
