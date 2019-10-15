@@ -45,6 +45,7 @@ TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
 CHECKPOINT=N
 SELF=$$
 
+test -n "$(which inotifywait)" || exit 2
 test -d ${DIRECTORY} || exit 2
 
 echo ${SELF} > ${PIDFIL}
