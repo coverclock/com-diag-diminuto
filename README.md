@@ -68,18 +68,18 @@ Ubuntu 18.04 "bionic"
 Linux 4.15.0    
 gcc 7.3.0    
 
-"Lead"  
-Raspberry Pi 3 Model B  
-ARMv7 64-bit    
-Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4  
+"Bronze"  
+Raspberry Pi 2B    
+ARMv7 32-bit    
+Broadcom BCM2836 Cortex-A7 @ 900MHz x 4  
 Raspbian 8.0 "jessie"  
 Linux 4.4.34  
 gcc 4.9.2    
 
-"Bronze"  
-Raspberry Pi 2 Model B    
-ARMv7 32-bit    
-Broadcom BCM2836 Cortex-A7 @ 900MHz x 4  
+"Lead"  
+Raspberry Pi 3B  
+ARMv7 64-bit    
+Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4  
 Raspbian 8.0 "jessie"  
 Linux 4.4.34  
 gcc 4.9.2    
@@ -99,6 +99,14 @@ Broadcom BCM2837B0 Cortex-A53 @ 1.4GHz x 4
 Raspbian 9.4 "stretch"    
 Linux 4.14.34    
 gcc 6.3.0    
+
+"Rhodium"    
+Raspberry Pi 4B    
+ARMv8 64-bit    
+Broadcom BCM2711 Cortex-A72 @ 1.5GHz x 4    
+Raspbian 10 "Buster"    
+Linux 4.19.58    
+gcc 8.3.0    
 
 # Features
 
