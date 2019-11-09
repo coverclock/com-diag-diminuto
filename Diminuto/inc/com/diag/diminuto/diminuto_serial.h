@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -146,5 +146,14 @@ extern int diminuto_serial_status(int fd);
  * @return >=0 for bytes available to be read, <0 if an error occurred.
  */
 extern int diminuto_serial_available(int fd);
+
+/**
+ * Returns true if the specified device descriptor identifies a device that
+ * is a terminal (whatever the operating system thinks that means), false
+ * otherwise.
+ * @param fd is the file descriptor.
+ * @return !0 if the device is a terminal, 0 otherwise.
+ */
+extern int diminuto_serial_valid(int fd);
 
 #endif

@@ -382,3 +382,8 @@ int diminuto_serial_available(int fd)
 
     return rc;
 }
+
+int diminuto_serial_valid(int fd)
+{
+    return !!isatty(fd);
+}
