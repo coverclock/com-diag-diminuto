@@ -9,13 +9,17 @@
  */
 
 #include "com/diag/diminuto/diminuto_observation.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <sys/param.h>
 #include <errno.h>
 #include <stdlib.h>
 
-static const char SUFFIX[] = "XXXXXX";
+static const char SUFFIX[] = "-" "XXXXXX";
+
+static const char TIMESTAMP[] = "-" "YYYYMMDD" "T" "HHMMSS" "Z" "UUUUUU";
 
 FILE * diminuto_observation_create(const char * path, char ** tempp)
 {
@@ -87,7 +91,6 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
 
         path = strdup(*tempp);
         if (path == (char *)0) {
-            errno = EFAULT;
             diminuto_perror("diminuto_observation_commit: strdup");
             break;
         }
@@ -97,7 +100,6 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
         rc = fclose(fp);
         if (rc != 0) {
             diminuto_perror("diminuto_observation_commit: fclose");
-            free(path);
             break;
         }
 
@@ -111,11 +113,9 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
         rc = rename(*tempp, path);
         if (rc < 0) {
             diminuto_perror("diminuto_observation_commit: rename");
-            free(path);
             break;
         }
 
-        free(path);
         free(*tempp);
 
         *tempp = (char *)0;
@@ -123,7 +123,80 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
 
     } while (0);
 
+    if (path != (char *)0) {
+        free(path);
+    }
+
     return fp;
+}
+
+FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
+{
+    FILE * result = (FILE *)0;
+    int rc = -1;
+    size_t length = 0;
+    char * path = (char *)0;
+    diminuto_sticks_t now = 0;
+    int year = 0;
+    int month = 0;
+    int day = 0;
+    int hour = 0;
+    int minute = 0;
+    int second = 0;
+    diminuto_ticks_t ticks = 0;
+
+    do {
+
+        length = strlen(*tempp);
+        if (!((sizeof(SUFFIX) < length) && (length < PATH_MAX))) {
+            errno = ENAMETOOLONG;
+            diminuto_perror("diminuto_observation_checkpoint: strlen");
+            break;
+        }
+
+        path = malloc(length - sizeof(SUFFIX) + sizeof(TIMESTAMP) + 1);
+        if (path == (char *)0) {
+            diminuto_perror("diminuto_observation_checkpoint: malloc");
+            break;
+        }
+
+        strncpy(path, *tempp, length - sizeof(SUFFIX) + 1);
+
+        now = diminuto_time_clock();
+        if (now < 0) {
+            break;
+        }
+
+        rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &ticks);
+        if (rc < 0) {
+            break;
+        }
+
+        ticks = diminuto_frequency_ticks2units(ticks, 1000000);
+
+        snprintf(&(path[length - sizeof(SUFFIX) + 1]), sizeof(TIMESTAMP), "-%04d%02d%02dT%02d%02d%02dZ%06ld", year, month, day, hour, minute, second, ticks);
+
+        rc = fflush(fp);
+        if (rc != 0) {
+            diminuto_perror("diminuto_observation_checkpoint: fflush");
+            /* Fall through. */
+        }
+
+        rc = link(*tempp, path);
+        if (rc < 0) {
+            diminuto_perror("diminuto_observation_checkpoint: link");
+            break;
+        }
+
+        result = fp;
+
+    } while (0);
+
+    if (path != (char *)0) {
+        free(path);
+    }
+
+    return result;
 }
 
 FILE * diminuto_observation_discard(FILE * fp, char ** tempp)

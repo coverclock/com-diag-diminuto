@@ -19,7 +19,7 @@
  * allocated temporary file name and and a FILE pointer open for read/write.
  * @param path is the path name that the file will have once committed.
  * @param tempp points to where a pointer to the temporary file name is returned.
- * @return an open FILE pointer if successful, <0 if an error occurred.
+ * @return an open FILE pointer or NULL if an error occurred.
  */
 extern FILE * diminuto_observation_create(const char * path, char ** tempp);
 
@@ -32,6 +32,16 @@ extern FILE * diminuto_observation_create(const char * path, char ** tempp);
  * @return NULL if successful, the original FILE pointer if an error occurred.
  */
 extern FILE * diminuto_observation_commit(FILE * fp, char ** tempp);
+
+/**
+ * Checkpoint the data in the temporary file by linking the file to a
+ * permanent file in the same directory whose name is a date and time
+ * stamp with microsecond resolution.
+ * @param fp is the open FILE pointer.
+ * @param tempp points to where a pointer to the temporary file name is stored.
+ * @return the open FILE pointer or NULL if an error occurred.
+ */
+extern FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp);
 
 /**
  * Discard the data in the temporary file by closing the open FILE pointer,
