@@ -56,20 +56,26 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
         fd = mkstemp(temp);
         if (fd < 0) {
             diminuto_perror("diminuto_observation_create: mkstemp");
-            free(temp);
             break;
         }
 
         fp = fdopen(fd, "r+");
         if (fp == (FILE *)0) {
             diminuto_perror("diminuto_observation_create: fdopen");
-            free(temp);
             break;
         }
 
         *tempp = temp;
 
     } while (0);
+
+    if (temp == (char *)0) {
+        /* Do nothing. */
+    } if (*tempp == temp) {
+        /* Do nothing. */
+    } else {
+        free(temp);
+    }
 
     return fp;
 }
