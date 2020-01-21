@@ -37,8 +37,6 @@
 #include <limits.h>
 #include <errno.h>
 #include <assert.h>
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_time.h"
 
 static const int DEBUG = 0;
 
@@ -77,9 +75,6 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     size_t dd = 0;
     size_t prior = 0;
     size_t length = 0;
-    diminuto_ticks_t atime = 0;
-    diminuto_ticks_t mtime = 0;
-    diminuto_ticks_t ctime = 0;
 
     /*
      * If we're at the root of the tree, initialize the path buffer.
@@ -135,10 +130,6 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
         perror("stat");
         return -2;
     }
-
-    atime = diminuto_frequency_seconds2ticks(status.st_atim.tv_sec, status.st_atim.tv_nsec, diminuto_time_frequency());
-    mtime = diminuto_frequency_seconds2ticks(status.st_mtim.tv_sec, status.st_mtim.tv_nsec, diminuto_time_frequency());
-    ctime = diminuto_frequency_seconds2ticks(status.st_ctim.tv_sec, status.st_ctim.tv_nsec, diminuto_time_frequency());
 
     /*
      * Display the file in the tree on stdout, and its attribytes
