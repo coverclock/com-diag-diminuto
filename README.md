@@ -252,32 +252,7 @@ together specifically for this purpose.)
 
 # Soundtrack
 
-The Highwomen, "The Chain" (Fleetwood Mac)
-<https://youtu.be/jVLNB3d-2cA>
-
-Michael Kiwanuka, "Love & Hate"
-<https://youtu.be/aMZ4QL0orw0>
-
-Pomplamoose, "Video Killed the Radio Star" (Buggles)
-<https://youtu.be/tk4_SMI0jVc>
-
-Doctor Who Cast and Crew, "500 Miles" (The Proclaimers)
-<https://youtu.be/2c6qENWh2jQ>
-
-Jungle, "Busy Earnin'"
-<https://youtu.be/BcsfftwLUf0>
-
-Swing Out Sister, "Not Gonna Change"
-<https://youtu.be/G4AQIF92slc>
-
-Giffords Lane, "Skyfall" (Adele) and "Kashmir" (Led Zeppelin),
-<https://youtu.be/8HnvhKDXaog>
-
-St. Vincent and Dua Lipa, "Masseducation" (St. Vincent) and "One Kiss" (Dua Lipa)
-<https://youtu.be/9tw2LMnxvW0>
-
-Heart, "Stairway to Heaven" (Led Zeppelin)
-<https://youtu.be/LFxOaDeJmXk>
+<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
 # Remarks
 

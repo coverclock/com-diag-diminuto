@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2019 Digital Aggregates Corporation
+# Copyright 2008-2020 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -23,8 +23,8 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	56# API changes that may require that applications be modified.
-MINOR				:=	10# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	11# Only functionality or features added with no legacy API changes.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -60,7 +60,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # faketime(1) utility to spoof the system time during builds.
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2019 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2020 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
