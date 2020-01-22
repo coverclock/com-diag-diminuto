@@ -101,10 +101,16 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
      */
 
     length = strnlen(name, PATH_MAX);
-    if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > PATH_MAX) {
+    if (length == 0) {
+        errno = EINVAL;
+        perror(name);
+        return -1;
+    } else if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > PATH_MAX) {
         errno = E2BIG;
         perror(path);
         return -1;
+    } else {
+        /* Do nothing. */
     }
 
     if (DEBUG) { fprintf(stderr, "%s@%d: \"%s\" [%zu] \"%s\" [%zu]\n", __FILE__, __LINE__, path, total, name, length); }
@@ -147,7 +153,13 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
         fputc(' ', stdout);
     }
     fputs(name, stdout);
-    if (S_ISDIR(status.st_mode)) { fputc('/', stdout); }
+    if (name[length - 1] == '/') {
+        /* Do nothing. */
+    } else if (!S_ISDIR(status.st_mode)) {
+        /* Do nothing. */
+    } else {
+        fputc('/', stdout);
+    }
     fputc('\n', stdout);
 
     fprintf(stderr,
