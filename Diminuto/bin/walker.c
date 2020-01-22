@@ -151,7 +151,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     fputc('\n', stdout);
 
     fprintf(stderr,
-        "%s %c 0%o (%d,%d) #%d [%d] %d:%d <%d,%d> [%d] [%d] [%d] %d.%09d %d.%09d %d.%09d\n"
+        "%s %c 0%o (%u,%u) #%lu [%u] %u:%u <%u,%u> [%lu] [%u] [%u] %ld.%09u %ld.%09u %ld.%09u\n"
         , path
         , classify(status.st_mode)
         , (status.st_mode & ~S_IFMT)
