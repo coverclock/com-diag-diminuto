@@ -218,6 +218,7 @@ gcc 9.2.1
 * timesource - produce concise timestamp stream.
 * usecsleep - sleep for a specified number of microseconds.
 * usectime - display the elapsed monotonic time in microseconds.
+* walker - my efforts at learning to walk the file system tree.
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
 
