@@ -151,22 +151,22 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     fputc('\n', stdout);
 
     fprintf(stderr,
-        "%s %c 0%o (%u,%u) #%lu [%u] %u:%u <%u,%u> [%lu] [%u] [%u] %ld.%09u %ld.%09u %ld.%09u\n"
+        "%s %c 0%o (%u,%u) #%lu [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu\n"
         , path
         , classify(status.st_mode)
         , (status.st_mode & ~S_IFMT)
         , major(status.st_dev), minor(status.st_dev)
         , status.st_ino
-        , status.st_nlink
+        , (size_t)status.st_nlink
         , status.st_uid
         , status.st_gid
         , major(status.st_rdev), minor(status.st_rdev)
-        , status.st_size
-        , status.st_blksize
-        , status.st_blocks * 512
-        , status.st_atim.tv_sec, status.st_atim.tv_nsec
-        , status.st_mtim.tv_sec, status.st_mtim.tv_nsec
-        , status.st_ctim.tv_sec, status.st_ctim.tv_nsec
+        , (size_t)status.st_size
+        , (size_t)status.st_blksize
+        , (size_t)(status.st_blocks * 512)
+        , status.st_atim.tv_sec, (unsigned long)status.st_atim.tv_nsec
+        , status.st_mtim.tv_sec, (unsigned long)status.st_mtim.tv_nsec
+        , status.st_ctim.tv_sec, (unsigned long)status.st_ctim.tv_nsec
     );
 
     /*
