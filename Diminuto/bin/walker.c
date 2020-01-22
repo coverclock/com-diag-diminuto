@@ -59,7 +59,14 @@ static char classify(mode_t mode)
     } else if (S_ISSOCK(mode)) {
         class = 's';
     } else {
-        class = '?';
+        mode = (mode & S_IFMT) >> 12 /* Fragile! */;
+        if ((0 <= mode) && (mode <= 9)) {
+            class = '0' + mode;
+        }  else if ((0xa <= mode) && (mode <= 0xf)) {
+            class = 'A' + mode - 0xa;
+        } else {
+            class = '?'; /* Impossible unless S_IFMT changes. */
+        }
     }
 
     return class;
@@ -127,7 +134,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
 
     rc = lstat(path, &status);
     if (rc < 0) {
-        perror("stat");
+        perror(path);
         return -2;
     }
 
@@ -170,7 +177,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
 
         dp = opendir(path);
         if (dp == (DIR *)0) {
-            perror("opendir");
+            perror(path);
             return -3;
         }
 
@@ -184,7 +191,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
             } else if (errno == 0) {
                 break;
             } else {
-                perror("readdir");
+                perror(path);
                 fc = -4;
                 break;
             }
@@ -203,7 +210,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
         }
 
         if (closedir(dp) < 0) {
-            perror("closedir");
+            perror(path);
             return -5;
         }
 
@@ -221,6 +228,12 @@ int main(int argc, char * argv[])
     int rc = 0;
     int ii = 0;
     char path[PATH_MAX] = { '\0', };
+
+#if 0
+    for (ii = 0x0; ii <= 0xf; ++ii) {
+        fprintf(stderr, "classify 0%06o '%c'\n", ii << 12, classify(ii << 12));
+    }
+#endif
 
     if (argc <= 1) {
         xc = walk(".", path, 0, 0);
