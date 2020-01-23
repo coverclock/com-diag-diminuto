@@ -162,13 +162,17 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     }
     fputc('\n', stdout);
 
+    /*
+     * N.B. Files with the same inode numbers are hardlinked to one
+     * another: they are aliases for the same file.
+     */
+
     fprintf(stderr,
-        "%s %c 0%o (%u,%u) #%lu [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu\n"
-        , path
+        "%lu '%c' 0%o (%u,%u) [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu \"%s\"\n"
+        , status.st_ino
         , classify(status.st_mode)
         , (status.st_mode & ~S_IFMT)
         , major(status.st_dev), minor(status.st_dev)
-        , status.st_ino
         , (size_t)status.st_nlink
         , status.st_uid
         , status.st_gid
@@ -179,6 +183,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
         , status.st_atim.tv_sec, (unsigned long)status.st_atim.tv_nsec
         , status.st_mtim.tv_sec, (unsigned long)status.st_mtim.tv_nsec
         , status.st_ctim.tv_sec, (unsigned long)status.st_ctim.tv_nsec
+        , path /* May contain spaces or other problematic characters. */
     );
 
     /*
