@@ -37,40 +37,9 @@
 #include <limits.h>
 #include <errno.h>
 #include <assert.h>
+#include "com/diag/diminuto/diminuto_fd.h"
 
 static const int DEBUG = 0;
-
-static char classify(mode_t mode)
-{
-    char class = '\0';
-
-    if (S_ISREG(mode)) {
-        class = '-';
-    } else if (S_ISDIR(mode)) {
-        class = 'd';
-    } else if (S_ISLNK(mode)) {
-        class = 'l';
-    } else if (S_ISCHR(mode)) {
-        class = 'c';
-    } else if (S_ISBLK(mode)) {
-        class = 'b';
-    } else if (S_ISFIFO(mode)) {
-        class = 'p';
-    } else if (S_ISSOCK(mode)) {
-        class = 's';
-    } else {
-        mode = (mode & S_IFMT) >> 12 /* Fragile! */;
-        if ((0 <= mode) && (mode <= 9)) {
-            class = '0' + mode;
-        }  else if ((0xa <= mode) && (mode <= 0xf)) {
-            class = 'A' + mode - 0xa;
-        } else {
-            class = '?'; /* Impossible unless S_IFMT changes. */
-        }
-    }
-
-    return class;
-}
 
 static int walk(const char * name, char * path, size_t total, size_t depth)
 {
@@ -175,7 +144,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     fprintf(stderr,
         "%lu '%c' 0%o (%u,%u) [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu \"%s\"\n"
         , status.st_ino
-        , classify(status.st_mode)
+        , diminuto_fd_mode2type(status.st_mode)
         , (status.st_mode & ~S_IFMT)
         , major(status.st_dev), minor(status.st_dev)
         , (size_t)status.st_nlink
@@ -254,12 +223,6 @@ int main(int argc, char * argv[])
     int rc = 0;
     int ii = 0;
     char path[PATH_MAX] = { '\0', };
-
-#if 0
-    for (ii = 0x0; ii <= 0xf; ++ii) {
-        fprintf(stderr, "classify 0%06o '%c'\n", ii << 12, classify(ii << 12));
-    }
-#endif
 
     if (argc <= 1) {
         xc = walk(".", path, 0, 0);

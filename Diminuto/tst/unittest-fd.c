@@ -30,16 +30,17 @@
         type = diminuto_fd_type(_FD_); \
         name = type2name(type); \
         expected = type2name((diminuto_fd_type_t)_EXPECTED_); \
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
+        COMMENT("%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
 
 static const char * type2name(diminuto_fd_type_t type)
 {
-    const char * name = "ERROR";
+    const char * name = (const char *)0;
 
     switch (type) {
     case -1:                            name = "N/A";       break;
+    case DIMINUTO_FD_TYPE_NONE:         name = "NONE";      break;
     case DIMINUTO_FD_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
     case DIMINUTO_FD_TYPE_TTY:          name = "TTY";       break;
     case DIMINUTO_FD_TYPE_SOCKET:       name = "SOCK";      break;
@@ -49,6 +50,7 @@ static const char * type2name(diminuto_fd_type_t type)
     case DIMINUTO_FD_TYPE_DIRECTORY:    name = "DIR";       break;
     case DIMINUTO_FD_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
     case DIMINUTO_FD_TYPE_FIFO:         name = "FIFO";      break;
+    default:                            name = "ERROR";     break;
     }
 
     return name;
@@ -66,7 +68,7 @@ int main(void)
         count = diminuto_fd_count();
         limit = diminuto_fd_limit();
         maximum = diminuto_fd_maximum();
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
+        COMMENT("count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
         fflush(stderr);
         ASSERT(count > 0);
         ASSERT(limit > 0);
@@ -79,7 +81,7 @@ int main(void)
         int ii;
         count = diminuto_fd_count();
         ASSERT(count > 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
+        COMMENT("count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
         map = diminuto_fd_map_alloc(count);
         ASSERT(map->count == count);
         for (ii = 0; ii < count; ++ii) {
@@ -89,6 +91,15 @@ int main(void)
     }
 
     {
+
+        {
+            mode_t mode = 0;
+            int ii;
+            for (ii = 0x0; ii <= 0xf; ++ii) {
+                mode = ii << 12;
+                COMMENT("mode=0%06o type='%c'\n", ii << 12, diminuto_fd_mode2type(mode));
+            }
+        }
         {
             DIMINUTO_FD_TYPE(STDIN_FILENO, -1);
             DIMINUTO_FD_TYPE(STDOUT_FILENO, -1);
@@ -111,14 +122,14 @@ int main(void)
             DIMINUTO_FD_TYPE(sock, DIMINUTO_FD_TYPE_SOCKET);
             ASSERT(close(sock) == 0);
         }
-#if 0
         {
-            int softlink;
-            ASSERT((softlink = open("/dev/fd", O_RDONLY)) >= 0);
-            DIMINUTO_FD_TYPE(softlink, DIMINUTO_FD_TYPE_SYMLINK);
-            ASSERT(close(softlink) == 0);
+            struct stat status;
+            diminuto_fd_type_t type;
+            ASSERT(lstat("/dev/fd", &status) == 0);
+            type = diminuto_fd_mode2type(status.st_mode);
+            COMMENT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FD_TYPE_SYMLINK, type2name(DIMINUTO_FD_TYPE_SYMLINK));
+            EXPECT(type == DIMINUTO_FD_TYPE_SYMLINK);
         }
-#endif
         {
             int file;
             if ((file = open("/bin/busybox", O_RDONLY)) >= 0) {

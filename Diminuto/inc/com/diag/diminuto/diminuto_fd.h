@@ -154,19 +154,48 @@ extern void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd);
 
 /**
  * This type defines an enumeration that is an abstraction of some bits in the
- * st_mode field returned in the stat structure by the fstat(2) system call.
+ * st_mode field returned in the stat structure by the stat(2) and related
+ * system calls. Most of them duplicate what the ls(1) command returns as
+ * the first character in the mode field. A hex digit indicates that it
+ * wasn't a known type, but some of these are for practical purposes
+ * impossible because the implied bit pattern matches a known type.
  */
 typedef enum DiminutoFdType {
-    DIMINUTO_FD_TYPE_UNKNOWN        = 0,
-    DIMINUTO_FD_TYPE_TTY            = 1,
-    DIMINUTO_FD_TYPE_SOCKET         = 2,
-    DIMINUTO_FD_TYPE_SYMLINK        = 3,
-    DIMINUTO_FD_TYPE_FILE           = 4,
-    DIMINUTO_FD_TYPE_BLOCKDEV       = 5,
-    DIMINUTO_FD_TYPE_DIRECTORY      = 6,
-    DIMINUTO_FD_TYPE_CHARACTERDEV   = 7,
-    DIMINUTO_FD_TYPE_FIFO           = 8,
+    DIMINUTO_FD_TYPE_NONE           = '\0',
+    DIMINUTO_FD_TYPE_UNKNOWN        = '?',  /* Should be impossible. */
+    DIMINUTO_FD_TYPE_TTY            = 't',  /* Special case of cdev. */
+    DIMINUTO_FD_TYPE_SOCKET         = 's',
+    DIMINUTO_FD_TYPE_SYMLINK        = 'l',
+    DIMINUTO_FD_TYPE_FILE           = '-',
+    DIMINUTO_FD_TYPE_BLOCKDEV       = 'b',
+    DIMINUTO_FD_TYPE_DIRECTORY      = 'd',
+    DIMINUTO_FD_TYPE_CHARACTERDEV   = 'c',
+    DIMINUTO_FD_TYPE_FIFO           = 'p',
+    DIMINUTO_FD_TYPE_0              = '0',
+    DIMINUTO_FD_TYPE_1              = '1', /* Should be DIMINUTO_FD_TYPE_FIFO. */
+    DIMINUTO_FD_TYPE_2              = '2', /* Should be DIMINTUO_FD_TYPE_CHARACTERDEV. */
+    DIMINUTO_FD_TYPE_3              = '3',
+    DIMINUTO_FD_TYPE_4              = '4', /* Should be DIMINUTO_FD_TYPE_DIRECTORY. */
+    DIMINUTO_FD_TYPE_5              = '5',
+    DIMINUTO_FD_TYPE_6              = '6', /* Should be DIMINUTO_FD_TYPE_BLOCKDEV. */
+    DIMINUTO_FD_TYPE_7              = '7',
+    DIMINUTO_FD_TYPE_8              = '8', /* Should be DIMINUTO_FD_TYPE_FILE. */
+    DIMINUTO_FD_TYPE_9              = '0',
+    DIMINUTO_FD_TYPE_A              = 'A', /* Should be DIMINUTO_FD_TYPE_SYMLINK. */
+    DIMINUTO_FD_TYPE_B              = 'B',
+    DIMINUTO_FD_TYPE_C              = 'C', /* Should be DIMINUTO_FD_TYPE_SOCKET. */
+    DIMINUTO_FD_TYPE_D              = 'D',
+    DIMINUTO_FD_TYPE_E              = 'E',
+    DIMINUTO_FD_TYPE_F              = 'F',
 } diminuto_fd_type_t;
+
+/**
+ * Determine an enumeration that indiciates the type of object the
+ * specified mode returned by stat(2) or related system call represents.
+ * @param mode is the mode value returned by stat(2) or related.
+ * @return the type of object the mode represents.
+ */
+extern diminuto_fd_type_t diminuto_fd_mode2type(mode_t mode);
 
 /**
  * Determine an enumeration that indicates the type of object the specified

@@ -238,36 +238,53 @@ int diminuto_fd_direct_acquire(int fd, const char * device, int flags, mode_t mo
     return diminuto_fd_acquire(fd, device, flags | O_DIRECT | O_SYNC, mode);
 }
 
+diminuto_fd_type_t diminuto_fd_mode2type(mode_t mode)
+{
+    diminuto_fd_type_t type = DIMINUTO_FD_TYPE_NONE;
+
+    if (S_ISREG(mode)) {
+        type = DIMINUTO_FD_TYPE_FILE;
+    } else if (S_ISDIR(mode)) {
+        type = DIMINUTO_FD_TYPE_DIRECTORY;
+    } else if (S_ISLNK(mode)) {
+        type = DIMINUTO_FD_TYPE_SYMLINK;
+    } else if (S_ISCHR(mode)) {
+        type = DIMINUTO_FD_TYPE_CHARACTERDEV;
+    } else if (S_ISBLK(mode)) {
+        type = DIMINUTO_FD_TYPE_BLOCKDEV;
+    } else if (S_ISFIFO(mode)) {
+        type = DIMINUTO_FD_TYPE_FIFO;
+    } else if (S_ISSOCK(mode)) {
+        type = DIMINUTO_FD_TYPE_SOCKET;
+    } else {
+        mode = (mode & S_IFMT) >> 12 /* Fragile assumed constant! */;
+        if ((0 <= mode) && (mode <= 9)) {
+            type = (diminuto_fd_type_t)('0' + mode);
+        }  else if ((0xa <= mode) && (mode <= 0xf)) {
+            type = (diminuto_fd_type_t)('A' + mode - 0xa);
+        } else {
+            type = DIMINUTO_FD_TYPE_UNKNOWN; /* Not unless S_IFMT changes. */
+        }
+    }
+
+    return type;
+}
+
 diminuto_fd_type_t diminuto_fd_type(int fd)
 {
     diminuto_fd_type_t type = DIMINUTO_FD_TYPE_UNKNOWN;
-    struct stat status;
+    struct stat status = { 0 };
 
     if (isatty(fd)) {
         type = DIMINUTO_FD_TYPE_TTY;
     } else if (fstat(fd, &status) < 0) {
         diminuto_perror("diminuto_fd_type: fstat");
-    } else if (S_ISREG(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_FILE;
-    } else if (S_ISDIR(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_DIRECTORY;
-    } else if (S_ISCHR(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_CHARACTERDEV;
-    } else if (S_ISBLK(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_BLOCKDEV;
-    } else if (S_ISFIFO(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_FIFO;
-#if defined(S_ISLNK)
-    } else if (S_ISLNK(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_SYMLINK; /* fstat(2) will never actually return this. */
-#endif
-#if defined(S_ISSOCK)
-    } else if (S_ISSOCK(status.st_mode)) {
-        type = DIMINUTO_FD_TYPE_SOCKET;
-#endif
     } else {
-        errno = EINVAL;
-        diminuto_perror("diminuto_fd_type: stat.st_mode");
+        type = diminuto_fd_mode2type(status.st_mode);
+        if (type == DIMINUTO_FD_TYPE_UNKNOWN) {
+            errno = EINVAL;
+            diminuto_perror("diminuto_fd_type: stat.st_mode");
+        }
     }
 
     return type;
