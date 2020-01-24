@@ -74,7 +74,6 @@ static char classify(mode_t mode)
 
 static int walk(const char * name, char * path, size_t total, size_t depth)
 {
-    int fc = 0;
     DIR * dp = (DIR *)0;
     struct dirent * ep = (struct dirent *)0;
     struct stat status = { 0 };
@@ -139,7 +138,13 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
      */
 
     rc = lstat(path, &status);
-    if (rc < 0) {
+    if (rc >= 0) {
+        /* Do nothing. */
+    } else if ((errno == EACCES) || (errno == ENOENT)) {
+        perror(path);
+        path[prior] = '\0';
+        return 0;
+    } else {
         perror(path);
         return -2;
     }
@@ -193,7 +198,13 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     if (S_ISDIR(status.st_mode)) {
 
         dp = opendir(path);
-        if (dp == (DIR *)0) {
+        if (dp != (DIR *)0) {
+            /* Do nothing. */
+        } else if ((errno == EACCES) || (errno == ENOENT)) {
+            perror(path);
+            path[prior] = '\0';
+            return 0;
+        } else {
             perror(path);
             return -3;
         }
@@ -209,8 +220,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
                 break;
             } else {
                 perror(path);
-                fc = -4;
-                break;
+                return -4;
             }
 
             if (strcmp(ep->d_name, "..") == 0) {
@@ -220,8 +230,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
             } else if ((rc = walk(ep->d_name, path, total, depth)) == 0) {
                 /* Do ntohing. */
             } else {
-                fc = rc;
-                break;
+                return rc;
             }
 
         }
@@ -236,7 +245,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     path[prior] = '\0';
     if (DEBUG) { fprintf(stderr, "%s@%d: \"%s\" [%zu]\n", __FILE__, __LINE__, path, prior); }
 
-    return fc;
+    return 0;
 }
 
 int main(int argc, char * argv[])
