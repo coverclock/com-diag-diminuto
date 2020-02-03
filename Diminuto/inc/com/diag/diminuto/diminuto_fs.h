@@ -71,7 +71,7 @@ extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
  * This type defines the prototype of a callback function invoked
  * by the walker framework for every object in the file system for
  * which the caller has permission to see.
- * @param statep points to a caller defined state structure.
+ * @param statep points to a caller-defined state variable.
  * @param name is the latest path component name.
  * @param path is the complete path name.
  * @param depth is the current directory depth.
@@ -88,18 +88,20 @@ typedef int (diminuto_fs_walker_t)(void * statep, const char * name, const char 
  * @param total is the total path length starting at zero.
  * @param depth is the current directory depth starting at zero.
  * @param walkerp points to the callback function.
- * @param statep points to a caller defined state structure.
+ * @param statep points to a caller-defined state variable.
  */
 extern int diminuto_fs_walker(const char * name, char * path, size_t total, size_t depth, diminuto_fs_walker_t * walkerp, void * statep);
 
 /**
- * This is a convenience function to being walking the file system at the
- * specified root, calling a caller defined callback function with a caller
- * defined state variable at each object in the file system the caller has
- * permission to see.
- * @param root is the root at which to start, expanded with realpath(3).
+ * This is a convenience function for walking the file system tree beginning
+ * at the specified root, calling a caller-defined callback function with a
+ * caller-defined state variable at each object in the file system the caller
+ * has permission to see. The function realpath(3) is applied to the root
+ * to resolve softlinks and components like "." and ".." before calling
+ * the recursive walker function.
+ * @param root is the root at which to start.
  * @param walkerp points to the callback function or NULL.
- * @param statep points to a caller defined state structure or NULL.
+ * @param statep points to a caller-defined state variable or NULL.
  */
 extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep);
 
