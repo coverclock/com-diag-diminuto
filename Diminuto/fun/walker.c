@@ -106,6 +106,16 @@ int main(int argc, char * argv[])
     files[0] = stdout;
     files[1] = stderr;
 
+    if (argc < 2) {
+        /* Do nothing. */
+    } else if (strcmp(argv[1], "-d") != 0) {
+        /* Do nothing. */
+    } else {
+        (void)diminuto_fs_debug(!0);
+        --argc;
+        ++argv;
+    }
+
     if (argc <= 1) {
         xc = diminuto_fs_walk(".", callback, files);
     } else {
