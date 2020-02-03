@@ -12,6 +12,10 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
+extern int diminuto_fs_debug(int now);
 
 /**
  * This type defines an enumeration that is an abstraction of some bits in the
@@ -57,5 +61,11 @@ typedef enum DiminutoFsType {
  * @return the type of object the mode represents.
  */
 extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
+
+typedef int (diminuto_fs_walker_t)(void * statep, const char * name, const char * path, size_t depth, const struct stat * statp);
+
+extern int diminuto_fs_walker(const char * name, char * path, size_t total, size_t depth, diminuto_fs_walker_t * walkerp, void * statep);
+
+extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep);
 
 #endif
