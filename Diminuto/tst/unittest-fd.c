@@ -24,32 +24,32 @@
 
 #define DIMINUTO_FD_TYPE(_FD_, _EXPECTED_) \
     do { \
-        diminuto_fd_type_t type; \
+        diminuto_fs_type_t type; \
         const char * name; \
         const char * expected; \
         type = diminuto_fd_type(_FD_); \
         name = type2name(type); \
-        expected = type2name((diminuto_fd_type_t)_EXPECTED_); \
+        expected = type2name((diminuto_fs_type_t)_EXPECTED_); \
         COMMENT("%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
 
-static const char * type2name(diminuto_fd_type_t type)
+static const char * type2name(diminuto_fs_type_t type)
 {
     const char * name = (const char *)0;
 
     switch (type) {
     case -1:                            name = "N/A";       break;
-    case DIMINUTO_FD_TYPE_NONE:         name = "NONE";      break;
-    case DIMINUTO_FD_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
-    case DIMINUTO_FD_TYPE_TTY:          name = "TTY";       break;
-    case DIMINUTO_FD_TYPE_SOCKET:       name = "SOCK";      break;
-    case DIMINUTO_FD_TYPE_SYMLINK:      name = "SYMLINK";   break;
-    case DIMINUTO_FD_TYPE_FILE:         name = "FILE";      break;
-    case DIMINUTO_FD_TYPE_BLOCKDEV:     name = "BLOCKDEV";  break;
-    case DIMINUTO_FD_TYPE_DIRECTORY:    name = "DIR";       break;
-    case DIMINUTO_FD_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
-    case DIMINUTO_FD_TYPE_FIFO:         name = "FIFO";      break;
+    case DIMINUTO_FS_TYPE_NONE:         name = "NONE";      break;
+    case DIMINUTO_FS_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
+    case DIMINUTO_FS_TYPE_TTY:          name = "TTY";       break;
+    case DIMINUTO_FS_TYPE_SOCKET:       name = "SOCK";      break;
+    case DIMINUTO_FS_TYPE_SYMLINK:      name = "SYMLINK";   break;
+    case DIMINUTO_FS_TYPE_FILE:         name = "FILE";      break;
+    case DIMINUTO_FS_TYPE_BLOCKDEV:     name = "BLOCKDEV";  break;
+    case DIMINUTO_FS_TYPE_DIRECTORY:    name = "DIR";       break;
+    case DIMINUTO_FS_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
+    case DIMINUTO_FS_TYPE_FIFO:         name = "FIFO";      break;
     default:                            name = "ERROR";     break;
     }
 
@@ -93,14 +93,6 @@ int main(void)
     {
 
         {
-            mode_t mode = 0;
-            int ii;
-            for (ii = 0x0; ii <= 0xf; ++ii) {
-                mode = ii << 12;
-                COMMENT("mode=0%06o type='%c'\n", ii << 12, diminuto_fd_mode2type(mode));
-            }
-        }
-        {
             DIMINUTO_FD_TYPE(STDIN_FILENO, -1);
             DIMINUTO_FD_TYPE(STDOUT_FILENO, -1);
             DIMINUTO_FD_TYPE(STDERR_FILENO, -1);
@@ -113,22 +105,22 @@ int main(void)
         {
             int tty;
             ASSERT((tty = open("/dev/tty", O_RDONLY)) >= 0);
-            DIMINUTO_FD_TYPE(tty, DIMINUTO_FD_TYPE_TTY);
+            DIMINUTO_FD_TYPE(tty, DIMINUTO_FS_TYPE_TTY);
             ASSERT(close(tty) == 0);
         }
         {
             int sock;
             ASSERT((sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
-            DIMINUTO_FD_TYPE(sock, DIMINUTO_FD_TYPE_SOCKET);
+            DIMINUTO_FD_TYPE(sock, DIMINUTO_FS_TYPE_SOCKET);
             ASSERT(close(sock) == 0);
         }
         {
             struct stat status;
-            diminuto_fd_type_t type;
+            diminuto_fs_type_t type;
             ASSERT(lstat("/dev/fd", &status) == 0);
-            type = diminuto_fd_mode2type(status.st_mode);
-            COMMENT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FD_TYPE_SYMLINK, type2name(DIMINUTO_FD_TYPE_SYMLINK));
-            EXPECT(type == DIMINUTO_FD_TYPE_SYMLINK);
+            type = diminuto_fs_type(status.st_mode);
+            COMMENT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
+            EXPECT(type == DIMINUTO_FS_TYPE_SYMLINK);
         }
         {
             int file;
@@ -152,7 +144,7 @@ int main(void)
                 file = -1;
             }
             ASSERT(file >= 0);
-            DIMINUTO_FD_TYPE(file, DIMINUTO_FD_TYPE_FILE);
+            DIMINUTO_FD_TYPE(file, DIMINUTO_FS_TYPE_FILE);
             ASSERT(close(file) == 0);
         }
         if ((getuid() == 0) || (geteuid() == 0)) {
@@ -169,7 +161,7 @@ int main(void)
                 blockdev = -1;
             }
             ASSERT(blockdev >= 0);
-            DIMINUTO_FD_TYPE(blockdev, DIMINUTO_FD_TYPE_BLOCKDEV);
+            DIMINUTO_FD_TYPE(blockdev, DIMINUTO_FS_TYPE_BLOCKDEV);
             ASSERT(close(blockdev) == 0);
         }
         {
@@ -186,20 +178,20 @@ int main(void)
                 dir = -1;
             }
             ASSERT(dir >= 0);
-            DIMINUTO_FD_TYPE(dir, DIMINUTO_FD_TYPE_DIRECTORY);
+            DIMINUTO_FD_TYPE(dir, DIMINUTO_FS_TYPE_DIRECTORY);
             ASSERT(close(dir) == 0);
         }
         {
             int chardev;
             ASSERT((chardev = open("/dev/null", O_RDONLY)) >= 0);
-            DIMINUTO_FD_TYPE(chardev, DIMINUTO_FD_TYPE_CHARACTERDEV);
+            DIMINUTO_FD_TYPE(chardev, DIMINUTO_FS_TYPE_CHARACTERDEV);
             ASSERT(close(chardev) == 0);
         }
         {
             int pipeline[2];
             ASSERT(pipe(pipeline) == 0);
-            DIMINUTO_FD_TYPE(pipeline[0], DIMINUTO_FD_TYPE_FIFO);
-            DIMINUTO_FD_TYPE(pipeline[1], DIMINUTO_FD_TYPE_FIFO);
+            DIMINUTO_FD_TYPE(pipeline[0], DIMINUTO_FS_TYPE_FIFO);
+            DIMINUTO_FD_TYPE(pipeline[1], DIMINUTO_FS_TYPE_FIFO);
             ASSERT(close(pipeline[0]) == 0);
             ASSERT(close(pipeline[1]) == 0);
         }

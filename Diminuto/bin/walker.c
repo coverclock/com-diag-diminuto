@@ -144,7 +144,7 @@ static int walk(const char * name, char * path, size_t total, size_t depth)
     fprintf(stderr,
         "%lu '%c' 0%o (%u,%u) [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu \"%s\"\n"
         , status.st_ino
-        , diminuto_fd_mode2type(status.st_mode)
+        , diminuto_fd_type(status.st_mode)
         , (status.st_mode & ~S_IFMT)
         , major(status.st_dev), minor(status.st_dev)
         , (size_t)status.st_nlink
