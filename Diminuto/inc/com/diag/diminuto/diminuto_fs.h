@@ -15,6 +15,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+/**
+ * Enable or disable debugging output.
+ * @param now is !0 to enable, 0 to disable.
+ * @return the prior value of the debug flag.
+ */
 extern int diminuto_fs_debug(int now);
 
 /**
@@ -62,10 +67,40 @@ typedef enum DiminutoFsType {
  */
 extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
 
+/**
+ * This type defines the prototype of a callback function invoked
+ * by the walker framework for every object in the file system for
+ * which the caller has permission to see.
+ * @param statep points to a caller defined state structure.
+ * @param name is the latest path component name.
+ * @param path is the complete path name.
+ * @param depth is the current directory depth.
+ * @param statp points to the stat(2) structure for the file.
+ * @return 0 to continue, -1 to stop with an error, 1 to stop.
+ */
 typedef int (diminuto_fs_walker_t)(void * statep, const char * name, const char * path, size_t depth, const struct stat * statp);
 
+/**
+ * Recursively walk the file system tree, invoking the caller-defined callback
+ * function for each object the caller has permission to see.
+ * @param name is the latest path component name.
+ * @param path is the complete path name.
+ * @param total is the total path length starting at zero.
+ * @param depth is the current directory depth starting at zero.
+ * @param walkerp points to the callback function.
+ * @param statep points to a caller defined state structure.
+ */
 extern int diminuto_fs_walker(const char * name, char * path, size_t total, size_t depth, diminuto_fs_walker_t * walkerp, void * statep);
 
+/**
+ * This is a convenience function to being walking the file system at the
+ * specified root, calling a caller defined callback function with a caller
+ * defined state variable at each object in the file system the caller has
+ * permission to see.
+ * @param root is the root at which to start, expanded with realpath(3).
+ * @param walkerp points to the callback function or NULL.
+ * @param statep points to a caller defined state structure or NULL.
+ */
 extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep);
 
 #endif

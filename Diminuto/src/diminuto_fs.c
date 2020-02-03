@@ -137,7 +137,11 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
      * Invoke the callback.
      */
 
-    if ((rc = (*walkerp)(statep, name, path, depth, &status)) != 0) {
+    if (walkerp == (diminuto_fs_walker_t *)0) {
+        /* Do nothing. */
+    } else if ((rc = (*walkerp)(statep, name, path, depth, &status)) == 0) {
+        /* Do nothing. */
+    } else {
         return rc;
     }
 

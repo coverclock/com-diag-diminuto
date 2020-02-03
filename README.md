@@ -140,6 +140,7 @@ gcc 9.2.1
 * escape - collapse and expand escape sequences in strings.
 * fd - general handling of file descriptors (including sockets).
 * frequency - determine common library time frequency.
+* fs - file system walking framework.
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
 * i2c - Simplified thread-safe API around Linux I2C API.
