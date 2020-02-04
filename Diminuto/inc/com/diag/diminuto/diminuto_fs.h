@@ -76,7 +76,7 @@ extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
  * @param path is the complete path name.
  * @param depth is the current directory depth.
  * @param statp points to the stat(2) structure for the file.
- * @return 0 to continue, -1 to stop with an error, 1 to stop.
+ * @return 0 to continue, <0 to stop with an error, >0 to stop.
  */
 typedef int (diminuto_fs_walker_t)(void * statep, const char * name, const char * path, size_t depth, const struct stat * statp);
 
@@ -89,6 +89,7 @@ typedef int (diminuto_fs_walker_t)(void * statep, const char * name, const char 
  * @param depth is the current directory depth starting at zero.
  * @param walkerp points to the callback function.
  * @param statep points to a caller-defined state variable.
+ * @return <0 for an error, 0 if the walk was completed, or the callback value.
  */
 extern int diminuto_fs_walker(const char * name, char * path, size_t total, size_t depth, diminuto_fs_walker_t * walkerp, void * statep);
 
@@ -102,6 +103,7 @@ extern int diminuto_fs_walker(const char * name, char * path, size_t total, size
  * @param root is the root at which to start.
  * @param walkerp points to the callback function or NULL.
  * @param statep points to a caller-defined state variable or NULL.
+ * @return <0 for an error, 0 if the walk was completed, or the callback value.
  */
 extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep);
 
