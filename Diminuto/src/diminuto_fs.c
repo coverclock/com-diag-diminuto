@@ -77,6 +77,18 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
     size_t length = 0;
 
     /*
+     * Limit the depth of recursion to something reasonable.
+     * This is still pretty big. The check below will limit
+     * it as well. This is just a safety valve.
+     */
+
+    if (depth > (PATH_MAX / 2)) {
+        errno = E2BIG;
+        diminuto_perror(path);
+        return -3;
+    }
+
+    /*
      * Insure the path buffer has sufficient room. I'd be surprised
      * if this failed on a modern system, but back when MAXPATHLEN
      * was 512 I have seen file systems for which an absolute path
@@ -86,12 +98,12 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
     length = strnlen(name, PATH_MAX);
     if (length == 0) {
         errno = EINVAL;
-        diminuto_perror(name);
-        return -3;
-    } else if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > PATH_MAX) {
-        errno = E2BIG;
         diminuto_perror(path);
         return -4;
+    } else if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > PATH_MAX) {
+        errno = EFBIG;
+        diminuto_perror(path);
+        return -5;
     } else {
         /* Do nothing. */
     }
@@ -132,7 +144,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
         return 0;
     } else {
         diminuto_perror(path);
-        return -5;
+        return -6;
     }
 
     /*
@@ -164,7 +176,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
             return 0;
         } else {
             diminuto_perror(path);
-            return -3;
+            return -7;
         }
 
         depth += 1;
@@ -178,7 +190,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
                 break;
             } else {
                 diminuto_perror(path);
-                return -4;
+                return -8;
             }
 
             if (strcmp(ep->d_name, "..") == 0) {
@@ -195,7 +207,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 
         if (closedir(dp) < 0) {
             diminuto_perror(path);
-            return -5;
+            return -9;
         }
 
     }
