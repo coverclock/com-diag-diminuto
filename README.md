@@ -232,7 +232,7 @@ gcc 9.2.1
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
 * pinchange - Multiplexing of GPIO pins (Pin).
 * pintest - Setting and getting GPIO pins (Pin).
-* walker - Walk the file system tree starting at a specified root.
+* walker - Walk the file system tree starting at a specified root (FS).
 
 (Some of these are functional tests that use hardware test fixtures I cobbled
 together specifically for this purpose.)
