@@ -208,9 +208,11 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
                  * is not dynamically allocated.
                  */
 
-                if (strcmp(ep->d_name, "..") == 0) {
+                if (ep->d_name[0] == '\0') {
                     /* Do ntohing. */
                 } else if (strcmp(ep->d_name, ".") == 0) {
+                    /* Do ntohing. */
+                } else if (strcmp(ep->d_name, "..") == 0) {
                     /* Do ntohing. */
                 } else if ((rc = diminuto_fs_walker(ep->d_name, path, total, depth, walkerp, statep)) == 0) {
                     /* Do ntohing. */
