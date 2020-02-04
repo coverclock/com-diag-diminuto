@@ -15,6 +15,20 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include <sys/types.h>
+#include <string.h>
+
+static int callback(void * vp, const char * name, const char * path, size_t depth, const struct stat * statp)
+{
+    if (vp == (void *)0) {
+        return -123;
+    } else if (*(const char *)vp == '\0') {
+        return -456;
+    } else if (strcmp(path, (const char *)vp) == 0) {
+        return 123;
+    } else {
+        return 0;
+    }
+}
 
 int main(void)
 {
@@ -25,6 +39,7 @@ int main(void)
         mode_t mode = 0;
         diminuto_fs_type_t type = DIMINUTO_FS_TYPE_NONE;
         int ii;
+        TEST();
         for (ii = 0x0; ii <= 0xf; ++ii) {
             mode = ii << 12;
             type = diminuto_fs_type(mode);
@@ -32,6 +47,50 @@ int main(void)
             EXPECT(type != DIMINUTO_FS_TYPE_NONE);
             EXPECT(type != DIMINUTO_FS_TYPE_UNKNOWN);
         }
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, (void *)0);
+        EXPECT(rc == -123);
+        STATUS();
+    }
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, "");
+        EXPECT(rc == -456);
+        STATUS();
+    }
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, "/");
+        EXPECT(rc == 123);
+        STATUS();
+    }
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, "/bin/true");
+        EXPECT(rc == 123);
+        STATUS();
+    }
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, "/usr/local/bin");
+        EXPECT(rc == 123);
+        STATUS();
+    }
+    {
+        int rc = 0;
+        TEST();
+        rc = diminuto_fs_walk("/", callback, "/usr/local/include/non-existent");
+        EXPECT(rc == 0);
+        STATUS();
     }
 
     EXIT();
