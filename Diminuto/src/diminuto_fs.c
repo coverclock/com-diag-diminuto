@@ -125,7 +125,9 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
     if (rc >= 0) {
         /* Do nothing. */
     } else if ((errno == EACCES) || (errno == ENOENT)) {
+#if 0
         diminuto_perror(path);
+#endif
         path[prior] = '\0';
         return 0;
     } else {
@@ -155,7 +157,9 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
         if (dp != (DIR *)0) {
             /* Do nothing. */
         } else if ((errno == EACCES) || (errno == ENOENT)) {
+#if 0
             diminuto_perror(path);
+#endif
             path[prior] = '\0';
             return 0;
         } else {
