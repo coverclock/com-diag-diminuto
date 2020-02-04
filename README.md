@@ -219,7 +219,6 @@ gcc 9.2.1
 * timesource - produce concise timestamp stream.
 * usecsleep - sleep for a specified number of microseconds.
 * usectime - display the elapsed monotonic time in microseconds.
-* walker - my efforts at learning to walk the file system tree.
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
 
@@ -233,8 +232,9 @@ gcc 9.2.1
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
 * pinchange - Multiplexing of GPIO pins (Pin).
 * pintest - Setting and getting GPIO pins (Pin).
+* walker - Walk the file system tree starting at a specified root.
 
-(These are functional tests that use hardware test fixtures I cobbled
+(Some of these are functional tests that use hardware test fixtures I cobbled
 together specifically for this purpose.)
 
 # Directories
