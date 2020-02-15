@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <wchar.h>
 #include <sys/types.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_offsetof.h"
@@ -71,6 +72,7 @@ int main(void)
     printsignof(uint64_t);
     printsignof(intptr_t);
     printsignof(uintptr_t);
+    printsignof(wchar_t);
     printsignof(size_t);
     printsignof(ssize_t);
     printsignof(off_t);
