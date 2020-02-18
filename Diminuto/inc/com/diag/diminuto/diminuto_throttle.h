@@ -310,7 +310,7 @@ extern diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, siz
  * Compute a jitter tolerance in ticks given the interarrival time (increment),
  * and the largest packet size (maximum burst size).
  * @param increment is the interarrival time in ticks corresponding to the rate.
- * @param maximimburstsize is the largest packet size in events (e.g. bytes).
+ * @param maximumburstsize is the largest packet size in events (e.g. bytes).
  * @return the jitter tolerance in ticks.
  */
 extern diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize);
