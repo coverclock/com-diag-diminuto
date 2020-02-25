@@ -36,8 +36,10 @@ typedef enum Enum { ENUM = 0 } enum_t;
 typedef void (function_t)(void);
 
 struct Zero {
-    char field[0];
+    uint8_t field[0];
 };
+
+typedef uint8_t (Array)[0];
 
 int main(void)
 {
@@ -89,5 +91,6 @@ int main(void)
     printsignof(diminuto_unsigned_t);
     printsignof(diminuto_signed_t);
     printsizeof(struct Zero);
+    printsizeof(Array);
     return 0;
 }
