@@ -15,6 +15,10 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 
 static int callback(void * vp, const char * name, const char * path, size_t depth, const struct stat * statp)
@@ -90,6 +94,193 @@ int main(void)
         TEST();
         rc = diminuto_fs_walk("/", callback, "/usr/local/include/non-existent");
         EXPECT(rc == 0);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("", 0755, 0);
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("", 0755, !0);
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("/", 0755, 0);
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("/", 0755, !0);
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("unittest-fs", 0755, 0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs", &status);
+        ASSERT(rc < 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("unittest-fs", 0755, !0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = unlink("unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("./unittest-fs", 0755, 0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("./unittest-fs", &status);
+        ASSERT(rc < 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("./unittest-fs", 0755, !0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("./unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = unlink("./unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("/tmp/unittest-fs", 0755, 0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("/tmp/unittest-fs", &status);
+        ASSERT(rc < 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("/tmp/unittest-fs", 0755, !0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("/tmp/unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = unlink("/tmp/unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("unittest-fs/unittest-fs/unittest-fs", 0755, 0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs/unittest-fs", &status);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
+        ASSERT(rc < 0);
+        rc = unlink("unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = unlink("unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdirp("unittest-fs/unittest-fs/unittest-fs", 0755, !0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = unlink("unittest-fs/unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = unlink("unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = unlink("unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
         STATUS();
     }
 

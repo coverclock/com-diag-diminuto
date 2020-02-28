@@ -107,4 +107,15 @@ extern int diminuto_fs_walker(const char * name, char * path, size_t total, size
  */
 extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep);
 
+/**
+ * Make a directory path, in the manner of "mkdir(1) -p", possibly with many
+ * individual nested directorie., ignoring existing components. If an error
+ * occurs, a partial directory path may be created.
+ * @param path is the directory path.
+ * @param mode is the mode of each new component.
+ * @param all if the last component is also a directory (versus a file).
+ * @return 0 for success, <0 with errno set if an error occurred.
+ */
+extern int diminuto_fs_mkdirp(const char * path, mode_t mode, int all);
+
 #endif

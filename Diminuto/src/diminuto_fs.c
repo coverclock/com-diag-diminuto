@@ -256,3 +256,67 @@ int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * s
 
     return diminuto_fs_walker(real, path, 0, 0, walkerp, statep);
 }
+
+int diminuto_fs_mkdirp(const char * path, mode_t mode, int all)
+{
+    int rc = 0;
+    size_t length = 0;
+    char * source = (char *)0;
+    char * sink = (char *)0;
+    char * saveptr = (char *)0;
+    char * pp = (char *)0;
+    static const char SLASH[] = "/";
+
+    do {
+
+        length = strlen(path);
+        if (length >= PATH_MAX) {
+            rc = -1;
+            errno = ENAMETOOLONG;
+            break;
+        } else if (length <= 0) {
+            break;
+        }
+
+        source = strdup(path);
+
+        if (all) {
+            /* Do nothing. */
+        } else if ((pp = strrchr(source, SLASH[0])) == (char *)0) {
+            break;
+        } else if (pp == source) {
+            break;
+        } else {
+            *pp = '\0';
+        }
+
+        sink = (char *)calloc(length + 1, sizeof(char));
+
+        while ((pp = strtok_r(source, SLASH, &saveptr)) != (char *)0) {
+            if (pp != source) {
+                strcat(sink, SLASH);
+            }
+            strcat(sink, pp);
+            if (Debug) { fprintf(stderr, "%s@%d: \"%s\" \"%s\" \"%s\"\n", __FILE__, __LINE__, path, pp, sink); }
+            rc = mkdir(sink, mode);
+            if (rc == 0) {
+                /* Do nothing. */
+            } else if (errno == EEXIST) {
+                rc = 0;
+            } else {
+                break;
+            }
+        }
+
+    } while (0);
+
+    if (source != (char *)0) {
+        free(source);
+    }
+
+    if (sink != (char *)0) {
+        free(sink);
+    }
+
+    return rc;
+}
