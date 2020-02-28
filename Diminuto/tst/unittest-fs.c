@@ -168,7 +168,7 @@ int main(void)
         rc = stat("unittest-fs", &status);
         ASSERT(rc == 0);
         ASSERT(S_ISDIR(status.st_mode));
-        rc = unlink("unittest-fs");
+        rc = rmdir("unittest-fs");
         ASSERT(rc == 0);
         diminuto_fs_debug(debug);
         STATUS();
@@ -201,7 +201,7 @@ int main(void)
         rc = stat("./unittest-fs", &status);
         ASSERT(rc == 0);
         ASSERT(S_ISDIR(status.st_mode));
-        rc = unlink("./unittest-fs");
+        rc = rmdir("./unittest-fs");
         ASSERT(rc == 0);
         diminuto_fs_debug(debug);
         STATUS();
@@ -234,7 +234,7 @@ int main(void)
         rc = stat("/tmp/unittest-fs", &status);
         ASSERT(rc == 0);
         ASSERT(S_ISDIR(status.st_mode));
-        rc = unlink("/tmp/unittest-fs");
+        rc = rmdir("/tmp/unittest-fs");
         ASSERT(rc == 0);
         diminuto_fs_debug(debug);
         STATUS();
@@ -254,9 +254,9 @@ int main(void)
         memset(&status, 0, sizeof(status));
         rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
         ASSERT(rc < 0);
-        rc = unlink("unittest-fs/unittest-fs");
+        rc = rmdir("unittest-fs/unittest-fs");
         ASSERT(rc == 0);
-        rc = unlink("unittest-fs");
+        rc = rmdir("unittest-fs");
         ASSERT(rc == 0);
         diminuto_fs_debug(debug);
         STATUS();
@@ -274,11 +274,11 @@ int main(void)
         rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
         ASSERT(rc == 0);
         ASSERT(S_ISDIR(status.st_mode));
-        rc = unlink("unittest-fs/unittest-fs/unittest-fs");
+        rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(rc == 0);
-        rc = unlink("unittest-fs/unittest-fs");
+        rc = rmdir("unittest-fs/unittest-fs");
         ASSERT(rc == 0);
-        rc = unlink("unittest-fs");
+        rc = rmdir("unittest-fs");
         ASSERT(rc == 0);
         diminuto_fs_debug(debug);
         STATUS();

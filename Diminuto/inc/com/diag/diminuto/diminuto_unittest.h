@@ -23,11 +23,14 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 extern int diminuto_unittest_test;
 extern int diminuto_unittest_tests;
 extern int diminuto_unittest_errors;
 extern int diminuto_unittest_total;
+extern int diminuto_unittest_errno;
 
 /**
  * @def SETLOGMASK()
@@ -143,8 +146,12 @@ extern int diminuto_unittest_total;
  */
 #define ADVISE(_COND_) \
     do { \
+        diminuto_unittest_errno = errno; \
         if (!(_COND_)) { \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
+            if (diminuto_unittest_errno) { \
+                diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
+            } \
         } \
     } while (0)
 
@@ -155,10 +162,14 @@ extern int diminuto_unittest_total;
  */
 #define EXPECT(_COND_) \
     do { \
+        diminuto_unittest_errno = errno; \
         if (!(_COND_)) { \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: test=%d errors=%d total=%d !(%s)?\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
+            if (diminuto_unittest_errno) { \
+                diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
+            } \
         } \
     } while (0)
 
@@ -169,10 +180,14 @@ extern int diminuto_unittest_total;
  */
 #define ASSERT(_COND_) \
     do { \
+        diminuto_unittest_errno = errno; \
         if (!(_COND_)) { \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
             diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: test=%d errors=%d total=%d !(%s)!\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
+            if (diminuto_unittest_errno) { \
+                diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
+            } \
             fflush(stdout); \
             fflush(stderr); \
             exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \

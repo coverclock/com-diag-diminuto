@@ -263,8 +263,9 @@ int diminuto_fs_mkdirp(const char * path, mode_t mode, int all)
     size_t length = 0;
     char * source = (char *)0;
     char * sink = (char *)0;
+    char * target = (char *)0;
     char * saveptr = (char *)0;
-    char * pp = (char *)0;
+    char * token = (char *)0;
     static const char SLASH[] = "/";
 
     do {
@@ -278,26 +279,33 @@ int diminuto_fs_mkdirp(const char * path, mode_t mode, int all)
             break;
         }
 
+        if (Debug) { fprintf(stderr, "%s@%d: path=\"%s\"\n", __FILE__, __LINE__, path); }
+
         source = strdup(path);
 
         if (all) {
             /* Do nothing. */
-        } else if ((pp = strrchr(source, SLASH[0])) == (char *)0) {
+        } else if ((token = strrchr(source, SLASH[0])) == (char *)0) {
             break;
-        } else if (pp == source) {
+        } else if (token == source) {
             break;
         } else {
-            *pp = '\0';
+            *token = '\0';
         }
+
+        if (Debug) { fprintf(stderr, "%s@%d: source=\"%s\"\n", __FILE__, __LINE__, source); }
 
         sink = (char *)calloc(length + 1, sizeof(char));
 
-        while ((pp = strtok_r(source, SLASH, &saveptr)) != (char *)0) {
-            if (pp != source) {
+        target = source;
+
+        while ((token = strtok_r(target, SLASH, &saveptr)) != (char *)0) {
+            if (Debug) { fprintf(stderr, "%s@%d: token=\"%s\"\n", __FILE__, __LINE__, token); }
+            if (token != source) {
                 strcat(sink, SLASH);
             }
-            strcat(sink, pp);
-            if (Debug) { fprintf(stderr, "%s@%d: \"%s\" \"%s\" \"%s\"\n", __FILE__, __LINE__, path, pp, sink); }
+            strcat(sink, token);
+            if (Debug) { fprintf(stderr, "%s@%d: sink=\"%s\"\n", __FILE__, __LINE__, sink); }
             rc = mkdir(sink, mode);
             if (rc == 0) {
                 /* Do nothing. */
@@ -306,6 +314,7 @@ int diminuto_fs_mkdirp(const char * path, mode_t mode, int all)
             } else {
                 break;
             }
+            target = (char *)0;
         }
 
     } while (0);
