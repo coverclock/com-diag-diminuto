@@ -257,7 +257,7 @@ int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * s
     return diminuto_fs_walker(real, path, 0, 0, walkerp, statep);
 }
 
-int diminuto_fs_mkdirp(const char * path, mode_t mode, int all)
+int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
 {
     int rc = 0;
     size_t length = 0;
