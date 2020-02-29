@@ -284,5 +284,49 @@ int main(void)
         STATUS();
     }
 
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs/", 0755, 0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = rmdir("unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = rmdir("unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
+    {
+        int rc = 0;
+        int debug = 0;
+        struct stat status;
+        TEST();
+        debug = diminuto_fs_debug(!0);
+        rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs/", 0755, !0);
+        ASSERT(rc == 0);
+        memset(&status, 0, sizeof(status));
+        rc = stat("unittest-fs/unittest-fs/unittest-fs", &status);
+        ASSERT(rc == 0);
+        ASSERT(S_ISDIR(status.st_mode));
+        rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = rmdir("unittest-fs/unittest-fs");
+        ASSERT(rc == 0);
+        rc = rmdir("unittest-fs");
+        ASSERT(rc == 0);
+        diminuto_fs_debug(debug);
+        STATUS();
+    }
+
     EXIT();
 }
