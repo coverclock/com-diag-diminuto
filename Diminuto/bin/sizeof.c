@@ -21,7 +21,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <wchar.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_offsetof.h"
 
@@ -80,6 +82,14 @@ int main(void)
     printsignof(off_t);
     printsignof(pid_t);
     printsignof(time_t);
+    printsignof(dev_t);
+    printsignof(ino_t);
+    printsignof(mode_t);
+    printsignof(nlink_t);
+    printsignof(uid_t);
+    printsignof(gid_t);
+    printsignof(blksize_t);
+    printsignof(blkcnt_t);
     printsizeof(pthread_t);
     printsizeof(pthread_mutex_t);
     printsizeof(pthread_cond_t);
