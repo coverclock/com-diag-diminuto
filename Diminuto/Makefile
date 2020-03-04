@@ -23,7 +23,7 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	59# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
@@ -161,9 +161,11 @@ ARFLAGS				:=	crsv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) -I $(OUT)/$(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CFLAGS				:=	$(CARCH) -g
+#CFLAGS				:=	$(CARCH) -g -pedantic
 #CFLAGS				:=	$(CARCH) -g -fprofile-arcs -ftest-coverage
 #CFLAGS				:=	$(CARCH) -O3
 CXXFLAGS			:=	$(CXXARCH) -g
+#CXXFLAGS			:=	$(CXXARCH) -g -pedantic
 #CXXFLAGS			:=	$(CXXARCH) -g -fprofile-arcs -ftest-coverage
 #CXXFLAGS			:=	$(CXXARCH) -O3
 CPFLAGS				:=	-i

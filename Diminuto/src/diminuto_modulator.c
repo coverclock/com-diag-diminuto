@@ -20,6 +20,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <sched.h>
+#include <stdint.h>
+
+/*
+ * N.B. casting mp->function to void * below produces an error. But
+ * NOT casting mp->function to void * produces another error when
+ * using %p. In effect, there is no way to print a function pointer
+ * using %p without causing a warning. Hence the weird casting below.
+ */
 
 void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
 {
@@ -40,10 +48,10 @@ void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
                     " condition=%d"
                     " data=%p"
                     "\n",
-        mp,
+        (void *)mp,
         sizeof(*mp),
-        mp->function,
-        mp->fp,
+        (void *)(uintptr_t)mp->function,
+        (void *)(mp->fp),
         mp->pin,
         mp->duty,
         mp->on,

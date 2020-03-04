@@ -237,7 +237,7 @@ int main(void)
     }
 
     {
-        unsigned char string[2] = "";
+        char string[2] = "";
         int ii;
         int printable;
         for (ii = 0; ii < 256; ++ii) {
@@ -281,10 +281,10 @@ int main(void)
         size_t size;
         unsigned int ii;
         diminuto_dump(stdout, DATA, sizeof(DATA));
-        buffer = (char *)malloc(sizeof(DATA));
+        buffer = (unsigned char *)malloc(sizeof(DATA));
         memcpy(buffer, DATA, sizeof(DATA));
         diminuto_dump(stdout, buffer, sizeof(DATA));
-        size = diminuto_escape_collapse(buffer, buffer, sizeof(DATA));
+        size = diminuto_escape_collapse((char *)buffer, (char *)buffer, sizeof(DATA));
         diminuto_dump(stdout, buffer, size);
         for (ii = 0; ii < (size - 1); ++ii) {
             ASSERT(buffer[ii] == ii);

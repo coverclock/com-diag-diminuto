@@ -127,7 +127,7 @@ extern ssize_t diminuto_fd_maximum(void);
  */
 typedef struct DiminutoFdMap {
     size_t count;
-    void * data[0];
+    void * data[0]; /* Will produce -pedantic warnings wherever used. */
 } diminuto_fd_map_t;
 
 /**

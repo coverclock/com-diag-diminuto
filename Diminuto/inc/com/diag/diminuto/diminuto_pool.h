@@ -36,7 +36,7 @@ typedef diminuto_list_t diminuto_pool_t;
  */
 typedef struct DiminutoPoolObject {
     diminuto_list_t link;
-    uint64_t payload[0];
+    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
 } diminuto_pool_object_t;
 
 /**

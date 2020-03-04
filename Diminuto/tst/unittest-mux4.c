@@ -33,7 +33,7 @@
 #include <sys/socket.h>
 
 static const int MIN_UNINIT = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
-static const int MAX_UNINIT = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. */
+static const int MAX_UNINIT = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. Produces -pedantic warning. */
 static const int NXT_UNINIT = -1;
 
 #if defined(__arm__)

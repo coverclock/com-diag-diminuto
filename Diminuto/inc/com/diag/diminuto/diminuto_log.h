@@ -31,8 +31,8 @@
  *
  * The long preprocessor macro and symbol names were designed to make
  * conflicts with other code unlikely. Feel free to define your own
- * shorter names from these, for example define DBG(_FORMAT_, ...) to
- * be DIMINUTO_LOG_DEBUG(_FORMAT_, __VA_ARGS__).
+ * shorter names from these, for example define DBG(...) to
+ * be DIMINUTO_LOG_DEBUG(__VA_ARGS__).
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -398,14 +398,14 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_DISABLE)
-#   define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) ((void)0)
-#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG(_PRIORITY_, ...) ((void)0)
+#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, ...) ((void)0)
 #elif defined(__KERNEL__) || defined(MODULE)
-#   define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__)
-#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_ _FORMAT_, ## __VA_ARGS__) : ((void)0))
+#   define DIMINUTO_LOG(_PRIORITY_, ...) (void)printk(_PRIORITY_ __VA_ARGS__)
+#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? (void)printk(_PRIORITY_ __VA_ARGS__) : ((void)0))
 #else
-#   define DIMINUTO_LOG(_PRIORITY_, _FORMAT_, ...) diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__)
-#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, _FORMAT_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, _FORMAT_, ## __VA_ARGS__) : ((void)0))
+#   define DIMINUTO_LOG(_PRIORITY_, ...) diminuto_log_log(_PRIORITY_, __VA_ARGS__)
+#   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, __VA_ARGS__) : ((void)0))
 #endif
 
 /******************************************************************************/
@@ -415,9 +415,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_EMERGENCY_DISABLE)
-#   define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_EMERGENCY(...) ((void)0)
 #else 
-#   define DIMINUTO_LOG_EMERGENCY(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_EMERGENCY(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -427,9 +427,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_ALERT_DISABLE)
-#   define DIMINUTO_LOG_ALERT(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_ALERT(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_ALERT(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_ALERT(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -439,9 +439,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_CRITICAL_DISABLE)
-#   define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_CRITICAL(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_CRITICAL(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_CRITICAL(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -451,9 +451,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_ERROR_DISABLE)
-#   define DIMINUTO_LOG_ERROR(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_ERROR(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_ERROR(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_ERROR(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -463,9 +463,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_WARNING_DISABLE)
-#   define DIMINUTO_LOG_WARNING(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_WARNING(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_WARNING(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_WARNING(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -475,9 +475,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_NOTICE_DISABLE)
-#   define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_NOTICE(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_NOTICE(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_NOTICE(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -487,9 +487,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_INFORMATION_DISABLE)
-#   define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_INFORMATION(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_INFORMATION(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_INFORMATION(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, __VA_ARGS__)
 #endif
 
 /******************************************************************************/
@@ -499,9 +499,9 @@ extern void diminuto_perror(const char * s);
 #endif
 
 #if defined(DIMINUTO_LOG_DEBUG_DISABLE)
-#   define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) ((void)0)
+#   define DIMINUTO_LOG_DEBUG(...) ((void)0)
 #else
-#   define DIMINUTO_LOG_DEBUG(_FORMAT_, ...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, _FORMAT_, ## __VA_ARGS__)
+#   define DIMINUTO_LOG_DEBUG(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, __VA_ARGS__)
 #endif
 
 /******************************************************************************/

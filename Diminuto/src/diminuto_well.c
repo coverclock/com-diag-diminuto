@@ -15,15 +15,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <errno.h>
 
 diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment, size_t pagesize, size_t linesize)
 {
     diminuto_well_t * wellp = (diminuto_well_t *)0;
     diminuto_well_t * well;
-    void * control = (void *)0;
-    void * data = (void *)0;
-    size_t ii;
+    uint8_t * control = (uint8_t *)0;
+    uint8_t * data = (uint8_t *)0;
+    size_t ii = 0;
 
     do {
 
@@ -31,8 +32,8 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
             pagesize = diminuto_memory_pagesize(0);
         }
 
-        control = diminuto_memory_aligned(pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
-        if (control == (void *)0) {
+        control = (uint8_t *)diminuto_memory_aligned(pagesize, sizeof(diminuto_list_t) * (DIMINUTO_WELL_NODE + count));
+        if (control == (uint8_t *)0) {
             break;
         }
 
@@ -47,17 +48,17 @@ diminuto_well_t * diminuto_well_init(size_t size, size_t count, size_t alignment
         alignment = diminuto_memory_power(alignment);
         size = diminuto_memory_alignment(size, alignment);
 
-        data = diminuto_memory_aligned(pagesize, size * count);
-        if (data == (void *)0) {
+        data = (uint8_t *)diminuto_memory_aligned(pagesize, size * count);
+        if (data == (uint8_t *)0) {
             free(control);
             break;
         }
 
         well = (diminuto_well_t *)control;
-        diminuto_list_datainit(&well[DIMINUTO_WELL_FREE], control);
-        diminuto_list_datainit(&well[DIMINUTO_WELL_USED], data);
+        diminuto_list_datainit(&well[DIMINUTO_WELL_FREE], (void *)control);
+        diminuto_list_datainit(&well[DIMINUTO_WELL_USED], (void *)data);
         for (ii = 0; ii < count; ++ii) {
-            diminuto_list_insert(diminuto_list_prev(&well[DIMINUTO_WELL_FREE]), diminuto_list_datainit(&well[DIMINUTO_WELL_NODE + ii], data));
+            diminuto_list_insert(diminuto_list_prev(&well[DIMINUTO_WELL_FREE]), diminuto_list_datainit(&well[DIMINUTO_WELL_NODE + ii], (void *)data));
             data += size;
         }
 

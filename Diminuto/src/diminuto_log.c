@@ -115,7 +115,7 @@ void diminuto_log_open_syslog(const char * name, int option, int facility)
 
 void diminuto_log_open(const char * name)
 {
-    return diminuto_log_open_syslog(name, diminuto_log_option, diminuto_log_facility);
+    diminuto_log_open_syslog(name, diminuto_log_option, diminuto_log_facility);
 }
 
 void diminuto_log_close(void)

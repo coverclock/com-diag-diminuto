@@ -28,7 +28,7 @@ int main(void)
         TEST();
 
         integer.word = 0;
-        integer.bitfield.bit = 1;
+        integer.bitfield.bit = 1; /* Produces -pedantic warning. Why? */
 
         if (integer.word == 0x80000000) { 
             DIMINUTO_LOG_INFORMATION("%s\n", DIMINUTO_LOG_HERE "high-to-low");

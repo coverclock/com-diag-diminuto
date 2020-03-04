@@ -35,6 +35,7 @@
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
+#if defined(PROBLEMATIC)
 typedef void (function_t)(void);
 
 struct Zero {
@@ -42,6 +43,7 @@ struct Zero {
 };
 
 typedef uint8_t (Array)[0];
+#endif
 
 int main(void)
 {
@@ -62,10 +64,14 @@ int main(void)
     printsignof(unsigned long long);
     printsizeof(float);
     printsizeof(double);
+#if defined(PROBLEMATIC)
     printsizeof(void);
+#endif
     printsizeof(bool);
     printsignof(enum_t);
+#if defined(PROBLEMATIC)
     printsizeof(function_t);
+#endif
     printsignof(int8_t);
     printsignof(uint8_t);
     printsignof(int16_t);
@@ -100,7 +106,9 @@ int main(void)
     printsignof(diminuto_port_t);
     printsignof(diminuto_unsigned_t);
     printsignof(diminuto_signed_t);
+#if defined(PROBLEMATIC)
     printsizeof(struct Zero);
     printsizeof(Array);
+#endif
     return 0;
 }

@@ -7,6 +7,9 @@
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * This unit tests requires a "make most" which makes *more* than
+ * make all.
+ *
  * uClibc doesn't implement all of the underlying mechanisms used by this
  * feature. Worse, bionic (Android) seems to implement quite different
  * semantics.
@@ -127,7 +130,7 @@ int main(int argc, char ** argv)
     functionp = diminuto_module_symbol(module, "diminuto_module_example_function", (const char *)0);
     ASSERT(functionp != (void *)0);
 
-    rc = (*(int (*)(int))functionp)(value);
+    rc = (*(int (*)(int))functionp)(value); /* Produces -pedantic warning. */
     CHECKPOINT("0x%8.8x=(*%p)(0x%8.8x)\n", rc, functionp, value);
     ASSERT(rc == ~value);
 

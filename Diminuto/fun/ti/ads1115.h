@@ -231,7 +231,7 @@ static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t 
     } while (0);
 
     return rc;
-};
+}
 
 /**
  * Configure the device and start a conversion.
@@ -313,7 +313,7 @@ static int ti_ads1115_sense(int fd, int device, double * bufferp)
         rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONFIG, &config);
         if (rc < 0) { break; }
 
-        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, &raw);
+        rc = diminuto_i2c_get_word(fd, device, TI_ADS1115_REGISTER_CONVERSION, (uint16_t *)&raw);
         if (rc < 0) { break; }
 
         rc = ti_ads1115_rawtovolts(ti_ads1115_dtoh(config), ti_ads1115_dtoh(raw), bufferp);

@@ -93,7 +93,7 @@ static int operate(
 
     if (debug) {
         fprintf(stderr, "%s: address=%p length=%zu offset=%p size=%zu effective=%p base=%p data=%p mask=0x%llx value=%p option=%c\n",
-            program, (void *)address, length, (void *)offset, size, (void *)effective, *basep, datap, (long long unsigned int)mask, valuep, opt);
+            program, (void *)address, length, (void *)offset, size, (void *)effective, *basep, datap, (long long unsigned int)mask, (void *)valuep, opt);
     }
 
     if (*basep == (void *)0) {

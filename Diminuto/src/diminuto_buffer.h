@@ -33,7 +33,7 @@ typedef struct DiminutoBuffer {
         size_t item;
         struct DiminutoBuffer * next;
     } header;
-    char payload[0];
+    char payload[0]; /* Will produce -pedantic warnings whereever used. */
 } diminuto_buffer_t;
 
 /**
