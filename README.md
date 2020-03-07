@@ -310,6 +310,11 @@ output from GPS devices. The fact that gpstool can do so much in a single
 file of not much more than a thousand lines of C code is a testimony to
 how useful Diminuto can be (and how much time it can save you).
 
+N.B. Diminuto requires IPv6 support. IPv6 is not enabled by default on
+all platforms (in particular the Raspberry Pi). Under Raspbian 10,
+I added a line "ipv6" to /etc/modules and rebooted. The command
+"modprobe ipv6" also worked albeit non-persistently.
+
 # Repositories
 
 <https://github.com/coverclock/com-diag-diminuto>
