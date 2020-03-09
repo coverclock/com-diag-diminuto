@@ -360,7 +360,7 @@ extern void diminuto_serror_f(const char * f, int l, const char * s);
  * @def diminuto_serror
  * Calls diminuto_serror_f with __FILE__, __LINE__, and @a _STRING_.
  */
-#define diminuto_serror(_STRING_) diminuto_serror_f(__FILE__, __LINE__, _STRING_);
+#define diminuto_serror(_STRING_) diminuto_serror_f(__FILE__, __LINE__, _STRING_)
 
 /**
  * If the calling process is interactive, emulate the stdio
@@ -377,7 +377,7 @@ extern void diminuto_perror_f(const char * f, int l, const char * s);
  * @def diminuto_perror
  * Calls diminuto_perror_f with __FILE__, __LINE__, and @a _STRING_.
  */
-#define diminuto_perror(_STRING_) diminuto_perror_f(__FILE__, __LINE__, _STRING_);
+#define diminuto_perror(_STRING_) diminuto_perror_f(__FILE__, __LINE__, _STRING_)
 
 #endif
 
