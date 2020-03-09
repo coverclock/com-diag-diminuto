@@ -22,10 +22,12 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "unittest-log.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 int main(int argc, char ** argv)
 {
@@ -220,6 +222,24 @@ int main(int argc, char ** argv)
         mine();
         diminuto_log_emit("END\n");
 
+        STATUS();
+    }
+
+    {
+        TEST();
+        const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
+        char buffer[sizeof("ERRNO[XXXXXXXXXX]")];
+        int ii;
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_perror(buffer);
+        }
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_serror(buffer);
+        }
         STATUS();
     }
 

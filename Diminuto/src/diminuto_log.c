@@ -285,18 +285,18 @@ void diminuto_log_emit(const char * format, ...)
  * ERROR NUMBER FUNCTIONS
  *****************************************************************************/
 
-void diminuto_serror(const char * s)
+void diminuto_serror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d[%d]: %s: %s\n", f, l, save,  s, strerror(save));
     errno = save;
 }
 
-void diminuto_perror(const char * s)
+void diminuto_perror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d[%d]: %s: %s\n", f, l, save, s, strerror(save));
     errno = save;
 }

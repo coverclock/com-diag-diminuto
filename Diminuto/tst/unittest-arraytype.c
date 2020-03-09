@@ -52,11 +52,13 @@ static void bar(array_t variable) {
      */
     fprintf(stderr, "bar(variable)\n");
     fprintf(stderr, "%s@%d: variable=%p\n", __FILE__, __LINE__, (void *)variable);
+#if defined(PROBLEMATIC)
     fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
     assert(sizeof(variable) == sizeof(void *));
     fprintf(stderr, "%s@%d: zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
     assert(sizeof(variable[0]) == 2);
     fprintf(stderr, "%s@%d: countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
+#endif
     fprintf(stderr, "%s@%d: variable=%p\n", __FILE__, __LINE__, (void *)&variable);
     fprintf(stderr, "%s@%d: eighth=%u\n", __FILE__, __LINE__, variable[7]);
     assert(variable[7] == 88);
