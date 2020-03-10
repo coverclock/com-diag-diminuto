@@ -410,8 +410,6 @@ I added a line "ipv6" to /etc/modules and rebooted. The command
 
 <https://github.com/coverclock/com-diag-concha>
 
-<https://github.com/coverclock/com-diag-drover>
-
 <https://github.com/coverclock/com-diag-grandote>
 
 <https://github.com/coverclock/com-diag-hazer>
