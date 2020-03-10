@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The FD feature implements convenience functions for doing I/O on
+ * file descriptors, including sockets.
  */
 
 #include "com/diag/diminuto/diminuto_fs.h"

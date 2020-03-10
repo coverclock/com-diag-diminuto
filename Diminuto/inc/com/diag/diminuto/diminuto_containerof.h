@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Container Of feature provides a mechanism to derive a
+ * container base pointer from the pointer to a field in the
+ * container. It was inspired by an equivalent capability in
+ * the Linux kernel.
  */
 
 #include "com/diag/diminuto/diminuto_offsetof.h"

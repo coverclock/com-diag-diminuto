@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Lock feature provides a mechanism to implement old-school atomic
+ * locks using the file system.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

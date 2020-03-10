@@ -5,13 +5,12 @@
 /**
  * @file
  *
- * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Provides socket and other interprocess/interprocessor communication
- * capabilities that are agnostic as to whether IPv4 or IPv6 is being used.
+ * The IPC feature provides  socket and other interprocess/interprocessor
+ * communication capabilities that are agnostic as to whether IPv4 or IPv6
+ * is being used.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

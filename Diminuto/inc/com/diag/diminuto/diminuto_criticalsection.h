@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Critical Section feature implements a critical section of
+ * code using a POSIX pthread mutex. The mutex is automatically
+ * unlocked if the thread cleanup action is invoked.
  */
 
 #include <pthread.h>

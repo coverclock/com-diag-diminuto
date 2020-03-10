@@ -5,12 +5,13 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Some of the underlying functionality used by this feature is not implemented
+ * The Module feature implements an interface to the Linux user-space
+ * module feature, where a linked object module can be loaded into memory and
+ * interrogated, executed, and otherwise used at run time. Some of the
+ * underlying functionality used by this feature is not implemented
  * in uClibc, and implemented with different semantics in bionic (Android).
  */
 

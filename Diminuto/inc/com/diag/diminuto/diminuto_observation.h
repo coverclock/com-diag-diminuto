@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2019-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2019-2020 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Observation feature provides a mechanism for an application to
+ * create and use an output file, but not have that output file be
+ * visible to other processes or threads until it is completely
+ * written out and closed.
  */
 
 #include <stdio.h>

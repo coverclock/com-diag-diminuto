@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Serial feature provides a convenient way to configure and
+ * manage serial ports (including, very usefully, USB serial adaptors).
+ * If you're doing embedded Linux work, you're gonna be using serial
+ * ports.
  */
 
 #include <stdio.h>

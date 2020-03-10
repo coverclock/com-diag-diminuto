@@ -5,10 +5,14 @@
 /**
  * @file
  *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The FS feature defines some tools to deal with a file system from the
+ * application point of view. The most useful function is the recursive
+ * file system walker, which can apply a callback function to each file
+ * starting at any root in a file system. It also has a remarkably useful
+ * function to programmatically duplicate "mkdir -p".
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

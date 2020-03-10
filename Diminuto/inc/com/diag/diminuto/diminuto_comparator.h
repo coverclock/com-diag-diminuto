@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Comparator feature provides a standard API, and usable examples,
+ * for a comparator function used by other features as a callback.
  */
 
 /**

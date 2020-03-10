@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Memmber Of feature creates a reference to a field in a structure
+ * without actually having an instance of such a structure. Sounds
+ * impossible, but useful in some limited contexts.
  */
 
 /**

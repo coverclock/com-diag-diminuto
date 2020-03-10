@@ -5,14 +5,13 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This code uses the real-time POSIX timer_create(2), timer_settime(2) feature,
- * to mimic the setitimer(2) semantics, but with a monotonic clock. The
- * resulting one-shot or periodic timer is, like setitimer(2), a singleton.
+ * The Timer feature uses the real-time POSIX timer_create(2) and
+ * timer_settime(2) facilites to mimic the setitimer(2) semantics, but
+ * with a monotonic clock. The resulting one-shot or periodic timer is,
+ * like setitimer(2), a singleton.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

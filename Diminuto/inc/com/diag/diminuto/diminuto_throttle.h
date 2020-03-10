@@ -5,12 +5,11 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implements a Generic Cell Rate Algorithm (GCRA) using a Virtual Scheduler.
+ * The Throttle feature implements a Generic Cell Rate Algorithm (GCRA) using
+ * a Virtual Scheduler.
  * This can in turn be used to implement a variety of traffic shaping and rate
  * control algorithms. The VS works by monitoring the inter-arrival interval of
  * events and comparing that interval to the expected value. When the cumulative

@@ -5,11 +5,10 @@
 /**
  * @file
  *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
+ * The String feature provides some alternate string handling functions.
  * IMPORTANT SAFETY TIP: depending on the implementation, any alternative
  * implementations of malloc(3) et al. used by this strdup may be incompatible.
  * So if, for example, you install allocate some memory, then install an

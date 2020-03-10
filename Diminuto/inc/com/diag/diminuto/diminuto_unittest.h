@@ -5,18 +5,16 @@
 /**
  * @file
  *
- * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This is a dirt simple unit testing framework for C programs.
- * If you are using C++ (or even if you are using C but are
+ * The Unit Test feature is a dirt simple unit testing framework for C
+ * programs. If you are using C++ (or even if you are using C but are
  * comfortable with C++) you would be better off using one of the
  * established C++ unit test frameworks. I particularly like Google
- * Test (a.k.a. gtest). But developers I know and trust have made good
- * use of CxxUnit, CppUnit, and CxxUnitLite. (If you are using Java,
- * go directly to JUnit.)
+ * Test (a.k.a. gtest). Also, developers I know and trust have made good
+ * use of CxxUnit, CppUnit, and CxxUnitLite. If you are using Java,
+ * go directly to JUnit.
  */
 
 #include "com/diag/diminuto/diminuto_log.h"

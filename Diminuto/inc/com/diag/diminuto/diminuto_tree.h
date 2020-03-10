@@ -5,15 +5,13 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implements a Red-Black Tree. This is intended to be used to build more
- * complex data structures, such as those have associative-memory-like
- * properties. See diminuto_store and its unit test for a more complete
- * solution.
+ * The Tree feature implements a Red-Black Tree. This is intended to be used
+ * to build more complex data structures, such as those that have
+ * associative-memory-like properties. See diminuto_store and its unit test
+ * for a more complete solution.
  *
  * I looked at all of the references below, but the one I found the most useful
  * was the one from the U-Boot boot loader, which is a simplified version of the

@@ -5,12 +5,11 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * The interrupter feature propagates a SIGINT signal to appropriate processes
+ * The Interrupter feature provides a convenient API for using SIGINT.
+ * It propagates a SIGINT signal to appropriate processes
  * (children or process group) when it receives one; SIGINT is typically the
  * signal received by a program running interactively in BASH when the user
  * types control-C.

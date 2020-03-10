@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Offset Of feature computes the offset of a field from the
+ * beginning of its structure without actually having an instance
+ * of that structure. See: this is where the Member Of feature is
+ * useful.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

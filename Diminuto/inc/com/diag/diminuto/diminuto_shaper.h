@@ -5,15 +5,14 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Use two throttles, a throttle being an implementation of the Generic Cell
- * Rate Algorithm (GCRA) using a Virtual Scheduler, to implement a traffic
- * shaper. The shaper can shape the emission of an event stream to a peak rate
- * with a jitter tolerance, and a sustained rate with a maximum burst size.
+ * The Shaper feature uses two instances of the Throttle feature, a throttle
+ * being an implementation of the Generic Cell Rate Algorithm (GCRA) using a
+ * Virtual Scheduler, to implement a traffic shaper. The shaper can shape the
+ * emission of an event stream to a peak rate with a jitter tolerance, and
+ * a sustained rate with a maximum burst size.
  *
  * REFERENCES
  *

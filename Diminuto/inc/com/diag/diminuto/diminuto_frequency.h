@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This is where the fundamental unit of time is defined for Diminuto, in terms
+ * The Frequency feature defines the Diminuto fundamental unit of time, in terms
  * of the duration of a single Diminuto tick, represented as the inverse of this
  * period, which is a frequency in Hertz or cycles per second. _All_ Diminuto
  * features represent time at this resolution, unlike the system calls and

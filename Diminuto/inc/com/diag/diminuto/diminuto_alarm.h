@@ -5,10 +5,10 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Alarm feature provides a convenient API to using SIGALRM.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

@@ -5,13 +5,11 @@
 /**
  * @file
  *
- * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * This provides a slightly more abstract interface to stream and datagram
- * IPv6 sockets. It was derived from the IPv4-based ipc feature.
+ * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+
+ * The IPC4 feature provides a slightly more abstract interface to stream
+ * and datagram IPv6 sockets. It was derived from the IPC4 feature.
  *
  * Note that ALL uses of IPv6 addresses and ports are in HOST BYTE ORDER.
  * This simplifies their use in unit tests and applications.

@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * The reaper feature provides a SIGCHLD signal handler that will reap any
+ * The Reaper feature provides a SIGCHLD signal handler that will reap any
  * terminating children via a waitpid(2), and logging their termination signals
  * or exit statuses. This prevents a forking application from being infested
  * with zombie processes (although most applications will likely choose to do

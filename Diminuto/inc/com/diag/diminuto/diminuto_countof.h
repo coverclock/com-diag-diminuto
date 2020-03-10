@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Count Of feature returns the number of positions in an
+ * array, providing the sizeof the total array and the sizeof the
+ * array type are both known. This is based on a macro the author
+ * encountered in VxWorks decades ago.
  */
 
 /**

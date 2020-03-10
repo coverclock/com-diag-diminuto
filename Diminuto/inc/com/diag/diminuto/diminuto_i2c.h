@@ -5,13 +5,10 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * ABSTRACT
- *
+ * The I2C feature implements some I-squared-C convenience functions.
  * This is not a general purpose I2C API. It implements an API on top
  * of the Linux I2C ioctl(2) API that is useful for the kinds of I2C
  * devices I tend to work with.

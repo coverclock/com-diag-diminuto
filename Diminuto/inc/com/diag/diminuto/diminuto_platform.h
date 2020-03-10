@@ -5,15 +5,14 @@
 /**
  * @file
  *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This header file tries to infer the underlying platform. It has been tested
- * on Ubuntu 14.04 for both user-space builds ("glibc") and kernel module builds
- * ("kernel"), uClibc ("uclibc"), Android ("bionic"), Cygwin ("cygwin"), and
- * Mac OS X ("darwin"). It has also been used on ChrUbuntu, which is an Ubuntu
+ * The Platform feature tries to infer the underlying platform. it is
+ * sometimes successful. It has been tested on Ubuntu 14.04 for both
+ * user-space builds ("glibc") and kernel module builds ("kernel"),
+ * uClibc ("uclibc"), Android ("bionic"), Cygwin ("cygwin"), and Mac OS X
+ * ("darwin"). It has also been used on ChrUbuntu, which is an Ubuntu
  * environment running on top of ChromeOS, but this just looks like Ubuntu
  * ("glibc"). HOWEVER, note that Diminuto has never been intended to run on
  * anything but Linux/GNU, so future compatibility with Android, Cygwin, or

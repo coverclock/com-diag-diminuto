@@ -5,13 +5,11 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implements an object which can be inserted into and removed from a
- * circular doubly-linked list, in which insertions and
+ * The List feature implements an object which can be inserted into and
+ * removed from a circular doubly-linked list, in which insertions and
  * removals can be done in O(1) time, the head of the list can be
  * accessed in O(1) time, and a payload object can be on multiple lists
  * simultaneously.

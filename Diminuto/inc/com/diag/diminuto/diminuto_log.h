@@ -5,10 +5,14 @@
 /**
  * @file
  *
- * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Log feature provides a logging capabilility that uses the
+ * system log if the caller is a daemon, standard error if the
+ * caller is not a daemon, or the Linux kernel printk facility if
+ * the code is compiled using the kernel build system. This makes it
+ * easy to use logging from a reusable piece of code.
  *
  * This header file can legitimately be included more than once in a
  * single translation unit. It can be used in applications, daemons,

@@ -5,10 +5,13 @@
 /**
  * @file
  *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Map feature provides an API for virtual memory mapping and unmapping
+ * for code compiled in the context of the kernel build system, or for
+ * user-space applications running with sufficient privileges. (N.B. This
+ * is not frequently tested.)
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

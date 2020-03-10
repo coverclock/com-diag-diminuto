@@ -5,17 +5,17 @@
 /**
  * @file
  *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This facility was inspired by countless dump programs I have encountered
- * over the years on platforms like the IBM 360 and the PDP-11. Depending on
- * what you're doing, you might want to try diminuto_phex_emit() instead,
- * particularly if you are dumping data byte by byte from a real-time source
- * like a serial port. On the other hand, if your data is in a buffer or is
- * structured, this approach is probably better.
+ * The Dump feature implements a variety of memory dump functions to a
+ * FILE stream. This facility was inspired by countless dump programs the
+ * author has  encountered over the years on platforms like the IBM 360 and
+ * the PDP-11. Depending on what you're doing, you might want to try
+ * diminuto_phex_emit() instead, particularly if you are dumping data byte
+ * by byte from a real-time source like a serial port. On the other hand,
+ * if your data is in a buffer or is structured, this approach is probably
+ * better.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

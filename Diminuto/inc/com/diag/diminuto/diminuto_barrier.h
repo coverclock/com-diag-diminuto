@@ -5,11 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2019 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- * This is largely experimental.
+ * Copyright 2008-2019 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Barrier feature provides an interface to the GNU-specific
+ * synchronization and spin lock capabilities. This is experimental.
  */
 
 typedef int diminuto_spinlock_t;

@@ -5,15 +5,14 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Arvada CO USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013 Digital Aggregates Corporation, Arvada CO USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Emits characters to a FILE, encoding non-printable characters as if they
- * were written for a C program. Automatically inserts newlines. When printing
- * in hexadecimal, two hexadecimal digits are always printed, eliminating any
- * ambiguity. "phex" is pronounced "fex" but intended to mean "print hex".
+ * The PHex feature emits characters to a FILE stream, encoding non-printable
+ * characters as C-style escape sequences. Can automatically inserts newlines to
+ * wrap output. When printing in hexadecimal, two hexadecimal digits are always
+ * displayed, eliminating any ambiguity. "phex" is pronounced "fex" but intended
+ * to mean "print hex".
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

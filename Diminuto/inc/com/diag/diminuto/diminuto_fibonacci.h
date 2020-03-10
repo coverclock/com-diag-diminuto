@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txth<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock//com-diag-diminuto<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Fibonacci feature implements a Fibonacci-sequence generator. This
+ * has turned out to be useful, in the author's experience, for a variety
+ * of resource allocation strategies.
  *
  * Generate the Fibonacci sequence: x[i+2] = x[i+1] + x[i+0]. The modern
  * sequence, in which x[0] = 0 and x[1] = 1, starts at 0, where as the classic

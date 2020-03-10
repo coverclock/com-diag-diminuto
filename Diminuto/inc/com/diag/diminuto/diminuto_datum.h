@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implements get and put operators typically used for memory mapped
+ * The Datum feature implements get and put operators for memory mapped
  * register operations. May be included by user space applications (just
  * to get the data structures) or by kernel space code such as kernel
  * modules and device drivers. The get and put functions enforce strict

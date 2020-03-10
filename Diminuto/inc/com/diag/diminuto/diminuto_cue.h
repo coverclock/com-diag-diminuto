@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * The cue feature provides a software debouncer and edge detector. It can be
+ * The Cue feature provides a software debouncer and edge detector. It can be
  * used with the pin feature which manipulates GPIO pins using the sysfs
  * interface, but it can also be used independently. A cue can smooth out high
  * frequency events over a short duration. A polling time of 10ms works well
