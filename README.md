@@ -237,92 +237,15 @@ gcc 9.2.1
 (Some of these functional tests use hardware test fixtures I cobbled
 together specifically for this purpose.)
 
-# Unit Tests
+# Unit Test Suites
 
-* unittest-alarm
-* unittest-arraytype
-* unittest-barrier
-* unittest-bitfield
-* unittest-buffer
-* unittest-buffer-perf
-* unittest-bufferpool
-* unittest-coherentsection
-* unittest-containerof
-* unittest-controller
-* unittest-coreable
-* unittest-countof
-* unittest-criticalsection
-* unittest-cue
-* unittest-daemon
-* unittest-datum
-* unittest-dump
-* unittest-endianess
-* unittest-epoch
-* unittest-escape
-* unittest-fatal
-* unittest-fd
-* unittest-fibonacci
-* unittest-fletcher
-* unittest-frequency
-* unittest-fs
-* unittest-hamming
-* unittest-hangup-fore
-* unittest-hangup-too
-* unittest-hangup-tree
-* unittest-hangup-wan
-* unittest-heap
-* unittest-interrupter
-* unittest-ipc4
-* unittest-ipc6
-* unittest-ipc
-* unittest-ipc-endpoint
-* unittest-list
-* unittest-lock
-* unittest-log
-* unittest-log.h
-* unittest-map
-* unittest-memory
-* unittest-module
-* unittest-mux4
-* unittest-mux6
-* unittest-mux-eventloop
-* unittest-number
-* unittest-observation
-* unittest-offsetof
-* unittest-path
-* unittest-periodic
-* unittest-phex
-* unittest-pin
-* unittest-ping4
-* unittest-ping6
-* unittest-pipe
-* unittest-poll4
-* unittest-poll6
-* unittest-poll-eventloop
-* unittest-pool
-* unittest-proxy
-* unittest-reaper
-* unittest-renameat2
-* unittest-serializedsection
-* unittest-service
-* unittest-shaper
-* unittest-sizeof
-* unittest-stacktrace
-* unittest-store
-* unittest-string
-* unittest-system
-* unittest-terminator
-* unittest-testify
-* unittest-throttle
-* unittest-time
-* unittest-time-cost
-* unittest-timer
-* unittest-time-zone
-* unittest-tree
-* unittest-uninterruptible
-* unittest-unittest
-* unittest-well
-* unittest-widthof
+* make extended - these unit tests take a lunch time to run.
+* make geologic - these unit test take over night or more to run.
+* make halting - these unit tests hang if they don't work.
+* make mostest - these unit tests require "make most" to be run first.
+* sudo make privileged - these unit tests must be run as root.
+* make sanity - these unit tests take a coffee break to run.
+* nohup make nohup - these unit tests require "nohup" to work.
 
 # Directories
  
