@@ -408,13 +408,13 @@ I added a line "ipv6" to /etc/modules and rebooted. The command
 
 <https://github.com/coverclock/com-diag-assay>
 
-<https://github.com/coverclock/com-diag-concha>
-
-<https://github.com/coverclock/com-diag-grandote>
+<https://github.com/coverclock/com-diag-codex>
 
 <https://github.com/coverclock/com-diag-hazer>
 
 <https://github.com/coverclock/com-diag-obelisk>
+
+<https://github.com/coverclock/com-diag-placer>
 
 # Images
 
