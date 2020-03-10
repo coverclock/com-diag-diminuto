@@ -222,7 +222,7 @@ gcc 9.2.1
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
 
-# Examples
+# Functional Tests
 
 * adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
@@ -236,6 +236,93 @@ gcc 9.2.1
 
 (Some of these are functional tests that use hardware test fixtures I cobbled
 together specifically for this purpose.)
+
+# Unit Tests
+
+* unittest-alarm
+* unittest-arraytype
+* unittest-barrier
+* unittest-bitfield
+* unittest-buffer
+* unittest-buffer-perf
+* unittest-bufferpool
+* unittest-coherentsection
+* unittest-containerof
+* unittest-controller
+* unittest-coreable
+* unittest-countof
+* unittest-criticalsection
+* unittest-cue
+* unittest-daemon
+* unittest-datum
+* unittest-dump
+* unittest-endianess
+* unittest-epoch
+* unittest-escape
+* unittest-fatal
+* unittest-fd
+* unittest-fibonacci
+* unittest-fletcher
+* unittest-frequency
+* unittest-fs
+* unittest-hamming
+* unittest-hangup-fore
+* unittest-hangup-too
+* unittest-hangup-tree
+* unittest-hangup-wan
+* unittest-heap
+* unittest-interrupter
+* unittest-ipc4
+* unittest-ipc6
+* unittest-ipc
+* unittest-ipc-endpoint
+* unittest-list
+* unittest-lock
+* unittest-log
+* unittest-log.h
+* unittest-map
+* unittest-memory
+* unittest-module
+* unittest-mux4
+* unittest-mux6
+* unittest-mux-eventloop
+* unittest-number
+* unittest-observation
+* unittest-offsetof
+* unittest-path
+* unittest-periodic
+* unittest-phex
+* unittest-pin
+* unittest-ping4
+* unittest-ping6
+* unittest-pipe
+* unittest-poll4
+* unittest-poll6
+* unittest-poll-eventloop
+* unittest-pool
+* unittest-proxy
+* unittest-reaper
+* unittest-renameat2
+* unittest-serializedsection
+* unittest-service
+* unittest-shaper
+* unittest-sizeof
+* unittest-stacktrace
+* unittest-store
+* unittest-string
+* unittest-system
+* unittest-terminator
+* unittest-testify
+* unittest-throttle
+* unittest-time
+* unittest-time-cost
+* unittest-timer
+* unittest-time-zone
+* unittest-tree
+* unittest-uninterruptible
+* unittest-unittest
+* unittest-well
+* unittest-widthof
 
 # Directories
  
