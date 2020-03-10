@@ -952,6 +952,17 @@ sanity:
 	unittest-well
 	unittest-widthof
 
+halting:
+	coreable unittest-coreable || true
+	unittest-fatal || true
+	unittest-pipe | sleep 5
+
+mostest:
+	unittest-module
+
+privileged:
+	unittest-map
+
 extended:
 	unittest-alarm
 	unittest-buffer-perf
@@ -974,19 +985,8 @@ extended:
 geologic:
 	unittest-epoch
 
-mostest:
-	unittest-module
-
-elevated:
-	unittest-map
-
-halting:
-	unittest-pipe | sleep 5
-
-insanity:
-	unittest-coreable & sleep 10 || true
-	unittest-fatal & sleep 10 || true
-	unittest-hangup-fore & sleep 10 || true
-	unittest-hangup-wan & sleep 10 || true
-	unittest-hangup-too & sleep 10 || true
-	unittest-hangup-tree & sleep 10 || true
+nohup:
+	unittest-hangup-wan
+	unittest-hangup-too
+	unittest-hangup-tree
+	unittest-hangup-fore

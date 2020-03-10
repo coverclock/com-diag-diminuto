@@ -8,9 +8,13 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
+
 int main(int argc, char ** argv)
 {
     int *pointer = (int *)0;
+    TEST();
     *pointer = 0;
-    return 0;
+    FAILURE();
+    EXIT();
 }
