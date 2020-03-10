@@ -289,7 +289,7 @@ void diminuto_serror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d[%d]: %s: %s\n", f, l, save,  s, strerror(save));
+    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }
 
@@ -297,6 +297,6 @@ void diminuto_perror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d[%d]: %s: %s\n", f, l, save, s, strerror(save));
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }
