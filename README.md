@@ -234,7 +234,7 @@ gcc 9.2.1
 * pintest - Setting and getting GPIO pins (Pin).
 * walker - Walk the file system tree starting at a specified root (FS).
 
-(Some of these are functional tests that use hardware test fixtures I cobbled
+(Some of these functional tests use hardware test fixtures I cobbled
 together specifically for this purpose.)
 
 # Unit Tests
