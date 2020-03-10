@@ -897,16 +897,96 @@ install-include:
 .PHONY:	sanity
 
 sanity:
+	unittest-arraytype
+	unittest-barrier
+	unittest-bitfield
+	unittest-buffer
+	unittest-bufferpool
+	unittest-coherentsection
+	unittest-containerof
+	unittest-countof
+	unittest-criticalsection
+	unittest-cue
+	unittest-daemon
+	unittest-datum
+	unittest-dump
+	unittest-endianess
+	unittest-escape
+	unittest-fd
+	unittest-fibonacci
+	unittest-fletcher
+	unittest-frequency
+	unittest-hamming
+	unittest-heap
+	unittest-interrupter
+	unittest-ipc-endpoint
+	unittest-list
+	unittest-lock
+	unittest-log
+	unittest-memory
+	unittest-number
+	unittest-observation
+	unittest-offsetof
+	unittest-path
+	unittest-phex
+	unittest-pin
+	unittest-pool
+	unittest-proxy
+	unittest-reaper
+	unittest-renameat2
+	unittest-serializedsection
+	unittest-service
+	unittest-shaper
+	unittest-sizeof
+	unittest-stacktrace
 	unittest-store
-	unittest-timer
-	unittest-periodic
+	unittest-string
+	unittest-system
+	unittest-terminator
+	unittest-testify
+	unittest-throttle
+	unittest-time-zone
+	unittest-tree
+	unittest-uninterruptible
+	unittest-unittest
+	unittest-well
+	unittest-widthof
+
+extended:
+	unittest-alarm
+	unittest-buffer-perf
+	unittest-controller
+	unittest-fs
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
 	unittest-mux4
 	unittest-mux6
 	unittest-mux-eventloop
+	unittest-periodic
 	unittest-poll4
 	unittest-poll6
 	unittest-poll-eventloop
-	unittest-controller
+	unittest-time
+	unittest-time-cost
+	unittest-timer
+
+geologic:
+	unittest-epoch
+
+mostest:
+	unittest-module
+
+elevated:
+	unittest-map
+
+halting:
+	unittest-pipe | sleep 5
+
+insanity:
+	unittest-coreable & sleep 10 || true
+	unittest-fatal & sleep 10 || true
+	unittest-hangup-fore & sleep 10 || true
+	unittest-hangup-wan & sleep 10 || true
+	unittest-hangup-too & sleep 10 || true
+	unittest-hangup-tree & sleep 10 || true
