@@ -347,6 +347,17 @@ I added a line "ipv6" to /etc/modules and rebooted. The command
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
 
+# Articles
+
+Chip Overclock, "Some Stuff That Has Worked For Me In C", 2017-04,
+<https://coverclock.blogspot.com/2017/04/some-stuff-that-has-worked-for-me-in-c.html>
+
+Chip Overclock, "When The Silicon Meets The Road", 2018-07,
+<https://coverclock.blogspot.com/2018/07/when-silicon-meets-road.html>
+
+Chip Overclock, "When Learning By Doing Goes To Eleven", 2020-03,
+<https://coverclock.blogspot.com/2020/03/when-learning-by-doing-goes-to-eleven.html>
+
 # Build
 
 Clone, build, and play with Diminuto (some unit and functional tests
