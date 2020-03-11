@@ -731,7 +731,7 @@ isystems:
 
 ########## Documentation
 
-.PHONY:	documentation documentation-ancillary
+.PHONY:	documentation manuals
 
 DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
 
@@ -755,7 +755,7 @@ documentation $(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pd
 # https://www.ctan.org/tex-archive/macros/latex/contrib/multirow
 # https://www.ctan.org/pkg/sectsty
 # https://www.ctan.org/tex-archive/macros/latex/contrib/tocloft
-documentation-ancillary:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
+manuals:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
 	$(MAKE) -C $(OUT)/$(DOC_DIR)/latex refman.pdf || exit 0
 	cp $(OUT)/$(DOC_DIR)/latex/refman.pdf $(OUT)/$(DOC_DIR)/pdf
 	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps
