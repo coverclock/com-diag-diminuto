@@ -35,9 +35,9 @@
 /**
  * Each Fibonacci number is of this integer type. This works for a lot of
  * applications, but if it doesn't work for you, feel free to try a narrower
- * (uint8_t) or wider (uint32_t) integer type.
+ * (uint16_t) or wider (uint64_t) integer type.
  */
-typedef uint16_t diminuto_fibonacci_value_t;
+typedef uint32_t diminuto_fibonacci_value_t;
 
 /**
  * The Fibonacci generator has to maintain the last two values as its state.

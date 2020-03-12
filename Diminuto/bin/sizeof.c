@@ -50,6 +50,7 @@ int main(void)
     printsignof(char);
     printsignof(signed char);
     printsignof(unsigned char);
+    printf("sizeof(\"%s\")=%zu\n", "FIVE", sizeof("FIVE"));
     printsignof(short);
     printsignof(signed short);
     printsignof(unsigned short);
@@ -85,7 +86,6 @@ int main(void)
     printsignof(wchar_t);
     printsignof(size_t);
     printsignof(ssize_t);
-    printsignof(off_t);
     printsignof(pid_t);
     printsignof(time_t);
     printsignof(dev_t);
@@ -94,6 +94,7 @@ int main(void)
     printsignof(nlink_t);
     printsignof(uid_t);
     printsignof(gid_t);
+    printsignof(off_t);
     printsignof(blksize_t);
     printsignof(blkcnt_t);
     printsizeof(pthread_t);
