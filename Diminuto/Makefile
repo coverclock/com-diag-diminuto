@@ -873,7 +873,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY:	sanity
+.PHONY:	sanity halting mostest privileged extended geologic nohup
 
 sanity:
 	unittest-arraytype

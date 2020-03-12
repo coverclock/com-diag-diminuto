@@ -378,6 +378,9 @@ Optionally install Diminuto headers, library, and utilities in /usr/local.
 
     sudo make install
 
+# Unit Tests
+ 
+
 # Acknowledgements
 
 I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
