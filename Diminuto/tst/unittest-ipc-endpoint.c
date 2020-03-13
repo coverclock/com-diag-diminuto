@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 
 #define FQDN "diag.com"
 #define IPV4 "205.178.189.131"
@@ -47,6 +48,12 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
+    COMMENT("FQDN=\"%s\"\n", FQDN);
+    COMMENT("IPV4=\"%s\"\n", IPV4);
+    COMMENT("IPV6=\"%s\"\n", IPV6);
+    COMMENT("SERVICE=\"%s\"\n", SERVICE);
+    COMMENT("PORT=\"%s\"\n", PORT);
+
     unspecified4 = DIMINUTO_IPC4_UNSPECIFIED;
     unspecified6 = DIMINUTO_IPC6_UNSPECIFIED;
     localhost4 = diminuto_ipc4_address("localhost");
@@ -64,13 +71,12 @@ int main(int argc, char * argv[])
     {
         diminuto_ipv4_buffer_t ipv4buffer;
         diminuto_ipv6_buffer_t ipv6buffer;
-        COMMENT("FQDN=\"%s\"\n", FQDN);
         COMMENT("unspecified4=%s\n", diminuto_ipc4_address2string(unspecified4, ipv4buffer, sizeof(ipv4buffer)));
-        COMMENT("unspecified6=%s\n", diminuto_ipc6_address2string(unspecified6, ipv4buffer, sizeof(ipv6buffer)));
+        COMMENT("unspecified6=%s\n", diminuto_ipc6_address2string(unspecified6, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("localhost4=%s\n", diminuto_ipc4_address2string(localhost4, ipv4buffer, sizeof(ipv4buffer)));
-        COMMENT("localhost6=%s\n", diminuto_ipc6_address2string(localhost6, ipv4buffer, sizeof(ipv6buffer)));
+        COMMENT("localhost6=%s\n", diminuto_ipc6_address2string(localhost6, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("fqdn4=%s\n", diminuto_ipc4_address2string(fqdn4, ipv4buffer, sizeof(ipv4buffer)));
-        COMMENT("fqdn6=%s\n", diminuto_ipc6_address2string(fqdn6, ipv4buffer, sizeof(ipv6buffer)));
+        COMMENT("fqdn6=%s\n", diminuto_ipc6_address2string(fqdn6, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address4=%s\n", diminuto_ipc4_address2string(address4, ipv4buffer, sizeof(ipv4buffer)));
         COMMENT("address46=%s\n", diminuto_ipc6_address2string(address46, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address6=%s\n", diminuto_ipc6_address2string(address6, ipv6buffer, sizeof(ipv6buffer)));
