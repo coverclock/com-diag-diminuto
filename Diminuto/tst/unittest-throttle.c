@@ -28,7 +28,6 @@ int main(int argc, char ** argv)
     {
         TEST();
 
-        ASSERT(sizeof(size_t) == 8);
         ASSERT(((size_t)(~(size_t)0)) > 0);
         ASSERT(sizeof(diminuto_ticks_t) == 8);
         ASSERT(((diminuto_ticks_t)(~(diminuto_ticks_t)0)) > 0);
