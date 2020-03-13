@@ -50,7 +50,8 @@ int main(void)
     printsignof(char);
     printsignof(signed char);
     printsignof(unsigned char);
-    printf("sizeof(\"%s\")=%zu\n", "FIVE", sizeof("FIVE"));
+    printf("sizeof('%c')=%zu\n", '?', sizeof('?'));
+    printf("sizeof(\"%s\")=%zu\n", "STRING", sizeof("STRING"));
     printsignof(short);
     printsignof(signed short);
     printsignof(unsigned short);
