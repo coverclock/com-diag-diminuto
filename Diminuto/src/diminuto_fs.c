@@ -136,13 +136,16 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
         if (Debug) { fprintf(stderr, "%s@%d: \"%s\" [%zu]\n", __FILE__, __LINE__, path, total); }
 
         /*
-         * Get the attributes for the file identified by the path.
+         * Get the attributes for the file identified by the path. SOme errors
+         * we ignore since the file in question can legitimate change between
+         * the opendir(3) and the lstat(2), or because of the lack of privilege
+         * of the caller.
          */
 
         rc = lstat(path, &status);
         if (rc >= 0) {
             /* Do nothing. */
-        } else if ((errno == EACCES) || (errno == ENOENT)) {
+        } else if ((errno == EACCES) || (errno == ENOENT) || (errno == ENOTDIR) || (errno == EOVERFLOW) || (errno == ENODEV)) {
             if (Debug) {
                 diminuto_perror(path);
             }
@@ -169,6 +172,9 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 
         /*
          * If a flat file, we're done; if a directory, recurse and descend.
+         * Some errors we ignore since the directory in question can
+         * legitimately change between the lstat(2) and the opendir(3),
+         * or are caused by a lack of privileged on the part of the caller.
          */
 
         if (S_ISDIR(status.st_mode)) {
@@ -176,7 +182,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
             dp = opendir(path);
             if (dp != (DIR *)0) {
                 /* Do nothing. */
-            } else if ((errno == EACCES) || (errno == ENOENT)) {
+            } else if ((errno == EACCES) || (errno == ENOENT) || (errno == ENOTDIR) || (errno == ENODEV)) {
                 if (Debug) {
                     diminuto_perror(path);
                 }
