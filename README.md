@@ -234,8 +234,8 @@ gcc 9.2.1
 * pintest - Setting and getting GPIO pins (Pin).
 * walker - Walk the file system tree starting at a specified root (FS).
 
-(Some of these functional tests use hardware test fixtures I cobbled
-together specifically for this purpose.)
+(Some of these functional tests use hardware test fixtures I fabricated
+specifically for this purpose.)
 
 # Unit Test Suites
 
@@ -377,9 +377,6 @@ may require you be root).
 Optionally install Diminuto headers, library, and utilities in /usr/local.
 
     sudo make install
-
-# Unit Tests
- 
 
 # Acknowledgements
 
