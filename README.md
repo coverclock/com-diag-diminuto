@@ -320,10 +320,22 @@ output from GPS devices. The fact that gpstool can do so much in a single
 file of not much more than a thousand lines of C code is a testimony to
 how useful Diminuto can be (and how much time it can save you).
 
-N.B. Diminuto requires IPv6 support. IPv6 is not enabled by default on
-all platforms (in particular the Raspberry Pi). Under Raspbian 10,
-I added a line "ipv6" to /etc/modules and rebooted. The command
-"modprobe ipv6" also worked albeit non-persistently.
+Another good example is the survey and census functional tests in the
+Placer project (ditto). The file system walker in Diminuto is a good
+example of how a need in another project leads to a kind of organic
+growth in Diminuto.
+
+# Issues
+
+Diminuto requires IPv6 support. IPv6 is not enabled by default on all
+platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
+a line "ipv6" to /etc/modules and rebooted. The command "modprobe ipv6"
+also worked albeit non-persistently.
+
+Diminuto was at one time ported to other platforms outside of the
+Linux mainstream, like the uC library (Buildroot), Bionic (Android),
+and MacOS. You might see some artifacts of those efforts still in the
+code base, but I haven't made any attempt to maintain them.
 
 # Repositories
 
