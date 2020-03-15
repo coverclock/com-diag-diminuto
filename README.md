@@ -9,7 +9,7 @@ Linux systems programming library in C.
 
 # Copyright
 
-Copyright 2008-2019 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2020 by the Digital Aggregates Corporation, Colorado, USA.
 
 # License
 
