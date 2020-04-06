@@ -337,6 +337,9 @@ Linux mainstream, like the uC library (Buildroot), Bionic (Android),
 and MacOS. You might see some artifacts of those efforts still in the
 code base, but I haven't made any attempt to maintain them.
 
+The headless script requires the inotify tools. Not all distros install
+these by default (e.g. Raspbian). Try: sudo apt-get install inotify-tools .
+
 # Repositories
 
 <https://github.com/coverclock/com-diag-diminuto>
