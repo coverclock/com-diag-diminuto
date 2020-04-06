@@ -340,6 +340,9 @@ code base, but I haven't made any attempt to maintain them.
 The headless script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian). Try: sudo apt-get install inotify-tools .
 
+On some distros I had to install the g++, the GNU C++ compiler, to get
+the features.h header file.
+
 # Repositories
 
 <https://github.com/coverclock/com-diag-diminuto>
