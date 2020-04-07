@@ -54,7 +54,7 @@ static void report(diminuto_ticks_t ticks)
     diminuto_ticks_t fraction;
 
     diminuto_time_duration(ticks, &day, &hour, &minute, &second, &fraction);
-    printf("elapsed %lluticks %d/%2.2d:%2.2d:%2.2d.%9.9llu\n", ticks, day, hour, minute, second, (long long unsigned int)fraction);
+    printf("elapsed %lluticks %d/%2.2d:%2.2d:%2.2d.%9.9llu\n", (long long unsigned int)ticks, day, hour, minute, second, (long long unsigned int)fraction);
 }
 
 int main(int argc, char * argv[])
