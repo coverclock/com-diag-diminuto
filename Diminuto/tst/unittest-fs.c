@@ -57,42 +57,42 @@ int main(void)
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, (void *)0);
+        rc = diminuto_fs_walk(".", callback, (void *)0);
         EXPECT(rc == -123);
         STATUS();
     }
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, "");
+        rc = diminuto_fs_walk(".", callback, "");
         EXPECT(rc == -456);
         STATUS();
     }
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, "/");
+        rc = diminuto_fs_walk("/usr/local/bin", callback, "/usr/local/bin");
         EXPECT(rc == 123);
         STATUS();
     }
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, "/bin/true");
+        rc = diminuto_fs_walk("/bin", callback, "/bin/true");
         EXPECT(rc == 123);
         STATUS();
     }
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, "/usr/local/bin");
+        rc = diminuto_fs_walk("/usr/local", callback, "/usr/local/bin");
         EXPECT(rc == 123);
         STATUS();
     }
     {
         int rc = 0;
         TEST();
-        rc = diminuto_fs_walk("/", callback, "/usr/local/include/non-existent");
+        rc = diminuto_fs_walk("/usr/local", callback, "/usr/local/include/com-diag-diminuto-fs-non-existent");
         EXPECT(rc == 0);
         STATUS();
     }

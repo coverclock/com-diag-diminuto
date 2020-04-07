@@ -65,7 +65,8 @@ int main(void)
         EXPECT(diminuto_offsetof(struct Beta, eight) == 8);
         EXPECT(diminuto_offsetof(struct Beta, eightyone) == 16);
         EXPECT(diminuto_offsetof(struct Beta, final) == 97);
-        ASSERT(sizeof(struct Beta) == 104); /* Consider arrays. */
+        ASSERT((sizeof(struct Beta) == 100) || (sizeof(struct Beta) == 104)); /* Consider arrays. */
+
         STATUS();
     }
     {
