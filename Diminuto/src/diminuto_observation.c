@@ -180,7 +180,7 @@ FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
 
         ticks = diminuto_frequency_ticks2units(ticks, 1000000);
 
-        snprintf(&(path[length - sizeof(SUFFIX) + 1]), sizeof(TIMESTAMP), "-%04d%02d%02dT%02d%02d%02dZ%06ld", year, month, day, hour, minute, second, ticks);
+        snprintf(&(path[length - sizeof(SUFFIX) + 1]), sizeof(TIMESTAMP), "-%04d%02d%02dT%02d%02d%02dZ%06lld", year, month, day, hour, minute, second, (long long signed int)ticks);
 
         rc = fflush(fp);
         if (rc != 0) {

@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -172,15 +173,24 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     size_t space = sizeof(buffer);
     size_t total = 0;
     char * bufferp = buffer;
+    static char hostname[sizeof("localhost")] = { '\0', };
 
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
+
+    if (hostname[0] != '\0') {
+        /* Do nothing. */
+    } else if (gethostname(hostname, sizeof(hostname)) < 0) {
+        strncpy(hostname, "localhost", sizeof(hostname));
+    } else {
+        hostname[sizeof(hostname) - 1] = '\0';
+    }
 
     /* Prepending an ISO8601 timestamp allows us to sort-merge logs. */
     /* Bracketing special fields allows us to more easily filter logs. */
     /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ <%s> [%d] {%lx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), PRIORITIES[priority & 0x7], getpid(), pthread_self());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%d] {%lx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], getpid(), pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {

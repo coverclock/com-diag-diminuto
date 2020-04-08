@@ -23,7 +23,7 @@ default:	all
 TITLE				:=	Diminuto
 
 MAJOR				:=	60# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
@@ -895,6 +895,7 @@ sanity:
 	unittest-fibonacci
 	unittest-fletcher
 	unittest-frequency
+	unittest-fs
 	unittest-hamming
 	unittest-heap
 	unittest-interrupter
@@ -946,7 +947,6 @@ extended:
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
-	unittest-fs
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
