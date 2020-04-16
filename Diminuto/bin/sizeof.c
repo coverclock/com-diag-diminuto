@@ -35,7 +35,7 @@
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
-typedef struct BitField { int bit1 : 1; char bit2 : 1; } bitfield_t;
+typedef struct BitField { int bit1 : 1; char bit2 : 8; } bitfield_t;
 
 #if defined(PROBLEMATIC)
 typedef void (function_t)(void);
