@@ -35,6 +35,8 @@
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
+typedef struct BitField { int bit1 : 1; char bit2 : 1; } bitfield_t;
+
 #if defined(PROBLEMATIC)
 typedef void (function_t)(void);
 
@@ -71,6 +73,7 @@ int main(void)
 #endif
     printsizeof(bool);
     printsignof(enum_t);
+    printsizeof(bitfield_t);
 #if defined(PROBLEMATIC)
     printsizeof(function_t);
 #endif
