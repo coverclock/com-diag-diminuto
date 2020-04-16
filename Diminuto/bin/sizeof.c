@@ -85,6 +85,7 @@ int main(void)
     printsignof(intptr_t);
     printsignof(uintptr_t);
     printsignof(wchar_t);
+    printsignof(wint_t);
     printsignof(size_t);
     printsignof(ssize_t);
     printsignof(pid_t);
