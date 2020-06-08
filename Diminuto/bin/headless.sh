@@ -17,16 +17,12 @@
 # to watch the full screen updates performed by the base script. Multiple
 # headless instantiations for the same output file can be run at one time.
 # Exiting the script directly or indirectly (e.g. by logging off or exiting
-# a terminal emulator) should have no effect on the gpstool instance running
-# in the background.
-#
-# The optional LIMIT parameter is to deal with the vagaries of various
-# terminal emulators; I'm lookin' at you, Chromebook's Beagle Term.
+# a terminal emulator) should have no effect on the application instance
+# running in the background.
 #
 # This script traps SIGHUP and creates a timestamped copy of the next
 # headless file being watched in the same directory. A HUP (hangup)
-# signal can be easily sent from the bash command line by suspending the
-# script (
+# signal can be easily sent from the bash command line.
 #
 # DEPENDENCIES
 #
@@ -36,7 +32,6 @@
 PROGRAM=$(basename ${0})
 HEADLESS=${1:-"/dev/null"}
 PIDFIL=${2:-"./${PROGRAM}.pid"}
-LIMIT=${3:-$(($(stty size | cut -d ' ' -f 1) - 2))}
 
 CANONICAL=$(readlink -f ${HEADLESS})
 DIRECTORY=$(dirname ${CANONICAL})
@@ -62,13 +57,7 @@ while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
 	CHECKPOINT=N
     fi
     clear
-    awk '
-      begin   { inp="INP [   ]"; out="OUT [   ]"; arm=1; }
-      /^INP / { inp=substr($0,0,79); arm=1; next; }
-      /^OUT / { out=substr($0,0,79); arm=1; next; }
-              { if (arm!=0) { print inp; print out; arm=0; } print $0; next; }
-      end     { if (arm!=0) { print inp; print out; arm=0; } }
-    ' ${CANONICAL} | head -n ${LIMIT}
+    stdbuf -o0 cat ${CANONICAL}
   fi
 done
 
