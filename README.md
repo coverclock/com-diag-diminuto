@@ -197,7 +197,7 @@ gcc 9.2.1
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
-* headless - display contents of an observation file as it changes.
+* headless - watch for an observation file and indicate when it arrives.
 * headup - sends a SIGHUP (hangup signal) to a running headless script.
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
