@@ -41,8 +41,9 @@ test -n "$(which inotifywait)" || exit 2
 test -d ${DIRECTORY} || exit 2
 
 echo ${SELF} > ${PIDFIL}
-trap "CHECKPOINT=Y" SIGHUP
+trap "kill -TERM -- -$$" SIGINT SIGQUIT SIGTERM
 trap "rm -f ${PIDFIL}" EXIT
+trap "CHECKPOINT=Y" SIGHUP
 
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
     if [[ "${MOVED}" == "${TARGET}" ]]; then
