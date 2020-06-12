@@ -26,6 +26,8 @@
 # sudo apt-get install inotify-tools
 #
 
+SELF=$$
+
 PROGRAM=$(basename ${0})
 HEADLESS=${1:-"/dev/null"}
 PIDFIL=${2:-"./${PROGRAM}.pid"}
@@ -35,14 +37,13 @@ DIRECTORY=$(dirname ${CANONICAL})
 FILE=$(basename ${CANONICAL})
 TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
 CHECKPOINT=N
-SELF=$$
 
 test -n "$(which inotifywait)" || exit 2
 test -d ${DIRECTORY} || exit 2
 
 echo ${SELF} > ${PIDFIL}
+trap "rm -f ${PIDFIL}; kill -KILL -- -${SELF}" SIGINT SIGQUIT SIGTERM
 trap "CHECKPOINT=Y" SIGHUP
-trap "rm -f ${PIDFIL}" EXIT
 
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
     if [[ "${MOVED}" == "${TARGET}" ]]; then
