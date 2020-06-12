@@ -9,7 +9,7 @@
 # Uses the inotify tool to watch for the indicated file to show
 # up, then emits its canonical path name to standard outout. Also
 # watches for a hangup (HUP) signal (SIGHUP) and when it sees it,
-# creates a timestamped copy of the next indicated file in the
+# creates a timestamped hard link of the next indicated file in the
 # same directory. Used to implement applications that run
 # headless.
 #
@@ -29,10 +29,10 @@
 SELF=$$
 
 PROGRAM=$(basename ${0})
-HEADLESS=${1:-"/dev/null"}
-PIDFIL=${2:-"./${PROGRAM}.pid"}
+OUTFIL=${1:-"/dev/null"}
+PIDFIL=${2:-"/tmp/${PROGRAM}.pid"}
 
-CANONICAL=$(readlink -f ${HEADLESS})
+CANONICAL=$(readlink -f ${OUTFIL})
 DIRECTORY=$(dirname ${CANONICAL})
 FILE=$(basename ${CANONICAL})
 TARGET="${DIRECTORY}/ MOVED_TO ${FILE}"
@@ -48,9 +48,7 @@ trap "CHECKPOINT=Y" SIGHUP
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
     if [[ "${MOVED}" == "${TARGET}" ]]; then
         if [[ "${CHECKPOINT}" == "Y" ]]; then
-            TEMPORARY=$(mktemp ${CANONICAL}-XXXXXXXXXX)
-            cp ${CANONICAL} ${TEMPORARY}
-            mv ${TEMPORARY} ${CANONICAL}-$(date -u '+%Y%m%dT%H%M%SZ%N')
+            ln ${CANONICAL} ${CANONICAL}-$(date -u '+%Y%m%dT%H%M%SZ%N')
             CHECKPOINT=N
         fi
         echo ${CANONICAL}
