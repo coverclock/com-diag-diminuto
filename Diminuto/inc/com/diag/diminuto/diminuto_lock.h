@@ -80,4 +80,13 @@ extern int diminuto_lock_unlock(const char * file);
  */
 extern pid_t diminuto_lock_check(const char * file);
 
+/**
+ * Atomically create a file with the specified path (e.g. "/var/run/foo.pid")
+ * containing the PID text string of the calling process. This has no lock
+ * semantics, but is useful for creating a file containing a PID.
+ * @param file is the path and name of the lock file.
+ * @return 0 if successful, <0 with errno set otherwise.
+ */
+extern int diminuto_lock_file(const char * file);
+
 #endif

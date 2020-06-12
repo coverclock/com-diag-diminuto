@@ -118,6 +118,48 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    {
+        static const char * FILENAME = "/tmp/unittest-lock-3.pid";
+        int rc = 0;
+        pid_t pid1;
+        pid_t pid2;
+        pid_t pid3;
+        pid_t pid4;
+        pid_t pid5;
+
+        (void)unlink(FILENAME);
+
+        pid1 = getpid();
+        ASSERT(pid1 >= 0);
+
+        pid2 = diminuto_lock_check(FILENAME);
+        ASSERT(pid2 < 0);
+
+        rc = diminuto_lock_file(FILENAME);
+        ASSERT(rc == 0);
+
+        pid3 = diminuto_lock_check(FILENAME);
+        ASSERT(pid3 >= 0);
+        ASSERT(pid3 == pid1);
+
+        rc = diminuto_lock_file(FILENAME);
+        ASSERT(rc == 0);
+
+        pid4 = diminuto_lock_check(FILENAME);
+        ASSERT(pid4 >= 0);
+        ASSERT(pid4 == pid1);
+
+        rc = diminuto_lock_unlock(FILENAME);
+        ASSERT(rc == 0);
+
+        pid5 = diminuto_lock_check(FILENAME);
+        ASSERT(pid5 < 0);
+
+        rc = diminuto_lock_unlock(FILENAME);
+        ASSERT(rc < 0);
+
+        STATUS();
+    }
 
     EXIT();
 }
