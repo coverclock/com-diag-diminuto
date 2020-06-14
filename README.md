@@ -197,8 +197,7 @@ gcc 9.2.1
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
-* headless - watch for an observation file and indicate when it arrives.
-* headup - sends a SIGHUP (hangup signal) to a running headless script.
+* headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
@@ -207,6 +206,7 @@ gcc 9.2.1
 * loopback - provide a configurable serial port loopback.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
+* observe - watch for an observation file and indicate when it arrives.
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
 * pinchange - execute a command when a GPIO pin changes state.
@@ -337,7 +337,7 @@ Linux mainstream, like the uC library (Buildroot), Bionic (Android),
 and MacOS. You might see some artifacts of those efforts still in the
 code base, but I haven't made any attempt to maintain them.
 
-The headless script requires the inotify tools. Not all distros install
+The observe script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian). Try: sudo apt-get install inotify-tools .
 
 On some distros I had to install the g++, the GNU C++ compiler, to get

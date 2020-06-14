@@ -15,11 +15,11 @@
 #
 # USAGE
 #
-# headless OUTFILE [ PIDFILE ]
+# observe OUTFILE [ PIDFILE ]
 #
 # EXAMPLE
 #
-# headless out/host/tmp/base.out
+# observe out/host/tmp/base.out
 #
 # DEPENDENCIES
 #
@@ -41,8 +41,8 @@ CHECKPOINT=N
 test -n "$(which inotifywait)" || exit 2
 test -d ${DIRECTORY} || exit 2
 
-echo ${SELF} > ${PIDFIL}
 trap "rm -f ${PIDFIL}; kill -KILL -- -${SELF}" SIGINT SIGQUIT SIGTERM
+echo ${SELF} > ${PIDFIL}
 trap "CHECKPOINT=Y" SIGHUP
 
 while MOVED=$(inotifywait -e moved_to ${DIRECTORY} 2> /dev/null); do
