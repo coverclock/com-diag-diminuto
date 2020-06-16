@@ -41,7 +41,7 @@ CHECKPOINT=N
 test -n "$(which inotifywait)" || exit 2
 test -d ${DIRECTORY} || exit 2
 
-trap "rm -f ${PIDFIL}; kill -KILL -- -${SELF}" SIGINT SIGQUIT SIGTERM
+trap "trap '' SIGINT SIGQUIT SIGTERM; rm -f ${PIDFIL}; kill -TERM -- -${SELF}; exit 0" SIGINT SIGQUIT SIGTERM
 echo ${SELF} > ${PIDFIL}
 trap "CHECKPOINT=Y" SIGHUP
 
