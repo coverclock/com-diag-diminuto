@@ -34,12 +34,12 @@ extern void diminuto_assert_f(int cond, const char * string, const char * file, 
  * @def diminuto_assert
  * If @a _COND_ is false then call diminuto_assert_f with an exit code.
  */
-#define diminuto_assert(_COND_) ((!(_COND_)) ? diminuto_assert_f(!0, #_COND_, __FILE__, __LINE__, errno, 1) : ((void)0))
+#define diminuto_assert(_COND_) ((!(_COND_)) ? diminuto_assert_f(0, #_COND_, __FILE__, __LINE__, errno, 1) : ((void)0))
 
 /**
  * @def diminuto_expect
  * If @a _COND_ is false then call diminuto_assert_f with no exit code.
  */
-#define diminuto_expect(_COND_) ((!(_COND_)) ? diminuto_assert_f(!0, #_COND_, __FILE__, __LINE__, errno, 0) : ((void)0))
+#define diminuto_expect(_COND_) ((!(_COND_)) ? diminuto_assert_f(0, #_COND_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
 #endif
