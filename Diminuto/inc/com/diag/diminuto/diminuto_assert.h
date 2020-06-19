@@ -11,13 +11,11 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
-#include <string.h>
 
 /**
- * If the asserted condition is not true, log an error message. If the exit
- * code is non-zero, exit with that code.
+ * If the asserted condition is not true, log an error message and then if
+ * the exit code is non-zero, exit with that code.
  * @param cond is the condition, treated as a boolean.
  * @param string is the stringified condition.
  * @param file is the name of the translation unit.
@@ -25,26 +23,23 @@
  * @param error is the errno error number.
  * @param code is the exit code.
  */
-static inline void diminuto_assert_f(int cond, const char * string, const char * file, int line, int error, int code)
-{
-    if (!cond) {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: FAIL! (%s) <%d> \"%s\" {%d}\n", file, line, string, error, error ? strerror(error) : "", code);
-        if (code) {
-            exit(code);
-        }
-    }
-}
+extern void diminuto_assert_f(int cond, const char * string, const char * file, int line, int error, int code);
+
+/*
+ * N.B. It is important to evaluate the condition once and only once,
+ *      since the expression may have side effects.
+ */
 
 /**
  * @def diminuto_assert
- * Calls diminuto_assert_f with @a _COND_ and an exit code.
+ * If @a _COND_ is false then call diminuto_assert_f with an exit code.
  */
-#define diminuto_assert(_COND_) diminuto_assert_f((_COND_), #_COND_, __FILE__, __LINE__, errno, 1)
+#define diminuto_assert(_COND_) ((!(_COND_)) ? diminuto_assert_f(!0, #_COND_, __FILE__, __LINE__, errno, 1) : ((void)0))
 
 /**
- * @def diminuto_assert
- * Calls diminuto_assert_f with @a _COND_ but without an exit code.
+ * @def diminuto_expect
+ * If @a _COND_ is false then call diminuto_assert_f with no exit code.
  */
-#define diminuto_expect(_COND_) diminuto_assert_f((_COND_), #_COND_, __FILE__, __LINE__, errno, 0)
+#define diminuto_expect(_COND_) ((!(_COND_)) ? diminuto_assert_f(!0, #_COND_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
 #endif
