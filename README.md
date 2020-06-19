@@ -116,6 +116,22 @@ Ubuntu 19.10 "Eoan"
 Linux 5.3.0    
 gcc 9.2.1    
 
+"Gypsum"    
+HP Mini 110-1100    
+Intel i686 32-bit    
+Intel Atom N270 @ 1.6GHz x 2    
+Mint 19.3 "Tricia"    
+Linux 5.0.0    
+gcc 7.5.0    
+
+"Neon"    
+GPD Micro PC    
+Intel x86_64
+Intel Celeron N4100 @ 1.10GHz x 2 x 2
+Ubuntu MATE 19.10 "eoan"    
+Linux 5.3.0    
+gcc 9.2.1    
+
 # Features
 
 * alarm - receive and check for a SIGALRM signal.
