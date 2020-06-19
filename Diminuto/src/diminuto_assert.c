@@ -9,6 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include <stdlib.h>
 #include <string.h>
 
 void diminuto_assert_f(int cond, const char * string, const char * file, int line, int error, int code)
