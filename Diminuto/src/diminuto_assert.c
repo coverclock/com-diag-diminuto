@@ -12,12 +12,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-void diminuto_assert_f(int cond, const char * string, const char * file, int line, int error, int code)
+/*
+ * We check the condition again, even though it has been done already
+ * in the macros in the header file, so that this can be called purely
+ * as a function.
+ */
+
+void diminuto_assert_f(int condition, const char * string, const char * file, int line, int error, int flag)
 {
-    if (!cond) {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: ASSERT (%s) FAILED! [%d] \"%s\" {%d}\n", file, line, string, error, error ? strerror(error) : "", code);
-        if (code) {
-            exit(code);
+    if (!condition) {
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: CONDITION (%s) FAILED! %d=\"%s\"\n", file, line, string, error, error ? strerror(error) : "");
+        if (flag) {
+            abort();
         }
     }
 }
