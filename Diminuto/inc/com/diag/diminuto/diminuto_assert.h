@@ -32,13 +32,13 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
 
 /**
  * @def diminuto_assert
- * If @a _CONDITION_ is false then call diminuto_assert_f with an exit code.
+ * If @a _CONDITION_ is false then call diminuto_assert_f to abort.
  */
 #define diminuto_assert(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, !0) : ((void)0))
 
 /**
  * @def diminuto_expect
- * If @a _CONDITION_ is false then call diminuto_assert_f with no exit code.
+ * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
  */
 #define diminuto_expect(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
