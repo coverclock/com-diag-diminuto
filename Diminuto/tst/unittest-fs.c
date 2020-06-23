@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
 
 static int callback(void * vp, const char * name, const char * path, size_t depth, const struct stat * statp)
 {
@@ -79,6 +80,12 @@ int main(void)
         int rc = 0;
         TEST();
         rc = diminuto_fs_walk("/bin", callback, "/bin/true");
+        /*
+         * Ubuntu MATE 19.10 soft links /bin to /usr/bin.
+         */
+        if (rc == 0) {
+            rc = diminuto_fs_walk("/usr/bin", callback, "/usr/bin/true");
+        }
         EXPECT(rc == 123);
         STATUS();
     }

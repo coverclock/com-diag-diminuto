@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	60# API changes that may require that applications be modified.
 MINOR				:=	6# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -879,7 +879,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY:	sanity halting mostest privileged extended geologic nohup
+.PHONY:	sanity mostest privileged extended geologic nohup
 
 sanity:
 	unittest-arraytype
@@ -890,6 +890,7 @@ sanity:
 	unittest-bufferpool
 	unittest-coherentsection
 	unittest-containerof
+	coreable unittest-coreable && false || true
 	unittest-countof
 	unittest-criticalsection
 	unittest-cue
@@ -898,6 +899,7 @@ sanity:
 	unittest-dump
 	unittest-endianess
 	unittest-escape
+	unittest-fatal && false || true
 	unittest-fd
 	unittest-fibonacci
 	unittest-fletcher
@@ -917,6 +919,7 @@ sanity:
 	unittest-path
 	unittest-phex
 	unittest-pin
+	unittest-pipe | sleep 5
 	unittest-pool
 	unittest-proxy
 	unittest-reaper
@@ -938,11 +941,6 @@ sanity:
 	unittest-unittest
 	unittest-well
 	unittest-widthof
-
-halting:
-	coreable unittest-coreable || true
-	unittest-fatal || true
-	unittest-pipe | sleep 5
 
 mostest:
 	unittest-module
