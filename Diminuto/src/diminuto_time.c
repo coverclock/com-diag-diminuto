@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_absolute.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -234,7 +235,7 @@ static void diminuto_time_stamp(const struct tm *datetimep, diminuto_sticks_t ti
     if (hourp != (int *)0) { *hourp = datetimep->tm_hour; }
     if (minutep != (int *)0) { *minutep = datetimep->tm_min; }
     if (secondp != (int *)0) { *secondp = datetimep->tm_sec; }
-    if (tickp != (diminuto_ticks_t *)0) { *tickp = llabs(ticks) % diminuto_frequency();
+    if (tickp != (diminuto_ticks_t *)0) { *tickp = abs64(ticks) % diminuto_frequency();
     }
 }
 
