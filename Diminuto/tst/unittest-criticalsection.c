@@ -52,6 +52,7 @@ static void * body(void * arg)
 
 int main(void)
 {
+
     {
         pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
         pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
@@ -121,6 +122,39 @@ int main(void)
         ASSERT(final == (void *)0);
 
         ASSERT(shared == LIMIT);
+
+        STATUS();
+    }
+
+    {
+        pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+        int rc = -1;
+
+        TEST();
+
+        rc = 0;
+        DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
+            rc = 1;
+        DIMINUTO_CRITICAL_SECTION_END;
+        ASSERT(rc == 1);
+
+        rc = 0;
+        DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
+            rc = 1;
+            DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
+                rc = 2;
+            DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_CRITICAL_SECTION_END;
+        ASSERT(rc == 1);
+
+        rc = 0;
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            rc = 1;
+            DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
+                rc = 2;
+            DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_CRITICAL_SECTION_END;
+        ASSERT(rc == 1);
 
         STATUS();
     }

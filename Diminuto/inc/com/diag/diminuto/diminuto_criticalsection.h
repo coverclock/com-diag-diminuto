@@ -25,10 +25,28 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MUTEXP_) \
     do { \
         pthread_mutex_t * _diminuto_criticalsection_mutexp_ = (_MUTEXP_); \
-        pthread_mutex_lock(_diminuto_criticalsection_mutexp_); \
-        pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
-        do { \
-            (void)0
+        int _diminuto_criticalsection_rc_ = -1; \
+        _diminuto_criticalsection_rc_ = pthread_mutex_lock(_diminuto_criticalsection_mutexp_); \
+        if (_diminuto_criticalsection_rc_ == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
+             do { \
+                 (void)0
+
+/**
+ * @def DIMINUTO_CRITICAL_SECTION_BEGIN_TRY
+ * Conditionally begin a code section that is serialized using a pthread
+ * mutex specified by the caller as a pointer in the argument @a _MUTEX_P
+ * by locking the mutex.
+ */
+#define DIMINUTO_CRITICAL_SECTION_TRY(_MUTEXP_) \
+    do { \
+        pthread_mutex_t * _diminuto_criticalsection_mutexp_ = (_MUTEXP_); \
+        int _diminuto_criticalsection_rc_ = -1; \
+        _diminuto_criticalsection_rc_ = pthread_mutex_trylock(_diminuto_criticalsection_mutexp_); \
+        if (_diminuto_criticalsection_rc_ == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
+            do { \
+                (void)0
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_END
@@ -36,8 +54,9 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
  * the beginning of the block by unlocking the mutex.
  */
 #define DIMINUTO_CRITICAL_SECTION_END \
-        } while (0); \
-        pthread_cleanup_pop(!0); \
+            } while (0); \
+            pthread_cleanup_pop(!0); \
+        } \
     } while (0)
 
 #endif
