@@ -234,10 +234,7 @@ pristine:	clean
 	rm -rf $(OUT_DIR)
 
 # This is not the same as simply listing the targets as dependencies.
-scratch:
-	make pristine
-	make depend
-	make all
+scratch:	pristine depend all
 
 clobber:	pristine
 	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po
@@ -970,17 +967,15 @@ extended:
 geologic:
 	unittest-epoch
 
+nohup:
+	unittest-hangup-wan
+	unittest-hangup-too
+	unittest-hangup-tree
+	unittest-hangup-fore
+
 signals:
 	unittest-alarm
 	unittest-interrupter
 	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
 	unittest-reaper
 	unittest-terminator
-
-# These four tests seem to need to be run manually.
-# The HUP interferes with make.
-hangup:
-	unittest-hangup-wan
-	unittest-hangup-too
-	unittest-hangup-tree
-	unittest-hangup-fore
