@@ -970,7 +970,16 @@ extended:
 geologic:
 	unittest-epoch
 
-nohup:
+signals:
+	unittest-alarm
+	unittest-interrupter
+	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
+	unittest-reaper
+	unittest-terminator
+
+# These four tests seem to need to be run manually.
+# The HUP interferes with make.
+hangup:
 	unittest-hangup-wan
 	unittest-hangup-too
 	unittest-hangup-tree
