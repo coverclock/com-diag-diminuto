@@ -24,7 +24,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	60# API changes that may require that applications be modified.
 MINOR				:=	7# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -970,7 +970,16 @@ extended:
 geologic:
 	unittest-epoch
 
-nohup:
+signals:
+	unittest-alarm
+	unittest-interrupter
+	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
+	unittest-reaper
+	unittest-terminator
+
+# These four tests seem to need to be run manually.
+# The HUP interferes with make.
+hangup:
 	unittest-hangup-wan
 	unittest-hangup-too
 	unittest-hangup-tree

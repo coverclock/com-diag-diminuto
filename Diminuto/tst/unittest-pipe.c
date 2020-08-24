@@ -23,7 +23,7 @@
 
 extern int diminuto_pipe_debug;
 
-static const char BUFFER[] = "unittest-pipe | cat > /dev/null & sleep 1 & pkill cat\n";
+static const char BUFFER[] = "unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat\n";
 
 int main(int argc, char ** argv)
 {

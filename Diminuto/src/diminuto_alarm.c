@@ -22,7 +22,7 @@
 
 int diminuto_alarm_debug = 0; /* Not part of the public API. */
 
-static int signaled = 0;
+static volatile int signaled = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int diminuto_alarm_signal(pid_t pid)
@@ -44,19 +44,22 @@ int diminuto_alarm_signal(pid_t pid)
 static void diminuto_alarm_handler(int signum)
 {
     int rc = 0;
+    int mysignaled = -1;
+    static const int MAXIMUM = ~(((int)1) << ((sizeof(signaled) * 8) - 1));
 
-    if (signum != SIGALRM) {
-        /* Do nothing. */
-    } else if (signaled < (~(((int)1) << ((sizeof(signaled) * 8) - 1)))) {
-        signaled += 1;
-    } else {
-        /* Do nothing. */
+    if (signum == SIGALRM) {
+        mysignaled = signaled;
+        if (mysignaled < MAXIMUM) {
+            mysignaled += 1;
+            signaled = mysignaled;
+        }
     }
+
 }
 
 int diminuto_alarm_check(void)
 {
-    int mysignaled;
+    int mysignaled = -1;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
         DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(SIGALRM);
