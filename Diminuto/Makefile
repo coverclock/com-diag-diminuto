@@ -975,6 +975,7 @@ nohup:
 
 signals:
 	unittest-alarm
+	# nohup make nohup; cat nohup.out
 	unittest-interrupter
 	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
 	unittest-reaper

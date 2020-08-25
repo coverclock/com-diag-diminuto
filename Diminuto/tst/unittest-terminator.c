@@ -58,7 +58,9 @@ int main(int argc, char ** argv)
 
     diminuto_delay(diminuto_frequency(), 0);
 
+    ASSERT(diminuto_reaper_reap((int *)0) == pid);
     ASSERT(diminuto_reaper_check());
+    ASSERT(!diminuto_reaper_check());
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "END parent=%d\n", getpid());
 

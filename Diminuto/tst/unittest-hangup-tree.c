@@ -81,9 +81,8 @@ int main(int argc, char ** argv)
 
         CHECKPOINT("unittest-hangup-tree PARENT READY\n");
 
-        id = waitpid(pid, &status, 0);
+        id = diminuto_reaper_wait(&status);
         ASSERT(id == pid);
-
         ASSERT(status == 0);
 
         ASSERT(diminuto_reaper_check());

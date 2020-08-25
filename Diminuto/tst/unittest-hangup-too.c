@@ -74,6 +74,8 @@ int main(int argc, char ** argv)
 
         diminuto_delay(diminuto_frequency(), 0);
 
+        ASSERT(diminuto_reaper_wait((int *)0) == pid);
+
         ASSERT(diminuto_reaper_check());
         ASSERT(!diminuto_reaper_check());
 
