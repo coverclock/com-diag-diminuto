@@ -73,7 +73,7 @@ int diminuto_reaper_check(void)
     if (!mysignaled) {
         /* Do nothing. */
     } else if (diminuto_reaper_debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_reaper_check: SIGCHLD");
+        DIMINUTO_LOG_DEBUG("diminuto_reaper_check: SIGCHLD [%d]", mysignaled);
    } else {
         /* Do nothing. */
     }
@@ -94,7 +94,7 @@ static pid_t diminuto_reaper_reap_generic(int * statusp, int flag)
     } else if (pid == 0) {
         /* Do nothing. */
     } else if (diminuto_reaper_debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_reaper_reap_generic: [%d] (%d)", pid, status);
+        DIMINUTO_LOG_DEBUG("diminuto_reaper_reap_generic: waitpid [%d] (%d)", pid, status);
     } else {
         /* Do nothing. */
     }
