@@ -212,7 +212,7 @@ TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 ########## Main Entry Points
 
-.PHONY:	all most plus dist tidy clean pristine clobber
+.PHONY:	all most plus dist tidy clean pristine clobber scratch
 
 all:	$(TARGETALL)
 
