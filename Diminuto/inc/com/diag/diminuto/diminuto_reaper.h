@@ -16,6 +16,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <sys/wait.h> /* For WIFEXISTED etc. macros. */
 
 /**
  * Send a process a SIGCHLD signal.
@@ -30,6 +31,26 @@ extern int diminuto_reaper_signal(pid_t pid);
  * @return the number of SIGCHLD signals received since the previous call.
  */
 extern int diminuto_reaper_check(void);
+
+/**
+ * Return the process identifier, and the qualified exit status in a value
+ * result parameter if the parameter is non-null, of a child process, or 0
+ * if there is no terminated child process, or <0 if an error occurred.
+ * If a PID is not returned, the value result parameter is left unchanged.
+ * @param statusp points to a variable into which the
+ * @return the PID of the terminated child process, or 0, or <0.
+ */
+extern pid_t diminuto_reaper_reap(int * statusp);
+
+/**
+ * Wait and Return the process identifier, and the qualified exit status
+ * in a value result parameter if the parameter is non-null, of a child
+ * process, or <0 if an error occurred. If a PID is not returned, the
+ * value result parameter is left unchanged.
+ * @param statusp points to a variable into which the
+ * @return the PID of the terminated child process, or <0 if an error occurred.
+ */
+extern pid_t diminuto_reaper_wait(int * statusp);
 
 /**
  * Install a SIGCHLD signal handler in the caller. The handler will
