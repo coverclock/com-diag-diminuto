@@ -5,14 +5,13 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
- * The Reaper feature provides a SIGCHLD signal handler that will reap any
- * terminating children via a waitpid(2), and logging their termination signals
- * or exit statuses. This prevents a forking application from being infested
- * with zombie processes (although most applications will likely choose to do
- * the waitpid(2) themselves).
+ * The Reaper feature provides a SIGCHLD signal handler and functions to reap
+ * any terminating children via a waitpid(2), and optionally logging their
+ * termination signals or exit statuses. This prevents a forking application
+* from being infested with zombie processes.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -53,8 +52,7 @@ extern pid_t diminuto_reaper_reap(int * statusp);
 extern pid_t diminuto_reaper_wait(int * statusp);
 
 /**
- * Install a SIGCHLD signal handler in the caller. The handler will
- * reap any pending child zombie processes.
+ * Install a SIGCHLD signal handler in the caller.
  * @param restart is true if interrupt system calls should be restarted.
  * @return 0 for success, <0 otherwise.
  */
