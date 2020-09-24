@@ -29,8 +29,8 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
         _diminuto_criticalsection_rc_ = pthread_mutex_lock(_diminuto_criticalsection_mutexp_); \
         if (_diminuto_criticalsection_rc_ == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
-             do { \
-                 (void)0
+            do { \
+                (void)0
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_TRY
