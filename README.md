@@ -349,16 +349,31 @@ platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
 a line "ipv6" to /etc/modules and rebooted. The command "modprobe ipv6"
 also worked albeit non-persistently.
 
+    sudo modprobe ipv6
+    sudo echo "ipv6" >> /etc/modules
+
+On some distros I had to install the gcc, g++, and make.
+
+    sudo apt-get install gcc
+    sudo apt-get install g++
+    sudo apt-get install make
+
+For my own workflow, I installed the following tools.
+
+    sudo apt-get install openssh-server
+    sudo apt-get install git
+    sudo apt-get install vim
+    sudo apt-get install screen
+
+The observe script requires the inotify tools. Not all distros install
+these by default (e.g. Raspbian).
+
+    sudo apt-get install inotify-tools
+
 Diminuto was at one time ported to other platforms outside of the
 Linux mainstream, like the uC library (Buildroot), Bionic (Android),
 and MacOS. You might see some artifacts of those efforts still in the
 code base, but I haven't made any attempt to maintain them.
-
-The observe script requires the inotify tools. Not all distros install
-these by default (e.g. Raspbian). Try: sudo apt-get install inotify-tools .
-
-On some distros I had to install the g++, the GNU C++ compiler, to get
-the features.h header file.
 
 # Repositories
 
