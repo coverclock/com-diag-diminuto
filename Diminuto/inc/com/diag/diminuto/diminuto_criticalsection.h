@@ -29,11 +29,11 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
         _diminuto_criticalsection_rc_ = pthread_mutex_lock(_diminuto_criticalsection_mutexp_); \
         if (_diminuto_criticalsection_rc_ == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
-             do { \
-                 (void)0
+            do { \
+                (void)0
 
 /**
- * @def DIMINUTO_CRITICAL_SECTION_BEGIN_TRY
+ * @def DIMINUTO_CRITICAL_SECTION_TRY
  * Conditionally begin a code section that is serialized using a pthread
  * mutex specified by the caller as a pointer in the argument @a _MUTEX_P
  * by locking the mutex.
