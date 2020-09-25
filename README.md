@@ -342,7 +342,7 @@ Placer project (ditto). The file system walker in Diminuto is a good
 example of how a need in another project leads to a kind of organic
 growth in Diminuto.
 
-# Issues
+# Dependencies
 
 Diminuto requires IPv6 support. IPv6 is not enabled by default on all
 platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
@@ -352,7 +352,7 @@ also worked albeit non-persistently.
     sudo modprobe ipv6
     sudo echo "ipv6" >> /etc/modules
 
-On some distros I had to install the gcc, g++, and make.
+On some distros I had to install gcc, g++, and make.
 
     sudo apt-get install gcc
     sudo apt-get install g++
@@ -375,9 +375,11 @@ Linux mainstream, like the uC library (Buildroot), Bionic (Android),
 and MacOS. You might see some artifacts of those efforts still in the
 code base, but I haven't made any attempt to maintain them.
 
-# Repositories
+# Repository
 
 <https://github.com/coverclock/com-diag-diminuto>
+
+# Related
 
 <https://github.com/coverclock/com-diag-assay>
 
