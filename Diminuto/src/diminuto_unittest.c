@@ -14,3 +14,4 @@ int diminuto_unittest_test = -1;
 int diminuto_unittest_tests = 0;
 int diminuto_unittest_errors = 0;
 int diminuto_unittest_total = 0;
+int diminuto_unittest_errno = 0;

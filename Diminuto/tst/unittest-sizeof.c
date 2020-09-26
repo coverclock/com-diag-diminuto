@@ -15,7 +15,7 @@
 typedef enum Enum { ENUM = 0 } enum_t;
 
 struct Zero {
-    char field[0];
+    char field[0]; /* Produces -pedantic warning. */
 };
 
 typedef uint16_t (Array)[7];

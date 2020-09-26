@@ -5,11 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
+ * The Time feature provides an API for dealing with durations, Time Of Day
+ * (TOD), and time and date stamps.
  * Important safety tip: although UNIX (and POSIX) professes to keep the time
  * in Coordinated Universal Time (UTC), it doesn't account for the occasional
  * leap second. This means it isn't strictly UTC. Worse, the time may appear

@@ -5,13 +5,12 @@
 /**
  * @file
  *
- * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This provides a slightly more abstract interface to stream and datagram
- * IPv4 sockets. It was ported from the Desperado library.
+ * The IPC4 feature provides a slightly more abstract interface to stream
+ * and datagram IPv4 sockets. It was ported from the Digital Aggregates
+ * Grandote C++ library.
  *
  * Note that ALL uses of IPv4 addresses and ports are in HOST BYTE ORDER.
  * This simplifies their use in unit tests and applications.

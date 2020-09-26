@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This is the public API for the generic buffer pool feature. The buffer
+ * This is the public API for the generic Buffer Pool feature. The Buffer
  * feature is built on top of this API. However, this feature can be used
  * by the application to implement its own buffer API.
  */

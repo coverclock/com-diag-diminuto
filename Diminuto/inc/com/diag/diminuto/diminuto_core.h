@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2008-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Core feature provides mechanisms to enable core dumps (which
+ * are typically not enabled by default), and to terminate the caller
+ * in such a way to generate a core dump if enabled.
  */
 
 /**

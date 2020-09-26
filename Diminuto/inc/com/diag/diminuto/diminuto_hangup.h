@@ -5,10 +5,10 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Hangup feature provides a convenient API for using SIGHUP.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

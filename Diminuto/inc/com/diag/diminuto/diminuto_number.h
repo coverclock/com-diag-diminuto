@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.tx.
+ *
+ * The Number feature implements a strtoll(3) and strotull(3) like
+ * capability. (Honestly, these days I just use the GLIBC functions.)
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -45,6 +46,10 @@ extern const char * diminuto_number_unsigned(const char * s, diminuto_unsigned_t
  */
 extern const char * diminuto_number_signed(const char * s, diminuto_signed_t * p);
 
+/**
+ * @def diminuto_number
+ * Make legacy applications happy by mapping the old name to the new name.
+ */
 #define diminuto_number diminuto_number_unsigned
 
 #endif

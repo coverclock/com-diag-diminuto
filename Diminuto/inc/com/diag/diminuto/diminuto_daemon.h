@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Daemon feature provides an API to daemonize a process, handling
+ * all the details of standard I/O redirection.
  */
 
 #include <sys/types.h>

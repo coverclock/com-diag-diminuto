@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2019 Digital Aggregates Corporation
+# Copyright 2008-2020 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -9,9 +9,9 @@
 #
 #	make all				# Build libraries, unit tests, executable programs.
 #	make clean				# Remove OUT directory for current TARGET.
-#	make pristine				# Remove all OUT directories.
-#	sudo make install			# Install libraries, binaries, headers under /usr/local.
-#	. out/host/bin/setup			# Sets up PATH and LD_LIBRARY_PATH after build.
+#	make pristine			# Remove all OUT directories.
+#	sudo make install		# Install libraries, binaries, headers under /usr/local.
+#	. out/host/bin/setup	# Sets up PATH and LD_LIBRARY_PATH after build.
 #
 
 .PHONY:	default
@@ -22,8 +22,8 @@ default:	all
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	56# API changes that may require that applications be modified.
-MINOR				:=	10# Only functionality or features added with no legacy API changes.
+MAJOR				:=	61# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
@@ -33,6 +33,7 @@ BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 # listed below are more or less in chronological order, from earliest to latest.
 # The hardware for some of these targets isn't even available to me anymore.
 
+TARGET				:=	host# Build for the current host.
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	betty# Build for the Raspberry Pi 2 running Raspbian.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
@@ -42,7 +43,6 @@ BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 #TARGET				:=	diminuto# Build for the AT91RM9200-EK running BuildRoot.
 #TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
 #TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
-TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 #TARGET				:=	orchard# Mac OS X 10.9.5 running on a Mac Mini "late 2012".
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
@@ -60,7 +60,7 @@ TARGET				:=	host# Build for the x86_64 running Ubuntu 14.04 LTS.
 # faketime(1) utility to spoof the system time during builds.
 
 # This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2019 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2020 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
@@ -161,9 +161,11 @@ ARFLAGS				:=	crsv
 #CPPFLAGS			:=	$(CDEFINES) -I $(SRC_DIR) -I $(INC_DIR) -I $(OUT)/$(INC_DIR) $(CPPARCH)
 CPPFLAGS			:=	$(CDEFINES) -iquote $(SRC_DIR) -iquote $(INC_DIR) -iquote $(OUT)/$(INC_DIR) $(CPPARCH)
 CFLAGS				:=	$(CARCH) -g
+#CFLAGS				:=	$(CARCH) -g -pedantic
 #CFLAGS				:=	$(CARCH) -g -fprofile-arcs -ftest-coverage
 #CFLAGS				:=	$(CARCH) -O3
 CXXFLAGS			:=	$(CXXARCH) -g
+#CXXFLAGS			:=	$(CXXARCH) -g -pedantic
 #CXXFLAGS			:=	$(CXXARCH) -g -fprofile-arcs -ftest-coverage
 #CXXFLAGS			:=	$(CXXARCH) -O3
 CPFLAGS				:=	-i
@@ -174,12 +176,6 @@ MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
 MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
 SOXXFLAGS			:=	$(SOXXARCH) $(LDXXLIBRARIES)
-
-GRIP				:=	grip
-
-BROWSER				:=	firefox
-#BROWSER			:=	epiphany
-#BROWSER			:=	evince
 
 ########## Build Artifacts
 
@@ -216,7 +212,7 @@ TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
 
 ########## Main Entry Points
 
-.PHONY:	all most plus dist tidy clean pristine clobber
+.PHONY:	all most plus dist tidy clean pristine clobber scratch
 
 all:	$(TARGETALL)
 
@@ -236,6 +232,9 @@ clean:
 
 pristine:	clean
 	rm -rf $(OUT_DIR)
+
+# This is not the same as simply listing the targets as dependencies.
+scratch:	pristine depend all
 
 clobber:	pristine
 	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po
@@ -729,7 +728,14 @@ isystems:
 
 ########## Documentation
 
-.PHONY:	documentation browse refman manpages readme
+# sudo apt-get install doxygen
+# sudo apt-get install ghostscript
+# sudo apt-get install latex
+# sudo apt-get install texlive
+# sudo apt-get install tabu
+# sudo apt-get install texlive-latex-extra
+
+.PHONY:	documentation manuals readme
 
 DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
 
@@ -741,39 +747,17 @@ documentation $(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pd
 		cat > $(OUT)/$(DOC_DIR)/doxygen-local.cf
 	doxygen $(OUT)/$(DOC_DIR)/doxygen-local.cf
 
-# When I upgraded to Ubuntu 14.04, a pile of latex macros used by the Doxygen
-# PDF generation were missing. I was never able to figure out what (if any)
-# Ubuntu package they might have been in (although I did install a boatload
-# of packages for TeX and Latex). In the end I just kept rerunning the make
-# step below, examining the refman.log output file in the output directory,
-# and figuring out what Latex macro packages from CTAN to manually download,
-# install in a subdirectory of /usr/share/texmf/tex/latex, and then run texhash.
-# It was very tedious. Here's a list of what I installed.
-# https://www.ctan.org/tex-archive/macros/latex/contrib/xtab
-# https://www.ctan.org/tex-archive/macros/latex/contrib/multirow
-# https://www.ctan.org/pkg/sectsty
-# https://www.ctan.org/tex-archive/macros/latex/contrib/tocloft
-documentation-ancillary:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
+manuals:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
 	$(MAKE) -C $(OUT)/$(DOC_DIR)/latex refman.pdf || exit 0
 	cp $(OUT)/$(DOC_DIR)/latex/refman.pdf $(OUT)/$(DOC_DIR)/pdf
 	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps
 	ps2pdf $(OUT)/$(DOC_DIR)/pdf/manpages.ps $(OUT)/$(DOC_DIR)/pdf/manpages.pdf
 
-browse:
-	$(BROWSER) file:$(OUT)/$(DOC_DIR)/html/index.html
-
-refman:
-	$(BROWSER) file:$(OUT)/$(DOC_DIR)/pdf/refman.pdf
-
-manpages:
-	$(BROWSER) file:$(OUT)/$(DOC_DIR)/pdf/manpages.pdf
-
 $(OUT)/$(DOC_DIR)/html/README.html:	../README.md
 	mkdir -p $(OUT)/$(DOC_DIR)/html
-	$(GRIP) ../README.md --export $(OUT)/$(DOC_DIR)/html/README.html
+	grip ../README.md --export $(OUT)/$(DOC_DIR)/html/README.html
 
 readme:	$(OUT)/$(DOC_DIR)/html/README.html
-	$(BROWSER) file:$(OUT)/$(DOC_DIR)/html/README.html
 
 ########## Diffs and Patches
 
@@ -892,19 +876,107 @@ install-include:
 
 ########## Sanity
 
-.PHONY:	sanity
+.PHONY:	sanity mostest privileged extended geologic nohup
 
 sanity:
+	unittest-absolute
+	unittest-arraytype
+	unittest-assert && false || true
+	unittest-barrier
+	unittest-bitfield
+	unittest-buffer
+	unittest-bufferpool
+	unittest-coherentsection
+	unittest-containerof
+	coreable unittest-coreable && false || true
+	unittest-countof
+	unittest-criticalsection
+	unittest-cue
+	unittest-daemon
+	unittest-datum
+	unittest-dump
+	unittest-endianess
+	unittest-escape
+	unittest-fatal && false || true
+	unittest-fd
+	unittest-fibonacci
+	unittest-fletcher
+	unittest-frequency
+	unittest-fs
+	unittest-hamming
+	unittest-heap
+	unittest-interrupter
+	unittest-ipc-endpoint
+	unittest-list
+	unittest-lock
+	unittest-log
+	unittest-memory
+	unittest-number
+	unittest-observation
+	unittest-offsetof
+	unittest-path
+	unittest-phex
+	unittest-pin
+	unittest-pipe | sleep 5
+	unittest-pool
+	unittest-proxy
+	unittest-reaper
+	unittest-renameat2
+	unittest-serializedsection
+	unittest-service
+	unittest-shaper
+	unittest-sizeof
+	unittest-stacktrace
 	unittest-store
-	unittest-timer
-	unittest-periodic
+	unittest-string
+	unittest-system
+	unittest-terminator
+	unittest-testify
+	unittest-throttle
+	unittest-time-zone
+	unittest-tree
+	unittest-uninterruptible
+	unittest-unittest
+	unittest-well
+	unittest-widthof
+
+mostest:
+	unittest-module
+
+privileged:
+	unittest-map
+
+extended:
+	unittest-alarm
+	unittest-buffer-perf
+	unittest-controller
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
 	unittest-mux4
 	unittest-mux6
 	unittest-mux-eventloop
+	unittest-periodic
 	unittest-poll4
 	unittest-poll6
 	unittest-poll-eventloop
-	unittest-controller
+	unittest-time
+	unittest-time-cost
+	unittest-timer
+
+geologic:
+	unittest-epoch
+
+nohup:
+	unittest-hangup-wan
+	unittest-hangup-too
+	unittest-hangup-tree
+	unittest-hangup-fore
+
+signals:
+	unittest-alarm
+	# nohup make nohup; cat nohup.out
+	unittest-interrupter
+	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
+	unittest-reaper
+	unittest-terminator

@@ -5,21 +5,21 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Portions of this implementation was derived from the Digital Aggregates
- * Desperado C++ library.
- * http://www.diag.com/navigation/downloads/Desperado.html<BR>
+ * The Escape feature implements functions to collapse and expand
+ * C-style escape sequences. This is especially useful for processing
+ * input strings from the terminal or an input file. Portions of this
+ * implementation was derived from the Digital Aggregates Grandote
+ * C++ library.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
- * Collapse a source C string containing C-style escape sequences like CTRL-r and
- * CTRL-n into a destination string containing ASCII characters like CR and LF.
+ * Collapse a source C string containing C-style escape sequences
+ * into a destination string containing ASCII characters like CR and LF.
  * The result will be NUL terminated, although if the source string contained
  * one or more '\0' sequences, there may be more than one NUL character in the
  * destination buffer. This function is useful for processing string input
@@ -34,7 +34,7 @@ extern size_t diminuto_escape_collapse(char *to, const char *from, size_t tsize)
 
 /**
  * Expand a source string into a destination string containing C-style escape
- * sequences like CTRL-r and CTRL-n. The result will be NUL terminated. The length
+ * sequences. The result will be NUL terminated. The length
  * of the source string is specified explicitly so that it can contain embedded
  * NUL characters. A set of additional characters to escape can be specified.
  * This is useful for escaping characters like single or double quotes. This

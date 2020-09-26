@@ -34,7 +34,7 @@ static int compare_strings(diminuto_store_t * thisp, diminuto_store_t * thatp)
 static void list(diminuto_store_t ** rootp)
 {
     diminuto_store_t * nodep;
-    printf("list: root=%p\n", rootp);
+    printf("list: root=%p\n", (void *)rootp);
     for (nodep = diminuto_store_first(rootp); !diminuto_store_ismissing(nodep); nodep = diminuto_store_next(nodep)) {
         printf("list: %s=\"%s\"\n", (const char *)(nodep->key), (const char *)(nodep->value));
     }

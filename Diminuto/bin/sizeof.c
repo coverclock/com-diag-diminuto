@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -20,7 +20,10 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <wchar.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_offsetof.h"
 
@@ -32,17 +35,25 @@
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
+typedef struct BitField { int bit1 : 1; char bit2 : 8; } bitfield_t;
+
+#if defined(PROBLEMATIC)
 typedef void (function_t)(void);
 
 struct Zero {
-    char field[0];
+    uint8_t field[0];
 };
+
+typedef uint8_t (Array)[0];
+#endif
 
 int main(void)
 {
     printsignof(char);
     printsignof(signed char);
     printsignof(unsigned char);
+    printf("sizeof('%c')=%zu\n", '?', sizeof('?'));
+    printf("sizeof(\"%s\")=%zu\n", "STRING", sizeof("STRING"));
     printsignof(short);
     printsignof(signed short);
     printsignof(unsigned short);
@@ -57,10 +68,15 @@ int main(void)
     printsignof(unsigned long long);
     printsizeof(float);
     printsizeof(double);
+#if defined(PROBLEMATIC)
     printsizeof(void);
+#endif
     printsizeof(bool);
     printsignof(enum_t);
+    printsizeof(bitfield_t);
+#if defined(PROBLEMATIC)
     printsizeof(function_t);
+#endif
     printsignof(int8_t);
     printsignof(uint8_t);
     printsignof(int16_t);
@@ -71,11 +87,21 @@ int main(void)
     printsignof(uint64_t);
     printsignof(intptr_t);
     printsignof(uintptr_t);
+    printsignof(wchar_t);
+    printsignof(wint_t);
     printsignof(size_t);
     printsignof(ssize_t);
-    printsignof(off_t);
     printsignof(pid_t);
     printsignof(time_t);
+    printsignof(dev_t);
+    printsignof(ino_t);
+    printsignof(mode_t);
+    printsignof(nlink_t);
+    printsignof(uid_t);
+    printsignof(gid_t);
+    printsignof(off_t);
+    printsignof(blksize_t);
+    printsignof(blkcnt_t);
     printsizeof(pthread_t);
     printsizeof(pthread_mutex_t);
     printsizeof(pthread_cond_t);
@@ -86,6 +112,9 @@ int main(void)
     printsignof(diminuto_port_t);
     printsignof(diminuto_unsigned_t);
     printsignof(diminuto_signed_t);
+#if defined(PROBLEMATIC)
     printsizeof(struct Zero);
+    printsizeof(Array);
+#endif
     return 0;
 }

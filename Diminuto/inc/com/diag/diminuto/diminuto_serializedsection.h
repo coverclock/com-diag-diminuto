@@ -5,11 +5,11 @@
 /**
  * @file
  *
- * Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- * This is largely experimental.
+ * Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Serialized Section feature uses the Barrier feature to implement
+ * a code section serialized between multiple processors. This is experimental.
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"

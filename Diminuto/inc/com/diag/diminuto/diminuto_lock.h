@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Lock feature provides a mechanism to implement old-school atomic
+ * locks using the file system.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -78,5 +79,14 @@ extern int diminuto_lock_unlock(const char * file);
  * @return a PID if locked, 0 if prelocked, <0 with errno set otherwise.
  */
 extern pid_t diminuto_lock_check(const char * file);
+
+/**
+ * Atomically create a file with the specified path (e.g. "/var/run/foo.pid")
+ * containing the PID text string of the calling process. This has no lock
+ * semantics, but is useful for creating a file containing a PID.
+ * @param file is the path and name of the lock file.
+ * @return 0 if successful, <0 with errno set otherwise.
+ */
+extern int diminuto_lock_file(const char * file);
 
 #endif

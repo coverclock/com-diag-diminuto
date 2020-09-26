@@ -48,7 +48,7 @@ static const char * number(const char * string, uint64_t * valuep)
     return result;
 }
 
-static int control(int fd, int request, diminuto_mmdriver_op_t * opp)
+static int control(int fd, unsigned long request, diminuto_mmdriver_op_t * opp)
 {
     int rc = -1;
 

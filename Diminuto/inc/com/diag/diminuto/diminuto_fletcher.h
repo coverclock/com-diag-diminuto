@@ -5,13 +5,11 @@
 /**
  * @file
  *
- * Copyright 2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implement the computationally simple Fletcher checksum algorithm.
- * This checksum is used in some of the unit tests.
+ * The Fletcher feature implements the computationally simple Fletcher-16
+ * checksum algorithm. This checksum is used in some of the unit tests.
  *
  * REFERENCES
  *

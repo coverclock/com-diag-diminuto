@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -28,7 +28,6 @@ int main(int argc, char ** argv)
     {
         TEST();
 
-        ASSERT(sizeof(size_t) == 8);
         ASSERT(((size_t)(~(size_t)0)) > 0);
         ASSERT(sizeof(diminuto_ticks_t) == 8);
         ASSERT(((diminuto_ticks_t)(~(diminuto_ticks_t)0)) > 0);

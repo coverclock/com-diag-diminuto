@@ -5,12 +5,10 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * The buffer feature is a prototype-compatible replacement for several
+ * The Buffer feature is a prototype-compatible replacement for several
  * functions defined in <stdlib.h> and <string.h> that dynamically allocate
  * and free memory from the heap. Using these functions instead of the standard
  * ones allows memory to be allocated from and freed back to linked lists of

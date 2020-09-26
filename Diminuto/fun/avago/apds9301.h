@@ -219,7 +219,7 @@ static int avago_apds9301_configure(int fd, int device, uint8_t timing, uint8_t 
     } while (0);
 
     return rc;
-};
+}
 
 /**
  * Configure the device with default values.

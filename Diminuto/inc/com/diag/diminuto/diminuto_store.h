@@ -5,20 +5,17 @@
 /**
  * @file
  *
- * Copyright 2014-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Uses a Red-Black tree, a kind of self-balancing binary tree, to implement
- * a key-value store in memory, a kind of associative memory. The key and value
- * can be anything that can be stored in, pointed to by, or mapped from, a void
- * pointer. The unit test uses character strings for both, which is a typical
- * application. This was obviously inspired by the std::map<> container in
- * the C++ Standard Template Library (STL).
- *
- * From an implementation point of view, it is useful to think of the store
- * structure as a class deriving from the tree structure base class.
+ * The Store feature uses a Red-Black tree, a kind of self-balancing binary
+ * tree, to implement a key-value store in memory, a kind of associative
+ * memory. The key and value can be anything that can be stored in, pointed
+ * to by, or mapped from, a void pointer. The unit test uses character
+ * strings for both, which is a typical application. This was obviously
+ * inspired by the std::map<> container in the C++ Standard Template Library
+ * (STL). From an implementation point of view, it is useful to think of the
+ * Store structure as a class deriving from the Tree structure base class.
  */
 
 #include "com/diag/diminuto/diminuto_tree.h"

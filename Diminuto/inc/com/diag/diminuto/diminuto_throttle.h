@@ -5,12 +5,11 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Implements a Generic Cell Rate Algorithm (GCRA) using a Virtual Scheduler.
+ * The Throttle feature implements a Generic Cell Rate Algorithm (GCRA) using
+ * a Virtual Scheduler.
  * This can in turn be used to implement a variety of traffic shaping and rate
  * control algorithms. The VS works by monitoring the inter-arrival interval of
  * events and comparing that interval to the expected value. When the cumulative
@@ -310,7 +309,7 @@ extern diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, siz
  * Compute a jitter tolerance in ticks given the interarrival time (increment),
  * and the largest packet size (maximum burst size).
  * @param increment is the interarrival time in ticks corresponding to the rate.
- * @param maximimburstsize is the largest packet size in events (e.g. bytes).
+ * @param maximumburstsize is the largest packet size in events (e.g. bytes).
  * @return the jitter tolerance in ticks.
  */
 extern diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t increment, size_t maximumburstsize);

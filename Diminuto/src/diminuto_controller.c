@@ -60,7 +60,7 @@ void diminuto_controller_parameters_print(FILE * fp, const diminuto_controller_p
                 " Kc=%d/%d"
                 " filter=%d"
                 "\n",
-        sp,
+        (void *)sp,
         sizeof(*sp),
         sp->windup,
         sp->minimum,
@@ -87,7 +87,7 @@ void diminuto_controller_state_print(FILE * fp, const diminuto_controller_state_
                 " previous=%d"
                 " initialized=%d"
                 "\n",
-        dp,
+        (void *)dp,
         sizeof(dp),
         dp->sample,
         dp->proportional,

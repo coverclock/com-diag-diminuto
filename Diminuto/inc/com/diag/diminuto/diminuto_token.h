@@ -5,13 +5,11 @@
 /**
  * @file
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * Pre-processes and then stringifies a preprocessor symbol. This is
- * a common compiler trick trick to get C to turn the value of a preprocessor
+ * The Token feature pre-processes and then stringifies a preprocessor symbol.
+ * This is a common trick trick to get C to turn the value of a preprocessor
  * symbol into a printable C-string at compile time.
  */
 

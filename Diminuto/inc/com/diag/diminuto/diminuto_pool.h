@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Pool feature implements a buffer pool that might simplify the
+ * dynamic memory management in some applications. Or not.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -36,7 +37,7 @@ typedef diminuto_list_t diminuto_pool_t;
  */
 typedef struct DiminutoPoolObject {
     diminuto_list_t link;
-    uint64_t payload[0];
+    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
 } diminuto_pool_object_t;
 
 /**

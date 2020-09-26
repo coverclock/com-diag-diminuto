@@ -5,13 +5,14 @@
 /**
  * @file
  *
- * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The FD feature implements convenience functions for doing I/O on
+ * file descriptors, including sockets.
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 
 /**
  * Open the named device with the specified flags and mode if the provided
@@ -127,7 +128,7 @@ extern ssize_t diminuto_fd_maximum(void);
  */
 typedef struct DiminutoFdMap {
     size_t count;
-    void * data[0];
+    void * data[0]; /* Will produce -pedantic warnings wherever used. */
 } diminuto_fd_map_t;
 
 /**
@@ -153,22 +154,6 @@ extern diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count);
 extern void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd);
 
 /**
- * This type defines an enumeration that is an abstraction of some bits in the
- * st_mode field returned in the stat structure by the fstat(2) system call.
- */
-typedef enum DiminutoFdType {
-    DIMINUTO_FD_TYPE_UNKNOWN        = 0,
-    DIMINUTO_FD_TYPE_TTY            = 1,
-    DIMINUTO_FD_TYPE_SOCKET         = 2,
-    DIMINUTO_FD_TYPE_SYMLINK        = 3,
-    DIMINUTO_FD_TYPE_FILE           = 4,
-    DIMINUTO_FD_TYPE_BLOCKDEV       = 5,
-    DIMINUTO_FD_TYPE_DIRECTORY      = 6,
-    DIMINUTO_FD_TYPE_CHARACTERDEV   = 7,
-    DIMINUTO_FD_TYPE_FIFO           = 8,
-} diminuto_fd_type_t;
-
-/**
  * Determine an enumeration that indicates the type of object the specified
  * file descriptor represents. Note that the fstat(2) call under Linux will
  * never return the type of symbolic link; it will always return the type of
@@ -176,6 +161,6 @@ typedef enum DiminutoFdType {
  * @param fd is an open file descriptor.
  * @return the type of object the file descriptor represents.
  */
-extern diminuto_fd_type_t diminuto_fd_type(int fd);
+extern diminuto_fs_type_t diminuto_fd_type(int fd);
 
 #endif

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -74,6 +74,11 @@ int main(int argc, char ** argv)
         ASSERT((was = diminuto_timer_singleton_get()) != DIMINUTO_TIMER_UNINITIALIZED);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
+        /*
+         * Why times two? This is *not* the delay we are measuring.
+         * This is the waiting period for the one-shot timer above
+         * to fire and interrupt this period.
+         */
         remaining = diminuto_delay(requested * 2, !0);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         now = result;

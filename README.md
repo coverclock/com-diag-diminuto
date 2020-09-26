@@ -9,7 +9,7 @@ Linux systems programming library in C.
 
 # Copyright
 
-Copyright 2008-2019 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2020 by the Digital Aggregates Corporation, Colorado, USA.
 
 # License
 
@@ -108,17 +108,34 @@ Raspbian 10 "Buster"
 Linux 4.19.58    
 gcc 8.3.0    
 
-"Silicon10"
-VM running under Windows 10
-Intel x86_64 64-bit
-Intel Core i7-3520M @ 2.90GHz x 2
-Ubuntu 19.10 "Eoan"
-Linux 5.3.0
-gcc 9.2.1
+"Silicon10"    
+VM running under Windows 10    
+Intel x86_64 64-bit    
+Intel Core i7-3520M @ 2.90GHz x 2    
+Ubuntu 19.10 "Eoan"    
+Linux 5.3.0    
+gcc 9.2.1    
+
+"Gypsum"    
+HP Mini 110-1100    
+Intel i686 32-bit    
+Intel Atom N270 @ 1.6GHz x 2    
+Mint 19.3 "Tricia"    
+Linux 5.0.0    
+gcc 7.5.0    
+
+"Neon"    
+GPD Micro PC    
+Intel x86_64
+Intel Celeron N4100 @ 1.10GHz x 2 x 2
+Ubuntu MATE 19.10 "eoan"    
+Linux 5.3.0    
+gcc 9.2.1    
 
 # Features
 
 * alarm - receive and check for a SIGALRM signal.
+* assert - similar to assert(3) but with more output.
 * barrier - acquire and release memory barriers.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
@@ -140,6 +157,7 @@ gcc 9.2.1
 * escape - collapse and expand escape sequences in strings.
 * fd - general handling of file descriptors (including sockets).
 * frequency - determine common library time frequency.
+* fs - file system walking framework.
 * hangup - receive and check for a SIGHUP signal.
 * heap - dependency injection mechanism for malloc/free alternatives.
 * i2c - Simplified thread-safe API around Linux I2C API.
@@ -196,8 +214,7 @@ gcc 9.2.1
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
-* headless - display contents of an observation file as it changes.
-* headup - sends a SIGHUP (hangup signal) to a running headless script.
+* headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
@@ -206,6 +223,7 @@ gcc 9.2.1
 * loopback - provide a configurable serial port loopback.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
+* observe - watch for an observation file and indicate when it arrives.
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
 * pinchange - execute a command when a GPIO pin changes state.
@@ -221,7 +239,7 @@ gcc 9.2.1
 * wipe - aggressively wipe a storage device.
 * zulu - display the UTC time in ISO 8601 format.
 
-# Examples
+# Functional Tests
 
 * adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
@@ -231,9 +249,20 @@ gcc 9.2.1
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
 * pinchange - Multiplexing of GPIO pins (Pin).
 * pintest - Setting and getting GPIO pins (Pin).
+* walker - Walk the file system tree starting at a specified root (FS).
 
-(These are functional tests that use hardware test fixtures I cobbled
-together specifically for this purpose.)
+(Some of these functional tests use hardware test fixtures I fabricated
+specifically for this purpose.)
+
+# Unit Test Suites
+
+* make extended - these unit tests take a lunch time to run.
+* make geologic - these unit test take over night or more to run.
+* make halting - these unit tests hang if they don't work.
+* make mostest - these unit tests require "make most" to be run first.
+* sudo make privileged - these unit tests must be run as root.
+* make sanity - these unit tests take a coffee break to run.
+* nohup make nohup - these unit tests require "nohup" to work.
 
 # Directories
  
@@ -252,32 +281,7 @@ together specifically for this purpose.)
 
 # Soundtrack
 
-The Highwomen, "The Chain" (Fleetwood Mac)
-<https://youtu.be/jVLNB3d-2cA>
-
-Michael Kiwanuka, "Love & Hate"
-<https://youtu.be/aMZ4QL0orw0>
-
-Pomplamoose, "Video Killed the Radio Star" (Buggles)
-<https://youtu.be/tk4_SMI0jVc>
-
-Doctor Who Cast and Crew, "500 Miles" (The Proclaimers)
-<https://youtu.be/2c6qENWh2jQ>
-
-Jungle, "Busy Earnin'"
-<https://youtu.be/BcsfftwLUf0>
-
-Swing Out Sister, "Not Gonna Change"
-<https://youtu.be/G4AQIF92slc>
-
-Giffords Lane, "Skyfall" (Adele) and "Kashmir" (Led Zeppelin),
-<https://youtu.be/8HnvhKDXaog>
-
-St. Vincent and Dua Lipa, "Masseducation" (St. Vincent) and "One Kiss" (Dua Lipa)
-<https://youtu.be/9tw2LMnxvW0>
-
-Heart, "Stairway to Heaven" (Led Zeppelin)
-<https://youtu.be/LFxOaDeJmXk>
+<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
 # Remarks
 
@@ -333,21 +337,59 @@ output from GPS devices. The fact that gpstool can do so much in a single
 file of not much more than a thousand lines of C code is a testimony to
 how useful Diminuto can be (and how much time it can save you).
 
-# Repositories
+Another good example is the survey and census functional tests in the
+Placer project (ditto). The file system walker in Diminuto is a good
+example of how a need in another project leads to a kind of organic
+growth in Diminuto.
+
+# Dependencies
+
+Diminuto requires IPv6 support. IPv6 is not enabled by default on all
+platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
+a line "ipv6" to /etc/modules and rebooted. The command "modprobe ipv6"
+also worked albeit non-persistently.
+
+    sudo modprobe ipv6
+    sudo echo "ipv6" >> /etc/modules
+
+On some distros I had to install gcc, g++, and make.
+
+    sudo apt-get install gcc
+    sudo apt-get install g++
+    sudo apt-get install make
+
+For my own workflow, I installed the following tools.
+
+    sudo apt-get install openssh-server
+    sudo apt-get install git
+    sudo apt-get install vim
+    sudo apt-get install screen
+
+The observe script requires the inotify tools. Not all distros install
+these by default (e.g. Raspbian).
+
+    sudo apt-get install inotify-tools
+
+Diminuto was at one time ported to other platforms outside of the
+Linux mainstream, like the uC library (Buildroot), Bionic (Android),
+and MacOS. You might see some artifacts of those efforts still in the
+code base, but I haven't made any attempt to maintain them.
+
+# Repository
 
 <https://github.com/coverclock/com-diag-diminuto>
 
+# Related
+
 <https://github.com/coverclock/com-diag-assay>
 
-<https://github.com/coverclock/com-diag-concha>
-
-<https://github.com/coverclock/com-diag-drover>
-
-<https://github.com/coverclock/com-diag-grandote>
+<https://github.com/coverclock/com-diag-codex>
 
 <https://github.com/coverclock/com-diag-hazer>
 
 <https://github.com/coverclock/com-diag-obelisk>
+
+<https://github.com/coverclock/com-diag-placer>
 
 # Images
 
@@ -356,6 +398,17 @@ how useful Diminuto can be (and how much time it can save you).
 # References
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
+
+# Articles
+
+Chip Overclock, "Some Stuff That Has Worked For Me In C", 2017-04,
+<https://coverclock.blogspot.com/2017/04/some-stuff-that-has-worked-for-me-in-c.html>
+
+Chip Overclock, "When The Silicon Meets The Road", 2018-07,
+<https://coverclock.blogspot.com/2018/07/when-silicon-meets-road.html>
+
+Chip Overclock, "When Learning By Doing Goes To Eleven", 2020-03,
+<https://coverclock.blogspot.com/2020/03/when-learning-by-doing-goes-to-eleven.html>
 
 # Build
 

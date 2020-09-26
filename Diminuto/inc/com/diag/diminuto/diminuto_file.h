@@ -5,26 +5,28 @@
 /**
  * @file
  *
- * Copyright 2019 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- */
-
-#include <stdio.h>
-#include "com/diag/diminuto/diminuto_types.h"
-
-/*
+ * Copyright 2019 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The File feature calculates how many characters are available
+ * in a standard I/O FILE object by violently breaking the object's
+ * encapsulation. This is probably not a good idea. It is, however,
+ * remarkably useful.
+ *
  * May fail to compile with other C libraries like UlibC or Bionic.
  *
- * May compiles but yield the wrong result if even a minor change is made to GLIBC.
+ * May compile but yield the wrong result if even a minor change is made to
+ * GLIBC.
  *
- * Based on a similar hack in the com-diag-grandote C++ project.
+ * Based on a similar hack in the Digital Aggregates Grandote C++ project.
  *
  * There is no unit test for this, but there is a functional test.
  *
  * Would really be helpful if the C library had a standard way to do this.
  */
+
+#include <stdio.h>
+#include "com/diag/diminuto/diminuto_types.h"
 
 /**
  * Return the number of bytes a FILE object has ready to read in its buffer.

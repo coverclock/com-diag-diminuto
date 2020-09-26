@@ -4,9 +4,14 @@
 
 /**
  * @file
+ *
  * Copyright 2012-2018 Digital Aggregates Corporation, Colorado, USA.
- * Author: Chip Overclock <mailto:coverclock@diag.com>.
  * Licensed under the terms in LICENSE.txt.
+ *
+ * The Hamming feature implements a Hamming(8,4) encode and decode
+ * function.
+ *
+ * REFERENCES
  *
  * R. W. Hamming, "Error Detecting and Error Correcting Codes", BELL SYSTEM
  * TECHNICAL JOURNAL, XXIX.2, April 1950.

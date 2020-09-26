@@ -132,9 +132,9 @@ static ssize_t input(uint8_t * buffer, size_t size)
         }
         break;
     case LINE:
-        if (fgets(buffer, size, stdin) != NULL) {
+        if (fgets((char *)buffer, (int)size, stdin) != NULL) {
             buffer[size - 1] = '\0';
-            rc = strlen(buffer);
+            rc = (ssize_t)strlen((char *)buffer);
         }
         break;
     default:
@@ -161,7 +161,7 @@ static ssize_t input(uint8_t * buffer, size_t size)
 static ssize_t output(const uint8_t * buffer, size_t size)
 {
     ssize_t rc = 0;
-    int ch;
+    int ch = 0;
 
     switch (io) {
     case BLOCK:
@@ -176,7 +176,7 @@ static ssize_t output(const uint8_t * buffer, size_t size)
         }
         break;
     case LINE:
-        if (fputs(buffer, stdout) > 0) {
+        if (fputs((char *)buffer, stdout) > 0) {
             rc = size;
         }
         break;

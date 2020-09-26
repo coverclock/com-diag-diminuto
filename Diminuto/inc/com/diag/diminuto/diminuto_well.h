@@ -5,15 +5,13 @@
 /**
  * @file
  *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * A well is like a Diminuto pool except the linked lists and allocated user
+ * The Well feature is like a Pool except the linked lists and allocated user
  * objects are kept in separately allocated sections of memory. Both sections
- * are page aligned, and objects in the well can have any specified alignment
- * in memory instead of the usual eight-byte alignment. Also, a well is of
+ * are page aligned, and objects in the Well can have any specified alignment
+ * in memory instead of the usual eight-byte alignment. Also, a Well is of
  * fixed size; additional objects are never allocated after initialization.
  */
 

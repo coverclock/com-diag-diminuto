@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, 0) == dest);
         EXPECT(dest[0] == (char)0x01);
@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, 1) == dest);
         EXPECT(dest[0] == '\0');
@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, 2) == dest);
         EXPECT(dest[0] == 'A');
@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, 3) == dest);
         EXPECT(dest[0] == 'A');
@@ -80,7 +80,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, 4) == dest);
         EXPECT(dest[0] == 'A');
@@ -94,7 +94,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char dest[] = { 0x01, 0x23, 0x45, 0x67, 0x89 };
+        char dest[] = { 0x01, 0x23, 0x45, 0x67, (char)0x89 };
         char * src = "ABC";
         EXPECT(diminuto_strscpy(dest, src, sizeof(dest)) == dest);
         EXPECT(dest[0] == 'A');

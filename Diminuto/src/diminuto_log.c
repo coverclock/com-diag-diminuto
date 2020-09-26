@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -115,7 +116,7 @@ void diminuto_log_open_syslog(const char * name, int option, int facility)
 
 void diminuto_log_open(const char * name)
 {
-    return diminuto_log_open_syslog(name, diminuto_log_option, diminuto_log_facility);
+    diminuto_log_open_syslog(name, diminuto_log_option, diminuto_log_facility);
 }
 
 void diminuto_log_close(void)
@@ -172,15 +173,24 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     size_t space = sizeof(buffer);
     size_t total = 0;
     char * bufferp = buffer;
+    static char hostname[sizeof("localhost")] = { '\0', };
 
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
+
+    if (hostname[0] != '\0') {
+        /* Do nothing. */
+    } else if (gethostname(hostname, sizeof(hostname)) < 0) {
+        strncpy(hostname, "localhost", sizeof(hostname));
+    } else {
+        hostname[sizeof(hostname) - 1] = '\0';
+    }
 
     /* Prepending an ISO8601 timestamp allows us to sort-merge logs. */
     /* Bracketing special fields allows us to more easily filter logs. */
     /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ <%s> [%d] {%lx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), PRIORITIES[priority & 0x7], getpid(), pthread_self());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%d] {%lx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], getpid(), pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
@@ -285,18 +295,18 @@ void diminuto_log_emit(const char * format, ...)
  * ERROR NUMBER FUNCTIONS
  *****************************************************************************/
 
-void diminuto_serror(const char * s)
+void diminuto_serror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }
 
-void diminuto_perror(const char * s)
+void diminuto_perror_f(const char * f, int l, const char * s)
 {
     int save;
     save = errno;
-    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s: %s\n", s, strerror(errno));
+    diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }

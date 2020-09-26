@@ -5,17 +5,15 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This is a socket multiplexer that uses the ppoll(2) system call instead of
- * the pselect(2) system call used by the mux feature. This feature exists
- * mostly because I wanted to benchmark ppoll(2) against pselect(2) using the
- * same abstraction and a similar API. But it isn't as efficient as it could
- * be since it sits on top of the mux feature and only differs in the wait
- * function.
+ * The Poll feature is a socket multiplexer that uses the ppoll(2) system
+ * call instead of the pselect(2) system call used by the mux feature. This
+ * feature exists mostly because I wanted to benchmark ppoll(2) against
+ * pselect(2) using the same abstraction and a similar API. But it isn't
+ * as efficient as it could be since it sits on top of the mux feature and
+ * only differs in the wait function.
  *
  * NOTE: Because the diminuto_mux feature uses the pselect(2) system call, it
  * is limited to using the first 1024 file descriptors enumerated 0 to 1023.

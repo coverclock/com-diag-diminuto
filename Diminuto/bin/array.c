@@ -17,6 +17,6 @@ int main(void) {
         }
     }
     for (pp = &array[0][0], kk = 0; kk < (3 * 5); kk = kk + 1, pp = pp + 1) {
-        printf("kk=%d pp=%p *pp=%d\n", kk, pp, *pp);
+        printf("kk=%d pp=%p *pp=%d\n", kk, (void *)pp, *pp);
     }
 }

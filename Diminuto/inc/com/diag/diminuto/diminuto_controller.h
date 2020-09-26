@@ -5,20 +5,17 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * ABSTRACT
- *
- * Implement a generic Proportional-Integral-Differential (PID) controller.
+ * The Controller feature is a generic Proportional-Integral-Differential
+ * (PID) controller. It is based on a commercial microcontroller implementation
+ * the author developed, but is a complete clean-room reimplementation.
  * This implementation goes to great lengths NOT to use floating point. It
  * does however use integer multiply and divide, unlike the similar feature
  * from which it was ported in the Telegraph library of features intended for
- * smaller microcontrollers. This is a work in progress, but it has been
- * functionally tested using a feedback loop consisting of a PWM controlled
- * LED and a light sensor.
+ * smaller microcontrollers. It has been functionally tested using a feedback
+ * loop consisting of a PWM controlled LED and a light sensor.
  *
  * REFERENCES
  *

@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Coherent Section feature uses the Barrier feature to
+ * provide consistent memory acquire/release semantics. It
+ * is experimental.
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"

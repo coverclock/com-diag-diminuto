@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 
 #define P(_NAME_, _FORMAT_) printf("%s=" _FORMAT_ "\n", #_NAME_, _NAME_)
+#define PV(_NAME_, _FORMAT_) printf("%s=" _FORMAT_ "\n", #_NAME_, (void *)_NAME_)
 
 int main(void)
 {
@@ -43,7 +44,7 @@ int main(void)
     P(DIMINUTO_LOG_FACILITY_DEFAULT, "0x%x");
 
     P(DIMINUTO_LOG_DESCRIPTOR_DEFAULT, "%d");
-    P(DIMINUTO_LOG_STREAM_DEFAULT, "%p");
+    PV(DIMINUTO_LOG_STREAM_DEFAULT, "%p");
     P(DIMINUTO_LOG_MASK_NAME_DEFAULT, "\"%s\"");
     P(DIMINUTO_LOG_MASK_VALUE_ALL, "\"%s\"");
     P(DIMINUTO_LOG_BUFFER_MAXIMUM, "%u");
@@ -52,7 +53,7 @@ int main(void)
     P(diminuto_log_option, "0x%x");
     P(diminuto_log_facility, "0x%x");
     P(diminuto_log_descriptor, "%d");
-    P(diminuto_log_file, "%p");
+    PV(diminuto_log_file, "%p");
     P(diminuto_log_mask_name, "\"%s\"");
     P(diminuto_log_mask, "0x%x");
     P(diminuto_log_forced, "%d");

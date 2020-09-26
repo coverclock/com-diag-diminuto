@@ -5,11 +5,11 @@
 /**
  * @file
  *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
+ * The Proxy feature provides a method of replacing what functions an
+ * application uses at run-time. It is used by the Heap feature.
  * This is an example of how powerful the preprocessor can be for code
  * generation (but with great power comes great responsibility). These macros
  * implement a method for dependency injection, so that the underlying

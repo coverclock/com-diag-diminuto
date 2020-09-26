@@ -22,7 +22,7 @@ static int memverify(void * s, int c, size_t n)
 {
     unsigned char * p;
     unsigned char ch;
-    for (p = (char *)s, ch = c; n > 0; --n, ++p) {
+    for (p = (unsigned char *)s, ch = c; n > 0; --n, ++p) {
         if (*p != ch) {
             return 0;
         }

@@ -43,7 +43,7 @@ typedef void (dumpf_t)(diminuto_tree_t * nodep);
 
 static void dumpn(diminuto_tree_t * nodep, dumpf_t * dumpfp)
 {
-    printf("node=%p color=%s parent=%p left=%p right=%p root=%p error=%d ", nodep, diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", diminuto_tree_parent(nodep), diminuto_tree_left(nodep), diminuto_tree_right(nodep), diminuto_tree_root(nodep), diminuto_tree_error(nodep));
+    printf("node=%p color=%s parent=%p left=%p right=%p root=%p error=%d ", (void *)nodep, diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", (void *)diminuto_tree_parent(nodep), (void *)diminuto_tree_left(nodep), (void *)diminuto_tree_right(nodep), (void *)diminuto_tree_root(nodep), diminuto_tree_error(nodep));
     (*dumpfp)(nodep);
 }
 
@@ -65,7 +65,7 @@ static void dumpr(int depth, int height, diminuto_tree_t * nodep, dumpf_t * dump
 
 static void dump(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
-    printf("dump: line=%d root=%p\n", line, rootp);
+    printf("dump: line=%d root=%p\n", line, (void *)rootp);
     if (!diminuto_tree_isempty(rootp)) {
         dumpr(1, 0, *rootp, dumpfp);
     }
@@ -85,7 +85,7 @@ static void traverser(diminuto_tree_t * nodep, dumpf_t * dumpfp)
 
 static void traverse(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
-    printf("traverse: line=%d root=%p\n", line, rootp);
+    printf("traverse: line=%d root=%p\n", line, (void *)rootp);
     if (!diminuto_tree_isempty(rootp)) {
         traverser(*rootp, dumpfp);
     }
@@ -94,7 +94,7 @@ static void traverse(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
-    printf("list: line=%d root=%p\n", line, rootp);
+    printf("list: line=%d root=%p\n", line, (void *)rootp);
     for (nodep = diminuto_tree_first(rootp); nodep != DIMINUTO_TREE_NULL; nodep = diminuto_tree_next(nodep)) {
         printf("list: ");
         dumpn(nodep, dumpfp);

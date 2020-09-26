@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -25,46 +25,45 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-int diminuto_lock_lock_generic(const char * file, pid_t pid)
+int diminuto_lock_f(const char * file, const char * suffix, pid_t pid, unsigned int type)
 {
     int rc = -1;
     int fd = -1;
     FILE * fp = (FILE *)0;
     char * path = (char *)0;
-    static const char SUFFIX[] = "-lock-XXXXXX";
 
     do {
 
-        path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
+        path = (char *)malloc(strlen(file) + strlen(suffix) + 1);
         if (path == (char *)0) {
-            diminuto_perror("diminuto_lock_lock_generic: malloc");
+            diminuto_perror("diminuto_lock_f: malloc");
             break;
         }
 
         strcpy(path, file);
-        strcat(path, SUFFIX);
+        strcat(path, suffix);
 
         if ((fd = mkstemp(path)) >= 0) {
             /* Do nothing. */
         } else if (errno == EEXIST) {
             break;
         } else {
-            diminuto_perror("diminuto_lock_lock_generic: mkstemp");
+            diminuto_perror("diminuto_lock_f: mkstemp");
             break;
         }
 
         if ((fp = fdopen(fd, "w")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_lock_generic: fdopen");
+            diminuto_perror("diminuto_lock_f: fdopen");
             break;
         }
 
         if (fprintf(fp, "%d\n", pid) < 0) {
-           diminuto_perror("diminuto_lock_lock_generic: fprintf");
+           diminuto_perror("diminuto_lock_f: fprintf");
            break;
         }
 
         if (fclose(fp) == EOF) {
-            diminuto_perror("diminuto_lock_lock_generic: fclose");
+            diminuto_perror("diminuto_lock_f: fclose");
             break;
         }
 
@@ -75,12 +74,12 @@ int diminuto_lock_lock_generic(const char * file, pid_t pid)
          * N.B. atomic.
          */
 
-        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE) >= 0) {
+        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, type) >= 0) {
             /* Do nothing. */
-        } else if (errno == EEXIST) {
+        } else if ((type == RENAME_NOREPLACE) && (errno == EEXIST)) {
             break;
         } else {
-            diminuto_perror("diminuto_lock_lock_generic: renameat2");
+            diminuto_perror("diminuto_lock_f: renameat2");
             break;
         }
 
@@ -94,7 +93,7 @@ int diminuto_lock_lock_generic(const char * file, pid_t pid)
         fp = (FILE *)0;
         fd = -1;
     } else {
-        diminuto_perror("diminuto_lock_lock_generic: fclose");
+        diminuto_perror("diminuto_lock_f: fclose");
     }
 
     if (fd < 0) {
@@ -102,7 +101,7 @@ int diminuto_lock_lock_generic(const char * file, pid_t pid)
     } else if (close(fd) == 0) {
         /* Do nothing. */
      } else {
-        diminuto_perror("diminuto_lock_lock_generic: close");
+        diminuto_perror("diminuto_lock_f: close");
     }
 
     if (path != (char *)0) {
@@ -112,6 +111,11 @@ int diminuto_lock_lock_generic(const char * file, pid_t pid)
     }
 
     return rc;
+}
+
+int diminuto_lock_lock_generic(const char * file, pid_t pid)
+{
+    return diminuto_lock_f(file, "-lock-XXXXXX", pid, RENAME_NOREPLACE);
 }
 
 int diminuto_lock_lock(const char * file)
@@ -158,87 +162,7 @@ int diminuto_lock_prelock(const char * file)
 
 int diminuto_lock_postlock_generic(const char * file, pid_t pid)
 {
-    int rc = -1;
-    int fd = -1;
-    FILE * fp = (FILE *)0;
-    char * path = (char *)0;
-    static const char SUFFIX[] = "-post-XXXXXX";
-
-    do {
-
-        path = (char *)malloc(strlen(file) + sizeof(SUFFIX));
-        if (path == (char *)0) {
-            diminuto_perror("diminuto_lock_postlock_generic: malloc");
-            break;
-        }
-
-        strcpy(path, file);
-        strcat(path, SUFFIX);
-
-        if ((fd = mkstemp(path)) >= 0) {
-            /* Do nothing. */
-        } else if (errno == EEXIST) {
-            break;
-        } else {
-            diminuto_perror("diminuto_lock_postlock_generic: mkstemp");
-            break;
-        }
-
-        if ((fp = fdopen(fd, "w")) == (FILE *)0) {
-            diminuto_perror("diminuto_lock_postlock_generic: fdopen");
-            break;
-        }
-
-        if (fprintf(fp, "%d\n", pid) < 0) {
-           diminuto_perror("diminuto_lock_postlock_generic: fprintf");
-           break;
-        }
-
-        if (fclose(fp) == EOF) {
-            diminuto_perror("diminuto_lock_postlock_generic: fclose");
-            break;
-        }
-
-        fp = (FILE *)0;
-        fd = -1;
-
-        /*
-         * N.B. atomic.
-         */
-
-        if (renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE) < 0) {
-            diminuto_perror("diminuto_lock_postlock_generic: renameat2");
-            break;
-        }
-
-        rc = 0;
-
-    } while (0);
-
-    if (fp == (FILE *)0) {
-        /* Do nothing. */
-    } else if (fclose(fp) == 0) {
-        fp = (FILE *)0;
-        fd = -1;
-    } else {
-        diminuto_perror("diminuto_lock_postlock_generic: fclose");
-    }
-
-    if (fd < 0) {
-        /* Do nothing. */
-    } else if (close(fd) == 0) {
-        /* Do nothing. */
-     } else {
-        diminuto_perror("diminuto_lock_postlock_generic: close");
-    }
-
-    if (path != (char *)0) {
-        (void)unlink(path);
-        free(path);
-        path = (char *)0;
-    }
-
-    return rc;
+    return diminuto_lock_f(file, "-post-XXXXXX", pid, RENAME_EXCHANGE);
 }
 
 int diminuto_lock_postlock(const char * file)
@@ -300,4 +224,23 @@ pid_t diminuto_lock_check(const char * file)
     }
 
     return pid;
+}
+
+int diminuto_lock_file_generic(const char * file, pid_t pid)
+{
+    return diminuto_lock_f(file, "-file-XXXXXX", pid, 0);
+}
+
+int diminuto_lock_file(const char * file)
+{
+    int rc = -1;
+    pid_t pid = -1;
+
+    if ((pid = getpid()) < 0) {
+        diminuto_perror("diminuto_lock_file: getpid");
+    } else {
+        rc = diminuto_lock_file_generic(file, pid);
+    }
+
+    return rc;
 }

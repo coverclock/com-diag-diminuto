@@ -5,10 +5,10 @@
 /**
  * @file
  *
- * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2008-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Delay feature implements blocking time delays in Diminuto ticks.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

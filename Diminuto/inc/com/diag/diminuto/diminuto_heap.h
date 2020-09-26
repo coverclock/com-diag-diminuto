@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Heap feature provides a mechanism to use the Proxy feature to
+ * dynamically replace the malloc(3), free(3), calloc(3), and realloc(3)
+ * functions at run time.
  *
  * This simple little dependency injection mechanism allows you to replace
  * malloc() and free() from <stdlib.h> with alternatives. I use this for

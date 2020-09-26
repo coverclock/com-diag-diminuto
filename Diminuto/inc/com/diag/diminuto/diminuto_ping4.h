@@ -5,14 +5,13 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This feature is a programmatic version of ping(1): send an ICMP ECHO REQUEST
- * to an IPv4 address and (hopefully) receive an ICMP ECHO REPLY back. If so,
- * compute the latency in ticks between the REQUEST and the REPLY.
+ * The Ping4 feature is a programmatic version of ping(1): send an ICMP ECHO
+ * REQUEST to an IPv4 address and (hopefully) receive an ICMP ECHO REPLY back.
+ * If so, compute the latency in ticks between the REQUEST and the REPLY.
+ * On most platforms, this must run with elevated privileges.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

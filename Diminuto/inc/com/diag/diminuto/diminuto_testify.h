@@ -5,10 +5,11 @@
 /**
  * @file
  *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Testify feature provides a standard way to interpret strings in
+ * configuration files or user input that are intended to be boolean.
  */
 
 /**

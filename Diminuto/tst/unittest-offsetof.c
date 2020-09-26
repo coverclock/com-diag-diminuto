@@ -22,7 +22,7 @@ struct Alpha {
     int16_t two;
     int8_t one;
     int8_t eightyone[81];
-    int8_t final[0];
+    int8_t final[0]; /* Will produce -pedantic warnings. */
 };
 
 struct Beta {
@@ -31,7 +31,7 @@ struct Beta {
     int32_t four;
     int64_t eight;
     int8_t eightyone[81];
-    int8_t final[0];
+    int8_t final[0]; /* Will produce -pedantic warnings. */
 };
 
 struct Gamma {
@@ -40,7 +40,7 @@ struct Gamma {
     int16_t two;
     int32_t four;
     int64_t eight;
-    int8_t final[0];
+    int8_t final[0]; /* Will produce -pedantic warnings. */
 };
 
 int main(void)
@@ -65,7 +65,8 @@ int main(void)
         EXPECT(diminuto_offsetof(struct Beta, eight) == 8);
         EXPECT(diminuto_offsetof(struct Beta, eightyone) == 16);
         EXPECT(diminuto_offsetof(struct Beta, final) == 97);
-        ASSERT(sizeof(struct Beta) == 104); /* Consider arrays. */
+        ASSERT((sizeof(struct Beta) == 100) || (sizeof(struct Beta) == 104)); /* Consider arrays. */
+
         STATUS();
     }
     {

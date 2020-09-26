@@ -5,13 +5,12 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * The terminator feature propagates a SIGTERM signal to appropriate processes
- * (children or process group) when it receives one.
+ * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+
+ * The Terminator feature provides a convenient API for using SIGTERM.
+ * It propagates the SIGTERM signal to appropriate processes (children or
+ * process group) when it receives one.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

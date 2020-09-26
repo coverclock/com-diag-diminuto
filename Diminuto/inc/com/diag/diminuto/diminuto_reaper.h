@@ -5,19 +5,17 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * The reaper feature provides a SIGCHLD signal handler that will reap any
- * terminating children via a waitpid(2), and logging their termination signals
- * or exit statuses. This prevents a forking application from being infested
- * with zombie processes (although most applications will likely choose to do
- * the waitpid(2) themselves).
+ * The Reaper feature provides a SIGCHLD signal handler and functions to reap
+ * any terminating children via a waitpid(2), and optionally logging their
+ * termination signals or exit statuses. This prevents a forking application
+* from being infested with zombie processes.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <sys/wait.h> /* For WIFEXISTED etc. macros. */
 
 /**
  * Send a process a SIGCHLD signal.
@@ -34,8 +32,27 @@ extern int diminuto_reaper_signal(pid_t pid);
 extern int diminuto_reaper_check(void);
 
 /**
- * Install a SIGCHLD signal handler in the caller. The handler will
- * reap any pending child zombie processes.
+ * Return the process identifier, and the qualified exit status in a value
+ * result parameter if the parameter is non-null, of a child process, or 0
+ * if there is no terminated child process, or <0 if an error occurred.
+ * If a PID is not returned, the value result parameter is left unchanged.
+ * @param statusp points to a variable into which the
+ * @return the PID of the terminated child process, or 0, or <0.
+ */
+extern pid_t diminuto_reaper_reap(int * statusp);
+
+/**
+ * Wait and Return the process identifier, and the qualified exit status
+ * in a value result parameter if the parameter is non-null, of a child
+ * process, or <0 if an error occurred. If a PID is not returned, the
+ * value result parameter is left unchanged.
+ * @param statusp points to a variable into which the
+ * @return the PID of the terminated child process, or <0 if an error occurred.
+ */
+extern pid_t diminuto_reaper_wait(int * statusp);
+
+/**
+ * Install a SIGCHLD signal handler in the caller.
  * @param restart is true if interrupt system calls should be restarted.
  * @return 0 for success, <0 otherwise.
  */

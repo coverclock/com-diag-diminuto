@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -71,6 +71,8 @@ int main(int argc, char ** argv)
         }
 
         diminuto_delay(diminuto_frequency(), 0);
+
+        ASSERT(diminuto_reaper_wait((int *)0) == pid);
 
         ASSERT(diminuto_reaper_check());
         ASSERT(!diminuto_reaper_check());

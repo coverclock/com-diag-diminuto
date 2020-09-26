@@ -5,10 +5,12 @@
 /**
  * @file
  *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
+ *
+ * The Pin feature implements an interface to interrogate and manipulate
+ * General Purpose I/O pins. On most platforms, this will require running
+ * with elevated privileges.
  *
  * If you are reading a GPIO pin that changes in real-time, you will probably
  * need a debouncing algorithm and/or an edge detector. See the cue feature

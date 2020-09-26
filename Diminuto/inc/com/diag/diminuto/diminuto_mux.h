@@ -5,13 +5,12 @@
 /**
  * @file
  *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Licensed under the terms in LICENSE.txt.
  *
- * This is a socket multiplexer that uses the pselect(2) system call. It is
- * inspired by similar code I wrote eons ago for SunOS. It provides a registry
+ * The Mux feature implements an easily used file descriptor and socket
+ * multiplexer that uses the pselect(2) system call. It was inspired by
+ * similar code the author wrote eons ago for SunOS. It provides a registry
  * of sockets used for read(2) and/or write(2) (for data sockets), or accept(2)
  * (for listening sockets). The application calls the provided wait function,
  * then interrogates the registry for those sockets that are "ready" (that is,
