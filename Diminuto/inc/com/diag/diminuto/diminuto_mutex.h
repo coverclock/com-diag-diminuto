@@ -25,11 +25,11 @@ typedef struct DiminutoMutex {
 
 extern diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp);
 
-extern int diminuto_mutex_begin(diminuto_mutex_t * mp);
+extern int diminuto_mutex_lock(diminuto_mutex_t * mp);
 
-extern int diminuto_mutex_begin_try(diminuto_mutex_t * mp);
+extern int diminuto_mutex_lock_try(diminuto_mutex_t * mp);
 
-extern int diminuto_mutex_end(diminuto_mutex_t * mp);
+extern int diminuto_mutex_unlock(diminuto_mutex_t * mp);
 
 extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
 

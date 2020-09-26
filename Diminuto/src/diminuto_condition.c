@@ -43,12 +43,12 @@ int diminuto_condition_wait_try(diminuto_condition_t * cp, diminuto_ticks_t time
     static const diminuto_ticks_t SECONDS = 1;
     static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
-    if (timeout == DIMINUTO_CONDITION_INFINITE) {
+    if (timeout == DIMINUTO_CONDITION_INFINITY) {
         if ((rc = pthread_cond_wait(&(cp->condition), &(cp->mutex.mutex))) != 0) {
             errno = rc;
             diminuto_perror("diminuto_condition_wait_try: pthread_cond_wait");
         }
-    else if ((rc = clock_gettime(CLOCK_REALTIME, &now)) < 0) {
+    } else if ((rc = clock_gettime(CLOCK_REALTIME, &now)) < 0) {
         rc = errno;
         diminuto_perror("diminuto_condition_wait_try: clock_gettime");
     } else {

@@ -11,12 +11,26 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+#include <pthread.h>
 #include <signal.h>
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_condition.h"
 
-static const int DIMINUTO_THREAD_NOTIFICATION = SIGUSR1;
+static const int DIMINUTO_THREAD_SIGNAL = SIGUSR1;
 
-static const diminuto_ticks_t DIMINUTO_THREAD_INFINITE = ~(diminuto_ticks_t)0;
+static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = ~(diminuto_ticks_t)0;
+
+typedef enuum DiminutoThreadState {
+    DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',
+    DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',
+    DIMINUTO_THREAD_STATE_STARTED       = 'S',
+    DIMINUTO_THREAD_STATE_RUNNING       = 'R',
+    DIMINUTO_THREAD_STATE_EXITING       = 'E',
+    DIMINUTO_THREAD_STATE_COMPLETED     = 'C',
+    DIMINUTO_THREAD_STATE_JOINED        = 'J',
+    DIMINUTO_THREAD_STATE_FINISHED      = 'F',
+    DIMINUTO_THREAD_STATE_FAILED        = 'X',
+} diminuto_thread_state_t;
 
 typedef struct DiminutoThread {
     diminuto_condition_t condition;
@@ -24,11 +38,9 @@ typedef struct DiminutoThread {
     void * (*function)(void *);
     void * context;
     void * value;
+    diminuto_thread_state_t state;
     int notification;
-    int8_t starting;
-    int8_t running;
     int8_t notifying;
-    int8_t joining;
 } diminuto_thread_t;
 
 #define DIMINUTO_THREAD_INITIALIZER \
@@ -38,9 +50,7 @@ typedef struct DiminutoThread {
         (void * (*)(void*))0, \
         (void *)0, \
         (void *)(~0), \
-        0, \
-        0, \
-        0, \
+        DIMINUTO_THREAD_STATE_ALLOCATED,
         0, \
         0, \
     }
@@ -63,9 +73,9 @@ extern int diminuto_thread_notify(diminuto_thread_t * tp);
 
 extern int diminuto_thread_join_try(diminuto_thread_t * tp, diminuto_ticks_t timeout);
 
-static inline int diminuto_thread_join(diminuto_thread_t * tp)
+static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp);)
 {
-    return diminuto_thread_join_try(tp, DIMINUTO_THREAD_INFINITE);
+    return diminuto_thread_join_try(tp, vpp, DIMINUTO_THREAD_INFINITY);
 }
 
 extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
