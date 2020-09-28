@@ -45,7 +45,7 @@ typedef struct DiminutoThread {
 #define DIMINUTO_THREAD_INITIALIZER \
     { \
         DIMINUTO_CONDITION_INITIALIZER, \
-        { 0, }, \
+        0, \
         (void * (*)(void*))0, \
         (void *)0, \
         (void *)(~0), \
