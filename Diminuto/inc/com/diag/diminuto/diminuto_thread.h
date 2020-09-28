@@ -1,6 +1,6 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_CONDITION_
-#define _H_COM_DIAG_DIMINUTO_CONDITION_
+#ifndef _H_COM_DIAG_DIMINUTO_THREAD_
+#define _H_COM_DIAG_DIMINUTO_THREAD_
 
 /**
  * @file
@@ -11,7 +11,6 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include <pthread.h>
 #include <signal.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_condition.h"
@@ -20,7 +19,7 @@ static const int DIMINUTO_THREAD_SIGNAL = SIGUSR1;
 
 static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = ~(diminuto_ticks_t)0;
 
-typedef enuum DiminutoThreadState {
+typedef enum DiminutoThreadState {
     DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',
     DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',
     DIMINUTO_THREAD_STATE_STARTED       = 'S',
@@ -50,7 +49,7 @@ typedef struct DiminutoThread {
         (void * (*)(void*))0, \
         (void *)0, \
         (void *)(~0), \
-        DIMINUTO_THREAD_STATE_ALLOCATED,
+        DIMINUTO_THREAD_STATE_ALLOCATED, \
         0, \
         0, \
     }
@@ -65,15 +64,15 @@ extern void diminuto_thread_exit(void * vp);
 
 extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *));
 
-extern void diminuto_thread_yield();
+extern int diminuto_thread_yield();
 
 extern int diminuto_thread_start(diminuto_thread_t * tp, void * cp);
 
 extern int diminuto_thread_notify(diminuto_thread_t * tp);
 
-extern int diminuto_thread_join_try(diminuto_thread_t * tp, diminuto_ticks_t timeout);
+extern int diminuto_thread_join_try(diminuto_thread_t * tp, void ** vpp, diminuto_ticks_t timeout);
 
-static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp);)
+static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 {
     return diminuto_thread_join_try(tp, vpp, DIMINUTO_THREAD_INFINITY);
 }

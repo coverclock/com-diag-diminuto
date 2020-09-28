@@ -27,26 +27,13 @@ diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp)
     return (diminuto_mutex_t *)0;
 }
 
-static void diminuto_mutex_cleanup(void * vp)
-{
-    int rc = EIO;
-    diminuto_mutex_t * mp = (diminuto_mutex_t *)vp;
-
-    if ((rc = pthread_mutex_unlock(&(mp->mutex))) != 0) {
-        errno = rc;
-        diminuto_perror("diminuto_mutex_cleanup: pthread_mutex_unlock");
-    }
-}
-
 int diminuto_mutex_lock(diminuto_mutex_t * mp)
 {
     int rc = EIO;
 
-    pthread_cleanup_push(diminuto_mutex_cleanup, (void *)mp);
     if ((rc = pthread_mutex_lock(&(mp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_mutex_lock: pthread_mutex_lock"); }
-        pthread_cleanup_pop(0);
+        diminuto_perror("diminuto_mutex_lock: pthread_mutex_lock");
     }
 
     return rc;
@@ -56,11 +43,9 @@ int diminuto_mutex_lock_try(diminuto_mutex_t * mp)
 {
     int rc = EIO;
 
-    pthread_cleanup_push(diminuto_mutex_cleanup, (void *)mp);
     if ((rc = pthread_mutex_trylock(&(mp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_mutex_lock_try: pthread_mutex_trylock"); }
-        pthread_cleanup_pop(0);
+        diminuto_perror("diminuto_mutex_lock_try: pthread_mutex_trylock");
     }
 
     return rc;
@@ -70,11 +55,9 @@ int diminuto_mutex_unlock(diminuto_mutex_t * mp)
 {
     int rc = EIO;
 
-    if ((rc = pthread_mutex_unlock(&(this->mutex))) != 0) {
+    if ((rc = pthread_mutex_unlock(&(mp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_mutex_unlock: pthread_mutex_unlock"); }
-    } else {
-        pthread_cleanup_pop(0);
+        diminuto_perror("diminuto_mutex_unlock: pthread_mutex_unlock");
     }
 
     return rc;

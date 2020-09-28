@@ -11,12 +11,13 @@
 #include <time.h>
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_condition.h"
+#include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
 diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 {
-    diminuto_mutex_init(&(cp->mutex)):
+    diminuto_mutex_init(&(cp->mutex));
     pthread_cond_init(&(cp->condition), (pthread_condattr_t *)0);
     return cp;
 }
@@ -29,7 +30,7 @@ diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
         errno = rc;
         diminuto_perror("diminuto_condition_fini: pthread_cond_broadcast");
     }
-    pthread_yield();
+    diminuto_thread_yield();
     pthread_cond_destroy(&(cp->condition));
     diminuto_mutex_fini(&(cp->mutex));
 
@@ -54,8 +55,8 @@ int diminuto_condition_wait_try(diminuto_condition_t * cp, diminuto_ticks_t time
     } else {
         timeout += diminuto_frequency_units2ticks(now.tv_sec, SECONDS);
         timeout += diminuto_frequency_units2ticks(now.tv_nsec, NANOSECONDS);
-        now.tv_sec = diminuto_frequency_ticks2whoseconds(timeout);
-        now.tv_nsec = diminuto_frequency_ticks2fractionalseconds(NANOSECONDS);
+        now.tv_sec = diminuto_frequency_ticks2wholeseconds(timeout);
+        now.tv_nsec = diminuto_frequency_ticks2fractionalseconds(timeout, NANOSECONDS);
         if ((rc = pthread_cond_timedwait(&(cp->condition), &(cp->mutex.mutex), &now)) != 0) {
             errno = rc;
             diminuto_perror("diminuto_condition_wait_try: pthread_cond_timedwait");
@@ -73,7 +74,7 @@ int diminuto_condition_signal(diminuto_condition_t * cp)
         errno = rc;
         diminuto_perror("diminuto_condition_signal: pthread_cond_broadcast");
     } else {
-        pthread_yield();
+        diminuto_thread_yield();
     }
 
     return rc;

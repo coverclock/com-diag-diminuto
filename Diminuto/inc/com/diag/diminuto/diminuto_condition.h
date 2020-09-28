@@ -11,7 +11,6 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include <pthread.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_mutex.h"
 
@@ -19,8 +18,8 @@ static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = ~(diminuto_ticks_t)0
 
 typedef struct DiminutoCondition {
     diminuto_mutex_t mutex;
-    pthread_condition_t condition;
-} diminuto_mutex_t;
+    pthread_cond_t condition;
+} diminuto_condition_t;
 
 #define DIMINUTO_CONDITION_INITIALIZER \
     { \

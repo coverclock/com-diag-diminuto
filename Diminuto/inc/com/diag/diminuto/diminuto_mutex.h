@@ -11,6 +11,8 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+#define __USE_GNU
+#define _GNU_SOURCE
 #include <pthread.h>
 
 typedef struct DiminutoMutex {
