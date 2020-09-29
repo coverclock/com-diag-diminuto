@@ -144,6 +144,7 @@ gcc 9.2.1
 * controller - proportional/integral/derivative (PID) controller.
 * core - enable core dumps.
 * coherentsection - macros to implement scoped acquire/release memory barriers.
+* condition - error checking wrapper around pthread condition.
 * countof - macro to compute array positions using sizeof operator.
 * criticalsection - macros to implement scoped pthread mutex serialization.
 * cue - logic level debouncer and edge detector.
@@ -171,6 +172,7 @@ gcc 9.2.1
 * mmdriver - kernel module implementing memory mapped I/O.
 * modulator - software pulse width modulator (PWM) generator.
 * module - support for dynamically linked user space modules.
+* mutex - error checking wrapper around pthread mutex.
 * mux - file descriptor multiplexer using select(2).
 * number - alternative interfaces to strtol(3) and strtoul(3).
 * observation - atomically instantiate data files from temporary files.
@@ -190,6 +192,7 @@ gcc 9.2.1
 * stacktrace - print a stack trace.
 * store - uses the tree feature to implement an in-memory key/value store.
 * string - some useful string manipulation stuff.
+* thread - error checking wrapper around pthread thread.
 * throttle - implement a traffic shaper for a traffic contract.
 * time - comprehensive time of day functions plus timestamp formatting.
 * timer - periodic and one-shot timers.

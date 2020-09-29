@@ -44,15 +44,15 @@ typedef struct DiminutoThread {
     int8_t notifying;
 } diminuto_thread_t;
 
-#define DIMINUTO_THREAD_INITIALIZER \
+#define DIMINUTO_THREAD_INITIALIZER(_FP_) \
     { \
         DIMINUTO_CONDITION_INITIALIZER, \
         0, \
-        (void * (*)(void*))0, \
+        (_FP_), \
         (void *)0, \
         (void *)(~0), \
-        DIMINUTO_THREAD_STATE_ALLOCATED, \
-        0, \
+        DIMINUTO_THREAD_STATE_INITIALIZED, \
+        DIMINUTO_THREAD_SIGNAL, \
         0, \
     }
 

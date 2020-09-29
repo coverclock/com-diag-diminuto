@@ -20,9 +20,23 @@
 
 /*********************************************************************/
 
+extern int main(int argc, char * argv[]);
+
+/*********************************************************************/
+
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static diminuto_thread_t diminuto_thread_main = DIMINUTO_THREAD_INITIALIZER;
+static diminuto_thread_t diminuto_thread_main =
+    {
+        DIMINUTO_CONDITION_INITIALIZER,
+        0,
+        (void * (*)(void *))main,
+        (void *)0,
+        (void *)0,
+        DIMINUTO_THREAD_STATE_RUNNING,
+        0,
+        0,
+    };
 
 static pthread_key_t key;
 
@@ -81,9 +95,7 @@ static int setup()
                     errno = rc;
                     diminuto_perror("diminuto_thread: setup: pthread_setspecific");
                 } else {
-                    diminuto_thread_init(&diminuto_thread_main, proxy);
                     diminuto_thread_main.thread = pthread_self();
-                    diminuto_thread_main.state = DIMINUTO_THREAD_STATE_RUNNING;
                     setupped = !0;
                     DIMINUTO_LOG_DEBUG("diminuto_thread:setup: setup");
                 }
@@ -148,6 +160,8 @@ void diminuto_thread_cleanup(void * vp)
 diminuto_thread_t * diminuto_thread_instance()
 {
     diminuto_thread_t * tp = (diminuto_thread_t *)0;
+
+    setup();
 
     tp = (diminuto_thread_t *)pthread_getspecific(key);
     if (tp == (diminuto_thread_t *)0) {
@@ -230,10 +244,13 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
     int rc = EIO;
     struct sigaction action = { 0 };
 
+    setup();
+
     diminuto_thread_lock(tp);
     pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
         switch (tp->state) {
         case DIMINUTO_THREAD_STATE_INITIALIZED:
+        case DIMINUTO_THREAD_STATE_JOINED:
         case DIMINUTO_THREAD_STATE_FINISHED:
         case DIMINUTO_THREAD_STATE_FAILED:
             if (tp->notification > 0) {
