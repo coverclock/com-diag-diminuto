@@ -52,6 +52,7 @@ static void * body2(void * arg)
     static diminuto_mutex_t mutex = DIMINUTO_MUTEX_INITIALIZER;
     int done = 0;
     int rc = -1;
+    int busy = 0;
 
     while (!done) {
 
@@ -72,9 +73,80 @@ static void * body2(void * arg)
             ASSERT(diminuto_mutex_unlock(&mutex) == 0);
         } else {
             COMMENT("BUSY\n");
+            busy += 1;
         }
 
     }
+
+    COMMENT("busy: %d\n", busy);
+    ASSERT(busy > 0);
+
+    return (void *)arg;
+}
+
+static void * body3(void * arg)
+{
+    static diminuto_mutex_t mutex = DIMINUTO_MUTEX_INITIALIZER;
+    int done = 0;
+
+    while (!done) {
+
+        DIMINUTO_MUTEX_BEGIN(&mutex);
+
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+            } else {
+                /* Do nothing. */
+            }
+
+        DIMINUTO_MUTEX_END;
+
+    }
+
+    return (void *)arg;
+}
+
+static void * body4(void * arg)
+{
+    static diminuto_mutex_t mutex = DIMINUTO_MUTEX_INITIALIZER;
+    int done = 0;
+    int rc = -1;
+    int successful = 0;
+    int busy = 0;
+
+    while (!done) {
+
+        successful = 0;
+
+        DIMINUTO_MUTEX_TRY(&mutex);
+
+            successful = !0;
+
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+            } else {
+                /* Do nothing. */
+            }
+
+        DIMINUTO_MUTEX_END;
+
+        if (!successful) {
+            COMMENT("BUSY\n");
+            busy += 1;
+        }
+
+    }
+
+    COMMENT("busy: %d\n", busy);
+    ASSERT(busy > 0);
 
     return (void *)arg;
 }
@@ -134,7 +206,7 @@ int main(void)
 
         TEST();
 
-        ASSERT(shared == 0);
+        shared = 0;
 
         rc = pthread_create(&odd, 0, body1, (void *)1);
         ASSERT(rc == 0);
@@ -171,6 +243,68 @@ int main(void)
         ASSERT(rc == 0);
 
         rc = pthread_create(&even, 0, body2, (void *)0);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        rc = pthread_join(odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
+
+        final = (void *)~0;
+        rc = pthread_join(even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        ASSERT(shared == LIMIT);
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        pthread_t odd;
+        pthread_t even;
+        void * final;
+
+        TEST();
+
+        shared = 0;
+
+        rc = pthread_create(&odd, 0, body3, (void *)1);
+        ASSERT(rc == 0);
+
+        rc = pthread_create(&even, 0, body3, (void *)0);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        rc = pthread_join(odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
+
+        final = (void *)~0;
+        rc = pthread_join(even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        ASSERT(shared == LIMIT);
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        pthread_t odd;
+        pthread_t even;
+        void * final;
+
+        TEST();
+
+        shared = 0;
+
+        rc = pthread_create(&odd, 0, body4, (void *)1);
+        ASSERT(rc == 0);
+
+        rc = pthread_create(&even, 0, body4, (void *)0);
         ASSERT(rc == 0);
 
         final = (void *)~0;

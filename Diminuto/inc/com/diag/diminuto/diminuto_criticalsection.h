@@ -20,7 +20,7 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 /**
  * @def DIMINUTO_CRITICAL_SECTION_BEGIN
  * Begin a code section that is serialized using a pthread mutex specified by
- * the caller as a pointer in the argument @a _MUTEX_P by locking the mutex.
+ * the caller as a pointer in the argument @a _MUTEXP_ by locking the mutex.
  */
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MUTEXP_) \
     do { \
@@ -35,7 +35,7 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 /**
  * @def DIMINUTO_CRITICAL_SECTION_TRY
  * Conditionally begin a code section that is serialized using a pthread
- * mutex specified by the caller as a pointer in the argument @a _MUTEX_P
+ * mutex specified by the caller as a pointer in the argument @a _MUTEXP_
  * by locking the mutex.
  */
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MUTEXP_) \

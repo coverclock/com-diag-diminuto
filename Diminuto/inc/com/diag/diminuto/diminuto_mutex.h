@@ -40,4 +40,40 @@ extern void diminuto_mutex_cleanup(void * vp);
 
 extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
 
+/**
+ * @def DIMINUTO_MUTEX_BEGIN
+ * Begin a code section that is serialized using a Diminuto mutex specified by
+ * the caller as a pointer in the argument @a _P_ by locking the mutex.
+ */
+#define DIMINUTO_MUTEX_BEGIN(_MP_) \
+    do { \
+        if (diminuto_mutex_lock(_MP_) == 0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, _MP_); \
+            do { \
+                (void)0
+
+/**
+ * @def DIMINUTO_MUTEX_TRY
+ * Conditionally begin a code section that is serialized using a Diminuto
+ * mutex specified by the caller as a pointer in the argument @a _MP_
+ * by locking the mutex.
+ */
+#define DIMINUTO_MUTEX_TRY(_MP_) \
+    do { \
+        if (diminuto_mutex_lock_try(_MP_) == 0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, _MP_); \
+            do { \
+                (void)0
+
+/**
+ * @def DIMINUTO_MUTEX_END
+ * End a code section that was serialized using the Diminuto mutex specified at
+ * the beginning of the block by unlocking the mutex.
+ */
+#define DIMINUTO_MUTEX_END \
+            } while (0); \
+            pthread_cleanup_pop(!0); \
+        } \
+    } while (0)
+
 #endif
