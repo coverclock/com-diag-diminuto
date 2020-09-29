@@ -376,8 +376,8 @@ int main(void)
         DIMINUTO_THREAD_END;
 
         final = (void *)0xdeadbeef;
-        ticks = diminuto_thread_clock() + (diminuto_frequency() * 10);
-        COMMENT("PAUSING");
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 5);
+        COMMENT("PAUSING 5s");
         rc = diminuto_thread_join_until(&thread, &final, ticks);
         ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
         ASSERT(final == (void *)0xdeadbeef);

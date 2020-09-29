@@ -911,6 +911,7 @@ sanity:
 	unittest-lock
 	unittest-log
 	unittest-memory
+	unittest-mutex
 	unittest-number
 	unittest-observation
 	unittest-offsetof
@@ -932,6 +933,7 @@ sanity:
 	unittest-system
 	unittest-terminator
 	unittest-testify
+	unittest-thread
 	unittest-throttle
 	unittest-time-zone
 	unittest-tree
