@@ -26,17 +26,7 @@ extern int main(int argc, char * argv[]);
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static diminuto_thread_t diminuto_thread_main =
-    {
-        DIMINUTO_CONDITION_INITIALIZER,
-        0,
-        (void * (*)(void *))main,
-        (void *)0,
-        (void *)0,
-        DIMINUTO_THREAD_STATE_RUNNING,
-        0,
-        0,
-    };
+static diminuto_thread_t diminuto_thread_main = DIMINUTO_THREAD_INITIALIZER((void * (*)(void *))main);
 
 static pthread_key_t key;
 
@@ -108,6 +98,8 @@ static int setup()
                     diminuto_perror("diminuto_thread: setup: pthread_setspecific");
                 } else {
                     diminuto_thread_main.thread = pthread_self();
+                    diminuto_thread_main.state = DIMINUTO_THREAD_STATE_RUNNING;
+                    diminuto_thread_main.notification = 0;
                     setupped = !0;
                     DIMINUTO_LOG_DEBUG("diminuto_thread:setup: setup");
                 }
@@ -126,7 +118,7 @@ diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(vo
     memset(&(tp->thread), 0, sizeof(tp->thread));
     tp->function = fp;
     tp->context = (void *)0;
-    tp->value = (void *)0;
+    tp->value = (void *)~0;
     tp->notification = DIMINUTO_THREAD_SIGNAL;
     tp->notifying = 0;
     tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
@@ -148,9 +140,9 @@ diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
         diminuto_condition_fini(&(tp->condition));
         /* FALL THRU */
     case DIMINUTO_THREAD_STATE_ALLOCATED:
-        tp->state = DIMINUTO_THREAD_STATE_FINISHED;
+        tp->state = DIMINUTO_THREAD_STATE_FINALIZED;
         /* FALL THRU */
-    case DIMINUTO_THREAD_STATE_FINISHED:
+    case DIMINUTO_THREAD_STATE_FINALIZED:
         tp = (diminuto_thread_t *)0;    
         break;
     }
@@ -263,7 +255,6 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
         switch (tp->state) {
         case DIMINUTO_THREAD_STATE_INITIALIZED:
         case DIMINUTO_THREAD_STATE_JOINED:
-        case DIMINUTO_THREAD_STATE_FINISHED:
         case DIMINUTO_THREAD_STATE_FAILED:
             if (tp->notification > 0) {
                 action.sa_handler = handler;
@@ -306,6 +297,7 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
         case DIMINUTO_THREAD_STATE_STARTED:
         case DIMINUTO_THREAD_STATE_RUNNING:
             tp->notifying = !0;
+            diminuto_thread_signal(tp);
             if ((tp->notification) <= 0) {
                 /* Do nothing. */
             } else if ((rc = pthread_kill(tp->thread, tp->notification)) != 0) {

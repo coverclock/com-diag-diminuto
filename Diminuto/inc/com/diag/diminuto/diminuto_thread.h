@@ -29,7 +29,7 @@ typedef enum DiminutoThreadState {
     DIMINUTO_THREAD_STATE_EXITING       = 'E',
     DIMINUTO_THREAD_STATE_COMPLETED     = 'C',
     DIMINUTO_THREAD_STATE_JOINED        = 'J',
-    DIMINUTO_THREAD_STATE_FINISHED      = 'F',
+    DIMINUTO_THREAD_STATE_FINALIZED     = 'F',
     DIMINUTO_THREAD_STATE_FAILED        = 'X',
 } diminuto_thread_state_t;
 
