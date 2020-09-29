@@ -49,10 +49,22 @@ static void * proxy(void * ap)
     diminuto_thread_t * tp = (diminuto_thread_t *)ap;
     void * value = (void *)0;
     int previous = -1;
+    int rc = -1;
 
-    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &previous);
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &previous);
-    pthread_setspecific(key, tp);
+    if ((rc = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &previous)) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_thread: setup: pthread_setcanceltype");
+    }
+
+    if ((rc = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &previous)) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_thread: setup: pthread_setcancelstate");
+    }
+
+    if ((rc = pthread_setspecific(key, tp)) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_thread: setup: pthread_setspecific");
+    }
 
     diminuto_thread_lock(tp);
     pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
