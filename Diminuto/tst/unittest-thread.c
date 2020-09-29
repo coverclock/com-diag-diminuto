@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <pthread.h>
 #include <stdint.h>
 #include <errno.h>
@@ -64,10 +65,10 @@ static void * body2(void * arg)
         if (rc == 0) {
 
             if (shared >= LIMIT) {
-                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s saw  %d", (intptr_t)arg ? "odd " : "even", shared);
                 done = !0;
             } else if ((shared % 2) == (intptr_t)arg) {
-                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s sees %d", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
                 /* Do nothing. */
@@ -75,13 +76,13 @@ static void * body2(void * arg)
 
             ASSERT(diminuto_mutex_unlock(&mutex) == 0);
         } else {
-            COMMENT("BUSY\n");
+            COMMENT("BUSY");
             busy += 1;
         }
 
     }
 
-    COMMENT("busy: %d\n", busy);
+    COMMENT("busy: %d", busy);
     ASSERT(busy > 0);
 
     return (void *)arg;
@@ -99,10 +100,10 @@ static void * body3(void * arg)
         DIMINUTO_MUTEX_BEGIN(&mutex);
 
             if (shared >= LIMIT) {
-                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s saw  %d", (intptr_t)arg ? "odd " : "even", shared);
                 done = !0;
             } else if ((shared % 2) == (intptr_t)arg) {
-                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s sees %d", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
                 /* Do nothing. */
@@ -134,10 +135,10 @@ static void * body4(void * arg)
             successful = !0;
 
             if (shared >= LIMIT) {
-                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s saw  %d", (intptr_t)arg ? "odd " : "even", shared);
                 done = !0;
             } else if ((shared % 2) == (intptr_t)arg) {
-                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s sees %d", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
                 /* Do nothing. */
@@ -146,20 +147,36 @@ static void * body4(void * arg)
         DIMINUTO_MUTEX_END;
 
         if (!successful) {
-            COMMENT("BUSY\n");
+            COMMENT("BUSY");
             busy += 1;
         }
 
     }
 
-    COMMENT("busy: %d\n", busy);
+    COMMENT("busy: %d", busy);
     ASSERT(busy > 0);
 
     return (void *)arg;
 }
 
+static void * body5(void * arg)
+{
+    diminuto_thread_t * tp;
+    diminuto_ticks_t now;
+    tp = diminuto_thread_instance();
+    DIMINUTO_THREAD_BEGIN(tp);
+        while (diminuto_thread_notified() == 0) {
+            now = diminuto_thread_clock() + diminuto_frequency();
+                diminuto_thread_wait_until(tp, now);
+        }
+    DIMINUTO_THREAD_END;
+    COMMENT("NOTIFIED");
+}
+
 int main(void)
 {
+    diminuto_log_setmask();
+
     {
         ASSERT(pthread_equal(pthread_self(), diminuto_thread_self()));
         ASSERT(diminuto_thread_yield() == 0);
@@ -250,7 +267,6 @@ int main(void)
         shared = 0;
 
         rc = diminuto_thread_start(&odd, (void *)1);
-        COMMENT("%p='%c' rc=%d=\"%s\" errno=%d=\"%s\"\n", &odd, odd.state, rc, strerror(rc), errno, strerror(errno));
         ASSERT(rc == 0);
 
         rc = diminuto_thread_start(&even, (void *)0);
@@ -335,6 +351,48 @@ int main(void)
         ASSERT(final == (void *)0);
 
         ASSERT(shared == LIMIT);
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER(body5);
+        void * final;
+        diminuto_ticks_t ticks;
+
+        TEST();
+
+        rc = diminuto_thread_start(&thread, (void *)0);
+        ASSERT(rc == 0);
+
+        COMMENT("STARTED");
+
+        DIMINUTO_THREAD_BEGIN(&thread);
+            while (thread.state != DIMINUTO_THREAD_STATE_RUNNING) {
+                COMMENT("WAITING");
+                diminuto_thread_wait(&thread);
+            }
+        DIMINUTO_THREAD_END;
+
+        final = (void *)0xdeadbeef;
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 10);
+        COMMENT("PAUSING");
+        rc = diminuto_thread_join_until(&thread, &final, ticks);
+        ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
+        ASSERT(final == (void *)0xdeadbeef);
+
+        COMMENT("NOTIFYING");
+        rc = diminuto_thread_notify(&thread);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        COMMENT("JOINING");
+        rc = diminuto_thread_join(&thread, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        COMMENT("FINISHED");
 
         STATUS();
     }

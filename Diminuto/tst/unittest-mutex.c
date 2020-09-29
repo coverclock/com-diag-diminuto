@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <pthread.h>
 #include <stdint.h>
 #include <errno.h>
@@ -153,6 +154,7 @@ static void * body4(void * arg)
 
 int main(void)
 {
+    diminuto_log_setmask();
 
     {
         diminuto_mutex_t mutex1;

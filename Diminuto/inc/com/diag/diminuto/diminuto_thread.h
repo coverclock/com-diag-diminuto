@@ -125,4 +125,10 @@ static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 
 extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
 
+#define DIMINUTO_THREAD_BEGIN(_TP_) DIMINUTO_CONDITION_BEGIN(&((_TP_)->condition))
+
+#define DIMINUTO_THREAD_TRY(_TP_) DIMINUTO_CONDITION_TRY(&((_TP_)->condition))
+
+#define DIMINUTO_THREAD_END DIMINUTO_CONDITION_END
+
 #endif

@@ -72,4 +72,10 @@ extern int diminuto_condition_signal(diminuto_condition_t * cp);
 
 extern diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp);
 
+#define DIMINUTO_CONDITION_BEGIN(_CP_) DIMINUTO_MUTEX_BEGIN(&((_CP_)->mutex))
+
+#define DIMINUTO_CONDITION_TRY(_CP_) DIMINUTO_MUTEX_TRY(&((_CP_)->mutex))
+
+#define DIMINUTO_CONDITION_END DIMINUTO_MUTEX_END
+
 #endif
