@@ -171,6 +171,25 @@ static void * body5(void * arg)
         }
     DIMINUTO_THREAD_END;
     COMMENT("NOTIFIED");
+
+    return (void *)5;
+}
+
+static void * body6(void * arg)
+{
+    diminuto_thread_t * tp;
+    diminuto_ticks_t now;
+    tp = diminuto_thread_instance();
+    DIMINUTO_THREAD_BEGIN(tp);
+        while (diminuto_thread_notified() == 0) {
+            now = diminuto_thread_clock() + diminuto_frequency();
+                diminuto_thread_wait_until(tp, now);
+        }
+    DIMINUTO_THREAD_END;
+    COMMENT("NOTIFIED");
+    diminuto_thread_exit((void *)6);
+
+    return (void *)0;
 }
 
 int main(void)
@@ -375,6 +394,8 @@ int main(void)
             }
         DIMINUTO_THREAD_END;
 
+        COMMENT("RUNNING");
+
         final = (void *)0xdeadbeef;
         ticks = diminuto_thread_clock() + (diminuto_frequency() * 5);
         COMMENT("PAUSING 5s");
@@ -390,7 +411,54 @@ int main(void)
         COMMENT("JOINING");
         rc = diminuto_thread_join(&thread, &final);
         ASSERT(rc == 0);
-        ASSERT(final == (void *)0);
+        ASSERT(final == (void *)5);
+
+        COMMENT("FINISHED");
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t thread;
+        void * final;
+        diminuto_ticks_t ticks;
+
+        TEST();
+
+        diminuto_thread_init(&thread, body6);
+
+        rc = diminuto_thread_start(&thread, (void *)0);
+        ASSERT(rc == 0);
+
+        COMMENT("STARTED");
+
+        DIMINUTO_THREAD_BEGIN(&thread);
+            while (thread.state != DIMINUTO_THREAD_STATE_RUNNING) {
+                COMMENT("WAITING");
+                diminuto_thread_wait(&thread);
+            }
+        DIMINUTO_THREAD_END;
+
+        COMMENT("RUNNING");
+
+        final = (void *)0xdeadbeef;
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 5);
+        COMMENT("PAUSING 5s");
+        rc = diminuto_thread_join_until(&thread, &final, ticks);
+        ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
+        ASSERT(final == (void *)0xdeadbeef);
+
+        COMMENT("NOTIFYING");
+        rc = diminuto_thread_notify(&thread);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 10);
+        COMMENT("JOINING");
+        rc = diminuto_thread_join_until(&thread, &final, ticks);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)6);
 
         COMMENT("FINISHED");
 

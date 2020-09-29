@@ -68,8 +68,8 @@ static void * proxy(void * ap)
     diminuto_thread_lock(tp);
     pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
         tp->value = value;
-        tp->state = DIMINUTO_THREAD_STATE_COMPLETED;
-        DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETED %p", tp);
+        tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
+        DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
         diminuto_thread_signal(tp);
     pthread_cleanup_pop(!0);
 
@@ -131,8 +131,7 @@ diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
     switch (tp->state) {
     case DIMINUTO_THREAD_STATE_STARTED:
     case DIMINUTO_THREAD_STATE_RUNNING:
-    case DIMINUTO_THREAD_STATE_EXITING:
-    case DIMINUTO_THREAD_STATE_COMPLETED:
+    case DIMINUTO_THREAD_STATE_COMPLETING:
         break;
     case DIMINUTO_THREAD_STATE_INITIALIZED:
     case DIMINUTO_THREAD_STATE_JOINED:
@@ -203,6 +202,7 @@ int diminuto_thread_notified()
         pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
             notifying = tp->notifying;
             tp->notifying = 0;
+            diminuto_thread_signal(tp);
         pthread_cleanup_pop(!0);
     }
 
@@ -214,27 +214,16 @@ void diminuto_thread_exit(void * vp)
     diminuto_thread_t * tp = (diminuto_thread_t *)0;
 
     if ((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0) {
-
         diminuto_thread_lock(tp);
         pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
             tp->value = vp;
-            tp->state = DIMINUTO_THREAD_STATE_COMPLETED;
-            DIMINUTO_LOG_DEBUG("diminuto_thread_exit: COMPLETED %p", tp);
+            tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
+            DIMINUTO_LOG_DEBUG("diminuto_thread_exit: COMPLETING %p", tp);
             diminuto_thread_signal(tp);
         pthread_cleanup_pop(!0);
-
-        diminuto_thread_yield();
-
-        diminuto_thread_lock(tp);
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-            tp->state = DIMINUTO_THREAD_STATE_EXITING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread_exit: EXITING %p", tp);
-            diminuto_thread_signal(tp);
-        pthread_cleanup_pop(!0);
-
-        diminuto_thread_yield();
-
     }
+
+    DIMINUTO_LOG_DEBUG("diminuto_thread_exit: EXITING %p", tp);
 
     pthread_exit(vp);
 }
@@ -331,7 +320,6 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
 
         case DIMINUTO_THREAD_STATE_STARTED:
         case DIMINUTO_THREAD_STATE_RUNNING:
-        case DIMINUTO_THREAD_STATE_EXITING:
             if (pthread_equal(pthread_self(), tp->thread)) {
 
                 /* Do nothing. */
@@ -341,7 +329,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                 do {
                     if ((rc = diminuto_thread_wait(tp)) != 0) {
                         done = !0;
-                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETED) {
+                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
                         done = !0;
                     } else {
                         /* Do nothing. */
@@ -361,7 +349,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                     }
                     if (done) {
                         /* Do nothing. */
-                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETED) {
+                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
                         done = !0;
                     } else {
                         /* Do nothing. */
@@ -379,7 +367,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     
     switch (tp->state) {
     
-    case DIMINUTO_THREAD_STATE_COMPLETED:
+    case DIMINUTO_THREAD_STATE_COMPLETING:
         if (pthread_equal(pthread_self(), tp->thread)) {
             rc = EIO;
         } else if ((rc = pthread_join(tp->thread, &value)) != 0) {
