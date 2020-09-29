@@ -40,10 +40,12 @@ static void * body(void * arg)
                 COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
-                diminuto_yield();
+                /* Do nothing. */
             }
 
         DIMINUTO_CRITICAL_SECTION_END;
+
+        diminuto_yield();
 
     }
 

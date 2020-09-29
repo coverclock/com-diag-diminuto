@@ -8,7 +8,6 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include <time.h>
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_condition.h"
 #include "com/diag/diminuto/diminuto_thread.h"
@@ -37,29 +36,34 @@ diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
     return (diminuto_condition_t *)0;
 }
 
-int diminuto_condition_wait_try(diminuto_condition_t * cp, diminuto_ticks_t timeout)
+void diminuto_condition_cleanup(void * vp)
+{
+    diminuto_condition_t * cp = (diminuto_condition_t *)vp;
+
+    diminuto_condition_unlock(cp);
+}
+
+int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t clocktime)
 {
     int rc = EIO;
-    struct timespec now = { 0, };
-    static const diminuto_ticks_t SECONDS = 1;
+    struct timespec later = { 0, };
     static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
-    if (timeout == DIMINUTO_CONDITION_INFINITY) {
+    if (clocktime == DIMINUTO_CONDITION_INFINITY) {
         if ((rc = pthread_cond_wait(&(cp->condition), &(cp->mutex.mutex))) != 0) {
             errno = rc;
-            diminuto_perror("diminuto_condition_wait_try: pthread_cond_wait");
+            diminuto_perror("diminuto_condition_wait_until: pthread_cond_wait");
         }
-    } else if ((rc = clock_gettime(CLOCK_REALTIME, &now)) < 0) {
-        rc = errno;
-        diminuto_perror("diminuto_condition_wait_try: clock_gettime");
     } else {
-        timeout += diminuto_frequency_units2ticks(now.tv_sec, SECONDS);
-        timeout += diminuto_frequency_units2ticks(now.tv_nsec, NANOSECONDS);
-        now.tv_sec = diminuto_frequency_ticks2wholeseconds(timeout);
-        now.tv_nsec = diminuto_frequency_ticks2fractionalseconds(timeout, NANOSECONDS);
-        if ((rc = pthread_cond_timedwait(&(cp->condition), &(cp->mutex.mutex), &now)) != 0) {
+        later.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
+        later.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
+        if ((rc = pthread_cond_timedwait(&(cp->condition), &(cp->mutex.mutex), &later)) == 0) {
+            /* Do nothing. */
+        } else if (rc == DIMINUTO_CONDITION_TIMEDOUT) {
+            /* Do nothing. */
+        } else {
             errno = rc;
-            diminuto_perror("diminuto_condition_wait_try: pthread_cond_timedwait");
+            diminuto_perror("diminuto_condition_wait_until: pthread_cond_timedwait");
         }
     }
 

@@ -12,9 +12,12 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_mutex.h"
 
 static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = ~(diminuto_ticks_t)0;
+
+static const int DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT;
 
 typedef struct DiminutoCondition {
     diminuto_mutex_t mutex;
@@ -29,26 +32,40 @@ typedef struct DiminutoCondition {
 
 extern diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp);
 
-static inline int diminuto_condition_lock(diminuto_condition_t * mp)
+static inline int diminuto_condition_lock(diminuto_condition_t * cp)
 {
-    return diminuto_mutex_lock(&(mp->mutex));
+    return diminuto_mutex_lock(&(cp->mutex));
 }
 
-static inline int diminuto_condition_lock_try(diminuto_condition_t * mp)
+static inline int diminuto_condition_lock_try(diminuto_condition_t * cp)
 {
-    return diminuto_mutex_lock_try(&(mp->mutex));
+    return diminuto_mutex_lock_try(&(cp->mutex));
 }
 
-static inline int diminuto_condition_unlock(diminuto_condition_t * mp)
+static inline int diminuto_condition_unlock(diminuto_condition_t * cp)
 {
-    return diminuto_mutex_unlock(&(mp->mutex));
+    return diminuto_mutex_unlock(&(cp->mutex));
 }
 
-extern int diminuto_condition_wait_try(diminuto_condition_t * cp, diminuto_ticks_t timeout);
+extern void diminuto_condition_cleanup(void * vp);
+
+/**
+ * Return the system clock time in Coordinated Universal Time (UTC) in
+ * ticks since the Epoch (shown here in ISO8601 format)
+ * 1970-01-01T00:00:00+0000.
+ * @return the number of ticks elapsed since the Epoch or -1 with
+ * errno set if an error occurred.
+ */
+static inline diminuto_sticks_t diminuto_condition_clock(void)
+{
+    return diminuto_time_clock();
+}
+
+extern int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t clocktime);
 
 static inline int diminuto_condition_wait(diminuto_condition_t * cp)
 {
-    return diminuto_condition_wait_try(cp, DIMINUTO_CONDITION_INFINITY);
+    return diminuto_condition_wait_until(cp, DIMINUTO_CONDITION_INFINITY);
 }
 
 extern int diminuto_condition_signal(diminuto_condition_t * cp);

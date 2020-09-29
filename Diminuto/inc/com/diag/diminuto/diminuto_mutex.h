@@ -14,6 +14,9 @@
 #define __USE_GNU
 #define _GNU_SOURCE
 #include <pthread.h>
+#include <errno.h>
+
+static const int DIMINUTO_MUTEX_BUSY = EBUSY;
 
 typedef struct DiminutoMutex {
     pthread_mutex_t mutex;
@@ -32,6 +35,8 @@ extern int diminuto_mutex_lock(diminuto_mutex_t * mp);
 extern int diminuto_mutex_lock_try(diminuto_mutex_t * mp);
 
 extern int diminuto_mutex_unlock(diminuto_mutex_t * mp);
+
+extern void diminuto_mutex_cleanup(void * vp);
 
 extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
 

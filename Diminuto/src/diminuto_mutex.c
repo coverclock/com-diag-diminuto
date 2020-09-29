@@ -43,7 +43,11 @@ int diminuto_mutex_lock_try(diminuto_mutex_t * mp)
 {
     int rc = EIO;
 
-    if ((rc = pthread_mutex_trylock(&(mp->mutex))) != 0) {
+    if ((rc = pthread_mutex_trylock(&(mp->mutex))) == 0) {
+        /* Do nothing. */ 
+    } else if (rc == DIMINUTO_MUTEX_BUSY) {
+        /* Do nothing. */ 
+    } else {
         errno = rc;
         diminuto_perror("diminuto_mutex_lock_try: pthread_mutex_trylock");
     }
@@ -61,4 +65,11 @@ int diminuto_mutex_unlock(diminuto_mutex_t * mp)
     }
 
     return rc;
+}
+
+void diminuto_mutex_cleanup(void * vp)
+{
+    diminuto_mutex_t * mp = (diminuto_mutex_t *)vp;
+
+    diminuto_mutex_unlock(mp);
 }
