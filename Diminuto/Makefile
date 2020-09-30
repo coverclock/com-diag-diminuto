@@ -982,3 +982,8 @@ signals:
 	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
 	unittest-reaper
 	unittest-terminator
+
+threads:
+	unittest-mutex
+	unittest-condition
+	unittest-thread
