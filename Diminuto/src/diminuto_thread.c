@@ -6,6 +6,14 @@
  * Licensed under the terms in LICENSE.txt.<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ * This module creates a framework the implements POSIX thread
+ * operations using a very specific model of behavior: all threads
+ * contain a dedicated condition (and therefore a dedicated mutex);
+ * all threads allow deferred cancellation (but discourage its use
+ * by not providing functions that use it); all threads have a
+ * synchronized notification facility that can use a kill signal to
+ * unblock them from a system call; and all threads signal their
+ * condition when their state changes.
  */
 
 #include <time.h>
@@ -50,22 +58,24 @@ static void * proxy(void * ap)
         diminuto_perror("diminuto_thread: setup: pthread_setspecific");
     }
 
-    diminuto_thread_lock(tp);
-    pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-        tp->state = DIMINUTO_THREAD_STATE_RUNNING;
-        DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
-        diminuto_thread_signal(tp);
-    pthread_cleanup_pop(!0);
+    if (diminuto_thread_lock(tp) == 0) {
+        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+            tp->state = DIMINUTO_THREAD_STATE_RUNNING;
+            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
+            (void)diminuto_thread_signal(tp);
+        pthread_cleanup_pop(!0);
+    }
 
     value = (*(tp->function))(tp->context);
 
-    diminuto_thread_lock(tp);
-    pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-        tp->value = value;
-        tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
-        DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
-        diminuto_thread_signal(tp);
-    pthread_cleanup_pop(!0);
+    if (diminuto_thread_lock(tp) == 0) {
+        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+            tp->value = value;
+            tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
+            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
+            (void)diminuto_thread_signal(tp);
+        pthread_cleanup_pop(!0);
+    }
 
     return tp->value;
 }
@@ -202,12 +212,13 @@ int diminuto_thread_notified()
     int notifying = -1;
 
     if ((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0) {
-        diminuto_thread_lock(tp);
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-            notifying = tp->notifying;
-            tp->notifying = 0;
-            diminuto_thread_signal(tp);
-        pthread_cleanup_pop(!0);
+        if (diminuto_thread_lock(tp) == 0) {
+            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                notifying = tp->notifying;
+                tp->notifying = 0;
+                (void)diminuto_thread_signal(tp);
+            pthread_cleanup_pop(!0);
+        }
     }
 
     return notifying;
@@ -218,13 +229,14 @@ void diminuto_thread_exit(void * vp)
     diminuto_thread_t * tp = (diminuto_thread_t *)0;
 
     if ((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0) {
-        diminuto_thread_lock(tp);
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-            tp->value = vp;
-            tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread_exit: COMPLETING %p", tp);
-            diminuto_thread_signal(tp);
-        pthread_cleanup_pop(!0);
+        if (diminuto_thread_lock(tp) == 0) {
+            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                tp->value = vp;
+                tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
+                DIMINUTO_LOG_DEBUG("diminuto_thread_exit: COMPLETING %p", tp);
+                (void)diminuto_thread_signal(tp);
+            pthread_cleanup_pop(!0);
+        }
     }
 
     DIMINUTO_LOG_DEBUG("diminuto_thread_exit: EXITING %p", tp);
@@ -243,39 +255,40 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 
     setup();
 
-    diminuto_thread_lock(tp);
-    pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-        switch (tp->state) {
-        case DIMINUTO_THREAD_STATE_INITIALIZED:
-        case DIMINUTO_THREAD_STATE_JOINED:
-        case DIMINUTO_THREAD_STATE_FAILED:
-            if (tp->notification > 0) {
-                action.sa_handler = handler;
-                if ((rc = sigaction(tp->notification, &action, (struct sigaction *)0)) < 0) {
-                    rc = errno;
-                    diminuto_perror("diminuto_thread_start: sigaction");
-                    break;
+    if (diminuto_thread_lock(tp) == 0) {
+        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+            switch (tp->state) {
+            case DIMINUTO_THREAD_STATE_INITIALIZED:
+            case DIMINUTO_THREAD_STATE_JOINED:
+            case DIMINUTO_THREAD_STATE_FAILED:
+                if (tp->notification > 0) {
+                    action.sa_handler = handler;
+                    if ((rc = sigaction(tp->notification, &action, (struct sigaction *)0)) < 0) {
+                        rc = errno;
+                        diminuto_perror("diminuto_thread_start: sigaction");
+                        break;
+                    }
                 }
+                tp->context = cp;
+                tp->value = (void *)(~0);
+                tp->notifying = 0;
+                if ((rc = pthread_create(&(tp->thread), (const pthread_attr_t *)0, proxy, tp)) != 0) {
+                    errno = rc;
+                    diminuto_perror("diminuto_thread_start: pthread_create");
+                    tp->state = DIMINUTO_THREAD_STATE_FAILED;
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_start: FAILED %p", tp);
+                    (void)diminuto_thread_signal(tp);
+                } else {
+                    tp->state = DIMINUTO_THREAD_STATE_STARTED;
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_start: STARTED %p", tp);
+                    (void)diminuto_thread_signal(tp);
+                }
+                break;
+            default:
+                break;
             }
-            tp->context = cp;
-            tp->value = (void *)(~0);
-            tp->notifying = 0;
-            if ((rc = pthread_create(&(tp->thread), (const pthread_attr_t *)0, proxy, tp)) != 0) {
-                errno = rc;
-                diminuto_perror("diminuto_thread_start: pthread_create");
-                tp->state = DIMINUTO_THREAD_STATE_FAILED;
-                DIMINUTO_LOG_DEBUG("diminuto_thread_start: FAILED %p", tp);
-                diminuto_thread_signal(tp);
-            } else {
-                tp->state = DIMINUTO_THREAD_STATE_STARTED;
-                DIMINUTO_LOG_DEBUG("diminuto_thread_start: STARTED %p", tp);
-                diminuto_thread_signal(tp);
-            }
-            break;
-        default:
-            break;
-        }
-    pthread_cleanup_pop(!0);
+        pthread_cleanup_pop(!0);
+    }
 
     return rc;
 }
@@ -284,26 +297,27 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
 {
     int rc = EIO;
 
-    diminuto_thread_lock(tp);
-    pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-        switch (tp->state) {
-        case DIMINUTO_THREAD_STATE_STARTED:
-        case DIMINUTO_THREAD_STATE_RUNNING:
-            tp->notifying = !0;
-            diminuto_thread_signal(tp);
-            if ((tp->notification) <= 0) {
-                /* Do nothing. */
-            } else if ((rc = pthread_kill(tp->thread, tp->notification)) != 0) {
-                errno = rc;
-                diminuto_perror("diminuto_thread_notify: pthread_kill");
-            } else {
-                /* Do nothing. */
+    if (diminuto_thread_lock(tp) == 0) {
+        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+            switch (tp->state) {
+            case DIMINUTO_THREAD_STATE_STARTED:
+            case DIMINUTO_THREAD_STATE_RUNNING:
+                tp->notifying = !0;
+                (void)diminuto_thread_signal(tp);
+                if ((tp->notification) <= 0) {
+                    /* Do nothing. */
+                } else if ((rc = pthread_kill(tp->thread, tp->notification)) != 0) {
+                    errno = rc;
+                    diminuto_perror("diminuto_thread_notify: pthread_kill");
+                } else {
+                    /* Do nothing. */
+                }
+                break;
+            default:
+                break;
             }
-            break;
-        default:
-            break;
-        }
-    pthread_cleanup_pop(!0);
+        pthread_cleanup_pop(!0);
+    }
 
     return rc;
 }
@@ -317,57 +331,58 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     static const diminuto_ticks_t SECONDS = 1;
     static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
-    diminuto_thread_lock(tp);
-    pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+    if (diminuto_thread_lock(tp) == 0) {
+        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+        
+            switch (tp->state) {
     
-        switch (tp->state) {
-
-        case DIMINUTO_THREAD_STATE_STARTED:
-        case DIMINUTO_THREAD_STATE_RUNNING:
-            if (pthread_equal(pthread_self(), tp->thread)) {
-
-                /* Do nothing. */
-
-            } else if (clocktime == DIMINUTO_THREAD_INFINITY) {
-
-                do {
-                    if ((rc = diminuto_thread_wait(tp)) != 0) {
-                        done = !0;
-                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
-                        done = !0;
-                    } else {
-                        /* Do nothing. */
-                    }
-                } while (!done);
-
-            } else {
-
-                do {
-                    if ((rc = diminuto_thread_wait_until(tp, clocktime)) == 0) {
-                        /* Do nothing. */
-                    } else if (rc == ETIMEDOUT) {
-                        done = !0;
-                    } else {
-                        diminuto_perror("diminuto_thread_join_until: pthread_cond_timedwait");
-                        done = !0;
-                    }
-                    if (done) {
-                        /* Do nothing. */
-                    } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
-                        done = !0;
-                    } else {
-                        /* Do nothing. */
-                    }
-                } while (!done);
-
+            case DIMINUTO_THREAD_STATE_STARTED:
+            case DIMINUTO_THREAD_STATE_RUNNING:
+                if (pthread_equal(pthread_self(), tp->thread)) {
+    
+                    /* Do nothing. */
+    
+                } else if (clocktime == DIMINUTO_THREAD_INFINITY) {
+    
+                    do {
+                        if ((rc = diminuto_thread_wait(tp)) != 0) {
+                            done = !0;
+                        } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
+                            done = !0;
+                        } else {
+                            /* Do nothing. */
+                        }
+                    } while (!done);
+    
+                } else {
+    
+                    do {
+                        if ((rc = diminuto_thread_wait_until(tp, clocktime)) == 0) {
+                            /* Do nothing. */
+                        } else if (rc == ETIMEDOUT) {
+                            done = !0;
+                        } else {
+                            diminuto_perror("diminuto_thread_join_until: pthread_cond_timedwait");
+                            done = !0;
+                        }
+                        if (done) {
+                            /* Do nothing. */
+                        } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
+                            done = !0;
+                        } else {
+                            /* Do nothing. */
+                        }
+                    } while (!done);
+    
+                }
+    
+            default:
+                break;
+    
             }
-
-        default:
-            break;
-
-        }
-
-    pthread_cleanup_pop(!0);
+    
+        pthread_cleanup_pop(!0);
+    }
     
     switch (tp->state) {
     
@@ -377,13 +392,14 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
         } else if ((rc = pthread_join(tp->thread, &value)) != 0) {
             diminuto_perror("diminuto_thread_join_until: pthread_join");
         } else {
-            diminuto_thread_lock(tp);
-            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-                tp->value = value;
-                tp->state = DIMINUTO_THREAD_STATE_JOINED;
-                DIMINUTO_LOG_DEBUG("diminuto_thread_join_until: JOINED %p", tp);
-                diminuto_thread_signal(tp);
-            pthread_cleanup_pop(!0);
+            if (diminuto_thread_lock(tp) == 0) {
+                pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                    tp->value = value;
+                    tp->state = DIMINUTO_THREAD_STATE_JOINED;
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_join_until: JOINED %p", tp);
+                    (void)diminuto_thread_signal(tp);
+                pthread_cleanup_pop(!0);
+            }
         }
         break;
     
