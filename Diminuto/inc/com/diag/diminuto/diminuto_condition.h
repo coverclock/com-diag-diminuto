@@ -67,14 +67,14 @@ typedef struct DiminutoCondition {
 
 /**
  * Initialize a Diminuto condition object. Allocate any resources.
- * @param mp points to the object.
+ * @param cp points to the object.
  * @return a pointer to the object or NULL if initialization failed.
  */
 extern diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp);
 
 /**
  * Finalize a Diminuto condition object. Release any resources.
- * @param mp points to the object.
+ * @param cp points to the object.
  * @return NULL or a pointer to the object finalization if failed.
  */
 extern diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp);
@@ -101,7 +101,7 @@ static inline diminuto_sticks_t diminuto_condition_clock(void)
 
 /**
  * Lock the Diminuto mutex associated with a Diminuto condition object.
- * @param mp points to the object.
+ * @param cp points to the object.
  * @return 0 or an error code if the lock failed.
  */
 static inline int diminuto_condition_lock(diminuto_condition_t * cp)
@@ -113,7 +113,7 @@ static inline int diminuto_condition_lock(diminuto_condition_t * cp)
  * Attempt to lock the Diminuto mutex associated with a Diminuto condition
  * object. EBUSY is returned (and no error message is generated) if the
  * mutex was already locked.
- * @param mp points to the object.
+ * @param cp points to the object.
  * @return 0 or an error code if the lock failed.
  */
 static inline int diminuto_condition_lock_try(diminuto_condition_t * cp)
@@ -123,7 +123,7 @@ static inline int diminuto_condition_lock_try(diminuto_condition_t * cp)
 
 /**
  * Unlock the Diminuto mutex associated with a Diminuto condition object.
- * @param mp points to the object.
+ * @param cp points to the object.
  * @return 0 or an error code if the unlock failed.
  */
 static inline int diminuto_condition_unlock(diminuto_condition_t * cp)

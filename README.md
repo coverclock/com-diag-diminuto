@@ -347,6 +347,8 @@ growth in Diminuto.
 
 # Dependencies
 
+## IPv6
+
 Diminuto requires IPv6 support. IPv6 is not enabled by default on all
 platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
 a line "ipv6" to /etc/modules and rebooted. The command "modprobe ipv6"
@@ -355,11 +357,22 @@ also worked albeit non-persistently.
     sudo modprobe ipv6
     sudo echo "ipv6" >> /etc/modules
 
+## Building
+
 On some distros I had to install gcc, g++, and make.
 
     sudo apt-get install gcc
     sudo apt-get install g++
     sudo apt-get install make
+
+## Documentation
+
+If you want to make documentation, doxygen and related tools will
+need to be installed.
+
+    sudo apt-get install doxygen
+
+## Workflow
 
 For my own workflow, I installed the following tools.
 
@@ -368,10 +381,14 @@ For my own workflow, I installed the following tools.
     sudo apt-get install vim
     sudo apt-get install screen
 
+## inotifywait
+
 The observe script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
+
+## Porting
 
 Diminuto was at one time ported to other platforms outside of the
 Linux mainstream, like the uC library (Buildroot), Bionic (Android),

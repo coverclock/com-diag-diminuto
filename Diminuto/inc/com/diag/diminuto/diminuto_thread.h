@@ -142,7 +142,8 @@ extern void diminuto_thread_exit(void * vp);
 /**
  * Initialize a Diminuto thread object. Allocate any resources.
  * The thread is not started.
- * @param mp points to the object.
+ * @param tp points to the object.
+ * @param fp points to the function to be associated with the object.
  * @return a pointer to the object or NULL if initialization failed.
  */
 extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *));
@@ -150,7 +151,7 @@ extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (
 /**
  * Finalize a Diminuto thread object. Free any resources. The thread
  * must not be in the STARTED or RUNNING states.
- * @param mp points to the object.
+ * @param tp points to the object.
  * @return NULL or a pointer to the object if finalization failed.
  */
 extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
@@ -178,7 +179,7 @@ static inline diminuto_sticks_t diminuto_thread_clock(void)
 /**
  * Lock the Diminuto mutex associated with the Diminuto condition
  * associated with a Diminuto thread.
- * @param mp points to the object.
+ * @param tp points to the object.
  * @return 0 or an error code if the lock failed.
  */
 static inline int diminuto_thread_lock(diminuto_thread_t * tp)
@@ -191,7 +192,7 @@ static inline int diminuto_thread_lock(diminuto_thread_t * tp)
  * condition associated with a Diminuto thread object. EBUSY is
  * returned (and no error message is generated) if the mutex was
  * already locked.
- * @param mp points to the object.
+ * @param tp points to the object.
  * @return 0 or an error code if the lock failed.
  */
 static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
@@ -202,7 +203,7 @@ static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
 /**
  * Unlock the Diminuto mutex associated with the Diminuto condition
  * associated with a Diminuto thread object.
- * @param mp points to the object.
+ * @param tp points to the object.
  * @return 0 or an error code if the unlock failed.
  */
 static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
@@ -292,7 +293,6 @@ extern int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, dimin
  * returned by the thread is placed in a value-result parameter.
  * @param tp points to the object.
  * @param vpp points to a variable into whcih the final value is placed.
- * @param clocktime is the absolute clock time.
  * @return 0 or an error code if the join failed.
  */
 static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)

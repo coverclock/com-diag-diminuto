@@ -394,21 +394,6 @@ static inline int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address,
 }
 
 /**
- * Create a provider-side stream socket bound to a specific address and with
- * a specific connection backlog. The address and port are in host byte order.
- * If the address is zero, any appropriate network interface may be used. If
- * the port is zero, an unused ephemeral port is allocated; its value can be
- * determined using the nearend function.
- * @param address is the address of the interface that will be used.
- * @param port is the port number at which connection requests will rendezvous.
- * @param interface points to the interface name, or NULL.
- * @param backlog is the limit to how many incoming connections may be queued,
- * <0 for the default.
- * @return a provider-side stream socket or <0 if an error occurred.
- */
-extern int diminuto_ipc6_stream_provider_generic(diminuto_ipv6_t address, diminuto_port_t port, const char * interface, int backlog);
-
-/**
  * Create a provider-side stream socket with the maximum connection backlog.
  * The port is in host byte order. If the port is zero, an unused ephemeral
  * port is allocated; its value can be determined using the nearend function.
