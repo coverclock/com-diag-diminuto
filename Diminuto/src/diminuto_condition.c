@@ -8,11 +8,19 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_condition.h"
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 {
@@ -36,12 +44,20 @@ diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
     return (diminuto_condition_t *)0;
 }
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 void diminuto_condition_cleanup(void * vp)
 {
     diminuto_condition_t * cp = (diminuto_condition_t *)vp;
 
     diminuto_condition_unlock(cp);
 }
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t clocktime)
 {

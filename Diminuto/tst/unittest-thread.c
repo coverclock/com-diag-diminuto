@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <pthread.h>
 #include <stdint.h>
@@ -33,10 +34,10 @@ static void * body1(void * arg)
         ASSERT(diminuto_mutex_lock(&mutex) == 0);
 
             if (shared >= LIMIT) {
-                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s saw  %d", (intptr_t)arg ? "odd " : "even", shared);
                 done = !0;
             } else if ((shared % 2) == (intptr_t)arg) {
-                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                COMMENT("%s sees %d", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
                 /* Do nothing. */
@@ -190,6 +191,65 @@ static void * body6(void * arg)
     diminuto_thread_exit((void *)6);
 
     return (void *)0;
+}
+
+static void * body7(void * arg)
+{
+    diminuto_thread_t * tp;
+    diminuto_ticks_t now;
+    diminuto_mux_t mux;
+    int rc;
+    int error;
+    tp = diminuto_thread_instance();
+    diminuto_mux_init(&mux);
+    while (!0) {
+        COMMENT("BLOCKING");
+        rc = diminuto_mux_wait(&mux, -1);
+        if (rc >= 0) {
+            COMMENT("READY");
+        } else if (errno != EINTR) {
+            COMMENT("ERROR");
+        } else {
+            COMMENT("INTERRUPTED");
+            break;
+        }
+    }
+    DIMINUTO_THREAD_BEGIN(tp);
+        if (diminuto_thread_notified()) {
+            COMMENT("NOTIFIED");
+        }
+    DIMINUTO_THREAD_END;
+
+    return (void *)7;
+}
+
+static void * body8(void * arg)
+{
+    static diminuto_condition_t condition = DIMINUTO_CONDITION_INITIALIZER;
+    int done = 0;
+
+    ASSERT(diminuto_thread_instance() != (diminuto_thread_t *)0);
+
+    while (!done) {
+
+        DIMINUTO_CONDITION_BEGIN(&condition);
+
+            if (shared >= LIMIT) {
+                COMMENT("%s saw  %d", (intptr_t)arg ? "odd " : "even", shared);
+                done = !0;
+            } else if ((shared % 2) == (intptr_t)arg) {
+                COMMENT("%s sees %d", (intptr_t)arg ? "odd " : "even", shared);
+                ++shared;
+                diminuto_condition_signal(&condition);
+            } else {
+                diminuto_condition_wait(&condition);
+            }
+
+        DIMINUTO_CONDITION_END;
+
+    }
+
+    return (void *)arg;
 }
 
 int main(void)
@@ -461,6 +521,127 @@ int main(void)
         ASSERT(final == (void *)6);
 
         COMMENT("FINISHED");
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t thread;
+        void * final;
+        diminuto_ticks_t ticks;
+
+        TEST();
+
+        diminuto_thread_init(&thread, body7);
+
+        rc = diminuto_thread_start(&thread, (void *)0);
+        ASSERT(rc == 0);
+
+        COMMENT("STARTED");
+
+        DIMINUTO_THREAD_BEGIN(&thread);
+            while (thread.state != DIMINUTO_THREAD_STATE_RUNNING) {
+                COMMENT("WAITING");
+                diminuto_thread_wait(&thread);
+            }
+        DIMINUTO_THREAD_END;
+
+        COMMENT("RUNNING");
+
+        final = (void *)0xdeadbeef;
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 5);
+        COMMENT("PAUSING 5s");
+        rc = diminuto_thread_join_until(&thread, &final, ticks);
+        ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
+        ASSERT(final == (void *)0xdeadbeef);
+
+        COMMENT("NOTIFYING");
+        rc = diminuto_thread_notify(&thread);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        ticks = diminuto_thread_clock() + (diminuto_frequency() * 10);
+        COMMENT("JOINING");
+        rc = diminuto_thread_join_until(&thread, &final, ticks);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)7);
+
+        COMMENT("FINISHED");
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t odd;
+        diminuto_thread_t even;
+        void * final;
+
+        TEST();
+
+        shared = 0;
+
+        ASSERT(diminuto_thread_init(&odd, body8) == &odd);
+        ASSERT(diminuto_thread_init(&even, body8) == &even);
+
+        rc = diminuto_thread_start(&odd, (void *)1);
+        ASSERT(rc == 0);
+
+        rc = diminuto_thread_start(&even, (void *)0);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        ASSERT(shared == LIMIT);
+
+        ASSERT(diminuto_thread_fini(&even) == (diminuto_thread_t *)0);
+        ASSERT(diminuto_thread_fini(&odd) == (diminuto_thread_t *)0);
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t odd;
+        diminuto_thread_t even;
+        void * final;
+
+        TEST();
+
+        shared = 0;
+
+        ASSERT(diminuto_thread_init(&even, body8) == &even);
+        ASSERT(diminuto_thread_init(&odd, body8) == &odd);
+
+        rc = diminuto_thread_start(&even, (void *)0);
+        ASSERT(rc == 0);
+
+        rc = diminuto_thread_start(&odd, (void *)1);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
+
+        ASSERT(shared == LIMIT);
+
+        ASSERT(diminuto_thread_fini(&odd) == (diminuto_thread_t *)0);
+        ASSERT(diminuto_thread_fini(&even) == (diminuto_thread_t *)0);
 
         STATUS();
     }

@@ -18,21 +18,15 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
-/*********************************************************************/
-
-extern int main(int argc, char * argv[]);
-
-/*********************************************************************/
-
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-static diminuto_thread_t diminuto_thread_main = DIMINUTO_THREAD_INITIALIZER((void * (*)(void *))main);
+/***********************************************************************
+ *
+ **********************************************************************/
 
 static pthread_key_t key;
 
-static int setupped = 0;
-
-/*********************************************************************/
+/***********************************************************************
+ *
+ **********************************************************************/
 
 static void * proxy(void * ap)
 {
@@ -83,7 +77,11 @@ static void handler(int signo)
 
 static int setup()
 {
+    extern int main(int argc, char * argv[]);
     int rc = EIO;
+    static int setupped = 0;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((void * (*)(void *))main);
 
     DIMINUTO_COHERENT_SECTION_BEGIN;
         if (!setupped) {
@@ -92,16 +90,16 @@ static int setup()
                     /* Do nothing. */
                 } else if ((rc = pthread_key_create(&key, 0)) != 0) {
                     errno = rc;
-                    diminuto_perror("diminuto_thread: setup: pthread_key_create");
-                } else if ((rc = pthread_setspecific(key, &diminuto_thread_main)) != 0) {
+                    diminuto_perror("diminuto_thread:setup: pthread_key_create");
+                } else if ((rc = pthread_setspecific(key, &thread)) != 0) {
                     errno = rc;
-                    diminuto_perror("diminuto_thread: setup: pthread_setspecific");
+                    diminuto_perror("diminuto_thread:setup: pthread_setspecific");
                 } else {
-                    diminuto_thread_main.thread = pthread_self();
-                    diminuto_thread_main.state = DIMINUTO_THREAD_STATE_RUNNING;
-                    diminuto_thread_main.notification = 0;
+                    thread.thread = pthread_self();
+                    thread.notification = 0;
+                    thread.state = DIMINUTO_THREAD_STATE_RUNNING;
                     setupped = !0;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread:setup: SETUP %p", &diminuto_thread_main);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread:setup: SETUP %p", &thread);
                 }
             DIMINUTO_CRITICAL_SECTION_END;
         }
@@ -110,7 +108,9 @@ static int setup()
     return rc;
 }
 
-/*********************************************************************/
+/***********************************************************************
+ *
+ **********************************************************************/
 
 diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *))
 {
@@ -149,7 +149,9 @@ diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
     return tp;
 }
 
-/*********************************************************************/
+/***********************************************************************
+ *
+ **********************************************************************/
 
 void diminuto_thread_cleanup(void * vp)
 {
@@ -158,7 +160,9 @@ void diminuto_thread_cleanup(void * vp)
     diminuto_thread_unlock(tp);
 }
 
-/*********************************************************************/
+/***********************************************************************
+ *
+ **********************************************************************/
 
 diminuto_thread_t * diminuto_thread_instance()
 {
@@ -228,9 +232,9 @@ void diminuto_thread_exit(void * vp)
     pthread_exit(vp);
 }
 
-/*
- * FUNCTIONS CALLED AGAINST A THREAD
- */
+/***********************************************************************
+ *
+ **********************************************************************/
 
 int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 {

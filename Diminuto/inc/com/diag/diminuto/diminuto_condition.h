@@ -11,17 +11,29 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_mutex.h"
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = ~(diminuto_ticks_t)0;
 
 static const int DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT;
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 typedef struct DiminutoCondition {
-    diminuto_mutex_t mutex;
-    pthread_cond_t condition;
+    diminuto_mutex_t mutex;             /* Diminuto mutual exclusion object */
+    pthread_cond_t condition;           /* POSIX Thread condition object */
 } diminuto_condition_t;
 
 #define DIMINUTO_CONDITION_INITIALIZER \
@@ -30,7 +42,13 @@ typedef struct DiminutoCondition {
         PTHREAD_COND_INITIALIZER, \
     }
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 extern diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp);
+
+extern diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp);
 
 static inline int diminuto_condition_lock(diminuto_condition_t * cp)
 {
@@ -70,12 +88,18 @@ static inline int diminuto_condition_wait(diminuto_condition_t * cp)
 
 extern int diminuto_condition_signal(diminuto_condition_t * cp);
 
-extern diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp);
+/***********************************************************************
+ *
+ **********************************************************************/
 
 #define DIMINUTO_CONDITION_BEGIN(_CP_) DIMINUTO_MUTEX_BEGIN(&((_CP_)->mutex))
 
 #define DIMINUTO_CONDITION_TRY(_CP_) DIMINUTO_MUTEX_TRY(&((_CP_)->mutex))
 
 #define DIMINUTO_CONDITION_END DIMINUTO_MUTEX_END
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 #endif

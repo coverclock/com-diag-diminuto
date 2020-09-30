@@ -8,9 +8,17 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 #include <errno.h>
 #include "com/diag/diminuto/diminuto_mutex.h"
 #include "com/diag/diminuto/diminuto_log.h"
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp)
 {
@@ -26,6 +34,10 @@ diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp)
     pthread_mutexattr_destroy(&(mp->attribute));
     return (diminuto_mutex_t *)0;
 }
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 int diminuto_mutex_lock(diminuto_mutex_t * mp)
 {
@@ -66,6 +78,10 @@ int diminuto_mutex_unlock(diminuto_mutex_t * mp)
 
     return rc;
 }
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 void diminuto_mutex_cleanup(void * vp)
 {

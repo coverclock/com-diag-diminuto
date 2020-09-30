@@ -11,16 +11,28 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 #define __USE_GNU
 #define _GNU_SOURCE
 #include <pthread.h>
 #include <errno.h>
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 static const int DIMINUTO_MUTEX_BUSY = EBUSY;
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 typedef struct DiminutoMutex {
-    pthread_mutex_t mutex;
-    pthread_mutexattr_t attribute;
+    pthread_mutex_t mutex;              /* POSIX Thread mutual exclusion object */
+    pthread_mutexattr_t attribute;      /* POSIX Thread mutual exclusion attribute */
 } diminuto_mutex_t;
 
 #define DIMINUTO_MUTEX_INITIALIZER \
@@ -28,7 +40,13 @@ typedef struct DiminutoMutex {
         PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP, \
     }
 
+/***********************************************************************
+ *
+ **********************************************************************/
+
 extern diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp);
+
+extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
 
 extern int diminuto_mutex_lock(diminuto_mutex_t * mp);
 
@@ -38,7 +56,9 @@ extern int diminuto_mutex_unlock(diminuto_mutex_t * mp);
 
 extern void diminuto_mutex_cleanup(void * vp);
 
-extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
+/***********************************************************************
+ *
+ **********************************************************************/
 
 /**
  * @def DIMINUTO_MUTEX_BEGIN
@@ -75,5 +95,9 @@ extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
             pthread_cleanup_pop(!0); \
         } \
     } while (0)
+
+/***********************************************************************
+ *
+ **********************************************************************/
 
 #endif
