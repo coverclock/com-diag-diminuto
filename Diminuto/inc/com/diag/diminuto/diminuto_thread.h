@@ -9,6 +9,14 @@
  * Licensed under the terms in LICENSE.txt.<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ * This module creates a framework the implements POSIX thread
+ * operations using a very specific model of behavior: all threads
+ * contain a dedicated condition (and therefore a dedicated mutex);
+ * all threads allow deferred cancellation (but discourage its use
+ * by not providing functions that use it); all threads have a
+ * synchronized notification facility that can use a kill signal to
+ * unblock them from a system call; and all threads signal their
+ * condition when their state changes.
  */
 
 /***********************************************************************
@@ -23,16 +31,33 @@
  * CONSTANTS
  **********************************************************************/
 
+/**
+ * This is the kill signal used to try to unblock a thread from a
+ * system call when it is notified.
+ */
 static const int DIMINUTO_THREAD_SIGNAL = SIGUSR1;
 
+/**
+ * This value when used as a clocktime specifies that the caller blocks
+ * indefinitely.
+ */
 static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = ~(diminuto_ticks_t)0;
 
+/**
+ * This is the error number returned when the caller joins with a
+ * thread and the clocktime is reached without being completed.
+ */
 static const int DIMINUTO_THREAD_TIMEDOUT = ETIMEDOUT;
 
 /***********************************************************************
  * TYPES
  **********************************************************************/
 
+/**
+ * These are the states in which a Diminuto thread object may be. The
+ * ALLOCATED state is only useful if the caller zeros out the object
+ * (for example, at compile time).
+ */
 typedef enum DiminutoThreadState {
     DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',     /* thread object allocated (if zeroed) */
     DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /* thread object init performed */
@@ -44,6 +69,9 @@ typedef enum DiminutoThreadState {
     DIMINUTO_THREAD_STATE_FAILED        = 'X',      /* thread object start failed */
 } diminuto_thread_state_t;
 
+/**
+ * This is the Diminuto thread object.
+ */
 typedef struct DiminutoThread {
     diminuto_condition_t condition;     /* Diminuto condition object */
     pthread_t thread;                   /* POSIX Thread thread object */
@@ -55,6 +83,10 @@ typedef struct DiminutoThread {
     int8_t notifying;                   /* True if notification performed */
 } diminuto_thread_t;
 
+/**
+ * @def DIMINUTO_THREAD_INITIALIZER
+ * This is a static initializer for the Diminuto thread object.
+ */
 #define DIMINUTO_THREAD_INITIALIZER(_FP_) \
     { \
         DIMINUTO_CONDITION_INITIALIZER, \
@@ -71,14 +103,36 @@ typedef struct DiminutoThread {
  * ACTIONS
  **********************************************************************/
 
+/**
+ * Returns a pointer to the Diminuto thread object associated with
+ * the calling thread.
+ * @return a pointer to the object.
+ */
 extern diminuto_thread_t * diminuto_thread_instance(void);
 
+/**
+ * Returns the opaque value of the POSIX thread identity associated with
+ * the calling thread.
+ * @return a POSIX thread identity.
+ */
 extern pthread_t diminuto_thread_self(void);
 
+/**
+ * Yield the processor from the calling thread to another ready thread.
+ * @return 0 or an error code of the yield failed.
+ */
 extern int diminuto_thread_yield();
 
+/**
+ * Return true if the calling thread has been notified, false otherwise.
+ * @return true if the caller has been notified, false otherwise.
+ */
 extern int diminuto_thread_notified(void);
 
+/**
+ * Cause the calling thread to exit.
+ * @param vp is the final value of the calling thread.
+ */
 extern void diminuto_thread_exit(void * vp);
 
 /***********************************************************************
@@ -156,16 +210,38 @@ static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
     return diminuto_condition_unlock(&(tp->condition));
 }
 
+/**
+ * Block the calling thread on the Diminuto condition assoociated with
+ * a Diminuto thread object until either the condition is signalled or
+ * the absolute clock time is reached. ETIMEDOUT is returned if the
+ * absolute clock time was reached before the condition was signaled.
+ * If the clock time is INFINITY, the caller blocks indefinitely.
+ * @param tp points to the object.
+ * @param clocktime is the absolute clock time in Diminuto ticks.
+ * @return 0 or an error code if the wait failed.
+ */
 static inline int diminuto_thread_wait_until(diminuto_thread_t * tp, diminuto_ticks_t clocktime)
 {
     return diminuto_condition_wait_until(&(tp->condition), clocktime);
 }
 
+/**
+ * Block the calling thread on a Diminuto condition associated with
+ * a Diminuto thread object until the condition is signalled.
+ * @param tp points to the object.
+ * @return 0 or an error code if the wait failed.
+ */
 static inline int diminuto_thread_wait(diminuto_thread_t * tp)
 {
     return diminuto_thread_wait_until(tp, DIMINUTO_CONDITION_INFINITY);
 }
 
+/**
+ * Broadcast a signal waking up all threads (if any) waiting on the
+ * Diminuto condition associated with a Diminuto thread object.
+ * @param tp points to the object.
+ * @return 0 or an error code if the signal failed.
+ */
 static inline int diminuto_thread_signal(diminuto_thread_t * tp)
 {
     return diminuto_condition_signal(&(tp->condition));
@@ -175,12 +251,50 @@ static inline int diminuto_thread_signal(diminuto_thread_t * tp)
  * OPERATIONS
  **********************************************************************/
 
+/**
+ * Start a new POSIX thread by executing the function associated with
+ * a Diminuto thread object. Pass the specified context pointer
+ * (whose usage is user defined) to the function.
+ * @param tp points to the object.
+ * @param cp points to the context.
+ * @return 0 or an error code of the start failed.
+ */
 extern int diminuto_thread_start(diminuto_thread_t * tp, void * cp);
 
+/**
+ * Notify a Diminuto thread object. The Diminuto signal associated with
+ * the object will be signalled. If enabled, a kill signal will be sent
+ * to the associated thread, possibly unblocking it from a system call
+ * by interrupting it.
+ * @param tp points to the object.
+ * @return 0 or an error code if the notify failed.
+ */
 extern int diminuto_thread_notify(diminuto_thread_t * tp);
 
+/**
+ * Block until the POSIX thread associated with a Diminuto thread
+ * object returns or exits, or until the absolute clock time is
+ * reached. ETIMEDOUT is returned if the absolute clock time was
+ * reached before the join was completed. If the absolute clock time
+ * is INFINITY, the caller blocks indeefinitely. If the join was
+ * comnpleted, the final value returned by the thread is placed in
+ * a value-result parameter.
+ * @param tp points to the object.
+ * @param vpp points to a variable into whcih the final value is placed.
+ * @param clocktime is the absolute clock time.
+ * @return 0 or an error code if the join failed.
+ */
 extern int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_ticks_t clocktime);
 
+/**
+ * Block until the POSIX thread associated with a Diminuto thread
+ * object returns or exits. If the join was comnpleted, the final value
+ * returned by the thread is placed in a value-result parameter.
+ * @param tp points to the object.
+ * @param vpp points to a variable into whcih the final value is placed.
+ * @param clocktime is the absolute clock time.
+ * @return 0 or an error code if the join failed.
+ */
 static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 {
     return diminuto_thread_join_until(tp, vpp, DIMINUTO_THREAD_INFINITY);
@@ -190,6 +304,12 @@ static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
  * CALLBACKS
  **********************************************************************/
 
+/**
+ * This is a callback used to unlock the Diminuto mutex associated with
+ * the Diminuto condition associated with a Diminuto thread object in the
+ * event of a cancellation.
+ * @param vp points to the object.
+ */
 extern void diminuto_thread_cleanup(void * vp);
 
 /***********************************************************************

@@ -6,14 +6,6 @@
  * Licensed under the terms in LICENSE.txt.<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- * This module creates a framework the implements POSIX thread
- * operations using a very specific model of behavior: all threads
- * contain a dedicated condition (and therefore a dedicated mutex);
- * all threads allow deferred cancellation (but discourage its use
- * by not providing functions that use it); all threads have a
- * synchronized notification facility that can use a kill signal to
- * unblock them from a system call; and all threads signal their
- * condition when their state changes.
  */
 
 /***********************************************************************
@@ -69,7 +61,11 @@ static void * proxy(void * ap)
         diminuto_perror("diminuto_thread: setup: pthread_setspecific");
     } else {
 
-        if (diminuto_thread_lock(tp) == 0) {
+        if (diminuto_thread_lock(tp) != 0) {
+
+            tp->state = DIMINUTO_THREAD_STATE_FAILED;
+
+        } else {
 
             pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
                 tp->state = DIMINUTO_THREAD_STATE_RUNNING;
@@ -79,7 +75,12 @@ static void * proxy(void * ap)
 
             value = (*(tp->function))(tp->context);
 
-            if (diminuto_thread_lock(tp) == 0) {
+            if (diminuto_thread_lock(tp) != 0) {
+
+                tp->state = DIMINUTO_THREAD_STATE_FAILED;
+
+            } else {
+
                 pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
                     tp->value = value;
                     tp->state = DIMINUTO_THREAD_STATE_COMPLETING;

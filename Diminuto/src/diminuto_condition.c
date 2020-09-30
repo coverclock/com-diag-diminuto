@@ -6,10 +6,6 @@
  * Licensed under the terms in LICENSE.txt.<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- * This module creates a framework the implements POSIX condition
- * operations using a very specific model of behavior: all conditions
- * contain a dedicated mutex that is used to access them (this may
- * not be appropriate for all algorithms).
  */
 
 /***********************************************************************

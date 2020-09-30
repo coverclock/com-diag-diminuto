@@ -9,6 +9,10 @@
  * Licensed under the terms in LICENSE.txt.<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ * This module creates a framework the implements POSIX mutual
+ * exclusion (mutex) operations using a very specific model of
+ * behavior: all mutexen are recursive (an attribute which
+ * greatly simplifies writing reusable multi-threaded libraries.)
  */
 
 /***********************************************************************
@@ -25,7 +29,8 @@
  **********************************************************************/
 
 /**
- * This is the error number returned with we try to lock a locked mutex.
+ * This is the error number returned with the caller tries to lock a
+ * locked mutex.
  */
 static const int DIMINUTO_MUTEX_BUSY = EBUSY;
 
@@ -43,7 +48,7 @@ typedef struct DiminutoMutex {
 
 /**
  * @def DIMINUTO_MUTEX_INITIALIZER
- * This is a static initializer for the Diminuto Mutex object.
+ * This is a static initializer for a Diminuto mutex object.
  */
 #define DIMINUTO_MUTEX_INITIALIZER \
     { \
@@ -99,6 +104,11 @@ extern int diminuto_mutex_unlock(diminuto_mutex_t * mp);
  * CALLBACKS
  **********************************************************************/
 
+/**
+ * This is a callback used to unlock a Diminuto mutex object in the
+ * event of a cancellation.
+ * @param vp points to the object.
+ */
 extern void diminuto_mutex_cleanup(void * vp);
 
 /***********************************************************************
