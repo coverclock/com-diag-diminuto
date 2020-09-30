@@ -16,6 +16,10 @@
  * condition when their state changes.
  */
 
+/***********************************************************************
+ * PREREQUISITES
+ **********************************************************************/
+
 #include <time.h>
 #include <errno.h>
 #include <signal.h>
@@ -27,15 +31,26 @@
 #include "com/diag/diminuto/diminuto_log.h"
 
 /***********************************************************************
- *
+ * GLOBALS
  **********************************************************************/
 
+/**
+ * This is the pthread specific key used to store a pointer to the
+ * thread's Diminuto thread object.
+ */
 static pthread_key_t key;
 
 /***********************************************************************
- *
+ * WRAPPERS
  **********************************************************************/
 
+/**
+ * This is the actual thread function called by POSIX threads. It calls
+ * the user function, and handles some bookkeeping beforehand and
+ * afterwards.
+ * @param ap points to the thread object.
+ * @return the final value returned by the user function.
+ */
 static void * proxy(void * ap)
 {
     diminuto_thread_t * tp = (diminuto_thread_t *)ap;
@@ -46,46 +61,63 @@ static void * proxy(void * ap)
     if ((rc = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &previous)) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread: setup: pthread_setcanceltype");
-    }
-
-    if ((rc = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &previous)) != 0) {
+    } else if ((rc = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &previous)) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread: setup: pthread_setcancelstate");
-    }
-
-    if ((rc = pthread_setspecific(key, tp)) != 0) {
+    } else if ((rc = pthread_setspecific(key, tp)) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread: setup: pthread_setspecific");
-    }
+    } else {
 
-    if (diminuto_thread_lock(tp) == 0) {
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-            tp->state = DIMINUTO_THREAD_STATE_RUNNING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
-            (void)diminuto_thread_signal(tp);
-        pthread_cleanup_pop(!0);
-    }
+        if (diminuto_thread_lock(tp) == 0) {
 
-    value = (*(tp->function))(tp->context);
+            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                tp->state = DIMINUTO_THREAD_STATE_RUNNING;
+                DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
+                (void)diminuto_thread_signal(tp);
+            pthread_cleanup_pop(!0);
 
-    if (diminuto_thread_lock(tp) == 0) {
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-            tp->value = value;
-            tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
-            (void)diminuto_thread_signal(tp);
-        pthread_cleanup_pop(!0);
+            value = (*(tp->function))(tp->context);
+
+            if (diminuto_thread_lock(tp) == 0) {
+                pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                    tp->value = value;
+                    tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
+                    DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
+                    (void)diminuto_thread_signal(tp);
+                pthread_cleanup_pop(!0);
+            }
+
+        }
+
     }
 
     return tp->value;
 }
 
+/***********************************************************************
+ * HANDLERS
+ **********************************************************************/
+
+/**
+ * This is the kill signal handler that receives the notification
+ * signal (if enabled).
+ * @param signo is the kill signal number.
+ */
 static void handler(int signo)
 {
     /* Do nothing. */
 }
 
-static int setup()
+/***********************************************************************
+ * HELPERS
+ **********************************************************************/
+
+/**
+ * This function initializes once and only once the main thread object.
+ * Should probably have used pthread_once() feature instead.
+ */
+static void setup()
 {
     extern int main(int argc, char * argv[]);
     int rc = EIO;
@@ -114,64 +146,63 @@ static int setup()
             DIMINUTO_CRITICAL_SECTION_END;
         }
     DIMINUTO_COHERENT_SECTION_END;
-
-    return rc;
 }
 
 /***********************************************************************
- *
+ * INITIALIZERS AND FINALIZERS
  **********************************************************************/
 
 diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *))
 {
-    diminuto_condition_init(&(tp->condition));
-    memset(&(tp->thread), 0, sizeof(tp->thread));
-    tp->function = fp;
-    tp->context = (void *)0;
-    tp->value = (void *)~0;
-    tp->notification = DIMINUTO_THREAD_SIGNAL;
-    tp->notifying = 0;
-    tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
+    diminuto_thread_t * result = (diminuto_thread_t *)0;
 
-    return tp;
+    if (diminuto_condition_init(&(tp->condition)) == &(tp->condition)) {
+        memset(&(tp->thread), 0, sizeof(tp->thread));
+        tp->function = fp;
+        tp->context = (void *)0;
+        tp->value = (void *)~0;
+        tp->notification = DIMINUTO_THREAD_SIGNAL;
+        tp->notifying = 0;
+        tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
+        result = tp;
+    }
+
+    return result;
 }
 
 diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
 {
+    diminuto_thread_t * result = tp;
+    int rc = 0; /* Not EIO. */
+
     switch (tp->state) {
-    case DIMINUTO_THREAD_STATE_STARTED:
-    case DIMINUTO_THREAD_STATE_RUNNING:
-    case DIMINUTO_THREAD_STATE_COMPLETING:
-        break;
     case DIMINUTO_THREAD_STATE_INITIALIZED:
     case DIMINUTO_THREAD_STATE_JOINED:
     case DIMINUTO_THREAD_STATE_FAILED:
-        diminuto_condition_fini(&(tp->condition));
+        if (diminuto_condition_fini(&(tp->condition)) != (diminuto_condition_t *)0) {
+            rc = EIO;
+        }
         /* FALL THRU */
     case DIMINUTO_THREAD_STATE_ALLOCATED:
-        tp->state = DIMINUTO_THREAD_STATE_FINALIZED;
+        if (rc == 0) {
+            tp->state = DIMINUTO_THREAD_STATE_FINALIZED;
+        }
         /* FALL THRU */
     case DIMINUTO_THREAD_STATE_FINALIZED:
-        tp = (diminuto_thread_t *)0;    
+        if (rc == 0) {
+            result = (diminuto_thread_t *)0;    
+        }
+        break;
+    default:
+        /* Do nothing. */
         break;
     }
 
-    return tp;
+    return result;
 }
 
 /***********************************************************************
- *
- **********************************************************************/
-
-void diminuto_thread_cleanup(void * vp)
-{
-    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
-
-    diminuto_thread_unlock(tp);
-}
-
-/***********************************************************************
- *
+ * ACTIONS
  **********************************************************************/
 
 diminuto_thread_t * diminuto_thread_instance()
@@ -245,7 +276,7 @@ void diminuto_thread_exit(void * vp)
 }
 
 /***********************************************************************
- *
+ * OPERATIONS
  **********************************************************************/
 
 int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
@@ -427,4 +458,15 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     }
 
     return rc;
+}
+
+/***********************************************************************
+ * CALLBACKS
+ **********************************************************************/
+
+void diminuto_thread_cleanup(void * vp)
+{
+    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
+
+    diminuto_thread_unlock(tp);
 }

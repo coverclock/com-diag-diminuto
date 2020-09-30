@@ -45,6 +45,8 @@ static void * body1(void * arg)
 
         ASSERT(diminuto_mutex_unlock(&mutex) == 0);
 
+        diminuto_thread_yield();
+
     }
 
     return (void *)arg;
@@ -81,6 +83,8 @@ static void * body2(void * arg)
             busy += 1;
         }
 
+        diminuto_thread_yield();
+
     }
 
     COMMENT("busy: %d", busy);
@@ -111,6 +115,8 @@ static void * body3(void * arg)
             }
 
         DIMINUTO_MUTEX_END;
+
+        diminuto_thread_yield();
 
     }
 
@@ -151,6 +157,8 @@ static void * body4(void * arg)
             COMMENT("BUSY");
             busy += 1;
         }
+
+        diminuto_thread_yield();
 
     }
 
@@ -257,13 +265,16 @@ int main(void)
     diminuto_log_setmask();
 
     {
+        TEST();
         ASSERT(pthread_equal(pthread_self(), diminuto_thread_self()));
         ASSERT(diminuto_thread_yield() == 0);
         ASSERT(diminuto_thread_notified() == 0);
+        STATUS();
     }
 
     {
         diminuto_thread_t * tp;
+        TEST();
         ASSERT((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0);
         ASSERT(pthread_equal(tp->thread, diminuto_thread_self()));
         ASSERT(tp->function == (void * (*)(void *))main);
@@ -272,20 +283,24 @@ int main(void)
         ASSERT(tp->state == DIMINUTO_THREAD_STATE_RUNNING);
         ASSERT(tp->notification == 0);
         ASSERT(tp->notifying == 0);
+        STATUS();
     }
 
     {
         diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER(body1);
+        TEST();
         ASSERT(thread.function == body1);
         ASSERT(thread.context == (void *)0);
         ASSERT(thread.value == (void *)~0);
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_INITIALIZED);
         ASSERT(thread.notification == DIMINUTO_THREAD_SIGNAL);
         ASSERT(thread.notifying == 0);
+        STATUS();
     }
 
     {
         diminuto_thread_t thread = { 0, };
+        TEST();
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_ALLOCATED);
         ASSERT(diminuto_thread_init(&thread, body2) == &thread);
         ASSERT(thread.function == body2);
@@ -296,6 +311,7 @@ int main(void)
         ASSERT(thread.notifying == 0);
         ASSERT(diminuto_thread_fini(&thread) == (diminuto_thread_t *)0);
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_FINALIZED);
+        STATUS();
     }
 
     {

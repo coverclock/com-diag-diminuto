@@ -13,7 +13,7 @@
  */
 
 /***********************************************************************
- *
+ * PREREQUISITES
  **********************************************************************/
 
 #include <errno.h>
@@ -23,44 +23,51 @@
 #include "com/diag/diminuto/diminuto_log.h"
 
 /***********************************************************************
- *
+ * INITIALIZERS AND FINALIZERS
  **********************************************************************/
 
 diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 {
-    diminuto_mutex_init(&(cp->mutex));
-    pthread_cond_init(&(cp->condition), (pthread_condattr_t *)0);
-    return cp;
+    diminuto_condition_t * result = (diminuto_condition_t *)0;
+    int rc = EIO;
+
+    if (diminuto_mutex_init(&(cp->mutex)) != &(cp->mutex)) {
+        /* Do nothing. */
+    } else if ((rc = pthread_cond_init(&(cp->condition), (pthread_condattr_t *)0)) != 0) {
+        errno = rc;
+        diminuto_perror("diminution_condition_init: pthread_cond_init");
+    } else {
+        result = cp;
+    }
+
+    return result;
 }
 
 diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
 {
+    diminuto_condition_t * result = cp;
     int rc = EIO;
 
     if ((rc = pthread_cond_broadcast(&(cp->condition))) != 0) {
         errno = rc;
         diminuto_perror("diminuto_condition_fini: pthread_cond_broadcast");
+    } else {
+        (void)diminuto_thread_yield();
+        if ((rc = pthread_cond_destroy(&(cp->condition))) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_condition_fini: pthread_cond_destroy");
+        } else if (diminuto_mutex_fini(&(cp->mutex)) != (diminuto_mutex_t *)0) {
+            /* Do nothing. */
+        } else {
+            result = (diminuto_condition_t *)0;
+        }
     }
-    diminuto_thread_yield();
-    pthread_cond_destroy(&(cp->condition));
-    diminuto_mutex_fini(&(cp->mutex));
 
-    return (diminuto_condition_t *)0;
+    return result;
 }
 
 /***********************************************************************
- *
- **********************************************************************/
-
-void diminuto_condition_cleanup(void * vp)
-{
-    diminuto_condition_t * cp = (diminuto_condition_t *)vp;
-
-    diminuto_condition_unlock(cp);
-}
-
-/***********************************************************************
- *
+ * OPERATIONS
  **********************************************************************/
 
 int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t clocktime)
@@ -102,4 +109,15 @@ int diminuto_condition_signal(diminuto_condition_t * cp)
     }
 
     return rc;
+}
+
+/***********************************************************************
+ * CALLBACKS
+ **********************************************************************/
+
+void diminuto_condition_cleanup(void * vp)
+{
+    diminuto_condition_t * cp = (diminuto_condition_t *)vp;
+
+    diminuto_condition_unlock(cp);
 }

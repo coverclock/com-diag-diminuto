@@ -12,7 +12,7 @@
  */
 
 /***********************************************************************
- *
+ * PREREQUISITES
  **********************************************************************/
 
 #include <signal.h>
@@ -20,7 +20,7 @@
 #include "com/diag/diminuto/diminuto_condition.h"
 
 /***********************************************************************
- *
+ * CONSTANTS
  **********************************************************************/
 
 static const int DIMINUTO_THREAD_SIGNAL = SIGUSR1;
@@ -30,7 +30,7 @@ static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = ~(diminuto_ticks_t)0;
 static const int DIMINUTO_THREAD_TIMEDOUT = ETIMEDOUT;
 
 /***********************************************************************
- *
+ * TYPES
  **********************************************************************/
 
 typedef enum DiminutoThreadState {
@@ -68,7 +68,7 @@ typedef struct DiminutoThread {
     }
 
 /***********************************************************************
- *
+ * ACTIONS
  **********************************************************************/
 
 extern diminuto_thread_t * diminuto_thread_instance(void);
@@ -81,26 +81,29 @@ extern int diminuto_thread_notified(void);
 
 extern void diminuto_thread_exit(void * vp);
 
+/***********************************************************************
+ * INITIALIZERS AND FINALIZERS
+ **********************************************************************/
+
+/**
+ * Initialize a Diminuto thread object. Allocate any resources.
+ * The thread is not started.
+ * @param mp points to the object.
+ * @return a pointer to the object or NULL if initialization failed.
+ */
 extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *));
 
+/**
+ * Finalize a Diminuto thread object. Free any resources. The thread
+ * must not be in the STARTED or RUNNING states.
+ * @param mp points to the object.
+ * @return NULL or a pointer to the object if finalization failed.
+ */
 extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
 
-static inline int diminuto_thread_lock(diminuto_thread_t * tp)
-{
-    return diminuto_condition_lock(&(tp->condition));
-}
-
-static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
-{
-    return diminuto_condition_lock_try(&(tp->condition));
-}
-
-static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
-{
-    return diminuto_condition_unlock(&(tp->condition));
-}
-
-extern void diminuto_thread_cleanup(void * vp);
+/***********************************************************************
+ * HELPERS
+ **********************************************************************/
 
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in
@@ -112,6 +115,45 @@ extern void diminuto_thread_cleanup(void * vp);
 static inline diminuto_sticks_t diminuto_thread_clock(void)
 {
     return diminuto_condition_clock();
+}
+
+/***********************************************************************
+ * EXTENSIONS
+ **********************************************************************/
+
+/**
+ * Lock the Diminuto mutex associated with the Diminuto condition
+ * associated with a Diminuto thread.
+ * @param mp points to the object.
+ * @return 0 or an error code if the lock failed.
+ */
+static inline int diminuto_thread_lock(diminuto_thread_t * tp)
+{
+    return diminuto_condition_lock(&(tp->condition));
+}
+
+/**
+ * Attempt to lock the Diminuto mutex associated with the Diminuto
+ * condition associated with a Diminuto thread object. EBUSY is
+ * returned (and no error message is generated) if the mutex was
+ * already locked.
+ * @param mp points to the object.
+ * @return 0 or an error code if the lock failed.
+ */
+static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
+{
+    return diminuto_condition_lock_try(&(tp->condition));
+}
+
+/**
+ * Unlock the Diminuto mutex associated with the Diminuto condition
+ * associated with a Diminuto thread object.
+ * @param mp points to the object.
+ * @return 0 or an error code if the unlock failed.
+ */
+static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
+{
+    return diminuto_condition_unlock(&(tp->condition));
 }
 
 static inline int diminuto_thread_wait_until(diminuto_thread_t * tp, diminuto_ticks_t clocktime)
@@ -129,6 +171,10 @@ static inline int diminuto_thread_signal(diminuto_thread_t * tp)
     return diminuto_condition_signal(&(tp->condition));
 }
 
+/***********************************************************************
+ * OPERATIONS
+ **********************************************************************/
+
 extern int diminuto_thread_start(diminuto_thread_t * tp, void * cp);
 
 extern int diminuto_thread_notify(diminuto_thread_t * tp);
@@ -141,17 +187,37 @@ static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 }
 
 /***********************************************************************
- *
+ * CALLBACKS
  **********************************************************************/
 
-#define DIMINUTO_THREAD_BEGIN(_TP_) DIMINUTO_CONDITION_BEGIN(&((_TP_)->condition))
-
-#define DIMINUTO_THREAD_TRY(_TP_) DIMINUTO_CONDITION_TRY(&((_TP_)->condition))
-
-#define DIMINUTO_THREAD_END DIMINUTO_CONDITION_END
+extern void diminuto_thread_cleanup(void * vp);
 
 /***********************************************************************
- *
+ * MACROS
  **********************************************************************/
+
+/**
+ * @def DIMINUTO_THREAD_BEGIN
+ * Begin a code section that is serialized using a Diminuto thread
+ * specified by the caller as a pointer in the argument @a _TP_ by
+ * locking the thread condition mutex.
+ */
+#define DIMINUTO_THREAD_BEGIN(_TP_) DIMINUTO_CONDITION_BEGIN(&((_TP_)->condition))
+
+/**
+ * @def DIMINUTO_THREAD_TRY
+ * Conditionally begin a code section that is serialized using a Diminuto
+ * thread specified by the caller as a pointer in the argument @a _TP_
+ * by locking the thread condition mutex.
+ */
+#define DIMINUTO_THREAD_TRY(_TP_) DIMINUTO_CONDITION_TRY(&((_TP_)->condition))
+
+/**
+ * @def DIMINUTO_THREAD_END
+ * End a code section that was serialized using the Diminuto thread
+ * specified at the beginning of the block by unlocking the thread
+ * condition mutex.
+ */
+#define DIMINUTO_THREAD_END DIMINUTO_CONDITION_END
 
 #endif

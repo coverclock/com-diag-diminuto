@@ -170,29 +170,19 @@ int main(void)
         ASSERT(diminuto_mutex_lock_try(&mutex2) == 0);
         ASSERT(diminuto_mutex_unlock(&mutex2) == 0);
 
-        ASSERT(diminuto_mutex_lock(&mutex1) == 0);
-
-            ASSERT(diminuto_mutex_lock_try(&mutex1) == 0);
-            ASSERT(diminuto_mutex_lock_try(&mutex2) == 0);
-            ASSERT(diminuto_mutex_unlock(&mutex2) == 0);
-
-            ASSERT(diminuto_mutex_lock(&mutex2) == 0);
-
-                ASSERT(diminuto_mutex_lock_try(&mutex1) == 0);
-                ASSERT(diminuto_mutex_lock_try(&mutex2) == 0);
-
-            ASSERT(diminuto_mutex_unlock(&mutex2) == 0);;
-
-            ASSERT(diminuto_mutex_lock_try(&mutex1) == 0);
-            ASSERT(diminuto_mutex_lock_try(&mutex2) == 0);
-            ASSERT(diminuto_mutex_unlock(&mutex2) == 0);
-
-        ASSERT(diminuto_mutex_unlock(&mutex1) == 0);
-
         ASSERT(diminuto_mutex_lock_try(&mutex1) == 0);
-        ASSERT(diminuto_mutex_unlock(&mutex1) == 0);
         ASSERT(diminuto_mutex_lock_try(&mutex2) == 0);
+        ASSERT(diminuto_mutex_unlock(&mutex1) == 0);
         ASSERT(diminuto_mutex_unlock(&mutex2) == 0);
+
+        ASSERT(diminuto_mutex_lock(&mutex1) == 0);
+            ASSERT(diminuto_mutex_lock(&mutex2) == 0);
+                ASSERT(diminuto_mutex_lock(&mutex1) == 0);
+                    ASSERT(diminuto_mutex_lock(&mutex2) == 0);
+                    ASSERT(diminuto_mutex_unlock(&mutex2) == 0);;
+                ASSERT(diminuto_mutex_unlock(&mutex1) == 0);
+            ASSERT(diminuto_mutex_unlock(&mutex2) == 0);;
+        ASSERT(diminuto_mutex_unlock(&mutex1) == 0);
 
         ASSERT(diminuto_mutex_fini(&mutex2) == (diminuto_mutex_t *)0);
         ASSERT(diminuto_mutex_fini(&mutex1) == (diminuto_mutex_t *)0);
