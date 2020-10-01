@@ -29,8 +29,8 @@ KERNEL_DIR			:=	/lib/modules/$(KERNEL_REV)/build
 # Or:  sudo apt-get install raspberrypi-kernel-headers
 GNUARCH				:=	-D__USE_GNU -D_GNU_SOURCE
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV) $(GNUARCH)
-CARCH				:=	-rdynamic -fPIC $(GNUARCH)
-CXXARCH				:=	$(CARCH) $(GNUARCH)
+CARCH				:=	-rdynamic -fPIC
+CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT)/$(LIB_DIR)
 SOARCH				:=
