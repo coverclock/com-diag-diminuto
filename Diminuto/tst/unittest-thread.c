@@ -188,14 +188,22 @@ static void * body6(void * arg)
 {
     diminuto_thread_t * tp;
     diminuto_ticks_t now;
-    unsigned int total;
+    uintptr_t limit;
+    uintptr_t total;
+    uintptr_t index;
     tp = diminuto_thread_instance();
+    limit = (uintptr_t)arg;
     DIMINUTO_THREAD_BEGIN(tp);
-        for (total = diminuto_thread_notifications(); total < 2; total += diminuto_thread_notifications()) {
-           diminuto_thread_wait(tp);
+        for (total = diminuto_thread_notifications(); total < limit; total += diminuto_thread_notifications()) {
+            COMMENT("WAITING");
+            diminuto_thread_wait(tp);
+            for (index = total; index > 0; --index) {
+                COMMENT("YIELDING");
+                diminuto_thread_yield();
+            }
         }
     DIMINUTO_THREAD_END;
-    COMMENT("NOTIFIED");
+    COMMENT("EXITING");
     diminuto_thread_exit((void *)6);
 
     return (void *)0;
@@ -499,12 +507,15 @@ int main(void)
         diminuto_thread_t thread;
         void * final;
         diminuto_ticks_t ticks;
+        uintptr_t count;
+        uintptr_t index;
+        static const uintptr_t LIMIT = 8;
 
         TEST();
 
         diminuto_thread_init(&thread, body6);
 
-        rc = diminuto_thread_start(&thread, (void *)0);
+        rc = diminuto_thread_start(&thread, (void *)LIMIT);
         ASSERT(rc == 0);
 
         COMMENT("STARTED");
@@ -518,22 +529,15 @@ int main(void)
 
         COMMENT("RUNNING");
 
-        final = (void *)0xdeadbeef;
-        ticks = diminuto_thread_clock() + (diminuto_frequency() * 5);
-        COMMENT("PAUSING 5s");
-        rc = diminuto_thread_join_until(&thread, &final, ticks);
-        ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
-        ASSERT(final == (void *)0xdeadbeef);
-
-        COMMENT("NOTIFYING 1");
-        rc = diminuto_thread_notify(&thread);
-        ASSERT(rc == 0);
-
-        diminuto_thread_yield();
-
-        COMMENT("NOTIFYING 2");
-        rc = diminuto_thread_notify(&thread);
-        ASSERT(rc == 0);
+        for (count = 0; count < LIMIT; ++count) {
+            COMMENT("NOTIFYING");
+            rc = diminuto_thread_notify(&thread);
+            ASSERT(rc == 0);
+            for (index = 0; index < count; ++index) {
+                COMMENT("YIELDING");
+                diminuto_thread_yield();
+            }
+        }
 
         final = (void *)~0;
         ticks = diminuto_thread_clock() + (diminuto_frequency() * 10);
