@@ -50,6 +50,11 @@ static void * proxy(void * ap)
     int previous = -1;
     int rc = -1;
 
+    /*
+     * We allow deferred cancellation, but we don't encourage it by
+     * providing an API for it.
+     */
+
     if ((rc = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &previous)) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread: setup: pthread_setcanceltype");
@@ -72,6 +77,11 @@ static void * proxy(void * ap)
                 DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
                 (void)diminuto_thread_signal(tp);
             pthread_cleanup_pop(!0);
+
+            /*
+             * This is where we call the actual user function and later
+             * capture its return value.
+             */
 
             value = (*(tp->function))(tp->context);
 
@@ -111,7 +121,7 @@ static void handler(int signo)
 }
 
 /***********************************************************************
- * HELPERS
+ * SINGLETONS
  **********************************************************************/
 
 /**
@@ -126,6 +136,12 @@ static void setup()
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((void * (*)(void *))main);
 
+    /*
+     * Do the double check locking pattern, and hope it works. The
+     * coherent section might or might not expand into read and write
+     * memory barriers.
+     */
+
     DIMINUTO_COHERENT_SECTION_BEGIN;
         if (!setupped) {
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
@@ -139,7 +155,7 @@ static void setup()
                     diminuto_perror("diminuto_thread:setup: pthread_setspecific");
                 } else {
                     thread.thread = pthread_self();
-                    thread.notify = 0;
+                    thread.notify = 0; /* Main doesn't get a kill signal. */
                     thread.notifications = 0;
                     thread.state = DIMINUTO_THREAD_STATE_RUNNING;
                     setupped = !0;
@@ -272,8 +288,6 @@ void diminuto_thread_exit(void * vp)
         }
     }
 
-    DIMINUTO_LOG_DEBUG("diminuto_thread_exit: EXITING %p", tp);
-
     pthread_exit(vp);
 }
 
@@ -294,6 +308,12 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
             case DIMINUTO_THREAD_STATE_INITIALIZED:
             case DIMINUTO_THREAD_STATE_JOINED:
             case DIMINUTO_THREAD_STATE_FAILED:
+                /*
+                 * Install the kill signal handler. The kill signal
+                 * is used purely to interrupt an interruptable system call,
+                 * allowing the thread to unblock so that it might check for
+                 * notifications.
+                 */
                 if (tp->notify != 0) {
                     action.sa_handler = handler;
                     if ((rc = sigaction(tp->notify, &action, (struct sigaction *)0)) < 0) {
@@ -335,12 +355,23 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
             switch (tp->state) {
             case DIMINUTO_THREAD_STATE_STARTED:
             case DIMINUTO_THREAD_STATE_RUNNING:
+                /*
+                 * The notification count is allowed to
+                 * reach its limit and no more. But we
+                 * to all the other notification stuff.
+                 */
                 if (tp->notifications == (~((unsigned int)0))) {
                     DIMINUTO_LOG_WARNING("diminuto_thread_notify: NOTIFIED %p [*]", tp);
                 } else {
                     ++tp->notifications;
                     DIMINUTO_LOG_DEBUG("diminuto_thread_notify: NOTIFIED %p [%u]", tp, tp->notifications);
                 }
+                /*
+                 * Signal any waiting threads that a notification has
+                 * arrived. Then send a kill signal to the thread to
+                 * possible interrupt a system call, allow it to
+                 * unblock, and check for notifications.
+                 */
                 if ((rc = diminuto_thread_signal(tp)) != 0) {
                     /* Do nothing. */
                 } else if (tp->notify == 0) {
@@ -370,6 +401,10 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     static const diminuto_ticks_t SECONDS = 1;
     static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
+    /*
+     * Wait for the thread to reach its completing state.
+     */
+
     if (diminuto_thread_lock(tp) == 0) {
         pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
         
@@ -382,7 +417,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                     /* Do nothing. */
     
                 } else if (clocktime == DIMINUTO_THREAD_INFINITY) {
-    
+
                     do {
                         if ((rc = diminuto_thread_wait(tp)) != 0) {
                             done = !0;
@@ -422,6 +457,10 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     
         pthread_cleanup_pop(!0);
     }
+
+    /*
+     * If the thread has reached completion, we can join with it.
+     */
     
     switch (tp->state) {
     
@@ -446,6 +485,10 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
         break;
     
     }
+
+    /*
+     * If the thread has joined, we can capture its final value.
+     */
     
     switch (tp->state) {
     

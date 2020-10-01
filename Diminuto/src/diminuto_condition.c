@@ -101,6 +101,11 @@ int diminuto_condition_signal(diminuto_condition_t * cp)
         errno = rc;
         diminuto_perror("diminuto_condition_signal: pthread_cond_broadcast");
     } else {
+        /*
+         * Give any woken threads the chance to reevaluate their
+         * condition variables and determine if they need to wait
+         * again.
+         */
         diminuto_thread_yield();
     }
 
