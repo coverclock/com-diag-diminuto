@@ -178,7 +178,7 @@ extern int diminuto_condition_signal(diminuto_condition_t * cp);
 extern void diminuto_condition_cleanup(void * vp);
 
 /***********************************************************************
- * MACROS
+ * GENERATORS
  **********************************************************************/
 
 /**

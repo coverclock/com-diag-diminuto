@@ -116,7 +116,7 @@ extern int diminuto_mutex_unlock(diminuto_mutex_t * mp);
 extern void diminuto_mutex_cleanup(void * vp);
 
 /***********************************************************************
- * MACROS
+ * GENERATORS
  **********************************************************************/
 
 /**

@@ -316,7 +316,7 @@ static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 extern void diminuto_thread_cleanup(void * vp);
 
 /***********************************************************************
- * MACROS
+ * GENERATORS
  **********************************************************************/
 
 /**
