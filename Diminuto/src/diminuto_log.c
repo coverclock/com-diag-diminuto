@@ -190,7 +190,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     /* Bracketing special fields allows us to more easily filter logs. */
     /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%d] {%lx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], getpid(), pthread_self());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
