@@ -174,9 +174,9 @@ static void * body5(void * arg)
     diminuto_ticks_t now;
     tp = diminuto_thread_instance();
     DIMINUTO_THREAD_BEGIN(tp);
-        while (diminuto_thread_notified() == 0) {
+        while (diminuto_thread_notifications() == 0) {
             now = diminuto_thread_clock() + diminuto_frequency();
-                diminuto_thread_wait_until(tp, now);
+            diminuto_thread_wait_until(tp, now);
         }
     DIMINUTO_THREAD_END;
     COMMENT("NOTIFIED");
@@ -188,11 +188,11 @@ static void * body6(void * arg)
 {
     diminuto_thread_t * tp;
     diminuto_ticks_t now;
+    unsigned int total;
     tp = diminuto_thread_instance();
     DIMINUTO_THREAD_BEGIN(tp);
-        while (diminuto_thread_notified() == 0) {
-            now = diminuto_thread_clock() + diminuto_frequency();
-                diminuto_thread_wait_until(tp, now);
+        for (total = diminuto_thread_notifications(); total < 2; total += diminuto_thread_notifications()) {
+           diminuto_thread_wait(tp);
         }
     DIMINUTO_THREAD_END;
     COMMENT("NOTIFIED");
@@ -223,7 +223,7 @@ static void * body7(void * arg)
         }
     }
     DIMINUTO_THREAD_BEGIN(tp);
-        if (diminuto_thread_notified()) {
+        if (diminuto_thread_notifications()) {
             COMMENT("NOTIFIED");
         }
     DIMINUTO_THREAD_END;
@@ -268,7 +268,7 @@ int main(void)
         TEST();
         ASSERT(pthread_equal(pthread_self(), diminuto_thread_self()));
         ASSERT(diminuto_thread_yield() == 0);
-        ASSERT(diminuto_thread_notified() == 0);
+        ASSERT(diminuto_thread_notifications() == 0);
         STATUS();
     }
 
@@ -281,8 +281,8 @@ int main(void)
         ASSERT(tp->context == (void *)0);
         ASSERT(tp->value == (void *)~0);
         ASSERT(tp->state == DIMINUTO_THREAD_STATE_RUNNING);
-        ASSERT(tp->notification == 0);
-        ASSERT(tp->notifying == 0);
+        ASSERT(tp->notify == 0);
+        ASSERT(tp->notifications == 0);
         STATUS();
     }
 
@@ -293,8 +293,8 @@ int main(void)
         ASSERT(thread.context == (void *)0);
         ASSERT(thread.value == (void *)~0);
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_INITIALIZED);
-        ASSERT(thread.notification == DIMINUTO_THREAD_SIGNAL);
-        ASSERT(thread.notifying == 0);
+        ASSERT(thread.notify == DIMINUTO_THREAD_NOTIFY);
+        ASSERT(thread.notifications == 0);
         STATUS();
     }
 
@@ -307,8 +307,8 @@ int main(void)
         ASSERT(thread.context == (void *)0);
         ASSERT(thread.value == (void *)~0);
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_INITIALIZED);
-        ASSERT(thread.notification == DIMINUTO_THREAD_SIGNAL);
-        ASSERT(thread.notifying == 0);
+        ASSERT(thread.notify == DIMINUTO_THREAD_NOTIFY);
+        ASSERT(thread.notifications == 0);
         ASSERT(diminuto_thread_fini(&thread) == (diminuto_thread_t *)0);
         ASSERT(thread.state == DIMINUTO_THREAD_STATE_FINALIZED);
         STATUS();
@@ -525,7 +525,13 @@ int main(void)
         ASSERT(rc == DIMINUTO_THREAD_TIMEDOUT);
         ASSERT(final == (void *)0xdeadbeef);
 
-        COMMENT("NOTIFYING");
+        COMMENT("NOTIFYING 1");
+        rc = diminuto_thread_notify(&thread);
+        ASSERT(rc == 0);
+
+        diminuto_thread_yield();
+
+        COMMENT("NOTIFYING 2");
         rc = diminuto_thread_notify(&thread);
         ASSERT(rc == 0);
 

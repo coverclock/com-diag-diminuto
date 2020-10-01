@@ -257,15 +257,24 @@ gcc 9.2.1
 (Some of these functional tests use hardware test fixtures I fabricated
 specifically for this purpose.)
 
-# Unit Test Suites
+# Unit Test Targets
+extended:
+geologic:
+mostest:
+nohup:
+privileged:
+sanity:
+signals:
+threads:
 
 * make extended - these unit tests take a lunch time to run.
 * make geologic - these unit test take over night or more to run.
-* make halting - these unit tests hang if they don't work.
 * make mostest - these unit tests require "make most" to be run first.
-* sudo make privileged - these unit tests must be run as root.
+* make nohup - these unit tests require "nohup make nohup" to run.
+* make privileged - these unit tests require "sudo make privileged" to run.
 * make sanity - these unit tests take a coffee break to run.
-* nohup make nohup - these unit tests require "nohup" to work.
+* make signals - these unit tests exercise the kill signal handlers.
+* make threads - these unit tests exercise the POSIX thread-based features.
 
 # Directories
  

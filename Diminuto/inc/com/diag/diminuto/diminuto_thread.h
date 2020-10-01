@@ -35,7 +35,7 @@
  * This is the kill signal used to try to unblock a thread from a
  * system call when it is notified.
  */
-static const int DIMINUTO_THREAD_SIGNAL = SIGUSR1;
+static const int DIMINUTO_THREAD_NOTIFY = SIGUSR1;
 
 /**
  * This value when used as a clocktime specifies that the caller blocks
@@ -79,8 +79,8 @@ typedef struct DiminutoThread {
     void * context;                     /* pointer to thread function context */
     void * value;                       /* final thread function value */
     diminuto_thread_state_t state;      /* Diminuto thread state */
-    int notification;                   /* kill signal used for notification or 0 if none */
-    int8_t notifying;                   /* True if notification performed */
+    int notify;                         /* kill signal used for notification or 0 if none */
+    int notifications;                  /* number of notifications received since last check */
 } diminuto_thread_t;
 
 /**
@@ -95,7 +95,7 @@ typedef struct DiminutoThread {
         (void *)0, \
         (void *)(~0), \
         DIMINUTO_THREAD_STATE_INITIALIZED, \
-        DIMINUTO_THREAD_SIGNAL, \
+        DIMINUTO_THREAD_NOTIFY, \
         0, \
     }
 
@@ -124,10 +124,12 @@ extern pthread_t diminuto_thread_self(void);
 extern int diminuto_thread_yield();
 
 /**
- * Return true if the calling thread has been notified, false otherwise.
- * @return true if the caller has been notified, false otherwise.
+ * Return the number of notifications received since the prior call.
+ * This count will increase to the maximum possible value but will
+ * not roll over; hence, not all notifications can be counted.
+ * @return the number of notifications received since the prior call.
  */
-extern int diminuto_thread_notified(void);
+extern unsigned int diminuto_thread_notifications(void);
 
 /**
  * Cause the calling thread to exit.
@@ -263,10 +265,11 @@ static inline int diminuto_thread_signal(diminuto_thread_t * tp)
 extern int diminuto_thread_start(diminuto_thread_t * tp, void * cp);
 
 /**
- * Notify a Diminuto thread object. The Diminuto signal associated with
- * the object will be signalled. If enabled, a kill signal will be sent
- * to the associated thread, possibly unblocking it from a system call
- * by interrupting it.
+ * Notify a Diminuto thread object. The notification count will be
+ * increased by one providing doing so would not cause it to overflow.
+ * The Diminuto condition associated with the object will be signalled.
+ * If enabled, a kill signal will be sent to the associated thread,
+ * possibly unblocking it from a system call by interrupting it.
  * @param tp points to the object.
  * @return 0 or an error code if the notify failed.
  */

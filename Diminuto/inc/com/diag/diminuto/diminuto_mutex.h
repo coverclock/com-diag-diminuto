@@ -19,8 +19,12 @@
  * PREREQUISITES
  **********************************************************************/
 
-#define __USE_GNU
-#define _GNU_SOURCE
+#if !defined(__USE_GNU)
+#   define __USE_GNU
+#endif
+#if !defined(_GNU_SOURCE)
+#   define _GNU_SOURCE
+#endif
 #include <pthread.h>
 #include <errno.h>
 
@@ -29,7 +33,7 @@
  **********************************************************************/
 
 /**
- * This is the error number returned with the caller tries to lock a
+ * This is the error number returned with the caller does a try on a
  * locked mutex.
  */
 static const int DIMINUTO_MUTEX_BUSY = EBUSY;
