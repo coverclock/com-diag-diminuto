@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -21,11 +21,16 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/fs.h>
-#define _GNU_SOURCE
 #include <unistd.h>
 #include <sys/syscall.h>
 
-#if defined(SYS_renameat2)
+#if defined(__USE_GNU)
+
+/* renameat2(2) available on later GNU platforms. */
+
+#elif defined(SYS_renameat2)
+
+#   warning renameat2(2) not available on this platform!
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -42,7 +47,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
 
 #else
 
-#warning SYS_renameat2 undefined!
+#   warning SYS_renameat2 not available on this platform!
 
 /**
  * Atomically change the name of a file providing it does not  already exist.

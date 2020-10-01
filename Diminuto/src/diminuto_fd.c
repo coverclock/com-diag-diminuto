@@ -24,9 +24,6 @@
 #else
 #   include <sys/ioctl.h> /* FIONREAD, TIOCINQ */
 #endif
-#if !defined(__USE_GNU)
-#   define __USE_GNU
-#endif
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>

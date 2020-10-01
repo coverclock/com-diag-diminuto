@@ -2150,6 +2150,7 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = DEBUG \
                          __USE_GNU \
                          __GNUC__ \
+			_GNU_SOURCE \
                          MODULE
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this

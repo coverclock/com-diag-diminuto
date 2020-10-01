@@ -20,42 +20,65 @@
 
 int main(void)
 {
+    int rc;
+    diminuto_condition_t condition = DIMINUTO_CONDITION_INITIALIZER;
+    diminuto_ticks_t ticks;
+
     diminuto_log_setmask();
 
     {
-        diminuto_condition_t condition = DIMINUTO_CONDITION_INITIALIZER;
-    }
-
-    {
-        diminuto_condition_t condition;
-        ASSERT(diminuto_condition_init(&condition) == &condition);
-    }
-
-    {
-        int rc;
-        diminuto_condition_t condition;
-        diminuto_ticks_t ticks;
-
         TEST();
 
-        diminuto_condition_init(&condition);
+        ASSERT(diminuto_condition_init(&condition) == &condition);
+
+        STATUS();
+    }
+
+    {
+        TEST();
 
         DIMINUTO_CONDITION_BEGIN(&condition);
-            COMMENT("PAUSING -s");
-            rc = diminuto_condition_wait_until(&condition, 0);
-            ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
-        DIMINUTO_CONDITION_END;
-
-        DIMINUTO_CONDITION_BEGIN(&condition);
-            ticks = diminuto_condition_clock();
-            COMMENT("PAUSING 0s");
+            ticks = 0;
+            COMMENT("PAUSING epoch");
             rc = diminuto_condition_wait_until(&condition, ticks);
             ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
         DIMINUTO_CONDITION_END;
 
+        STATUS();
+    }
+
+    {
+        TEST();
+
         DIMINUTO_CONDITION_BEGIN(&condition);
-            ticks = diminuto_condition_clock() + (diminuto_frequency() * 5);
-            COMMENT("PAUSING 5s");
+            ticks = diminuto_condition_clock() - diminuto_frequency();
+            COMMENT("PAUSING earlier");
+            rc = diminuto_condition_wait_until(&condition, ticks);
+            ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
+        DIMINUTO_CONDITION_END;
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        DIMINUTO_CONDITION_BEGIN(&condition);
+            ticks = diminuto_condition_clock();
+            COMMENT("PAUSING now");
+            rc = diminuto_condition_wait_until(&condition, ticks);
+            ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
+        DIMINUTO_CONDITION_END;
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        DIMINUTO_CONDITION_BEGIN(&condition);
+            ticks = diminuto_condition_clock() + diminuto_frequency();
+            COMMENT("PAUSING later");
             rc = diminuto_condition_wait_until(&condition, ticks);
             ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
         DIMINUTO_CONDITION_END;

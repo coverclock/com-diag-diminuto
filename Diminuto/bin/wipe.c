@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA.<BR>
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
  * Licensed under the terms of the GNU Public License (GPL) v2.<BR>
  * Author: Chip Overclock<BR>
  * mailto:coverclock@diag.com<BR>
@@ -78,16 +78,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#undef COM_DIAG_DIMINUTO_UNDEFINE___USE_GNU
-#if !defined(__USE_GNU)
-#       define __USE_GNU
-#       define COM_DIAG_DIMINUTO_UNDEFINE___USE_GNU
-#endif
 #include <fcntl.h>
-#if defined(COM_DIAG_DIMINUTO_UNDEFINE___USE_GNU)
-#       undef __USE_GNU
-#       undef COM_DIAG_DIMINUTO_UNDEFINE___USE_GNU
-#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>

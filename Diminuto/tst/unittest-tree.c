@@ -2,13 +2,12 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#define _GNU_SOURCE /* for strfry(3) */
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_tree.h"
@@ -20,8 +19,8 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if !defined(COM_DIAG_DIMINUTO_PLATFORM_GLIBC)
-#warning platform may not provide strfry(3)!
+#if !defined(_GNU_SOURCE)
+#   warning strfry(3) not available on this platform!
 static inline char * strfry(char *string) {
     return string;
 }

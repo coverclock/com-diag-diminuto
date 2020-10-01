@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -11,14 +11,7 @@
 #include "com/diag/diminuto/diminuto_module.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#if !defined(__USE_GNU)
-#   define __USE_GNU
-#   define UNDEF__USE_GNU
-#endif
 #include <dlfcn.h>
-#if defined(UNDEF__USE_GNU)
-#   undef __USE_GNU
-#endif
 
 /*
  * This is deliberately global but not in the header file. So it is not part

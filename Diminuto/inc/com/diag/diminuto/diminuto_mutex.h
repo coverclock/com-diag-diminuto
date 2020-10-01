@@ -19,12 +19,6 @@
  * PREREQUISITES
  **********************************************************************/
 
-#if !defined(__USE_GNU)
-#   define __USE_GNU
-#endif
-#if !defined(_GNU_SOURCE)
-#   define _GNU_SOURCE
-#endif
 #include <pthread.h>
 #include <errno.h>
 
@@ -50,9 +44,18 @@ typedef struct DiminutoMutex {
     pthread_mutexattr_t attribute;      /* POSIX Thread mutual exclusion attribute */
 } diminuto_mutex_t;
 
+#if !defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
+#   warning PTHREAD_RECURSIVE_MUTEX_INITIALZER_NP not defined on this platform!
+#   define PTHREAD_MUTEX_INITIALIZER_NP PTHREAD_MUTEX_INITIALIZER
+#endif
+
 /**
  * @def DIMINUTO_MUTEX_INITIALIZER
  * This is a static initializer for a Diminuto mutex object.
+ * N.B. if the non-portable GNU-specific initializer for recursive
+ * mutexn is available, it is used; otherwise the mutex is not
+ * recursive. If this is not desirable, the initialization function
+ * should be used instead.
  */
 #define DIMINUTO_MUTEX_INITIALIZER \
     { \

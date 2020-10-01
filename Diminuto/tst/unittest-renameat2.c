@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -17,42 +17,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/fs.h>
-#define _GNU_SOURCE
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <stdlib.h>
-#include <assert.h>
-
-#if defined(SYS_renameat2)
-
-static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-    return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
-}
-
-#else
-
-#if !defined(RENAME_NOREPLACE)
-#define RENAME_NOREPLACE 0
-#endif
-
-#if !defined(RENAME_EXCHANGE)
-#define RENAME_EXCHANGE 0
-#endif
-
-#if !defined(RENAME_WHITEOUT)
-#define RENAME_WHITEOUT 0
-#endif
-
-#if !defined(AT_FDCWD)
-#define AT_FDCWD 0
-#endif
-
-static int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-    errno = EIO;
-    return -1;
-}
-
-#endif
+#include "../src/diminuto_renameat2.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
 
 static int my_lock(const char * file) {
     static const char SUFFIX[] = "-lock-XXXXXX";
@@ -115,69 +84,67 @@ static pid_t my_locked(const char * file) {
 static void test_lock() {
     static const char * LOCKFILE = "/tmp/unittest-renameat2-lock.pid";
     pid_t pid1 = getpid();
-    assert(pid1 >= 0);
+    ASSERT(pid1 >= 0);
     pid_t pid2 = my_locked(LOCKFILE);
-    assert(pid2 < 0);
+    ASSERT(pid2 < 0);
     int rc = my_lock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid3 = my_locked(LOCKFILE);
-    assert(pid3 > 0);
-    assert(pid1 == pid3);
+    ASSERT(pid3 > 0);
+    ASSERT(pid1 == pid3);
     /* Try locking again: should fail. */
     rc = my_lock(LOCKFILE);
-    assert(rc < 0);
+    ASSERT(rc < 0);
     rc = my_unlock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid4 = my_locked(LOCKFILE);
-    assert(pid4 < 0);
+    ASSERT(pid4 < 0);
     rc = my_unlock(LOCKFILE);
-    assert(rc < 0);
+    ASSERT(rc < 0);
     pid_t pid5 = my_locked(LOCKFILE);
-    assert(pid5 < 0);
+    ASSERT(pid5 < 0);
 }
 
 static void test_prepostlock() {
     static const char * LOCKFILE = "/tmp/unittest-renameat2-prepostlock.pid";
     pid_t pid1 = getpid();
-    assert(pid1 >= 0);
+    ASSERT(pid1 >= 0);
     pid_t pid2 = my_locked(LOCKFILE);
-    assert(pid2 < 0);
+    ASSERT(pid2 < 0);
     int rc = my_postlock(LOCKFILE);
-    assert(rc < 0);
+    ASSERT(rc < 0);
     rc = my_prelock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid3 = my_locked(LOCKFILE);
-    assert(pid3 == 0);
+    ASSERT(pid3 == 0);
     /* Try prelocking again: should fail. */
     rc = my_prelock(LOCKFILE);
-    assert(rc < 0);
+    ASSERT(rc < 0);
     pid_t pid4 = my_locked(LOCKFILE);
-    assert(pid4 == 0);
+    ASSERT(pid4 == 0);
     rc = my_postlock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid5 = my_locked(LOCKFILE);
-    assert(pid5 > 0);
-    assert(pid1 == pid5);
+    ASSERT(pid5 > 0);
+    ASSERT(pid1 == pid5);
     /* Try postlocking again: should succeed. */
     rc = my_postlock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid6 = my_locked(LOCKFILE);
-    assert(pid6 > 0);
-    assert(pid1 == pid6);
+    ASSERT(pid6 > 0);
+    ASSERT(pid1 == pid6);
     rc = my_unlock(LOCKFILE);
-    assert(rc == 0);
+    ASSERT(rc == 0);
     pid_t pid7 = my_locked(LOCKFILE);
-    assert(pid7 < 0);
+    ASSERT(pid7 < 0);
     rc = my_unlock(LOCKFILE);
-    assert(rc < 0);
+    ASSERT(rc < 0);
     pid_t pid8 = my_locked(LOCKFILE);
-    assert(pid8 < 0);
+    ASSERT(pid8 < 0);
 }
 
 int main(void) {
-    test_lock();
-    test_prepostlock();
-#if 0
-    assert(0);
-#endif
+    diminuto_log_setmask();
+    { TEST(); test_lock(); STATUS(); }
+    { TEST(); test_prepostlock(); STATUS(); }
 }
