@@ -444,6 +444,9 @@ Chip Overclock, "When The Silicon Meets The Road", 2018-07,
 Chip Overclock, "When Learning By Doing Goes To Eleven", 2020-03,
 <https://coverclock.blogspot.com/2020/03/when-learning-by-doing-goes-to-eleven.html>
 
+Chip Overclock, "Clock Time", 2020-10,
+<https://coverclock.blogspot.com/2020/10/clock-time.html>
+
 # Build
 
 Clone, build, and play with Diminuto (some unit and functional tests

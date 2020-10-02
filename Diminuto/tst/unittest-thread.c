@@ -566,10 +566,12 @@ int main(void)
 
         COMMENT("STARTED");
 
+        ticks = diminuto_thread_clock() + diminuto_frequency();
         DIMINUTO_THREAD_BEGIN(&thread);
             while (thread.state != DIMINUTO_THREAD_STATE_RUNNING) {
                 COMMENT("WAITING");
-                diminuto_thread_wait(&thread);
+                rc = diminuto_thread_wait_until(&thread, ticks);
+                ASSERT(rc == 0);
             }
         DIMINUTO_THREAD_END;
 
