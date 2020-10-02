@@ -59,13 +59,13 @@ static void * proxy(void * ap)
 
     if ((rc = pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &previous)) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_thread: setup: pthread_setcanceltype");
+        diminuto_perror("diminuto_thread:proxy: pthread_setcanceltype");
     } else if ((rc = pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &previous)) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_thread: setup: pthread_setcancelstate");
+        diminuto_perror("diminuto_thread:proxy: pthread_setcancelstate");
     } else if ((rc = pthread_setspecific(key, tp)) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_thread: setup: pthread_setspecific");
+        diminuto_perror("diminuto_thread:proxy: pthread_setspecific");
     } else {
 
         if (diminuto_thread_lock(tp) != 0) {
