@@ -88,7 +88,7 @@
 #include <stdio.h>
 
 #if !defined(O_DIRECT)
-#   warning O_DIRECT is not implemented on this platform!
+#   warning O_DIRECT not defined on this platform!
 #   define O_DIRECT (0)
 #endif
 

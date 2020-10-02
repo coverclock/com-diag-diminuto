@@ -269,6 +269,7 @@ threads:
 
 * make extended - these unit tests take a lunch time to run.
 * make geologic - these unit test take over night or more to run.
+* make gnuish - these unit tests are for feature that require GNU.
 * make mostest - these unit tests require "make most" to be run first.
 * make nohup - these unit tests require "nohup make nohup" to run.
 * make privileged - these unit tests require "sudo make privileged" to run.

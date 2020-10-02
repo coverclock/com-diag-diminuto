@@ -34,6 +34,7 @@ BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 # The hardware for some of these targets isn't even available to me anymore.
 
 TARGET				:=	host# Build for the current host.
+#TARGET				:=	notgnu# Build for a host that is not GNU-based (testing).
 #TARGET				:=	arroyo# Build for the AT91RM9200-EK running roll-your-own.
 #TARGET				:=	betty# Build for the Raspberry Pi 2 running Raspbian.
 #TARGET				:=	cascada# Build for the BeagleBoard C4 running Angstrom.
@@ -876,7 +877,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY:	sanity mostest privileged extended geologic nohup
+.PHONY:	extended geologic gnuish mostest nohup privileged sanity signals threads
 
 sanity:
 	unittest-absolute
@@ -977,7 +978,7 @@ nohup:
 
 signals:
 	unittest-alarm
-	# nohup make nohup; cat nohup.out
+	echo "nohup make hangup" 1>&2
 	unittest-interrupter
 	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
 	unittest-reaper
@@ -986,4 +987,16 @@ signals:
 threads:
 	unittest-mutex
 	unittest-condition
+	unittest-thread
+
+gnuish:
+	echo "nohup make hangup" 1>&2
+	unittest-lock
+	echo "make most mostest" 1>&2
+	unittest-module
+	unittest-mutex
+	unittest-poll4
+	unittest-poll6
+	unittest-poll-eventloop
+	unittest-renameat2
 	unittest-thread

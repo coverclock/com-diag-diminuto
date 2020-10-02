@@ -29,7 +29,7 @@ diminuto_module_handle_t diminuto_module_load_generic(const char * filename, int
         /* Do nothing: nominal. */
 #endif
     } else {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "diminuto_module_load_generic: dlopen: %s\n", dlerror());
+        DIMINUTO_LOG_ERROR("diminuto_module_load_generic: dlopen: %s\n", dlerror());
     }
 
     return handle;
@@ -40,7 +40,7 @@ diminuto_module_handle_t diminuto_module_handle(const char * filename)
 #if defined(RTLD_NOLOAD)
     return diminuto_module_load_generic(filename, RTLD_NOLOAD);
 #else
-#   warning RTLD_NOLOAD not defined!
+#   warning RTLD_NOLOAD not defined in this platform!
     return diminuto_module_load_generic(filename, 0);
 #endif
 }
@@ -50,6 +50,7 @@ diminuto_module_handle_t diminuto_module_load(const char * filename)
 #if defined(RTLD_DEEPBIND)
     return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL | RTLD_DEEPBIND);
 #else
+#   warning RTLD_DEEPBIND not defined in this platform!
     return diminuto_module_load_generic(filename, RTLD_LAZY | RTLD_GLOBAL);
 #endif
 }
@@ -75,6 +76,10 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
 #   warning dlvsym(3) not implemented in Darwin!
     label = "dlsym";
     resolved = dlsym(handle, symbol);
+#elif !defined(__USE_GNU)
+#   warning dlvsym(3) not available on this platform!
+    label = "dlsym";
+    resolved = dlsym(handle, symbol);
 #else
     if (version == (const char *)0) {
         label = "dlsym";
@@ -85,7 +90,7 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
     }
 #endif
     if (resolved == (void *)0) {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, "diminuto_module_symbol: %s: %s\n", label, dlerror());
+        DIMINUTO_LOG_ERROR("diminuto_module_symbol: %s: %s", label, dlerror());
     }
 
     return resolved;
@@ -123,7 +128,7 @@ diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle,
     } else if (rc == 0) {
         handle = (diminuto_module_handle_t)0;
     } else {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, "diminuto_module_unload: dlclose: %s\n", dlerror());
+        DIMINUTO_LOG_ERROR("diminuto_module_unload: dlclose: %s\n", dlerror());
     }
 
     return handle;

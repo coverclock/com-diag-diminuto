@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
+#include <unistd.h>
+#include <sched.h>
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_coherentsection.h"
@@ -247,10 +249,21 @@ int diminuto_thread_yield()
 {
     int rc = EIO;
 
-    if ((rc = pthread_yield())) {
+#if defined(_GNU_SOURCE)
+    if ((rc = pthread_yield()) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread_yield: pthread_yield");
     }
+#elif defined(_POSIX_PRIORITY_SCHEDULING)
+#   warning pthread_yield(3) not available on this platform!
+    if ((rc = sched_yield()) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_thread_yield: sched_yield");
+    }
+#else
+#   warning _POSIX_PRIORITY_SCHEDULING not defined on this platform!
+    rc = ENOSYS;
+#endif
 
     return rc;
 }

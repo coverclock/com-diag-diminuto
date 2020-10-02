@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -16,6 +16,15 @@
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
+
+#if !defined(__USE_GNU)
+#   warning ppoll(2) not available on this platform!
+static inline int ppoll(struct pollfd *__fds, nfds_t __nfds, const struct timespec *__timeout, const __sigset_t *__ss)
+{
+    errno = ENOSYS;
+    return -1;
+}
+#endif
 
 void diminuto_poll_init(diminuto_poll_t * pollp)
 {

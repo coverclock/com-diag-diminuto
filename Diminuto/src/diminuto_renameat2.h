@@ -34,6 +34,7 @@
 
 /**
  * Atomically change the name of a file providing it does not already exist.
+ * This stub calls the SYS_renameat2 system call directly.
  * @param olddirfd is a descriptor referring to the old directory.
  * @param oldpath points to the old file system path.
  * @param newdirfd is a descriptor referring to the new directory.
@@ -50,7 +51,8 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
 #   warning SYS_renameat2 not available on this platform!
 
 /**
- * Atomically change the name of a file providing it does not  already exist.
+ * Atomically change the name of a file providing it does not already exist.
+ * This stub returns failure always.
  * @param olddirfd is a descriptor referring to the old directory.
  * @param oldpath points to the old file system path.
  * @param newdirfd is a descriptor referring to the new directory.
@@ -59,7 +61,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
  * @return -1 for failure always.
  */
 static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-    errno = EIO;
+    errno = ENOSYS;
     return -1;
 }
 
