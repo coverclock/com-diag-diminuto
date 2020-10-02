@@ -55,6 +55,12 @@ static const int DIMINUTO_THREAD_TIMEDOUT = ETIMEDOUT;
  **********************************************************************/
 
 /**
+ * This defines the prototype for a function that be the implementation
+ * of a thread.
+ */
+typedef void * (diminuto_thread_function_t)(void *);
+
+/**
  * These are the states in which a Diminuto thread object may be. The
  * ALLOCATED state is only useful if the caller zeros out the object
  * (for example, at compile time).
@@ -74,14 +80,14 @@ typedef enum DiminutoThreadState {
  * This is the Diminuto thread object.
  */
 typedef struct DiminutoThread {
-    diminuto_condition_t condition;     /* Diminuto condition object */
-    pthread_t thread;                   /* POSIX Thread thread object */
-    void * (*function)(void *);         /* pointer to thread function implementation */
-    void * context;                     /* pointer to thread function context */
-    void * value;                       /* final thread function value */
-    diminuto_thread_state_t state;      /* Diminuto thread state */
-    int notify;                         /* kill signal used for notification or 0 if none */
-    int notifications;                  /* number of notifications received since last check */
+    diminuto_condition_t condition;         /* Diminuto condition object */
+    pthread_t thread;                       /* POSIX Thread thread object */
+    diminuto_thread_function_t * function;  /* pointer to thread function implementation */
+    void * context;                         /* pointer to thread function context */
+    void * value;                           /* final thread function value */
+    diminuto_thread_state_t state;          /* Diminuto thread state */
+    int notify;                             /* kill signal used for notification or 0 if none */
+    int notifications;                      /* number of notifications received since last check */
 } diminuto_thread_t;
 
 /**
@@ -149,7 +155,7 @@ extern void diminuto_thread_exit(void * vp);
  * @param fp points to the function to be associated with the object.
  * @return a pointer to the object or NULL if initialization failed.
  */
-extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *));
+extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto_thread_function_t * fp);
 
 /**
  * Finalize a Diminuto thread object. Free any resources. The thread

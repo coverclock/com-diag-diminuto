@@ -136,7 +136,7 @@ static void setup()
     int rc = EIO;
     static int setupped = 0;
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((void * (*)(void *))main);
+    static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((diminuto_thread_function_t *)0);
 
     /*
      * Do the double check locking pattern, and hope it works. The
@@ -157,6 +157,7 @@ static void setup()
                     diminuto_perror("diminuto_thread:setup: pthread_setspecific");
                 } else {
                     thread.thread = pthread_self();
+                    thread.function = (diminuto_thread_function_t *)main;
                     thread.notify = 0; /* Main doesn't get a kill signal. */
                     thread.notifications = 0;
                     thread.state = DIMINUTO_THREAD_STATE_RUNNING;
