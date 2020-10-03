@@ -1,7 +1,7 @@
 com-diag-diminuto
 =================
 
-Linux systems programming library in C.
+A Linux systems programming library in C.
 
 # Thanks
 
