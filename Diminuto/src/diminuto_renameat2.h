@@ -12,25 +12,29 @@
  *
  * This describes the private API for the renameat2(2) feature. It is not
  * accessible to applications outside of Diminuto. This is a system call
- * provided by the Linux kernel starting in 3.15. It is not (yet) supported by
- * glibc. I am of the opinion that there is not any other way to accomplish its
- * function reliably using another combination of system calls.
+ * provided by the Linux kernel starting in 3.15. It is has besn supported
+ * in glibc since 2.28. I have convinced myself that there is not any other
+ * way to accomplish its function reliably using another combination of
+ * system calls.
  */
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <linux/fs.h>
-#include <unistd.h>
 #include <sys/syscall.h>
+#include <gnu/libc-version.h>
 
-#if defined(__USE_GNU)
+#if defined(__USE_GNU) && defined(_GNU_SOURCE) && (((__GLIBC__*1000)+(__GLIBC_MINOR__))>2028)
 
-/* renameat2(2) available on later GNU platforms. */
+    /* renameat2(2) available on GNU 2.28 and later. */
 
 #elif defined(SYS_renameat2)
 
 #   warning renameat2(2) not available on this platform!
+
+    /* SYS_renameat2 available in Linux 3.15 and later. */
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -50,6 +54,8 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
 
 #   warning SYS_renameat2 not available on this platform!
 
+    /* renameat2 isn't available. */
+
 /**
  * Atomically change the name of a file providing it does not already exist.
  * This stub returns failure always.
@@ -65,21 +71,21 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
     return -1;
 }
 
-#if !defined(RENAME_NOREPLACE)
-#define RENAME_NOREPLACE 0
-#endif
+#   if !defined(RENAME_NOREPLACE)
+#       define RENAME_NOREPLACE 0
+#   endif
 
-#if !defined(RENAME_EXCHANGE)
-#define RENAME_EXCHANGE 0
-#endif
+#   if !defined(RENAME_EXCHANGE)
+#       define RENAME_EXCHANGE 0
+#   endif
 
-#if !defined(RENAME_WHITEOUT)
-#define RENAME_WHITEOUT 0
-#endif
+#   if !defined(RENAME_WHITEOUT)
+#       define RENAME_WHITEOUT 0
+#   endif
 
-#if !defined(AT_FDCWD)
-#define AT_FDCWD 0
-#endif
+#   if !defined(AT_FDCWD)
+#       define AT_FDCWD 0
+#   endif
 
 #endif
 

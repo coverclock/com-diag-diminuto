@@ -12,6 +12,7 @@
  * and unittest-hangup-*.c unit tests.
  */
 
+#include "../src/diminuto_renameat2.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -20,7 +21,6 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <stdlib.h>
-#include "../src/diminuto_renameat2.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 
 static int my_lock(const char * file) {

@@ -20,11 +20,11 @@
  * by GNU libc as of version 6.
  */
 
+#include "../src/diminuto_renameat2.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "../src/diminuto_renameat2.h"
 
 int main(int argc, char * argv[])
 {

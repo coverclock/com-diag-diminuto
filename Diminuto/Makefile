@@ -18,6 +18,13 @@
 
 default:	all
 
+########## Metadata
+
+COPYRIGHT			:=	2008-2020 Digital Aggregates Corporation
+LICENSE				:=	GNU Lesser General Public License 2.1
+CONTACT				:=	coverclock@diag.com
+HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
+
 ########## Customizations
 
 TITLE				:=	Diminuto
@@ -48,29 +55,6 @@ TARGET				:=	host# Build for the current host.
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
 #TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
-
-# Some civilian, defense, or intelligence agencies (e.g. the U.S. Federal
-# Aviation Administration or FAA) require that software builds for safety
-# critical or national security applications generate exactly the same binary
-# images bit for bit if the source code has not changed. (This is theoretically
-# a more stringent requirement than requiring that checksums or cryptographic
-# hashes are the same, although in practice it is the same thing.) This allows
-# agency inspectors to verify the integrity of the binary software images. This
-# makes embedding build timestamps inside compiled translation units problematic.
-# Avoid using the built-in C macros __DATE__ and __TIME__, and consider using the
-# faketime(1) utility to spoof the system time during builds.
-
-# This stuff all gets embedded in the vintage application.
-COPYRIGHT			:=	2008-2020 Digital Aggregates Corporation
-LICENSE				:=	GNU Lesser General Public License 2.1
-CONTACT				:=	coverclock@diag.com
-HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
-HOST				:=	$(shell hostname -s)
-BRANCH				:=	$(shell git rev-parse --abbrev-ref HEAD)
-REVISION			:=	$(shell git rev-parse HEAD)
-MODIFIED			:=	$(shell date -u -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
-ROOT				:=	$(shell git rev-parse --show-toplevel)
-VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
@@ -152,9 +136,11 @@ CROSS_COMPILE		:=	$(TOOLCHAIN)
 
 CC					:=	$(CROSS_COMPILE)gcc
 CXX					:=	$(CROSS_COMPILE)g++
+LD					:=	$(CROSS_COMPILE)ld
 AR					:=	$(CROSS_COMPILE)ar
 RANLIB				:=	$(CROSS_COMPILE)ranlib
 STRIP				:=	$(CROSS_COMPILE)strip
+LDD					:=	$(CROSS_COMPILE)ldd
 
 CDEFINES			:=
 
@@ -177,6 +163,18 @@ MOFLAGS				:=	$(MOARCH) -l$(PROJECT) $(LDLIBRARIES)
 MOXXFLAGS			:=	$(MOARCH) -l$(PROJECT)xx -l$(PROJECT) $(LDXXLIBRARIES)
 SOFLAGS				:=	$(SOARCH) $(LDLIBRARIES)
 SOXXFLAGS			:=	$(SOXXARCH) $(LDXXLIBRARIES)
+
+########## Environment
+
+HOST				:=	$(shell hostname -s)
+BRANCH				:=	$(shell git rev-parse --abbrev-ref HEAD)
+REVISION			:=	$(shell git rev-parse HEAD)
+MODIFIED			:=	$(shell date -u -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
+ROOT				:=	$(shell git rev-parse --show-toplevel)
+VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
+MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
+CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
+LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
 
 ########## Build Artifacts
 
@@ -422,6 +420,17 @@ $(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBX_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 # tried to automate this - having this Makefile determine your make version - but
 # have not yet discovered the fu necessary to make that work reliably.
 
+# Some civilian, defense, or intelligence agencies (e.g. the U.S. Federal
+# Aviation Administration or FAA) require that software builds for safety
+# critical or national security applications generate exactly the same binary
+# images bit for bit if the source code has not changed. (This is theoretically
+# a more stringent requirement than requiring that checksums or cryptographic
+# hashes are the same, although in practice it is the same thing.) This allows
+# agency inspectors to verify the integrity of the binary software images. This
+# makes embedding build timestamps inside compiled translation units problematic.
+# Avoid using the built-in C macros __DATE__ and __TIME__, and consider using the
+# faketime(1) utility to spoof the system time during builds.
+
 SLASHES=2
 
 ifeq ($(SLASHES), 1)
@@ -443,17 +452,20 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'static const char METADATA[] =' >> $@
 	echo '    "Arch=\"$(ARCH)\"\n"' >> $@
 	echo '    "Branch=\"$(BRANCH)\"\n"' >> $@
+	echo '    "Cc=\"$(CCVERSION)\"\n"' >> $@
 	echo '    "Contact=\"$(CONTACT)\"\n"' >> $@
 	echo '    "Copyright=\"$(COPYRIGHT)\"\n"' >> $@
 	echo '    "Homepage=\"$(HOMEPAGE)\"\n"' >> $@
-	echo '    "Repository=\"$(GITURL)\"\n"' >> $@
 	echo '    "Host=\"$(HOST)\"\n"' >> $@
 	echo '    "Kernel=\"$(KERNEL_REV)\"\n"' >> $@
+	echo '    "Libc=\"$(LIBCVERSION)\"\n"' >> $@
 	echo '    "License=\"$(LICENSE)\"\n"' >> $@
+	echo '    "Make=\"$(MAKEVERSION)\"\n"' >> $@
 	echo '    "Modified=\"$(MODIFIED)\"\n"' >> $@
 	echo '    "Os=\"$(OS)\"\n"' >> $@
 	echo '    "Platform=\"" COM_DIAG_$(SYMBOL)_PLATFORM "\"\n"' >> $@
 	echo '    "Release=\"" COM_DIAG_$(SYMBOL)_RELEASE "\"\n"' >> $@
+	echo '    "Repository=\"$(GITURL)\"\n"' >> $@
 	echo '    "Revision=\"" COM_DIAG_$(SYMBOL)_REVISION "\"\n"' >> $@
 	echo '    "Root=\"$(ROOT)\"\n"' >> $@
 	echo '    "Target=\"$(TARGET)\"\n"' >> $@
@@ -521,17 +533,20 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'static const char METADATA[] =' >> $@
 	echo '    "Arch=\\"$(ARCH)\\"\\n"' >> $@
 	echo '    "Branch=\\"$(BRANCH)\\"\\n"' >> $@
+	echo '    "Cc=\\"$(CCVERSION)\\"\\n"' >> $@
 	echo '    "Contact=\\"$(CONTACT)\\"\\n"' >> $@
 	echo '    "Copyright=\\"$(COPYRIGHT)\\"\\n"' >> $@
 	echo '    "Homepage=\\"$(HOMEPAGE)\\"\\n"' >> $@
-	echo '    "Repository=\\"$(GITURL)\\"\\n"' >> $@
 	echo '    "Host=\\"$(HOST)\\"\\n"' >> $@
 	echo '    "Kernel=\\"$(KERNEL_REV)\\"\\n"' >> $@
+	echo '    "Libc=\\"$(LIBCVERSION)\\"\\n"' >> $@
 	echo '    "License=\\"$(LICENSE)\\"\\n"' >> $@
+	echo '    "Make=\\"$(MAKEVERSION)\\"\\n"' >> $@
 	echo '    "Modified=\\"$(MODIFIED)\\"\\n"' >> $@
 	echo '    "Os=\\"$(OS)\\"\\n"' >> $@
 	echo '    "Platform=\\"" COM_DIAG_$(SYMBOL)_PLATFORM "\\"\\n"' >> $@
 	echo '    "Release=\\"" COM_DIAG_$(SYMBOL)_RELEASE "\\"\\n"' >> $@
+	echo '    "Repository=\\"$(GITURL)\\"\\n"' >> $@
 	echo '    "Revision=\\"" COM_DIAG_$(SYMBOL)_REVISION "\\"\\n"' >> $@
 	echo '    "Root=\\"$(ROOT)\\"\\n"' >> $@
 	echo '    "Target=\\"$(TARGET)\\"\\n"' >> $@
@@ -707,13 +722,16 @@ drivers-make:
 
 ########## Helpers
 
-.PHONY:	makeversion gccversion implicit defines iquotes isystems
+.PHONY:	makeversion ccversion libcversion implicit defines iquotes isystems
 
 makeversion:
-	@echo $(MAKE_VERSION)
+	echo "$(MAKEVERSION)"
 
-gccversion:
-	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null
+ccversion:
+	echo "$(CCVERSION)"
+
+libcversion:
+	echo "$(LIBCVERSION)"
 
 implicit:
 	@$(CC) $(CFLAGS) -dM -E - < /dev/null
@@ -880,6 +898,7 @@ install-include:
 .PHONY:	extended geologic gnuish mostest nohup privileged sanity signals threads
 
 sanity:
+	vintage
 	unittest-absolute
 	unittest-arraytype
 	unittest-assert && false || true
