@@ -58,7 +58,7 @@ built on top of Diminuto. Diminuto doesn't depend on any of them, but they
 depend on it. In addition, there are several of my projects in which I just
 cut and pasted a small amount of code, a function here and there, rather
 than create a dependency for the entire library. Finally, over the years,
-bits and pieces of Diminuto have founds themselves incorporated into a
+bits and pieces of Diminuto have found themselves incorporated into a
 number of commercial products to which I have contributed, ranging from
 satellite communications systems to cellular base station routers to
 in-flight entertainment systems.
