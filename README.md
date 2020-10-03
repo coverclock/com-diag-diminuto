@@ -39,7 +39,7 @@ fixture used to validate features that depend on hardware (like GPIO).
 
 This software is an original work of its author.
 
-# Dependencies
+# Details
 
 Diminuto isn't intended to be portable. It is specifically designed to
 support my kind of systems programming efforts in the Linux/GNU environment.
@@ -281,25 +281,17 @@ gcc 9.2.1
 (Some of these functional tests use hardware test fixtures I fabricated
 specifically for this purpose.)
 
-# Unit Test Targets
-extended:
-geologic:
-mostest:
-nohup:
-privileged:
-sanity:
-signals:
-threads:
+# Unit Test Make Targets
 
-* make extended - these unit tests take a lunch time to run.
-* make geologic - these unit test take over night or more to run.
-* make gnuish - these unit tests are for feature that require GNU.
-* make mostest - these unit tests require "make most" to be run first.
-* make nohup - these unit tests require "nohup make nohup" to run.
-* make privileged - these unit tests require "sudo make privileged" to run.
-* make sanity - these unit tests take a coffee break to run.
-* make signals - these unit tests exercise the kill signal handlers.
-* make threads - these unit tests exercise the POSIX thread-based features.
+* extended - these unit tests take a lunch time to run.
+* geologic - these unit test take over night or more to run.
+* gnuish - these unit tests are for features that require GNU.
+* mostest - these unit tests require "make most; make mostest" to run.
+* nohup - these unit tests require "nohup make nohup" to run.
+* privileged - these unit tests require "sudo make privileged" to run.
+* sanity - these unit tests take a coffee break to run.
+* signals - these unit tests exercise the kill signal handlers.
+* threads - these unit tests exercise the POSIX thread-based features.
 
 # Directories
  
