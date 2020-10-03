@@ -12,8 +12,8 @@
  * for examples of patterns in how this feature might be used.
  */
 
-#include "diminuto_renameat2.h"
-#include "diminuto_lock.h"
+#include "../src/diminuto_renameat2.h"
+#include "../src/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_lock.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <fcntl.h>
