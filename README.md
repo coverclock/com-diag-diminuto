@@ -450,7 +450,7 @@ Chip Overclock, "Clock Time", 2020-10,
 
 # Build
 
-Clone, build, and play with Diminuto (some unit and functional tests
+Clone, build, and test Diminuto (some unit and functional tests
 may require you be root).
 
 
@@ -463,6 +463,7 @@ may require you be root).
     make depend
     make all
     . out/host/bin/setup
+    make sanity
 
 Optionally install Diminuto headers, library, and utilities in /usr/local.
 
