@@ -30,12 +30,13 @@ This file is part of the Digital Aggregates Corporation Diminuto package.
 Diminuto ("tiny") is an open source library of systems programming
 functions and tools written in C to simplify the writing of device
 drivers, daemons, and systems applications for the Linux operating
-system. It has found its way into a number of commercial products of the
-Corporation's clients, so don't be surprised if you find this code being
-used legitimately elsewhere in your travels. Diminuto includes a suite
-of unit tests that are used to validate features when they change, and
-a suite of functional tests that require a purpose-built hardware test
-fixture used to validate features that depend on hardware (like GPIO).
+system with the GNU C library and compilers. It has found its way
+into a number of commercial products of the Corporation's clients, so
+don't be surprised if you find this code being used legitimately elsewhere
+in your travels. Diminuto includes a suite of unit tests that are used
+to validate features when they change, and a suite of functional tests
+that require a purpose-built hardware test fixture used to validate
+features that depend on hardware (like GPIO).
 
 This software is an original work of its author.
 
