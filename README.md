@@ -39,6 +39,30 @@ fixture used to validate features that depend on hardware (like GPIO).
 
 This software is an original work of its author.
 
+# Dependencies
+
+Diminuto isn't intended to be portable. It is specifically designed to
+support my kind of systems programming efforts in the Linux/GNU environment.
+It depends on specific features of the Linux kernel, the GNU libraries, and
+even the GNU compiler.
+
+For some projects over the years, I have ported Diminuto (as it existed
+at that time) to UcLibC (a stripped down C library used by Buildroot),
+Bionic (a C library and run-time used by Google's Android), Cygwin (a
+UNIX-like run-time environment that runs on Windows), and Darwin (the
+run-time of Apple's MacOS). You may find artifacts of that work in
+existing code, but I have made no effort to maintain it.
+
+There are several other repositories of C or C++ code that I wrote that are
+built on top of Diminuto. Diminuto doesn't depend on any of them, but they
+depend on it. In addition, there are several of my projects in which I just
+cut and pasted a small amount of code, a function here and there, rather
+than create a dependency for the entire library. Finally, over the years,
+bits and pieces of Diminuto have founds themselves incorporated into a
+number of commercial products to which I have contributed, ranging from
+satellite communications systems to cellular base station routers to
+in-flight entertainment systems.
+
 # Targets
 
 This code is typically regression tested against one or more of the following
@@ -332,15 +356,7 @@ when duty calls); and because I wanted perhaps to return to teaching this
 stuff in the future but didn't want to start at the low level to do so.
 
 If you happen upon this repo and find it useful, that's great. If you
-don't, that's great too. Portions of it will still be shipping in a number
-of commercial products, ranging from satellite communications systems
-to cellular base station routers to in-flight entertainment systems.
-
-There are several other repositories of C or C++ code that I wrote that are
-built on top of Diminuto. Diminuto doesn't depend on any of them, but they
-depend on it. In addition, there are several of my projects in which I just
-cut and pasted a small amount of code, a function here and there, rather
-than create a dependency for the entire library.
+don't, that's great too.
 
 If you'd like to see a non-trivial application that makes heavy use
 of many Diminuto features in exactly the way I envisioned them being
@@ -401,13 +417,6 @@ The observe script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
-
-## Porting
-
-Diminuto was at one time ported to other platforms outside of the
-Linux mainstream, like the uC library (Buildroot), Bionic (Android),
-and MacOS. You might see some artifacts of those efforts still in the
-code base, but I haven't made any attempt to maintain them.
 
 # Repository
 
