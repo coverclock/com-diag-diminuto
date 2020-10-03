@@ -8,7 +8,6 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include "diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_poll.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -16,6 +15,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
+#include "../src/diminuto_mux.h"
 
 #if !defined(__USE_GNU)
 #   warning ppoll(2) not available on this platform!

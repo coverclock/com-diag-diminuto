@@ -2,13 +2,12 @@
 /**
  * @file
  *
- * Copyright 2013-2019 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include "diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -16,6 +15,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#include "../src/diminuto_mux.h"
 
 void diminuto_mux_init(diminuto_mux_t * muxp)
 {

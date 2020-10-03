@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -13,11 +13,11 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
-#include "diminuto_buffer_pool.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "../src/diminuto_buffer_pool.h"
 
 /*******************************************************************************
  * OPTIONS

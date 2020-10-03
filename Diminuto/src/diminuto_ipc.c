@@ -2,14 +2,13 @@
 /**
  * @file
  *
- * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  * Ported from the Desperado::Service class.
  */
 
-#include "diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -32,6 +31,7 @@
 #include <asm/ioctls.h>
 #include <linux/limits.h>
 #include <linux/sockios.h>
+#include "../src/diminuto_ipc.h"
 
 /*******************************************************************************
  * STRING TO PORT AND VICE VERSA

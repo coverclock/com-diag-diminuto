@@ -1,13 +1,13 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * Copyright 2012-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2012-2020 Digital Aggregates Corporation, Colorado, USA.
  * Author: Chip Overclock <mailto:coverclock@diag.com>.
  * Licensed under the terms in LICENSE.txt.
  */
 
-#include "diminuto_hamming.h"
 #include "com/diag/diminuto/diminuto_hamming.h"
+#include "../src/diminuto_hamming.h"
 
 uint8_t diminuto_hamming84_nib2sym(uint8_t nib) {
     uint8_t sym;

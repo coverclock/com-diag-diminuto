@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -20,11 +20,11 @@
  * by GNU libc as of version 6.
  */
 
-#include "diminuto_renameat2.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "../src/diminuto_renameat2.h"
 
 int main(int argc, char * argv[])
 {

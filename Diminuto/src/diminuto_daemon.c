@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include "diminuto_daemon.h"
+#include "../src/diminuto_daemon.h"
 
 diminuto_daemon_test_t diminuto_daemon_testing = DIMINUTO_DAEMON_TEST_NONE;
 

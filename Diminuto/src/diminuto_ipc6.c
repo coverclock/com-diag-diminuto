@@ -2,13 +2,12 @@
 /**
  * @file
  *
- * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include "diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_countof.h"
@@ -27,6 +26,7 @@
 #include <ifaddrs.h>
 #include <linux/limits.h>
 #include <net/if.h>
+#include "../src/diminuto_ipc6.h"
 
 /*******************************************************************************
  * GLOBALS

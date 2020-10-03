@@ -2,21 +2,12 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  */
 
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/ip_icmp.h>
-#include <arpa/inet.h>
-#include "diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ping4.h"
 #include "com/diag/diminuto/diminuto_inet.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
@@ -26,6 +17,15 @@
 #include "com/diag/diminuto/diminuto_memberof.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/ip_icmp.h>
+#include <arpa/inet.h>
+#include "../src/diminuto_ipc4.h"
 
 int diminuto_ping4_debug = 0; /* Not part of the public API. */
 

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -15,7 +15,7 @@
 
 #include <stdlib.h>
 #include <errno.h>
-#include "diminuto_buffer.h"
+#include "../src/diminuto_buffer.h"
 
 /**
  * Return the number of quanta in the pool.

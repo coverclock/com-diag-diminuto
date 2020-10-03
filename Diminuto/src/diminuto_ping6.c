@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock <coverclock@diag.com><BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -18,11 +18,11 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/icmp6.h>
-#include "diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_ping6.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "../src/diminuto_ipc6.h"
 
 int diminuto_ping6_datagram_peer(void)
 {
