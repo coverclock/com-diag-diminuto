@@ -157,6 +157,24 @@ int main(void)
     diminuto_log_setmask();
 
     {
+        TEST();
+
+        ASSERT(COM_DIAG_DIMINUTO_MUTEX_ERROR == EIO);
+        ASSERT(COM_DIAG_DIMINUTO_MUTEX_BUSY == EBUSY);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(DIMINUTO_MUTEX_ERROR == COM_DIAG_DIMINUTO_MUTEX_ERROR);
+        ASSERT(DIMINUTO_MUTEX_BUSY == COM_DIAG_DIMINUTO_MUTEX_BUSY);
+
+        STATUS();
+    }
+
+    {
         diminuto_mutex_t mutex1;
         diminuto_mutex_t mutex2;
 

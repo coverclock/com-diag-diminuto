@@ -23,7 +23,7 @@
 diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp)
 {
     diminuto_mutex_t * result = (diminuto_mutex_t *)0;
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
     if ((rc = pthread_mutexattr_init(&(mp->attribute))) != 0) {
         errno = rc;
@@ -44,7 +44,7 @@ diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp)
 diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp)
 {
     diminuto_mutex_t * result = mp;
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
     if ((rc = pthread_mutex_destroy(&(mp->mutex))) != 0) {
         errno = rc;
@@ -65,7 +65,7 @@ diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp)
 
 int diminuto_mutex_lock(diminuto_mutex_t * mp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
     if ((rc = pthread_mutex_lock(&(mp->mutex))) != 0) {
         errno = rc;
@@ -77,7 +77,7 @@ int diminuto_mutex_lock(diminuto_mutex_t * mp)
 
 int diminuto_mutex_lock_try(diminuto_mutex_t * mp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
     if ((rc = pthread_mutex_trylock(&(mp->mutex))) == 0) {
         /* Do nothing. */ 
@@ -93,7 +93,7 @@ int diminuto_mutex_lock_try(diminuto_mutex_t * mp)
 
 int diminuto_mutex_unlock(diminuto_mutex_t * mp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
     if ((rc = pthread_mutex_unlock(&(mp->mutex))) != 0) {
         errno = rc;

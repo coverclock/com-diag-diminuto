@@ -25,7 +25,7 @@
 diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 {
     diminuto_condition_t * result = (diminuto_condition_t *)0;
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_CONDITION_ERROR;
 
     if (diminuto_mutex_init(&(cp->mutex)) != &(cp->mutex)) {
         /* Do nothing. */
@@ -42,7 +42,7 @@ diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
 {
     diminuto_condition_t * result = cp;
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_CONDITION_ERROR;
 
     if ((rc = pthread_cond_broadcast(&(cp->condition))) != 0) {
         errno = rc;
@@ -68,7 +68,7 @@ diminuto_condition_t * diminuto_condition_fini(diminuto_condition_t * cp)
 
 int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t clocktime)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_CONDITION_ERROR;
     struct timespec later = { 0, };
     static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
@@ -95,7 +95,7 @@ int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t cl
 
 int diminuto_condition_signal(diminuto_condition_t * cp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_CONDITION_ERROR;
 
     if ((rc = pthread_cond_broadcast(&(cp->condition))) != 0) {
         errno = rc;

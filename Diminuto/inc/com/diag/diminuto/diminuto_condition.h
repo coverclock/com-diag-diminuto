@@ -27,6 +27,28 @@
 #include "com/diag/diminuto/diminuto_mutex.h"
 
 /***********************************************************************
+ * SYMBOLS
+ **********************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_CONDITION_INFINITY
+ * Defines the value used to indicate an infinite timeout.
+ */
+#define COM_DIAG_DIMINUTO_CONDITION_INFINITY (~(diminuto_ticks_t)0)
+
+/**
+ * @def COM_DIAG_DIMINUTO_CONDITION_ERROR
+ * Defines the error code used for non-specific errors.
+ */
+#define COM_DIAG_DIMINUTO_CONDITION_ERROR COM_DIAG_DIMINUTO_MUTEX_ERROR
+
+/**
+ * @def COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT
+ * Defines the error code used for when a condition times out.
+ */
+#define COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT ETIMEDOUT
+
+/***********************************************************************
  * CONSTANTS
  **********************************************************************/
 
@@ -34,13 +56,19 @@
  * This value when used as a clocktime specifies that the caller blocks
  * indefinitely.
  */
-static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = ~(diminuto_ticks_t)0;
+static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = COM_DIAG_DIMINUTO_CONDITION_INFINITY;
+
+/**
+ * This is the error number returned when no other more specific error
+ * is available.
+ */
+static const int DIMINUTO_CONDITION_ERROR = COM_DIAG_DIMINUTO_CONDITION_ERROR;
 
 /**
  * This is the error number returned when the caller waits on a
  * condition and the clocktime is reached without being signalled.
  */
-static const int DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT;
+static const int DIMINUTO_CONDITION_TIMEDOUT = COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT;
 
 /***********************************************************************
  * TYPES
@@ -141,7 +169,7 @@ static inline int diminuto_condition_unlock(diminuto_condition_t * cp)
 /**
  * Block the calling thread on a Diminuto condition object until
  * either the condition is signalled or the absolute clock time is
- * reached. ETIMEDOUT is returned if the absolute clock time was
+ * reached. TIMEDOUT is returned if the absolute clock time was
  * reached before the condition was signaled. If the absolute clock
  * time is INFINITY, the caller waits indefinitely.
  * @param cp points to the object.

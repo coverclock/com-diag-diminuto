@@ -24,14 +24,36 @@
 #include <errno.h>
 
 /***********************************************************************
+ * SYMBOLS
+ **********************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_MUTEX_ERROR
+ * Defines the error code used for non-specific errors.
+ */
+#define COM_DIAG_DIMINUTO_MUTEX_ERROR EIO
+
+/**
+ * @def COM_DIAG_DIMINUTO_MUTEX_BUSY
+ * Defines the error code used for trying to lock a busy mutex.
+ */
+#define COM_DIAG_DIMINUTO_MUTEX_BUSY EBUSY
+
+/***********************************************************************
  * CONSTANTS
  **********************************************************************/
+
+/**
+ * This is the error number returned when no other more specific error
+ * is available.
+ */
+static const int DIMINUTO_MUTEX_ERROR = COM_DIAG_DIMINUTO_MUTEX_ERROR;
 
 /**
  * This is the error number returned with the caller does a try on a
  * locked mutex.
  */
-static const int DIMINUTO_MUTEX_BUSY = EBUSY;
+static const int DIMINUTO_MUTEX_BUSY = COM_DIAG_DIMINUTO_MUTEX_BUSY;
 
 /***********************************************************************
  * TYPES
@@ -93,7 +115,7 @@ extern diminuto_mutex_t * diminuto_mutex_fini(diminuto_mutex_t * mp);
 extern int diminuto_mutex_lock(diminuto_mutex_t * mp);
 
 /**
- * Attempt to lock a Diminuto mutex object. EBUSY is returned
+ * Attempt to lock a Diminuto mutex object. BUSY is returned
  * (and no error message is generated) if the object was already
  * locked.
  * @param mp points to the object.

@@ -50,7 +50,7 @@ static void * proxy(void * ap)
     diminuto_thread_t * tp = (diminuto_thread_t *)ap;
     void * value = (void *)0;
     int previous = -1;
-    int rc = -1;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
 
     /*
      * We allow deferred cancellation, but we don't encourage it by
@@ -133,7 +133,7 @@ static void handler(int signo)
 static void setup()
 {
     extern int main(int argc, char * argv[]);
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
     static int setupped = 0;
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((diminuto_thread_function_t *)0);
@@ -182,7 +182,7 @@ diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(vo
         tp->function = fp;
         tp->context = (void *)0;
         tp->value = (void *)~0;
-        tp->notify = DIMINUTO_THREAD_NOTIFY;
+        tp->notify = COM_DIAG_DIMINUTO_THREAD_NOTIFY;
         tp->notifications = 0;
         tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
         result = tp;
@@ -194,14 +194,14 @@ diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(vo
 diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
 {
     diminuto_thread_t * result = tp;
-    int rc = 0; /* Not EIO. */
+    int rc = 0; /* Not ERROR! */
 
     switch (tp->state) {
     case DIMINUTO_THREAD_STATE_INITIALIZED:
     case DIMINUTO_THREAD_STATE_JOINED:
     case DIMINUTO_THREAD_STATE_FAILED:
         if (diminuto_condition_fini(&(tp->condition)) != (diminuto_condition_t *)0) {
-            rc = EIO;
+            rc = DIMINUTO_MUTEX_ERROR;
         }
         /* FALL THRU */
     case DIMINUTO_THREAD_STATE_ALLOCATED:
@@ -234,7 +234,7 @@ diminuto_thread_t * diminuto_thread_instance()
 
     tp = (diminuto_thread_t *)pthread_getspecific(key);
     if (tp == (diminuto_thread_t *)0) {
-        errno = EIO;
+        errno = DIMINUTO_MUTEX_ERROR;
         diminuto_perror("diminuto_thread_instance: pthread_getspecific");
     }
 
@@ -248,7 +248,7 @@ pthread_t diminuto_thread_self()
 
 int diminuto_thread_yield()
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
 
 #if defined(_GNU_SOURCE)
     if ((rc = pthread_yield()) != 0) {
@@ -311,7 +311,7 @@ void diminuto_thread_exit(void * vp)
 
 int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
     struct sigaction action = { 0 };
 
     setup();
@@ -362,7 +362,7 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 
 int diminuto_thread_notify(diminuto_thread_t * tp)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
 
     if (diminuto_thread_lock(tp) == 0) {
         pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
@@ -408,7 +408,7 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
 
 int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_ticks_t clocktime)
 {
-    int rc = EIO;
+    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
     int done = 0;
     void * value = (void *)0;
     struct timespec now = { 0, };
@@ -447,7 +447,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                     do {
                         if ((rc = diminuto_thread_wait_until(tp, clocktime)) == 0) {
                             /* Do nothing. */
-                        } else if (rc == DIMINUTO_CONDITION_TIMEDOUT) {
+                        } else if (rc == DIMINUTO_THREAD_TIMEDOUT) {
                             done = !0;
                         } else {
                             diminuto_perror("diminuto_thread_join_until: pthread_cond_timedwait");
@@ -480,7 +480,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     
     case DIMINUTO_THREAD_STATE_COMPLETING:
         if (pthread_equal(pthread_self(), tp->thread)) {
-            rc = EIO;
+            rc = DIMINUTO_THREAD_ERROR;
         } else if ((rc = pthread_join(tp->thread, &value)) != 0) {
             diminuto_perror("diminuto_thread_join_until: pthread_join");
         } else {
@@ -508,7 +508,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     
     case DIMINUTO_THREAD_STATE_JOINED:
         if (pthread_equal(pthread_self(), tp->thread)) {
-            rc = EIO;
+            rc = DIMINUTO_THREAD_ERROR;
         } else if (vpp != (void **)0) {
             *vpp = tp->value;
             rc = 0;

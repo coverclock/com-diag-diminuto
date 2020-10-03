@@ -25,8 +25,37 @@
  **********************************************************************/
 
 #include <signal.h>
+#include <errno.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_condition.h"
+
+/***********************************************************************
+ * SYMBOLS
+ **********************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_THREAD_NOTIFY
+ * Defines the value used as a kill signal during notification.
+ */
+#define COM_DIAG_DIMINUTO_THREAD_NOTIFY SIGUSR1
+
+/**
+ * @def COM_DIAG_DIMINUTO_THREAD_INFINITY
+ * Defines the value used to indicate an infinite timeout.
+ */
+#define COM_DIAG_DIMINUTO_THREAD_INFINITY COM_DIAG_DIMINUTO_CONDITION_INFINITY
+
+/**
+ * @def COM_DIAG_DIMINUTO_THREAD_ERROR
+ * Defines the error code use for non-specific errors.
+ */
+#define COM_DIAG_DIMINUTO_THREAD_ERROR COM_DIAG_DIMINUTO_CONDITION_ERROR
+
+/**
+ * @def COM_DIAG_DIMINUTO_THREAD_TIMEDOUT
+ * Defines the error code use for when a thread condition times out.
+ */
+#define COM_DIAG_DIMINUTO_THREAD_TIMEDOUT COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT
 
 /***********************************************************************
  * CONSTANTS
@@ -36,19 +65,25 @@
  * This is the kill signal used to try to unblock a thread from a
  * system call when it is notified.
  */
-static const int DIMINUTO_THREAD_NOTIFY = SIGUSR1;
+static const int DIMINUTO_THREAD_NOTIFY = COM_DIAG_DIMINUTO_THREAD_NOTIFY;
 
 /**
  * This value when used as a clocktime specifies that the caller blocks
  * indefinitely.
  */
-static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = ~(diminuto_ticks_t)0;
+static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = COM_DIAG_DIMINUTO_THREAD_INFINITY;
+
+/**
+ * This is the error number returned when no other more specific error
+ * is available.
+ */
+static const int DIMINUTO_THREAD_ERROR = COM_DIAG_DIMINUTO_THREAD_ERROR;
 
 /**
  * This is the error number returned when the caller joins with a
  * thread and the clocktime is reached without being completed.
  */
-static const int DIMINUTO_THREAD_TIMEDOUT = ETIMEDOUT;
+static const int DIMINUTO_THREAD_TIMEDOUT = COM_DIAG_DIMINUTO_THREAD_TIMEDOUT;
 
 /***********************************************************************
  * TYPES
@@ -102,7 +137,7 @@ typedef struct DiminutoThread {
         (void *)0, \
         (void *)(~0), \
         DIMINUTO_THREAD_STATE_INITIALIZED, \
-        DIMINUTO_THREAD_NOTIFY, \
+        COM_DIAG_DIMINUTO_THREAD_NOTIFY, \
         0, \
     }
 
@@ -223,7 +258,7 @@ static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
 /**
  * Block the calling thread on the Diminuto condition assoociated with
  * a Diminuto thread object until either the condition is signalled or
- * the absolute clock time is reached. ETIMEDOUT is returned if the
+ * the absolute clock time is reached. TIMEDOUT is returned if the
  * absolute clock time was reached before the condition was signaled.
  * If the clock time is INFINITY, the caller blocks indefinitely.
  * @param tp points to the object.
@@ -285,7 +320,7 @@ extern int diminuto_thread_notify(diminuto_thread_t * tp);
 /**
  * Block until the POSIX thread associated with a Diminuto thread
  * object returns or exits, or until the absolute clock time is
- * reached. ETIMEDOUT is returned if the absolute clock time was
+ * reached. TIMEDOUT is returned if the absolute clock time was
  * reached before the join was completed. If the absolute clock time
  * is INFINITY, the caller blocks indeefinitely. If the join was
  * comnpleted, the final value returned by the thread is placed in
