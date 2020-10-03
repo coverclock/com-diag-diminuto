@@ -8,8 +8,12 @@
 
 .PHONY:	all bootstrap release
 
-all bootstrap release:
+all:
 	make -C Diminuto all
+
+bootstrap:
+
+release:	all
 
 .PHONY:	scope
 
