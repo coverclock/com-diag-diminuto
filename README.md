@@ -60,9 +60,9 @@ depend on it. In addition, there are several of my projects in which I just
 cut and pasted a small amount of code, a function here and there, rather
 than create a dependency for the entire library. Finally, over the years,
 bits and pieces of Diminuto have found themselves incorporated into a
-number of commercial products to which I have contributed, ranging from
-satellite communications systems to cellular base station routers to
-in-flight entertainment systems.
+number of commercial products to which I have contributed, such as:
+satellite communications systems, cellular base station routers,
+in-flight entertainment systems, and special purpose Android platforms.
 
 # Targets
 
