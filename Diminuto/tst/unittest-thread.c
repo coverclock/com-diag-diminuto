@@ -87,7 +87,7 @@ static void * body2(void * arg)
 
     }
 
-    COMMENT("busy: %d", busy);
+    ADVISE(busy > 0);
 
     return (void *)arg;
 }
@@ -161,7 +161,7 @@ static void * body4(void * arg)
 
     }
 
-    COMMENT("busy: %d", busy);
+    ADVISE(busy > 0);
 
     return (void *)arg;
 }
