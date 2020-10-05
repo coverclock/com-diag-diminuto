@@ -32,9 +32,7 @@
 
 #elif defined(SYS_renameat2)
 
-#   warning renameat2(2) not available on this platform!
-
-    /* SYS_renameat2 available in Linux 3.15 and later. */
+#   warning renameat2(2) not available on this platform so using SYS_renameat2 instead!
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -52,9 +50,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
 
 #else
 
-#   warning SYS_renameat2 not available on this platform!
-
-    /* renameat2 isn't available. */
+#   warning renameat2(2) or SYS_renameat2 not available on this platform so stubbing out!
 
 /**
  * Atomically change the name of a file providing it does not already exist.
