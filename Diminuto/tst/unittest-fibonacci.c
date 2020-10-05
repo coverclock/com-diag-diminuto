@@ -85,7 +85,7 @@ int main(void)
         if (x == y) { break; }
         y = x;
     }
-    ASSERT(x == 2971215073); /* Number 47 */
+    ASSERT(x == 2971215073UL); /* Number 47 */
 
     x = diminuto_fibonacci_next(statep);
     ASSERT(x == y);
@@ -162,7 +162,7 @@ int main(void)
         if (x == y) { break; }
         y = x;
     }
-    ASSERT(x == 2971215073);
+    ASSERT(x == 2971215073UL);
 
     x = diminuto_fibonacci_next(statep);
     ASSERT(x == y);
