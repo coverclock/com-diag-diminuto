@@ -43,12 +43,12 @@ This software is an original work of its author.
 # Details
 
 Diminuto isn't intended to be portable. It is specifically designed to
-support my kind of systems programming efforts in the Linux/GNU environment.
-It depends on specific features of the Linux kernel, the GNU libraries, and
-even the GNU compiler.
+support the kind of systems programming efforts in the Linux/GNU environment
+that I am routinely called upon to do. It depends on specific features of
+the Linux kernel, the GNU libraries, and even the GNU compiler.
 
 For some projects over the years, I have ported Diminuto (as it existed
-at that time) to UcLibC (a stripped down C library used by Buildroot),
+at that time) to uClibc (a stripped down C library used by Buildroot),
 Bionic (a C library and run-time used by Google's Android), Cygwin (a
 UNIX-like run-time environment that runs on Windows), and Darwin (the
 run-time of Apple's MacOS). You may find artifacts of that work in
@@ -67,7 +67,7 @@ in-flight entertainment systems, and special purpose Android platforms.
 # Targets
 
 This code is typically regression tested against one or more of the following
-hardware targets and software platforms depending on the feature.
+hardware targets and software platforms, depending on the feature.
 
 "Mercury"  
 Dell OptiPlex 7040  
@@ -368,10 +368,10 @@ growth in Diminuto.
 
 ## IPv6
 
-Diminuto requires IPv6 support. IPv6 is not enabled by default on all
-platforms (in particular the Raspberry Pi). Under Raspbian 10, I added
-a line "ipv6" to /etc/modules and rebooted. The command "modprobe ipv6"
-also worked albeit non-persistently.
+Diminuto's ipc6 feature requires IPv6 support. IPv6 is not enabled by
+default on all platforms (in particular the Raspberry Pi). Under
+Raspbian 10, I added a line "ipv6" to /etc/modules and rebooted.
+The command "modprobe ipv6" also worked albeit non-persistently.
 
     sudo modprobe ipv6
     sudo echo "ipv6" >> /etc/modules
@@ -451,9 +451,9 @@ Chip Overclock, "Clock Time", 2020-10,
 
 # Build
 
-Clone, build, and test Diminuto (some unit and functional tests
-may require you be root).
-
+Clone, build, and sanity test Diminuto. (Some other unit and
+functional tests may require you be root, require nohup, or even
+require a purpose-built hardware test fixture.)
 
     cd ~
     mkdir -p src
@@ -466,9 +466,14 @@ may require you be root).
     . out/host/bin/setup
     make sanity
 
-Optionally install Diminuto headers, library, and utilities in /usr/local.
+Optionally install Diminuto headers, library, and utilities in /usr/local
+subdirectories. (I typically never bother with this.)
 
     sudo make install
+
+Optionally build documentation based on embedded doxygen comments.
+
+    make documentation
 
 # Acknowledgements
 
