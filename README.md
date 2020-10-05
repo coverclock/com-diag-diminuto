@@ -64,12 +64,11 @@ number of commercial products to which I have contributed, such as:
 satellite communications systems, cellular base station routers,
 in-flight entertainment systems, and special purpose Android platforms.
 
-# Targets
+# Platforms
 
 This code is typically regression tested against one or more of the following
 hardware targets and software platforms, depending on the feature.
 
-"Mercury"  
 Dell OptiPlex 7040  
 Intel x86_64 64-bit    
 Intel Core i7-6700T Skylake @ 2.80GHz x 4 x 2  
@@ -77,7 +76,6 @@ Ubuntu 16.04.2 "xenial"
 Linux 4.4.0  
 gcc 5.4.0    
 
-"Nickel"    
 Intel NUC5i7RYH    
 Intel x86_64 64-bit    
 Intel Core i7-5557U @ 3.10GHz x 2 x 2   
@@ -85,7 +83,6 @@ Ubuntu 16.04.4 "xenial"
 Linux 4.13.0     
 gcc 5.4.0    
 
-"Nickel" (updated)    
 Intel NUC5i7RYH    
 Intel x86_64 64-bit    
 Intel Core i7-5557U @ 3.10GHz x 2 x 2    
@@ -93,7 +90,6 @@ Ubuntu 18.04 "bionic"
 Linux 4.15.0    
 gcc 7.3.0    
 
-"Bronze"  
 Raspberry Pi 2B    
 ARMv7 32-bit    
 Broadcom BCM2836 Cortex-A7 @ 900MHz x 4  
@@ -101,7 +97,6 @@ Raspbian 8.0 "jessie"
 Linux 4.4.34  
 gcc 4.9.2    
 
-"Lead"  
 Raspberry Pi 3B  
 ARMv7 64-bit    
 Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4  
@@ -109,7 +104,6 @@ Raspbian 8.0 "jessie"
 Linux 4.4.34  
 gcc 4.9.2    
 
-"Zinc"    
 Raspberry Pi 3B with special HW test fixture    
 ARMv7 64-bit    
 Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4    
@@ -117,7 +111,6 @@ Raspbian 8.0 "jessie"
 Linux 4.4.34    
 gcc 4.9.2    
 
-"Gold"    
 Raspberry Pi 3B+    
 ARMv7 64-bit    
 Broadcom BCM2837B0 Cortex-A53 @ 1.4GHz x 4      
@@ -125,7 +118,6 @@ Raspbian 9.4 "stretch"
 Linux 4.14.34    
 gcc 6.3.0    
 
-"Rhodium"    
 Raspberry Pi 4B    
 ARMv8 64-bit    
 Broadcom BCM2711 Cortex-A72 @ 1.5GHz x 4    
@@ -133,7 +125,6 @@ Raspbian 10 "Buster"
 Linux 4.19.58    
 gcc 8.3.0    
 
-"Silicon10"    
 VM running under Windows 10    
 Intel x86_64 64-bit    
 Intel Core i7-3520M @ 2.90GHz x 2    
@@ -141,7 +132,6 @@ Ubuntu 19.10 "Eoan"
 Linux 5.3.0    
 gcc 9.2.1    
 
-"Gypsum"    
 HP Mini 110-1100    
 Intel i686 32-bit    
 Intel Atom N270 @ 1.6GHz x 2    
@@ -149,7 +139,6 @@ Mint 19.3 "Tricia"
 Linux 5.0.0    
 gcc 7.5.0    
 
-"Neon"    
 GPD Micro PC    
 Intel x86_64
 Intel Celeron N4100 @ 1.10GHz x 2 x 2
