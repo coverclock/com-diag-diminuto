@@ -52,7 +52,55 @@
 #include <stdio.h>
 
 /*******************************************************************************
- * HELPERS
+ * TYPES
+ ******************************************************************************/
+
+/**
+ * This enumeration describes the possible edge detection values.
+ */
+typedef enum DiminutoPinEdge {
+    DIMINUTO_PIN_EDGE_NONE = 0,
+    DIMINUTO_PIN_EDGE_RISING = 1,
+    DIMINUTO_PIN_EDGE_FALLING = 2,
+    DIMINUTO_PIN_EDGE_BOTH = 3,
+} diminuto_pin_edge_t;
+
+/*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_EXPORT[];
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_DIRECTION[];
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_ACTIVELOW[];
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_EDGE[];
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_VALUE[];
+
+/**
+ * THis is a printf format for the user-space GPIO API in the /sys file system.
+ */
+extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT[];
+
+/*******************************************************************************
+ * DEBUG
  ******************************************************************************/
 
 /**
@@ -69,6 +117,59 @@
 extern const char * diminuto_pin_debug(const char * tmp);
 
 /*******************************************************************************
+ * CORE API
+ ******************************************************************************/
+
+/**
+ * This is a general mechanism to configure GPIO pins using the /sys API.
+ * It allows certain errors to be optionally ignored.
+ * @param format points to a printf format string.
+ * @param pin is the GPIO pin number.
+ * @param string points to the name of the specific feature in the /sys API.
+ * @param ignore if true causes certain errors to be ignored.
+ * @return >=0 for success, <0 for error with errno set.
+ */
+extern int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, int ignore);
+
+/**
+ * This is a general mechanism to export or unexport GPIO pins using the /sys API.
+ * It allows certain errors to be optionally ignored.
+ * @param format points to a printf format string.
+ * @param pin is the GPIO pin number.
+ * @param ignore if true causes certain errors to be ignored.
+ * @return >=0 for success, <0 for error with errno set.
+ */
+extern int diminuto_pin_port_conditional(const char * format, int pin, int ignore);
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+/**
+ * This is a general mechanism to configure GPIO pins using the /sys API.
+ * @param format points to a printf format string.
+ * @param pin is the GPIO pin number.
+ * @param string points to the name of the specific feature in the /sys API.
+ * @return >=0 for success, <0 for error with errno set.
+ */
+static inline int diminuto_pin_configure(const char * format, int pin, const char * string)
+{
+    return diminuto_pin_configure_conditional(format, pin, string, 0);
+}
+
+/**
+ * It allows certain errors to be optionally ignored.
+ * @param format points to a printf format string.
+ * @param pin is the GPIO pin number.
+ * @param ignore if true causes certain errors to be ignored.
+ * @return >=0 for success, <0 for error with errno set.
+ */
+static inline int diminuto_pin_port(const char * format, int pin)
+{
+    return diminuto_pin_port_conditional(format, pin, 0);
+}
+
+/*******************************************************************************
  * LOW LEVEL API
  ******************************************************************************/
 
@@ -76,17 +177,23 @@ extern const char * diminuto_pin_debug(const char * tmp);
  * Ask that the specified GPIO pin be exported to the /sys/class/gpio file
  * system.
  * @param pin identifies the pin by number from the data sheet.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_export(int pin);
+static inline int diminuto_pin_export(int pin)
+{
+    return diminuto_pin_port(DIMINUTO_PIN_ROOT_CLASS_GPIO_EXPORT, pin);
+}
 
 /**
  * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
  * system.
  * @param pin identifies the pin by number from the data sheet.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_unexport(int pin);
+static inline int diminuto_pin_unexport(int pin)
+{
+    return diminuto_pin_port_conditional(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, 0);
+}
 
 /**
  * Ask that the specified GPIO pin be unexported from the /sys/class/gpio file
@@ -94,25 +201,24 @@ extern int diminuto_pin_unexport(int pin);
  * the error message is suppressed from a common application initialization
  * or error recovery code path.
  * @param pin identifies the pin by number from the data sheet.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_unexport_ignore(int pin);
+static inline int diminuto_pin_unexport_ignore(int pin)
+{
+    return diminuto_pin_port_conditional(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, !0);
+}
 
 /**
  * Ask that the specified GPIO pin be configured to be active low or high.
  * @param pin identifies the pin by number from the data sheet. This is only
  * useful for wired to produce an interrupt.
  * @param high if !0 configures the pin for active high, else active low.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_active(int pin, int high);
-
-typedef enum DiminutoPinEdge {
-    DIMINUTO_PIN_EDGE_NONE = 0,
-    DIMINUTO_PIN_EDGE_RISING = 1,
-    DIMINUTO_PIN_EDGE_FALLING = 2,
-    DIMINUTO_PIN_EDGE_BOTH = 3,
-} diminuto_pin_edge_t;
+static inline int diminuto_pin_active(int pin, int high)
+{
+    return diminuto_pin_configure(DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_ACTIVELOW, pin, high ? "0\n" : "1\n");
+}
 
 /**
  * Ask that the specified GPIO pin be configured to for no edge (0), rising
@@ -124,7 +230,7 @@ typedef enum DiminutoPinEdge {
  * (e.g. an FPGA).
  * @param pin identifies the pin by number from the data sheet.
  * @param edge is 0 for none, 1 for rising, 2 for falling, or 3 for both.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
 extern int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge);
 
@@ -132,18 +238,24 @@ extern int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge);
  * Ask that the specified GPIO pin be configured as an input or an output pin.
  * @param pin identifies the pin by number from the data sheet.
  * @param output if !0 configures the pin for output, else input.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_direction(int pin, int output);
+static inline int diminuto_pin_direction(int pin, int output)
+{
+    return diminuto_pin_configure(DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_DIRECTION, pin, output ? "out\n" : "in\n");
+}
 
 /**
  * Ask that the specified GPIO pin be configured as an output pin and
  * simultaneously its output state be set.
  * @param pin identifies the pin by number from the data sheet.
  * @param high if !0 sets the pin high, else low.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_initialize(int pin, int high);
+static inline int diminuto_pin_initialize(int pin, int high)
+{
+    return diminuto_pin_configure(DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_DIRECTION, pin, high ? "high\n" : "low\n");
+}
 
 /**
  * Return a FILE pointer for the specified GPIO pin.
@@ -156,7 +268,7 @@ extern FILE * diminuto_pin_open(int pin);
  * Return the value of a GPIO pin, true (high) or false (low). The application
  * is responsible for inversion (if, for example, the pin is active low).
  * @param fp points to an input GPIO FILE pointer.
- * @return >0 for high, 0 for low, <0 for error.
+ * @return >0 for high, 0 for low, <0 for error with errno set.
  */
 extern int diminuto_pin_get(FILE * fp);
 
@@ -165,7 +277,7 @@ extern int diminuto_pin_get(FILE * fp);
  * for inversion (if, for example, the pin is active low).
  * @param fp points to an output GPIO FILE pointer.
  * @param assert is !0 for true, 0 for false.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
 extern int diminuto_pin_put(FILE * fp, int assert);
 
@@ -200,7 +312,7 @@ extern FILE * diminuto_pin_output(int pin);
  * Set a GPIO pin to high (true). The application is responsible
  * for inversion (if, for example, the pin is active low).
  * @param fp points to an output GPIO FILE pointer.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
 static inline int diminuto_pin_set(FILE * fp)
 {
@@ -211,7 +323,7 @@ static inline int diminuto_pin_set(FILE * fp)
  * Set a GPIO pin to low (false). The application is responsible
  * for inversion (if, for example, the pin is active low).
  * @param fp points to an output GPIO FILE pointer.
- * @return >=0 for success, <0 for error.
+ * @return >=0 for success, <0 for error with errno set.
  */
 static inline int diminuto_pin_clear(FILE * fp)
 {

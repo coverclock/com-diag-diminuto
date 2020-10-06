@@ -27,11 +27,11 @@ PINCHANGE=$(which pinchange)
 
 if [[ $# -eq 0 ]]; then
     pintool -p ${PIN} -n 2> /dev/null
-    pintool -p ${PIN} -x -i -H
+    pintool -p ${PIN} -x -u 1000000 -i -H
     exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -M
 elif [[ $# -eq 1 ]]; then
     pintool -p ${PIN} -n 2> /dev/null
-    pintool -p ${PIN} -x -i -H
+    pintool -p ${PIN} -x -u 1000000 -i -H
     exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -S -M
 elif [[ $# -eq 3 ]]; then
     CHANGED="${1}"

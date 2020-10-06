@@ -23,7 +23,7 @@ PIN=${3:-${HARDWARE_TEST_FIXTURE_PIN_INT_LUX}}
 # Setup GPIO.
 
 pintool -p ${PIN} -n 2> /dev/null
-pintool -p ${PIN} -x -i -L -R
+pintool -p ${PIN} -x -u 1000000 -i -L -R
 trap "pintool -p ${PIN} -n 2> /dev/null; echo ${PGM}: exit;  exit 0" 1 2 3 15
 
 # Scan.

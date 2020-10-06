@@ -19,7 +19,24 @@
  *
  * Allows manipulation of general purpose input/output (GPIO) pins using the
  * lower level calls of the pin facility. Uses the sysfs GPIO driver interface.
- * Probably must be run as root.
+ * Probably must be run as root or, on some platforms (e.g. Raspian on the
+ * Raspberry Pi) as a user in the gpio group (e.g. pi).
+ *
+ * N.B. When exporting (-x) pins, it apparently can take a while for the
+ * driver to [1] create the files in /sys and [2] set their permissions
+ * and ownnership so that, for example, non-root users like pi can write
+ * to them. That's what the "-u USECONDS" option is for. Alas, the amount
+ * of time it takes for the files to be usable appears to me to be
+ * non-deterministic, but longer than the latency in this program to
+ * try to use them after exporting them. For example
+ * 
+ * pintool -p 42-e -x -o
+ * 
+ * might fail on some platforms (but not others) but
+ *
+ * pintool -p 42-e -x -u 1000000 -o
+ *
+ * will succeed.
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"
@@ -38,7 +55,7 @@
 
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b USECONDS ] [ -X COMMAND ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ -D PATH ] -p PIN [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b USECONDS ] [ -X COMMAND ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n | -e ] [ ... ]\n", program);
     fprintf(stderr, "       -1            Read PIN initially when multiplexing.\n");
     fprintf(stderr, "       -B            Set PIN edge to both.\n");
     fprintf(stderr, "       -D PATH       Use PATH instead of /sys for subsequent operations.\n");
@@ -54,6 +71,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -b USECONDS   Poll with debounce every USECONDS (try 10000) microseconds.\n");
     fprintf(stderr, "       -c            Clear PIN by writing 0.\n");
     fprintf(stderr, "       -d            Enable debug mode.\n");
+    fprintf(stderr, "       -e            Unexport PIN and ignore failure.\n");
     fprintf(stderr, "       -f            Proceed if the last PIN state was 0.\n");
     fprintf(stderr, "       -h            Set PIN direction to output and write !0.\n");
     fprintf(stderr, "       -i            Set PIN direction to input.\n");
@@ -105,7 +123,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "1BD:FHLMNRSUX:b:cdfhilm:nop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1BD:FHLMNRSUX:b:cdefhilm:nop:rstu:vw:x?")) >= 0) {
 
         opts[0] = opt;
 
@@ -311,6 +329,21 @@ int main(int argc, char * argv[])
         case 'd':
             debug = !0;
             if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            break;
+
+        case 'e':
+            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            if (pin < 0) {
+                errno = EINVAL;
+                perror(opts);
+                error = !0;
+                break;
+            } else if (diminuto_pin_unexport_ignore(pin) < 0) {
+                fail = !0;
+                break;
+            } else {
+                /* Do nothing. */
+            }
             break;
 
         case 'f':

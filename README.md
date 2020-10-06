@@ -265,11 +265,14 @@ gcc 9.2.1
 * luxcontroller - LED and lux sensor PID loop (Pin, Modulator, I2C, Controller).
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
 * pinchange - Multiplexing of GPIO pins (Pin).
+* pincleanup - Clean up pins exported to hardware test fixture (Pin).
 * pintest - Setting and getting GPIO pins (Pin).
 * walker - Walk the file system tree starting at a specified root (FS).
 
-(Some of these functional tests use hardware test fixtures I fabricated
-specifically for this purpose.)
+(Some of these functional tests depend upon hardware test fixtures I
+fabricated specifically for this purpose. Depending on the platform,
+some or all of these functional tests  may need to be run as root,
+or as a user - e.g. pi - that is in the gpio group.)
 
 # Unit Test Make Targets
 
