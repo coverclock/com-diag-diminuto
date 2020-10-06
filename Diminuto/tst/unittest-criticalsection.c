@@ -13,7 +13,6 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_thread.h"
-#include <pthread.h>
 #include <stdint.h>
 #include <errno.h>
 

@@ -1007,6 +1007,9 @@ threads:
 	unittest-mutex
 	unittest-condition
 	unittest-thread
+	unittest-coherentsection
+	unittest-serializedsection
+	unittest-criticalsection
 
 gnuish:
 	echo "nohup make hangup" 1>&2

@@ -12,7 +12,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
-#include <pthread.h>
+#include "com/diag/diminuto/diminuto_thread.h"
 #include <stdint.h>
 #include <errno.h>
 
@@ -87,34 +87,43 @@ int main(void)
 
         STATUS();
     }
-
     {
         int rc;
-        pthread_t odd;
-        pthread_t even;
+        diminuto_thread_t odd;
+        diminuto_thread_t even;
+        diminuto_thread_t * tp;
         void * final;
 
         TEST();
 
         ASSERT(shared == 0);
 
-        rc = pthread_create(&odd, 0, body, (void *)1);
-        ASSERT(rc == 0);
+        tp = diminuto_thread_init(&odd, body);
+        ASSERT(tp == &odd);
+        tp = diminuto_thread_init(&even, body);
+        ASSERT(tp == &even);
 
-        rc = pthread_create(&even, 0, body, (void *)0);
+        rc = diminuto_thread_start(&odd, (void *)1);
+        ASSERT(rc == 0);
+        rc = diminuto_thread_start(&even, (void *)0);
         ASSERT(rc == 0);
 
         final = (void *)~0;
-        rc = pthread_join(odd, &final);
+        rc = diminuto_thread_join(&odd, &final);
         ASSERT(rc == 0);
         ASSERT(final == (void *)1);
 
         final = (void *)~0;
-        rc = pthread_join(even, &final);
+        rc = diminuto_thread_join(&even, &final);
         ASSERT(rc == 0);
         ASSERT(final == (void *)0);
 
         ASSERT(shared == LIMIT);
+
+        tp = diminuto_thread_fini(&odd);
+        ASSERT(tp == (diminuto_thread_t *)0);
+        tp = diminuto_thread_fini(&even);
+        ASSERT(tp == (diminuto_thread_t *)0);
 
         STATUS();
     }
