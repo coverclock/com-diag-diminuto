@@ -85,8 +85,23 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
        /* Do nothing. */
     }
 
+    /*
+     * 0% <= on <=  100%
+     * 0% <= off <=  100%
+     * on = duty cycle
+     * off = 100% - duty cycle
+     * on + off == 100%
+     */
+
     on = duty;
     off = DIMINUTO_MODULATOR_MAXIMUM_DUTY - duty;
+
+    /*
+     * Remove the common prime factors from the on and off cycles.
+     * This smooths out the on versus off cycles and reduces visible flicker.
+     * This code is so counter intuitive that a year after writing it
+     * I had no idea what I was doing at first.
+     */
 
     for (ii = 0; ii < countof(PRIMES); ++ii) {
         prime = PRIMES[ii];
@@ -95,6 +110,11 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
             off /= prime;
         }
     }
+
+    /*
+     * Yeah, this is sketchy. But blocking the modulator interrupt service routine on a mutex
+     * messes up what little real-time goodness we have.
+     */
 
     DIMINUTO_COHERENT_SECTION_BEGIN;
 

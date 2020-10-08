@@ -44,10 +44,10 @@
 #include <unistd.h>
 
 static const int LED = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
-static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
+static const int DUTY = 100;
 static const int SUSTAIN = 3;
 
 int main(int argc, char ** argv) {
@@ -202,7 +202,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% Lux %.2f lx Period %lld ms\n", program, duty, lux, (long long int)elapsed);
+            printf("%s: PWM %d %% on %u off %u Lux %.2f lx Period %lld ms\n", program, duty, modulator.on, modulator.off, lux, (long long int)elapsed);
 
             duty += increment;
             if (duty > 100) {

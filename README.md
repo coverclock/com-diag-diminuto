@@ -162,6 +162,7 @@ gcc 9.2.1
 * countof - macro to compute array positions using sizeof operator.
 * criticalsection - macros to implement scoped pthread mutex serialization.
 * cue - logic level debouncer and edge detector.
+* debug - simple debug tools to help with Work In Progress (WIP).
 * daemon - process deamonizer.
 * datum - memory mapped register operators for device drivers.
 * delay - time delay and execution yield.

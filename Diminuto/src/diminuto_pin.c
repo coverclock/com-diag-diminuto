@@ -14,12 +14,22 @@
 
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#if 0
+#   define COM_DIAG_DIMINUTO_DEBUG !0
+#endif
+#include "com/diag/diminuto/diminuto_debug.h"
 #include <errno.h>
 #include <sys/param.h>
 #include <sys/select.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
+diminuto_ticks_t diminuto_pin_delay = COM_DIAG_DIMINUTO_FREQUENCY / 4; /* 250ms */
+
+int diminuto_pin_tries = 8; /* 2s */
 
 static const char ROOT[] = "/sys";
 
@@ -47,72 +57,164 @@ const char * diminuto_pin_debug(const char * tmp)
     return prior;
 }
 
-int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, int ignore)
+/*
+ * The /sys GPIO interface depend son the Linux udev feature, which is
+ * used to, among other things, dynamically create devices in the /dev
+ * directory and entries in the /sys file system. It does so asynchronously
+ * with respect to the application using the /sys GPIO interface. When the
+ * application calls for a GPIO pin to be exported, that action returns
+ * with success, but the creation of the subdirectories for that pin, the
+ * setting of their ownership and groupship, and of their permissions, may
+ * still be happening. If the application tries to use those files too soon,
+ * it may get an ENOENT, EACCES, or EPERM. We do the stat(2) in addition
+ * to the fopen(3) because the latter will create the file if it isn't there,
+ * and we don't want that. I think it's a bad idea to put delays inside of
+ * library functions, but the alternative here is to put the retry logic
+ * in the applications, which defeates the purpose. At least the retry
+ * limit and delay are usable tunable if it comes to that. And this
+ * initialization will typically be at the beginning of an application,
+ * not in the main work loop.
+ */
+
+int diminuto_pin_configure_generic(const char * format, int pin, const char * string, int ignore, int tries, diminuto_ticks_t delay)
 {
+    int result = -1;
     int rc = -1;
-    char filename[PATH_MAX];
+    char filename[PATH_MAX] = { '\0', };
+    struct stat status = { 0, };
     FILE * fp = (FILE *)0;
+    int tt = 0;
 
     do {
 
+        DPRINTF("configure pin=%d\n", pin);
+
         if (pin < 0) {
             errno = EINVAL;
-            diminuto_perror("diminuto_pin_configure_conditional: pin");
+            diminuto_perror("diminuto_pin_configure_generic: pin");
             break;
         }
 
         snprintf(filename, sizeof(filename), format, root, pin);
-
-        if ((fp = fopen(filename, "w")) == (FILE *)0) {
+        if (filename[sizeof(filename) - 1] != '\0') {
+            filename[sizeof(filename) - 1] = '\0';
+            errno = EINVAL;
             diminuto_perror(filename);
             break;
         }
 
-        if (fputs(string, fp) >= 0) {
+        DPRINTF("configure filename=\"%s\"\n", filename);
+
+        for (tt = tries; tt > 0; --tt) {
+
+            DPRINTF("configure tries=%d\n", tt);
+
+            if ((rc = stat(filename, &status)) >= 0) {
+                /* Do nothing. */
+            } else if (errno == ENOENT) {
+                /* Do nothing. */
+            } else if (errno == EPERM) {
+                /* Do nothing. */
+            } else if (errno == EACCES) {
+                /* Do nothing. */
+            } else {
+                break;
+            }
+
+            DPRINTF("configure stat=%d errno=%d\n", rc, errno);
+
+            if (rc >= 0) {
+                /* Do nothing. */
+            } else if (tt > 1) {
+                diminuto_delay(diminuto_pin_delay, 0);
+                continue;
+            } else {
+                break;
+            }
+
+            if ((fp = fopen(filename, "w")) != (FILE *)0) {
+                /* Do nothing. */
+            } else if (errno == ENOENT) {
+                /* Do nothing. */
+            } else if (errno == EPERM) {
+                /* Do nothing. */
+            } else if (errno == EACCES) {
+                /* Do nothing. */
+            } else {
+                break;
+            }
+
+            DPRINTF("configure fopen=%p errno=%d\n", fp, errno);
+
+            if (fp != (FILE *)0) {
+                break;
+            } else if (tt > 1) {
+                diminuto_delay(diminuto_pin_delay, 0);
+                continue;
+            } else {
+                break;
+            }
+
+        }
+
+        if (fp == (FILE *)0) {
+            diminuto_perror(filename);
+            break;
+        }
+
+        DPRINTF("configure string=\"%s\"\n", string);
+
+        if ((rc = fputs(string, fp)) != EOF) {
             /* Do nothing. */
         } else if (errno != EINVAL) {
-            diminuto_perror("diminuto_pin_configure_conditional: fputs");
+            diminuto_perror(filename);
             break;
         } else if (ignore) {
             /* Do nothing. */
         } else {
-            diminuto_perror("diminuto_pin_configure_conditional: fputs");
+            diminuto_perror(filename);
             break;
         }
 
-        if (fflush(fp) != EOF) {
+        DPRINTF("configure fputs=%d errno=%d\n", rc, errno);
+
+        if ((rc = fflush(fp)) != EOF) {
             /* Do nothing. */
         } else if (errno != EINVAL) {
-            diminuto_perror("diminuto_pin_configure_conditional: fflush");
+            diminuto_perror(filename);
             break;
         } else if (ignore) {
             /* Do nothing. */
         } else {
-            diminuto_perror("diminuto_pin_configure_conditional: fflush");
+            diminuto_perror(filename);
             break;
         }
 
-        rc = 0;
+        DPRINTF("configure fputs=%d errno=%d\n", rc, errno);
+
+        result = 0;
 
     } while (0);
 
     if (fp == (FILE *)0) {
         /* Do nothing. */
-    } else if (fclose(fp) == 0) {
+    } else if (fclose(fp) != EOF) {
         /* Do nothing. */
     } else {
-        diminuto_perror("diminuto_pin_configure_conditional: fclose");
-        rc = -1;
+        diminuto_perror(filename);
+        result = -1;
     }
 
-    return rc;
+    DPRINTF("configure result=%d\n", result);
+
+    return result;
 }
 
-int diminuto_pin_port_conditional(const char * format, int pin, int ignore)
+int diminuto_pin_port_generic(const char * format, int pin, int ignore)
 {
     char buffer[sizeof("-9223372036854775807\n")];
     snprintf(buffer, sizeof(buffer), "%d\n", pin);
-    return diminuto_pin_configure_conditional(format, pin, buffer, ignore);
+    return diminuto_pin_configure_generic(format, pin, buffer, ignore, 1, 0);
 }
 
 int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
@@ -131,12 +233,17 @@ int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
     return diminuto_pin_configure(DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_EDGE, pin, string);
 }
 
-FILE * diminuto_pin_open(int pin)
+FILE * diminuto_pin_open(int pin, int output)
 {
     FILE * fp = (FILE *)0;
     char filename[PATH_MAX];
+    int rc = -1;
+    struct stat status;
+    const char * mode = (const char *)0;
 
     do {
+
+        DPRINTF("open pin=%d\n", pin);
 
         if (pin < 0) {
             errno = EINVAL;
@@ -146,10 +253,21 @@ FILE * diminuto_pin_open(int pin)
 
         snprintf(filename, sizeof(filename), DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_VALUE, root, pin);
 
-        if ((fp = fopen(filename, "r+")) == (FILE *)0) {
+        DPRINTF("open filename=\"%s\"\n", filename);
+
+        if ((rc = stat(filename, &status)) < 0) {
             diminuto_perror(filename);
             break;
         }
+
+        DPRINTF("open stat=%d\n", rc);
+
+        if ((fp = fopen(filename, mode = output ? "w" : "r")) == (FILE *)0) {
+            diminuto_perror(filename);
+            break;
+        }
+
+        DPRINTF("open fopen=%p mode=\"%c\"\n", fp, mode[0]);
 
     } while (0);
 
@@ -163,41 +281,24 @@ FILE * diminuto_pin_close(FILE * fp)
     } else if (fclose(fp) == 0) {
         fp = (FILE *)0;
     } else {
-        diminuto_perror("diminuto_pin_close");
+        diminuto_perror("diminuto_pin_close: fclose");
     }
+
+    DPRINTF("close fclose=%p\n, fp");
 
     return fp;
 }
 
-FILE * diminuto_pin_input(int pin)
+FILE * diminuto_pin_setup(int pin, int output)
 {
     FILE * fp = (FILE *)0;
 
     if (diminuto_pin_export(pin) < 0) {
         /* Do nothing. */
-    } else if (diminuto_pin_direction(pin, 0) < 0) {
-        /* Do nothing. */
-    } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+    } else if (diminuto_pin_direction(pin, output) < 0) {
         /* Do nothing. */
     } else {
-        /* Do nothing. */
-    }
-
-    return fp;
-}
-
-FILE * diminuto_pin_output(int pin)
-{
-    FILE * fp = (FILE *)0;
-
-    if (diminuto_pin_export(pin) < 0) {
-        /* Do nothing. */
-    } else if (diminuto_pin_direction(pin, !0) < 0) {
-        /* Do nothing. */
-    } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
-        /* Do nothing. */
-    } else {
-        /* Do nothing. */
+        fp = diminuto_pin_open(pin, output);
     }
 
     return fp;
@@ -231,88 +332,71 @@ FILE * diminuto_pin_unused(FILE * fp, int pin)
 
 int diminuto_pin_put(FILE * fp, int assert)
 {
+    int result = -1;
     int rc = -1;
+    ssize_t size = 0;
+    const char * value = (const char *)0;
 
     do {
 
-#if 0
-        if (fseek(fp, 0L, SEEK_SET) < 0) {
-            diminuto_perror("diminuto_pin_put: fseek");
-            break;
-        }
-
-        if (fputs(assert ? "1\n" : "0\n", fp) == EOF) {
-            diminuto_perror("diminuto_pin_put: fputs");
-            break;
-        }
-
-        if (fflush(fp) == EOF) {
-            diminuto_perror("diminuto_pin_put: fflush");
-            break;
-        }
-#else
         int fd = -1;
 
         fd = fileno(fp);
 
-        if (lseek(fd, 0, SEEK_SET) < 0) {
+        DPRINTF("put fp=%p fd=%d assert=%d\n", fp, fd, assert);
+
+        if ((rc = lseek(fd, 0, SEEK_SET)) < 0) {
             diminuto_perror("diminuto_pin_put: lseek");
             break;
         }
 
-        if (write(fd, assert ? "1\n" : "0\n", sizeof("X\n") - 1) < 0) {
+        DPRINTF("put lseek=%d\n", rc);
+
+        if ((size = write(fd, value = assert ? "1\n" : "0\n", sizeof("X\n") - 1)) < 0) {
             diminuto_perror("diminuto_pin_put: write");
             break;
         }
-#endif
-        rc = 0;
+
+        DPRINTF("put write=%zd value=\"%c\"\n", size, value[0]);
+
+        result = 0;
 
     } while (0);
 
-    return rc;
+    DPRINTF("put result=%d\n", result);
+
+    return result;
 }
 
 int diminuto_pin_get(FILE * fp)
 {
     int value = -1;
     int rc = -1;
+    ssize_t size = 0;
 
     do {
 
-#if 0
-        if (fseek(fp, 0, SEEK_SET) < 0) {
-            diminuto_perror("diminuto_pin_get: fseek");
-            break;
-        }
-
-        if ((rc = fscanf(fp, "%d\n", &value)) == EOF) {
-            diminuto_perror("diminuto_pin_get: fscanf");
-            break;
-        }
-
-        if (rc < 1) {
-            errno = EAGAIN;
-            diminuto_perror("diminuto_pin_get: fscanf");
-            break;
-        }
-
-        value = !!value;
-#else
         int fd = -1;
-        char buffer[3] = { 0 };
+        char buffer[sizeof("X\n")] = { 0 };
         ssize_t size = 0;
 
         fd = fileno(fp);
 
-        if (lseek(fd, 0, SEEK_SET) < 0) {
+        DPRINTF("get fp=%p fd=%d\n", fp, fd);
+
+        if ((rc = lseek(fd, 0, SEEK_SET)) < 0) {
             diminuto_perror("diminuto_pin_get: lseek");
             break;
         }
+
+        DPRINTF("get lseek=%d\n", rc);
 
         if ((size = read(fd, buffer, sizeof(buffer) - 1)) < 0) {
             diminuto_perror("diminuto_pin_get: read");
             break;
         }
+
+        DPRINTF("get read=%zd\n", size);
 
         if (size == 0) {
             errno = EAGAIN;
@@ -327,12 +411,12 @@ int diminuto_pin_get(FILE * fp)
         } else {
             errno = EBADMSG;
             diminuto_perror("diminuto_pin_get: read");
+            break;
         }
-#endif
-
-        rc = 0;
 
     } while (0);
+
+    DPRINTF("get value=%d\n", value);
 
     return value;
 }

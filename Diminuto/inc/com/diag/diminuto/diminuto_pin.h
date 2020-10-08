@@ -49,6 +49,7 @@
  * misbehavior.
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 
 /*******************************************************************************
@@ -100,6 +101,22 @@ extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_PIN_VALUE[];
 extern const char DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT[];
 
 /*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
+/**
+ * The pin configuration functions use this count to determine how long to
+ * delay after a failure following an export.
+ */
+extern diminuto_ticks_t diminuto_pin_delay;
+
+/**
+ * The pin configuration functions use this count to determine how many times
+ * to retry after a failure following an export.
+ */
+extern int diminuto_pin_tries;
+
+/*******************************************************************************
  * DEBUG
  ******************************************************************************/
 
@@ -122,24 +139,27 @@ extern const char * diminuto_pin_debug(const char * tmp);
 
 /**
  * This is a general mechanism to configure GPIO pins using the /sys API.
- * It allows certain errors to be optionally ignored.
+ * It allows EINVAL on fputs(3) and fflush(3) to be optionally ignored.
  * @param format points to a printf format string.
  * @param pin is the GPIO pin number.
  * @param string points to the name of the specific feature in the /sys API.
  * @param ignore if true causes certain errors to be ignored.
+ * @param tries is the total number of times the operation can be tried.
+ * @param delay is the number of ticks to delay before retrying.
  * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_configure_conditional(const char * format, int pin, const char * string, int ignore);
+extern int diminuto_pin_configure_generic(const char * format, int pin, const char * string, int ignore, int tries, diminuto_ticks_t delay);
 
 /**
  * This is a general mechanism to export or unexport GPIO pins using the /sys API.
- * It allows certain errors to be optionally ignored.
+ * It allows EINVAL on fputs(3) and fflush(3) to be optionally ignored.
+ * N.B. See also the notes on diminuto_pin_export().
  * @param format points to a printf format string.
  * @param pin is the GPIO pin number.
  * @param ignore if true causes certain errors to be ignored.
  * @return >=0 for success, <0 for error with errno set.
  */
-extern int diminuto_pin_port_conditional(const char * format, int pin, int ignore);
+extern int diminuto_pin_port_generic(const char * format, int pin, int ignore);
 
 /*******************************************************************************
  * HELPERS
@@ -154,19 +174,19 @@ extern int diminuto_pin_port_conditional(const char * format, int pin, int ignor
  */
 static inline int diminuto_pin_configure(const char * format, int pin, const char * string)
 {
-    return diminuto_pin_configure_conditional(format, pin, string, 0);
+    return diminuto_pin_configure_generic(format, pin, string, 0, diminuto_pin_tries, diminuto_pin_delay);
 }
 
 /**
- * It allows certain errors to be optionally ignored.
+ * This is a general mechanism to export or unexport GPIO pins using the /sys API.
+ * N.B. See also the notes on diminuto_pin_export().
  * @param format points to a printf format string.
  * @param pin is the GPIO pin number.
- * @param ignore if true causes certain errors to be ignored.
  * @return >=0 for success, <0 for error with errno set.
  */
 static inline int diminuto_pin_port(const char * format, int pin)
 {
-    return diminuto_pin_port_conditional(format, pin, 0);
+    return diminuto_pin_port_generic(format, pin, 0);
 }
 
 /*******************************************************************************
@@ -175,7 +195,12 @@ static inline int diminuto_pin_port(const char * format, int pin)
 
 /**
  * Ask that the specified GPIO pin be exported to the /sys/class/gpio file
- * system.
+ * system. N.B. Newly exporting a GPIO pin engages the Linux udev feature.
+ * This is an asynchronous feature that creates, in this case, new files
+ * in the /sys file system. The time it takes for this action to complete
+ * is non-deterministic. Hence, a race condition can result in which
+ * successive functions in this API can be called before the export is
+ * complete, resulting in errors such as EPERM, EACCESS, ENOENT, or others.
  * @param pin identifies the pin by number from the data sheet.
  * @return >=0 for success, <0 for error with errno set.
  */
@@ -192,7 +217,7 @@ static inline int diminuto_pin_export(int pin)
  */
 static inline int diminuto_pin_unexport(int pin)
 {
-    return diminuto_pin_port_conditional(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, 0);
+    return diminuto_pin_port_generic(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, 0);
 }
 
 /**
@@ -205,13 +230,13 @@ static inline int diminuto_pin_unexport(int pin)
  */
 static inline int diminuto_pin_unexport_ignore(int pin)
 {
-    return diminuto_pin_port_conditional(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, !0);
+    return diminuto_pin_port_generic(DIMINUTO_PIN_ROOT_CLASS_GPIO_UNEXPORT, pin, !0);
 }
 
 /**
  * Ask that the specified GPIO pin be configured to be active low or high.
- * @param pin identifies the pin by number from the data sheet. This is only
- * useful for wired to produce an interrupt.
+ * This is only useful if the pin is wired to produce an interrupt.
+ * @param pin identifies the pin by number from the data sheet.
  * @param high if !0 configures the pin for active high, else active low.
  * @return >=0 for success, <0 for error with errno set.
  */
@@ -260,9 +285,10 @@ static inline int diminuto_pin_initialize(int pin, int high)
 /**
  * Return a FILE pointer for the specified GPIO pin.
  * @param pin identifies the pin by number from the data sheet.
+ * @param output if !0 opens the pin for write, else read.
  * @return a FILE pointer or NULL if error.
  */
-extern FILE * diminuto_pin_open(int pin);
+extern FILE * diminuto_pin_open(int pin, int output);
 
 /**
  * Return the value of a GPIO pin, true (high) or false (low). The application
@@ -288,25 +314,43 @@ extern int diminuto_pin_put(FILE * fp, int assert);
  */
 extern FILE * diminuto_pin_close(FILE * fp);
 
+/**
+ * Return a FILE pointer for the specified GPIO pin configured as an input or
+ * an output. This function combines the export, direction, and open functions.
+ * It tries to handle the case where the export takes a while to complete.
+ * @param pin identifies the pin by number from the data sheet.
+ * @param output if !0 configures the pin for output, else input.
+ * @return a FILE pointer or NULL if error.
+ */
+extern FILE * diminuto_pin_setup(int pin, int output);
+
 /*******************************************************************************
  * HIGH LEVEL API
  ******************************************************************************/
 
 /**
  * Return a FILE pointer for the specified GPIO pin configured as an input.
- * This function combines the open, export, and direction functions.
+ * This function combines the export, direction, and open functions. It tries
+ * to handle the case where the export takes a while to complete.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.
  */
-extern FILE * diminuto_pin_input(int pin);
+static inline FILE * diminuto_pin_input(int pin)
+{
+    return diminuto_pin_setup(pin, 0);
+}
 
 /**
  * Return a FILE pointer for the specified GPIO pin configured as an output.
- * This function combines the open, export, and direction functions.
+ * This function combines the export, direction, and open functions. It tries
+ * to handle the case where the export takes a while to complete.
  * @param pin identifies the pin by number from the data sheet.
  * @return a FILE pointer or NULL if error.
  */
-extern FILE * diminuto_pin_output(int pin);
+static inline FILE * diminuto_pin_output(int pin)
+{
+    return diminuto_pin_setup(pin, !0);
+}
 
 /**
  * Set a GPIO pin to high (true). The application is responsible

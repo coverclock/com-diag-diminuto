@@ -46,10 +46,10 @@
 #include <unistd.h>
 
 static const int PWM = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
-static const int DUTY = 0;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_ADC;
+static const int DUTY = 100;
 static const int SUSTAIN = 4;
 static const int MEASURE = 5;
 
@@ -207,7 +207,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% ADC %.3f v Period %lld ms\n", program, duty, volts, (long long int)elapsed);
+            printf("%s: PWM %d %% on %u off %u ADC %.3f v Period %lld ms\n", program, duty, modulator.on, modulator.off, volts, (long long int)elapsed);
 
             /*
              * Measure allows us to read the voltage more than once.

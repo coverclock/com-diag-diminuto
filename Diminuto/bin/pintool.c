@@ -270,7 +270,7 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+            } else if ((fp = diminuto_pin_open(pin, 0)) == (FILE *)0) {
                 fail = !0;
                 break;
             } else {
@@ -312,7 +312,7 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+            } else if ((fp = diminuto_pin_open(pin, !0)) == (FILE *)0) {
                 fail = !0;
                 break;
             } else {
@@ -419,7 +419,7 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+            } else if ((fp = diminuto_pin_open(pin, 0)) == (FILE *)0) {
                 fail = !0;
                 break;
             } else {
@@ -575,7 +575,7 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+            } else if ((fp = diminuto_pin_open(pin, 0)) == (FILE *)0) {
                 fail = !0;
                 break;
             } else {
@@ -601,7 +601,7 @@ int main(int argc, char * argv[])
                 perror(opts);
                 error = !0;
                 break;
-            } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+            } else if ((fp = diminuto_pin_open(pin, !0)) == (FILE *)0) {
                 fail = !0;
                 break;
             } else {
@@ -648,7 +648,7 @@ int main(int argc, char * argv[])
                     perror(opts);
                     error = !0;
                     break;
-                } else if ((fp = diminuto_pin_open(pin)) == (FILE *)0) {
+                } else if ((fp = diminuto_pin_open(pin, !0)) == (FILE *)0) {
                     fail = !0;
                     break;
                 } else {

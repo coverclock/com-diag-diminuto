@@ -7,6 +7,7 @@
  *
  * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
+ *
  * Provides inline absolute value function for stdint signed integer types.
  */
 

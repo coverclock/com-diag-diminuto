@@ -15,11 +15,12 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-trap "pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -e" 0 2 3 15
+trap "pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -e" 0 2 3 15
 
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e -x -u 1000000 -o
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e -x -u 1000000 -o
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e -x -u 1000000 -o
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -e -x -u 1000000 -o
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -e -x -u 1000000 -i -L
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -e -x -u 1000000 -i -H
 
@@ -27,6 +28,8 @@ PIN22=$(pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -r)
 echo PIN22=${PIN22}
 PIN27=$(pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -r)
 echo PIN27=${PIN27}
+
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -s
 
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -s
 sleep 1
@@ -64,5 +67,7 @@ pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -b 10000 | while read PIN27; do
 		:
 	fi
 done
+
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -c
 
 exit 0
