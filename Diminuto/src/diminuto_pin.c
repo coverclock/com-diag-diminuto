@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -56,25 +56,6 @@ const char * diminuto_pin_debug(const char * tmp)
 
     return prior;
 }
-
-/*
- * The /sys GPIO interface depend son the Linux udev feature, which is
- * used to, among other things, dynamically create devices in the /dev
- * directory and entries in the /sys file system. It does so asynchronously
- * with respect to the application using the /sys GPIO interface. When the
- * application calls for a GPIO pin to be exported, that action returns
- * with success, but the creation of the subdirectories for that pin, the
- * setting of their ownership and groupship, and of their permissions, may
- * still be happening. If the application tries to use those files too soon,
- * it may get an ENOENT, EACCES, or EPERM. We do the stat(2) in addition
- * to the fopen(3) because the latter will create the file if it isn't there,
- * and we don't want that. I think it's a bad idea to put delays inside of
- * library functions, but the alternative here is to put the retry logic
- * in the applications, which defeates the purpose. At least the retry
- * limit and delay are usable tunable if it comes to that. And this
- * initialization will typically be at the beginning of an application,
- * not in the main work loop.
- */
 
 int diminuto_pin_configure_generic(const char * format, int pin, const char * string, int ignore, int tries, diminuto_ticks_t delay)
 {

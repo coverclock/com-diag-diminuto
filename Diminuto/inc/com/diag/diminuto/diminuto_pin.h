@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Pin feature implements an interface to interrogate and manipulate
@@ -20,6 +20,23 @@
  * The fact that non-digital devices - like mechanical switches - tend to
  * bounce - sometimes for many milliseconds - makes interrupt-driven edge
  * detection problematic unless the debouncing is implemented in hardware.
+ *
+ * The /sys GPIO interface depend son the Linux udev feature, which is
+ * used to, among other things, dynamically create devices in the /dev
+ * directory and entries in the /sys file system. It does so asynchronously
+ * with respect to the application using the /sys GPIO interface. When the
+ * application calls for a GPIO pin to be exported, that action returns
+ * with success, but the creation of the subdirectories for that pin, the
+ * setting of their ownership and groupship, and of their permissions, may
+ * still be happening. If the application tries to use those files too soon,
+ * it may get an ENOENT, EACCES, or EPERM. We do the stat(2) in addition
+ * to the fopen(3) because the latter will create the file if it isn't there,
+ * and we don't want that. I think it's a bad idea to put delays inside of
+ * library functions, but the alternative here is to put the retry logic
+ * in the applications, which defeates the purpose. At least the retry
+ * limit and delay are usable tunable if it comes to that. And this
+ * initialization will typically be at the beginning of an application,
+ * not in the main work loop.
  *
  * Some domains that I've worked in, like aircraft avionics, don't have digital
  * logic high/ground signaling but rather ground/open signaling, where ground
