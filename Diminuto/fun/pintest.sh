@@ -15,6 +15,8 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
+trap "pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -e; pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -e" 0 2 3 15
+
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e -x -u 1000000 -o
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e -x -u 1000000 -o
 pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e -x -u 1000000 -o
@@ -62,11 +64,5 @@ pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -b 10000 | while read PIN27; do
 		:
 	fi
 done
-
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -n
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -n
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -n
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -n
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -n
 
 exit 0

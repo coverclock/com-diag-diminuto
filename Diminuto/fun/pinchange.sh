@@ -26,19 +26,20 @@ PIN=${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW}
 PINCHANGE=$(which pinchange)
 
 if [[ $# -eq 0 ]]; then
-    pintool -p ${PIN} -n 2> /dev/null
-    pintool -p ${PIN} -x -u 1000000 -i -H
-    exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -M
+    trap "pintool -p ${PIN} -e" 0 2 3 15
+    pintool -p ${PIN} -e -x -u 1000000 -i -H
+    pintool -p ${PIN} -X ${PINCHANGE} -B -U -M
 elif [[ $# -eq 1 ]]; then
-    pintool -p ${PIN} -n 2> /dev/null
-    pintool -p ${PIN} -x -u 1000000 -i -H
-    exec pintool -p ${PIN} -X ${PINCHANGE} -B -U -S -M
+    pintool -p ${PIN} -e -x -u 1000000 -i -H
+    pintool -p ${PIN} -X ${PINCHANGE} -B -U -S -M
 elif [[ $# -eq 3 ]]; then
     CHANGED="${1}"
     STATE="${2}"
     PRIOR="${3}"
-    exec log -U -n "${PROGRAM} ${CHANGED} ${STATE} ${PRIOR}" 1>&2
+    log -U -I -n "${PROGRAM} ${CHANGED} ${STATE} ${PRIOR}" 1>&2
 else
-    echo "usage: ${PROGRAM} [ PIN STATE PRIOR ]" 1>&2
+    echo "usage: ${PROGRAM} [ DAEMON | CHANGED STATE PRIOR ]" 1>&2
     exit 1
 fi
+
+exit 0
