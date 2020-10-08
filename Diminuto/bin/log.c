@@ -43,6 +43,7 @@ int main(int argc, char * argv[])
     int priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
     int unconditional = 0;
     int suppress = 0;
+    int count = 0;
     char * buffer = (char *)0;
     size_t length = 256;
     char * endptr = (char *)0;
@@ -126,7 +127,22 @@ int main(int argc, char * argv[])
 
         case '?':
         default:
-            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -S ] [ -E | -a | -c | -e | -w | -n | -i | -d ] [ -I ] [ -U ] MESSAGE ... \n", program);
+            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -I ] [ -S ] [ -U ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -E | -a | -c | -e | -w | -n | -i | -d ] MESSAGE ... \n", program);
+            fprintf(stderr, "       -B BUFSIZE      Allocate a buffer of BUFSIZE bytes for reading lines from standard input.\n");
+            fprintf(stderr, "       -I              Suppress reading standard input.\n");
+            fprintf(stderr, "       -S              Force logging to the system log even if the caller is not a daemon.\n");
+            fprintf(stderr, "       -U              Log Unconditionally by ignoring the the log mask.\n");
+            fprintf(stderr, "       -N NAME         Use the string NAME as the application name in the system log.\n");
+            fprintf(stderr, "       -O OPTION       Pass the numeric value OPTION as the option to the system logger.\n");
+            fprintf(stderr, "       -F FACILITY     Pass the numeric value FACILITY as the facility to the system logger.\n");
+            fprintf(stderr, "       -E              Log at the EMERGENCY level.\n");
+            fprintf(stderr, "       -a              Log at the ALERT level.\n");
+            fprintf(stderr, "       -c              Log at the CRITICAL level.\n");
+            fprintf(stderr, "       -e              Log at the ERROR level.\n");
+            fprintf(stderr, "       -w              Log at the WARNING level.\n");
+            fprintf(stderr, "       -n              Log at the NOTIVE level.\n");
+            fprintf(stderr, "       -i              Log at the INFORMATION level.\n");
+            fprintf(stderr, "       -d              Log at the DEBUG level.\n");
             return 1;
             break;
 
@@ -148,13 +164,18 @@ int main(int argc, char * argv[])
                     /* Do nothing. */
                 } else {
                     diminuto_log_log(priority, "%s\n", argv[optind]);
+                    ++count;
                 }
             }
         }
 
     }
 
-    if (!suppress) {
+    if (suppress) {
+        /* Do nothing. */
+    } else if (count > 0) {
+        /* Do nothing. */
+    } else {
 
         buffer = (char *)malloc(length);
         if (buffer == (char *)0) {
