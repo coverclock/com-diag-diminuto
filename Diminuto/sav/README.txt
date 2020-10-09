@@ -7,3 +7,8 @@ Virtually everything that was useful in Telegraph has been ported to Diminuto.
 The few things that weren't, I saved here, mostly just for documentary purposes.
 I expect the Telegraph project name to be reused in the future. There will
 surely be no connection between original Telegraph and the new project.
+
+I've saved some functional tests from the com-diag-hazer repository that
+are helpful in testing some of the GPIO support in the Pin feature. The
+scripts use GPIO pins, two different GNSS devices, and the Hazer gpstool.
+The gpstool application requires the Hazer library.
