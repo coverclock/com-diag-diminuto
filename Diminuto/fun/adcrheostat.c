@@ -207,7 +207,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% on %u off %u ADC %.3f v Period %lld ms\n", program, duty, modulator.on, modulator.off, volts, (long long int)elapsed);
+            printf("%s: PWM %3d %% on %3u off %3u ADC %7.3f v Period %3lld ms\n", program, duty, modulator.on, modulator.off, volts, (long long int)elapsed);
 
             /*
              * Measure allows us to read the voltage more than once.

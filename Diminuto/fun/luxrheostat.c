@@ -202,7 +202,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %d %% on %u off %u Lux %.2f lx Period %lld ms\n", program, duty, modulator.on, modulator.off, lux, (long long int)elapsed);
+            printf("%s: PWM %3d %% on %3u off %3u Lux %7.2f lx Period %3lld ms\n", program, duty, modulator.on, modulator.off, lux, (long long int)elapsed);
 
             duty += increment;
             if (duty > 100) {

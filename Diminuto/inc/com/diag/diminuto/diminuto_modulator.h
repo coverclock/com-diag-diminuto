@@ -84,7 +84,8 @@ typedef struct DiminutoModulator {
     /* Fields for use by the application, otherwise unused. */
     void * data;
     /* Fields computed at Initialization or Finish. */
-    diminuto_modulator_function_t * function;
+    struct sched_param param;
+    struct sigevent event;
     FILE * fp;
     int pin;
     /* Fields computed at Start or Stop. */
