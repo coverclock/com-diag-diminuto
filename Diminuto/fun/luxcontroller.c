@@ -294,11 +294,6 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_init(&modulator, led, output);
     assert(rc >= 0);
 
-    if (debug) {
-        fprintf(stderr, "%s: ", program);
-        diminuto_modulator_print(stderr, &modulator);
-    }
-
     /*
      * Signal handlers.
      */

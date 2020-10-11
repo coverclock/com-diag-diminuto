@@ -67,14 +67,11 @@ int main(int argc, char ** argv)
 
     diminuto_alarm_install(0);
 
-    ASSERT((is = diminuto_timer_singleton_get()) == DIMINUTO_TIMER_UNINITIALIZED);
-
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
         "requested", "computed", "measured", "error");
 
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
         ASSERT(diminuto_timer_periodic(requested) != (diminuto_sticks_t)-1);
-        ASSERT((was = diminuto_timer_singleton_get()) != DIMINUTO_TIMER_UNINITIALIZED);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
         for (ii = 0; ii < 5; ++ii) {
@@ -99,11 +96,9 @@ int main(int argc, char ** argv)
                 , delta
             );
             then = now;
-            ASSERT((is = diminuto_timer_singleton_get()) != DIMINUTO_TIMER_UNINITIALIZED);
             ASSERT(is == was);
         }
         ASSERT(diminuto_timer_periodic(0) != (diminuto_sticks_t)-1);
-        ASSERT((is = diminuto_timer_singleton_get()) == DIMINUTO_TIMER_UNINITIALIZED);
     }
 
     EXIT();

@@ -15,8 +15,10 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include <pthread.h>
 #include <signal.h>
 #include <time.h>
+#include <sched.h>
 
 /**
  * @def COM_DIAG_DIMINUTO_TIMER_FREQUENCY
@@ -41,6 +43,30 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
     return COM_DIAG_DIMINUTO_TIMER_FREQUENCY;
 }
 
+typedef void * (diminuto_timer_function_t)(void *);
+
+typedef struct DiminutoTimer {
+    diminuto_ticks_t ticks;
+    struct sigevent event;
+    struct sched_param param;
+    pthread_attr_t attributes;
+    struct itimerspec current;
+    struct itimerspec remaining;
+    int periodic;
+    timer_t timer;
+    diminuto_timer_function_t * function;
+    void * context;
+    void * value;
+} diminuto_timer_t;
+
+extern diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum);
+
+extern diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp);
+
+extern diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t ticks, void * cp);
+
+extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
+
 /**
  * Start a singleton one-shot timer for the specified number of ticks. When the
  * timer expires, the calling process will receive a SIGALRM. If a timer is
@@ -56,8 +82,8 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  */
 static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
-    return diminuto_timer_singleton(ticks, 0);
+    extern diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_timer_setitimer(ticks, 0);
 }
 
 /**
@@ -75,8 +101,8 @@ static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  */
 static inline diminuto_sticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_timer_singleton(diminuto_ticks_t ticks, int periodic);
-    return diminuto_timer_singleton(ticks, !0);
+    extern diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic);
+    return diminuto_timer_setitimer(ticks, !0);
 }
 
 #endif

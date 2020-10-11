@@ -65,33 +65,22 @@ typedef uint8_t diminuto_modulator_cycle_t;
 /**
  * This is the smallest duty cycle value.
  */
-static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_MINIMUM_DUTY = 0;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = 0;
 
 /**
  * This is the largest uty cycle value.
  */
-static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_MAXIMUM_DUTY = 100;
-
-/**
- * Defines the prototype for a PWM generator function.
- */
-typedef void (diminuto_modulator_function_t)(union sigval);
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
 
 /**
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-    /* Fields for use by the application, otherwise unused. */
-    void * data;
     /* Fields computed at Initialization or Finish. */
-    struct sched_param param;
-    struct sigevent event;
     FILE * fp;
     int pin;
     /* Fields computed at Start or Stop. */
-    timer_t timer;
-    pthread_attr_t attributes;
-    int initialized;
+    diminuto_timer_t timer;
     /* Fields computed at Set. */
     volatile diminuto_modulator_cycle_t duty;
     volatile diminuto_modulator_cycle_t on;
@@ -106,24 +95,6 @@ typedef struct DiminutoModulator {
 } diminuto_modulator_t;
 
 /**
- * Print the modulator structure.
- * @param fp points to the FILE to which the structure is printed.
- * @param mp points to the modulator structure.
- */
-extern void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp);
-
-/**
- * Initializes a modulator structure with a given function, a pin number, and
- * a duty cycle.
- * @param mp points to the modulator structure.
- * @param funp points to the modulator function.
- * @param pin is the GPIO pin number.
- * @param duty is the duty cycle in the range [0..100].
- * @return 0 for success, <0 if an error occured.
- */
-extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, diminuto_modulator_cycle_t duty);
-
-/**
  * Initializes a modulator structure with the default function, a pin number,
  * and a duty cycle.
  * @param mp points to the modulator structure.
@@ -131,17 +102,7 @@ extern int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_m
  * @param duty is the initial duty cycle in the range [0..100].
  * @return 0 for success, <0 if an error occured.
  */
-static inline int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty) {
-    extern void diminuto_modulator_function(union sigval arg);
-    return diminuto_modulator_init_generic(mp, diminuto_modulator_function, pin, duty);
-}
-
-/**
- * Starts a modulator.
- * @param mp points to the modulator structure.
- * @return 0 for success, <0 if an error occured.
- */
-extern int diminuto_modulator_start(diminuto_modulator_t * mp);
+extern int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
 
 /**
  * Changes the duty cycle of a modulator. Can be called any time after
@@ -153,6 +114,13 @@ extern int diminuto_modulator_start(diminuto_modulator_t * mp);
  * @return 0 for success, <0 if an error occured.
  */
 extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty);
+
+/**
+ * Starts a modulator.
+ * @param mp points to the modulator structure.
+ * @return 0 for success, <0 if an error occured.
+ */
+extern int diminuto_modulator_start(diminuto_modulator_t * mp);
 
 /**
  * Stops a modulator

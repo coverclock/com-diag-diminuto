@@ -16,57 +16,8 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "../src/diminuto_timer.h"
 #include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <sched.h>
 #include <stdint.h>
-
-/*
- * N.B. casting mp->function to void * below produces an error. But
- * NOT casting mp->function to void * produces another error when
- * using %p. In effect, there is no way to print a function pointer
- * using %p without causing a warning. Hence the weird casting below.
- */
-
-void diminuto_modulator_print(FILE * fp, const diminuto_modulator_t * mp)
-{
-    fprintf(fp,	"modulator@%p[%zu]:"
-                    " function=%p"
-                    " fp=%p"
-                    " pin=%d"
-                    " duty=%d"
-                    " on=%d"
-                    " off=%d"
-                    " set=%d"
-                    " timer=%p"
-                    " initialized=%d"
-                    " total=%d"
-                    " cycle=%d"
-                    " ton=%d"
-                    " toff=%d"
-                    " condition=%d"
-                    " data=%p"
-                    "\n",
-        (void *)mp,
-        sizeof(*mp),
-        (void *)(uintptr_t)(mp->event.sigev_notify_function),
-        (void *)(mp->fp),
-        mp->pin,
-        mp->duty,
-        mp->on,
-        mp->off,
-        mp->set,
-        (void *)(mp->timer),
-        mp->initialized,
-        mp->total,
-        mp->cycle,
-        mp->ton,
-        mp->toff,
-        mp->condition,
-        mp->data
-    );
-}
 
 int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty)
 {
@@ -77,10 +28,10 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     static const diminuto_modulator_cycle_t PRIMES[] = { 7, 5, 3, 2 };
     int ii = 0;
 
-    if (duty <= DIMINUTO_MODULATOR_MINIMUM_DUTY) {
-        duty = DIMINUTO_MODULATOR_MINIMUM_DUTY;
-    } else if (duty >= DIMINUTO_MODULATOR_MAXIMUM_DUTY) {
-        duty = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
+    if (duty <= DIMINUTO_MODULATOR_DUTY_MIN) {
+        duty = DIMINUTO_MODULATOR_DUTY_MIN;
+    } else if (duty >= DIMINUTO_MODULATOR_DUTY_MAX) {
+        duty = DIMINUTO_MODULATOR_DUTY_MAX;
     } else {
        /* Do nothing. */
     }
@@ -94,7 +45,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
      */
 
     on = duty;
-    off = DIMINUTO_MODULATOR_MAXIMUM_DUTY - duty;
+    off = DIMINUTO_MODULATOR_DUTY_MAX - duty;
 
     /*
      * Remove the common prime factors from the on and off cycles.
@@ -132,11 +83,11 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     return rc;
 }
 
-void diminuto_modulator_function(union sigval arg)
+static void * isr(void * vp)
 {
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
 
-    mp = (diminuto_modulator_t *)(arg.sival_ptr);
+    mp = (diminuto_modulator_t *)vp;
 
     do {
 
@@ -164,7 +115,7 @@ void diminuto_modulator_function(union sigval arg)
         }
 
         mp->total += 1;
-        if (mp->total < DIMINUTO_MODULATOR_MAXIMUM_DUTY) {
+        if (mp->total < DIMINUTO_MODULATOR_DUTY_MAX) {
             continue;
         }
 
@@ -182,44 +133,25 @@ void diminuto_modulator_function(union sigval arg)
 
     } while (0);
 
-    return;
+    return (void *)0;
 }
 
-int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulator_function_t * funp, int pin, diminuto_modulator_cycle_t duty)
+int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty)
 {
     int rc = -1;
+    diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
     do {
 
         memset(mp, 0, sizeof(*mp));
 
         mp->pin = pin;
-        mp->toff = DIMINUTO_MODULATOR_MAXIMUM_DUTY;
+        mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
-        if ((rc = pthread_attr_init(&(mp->attributes))) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_modulator_init_generic: pthread_attr_init");
+        tp = diminuto_timer_init(&(mp->timer), !0, isr, 0);
+        if (tp == (diminuto_timer_t *)0) {
             break;
-        } else if ((rc = pthread_attr_setschedpolicy(&(mp->attributes), SCHED_FIFO)) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_modulator_init_generic: pthread_attr_setsched_policy");
-            break;
-        } else if ((mp->param.sched_priority = sched_get_priority_max(SCHED_FIFO)) < 0) {
-            diminuto_perror("diminuto_modulator_init_generic: sched_get_priority_max");
-            mp->param.sched_priority = 0;
-            break;
-        } else if ((rc = pthread_attr_setschedparam(&(mp->attributes), &(mp->param))) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_modulator_init_generic: pthread_attr_setschedparam");
-            break;
-        } else {
-            /* Do nothing. */
         }
-    
-        mp->event.sigev_notify = SIGEV_THREAD;
-        mp->event.sigev_value.sival_ptr = (void *)mp;
-        mp->event.sigev_notify_function = funp;
-        mp->event.sigev_notify_attributes = &(mp->attributes);
 
         (void)diminuto_pin_unexport_ignore(pin);
 
@@ -228,9 +160,10 @@ int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulato
             break;
         }
 
-        diminuto_modulator_set(mp, duty);
-
-        rc = 0;
+        rc = diminuto_modulator_set(mp, duty);
+        if (rc < 0) {
+            diminuto_perror("diminuto_modulator_init: diminuto_modulator_set");
+        }
 
     } while (0);
 
@@ -239,19 +172,19 @@ int diminuto_modulator_init_generic(diminuto_modulator_t * mp, diminuto_modulato
 
 int diminuto_modulator_start(diminuto_modulator_t * mp)
 {
-    diminuto_sticks_t ticks = 0;
+    diminuto_sticks_t ticks = -1;
 
     ticks = diminuto_frequency() / diminuto_modulator_frequency();
-    ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &(mp->event), ticks, !0);
+    ticks = diminuto_timer_start(&(mp->timer), ticks, mp);
 
     return (ticks >= 0) ? 0 : -1;
 }
 
 int diminuto_modulator_stop(diminuto_modulator_t * mp)
 {
-    diminuto_sticks_t ticks = 0;
+    diminuto_sticks_t ticks = -1;
 
-    ticks = diminuto_timer_generic(&(mp->initialized), &(mp->timer), &(mp->event), 0, !0);
+    ticks = diminuto_timer_stop(&(mp->timer));
 
     return (ticks >= 0) ? 0 : -1;
 }
@@ -259,10 +192,11 @@ int diminuto_modulator_stop(diminuto_modulator_t * mp)
 int diminuto_modulator_fini(diminuto_modulator_t * mp)
 {
     int rc = 0;
+    diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
-    rc = pthread_attr_destroy(&(mp->attributes));
-    if (rc != 0) {
-        diminuto_perror("diminuto_modulator_stop: pthread_attr_init");
+    tp = diminuto_timer_fini(&(mp->timer));
+    if (tp != (diminuto_timer_t *)0) {
+        rc = -1;
     }
 
     mp->fp = diminuto_pin_unused(mp->fp, mp->pin);

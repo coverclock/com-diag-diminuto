@@ -35,26 +35,6 @@
 
 static const char * program = (const char *)0;
 
-void dump(FILE * fp, const diminuto_modulator_t * mp)
-{
-    fprintf(stderr, "modulator@%p: timer=%p initialized=%d pin=%d duty=%d fp=%p on=%d off=%d set=%d total=%d cycle=%d ton=%d toff=%d condition=%d\n",
-        (void *)mp,
-        (void *)(mp->timer),
-        mp->initialized,
-        mp->pin,
-        mp->duty,
-        (void *)(mp->fp),
-        mp->on,
-        mp->off,
-        mp->set,
-        mp->total,
-        mp->cycle,
-        mp->ton,
-        mp->toff,
-        mp->condition
-    );
-}
-
 int main(int argc, char * argv[])
 {
     int xc = 0;
@@ -100,7 +80,6 @@ int main(int argc, char * argv[])
     fprintf(stderr, "%s: initializing\n", program);
 
     rc = diminuto_modulator_init(&modulator, pin, duty);
-    dump(stderr, &modulator);
     assert(rc == 0);
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
