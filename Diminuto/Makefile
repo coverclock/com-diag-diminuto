@@ -985,6 +985,7 @@ extended:
 	unittest-time
 	unittest-time-cost
 	unittest-timer
+	unittest-timer2
 
 geologic:
 	unittest-epoch

@@ -26,7 +26,7 @@ static void proxy(union sigval sv)
     tp->value = (*(tp->function))(tp->context);
 }
 
-diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
+diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
 {
     diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
@@ -179,7 +179,7 @@ diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic)
 
             if (initialized) {
                 /* Do nothing. */
-            } else if (diminuto_timer_init(&singleton, periodic, (diminuto_timer_function_t *)0, SIGALRM) != (diminuto_timer_t *)0) {
+            } else if (diminuto_timer_init_generic(&singleton, periodic, (diminuto_timer_function_t *)0, SIGALRM) != (diminuto_timer_t *)0) {
                 initialized = !0;
             } else {
                 break;

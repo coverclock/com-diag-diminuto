@@ -78,7 +78,49 @@ typedef struct DiminutoTimer {
  * @param signum is the signal number or 0.
  * @return a pointer to the timer object if successful or NULL otherwise.
  */
-extern diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum);
+extern diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum);
+
+/**
+ * Initialize a timer object. The behavior is undefined if the timer is
+ * active. The timer calls a function. The timer is initialized in the
+ * disarmed (idle) state.
+ * @param tp points to the timer object.
+ * @param periodic if true makes the timer periodic, else a one-shot.
+ * @param fp points to the timer function or NULL.
+ * @return a pointer to the timer object if successful or NULL otherwise.
+ */
+static inline diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp)
+{
+    return diminuto_timer_init_generic(tp, periodic, fp, 0);
+}
+
+/**
+ * Initialize a timer oneshot object. The behavior is undefined if the timer
+ * is active. The timer calls a function. The timer is initialized in the
+ * disarmed (idle) state.
+ * @param tp points to the timer object.
+ * @param periodic if true makes the timer periodic, else a one-shot.
+ * @param fp points to the timer function or NULL.
+ * @return a pointer to the timer object if successful or NULL otherwise.
+ */
+static inline diminuto_timer_t * diminuto_timer_init_oneshot(diminuto_timer_t * tp, diminuto_timer_function_t * fp)
+{
+    return diminuto_timer_init(tp, 0, fp);
+}
+
+/**
+ * Initialize a timer periodic object. The behavior is undefined if the timer
+ * is active. The timer calls a function. The timer is initialized in the
+ * disarmed (idle) state.
+ * @param tp points to the timer object.
+ * @param periodic if true makes the timer periodic, else a one-shot.
+ * @param fp points to the timer function or NULL.
+ * @return a pointer to the timer object if successful or NULL otherwise.
+ */
+static inline diminuto_timer_t * diminuto_timer_init_periodic(diminuto_timer_t * tp, diminuto_timer_function_t * fp)
+{
+    return diminuto_timer_init(tp, !0, fp);
+}
 
 /**
  * Release any resources associated with a timer object, The behavior is
@@ -90,7 +132,7 @@ extern diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp);
 
 /**
  * Start the timer of a timer object. This arms the timer a.k.a. places
- * it in the active state.
+ 0* it in the active state.
  * @param tp points to the timer object.
  * @param cp points to a context that is passed to the optional timer function.
  * @return the number of ticks left on the timer or <0 if an error occurred.
@@ -111,7 +153,8 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  * way into a lot of code. It used the older setitimer(2) system call. Unlike
  * that call, this uses POSIX timers with a rate monotonic clock. The old
  * system call uses the real-time clock, which could be jittered by, for
- * example, NTP adjustments.
+ * example, NTP adjustments. Most of the unit tests were originally written
+ * using this older API.
  ******************************************************************************/
 
 /**

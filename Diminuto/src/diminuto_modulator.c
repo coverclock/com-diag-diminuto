@@ -148,7 +148,7 @@ int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulat
         mp->pin = pin;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
-        tp = diminuto_timer_init(&(mp->timer), !0, isr, 0);
+        tp = diminuto_timer_init_periodic(&(mp->timer), isr);
         if (tp == (diminuto_timer_t *)0) {
             break;
         }
