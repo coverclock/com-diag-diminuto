@@ -163,7 +163,7 @@ static void * body4(void * arg)
 
     ADVISE(busy > 0);
 
-    return (void *)arg;
+    return arg;
 }
 
 static void * body5(void * arg)
@@ -179,7 +179,7 @@ static void * body5(void * arg)
     DIMINUTO_THREAD_END;
     COMMENT("NOTIFIED");
 
-    return (void *)5;
+    return arg;
 }
 
 static void * body6(void * arg)
@@ -486,7 +486,7 @@ int main(void)
 
         TEST();
 
-        rc = diminuto_thread_start(&thread, (void *)0);
+        rc = diminuto_thread_start(&thread, (void *)5);
         ASSERT(rc == 0);
 
         COMMENT("STARTED");
@@ -516,6 +516,56 @@ int main(void)
         rc = diminuto_thread_join(&thread, &final);
         ASSERT(rc == 0);
         ASSERT(final == (void *)5);
+
+        COMMENT("FINISHED");
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        diminuto_thread_t thread;
+        diminuto_thread_t * tp;
+        void * final;
+        uintptr_t ii;
+
+        TEST();
+
+        tp = diminuto_thread_init(&thread, body5);
+        ASSERT(tp == &thread);
+
+        for (ii = 0; ii < 5; ++ii) {
+
+            COMMENT("STARTING %u\n", (unsigned int)ii);
+
+            rc = diminuto_thread_start(&thread, (void *)ii);
+            ASSERT(rc == 0);
+
+            COMMENT("STARTED");
+
+            DIMINUTO_THREAD_BEGIN(&thread);
+                while (thread.state != DIMINUTO_THREAD_STATE_RUNNING) {
+                    COMMENT("WAITING");
+                    diminuto_thread_wait(&thread);
+                }
+            DIMINUTO_THREAD_END;
+
+            COMMENT("RUNNING");
+
+            COMMENT("NOTIFYING");
+            rc = diminuto_thread_notify(&thread);
+            ASSERT(rc == 0);
+
+            final = (void *)~0;
+            COMMENT("JOINING");
+            rc = diminuto_thread_join(&thread, &final);
+            ASSERT(rc == 0);
+            ASSERT(final == (void *)ii);
+
+        }
+
+        tp = diminuto_thread_fini(&thread);
+        ASSERT(tp == (diminuto_thread_t *)0);
 
         COMMENT("FINISHED");
 

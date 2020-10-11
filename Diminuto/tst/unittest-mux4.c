@@ -753,6 +753,7 @@ int main(int argc, char ** argv)
 
     {
         diminuto_mux_t mux;
+        int rc;
 
         TEST();
 
@@ -761,7 +762,9 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
 
-        ASSERT(diminuto_mux_wait(&mux, -1) == 1);
+        rc = diminuto_mux_wait(&mux, -1);
+        COMMENT("rc=%d\n", rc);
+        ADVISE(rc == 1);
 
         ASSERT(diminuto_mux_ready_read(&mux) < 0);
 
