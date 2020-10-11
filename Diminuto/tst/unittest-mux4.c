@@ -673,6 +673,7 @@ int main(int argc, char ** argv)
         diminuto_mux_t mux;
         int socket;
         int rc;
+        int fd;
 
         TEST();
 
@@ -687,11 +688,17 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
+        COMMENT("rc=%d\n", rc);
         ADVISE(rc == 2);
         ASSERT(rc > 0);
         CHECKPOINT();
 
-        ASSERT(diminuto_mux_ready_read(&mux) < 0);
+        CHECKPOINT();
+        while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
+            COMMENT("fd=%d\n", fd);
+            ADVISE(fd < 0);
+        }
+        CHECKPOINT();
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
@@ -699,6 +706,7 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
+        COMMENT("rc=%d\n", rc);
         ADVISE(rc == 2);
         ASSERT(rc > 0);
         CHECKPOINT();
@@ -707,6 +715,7 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
+        COMMENT("rc=%d\n", rc);
         ADVISE(rc == 2);
         ASSERT(rc > 0);
         CHECKPOINT();
@@ -720,6 +729,7 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
+        COMMENT("rc=%d\n", rc);
         ADVISE(rc == 1);
         ASSERT(rc > 0);
         CHECKPOINT();
@@ -979,7 +989,9 @@ int main(int argc, char ** argv)
 
             ASSERT(input_16 == output_16);
 
+            COMMENT("timeouts=%d\n", timeouts);
             ADVISE(timeouts > 0);
+            COMMENT("alarms=%d\n", alarms);
             ADVISE(alarms > 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
