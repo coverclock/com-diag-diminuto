@@ -76,17 +76,13 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-    /* Fields computed at Initialization or Finish. */
     FILE * fp;
     int pin;
-    /* Fields computed at Start or Stop. */
     diminuto_timer_t timer;
-    /* Fields computed at Set. */
     volatile diminuto_modulator_cycle_t duty;
     volatile diminuto_modulator_cycle_t on;
     volatile diminuto_modulator_cycle_t off;
     volatile bool set;
-    /* Fields computed at Run. */
     volatile diminuto_modulator_cycle_t total;
     volatile diminuto_modulator_cycle_t cycle;
     volatile diminuto_modulator_cycle_t ton;

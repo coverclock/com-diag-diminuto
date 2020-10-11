@@ -43,8 +43,17 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
     return COM_DIAG_DIMINUTO_TIMER_FREQUENCY;
 }
 
+/**
+ * This type defines the prototype of a timer function (effectively an
+ * interrupt service routine). It is a little different from the
+ * prototype defined for POSIX timer functions.
+ */
 typedef void * (diminuto_timer_function_t)(void *);
 
+/**
+ * This type defines the structure of a Diminuto timer object. The timer can
+ * be a one-shot or periodic.
+ */
 typedef struct DiminutoTimer {
     diminuto_ticks_t ticks;
     struct sigevent event;
@@ -59,13 +68,51 @@ typedef struct DiminutoTimer {
     void * value;
 } diminuto_timer_t;
 
+/**
+ * Initialize a timer object. The behavior is undefined if the timer is
+ * active. The timer must either call a function, or send a signal,
+ * but not both. The timer is initialized in the disarmed (idle) state.
+ * @param tp points to the timer object.
+ * @param periodic if true makes the timer periodic, else a one-shot.
+ * @param fp points to the timer function or NULL.
+ * @param signum is the signal number or 0.
+ * @return a pointer to the timer object if successful or NULL otherwise.
+ */
 extern diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum);
 
+/**
+ * Release any resources associated with a timer object, The behavior is
+ * undefined if the timer is active.
+ * @param tp points to the timer object.
+ * @return NULL if successful or a pointer to the timer object otherwise.
+ */
 extern diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp);
 
+/**
+ * Start the timer of a timer object. This arms the timer a.k.a. places
+ * it in the active state.
+ * @param tp points to the timer object.
+ * @param cp points to a context that is passed to the optional timer function.
+ * @return the number of ticks left on the timer or <0 if an error occurred.
+ */
 extern diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t ticks, void * cp);
 
+/**
+ * Stop the timer of a timer object. This disarms the timer a.k.a. places
+ * it in the inactive state.
+ * @param tp points to the timer object.
+ * @param cp points to a context that is passed to the optional timer function.
+ * @return the number of ticks left on the timer or <0 if an error occurred.
+ */
 extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
+
+/*******************************************************************************
+ * The API below emulates an older Diminuto implementation that found its
+ * way into a lot of code. It used the older setitimer(2) system call. Unlike
+ * that call, this uses POSIX timers with a rate monotonic clock. The old
+ * system call uses the real-time clock, which could be jittered by, for
+ * example, NTP adjustments.
+ ******************************************************************************/
 
 /**
  * Start a singleton one-shot timer for the specified number of ticks. When the
@@ -75,10 +122,9 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  * granularity of the system clock and latency in the implementation.
  * The timer fires only once per call. Calling with zero ticks
  * cancels any prior timer.
- * N.B. This implementation uses a static variable and so is not thread safe.
  * @param ticks is the desired timer duration in ticks.
  * @return the number of ticks remaining in prior timer if a timer was already
- * running, or -1 if an error occurred.
+ * running, or <0 if an error occurred.
  */
 static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
@@ -94,7 +140,6 @@ static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  * on the granularity of the system clock and latency in the implementation.
  * The timer fires repeatedly with a periodicity of the specified ticks
  * until it is cancelled. Calling with zero ticks cancels the timer.
- * N.B. This implementation uses a static variable and so is not thread safe.
  * @param ticks is the desired period interval in ticks.
  * @return the number of ticks remaining in the prior timer if a timer was
  * already running, or -1 if an error occurred.
