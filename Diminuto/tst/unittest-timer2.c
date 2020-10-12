@@ -34,7 +34,7 @@ static void * isr(void * cp)
         diminuto_perror("kill");
     }
 
-    return (void *)rc;
+    return (void *)(intptr_t)rc;
 }
 
 int main(int argc, char ** argv)

@@ -12,7 +12,6 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "../src/diminuto_timer.h"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>

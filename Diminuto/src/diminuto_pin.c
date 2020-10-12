@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #if 0
 #   define COM_DIAG_DIMINUTO_DEBUG !0

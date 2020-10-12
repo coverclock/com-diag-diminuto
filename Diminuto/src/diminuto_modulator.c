@@ -14,7 +14,6 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "../src/diminuto_timer.h"
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>

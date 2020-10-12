@@ -15,7 +15,6 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
-#include "../src/diminuto_timer.h"
 #include <errno.h>
 
 int main(int argc, char ** argv)
