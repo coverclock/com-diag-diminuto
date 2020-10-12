@@ -12,6 +12,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_coherentsection.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -61,7 +62,7 @@ FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
 
 const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
-bool diminuto_log_forced = false;
+diminuto_log_strategy_t diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
 
 bool diminuto_log_cached = false;
 
@@ -71,7 +72,7 @@ bool diminuto_log_cached = false;
 
 void diminuto_log_setmask(void)
 {
-    const char * mask;
+    const char * mask = (const char *)0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
@@ -248,7 +249,35 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-    if (diminuto_log_forced || diminuto_log_cached || (diminuto_log_cached = (getpid() == getsid(0))) || (diminuto_log_cached = (getppid() == 1))) {
+    int tolog = -1;
+
+    DIMINUTO_COHERENT_SECTION_BEGIN;
+
+        if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_STDERR) {
+            tolog = 0;
+        } else if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_SYSLOG) {
+            tolog = !0;
+        } else if (diminuto_log_cached) {
+            tolog = !0;
+        }  else {
+
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+                if ((diminuto_log_cached = (getpid() == getsid(0)))) {
+                    tolog = !0;
+                } else if ((diminuto_log_cached = (getppid() == 1))) {
+                    tolog = !0;
+                } else {
+                    tolog = 0;
+                }
+
+            DIMINUTO_CRITICAL_SECTION_END;
+
+        }
+
+    DIMINUTO_COHERENT_SECTION_END;
+
+    if (tolog) {
         diminuto_log_vsyslog(priority, format, ap);
     } else {
         diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);

@@ -53,9 +53,13 @@ int main(int argc, char * argv[])
     program = strrchr(argv[0], '/');
     program = (program == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "B:IN:O:F:SUEacewnid?")) >= 0) {
+    while ((opt = getopt(argc, argv, "AB:IN:O:F:SUEacdiensw?")) >= 0) {
 
         switch (opt) {
+
+        case 'A':
+            diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
+            break;
 
         case 'B':
             length = strtoul(optarg, &endptr, 0);
@@ -83,7 +87,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'S':
-            diminuto_log_forced = true;
+            diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_SYSLOG;
             break;
 
         case 'U':
@@ -120,6 +124,10 @@ int main(int argc, char * argv[])
             priority = DIMINUTO_LOG_PRIORITY_NOTICE;
             break;
 
+        case 's':
+            diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_STDERR;
+            break;
+
         case 'w':
             mask = DIMINUTO_LOG_MASK_WARNING;
             priority = DIMINUTO_LOG_PRIORITY_WARNING;
@@ -127,10 +135,12 @@ int main(int argc, char * argv[])
 
         case '?':
         default:
-            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -I ] [ -S ] [ -U ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -E | -a | -c | -e | -w | -n | -i | -d ] MESSAGE ... \n", program);
+            fprintf(stderr, "usage: %s [ -B BUFSIZE ] [ -I ] [ -A | -S | -s ] [ -U ] [ -N NAME ] [ -O OPTION ] [ -F FACILITY ] [ -E | -a | -c | -e | -w | -n | -i | -d ] MESSAGE ... \n", program);
             fprintf(stderr, "       -B BUFSIZE      Allocate a buffer of BUFSIZE bytes for reading lines from standard input.\n");
             fprintf(stderr, "       -I              Suppress reading standard input.\n");
+            fprintf(stderr, "       -A              Force logging to automatic.\n");
             fprintf(stderr, "       -S              Force logging to the system log even if the caller is not a daemon.\n");
+            fprintf(stderr, "       -s              Force logging to standard error even if the caller is a daemon.\n");
             fprintf(stderr, "       -U              Log Unconditionally by ignoring the the log mask.\n");
             fprintf(stderr, "       -N NAME         Use the string NAME as the application name in the system log.\n");
             fprintf(stderr, "       -O OPTION       Pass the numeric value OPTION as the option to the system logger.\n");

@@ -52,8 +52,6 @@ int main(int argc, char ** argv)
     int msecond;
     diminuto_ticks_t mtick;
     double delta;
-    void * is;
-    void * was;
 
     SETLOGMASK();
 
@@ -95,7 +93,6 @@ int main(int argc, char ** argv)
                 , delta
             );
             then = now;
-            ASSERT(is == was);
         }
         ASSERT(diminuto_timer_periodic(0) != (diminuto_sticks_t)-1);
     }

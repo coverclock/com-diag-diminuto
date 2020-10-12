@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2018-2019 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Modulator feature implements a pulse width modulation (PWM) generator

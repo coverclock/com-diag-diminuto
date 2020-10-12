@@ -91,11 +91,17 @@ int main(int argc, char ** argv)
             diminuto_perror("diminuto_daemon");
             exit(1);
         }
-    } else if (strcmp(argv[1], "force") == 0) {
-        diminuto_log_emit("FORCING\n");
-        diminuto_log_forced = true;
+    } else if (strcmp(argv[1], "automatic") == 0) {
+        diminuto_log_emit("AUTOMATIC\n");
+        diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
+    } else if (strcmp(argv[1], "stderr") == 0) {
+        diminuto_log_emit("STDERR\n");
+        diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_STDERR;
+    } else if (strcmp(argv[1], "syslog") == 0) {
+        diminuto_log_emit("SYSLOG\n");
+        diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_SYSLOG;
     } else {
-        fprintf(stderr, "usage: %s [ daemon | force | ]\n", argv[0]);
+        fprintf(stderr, "usage: %s [ automatic | daemon | stderr | syslog ]\n", argv[0]);
         exit(1);
     }
 

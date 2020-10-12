@@ -56,7 +56,7 @@ int main(void)
     PV(diminuto_log_file, "%p");
     P(diminuto_log_mask_name, "\"%s\"");
     P(diminuto_log_mask, "0x%x");
-    P(diminuto_log_forced, "%d");
+    P(diminuto_log_strategy, "%c");
     P(diminuto_log_cached, "%d");
 
     P(getenv(diminuto_log_mask_name), "\"%s\"");

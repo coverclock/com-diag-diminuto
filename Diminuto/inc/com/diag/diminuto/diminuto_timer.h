@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Timer feature uses the real-time POSIX timer_create(2) and
