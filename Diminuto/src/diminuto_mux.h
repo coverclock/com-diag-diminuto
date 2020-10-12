@@ -23,14 +23,21 @@ static const int DIMINUTO_MUX_MOSTNEGATIVE =  (((int)1)<<((sizeof(int)*8)-1)); /
 /**
  * Initialize a multiplexer set.
  * @param setp points to the multiplexer set.
+ * @return a pointer to the object or NULL if an error occurred.
  */
-static inline void diminuto_mux_set_init(diminuto_mux_set_t * setp)
+static inline diminuto_mux_set_t * diminuto_mux_set_init(diminuto_mux_set_t * setp)
 {
     setp->min = DIMINUTO_MUX_MOSTPOSITIVE;
     setp->max = DIMINUTO_MUX_MOSTNEGATIVE;
     setp->next = -1;
     FD_ZERO(&setp->active);
     FD_ZERO(&setp->ready);
+    return setp;
+}
+
+static inline diminuto_mux_set_t * diminuto_mux_set_fini(diminuto_mux_set_t * setp)
+{
+    return (diminuto_mux_set_t *)0;
 }
 
 /**

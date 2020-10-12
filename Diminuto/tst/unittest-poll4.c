@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
             ASSERT(sigaddset(&mask, SIGALRM) == 0);
             ASSERT(sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0) == 0);
 
-            diminuto_poll_init(&poll);
+            ASSERT(diminuto_poll_init(&poll) == &poll);
 
             ASSERT(diminuto_poll_register_accept(&poll, listener) >= 0);
             ASSERT(diminuto_poll_unregister_signal(&poll, SIGALRM) >= 0);
@@ -247,7 +247,8 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_poll_close(&poll, producer) == 0);
             ASSERT(diminuto_poll_close(&poll, listener) == 0);
-            diminuto_poll_fini(&poll);
+
+            ASSERT(diminuto_poll_fini(&poll) == (diminuto_poll_t *)0);
 
             ASSERT(input_16 == output_16);
 
@@ -280,7 +281,7 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_ipc4_close(listener) >= 0);
 
-            diminuto_poll_init(&poll);
+            ASSERT(diminuto_poll_init(&poll) == &poll);
 
             ASSERT((consumer = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("localhost"), rendezvous)) >= 0);
             ASSERT(diminuto_poll_register_read(&poll, consumer) >= 0);
@@ -356,7 +357,8 @@ int main(int argc, char ** argv)
             } while (!done);
 
             ASSERT(diminuto_poll_close(&poll, consumer) == 0);
-            diminuto_poll_fini(&poll);
+
+            ASSERT(diminuto_poll_fini(&poll) == (diminuto_poll_t *)0);
 
             exit(0);
         }

@@ -68,14 +68,16 @@ typedef struct DiminutoPoll {
  * (in other words, blocked signals are automatically registered).
  * Signals can be removed from this cached mask by unregistering them.
  * @param pollp points to a poller structure.
+ * @return a pointer to the object or NULL if an error occurred.
  */
-extern void diminuto_poll_init(diminuto_poll_t * pollp);
+extern diminuto_poll_t * diminuto_poll_init(diminuto_poll_t * pollp);
 
 /**
  * Release any dynamically acquired storage associated with the poller.
  * @param pollp points to a poller structure.
+ * @return NULL or a pointer to the object if an error occurred.
  */
-extern void diminuto_poll_fini(diminuto_poll_t * pollp);
+extern diminuto_poll_t * diminuto_poll_fini(diminuto_poll_t * pollp);
 
 /**
  * Register a file descriptor with the poller for reading.

@@ -17,7 +17,7 @@
 #include <pthread.h>
 #include "../src/diminuto_mux.h"
 
-void diminuto_mux_init(diminuto_mux_t * muxp)
+diminuto_mux_t * diminuto_mux_init(diminuto_mux_t * muxp)
 {
     FD_ZERO(&muxp->read_or_accept);
     FD_ZERO(&muxp->urgent_or_interrupt);
@@ -27,6 +27,7 @@ void diminuto_mux_init(diminuto_mux_t * muxp)
     diminuto_mux_set_init(&muxp->urgent);
     diminuto_mux_set_init(&muxp->interrupt);
     pthread_sigmask(SIG_BLOCK, (sigset_t *)0, &muxp->mask);
+    return muxp;
 }
 
 static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)

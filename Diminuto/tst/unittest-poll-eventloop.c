@@ -267,7 +267,6 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
     diminuto_poll_close(&poll, listener4);
     diminuto_poll_close(&poll, listener6);
     diminuto_poll_fini(&poll);
-    diminuto_pool_fini(&pool);
     diminuto_heap_free(queue);
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d connects=%d disconnects=%d controls=%d reads=%d writes=%d input=%zubytes output=%zubytes.\n", pid, connects, disconnects, controls, reads, writes, input, output);

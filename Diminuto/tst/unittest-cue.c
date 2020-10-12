@@ -35,7 +35,7 @@ int main(int argc, char ** argv)
     {
         diminuto_cue_state_t state;
         TEST();
-        diminuto_cue_init(&state, 0);
+        ASSERT(diminuto_cue_init(&state, 0) == &state);
         ASSERT(!diminuto_cue_debounce(&state, 0));
         ASSERT(!diminuto_cue_state(&state));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_LOW);
@@ -124,13 +124,14 @@ int main(int argc, char ** argv)
         ASSERT(!diminuto_cue_is_falling(&state));
         ASSERT(!diminuto_cue_state(&state));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_LOW);
+        ASSERT(diminuto_cue_fini(&state) == (diminuto_cue_state_t *)0);
         STATUS();
     }
 
     {
         diminuto_cue_state_t state;
         TEST();
-        diminuto_cue_init(&state, !0);
+        ASSERT(diminuto_cue_init(&state, !0) == &state);
         ASSERT(diminuto_cue_debounce(&state, !0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
         ASSERT(diminuto_cue_debounce(&state, !0));
@@ -167,13 +168,14 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
         ASSERT(diminuto_cue_debounce(&state, !0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
+        ASSERT(diminuto_cue_fini(&state) == (diminuto_cue_state_t *)0);
         STATUS();
     }
 
     {
         diminuto_cue_state_t state;
         TEST();
-        diminuto_cue_init(&state, 0);
+        ASSERT(diminuto_cue_init(&state, 0) == &state);
         ASSERT(!diminuto_cue_debounce(&state, !0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_LOW);
         ASSERT(!diminuto_cue_debounce(&state, 0));
@@ -198,13 +200,14 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_LOW);
         ASSERT(!diminuto_cue_debounce(&state, 0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_LOW);
+        ASSERT(diminuto_cue_fini(&state) == (diminuto_cue_state_t *)0);
         STATUS();
     }
 
     {
         diminuto_cue_state_t state;
         TEST();
-        diminuto_cue_init(&state, !0);
+        ASSERT(diminuto_cue_init(&state, !0) == &state);
         ASSERT(diminuto_cue_debounce(&state, 0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
         ASSERT(diminuto_cue_debounce(&state, !0));
@@ -229,6 +232,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
         ASSERT(diminuto_cue_debounce(&state, !0));
         ASSERT(diminuto_cue_edge(&state) == DIMINUTO_CUE_EDGE_HIGH);
+        ASSERT(diminuto_cue_fini(&state) == (diminuto_cue_state_t *)0);
         STATUS();
     }
 
