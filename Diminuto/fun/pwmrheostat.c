@@ -40,6 +40,7 @@ int main(int argc, char * argv[])
     int duty[4] = { 0 };
     int rc = 0;
     diminuto_modulator_t modulator[4] = { { 0 } };
+    diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     unsigned int seconds = 0;
@@ -103,8 +104,8 @@ int main(int argc, char * argv[])
     for (ii = 0; ii < countof(pin); ++ii) {
         if (pin[ii] >= 0) {
             fprintf(stderr, "%s: initializing %d %d\n", program, pin[ii], duty[ii]);
-            rc = diminuto_modulator_init(&(modulator[ii]), pin[ii], duty[ii]);
-            assert(rc == 0);
+            mp = diminuto_modulator_init(&(modulator[ii]), pin[ii], duty[ii]);
+            assert(mp == &(modulator[ii]));
             assert(modulator[ii].pin == pin[ii]);
             assert(modulator[ii].fp != (FILE *)0);
             assert(modulator[ii].duty == duty[ii]);
@@ -191,8 +192,8 @@ int main(int argc, char * argv[])
     for (ii = 0; ii < countof(pin); ++ii) {
         if (pin[ii] >= 0) {
             fprintf(stderr, "%s: finishing %d %d\n", program, pin[ii], duty[ii]);
-            rc = diminuto_modulator_fini(&(modulator[ii]));
-            assert(rc == 0);
+            mp = diminuto_modulator_fini(&(modulator[ii]));
+            assert(mp == (diminuto_modulator_t *)0);
         }
     }
 

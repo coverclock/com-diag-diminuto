@@ -74,6 +74,7 @@ int main(int argc, char ** argv) {
     diminuto_ticks_t elapsed = 0;
     int value = 0;
     diminuto_modulator_t modulator = { 0 };
+    diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     int increment = 1;
     int sustain = SUSTAIN;
     int measure = MEASURE;
@@ -129,8 +130,8 @@ int main(int argc, char ** argv) {
      * Pulse width moddulator.
      */
 
-    rc = diminuto_modulator_init(&modulator, pwm, duty);
-    assert(rc >= 0);
+    mp = diminuto_modulator_init(&modulator, pwm, duty);
+    assert(mp == &modulator);
 
     /*
      * Signal handlers.
@@ -248,8 +249,8 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_stop(&modulator);
     assert(rc >= 0);
 
-    rc = diminuto_modulator_fini(&modulator);
-    assert(rc >= 0);
+    mp = diminuto_modulator_fini(&modulator);
+    assert(mp == (diminuto_modulator_t *)0);
 
     rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
     assert(rc >= 0);

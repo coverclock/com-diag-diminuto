@@ -96,9 +96,9 @@ typedef struct DiminutoModulator {
  * @param mp points to the modulator structure.
  * @param pin is the GPIO pin number.
  * @param duty is the initial duty cycle in the range [0..100].
- * @return 0 for success, <0 if an error occured.
+ * @return a pointer to the object for success, NULL if an error occurred.
  */
-extern int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
+extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
 
 /**
  * Changes the duty cycle of a modulator. Can be called any time after
@@ -128,8 +128,8 @@ extern int diminuto_modulator_stop(diminuto_modulator_t * mp);
 /**
  * Finishes a modulator structure by releasing any resources.
  * @param mp points to the modulator structure.
- * @return 0 for success, <0 if an error occured.
+ * @return NULL for success, a pointer ot th eobject if an error occurred.
  */
-extern int diminuto_modulator_fini(diminuto_modulator_t * mp);
+extern diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp);
 
 #endif

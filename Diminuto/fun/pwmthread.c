@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
     int duty = 0;
     int rc = 0;
     diminuto_modulator_t modulator = { 0 };
+    diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
 
@@ -79,8 +80,8 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: initializing\n", program);
 
-    rc = diminuto_modulator_init(&modulator, pin, duty);
-    assert(rc == 0);
+    mp = diminuto_modulator_init(&modulator, pin, duty);
+    assert(mp == &modulator);;
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
     assert(modulator.duty == duty);
@@ -134,8 +135,8 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: finishing\n", program);
 
-    rc = diminuto_modulator_fini(&modulator);
-    assert(rc == 0);
+    mp = diminuto_modulator_fini(&modulator);
+    assert(mp == (diminuto_modulator_t *)0);
 
     /*
      * Exit.
