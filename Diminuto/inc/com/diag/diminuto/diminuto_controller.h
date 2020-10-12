@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Controller feature is a generic Proportional-Integral-Differential
