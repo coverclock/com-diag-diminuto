@@ -280,12 +280,15 @@ or as a user - e.g. pi - that is in the gpio group.)
 * extended - these unit tests take a lunch time to run.
 * geologic - these unit test take over night or more to run.
 * gnuish - these unit tests are for features that require GNU.
+* logging - these unit tests exercise the logging feature.
 * mostest - these unit tests require "make most; make mostest" to run.
 * nohup - these unit tests require "nohup make nohup" to run.
 * privileged - these unit tests require "sudo make privileged" to run.
 * sanity - these unit tests take a coffee break to run.
 * signals - these unit tests exercise the kill signal handlers.
+* sockets - these unit tests test the socket, ipc, and mux features.
 * threads - these unit tests exercise the POSIX thread-based features.
+* timers - these unit tests exercise the timer feature.
 
 # Directories
  

@@ -895,7 +895,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY: extended geologic gnuish gnuish logging mostest nohup privileged sanity signals sockets threads timers
+.PHONY: extended geologic gnuish logging mostest nohup privileged sanity signals sockets threads timers
 
 sanity:
 	vintage
