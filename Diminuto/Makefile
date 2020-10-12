@@ -1089,6 +1089,7 @@ timers:
 	unittest-periodic3
 	unittest-alarm
 	unittest-uninterruptible
+	unittest-modulator
 
 sockets:
 	unittest-ipc
