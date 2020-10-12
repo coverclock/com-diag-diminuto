@@ -250,7 +250,9 @@ int main(int argc, char ** argv)
 
             ASSERT(input_16 == output_16);
 
+            COMMENT("timeouts=%d\n", timeouts);
             ADVISE(timeouts > 0);
+            COMMENT("alarms=%d\n", alarms);
             ADVISE(alarms > 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
