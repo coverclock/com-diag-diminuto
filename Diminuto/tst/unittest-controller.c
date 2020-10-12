@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
         memset(&parameters, 0xAA, sizeof(parameters));
         memset(&state, 0x55, sizeof(state));
 
-        diminuto_controller_init(&parameters, &state);
+        assert(diminuto_controller_init(&parameters, &state) == &state);
 
         diminuto_controller_parameters_print(stdout, &parameters);
         diminuto_controller_state_print(stdout, &state);
@@ -115,6 +115,8 @@ int main(int argc, char ** argv)
         assert(state.delta == 0);
         assert(state.previous == 0);
         assert(state.initialized == 0);
+
+        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
     }
 
     {
@@ -127,7 +129,7 @@ int main(int argc, char ** argv)
          * parameters.
          */
 
-        diminuto_controller_init((diminuto_controller_parameters_t *)0, &state);
+        assert(diminuto_controller_init((diminuto_controller_parameters_t *)0, &state) == &state);
 
         diminuto_controller_state_print(stdout, &state);
 
@@ -139,6 +141,8 @@ int main(int argc, char ** argv)
         assert(state.delta == 0);
         assert(state.previous == 0);
         assert(state.initialized == 0);
+
+        assert(diminuto_controller_fini((diminuto_controller_parameters_t *)0, &state) == (diminuto_controller_state_t *)0);
     }
 
     {
@@ -151,7 +155,7 @@ int main(int argc, char ** argv)
          * affecting the state of the controller.
          */
 
-        diminuto_controller_init(&parameters, (diminuto_controller_state_t *)0);
+        assert(diminuto_controller_init(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
 
         diminuto_controller_parameters_print(stdout, &parameters);
 
@@ -169,17 +173,20 @@ int main(int argc, char ** argv)
         assert(parameters.kc.numerator == 1);
         assert(parameters.kc.denominator == 1);
         assert(parameters.filter == !0);
+
+        assert(diminuto_controller_fini(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
     }
 
     {
-        diminuto_controller_init((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0);
+        assert(diminuto_controller_init((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+        assert(diminuto_controller_fini((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        diminuto_controller_init(&parameters, &state);
+        assert(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
 
@@ -187,13 +194,15 @@ int main(int argc, char ** argv)
         diminuto_controller_state_print(stdout, &state);
 
         fcontrol(&parameters, &state, 1000, 500, 1, 60);
+
+        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        diminuto_controller_init(&parameters, &state);
+        assert(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
 
@@ -201,13 +210,15 @@ int main(int argc, char ** argv)
         diminuto_controller_state_print(stdout, &state);
 
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
+
+        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        diminuto_controller_init(&parameters, &state);
+        assert(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
         parameters.kp.numerator = 1;
@@ -221,6 +232,8 @@ int main(int argc, char ** argv)
         diminuto_controller_state_print(stdout, &state);
 
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
+
+        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
     }
 
     return 0;

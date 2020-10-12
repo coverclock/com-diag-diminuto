@@ -13,7 +13,7 @@
 #include "com/diag/diminuto/diminuto_controller.h"
 #include <stdlib.h>
 
-void diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp)
+diminuto_controller_state_t * diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp)
 {
 
     if (sp != (diminuto_controller_parameters_t *)0) {
@@ -44,6 +44,7 @@ void diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_co
         dp->initialized = 0;
     }
 
+    return dp;
 }
 
 void diminuto_controller_parameters_print(FILE * fp, const diminuto_controller_parameters_t * sp)

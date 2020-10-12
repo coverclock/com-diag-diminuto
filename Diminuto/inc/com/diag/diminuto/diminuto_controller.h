@@ -257,8 +257,9 @@ extern void diminuto_controller_state_print(FILE * fp, const diminuto_controller
  * values.
  * @param sp points to the static parameters structure or null if none.
  * @param dp points to the dynamic state structure or null if none.
+ * @return a pointer to the stae object or NULL if an error occurred.
  */
-extern void diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp);
+extern diminuto_controller_state_t * diminuto_controller_init(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp);
 
 /**
  * Advance the controller by one time step, recalculating the new output based
@@ -279,7 +280,11 @@ extern diminuto_controller_output_t diminuto_controller(const diminuto_controlle
  * Releases any dynamically acquired resources associated with a controller.
  * @param sp points to the static parameters structure or null if none.
  * @param dp points to the dynamic state structure or null if none.
+ * @return NULL or a pointer to the state object if an error occurred.
  */
-static inline void diminuto_controller_fini(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp) { }
+static inline diminuto_controller_state_t * diminuto_controller_fini(diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp)
+{
+    return (diminuto_controller_state_t *)0;
+}
 
 #endif
