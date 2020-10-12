@@ -75,7 +75,7 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
         ASSERT(*diminuto_fd_map_ref(mapp, ii) == &datap[ii]);
     }
 
-    diminuto_mux_init(&mux);
+    ASSERT(diminuto_mux_init(&mux) == &mux);
 
     for (ii = 0; ii < countof(reads); ++ii) {
         reads[ii] = 0;
@@ -159,6 +159,8 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
 
     free(datap);
     free(mapp);
+
+    ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 }
 
 int main(int argc, char ** argv)
@@ -173,7 +175,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        diminuto_mux_init(&mux);
+        ASSERT(diminuto_mux_init(&mux) == &mux);
 
         diminuto_mux_dump(&mux);
 
@@ -187,6 +189,8 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
 
+        ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
         STATUS();
     }
 
@@ -198,7 +202,8 @@ int main(int argc, char ** argv)
 
         socket = STDERR_FILENO + 1; /* Nominally 3. */
 
-        diminuto_mux_init(&mux);
+        ASSERT(diminuto_mux_init(&mux) == &mux);
+
         ASSERT(mux.read.min == MIN_UNINIT);
         ASSERT(mux.read.max == MAX_UNINIT);
         ASSERT(mux.read.next == NXT_UNINIT);
@@ -666,6 +671,8 @@ int main(int argc, char ** argv)
         ASSERT(mux.accept.max == MAX_UNINIT);
         ASSERT(mux.accept.next == NXT_UNINIT);
 
+        ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
         STATUS();
     }
 
@@ -679,7 +686,7 @@ int main(int argc, char ** argv)
 
         ASSERT((socket = diminuto_ipc4_stream_provider(0)) >= 0);
 
-        diminuto_mux_init(&mux);
+        ASSERT(diminuto_mux_init(&mux) == &mux);
 
         ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
@@ -748,6 +755,8 @@ int main(int argc, char ** argv)
 
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
+        ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
         STATUS();
     }
 
@@ -757,7 +766,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        diminuto_mux_init(&mux);
+        ASSERT(diminuto_mux_init(&mux) == &mux);
 
         ASSERT(diminuto_mux_register_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
@@ -773,6 +782,8 @@ int main(int argc, char ** argv)
 
         ASSERT(diminuto_mux_unregister_write(&mux, STDOUT_FILENO) >= 0);
         ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) >= 0);
+
+        ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
         STATUS();
     }
@@ -840,7 +851,7 @@ int main(int argc, char ** argv)
             ASSERT(sigaddset(&mask, SIGALRM) == 0);
             ASSERT(sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0) == 0);
 
-            diminuto_mux_init(&mux);
+            ASSERT(diminuto_mux_init(&mux) == &mux);
 
             ASSERT(diminuto_mux_register_accept(&mux, listener) >= 0);
             ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
@@ -1001,6 +1012,8 @@ int main(int argc, char ** argv)
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
+            ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
             STATUS();
 
         } else {
@@ -1025,7 +1038,7 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_ipc4_close(listener) >= 0);
 
-            diminuto_mux_init(&mux);
+            ASSERT(diminuto_mux_init(&mux) == &mux);
 
             ASSERT((consumer = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("localhost"), rendezvous)) >= 0);
             ASSERT(diminuto_mux_register_read(&mux, consumer) >= 0);
@@ -1102,6 +1115,8 @@ int main(int argc, char ** argv)
             } while (!done);
 
             ASSERT(diminuto_mux_close(&mux, consumer) == 0);
+
+            ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
             exit(0);
         }

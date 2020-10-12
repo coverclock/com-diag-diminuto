@@ -213,11 +213,22 @@ extern const char * diminuto_log_mask_name;
 extern diminuto_log_mask_t diminuto_log_mask;
 
 /**
- * If this variable is true (!0), log output is forced to syslog. Otherwise,
- * log output will be written to stderr if the process is interactive, or to
- * syslog if it is not. The default is false (0).
+ * THese are the strategies the log feature may use to determine to where
+ * to send logging output. The automatic option makes the choice depending
+ * on whether the caller has a controlling terminal, and is the default.
  */
-extern bool diminuto_log_forced;
+typedef enum DiminutoLogStrategy {
+    DIMINUTO_LOG_STRATEGY_AUTOMATIC = 'A',
+    DIMINUTO_LOG_STRATEGY_STDERR    = 'E',
+    DIMINUTO_LOG_STRATEGY_SYSLOG    = 'S',
+} diminuto_log_strategy_t;
+
+/**
+ * This variable determines how log messages are routed: to standard
+ * error, to the system log, or automatically based on the characteristics
+ * of the caller.
+ */
+extern diminuto_log_strategy_t diminuto_log_strategy;
 
 /**
  * Calling getpid() and getsid() every time we log something is not

@@ -57,8 +57,19 @@ typedef struct DiminutoCueState {
  * low/false/deasserted.
  * @param statep points to the cue state structure.
  * @param initial is the initial value, 0 for false, !0 for true.
+ * @return a pointer ot the object or NULL if an error occurred.
  */
-extern void diminuto_cue_init(diminuto_cue_state_t * statep, int initial);
+extern diminuto_cue_state_t *  diminuto_cue_init(diminuto_cue_state_t * statep, int initial);
+
+/**
+ * Release resources associatged with the cue.
+ * @param statep points to the cue state structure.
+ * @return NULL or a pointer ot the object an error occurred.
+ */
+static inline diminuto_cue_state_t *  diminuto_cue_fini(diminuto_cue_state_t * statep)
+{
+    return (diminuto_cue_state_t *)0;
+}
 
 /**
  * Feed the next successive cue sample to the debounce algorithm and

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -12,7 +12,6 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "../src/diminuto_timer.h"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -26,7 +25,7 @@ static void proxy(union sigval sv)
     tp->value = (*(tp->function))(tp->context);
 }
 
-diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
+diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
 {
     diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
@@ -179,7 +178,7 @@ diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic)
 
             if (initialized) {
                 /* Do nothing. */
-            } else if (diminuto_timer_init(&singleton, periodic, (diminuto_timer_function_t *)0, SIGALRM) != (diminuto_timer_t *)0) {
+            } else if (diminuto_timer_init_generic(&singleton, periodic, (diminuto_timer_function_t *)0, SIGALRM) != (diminuto_timer_t *)0) {
                 initialized = !0;
             } else {
                 break;

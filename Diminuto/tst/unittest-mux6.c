@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
             ASSERT(sigaddset(&mask, SIGALRM) == 0);
             ASSERT(sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0) == 0);
 
-            diminuto_mux_init(&mux);
+            ASSERT(diminuto_mux_init(&mux) == &mux);
 
             ASSERT(diminuto_mux_register_accept(&mux, listener) >= 0);
             ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
@@ -259,6 +259,8 @@ int main(int argc, char ** argv)
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
+            ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
             STATUS();
 
         } else {
@@ -357,6 +359,8 @@ int main(int argc, char ** argv)
             } while (!done);
 
             ASSERT(diminuto_mux_close(&mux, consumer) == 0);
+
+            ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
             exit(0);
         }

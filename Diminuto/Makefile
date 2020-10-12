@@ -29,9 +29,9 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	65# API changes that may require that applications be modified.
+MAJOR				:=	66# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -895,7 +895,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY:	extended geologic gnuish mostest nohup privileged sanity signals threads
+.PHONY: extended geologic gnuish gnuish logging mostest nohup privileged sanity signals sockets threads timers
 
 sanity:
 	vintage
@@ -966,6 +966,8 @@ mostest:
 	unittest-module
 
 privileged:
+	unittest-ping4
+	unittest-ping6
 	unittest-map
 
 extended:
@@ -985,6 +987,7 @@ extended:
 	unittest-time
 	unittest-time-cost
 	unittest-timer
+	unittest-timer2
 
 geologic:
 	unittest-epoch
@@ -1022,3 +1025,71 @@ gnuish:
 	unittest-poll-eventloop
 	unittest-renameat2
 	unittest-thread
+
+logging:
+	logging
+	unittest-log
+	unittest-log daemon
+	unittest-log syslog
+	unittest-log stderr
+	nohup unittest-log stderr < /dev/null > /dev/null 2> /dev/null
+	log -N DBUG -I -d "Testing debug."
+	log -N INFO -I -i "Testing information."
+	log -N NOTE -I -n "Testing notice."
+	log -N WARN -I -w "Testing warning."
+	log -N EROR -I -e "Testing error."
+	log -N CRIT -I -c "Testing critical."
+	log -N ALRT -I -a "Testing alert."
+	log -N EMER -I -E "Testing Emergency."
+	log -N DBUG -I -S -d "Testing debug."
+	log -N INFO -I -S -i "Testing information."
+	log -N NOTE -I -S -n "Testing notice."
+	log -N WARN -I -S -w "Testing warning."
+	log -N EROR -I -S -e "Testing error."
+	log -N CRIT -I -S -c "Testing critical."
+	log -N ALRT -I -S -a "Testing alert."
+	log -N EMER -I -S -E "Testing Emergency."
+	nohup log -N DBUG -I -s -d "Testing debug."       < /dev/null > /dev/null 2> /dev/null
+	nohup log -N INFO -I -s -i "Testing information." < /dev/null > /dev/null 2> /dev/null
+	nohup log -N NOTE -I -s -n "Testing notice."      < /dev/null > /dev/null 2> /dev/null
+	nohup log -N WARN -I -s -w "Testing warning."     < /dev/null > /dev/null 2> /dev/null
+	nohup log -N EROR -I -s -e "Testing error."       < /dev/null > /dev/null 2> /dev/null
+	nohup log -N CRIT -I -s -c "Testing critical."    < /dev/null > /dev/null 2> /dev/null
+	nohup log -N ALRT -I -s -a "Testing alert."       < /dev/null > /dev/null 2> /dev/null
+	nohup log -N EMER -I -s -E "Testing Emergency."   < /dev/null > /dev/null 2> /dev/null
+	echo "Testing debug."       | log -N DBUG -d
+	echo "Testing information." | log -N INFO -i
+	echo "Testing notice."      | log -N NOTE -n
+	echo "Testing warning."     | log -N WARN -w
+	echo "Testing error."       | log -N EROR -e
+	echo "Testing critical."    | log -N CRIT -c
+	echo "Testing alert."       | log -N ALRT -a
+	echo "Testing emergency."   | log -N EMER -E
+	echo "Testing debug."       | log -N DBUG -d -B 256
+	echo "Testing information." | log -N INFO -i -B 256
+	echo "Testing notice."      | log -N NOTE -n -B 256
+	echo "Testing warning."     | log -N WARN -w -B 256
+	echo "Testing error."       | log -N EROR -e -B 256
+	echo "Testing critical."    | log -N CRIT -c -B 256
+	echo "Testing alert."       | log -N ALRT -a -B 256
+	echo "Testing emergency."   | log -N EMER -E -B 256
+	echo "Testing debug."       | log -N DBUG -d -U
+
+timers:
+	unittest-frequency
+	unittest-timer2
+	unittest-timer
+	unittest-periodic
+	unittest-alarm
+	unittest-uninterruptible
+
+sockets:
+	unittest-ipc
+	unittest-ipc4
+	unittest-ipc6
+	unittest-mux4
+	unittest-mux6
+	unittest-mux-eventloop
+	unittest-poll4
+	unittest-poll6
+	unittest-poll-eventloop

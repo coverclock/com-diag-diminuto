@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2018-2019 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Modulator feature implements a pulse width modulation (PWM) generator
@@ -76,17 +76,13 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-    /* Fields computed at Initialization or Finish. */
     FILE * fp;
     int pin;
-    /* Fields computed at Start or Stop. */
     diminuto_timer_t timer;
-    /* Fields computed at Set. */
     volatile diminuto_modulator_cycle_t duty;
     volatile diminuto_modulator_cycle_t on;
     volatile diminuto_modulator_cycle_t off;
     volatile bool set;
-    /* Fields computed at Run. */
     volatile diminuto_modulator_cycle_t total;
     volatile diminuto_modulator_cycle_t cycle;
     volatile diminuto_modulator_cycle_t ton;
@@ -100,9 +96,9 @@ typedef struct DiminutoModulator {
  * @param mp points to the modulator structure.
  * @param pin is the GPIO pin number.
  * @param duty is the initial duty cycle in the range [0..100].
- * @return 0 for success, <0 if an error occured.
+ * @return a pointer to the object for success, NULL if an error occurred.
  */
-extern int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
+extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
 
 /**
  * Changes the duty cycle of a modulator. Can be called any time after
@@ -132,8 +128,8 @@ extern int diminuto_modulator_stop(diminuto_modulator_t * mp);
 /**
  * Finishes a modulator structure by releasing any resources.
  * @param mp points to the modulator structure.
- * @return 0 for success, <0 if an error occured.
+ * @return NULL for success, a pointer ot th eobject if an error occurred.
  */
-extern int diminuto_modulator_fini(diminuto_modulator_t * mp);
+extern diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp);
 
 #endif

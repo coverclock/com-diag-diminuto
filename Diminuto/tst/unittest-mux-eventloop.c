@@ -286,6 +286,8 @@ static pid_t provider(diminuto_port_t * port4p, diminuto_port_t * port6p)
     else if (reads != writes) { xc = 4; }
     else if (input != output) { xc = 5; }
 
+    diminuto_mux_fini(&mux);
+
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "PROVIDER %d exiting status=%d.\n", pid, xc);
 
     exit(xc);

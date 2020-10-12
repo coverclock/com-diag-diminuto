@@ -14,7 +14,6 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "../src/diminuto_timer.h"
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
@@ -136,8 +135,9 @@ static void * isr(void * vp)
     return (void *)0;
 }
 
-int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty)
+diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty)
 {
+    diminuto_modulator_t * result = (diminuto_modulator_t *)0;
     int rc = -1;
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
@@ -148,7 +148,7 @@ int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulat
         mp->pin = pin;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
-        tp = diminuto_timer_init(&(mp->timer), !0, isr, 0);
+        tp = diminuto_timer_init_periodic(&(mp->timer), isr);
         if (tp == (diminuto_timer_t *)0) {
             break;
         }
@@ -165,9 +165,11 @@ int diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulat
             diminuto_perror("diminuto_modulator_init: diminuto_modulator_set");
         }
 
+        result = mp;
+
     } while (0);
 
-    return rc;
+    return result;
 }
 
 int diminuto_modulator_start(diminuto_modulator_t * mp)
@@ -189,20 +191,25 @@ int diminuto_modulator_stop(diminuto_modulator_t * mp)
     return (ticks >= 0) ? 0 : -1;
 }
 
-int diminuto_modulator_fini(diminuto_modulator_t * mp)
+diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp)
 {
-    int rc = 0;
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
-    tp = diminuto_timer_fini(&(mp->timer));
-    if (tp != (diminuto_timer_t *)0) {
-        rc = -1;
-    }
+    do {
 
-    mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
-    if (mp->fp != (FILE *)0) {
-        rc = -1;
-    }
+        tp = diminuto_timer_fini(&(mp->timer));
+        if (tp != (diminuto_timer_t *)0) {
+            break;
+        }
 
-    return rc;
+        mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
+        if (mp->fp != (FILE *)0) {
+            break;
+        }
+
+        mp = (diminuto_modulator_t *)0;
+
+    } while (0);
+
+    return mp;
 }

@@ -10,7 +10,7 @@
 
 #include "com/diag/diminuto/diminuto_cue.h"
 
-void diminuto_cue_init(diminuto_cue_state_t * statep, int initial)
+diminuto_cue_state_t * diminuto_cue_init(diminuto_cue_state_t * statep, int initial)
 {
     initial = !!initial;
     statep->a = initial;
@@ -18,6 +18,7 @@ void diminuto_cue_init(diminuto_cue_state_t * statep, int initial)
     statep->c = initial;
     statep->r = initial;
     statep->p = initial;
+    return statep;
 }
 
 int diminuto_cue_debounce(diminuto_cue_state_t * statep, int input)

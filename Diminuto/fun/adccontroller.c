@@ -142,6 +142,7 @@ int main(int argc, char ** argv) {
     diminuto_ticks_t elapsed = 0;
     int bit = 0;
     diminuto_modulator_t modulator = { 0 };
+    diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     diminuto_controller_parameters_t parameters = { 0 };
     diminuto_controller_state_t state = { 0 };
     int increment = 1;
@@ -283,8 +284,8 @@ int main(int argc, char ** argv) {
      * Pulse width moddulator.
      */
 
-    rc = diminuto_modulator_init(&modulator, led, output);
-    assert(rc >= 0);
+    mp = diminuto_modulator_init(&modulator, led, output);
+    assert(mp == &modulator);
 
     /*
      * Signal handlers.
@@ -397,8 +398,8 @@ int main(int argc, char ** argv) {
     rc = diminuto_modulator_stop(&modulator);
     assert(rc >= 0);
 
-    rc = diminuto_modulator_fini(&modulator);
-    assert(rc >= 0);
+    mp = diminuto_modulator_fini(&modulator);
+    assert(mp == (diminuto_modulator_t *)0);
 
     diminuto_controller_fini(&parameters, &state);
 

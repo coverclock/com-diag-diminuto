@@ -16,9 +16,30 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <errno.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
+
+static void * isr(void * cp)
+{
+    int sig = -1;
+    pid_t pid = -1;
+    int rc = -1;
+
+    sig = (int)(intptr_t)cp;
+    pid = getpid();
+    rc = kill(pid, sig);
+    if (rc < 0) {
+        diminuto_perror("kill");
+    }
+
+    return (void *)(intptr_t)rc;
+}
 
 int main(int argc, char ** argv)
 {
+    diminuto_timer_t timer;
     diminuto_sticks_t value;
     diminuto_sticks_t result;
     diminuto_ticks_t hertz;
@@ -52,6 +73,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    ASSERT(diminuto_timer_init_oneshot(&timer, isr) == &timer);
+
     diminuto_core_enable();
     diminuto_alarm_install(0);
 
@@ -65,7 +88,7 @@ int main(int argc, char ** argv)
 
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
-        ASSERT(diminuto_timer_oneshot(requested) != (diminuto_sticks_t)-1);
+        ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) != (diminuto_sticks_t)-1);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
         /*
@@ -77,7 +100,7 @@ int main(int argc, char ** argv)
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         now = result;
         ASSERT(now >= then);
-        ASSERT(diminuto_timer_oneshot(0) != (diminuto_sticks_t)-1);
+        ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
         computed = (requested * 2) - remaining;
@@ -95,5 +118,8 @@ int main(int argc, char ** argv)
         );
     }
 
+    ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
     EXIT();
 }
+

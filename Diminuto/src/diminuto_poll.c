@@ -26,7 +26,7 @@ static inline int ppoll(struct pollfd *__fds, nfds_t __nfds, const struct timesp
 }
 #endif
 
-void diminuto_poll_init(diminuto_poll_t * pollp)
+diminuto_poll_t * diminuto_poll_init(diminuto_poll_t * pollp)
 {
     diminuto_mux_init(&pollp->mux);
     pollp->pollfd = (struct pollfd *)0;
@@ -34,9 +34,10 @@ void diminuto_poll_init(diminuto_poll_t * pollp)
     pollp->min = DIMINUTO_MUX_MOSTPOSITIVE;
     pollp->max = DIMINUTO_MUX_MOSTNEGATIVE;
     pollp->refresh = 0;
+    return pollp;
 }
 
-void diminuto_poll_fini(diminuto_poll_t * pollp)
+diminuto_poll_t * diminuto_poll_fini(diminuto_poll_t * pollp)
 {
     free(pollp->pollfd);
     pollp->pollfd = (struct pollfd *)0;
@@ -44,6 +45,7 @@ void diminuto_poll_fini(diminuto_poll_t * pollp)
     pollp->min = DIMINUTO_MUX_MOSTPOSITIVE;
     pollp->max = DIMINUTO_MUX_MOSTNEGATIVE;
     pollp->refresh = !0;
+    return (diminuto_poll_t *)0;
 }
 
 static inline void poll_bounds(diminuto_poll_t * pollp, diminuto_mux_set_t * setp)

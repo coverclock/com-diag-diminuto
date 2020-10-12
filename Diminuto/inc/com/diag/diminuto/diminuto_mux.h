@@ -93,14 +93,19 @@ typedef struct DiminutoMux {
  * (in other words, blocked signals are automatically registered).
  * Signals can be removed from this cached mask by unregistering them.
  * @param muxp points to a multiplexer structure.
+ * @return a pointer ot the object or NULL if an error occurred.
  */
-extern void diminuto_mux_init(diminuto_mux_t * muxp);
+extern diminuto_mux_t * diminuto_mux_init(diminuto_mux_t * muxp);
 
 /**
  * Handle any necessary deinitialization on a multiplexer.
  * param muxp points to the multiplexer structure.
+ * @return NULL or a pointer ot the object if an error occurred.
  */
-static inline void diminuto_mux_fini(diminuto_mux_t * muxp) {}
+static inline diminuto_mux_t * diminuto_mux_fini(diminuto_mux_t * muxp)
+{
+    return (diminuto_mux_t *)0;
+}
 
 /**
  * Register a file descriptor with the multiplexer for reading.
