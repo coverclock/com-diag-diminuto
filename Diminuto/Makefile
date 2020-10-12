@@ -982,6 +982,8 @@ extended:
 	unittest-mux6
 	unittest-mux-eventloop
 	unittest-periodic
+	unittest-periodic2
+	unittest-periodic3
 	unittest-poll4
 	unittest-poll6
 	unittest-poll-eventloop
@@ -989,6 +991,7 @@ extended:
 	unittest-time-cost
 	unittest-timer
 	unittest-timer2
+	unittest-timer3
 
 geologic:
 	unittest-epoch
@@ -1078,9 +1081,12 @@ logging:
 
 timers:
 	unittest-frequency
-	unittest-timer2
 	unittest-timer
+	unittest-timer2
+	unittest-timer3
 	unittest-periodic
+	unittest-periodic2
+	unittest-periodic3
 	unittest-alarm
 	unittest-uninterruptible
 

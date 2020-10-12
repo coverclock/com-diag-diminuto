@@ -21,22 +21,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-static void * isr(void * cp)
-{
-    int sig = -1;
-    pid_t pid = -1;
-    int rc = -1;
-
-    sig = (int)(intptr_t)cp;
-    pid = getpid();
-    rc = kill(pid, sig);
-    if (rc < 0) {
-        diminuto_perror("kill");
-    }
-
-    return (void *)(intptr_t)rc;
-}
-
 int main(int argc, char ** argv)
 {
     diminuto_timer_t timer;
@@ -73,7 +57,7 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
-    ASSERT(diminuto_timer_init_oneshot(&timer, isr) == &timer);
+    ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
 
     diminuto_core_enable();
     diminuto_alarm_install(0);
