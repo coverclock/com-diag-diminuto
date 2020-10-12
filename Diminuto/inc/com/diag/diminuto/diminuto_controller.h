@@ -276,8 +276,7 @@ extern void diminuto_controller_init(diminuto_controller_parameters_t * sp, dimi
 extern diminuto_controller_output_t diminuto_controller(const diminuto_controller_parameters_t * sp, diminuto_controller_state_t * dp, diminuto_controller_input_t target, diminuto_controller_input_t input, diminuto_controller_output_t output);
 
 /**
- * Finalizes a parameter structure and a state structure to useful default
- * values.
+ * Releases any dynamically acquired resources associated with a controller.
  * @param sp points to the static parameters structure or null if none.
  * @param dp points to the dynamic state structure or null if none.
  */
