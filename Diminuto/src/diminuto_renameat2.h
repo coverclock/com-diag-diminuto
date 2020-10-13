@@ -28,11 +28,14 @@
 
 #if defined(__USE_GNU) && defined(_GNU_SOURCE) && (((__GLIBC__*1000)+(__GLIBC_MINOR__))>2028)
 
+#   define DIMINUTO_RENAMEAT2_GLIBC (1)
+
     /* renameat2(2) available on GNU 2.28 and later. */
 
 #elif defined(SYS_renameat2)
 
 #   warning renameat2(2) not available on this platform so using SYS_renameat2 instead!
+#   define DIMINUTO_RENAMEAT2_SYSCALL (1)
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -44,13 +47,12 @@
  * @param flags is a set of flags modifying behavior.
  * @return 0 if successful, <0 with errno set otherwise.
  */
-static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-    return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
-}
+extern int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags);
 
 #else
 
 #   warning renameat2(2) or SYS_renameat2 not available on this platform so stubbing out!
+#   define DIMINUTO_RENAMEAT2_STUB (1)
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -62,10 +64,7 @@ static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, co
  * @param flags is a set of flags modifying behavior.
  * @return -1 for failure always.
  */
-static inline int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
-    errno = ENOSYS;
-    return -1;
-}
+extern int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags);
 
 #   if !defined(RENAME_NOREPLACE)
 #       define RENAME_NOREPLACE 0
