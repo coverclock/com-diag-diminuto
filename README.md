@@ -238,6 +238,7 @@ gcc 9.2.1
 * ipcalc - calculate IPv4 addresses and masks.
 * juliet - display the local time in ISO 8601 format.
 * log - log from command line and/or stdin using Diminuto log functions.
+* logging - display the configuration and state of the log feature.
 * loopback - provide a configurable serial port loopback.
 * memtool - manipulate memory mapped registers directly (requires root).
 * mmdrivertool - manipulate memory mapped registers using a device driver.
