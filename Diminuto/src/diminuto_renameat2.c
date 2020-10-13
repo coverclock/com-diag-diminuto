@@ -21,6 +21,7 @@
  * a compile warning about a prototype mismatch.)
  */
 
+#include "../src/diminuto_renameat2.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -29,17 +30,21 @@
 #include <sys/syscall.h>
 #include <gnu/libc-version.h>
 
-#if defined(DIMINUTO_RENAMEAT2_GLIBC)
+#if defined(COM_DIAG_DIMINUTO_RENAMEAT2_GLIBC)
 
 	/* Do nothing. */
 
-#elif	defined(DIMINUTO_RENAMEAT2_SYSCALL)
+#elif	defined(COM_DIAG_DIMINUTO_RENAMEAT2_SYSCALL)
+
+#   warning renameat2(2) not available on this platform so using SYS_renameat2 instead!
 
 int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
     return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
 }
 
-#elif defined(DIMINUTO_RENAMEAT2_STUB)
+#elif defined(COM_DIAG_DIMINUTO_RENAMEAT2_STUB)
+
+#   warning renameat2(2) or SYS_renameat2 not available on this platform so stubbing out!
 
 int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
     errno = ENOSYS;
@@ -48,6 +53,6 @@ int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * new
 
 #else
 
-	/* Do nothing. */
+#   warning renameat2(2) availability is unknown on this platform!
 
 #endif

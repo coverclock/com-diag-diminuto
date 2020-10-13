@@ -28,14 +28,13 @@
 
 #if defined(__USE_GNU) && defined(_GNU_SOURCE) && (((__GLIBC__*1000)+(__GLIBC_MINOR__))>2028)
 
-#   define DIMINUTO_RENAMEAT2_GLIBC (1)
+#   define COM_DIAG_DIMINUTO_RENAMEAT2_GLIBC (1)
 
     /* renameat2(2) available on GNU 2.28 and later. */
 
 #elif defined(SYS_renameat2)
 
-#   warning renameat2(2) not available on this platform so using SYS_renameat2 instead!
-#   define DIMINUTO_RENAMEAT2_SYSCALL (1)
+#   define COM_DIAG_DIMINUTO_RENAMEAT2_SYSCALL (1)
 
 /**
  * Atomically change the name of a file providing it does not already exist.
@@ -51,8 +50,7 @@ extern int renameat2(int olddirfd, const char * oldpath, int newdirfd, const cha
 
 #else
 
-#   warning renameat2(2) or SYS_renameat2 not available on this platform so stubbing out!
-#   define DIMINUTO_RENAMEAT2_STUB (1)
+#   define COM_DIAG_DIMINUTO_RENAMEAT2_STUB (1)
 
 /**
  * Atomically change the name of a file providing it does not already exist.
