@@ -263,8 +263,9 @@ static inline int diminuto_log_interactive()
  * of the log mask environmental variable is "COM_DIAG_DIMINUTO_LOG_MASK" and
  * its value is a string number in decimal, octal, or hexadecimal format as
  * understood by strtoul(3), e.g. 255, 0x377, 0xff, 0xFF.
+ * @return the log mask value.
  */
-extern void diminuto_log_setmask(void);
+extern diminuto_log_mask_t diminuto_log_setmask(void);
 
 /**
  * Open the underlying system log communication channel (whatever that is)

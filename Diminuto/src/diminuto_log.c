@@ -70,7 +70,7 @@ bool diminuto_log_cached = false;
  * BASE FUNCTIONS
  *****************************************************************************/
 
-void diminuto_log_setmask(void)
+diminuto_log_mask_t diminuto_log_setmask(void)
 {
     const char * mask = (const char *)0;
 
@@ -79,12 +79,14 @@ void diminuto_log_setmask(void)
         if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
             /* Do nothing. */
         } else if (strcmp(mask, ALL) == 0) {
-            DIMINUTO_LOG_MASK = ~(diminuto_log_mask_t)0;
+            DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
         } else {
             DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
         }
 
     DIMINUTO_CRITICAL_SECTION_END;
+
+    return DIMINUTO_LOG_MASK;
 }
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)

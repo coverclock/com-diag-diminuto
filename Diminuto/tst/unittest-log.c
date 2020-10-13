@@ -37,7 +37,7 @@ int main(int argc, char ** argv)
         diminuto_log_mask = 0;
         ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
         diminuto_log_setmask();
-        ASSERT(diminuto_log_mask == ~(int)0);
+        ASSERT(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
         ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();
         ASSERT(diminuto_log_mask == 0);

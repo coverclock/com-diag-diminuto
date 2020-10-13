@@ -30,7 +30,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	66# API changes that may require that applications be modified.
-MINOR				:=	0# Only functionality or features added with no legacy API changes.
+MINOR				:=	1# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
@@ -351,7 +351,7 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 # COM_DIAG_DIMINUTO_LOG_MASK. For example, this bash command turns on
 # everything.
 #
-#	export COM_DIAG_DIMINUTO_LOG_MASK=0xffff
+#	export COM_DIAG_DIMINUTO_LOG_MASK=0xff
 #
 # The Diminuto logging system sends log messages to the system log (syslog)
 # when the emitter is a kernel-space module or the emitting process is a child
@@ -648,7 +648,7 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
-	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xffff' >> $@
+	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xff' >> $@
 	chmod 755 $@
 
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
@@ -660,7 +660,7 @@ $(OUT)/$(SYM_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
-	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xffff' >> $@
+	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xff' >> $@
 	chmod 755 $@
 
 # For sourcing into a bash shell (for example, ". setup").
