@@ -934,7 +934,7 @@ sanity:
 	unittest-modulator
 	unittest-mutex
 	unittest-number
-	unittest-observation
+	unittest-observation && rm /tmp/diminuto-unittest-observation-*
 	unittest-offsetof
 	unittest-path
 	unittest-phex
@@ -1107,3 +1107,4 @@ sockets:
 renameat2:
 	unittest-renameat2
 	unittest-lock
+	renametooltest

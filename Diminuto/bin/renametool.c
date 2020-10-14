@@ -43,6 +43,7 @@ int main(int argc, char * argv[])
 
         if (argc < 3) {
             fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
+            fprintf(stderr, "       -x        Exhange FROMFILE and TOFILE.\n");
             xc = 2;
             break;
         }
@@ -54,6 +55,7 @@ int main(int argc, char * argv[])
 
         if (argc != (ndx + 2)) {
             fprintf(stderr, "usage: %s [ -x ] FROMFILE TOFILE\n", program);
+            fprintf(stderr, "       -x        Exhange FROMFILE and TOFILE.\n");
             xc = 2;
             break;
         }
