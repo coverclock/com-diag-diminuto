@@ -53,6 +53,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     DIMINUTO_LOG_DEBUG("%s%u", DIMINUTO_LOG_HERE, sizeof(buffer));
     root = ((root = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : root + 1;
     DIMINUTO_LOG_DEBUG("%s\"%s\"", DIMINUTO_LOG_HERE, root);
@@ -98,6 +100,8 @@ int main(int argc, char ** argv)
     prior = diminuto_pin_debug((const char *)0);
     ASSERT(prior != (const char *)0);
     EXPECT(prior == root);
+
+    STATUS();
 
     EXIT();
 }

@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -55,6 +55,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     diminuto_core_enable();
 
     hertz = diminuto_frequency();
@@ -96,6 +98,8 @@ int main(int argc, char ** argv)
         }
         ASSERT(diminuto_timer_periodic(0) != (diminuto_sticks_t)-1);
     }
+
+    STATUS();
 
     EXIT();
 }

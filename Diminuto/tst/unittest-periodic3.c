@@ -56,6 +56,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     diminuto_core_enable();
 
     hertz = diminuto_frequency();
@@ -101,6 +103,8 @@ int main(int argc, char ** argv)
     }
 
     ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+    STATUS();
 
     EXIT();
 }

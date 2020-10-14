@@ -52,6 +52,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     diminuto_core_enable();
     diminuto_alarm_install(0);
 
@@ -94,6 +96,8 @@ int main(int argc, char ** argv)
             , delta
         );
     }
+
+    STATUS();
 
     EXIT();
 }

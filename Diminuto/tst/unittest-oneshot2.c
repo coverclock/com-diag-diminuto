@@ -73,6 +73,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     ASSERT(diminuto_timer_init_oneshot(&timer, isr) == &timer);
 
     diminuto_core_enable();
@@ -119,6 +121,8 @@ int main(int argc, char ** argv)
     }
 
     ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+    STATUS();
 
     EXIT();
 }
