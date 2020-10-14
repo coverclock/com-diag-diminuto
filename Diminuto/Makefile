@@ -1107,4 +1107,4 @@ sockets:
 renameat2:
 	unittest-renameat2
 	unittest-lock
-	renametooltest
+	renametooltest && echo "SUCCESS." || echo "FAILED!"

@@ -46,6 +46,15 @@ rm -f ${SRCE} ${DEST}
 test -f ${SRCE} && exit 1
 test -f ${DEST} && exit 2
 
+SRCE=$(mktemp -u ${ROOT}/${BASE}-srce-XXXXXXXXXX)
+DEST=$(mktemp -u ${ROOT}/${BASE}-dest-XXXXXXXXXX)
+test -f ${SRCE} && exit 1
+test -f ${DEST} && exit 2
+renametool -x ${SRCE} ${DEST} && exit 3
+rm -f ${SRCE} ${DEST}
+test -f ${SRCE} && exit 1
+test -f ${DEST} && exit 2
+
 SRCE=$(mktemp ${ROOT}/${BASE}-srce-XXXXXXXXXX)
 DEST=$(mktemp -u ${ROOT}/${BASE}-dest-XXXXXXXXXX)
 test -f ${SRCE} || exit 1
