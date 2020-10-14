@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	66# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host", my
 # X86_64 Ubuntu build server. While Diminuto has been built, tested, and used
@@ -956,6 +956,7 @@ sanity:
 	unittest-testify
 	unittest-thread
 	unittest-throttle
+	unittest-timer
 	unittest-time-zone
 	unittest-tree
 	unittest-uninterruptible
@@ -981,7 +982,10 @@ extended:
 	unittest-mux4
 	unittest-mux6
 	unittest-mux-eventloop
-	unittest-periodic
+	unittest-oneshot1
+	unittest-oneshot2
+	unittest-oneshot3
+	unittest-periodic1
 	unittest-periodic2
 	unittest-periodic3
 	unittest-poll4
@@ -989,9 +993,6 @@ extended:
 	unittest-poll-eventloop
 	unittest-time
 	unittest-time-cost
-	unittest-timer
-	unittest-timer2
-	unittest-timer3
 
 geologic:
 	unittest-epoch
@@ -1082,9 +1083,10 @@ logging:
 timers:
 	unittest-frequency
 	unittest-timer
-	unittest-timer2
-	unittest-timer3
-	unittest-periodic
+	unittest-oneshot1
+	unittest-oneshot2
+	unittest-oneshot3
+	unittest-periodic1
 	unittest-periodic2
 	unittest-periodic3
 	unittest-alarm

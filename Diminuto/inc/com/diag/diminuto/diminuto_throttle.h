@@ -70,6 +70,16 @@ typedef struct DiminutoThrottle {
  ******************************************************************************/
 
 /**
+ * @def COM_DIAG_DIMINUTO_THROTTLE_FREQUENCY
+ * This manifest constant is the frequency in Hertz at which this feature
+ * operates. The inverse of this value is the smallest unit of time in fractions
+ * of a second that this feature can express or use. This constant is provided
+ * for use in those cases where it is useful to have the value at compile time.
+ * However, you chould always prefer to use the inline function when possible.
+ */
+#define COM_DIAG_DIMINUTO_THROTTLE_FREQUENCY (COM_DIAG_DIMINUTO_FREQUENCY)
+
+/**
  * Return the resolution of the Diminuto throttle time units in ticks per second
  * (Hertz). Time intervals smaller than the equivalent period in ticks will
  * not yield the expected results.
