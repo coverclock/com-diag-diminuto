@@ -176,15 +176,15 @@ extern int diminuto_unittest_errno;
 /**
  * @def ADVISE(_COND_)
  * Emit a notice message if the specified condition @a _COND_ is not true.
+ * We emit the errno number even thoough it might not be germane.
  */
 #define ADVISE(_COND_) \
     do { \
         diminuto_unittest_errno = errno; \
         if (!(_COND_)) { \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
-            if (diminuto_unittest_errno) { \
-                diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
-            } \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_NOTICE, DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d errno=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, #_COND_); \
+            fflush(stdout); \
+            fflush(stderr); \
         } \
     } while (0)
 
@@ -192,6 +192,7 @@ extern int diminuto_unittest_errno;
  * @def EXPECT(_COND_)
  * Emit a warning message if the specified condition @a _COND_ is not true
  * and increment the error counter.
+ * We emit the errno number even thoough it might not be germane.
  */
 #define EXPECT(_COND_) \
     do { \
@@ -199,10 +200,9 @@ extern int diminuto_unittest_errno;
         if (!(_COND_)) { \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: test=%d errors=%d total=%d !(%s)?\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
-            if (diminuto_unittest_errno) { \
-                diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
-            } \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_WARNING, DIMINUTO_LOG_HERE "EXPECT: test=%d errors=%d total=%d errno=%d !(%s)?\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, #_COND_); \
+            fflush(stdout); \
+            fflush(stderr); \
         } \
     } while (0)
 
@@ -210,6 +210,7 @@ extern int diminuto_unittest_errno;
  * @def ASSERT(_COND_)
  * Emit a warning message if the specified condition @a _COND_ is not true,
  * increment the error counter, and exit immediately.
+ * We emit the errno number even thoough it might not be germane.
  */
 #define ASSERT(_COND_) \
     do { \
@@ -217,10 +218,7 @@ extern int diminuto_unittest_errno;
         if (!(_COND_)) { \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
-            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: test=%d errors=%d total=%d !(%s)!\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, #_COND_); \
-            if (diminuto_unittest_errno) { \
-                diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: errno=%d=\"%s\".\n", diminuto_unittest_errno, strerror(diminuto_unittest_errno)); \
-            } \
+            diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, DIMINUTO_LOG_HERE "ASSERT: test=%d errors=%d total=%d errno=%d !(%s)!\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno,  #_COND_); \
             fflush(stdout); \
             fflush(stderr); \
             exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
