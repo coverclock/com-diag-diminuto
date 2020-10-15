@@ -22,13 +22,28 @@ int main(int argc, char ** argv)
     COMMENT();
     EXPECT(!0);
     ASSERT(!0);
+    ADVISE(!0);
     STATUS();
     TEST("Test");
     CHECKPOINT("%s", argv[0]);
     COMMENT("%s", argv[0]);
     if (fork() == 0) {
+        COMMENT();
         EXPECT(0);
+        STATUS("Status");
+        EXIT("Exit");
+        exit(0);
+    }
+    if (fork() == 0) {
+        COMMENT();
         ASSERT(0);
+        STATUS("Status");
+        EXIT("Exit");
+        exit(0);
+    }
+    if (fork() == 0) {
+        COMMENT();
+        ADVISE(0);
         STATUS("Status");
         EXIT("Exit");
         exit(0);
