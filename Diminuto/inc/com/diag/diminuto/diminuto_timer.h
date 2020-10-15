@@ -15,6 +15,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_condition.h"
 #include <pthread.h>
 #include <signal.h>
 #include <time.h>
@@ -50,22 +51,30 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  */
 typedef void * (diminuto_timer_function_t)(void *);
 
+typedef enum DiminutoTimerState {
+    DIMINUTO_TIMER_STATE_IDLE       = 'I',
+    DIMINUTO_TIMER_STATE_ARM        = 'A',
+    DIMINUTO_TIMER_STATE_DISARM     = 'D',
+} diminuto_timer_state_t;
+
 /**
  * This type defines the structure of a Diminuto timer object. The timer can
  * be a one-shot or periodic.
  */
 typedef struct DiminutoTimer {
     diminuto_ticks_t ticks;
+    diminuto_condition_t condition;
     struct sigevent event;
     struct sched_param param;
     pthread_attr_t attributes;
     struct itimerspec current;
     struct itimerspec remaining;
-    int periodic;
     timer_t timer;
     diminuto_timer_function_t * function;
     void * context;
     void * value;
+    int periodic;
+    diminuto_timer_state_t state;
 } diminuto_timer_t;
 
 /**

@@ -6,12 +6,25 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * The condition is necessary because, at least in this POSIX implementation,
+ * there is a race condition in which we can already be in the timer
+ * callback function as we stop the timer. Deallocating resources
+ * (especially if we are next going to call the fini function) while
+ * the callback is executing (for example, on another core) cause
+ * wackiness (like a segmentation fault) to ensue. I've seen this
+ * in the modulator unit test. While I regret having to put a
+ * block on a mutex in the timer proxy function, the only time
+ * the proxy will find the mutex locked is when we are stopping the
+ * timer. We wait for the proxy for longer than timeout value, just
+ * to provide some margin.
  */
 
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_coherentsection.h"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -22,7 +35,30 @@ static void proxy(union sigval sv)
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
     tp = (diminuto_timer_t *)sv.sival_ptr;
-    tp->value = (*(tp->function))(tp->context);
+
+    DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+
+        if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
+            tp->state == DIMINUTO_TIMER_STATE_IDLE;
+            (void)diminuto_condition_signal(&(tp->condition));
+        }
+
+    DIMINUTO_CONDITION_END;
+
+    if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+        tp->value = (*(tp->function))(tp->context);
+    }
+
+    if (!tp->periodic) {
+
+         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+
+             tp->state = DIMINUTO_TIMER_STATE_IDLE;
+             (void)diminuto_condition_signal(&(tp->condition));
+
+         DIMINUTO_CONDITION_END;
+
+     }
 }
 
 diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
@@ -35,6 +71,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         memset(tp, 0, sizeof(*tp));
 
         tp->periodic = periodic;
+        tp->state = DIMINUTO_TIMER_STATE_IDLE;
 
         if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
             errno = rc;
@@ -59,6 +96,10 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
+        if (diminuto_condition_init(&(tp->condition)) == (diminuto_condition_t *)0) {
+            break;
+        }
+
         if ((fp != (diminuto_timer_function_t *)0) && (signum > 0)) {
             errno = EINVAL;
             diminuto_perror("diminuto_timer_init: function and signal");
@@ -72,6 +113,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             tp->event.sigev_notify_function = proxy;
             tp->event.sigev_notify_attributes = &(tp->attributes);
         } else if (signum > 0) {
+            tp->function = (diminuto_timer_function_t *)0;
             tp->event.sigev_notify = SIGEV_SIGNAL;
             tp->event.sigev_signo = signum;
         } else {
@@ -115,6 +157,8 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
 
     tp->context = cp;
 
+    tp->ticks = ticks;
+
     tp->current.it_value.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
     tp->current.it_value.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_timer_frequency());
 
@@ -126,6 +170,8 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     }
 
     tp->remaining = tp->current;
+
+    tp->state = DIMINUTO_TIMER_STATE_ARM;
 
     if (timer_settime(tp->timer, 0, &(tp->current), &(tp->remaining)) < 0) {
         diminuto_perror("diminuto_timer_start: timer_settime");
@@ -139,18 +185,34 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
 diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
 {
     diminuto_sticks_t sticks = -1;
+    int rc = 0;
 
-#if 0
-    if (timer_gettime(tp->timer, &(tp->remaining)) < 0) {
-        diminuto_perror("diminuto_timer_stop: timer_gettime");
+    if (tp->function != (diminuto_timer_function_t *)0) {
+
+        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+
+            if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+                tp->state = DIMINUTO_TIMER_STATE_DISARM;
+                while (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
+                    if ((rc = diminuto_condition_wait_until(&(tp->condition), (tp->ticks * 10))) == DIMINUTO_CONDITION_TIMEDOUT) {
+                        errno = rc;
+                        diminuto_perror("diminuto_timer_stop");
+                        break;
+                    }
+                }
+            }
+
+        DIMINUTO_CONDITION_END;
+
     }
-#endif
 
     tp->current.it_value.tv_sec = 0;
     tp->current.it_value.tv_nsec = 0;
 
     if (timer_settime(tp->timer, 0, &(tp->current), &(tp->remaining)) < 0) {
         diminuto_perror("diminuto_timer_stop: timer_settime");
+    } else if (rc != 0) {
+        /* Do nothing. */
     } else {
         sticks = diminuto_frequency_seconds2ticks(tp->remaining.it_value.tv_sec, tp->remaining.it_value.tv_nsec, diminuto_timer_frequency());
     }
