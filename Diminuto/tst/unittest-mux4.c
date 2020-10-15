@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
 
@@ -168,7 +170,30 @@ int main(int argc, char ** argv)
     extern int diminuto_alarm_debug;
 
     SETLOGMASK();
+
     diminuto_alarm_debug = !0;
+
+    {
+        int fd;
+
+        /*
+         * Not really a test, just wanted to isolate this code.
+         * Redirect standard input to /dev/null so we should never
+         * have a ready to read condition on it. This saves us
+         * from having to redirect stdin to /dev/null on the
+         * command line.
+         */
+
+        TEST();
+
+        ASSERT((fd = open("/dev/null", O_RDONLY)) >= 0);
+        ASSERT(fd != STDIN_FILENO);
+        ASSERT(close(STDIN_FILENO) == 0);
+        ASSERT(dup2(fd, STDIN_FILENO) == 0);
+        ASSERT(close(fd) == 0);
+
+        STATUS();
+    }
 
     {
         diminuto_mux_t mux;
@@ -797,6 +822,12 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+#if !0
+    {
+        EXIT();
+    }
+#endif
 
     {
         int listener;
