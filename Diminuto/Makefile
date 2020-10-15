@@ -931,7 +931,7 @@ sanity:
 	unittest-lock
 	unittest-log
 	unittest-memory
-	unittest-modulator
+	coreable unittest-modulator
 	unittest-mutex
 	unittest-number
 	unittest-observation && rm /tmp/diminuto-unittest-observation-*

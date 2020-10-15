@@ -24,20 +24,56 @@
 #include <string.h>
 #include <errno.h>
 
+/**
+ * Current test number.
+ */
 extern int diminuto_unittest_test;
+
+/**
+ * Total number of tests executed.
+ */
 extern int diminuto_unittest_tests;
+
+/**
+ * Number of errors in current test.
+ */
 extern int diminuto_unittest_errors;
+
+/**
+ * Total number of errors.
+ */
 extern int diminuto_unittest_total;
+
+/**
+ * Most recent error number.
+ */
 extern int diminuto_unittest_errno;
 
+#if !0
+/**
+ * @def SETLOGMASK()
+ * Set the log mask from the string value of the environmental variable
+ * DIMINUTO_LOG_MASK. The value of the environmental variable can be in decimal,
+ * hexadecimal, or octal in strtoul() format. Also enables core dumps.
+ */
+#   define SETLOGMASK() \
+    do { \
+        diminuto_log_setmask(); \
+        diminuto_core_enable(); \
+    } while (0)
+#else
 /**
  * @def SETLOGMASK()
  * Set the log mask from the string value of the environmental variable
  * DIMINUTO_LOG_MASK. The value of the environmental variable can be in decimal,
  * hexadecimal, or octal in strtoul() format.
  */
-#define SETLOGMASK() \
-    diminuto_log_setmask()
+#   define SETLOGMASK() \
+    do { \
+        diminuto_log_setmask() \
+        diminuto_core_enable(); \
+    } while (0)
+#endif
 
 /**
  * @def TEST(...)
