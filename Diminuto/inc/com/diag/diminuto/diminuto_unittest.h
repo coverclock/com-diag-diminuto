@@ -71,7 +71,6 @@ extern int diminuto_unittest_errno;
 #   define SETLOGMASK() \
     do { \
         diminuto_log_setmask() \
-        diminuto_core_enable(); \
     } while (0)
 #endif
 
