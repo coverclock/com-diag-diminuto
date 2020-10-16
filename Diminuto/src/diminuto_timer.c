@@ -23,6 +23,7 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include <string.h>
@@ -36,32 +37,41 @@ static void proxy(union sigval sv)
 
     tp = (diminuto_timer_t *)sv.sival_ptr;
 
+    /*
+     * Mutex locking is relatively fast. The only time
+     * we will block is when the owner is trying to stop
+     * the timer, in which case some delay here is moot.
+     */
+
     DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
         if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
-            tp->state == DIMINUTO_TIMER_STATE_IDLE;
+            tp->state = DIMINUTO_TIMER_STATE_IDLE;
             (void)diminuto_condition_signal(&(tp->condition));
-fprintf(stderr, "%llx:PRE %c\n", (unsigned long long)pthread_self(), tp->state);
         }
 
     DIMINUTO_CONDITION_END;
 
     if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
-fprintf(stderr, "%llx:EXEC %c\n", (unsigned long long)pthread_self(), tp->state);
         tp->value = (*(tp->function))(tp->context);
     }
 
     if (!tp->periodic) {
 
-         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+        /*
+         * If we are a one-shot timer, then we might as
+         * well stop ourselves, which will prevent the need
+         * for the owner to wait.
+         */
+
+        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
             if (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
                 tp->state = DIMINUTO_TIMER_STATE_IDLE;
                 (void)diminuto_condition_signal(&(tp->condition));
-fprintf(stderr, "%llx:POST %c\n", (unsigned long long)pthread_self(), tp->state);
             }
 
-         DIMINUTO_CONDITION_END;
+        DIMINUTO_CONDITION_END;
 
      }
 }
@@ -106,7 +116,6 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         if (diminuto_condition_init(&(tp->condition)) == (diminuto_condition_t *)0) {
             break;
         }
-fprintf(stderr, "%llx:INIT %d\n", (unsigned long long)pthread_self(), tp->periodic);
 
         if ((fp != (diminuto_timer_function_t *)0) && (signum > 0)) {
             errno = EINVAL;
@@ -188,24 +197,24 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
 diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
 {
     diminuto_sticks_t sticks = -1;
+    diminuto_ticks_t later = 0;
     int rc = 0;
 
     if (tp->function != (diminuto_timer_function_t *)0) {
 
         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
-fprintf(stderr, "%llx:BEFORE %c %llu\n", (unsigned long long)pthread_self(), tp->state, (unsigned long long)tp->ticks);
             if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
                 tp->state = DIMINUTO_TIMER_STATE_DISARM;
                 while (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
-                    if ((rc = diminuto_condition_wait_until(&(tp->condition), tp->ticks * 10)) == DIMINUTO_CONDITION_TIMEDOUT) {
+                    later = diminuto_condition_clock() + (tp->ticks * 2);
+                    if ((rc = diminuto_condition_wait_until(&(tp->condition), later)) == DIMINUTO_CONDITION_TIMEDOUT) {
                         errno = rc;
                         diminuto_perror("diminuto_timer_stop");
                         break;
                     }
                 }
             }
-fprintf(stderr, "%llx:AFTER %c %llu\n", (unsigned long long)pthread_self(), tp->state, (unsigned long long)tp->ticks);
 
         DIMINUTO_CONDITION_END;
 
