@@ -908,7 +908,7 @@ sanity:
 	unittest-bufferpool
 	unittest-coherentsection
 	unittest-containerof
-	coreable unittest-coreable && false || true
+	unittest-coreable && false || true
 	unittest-countof
 	unittest-criticalsection
 	unittest-cue
@@ -931,7 +931,7 @@ sanity:
 	unittest-lock
 	unittest-log
 	unittest-memory
-	coreable unittest-modulator
+	unittest-modulator
 	unittest-mutex
 	unittest-number
 	unittest-observation && rm /tmp/diminuto-unittest-observation-*
