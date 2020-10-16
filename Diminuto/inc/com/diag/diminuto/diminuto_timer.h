@@ -51,6 +51,11 @@ static inline diminuto_sticks_t diminuto_timer_frequency(void)
  */
 typedef void * (diminuto_timer_function_t)(void *);
 
+/**
+ * A timer can be in one of these states. The feature uses these states
+ * along with a mutex and condition to eliminate the race condition
+ * between the caller and the timer callback function.
+ */
 typedef enum DiminutoTimerState {
     DIMINUTO_TIMER_STATE_IDLE       = 'I',
     DIMINUTO_TIMER_STATE_ARM        = 'A',

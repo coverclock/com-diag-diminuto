@@ -49,30 +49,20 @@ extern int diminuto_unittest_total;
  */
 extern int diminuto_unittest_errno;
 
-#if !0
 /**
  * @def SETLOGMASK()
  * Set the log mask from the string value of the environmental variable
  * DIMINUTO_LOG_MASK. The value of the environmental variable can be in decimal,
- * hexadecimal, or octal in strtoul() format. Also enables core dumps.
+ * hexadecimal, or octal in strtoul() format. Also performs other useful
+ * initialization for unit tests, like making sure the standard error stream
+ * is unbuffered, and enabling core dumps.
  */
-#   define SETLOGMASK() \
+#define SETLOGMASK() \
     do { \
         diminuto_log_setmask(); \
+        setvbuf(stderr, (char *)0, _IONBF, 0); \
         diminuto_core_enable(); \
     } while (0)
-#else
-/**
- * @def SETLOGMASK()
- * Set the log mask from the string value of the environmental variable
- * DIMINUTO_LOG_MASK. The value of the environmental variable can be in decimal,
- * hexadecimal, or octal in strtoul() format.
- */
-#   define SETLOGMASK() \
-    do { \
-        diminuto_log_setmask() \
-    } while (0)
-#endif
 
 /**
  * @def TEST(...)

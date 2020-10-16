@@ -41,11 +41,13 @@ static void proxy(union sigval sv)
         if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
             tp->state == DIMINUTO_TIMER_STATE_IDLE;
             (void)diminuto_condition_signal(&(tp->condition));
+fprintf(stderr, "%llx:PRE %c\n", (unsigned long long)pthread_self(), tp->state);
         }
 
     DIMINUTO_CONDITION_END;
 
     if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+fprintf(stderr, "%llx:EXEC %c\n", (unsigned long long)pthread_self(), tp->state);
         tp->value = (*(tp->function))(tp->context);
     }
 
@@ -53,8 +55,11 @@ static void proxy(union sigval sv)
 
          DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
-             tp->state = DIMINUTO_TIMER_STATE_IDLE;
-             (void)diminuto_condition_signal(&(tp->condition));
+            if (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
+                tp->state = DIMINUTO_TIMER_STATE_IDLE;
+                (void)diminuto_condition_signal(&(tp->condition));
+fprintf(stderr, "%llx:POST %c\n", (unsigned long long)pthread_self(), tp->state);
+            }
 
          DIMINUTO_CONDITION_END;
 
@@ -68,10 +73,12 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
 
     do {
 
-        memset(tp, 0, sizeof(*tp));
-
+        tp->ticks = 0;
         tp->periodic = periodic;
         tp->state = DIMINUTO_TIMER_STATE_IDLE;
+        tp->function = (diminuto_timer_function_t *)0;
+        tp->context = (void *)0;
+        tp->value = (void *)0;
 
         if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
             errno = rc;
@@ -99,6 +106,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         if (diminuto_condition_init(&(tp->condition)) == (diminuto_condition_t *)0) {
             break;
         }
+fprintf(stderr, "%llx:INIT %d\n", (unsigned long long)pthread_self(), tp->periodic);
 
         if ((fp != (diminuto_timer_function_t *)0) && (signum > 0)) {
             errno = EINVAL;
@@ -106,14 +114,11 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         } else if (fp != (diminuto_timer_function_t *)0) {
             tp->function = fp;
-            tp->context = (void *)0;
-            tp->value = (void *)0;
             tp->event.sigev_notify = SIGEV_THREAD;
             tp->event.sigev_value.sival_ptr = (void *)tp;
             tp->event.sigev_notify_function = proxy;
             tp->event.sigev_notify_attributes = &(tp->attributes);
         } else if (signum > 0) {
-            tp->function = (diminuto_timer_function_t *)0;
             tp->event.sigev_notify = SIGEV_SIGNAL;
             tp->event.sigev_signo = signum;
         } else {
@@ -156,8 +161,8 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     diminuto_sticks_t sticks = -1;
 
     tp->context = cp;
-
     tp->ticks = ticks;
+    tp->state = DIMINUTO_TIMER_STATE_ARM;
 
     tp->current.it_value.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
     tp->current.it_value.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_timer_frequency());
@@ -170,8 +175,6 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     }
 
     tp->remaining = tp->current;
-
-    tp->state = DIMINUTO_TIMER_STATE_ARM;
 
     if (timer_settime(tp->timer, 0, &(tp->current), &(tp->remaining)) < 0) {
         diminuto_perror("diminuto_timer_start: timer_settime");
@@ -191,16 +194,18 @@ diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
 
         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
+fprintf(stderr, "%llx:BEFORE %c %llu\n", (unsigned long long)pthread_self(), tp->state, (unsigned long long)tp->ticks);
             if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
                 tp->state = DIMINUTO_TIMER_STATE_DISARM;
                 while (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
-                    if ((rc = diminuto_condition_wait_until(&(tp->condition), (tp->ticks * 10))) == DIMINUTO_CONDITION_TIMEDOUT) {
+                    if ((rc = diminuto_condition_wait_until(&(tp->condition), tp->ticks * 10)) == DIMINUTO_CONDITION_TIMEDOUT) {
                         errno = rc;
                         diminuto_perror("diminuto_timer_stop");
                         break;
                     }
                 }
             }
+fprintf(stderr, "%llx:AFTER %c %llu\n", (unsigned long long)pthread_self(), tp->state, (unsigned long long)tp->ticks);
 
         DIMINUTO_CONDITION_END;
 

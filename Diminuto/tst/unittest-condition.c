@@ -106,5 +106,18 @@ int main(void)
         STATUS();
     }
 
+    {
+        TEST();
+
+        DIMINUTO_CONDITION_BEGIN(&condition);
+            ticks = diminuto_condition_clock() + (10 * diminuto_frequency());
+            COMMENT("PAUSING much later");
+            rc = diminuto_condition_wait_until(&condition, ticks);
+            ASSERT(rc == DIMINUTO_CONDITION_TIMEDOUT);
+        DIMINUTO_CONDITION_END;
+
+        STATUS();
+    }
+
     EXIT();
 }

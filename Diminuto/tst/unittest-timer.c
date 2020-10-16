@@ -12,7 +12,7 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include <signal.h>
 
-static void * isr(void * vp) { return (void *)0; }
+static void * callback(void * vp) { return (void *)0; }
 
 int main(int argc, char ** argv)
 {
@@ -26,15 +26,15 @@ int main(int argc, char ** argv)
     {
         diminuto_timer_t timer;
         TEST();
-        ASSERT(diminuto_timer_init_generic(&timer, 0, isr, SIGALRM) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_init_generic(&timer, 0, callback, SIGALRM) == (diminuto_timer_t *)0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
-        ASSERT(diminuto_timer_init_generic(&timer, 0, isr, 0) == &timer);
+        ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
-        ASSERT(diminuto_timer_init_generic(&timer, 0, isr, 0) == &timer);
+        ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }
@@ -56,15 +56,15 @@ int main(int argc, char ** argv)
     {
         diminuto_timer_t timer;
         TEST();
-        ASSERT(diminuto_timer_init_generic(&timer, !0, isr, SIGALRM) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_init_generic(&timer, !0, callback, SIGALRM) == (diminuto_timer_t *)0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
-        ASSERT(diminuto_timer_init_generic(&timer, !0, isr, 0) == &timer);
+        ASSERT(diminuto_timer_init_generic(&timer, !0, callback, 0) == &timer);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
-        ASSERT(diminuto_timer_init_generic(&timer, !0, isr, 0) == &timer);
+        ASSERT(diminuto_timer_init_generic(&timer, !0, callback, 0) == &timer);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }

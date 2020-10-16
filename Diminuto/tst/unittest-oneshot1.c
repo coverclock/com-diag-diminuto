@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
     diminuto_ticks_t remaining;
-    diminuto_ticks_t computed;
+    diminuto_ticks_t claimed;
     diminuto_sticks_t difference;
     char rs;
     char cs;
@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
     DIMINUTO_LOG_INFORMATION("timer frequency %llu Hz\n", frequency);
 
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
-        "requested", "computed", "measured", "error");
+        "requested", "claimed", "measured", "error");
 
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
@@ -82,12 +82,12 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_oneshot(0) != (diminuto_sticks_t)-1);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
-        computed = (requested * 2) - remaining;
+        claimed = (requested * 2) - remaining;
         measured = now - then;
         difference = measured - requested;
         delta = (100.0 * difference) / requested;
         rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
-        cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
+        cs = (diminuto_time_duration(claimed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
         ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
         DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
             , rs, rday, rhour, rminute, rsecond, rtick
