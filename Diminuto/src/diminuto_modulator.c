@@ -82,7 +82,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     return rc;
 }
 
-static void * isr(void * vp)
+static void * callback(void * vp)
 {
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
 
@@ -148,7 +148,7 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->pin = pin;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
-        tp = diminuto_timer_init_periodic(&(mp->timer), isr);
+        tp = diminuto_timer_init_periodic(&(mp->timer), callback);
         if (tp == (diminuto_timer_t *)0) {
             break;
         }

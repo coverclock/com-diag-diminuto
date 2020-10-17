@@ -9,7 +9,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
-#include <stdlib.h>
+#include "com/diag/diminuto/diminuto_core.h"
 #include <string.h>
 
 /*
@@ -21,9 +21,10 @@
 void diminuto_assert_f(int condition, const char * string, const char * file, int line, int error, int flag)
 {
     if (!condition) {
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: CONDITION (%s) FAILED! %d=\"%s\"\n", file, line, string, error, error ? strerror(error) : "");
+        diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: diminuto_%s(%s) FAILED! %d=\"%s\"\n", file, line, flag ? "assert" : "expect", string, error, error ? strerror(error) : "");
         if (flag) {
-            abort();
+            diminuto_core_enable();
+            diminuto_core_fatal();
         }
     }
 }

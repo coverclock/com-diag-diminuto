@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t now;
     diminuto_sticks_t measured;
     diminuto_ticks_t remaining;
-    diminuto_sticks_t computed;
+    diminuto_sticks_t claimed;
     diminuto_sticks_t requested;
     diminuto_sticks_t difference;
     int ii;
@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
     diminuto_alarm_install(0);
 
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
-        "requested", "computed", "measured", "error");
+        "requested", "claimed", "measured", "error");
 
     ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
 
@@ -83,13 +83,13 @@ int main(int argc, char ** argv)
             EXPECT(!diminuto_alarm_check());
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
             now = result;
-            computed = (requested * 2) - remaining;
+            claimed = (requested * 2) - remaining;
             measured = now - then;
             ASSERT(measured > 0);
             difference = measured - requested;
             delta = (100.0 * difference) / requested;
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
-            cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
+            cs = (diminuto_time_duration(claimed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
             DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
                 , rs, rday, rhour, rminute, rsecond, rtick

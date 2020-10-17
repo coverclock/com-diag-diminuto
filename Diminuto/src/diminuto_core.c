@@ -47,10 +47,13 @@ int diminuto_core_enable(void)
 void diminuto_core_fatal(void)
 {
     int rc = -1;
-    char datum = 0;
+    int datum = 0;
 
     abort();
     diminuto_perror("diminuto_core_fatal: abort");
+
+    rc = kill(getpid(), SIGABRT);
+    diminuto_perror("diminuto_core_fatal: kill(SIGABRT)");
 
     rc = kill(getpid(), SIGKILL);
     diminuto_perror("diminuto_core_fatal: kill(SIGKILL)");
@@ -59,9 +62,9 @@ void diminuto_core_fatal(void)
      * Remarkably, I have worked on hardware where deferencing
      * a null pointer in C succeeds.
      */
-    datum = *((volatile char *)0);
+    datum = *((volatile int *)0);
     errno = EINVAL;
-    diminuto_perror("diminuto_core_fatal: *nullptr");
+    diminuto_perror("diminuto_core_fatal: *NULL");
 
     rc = kill(getpid(), SIGSEGV);
     diminuto_perror("diminuto_core_fatal: kill(SIGSEGV)");

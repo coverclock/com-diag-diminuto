@@ -14,6 +14,7 @@ int main(int argc, char ** argv)
 {
     int *pointer = (int *)0;
     TEST();
+    diminuto_core_enable();
     *pointer = 0;
     FAILURE();
     EXIT();

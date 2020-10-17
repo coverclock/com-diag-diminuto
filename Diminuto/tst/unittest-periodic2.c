@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-static void * isr(void * cp)
+static void * callback(void * cp)
 {
     int sig = -1;
     pid_t pid = -1;
@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t now;
     diminuto_sticks_t measured;
     diminuto_ticks_t remaining;
-    diminuto_sticks_t computed;
+    diminuto_sticks_t claimed;
     diminuto_sticks_t requested;
     diminuto_sticks_t difference;
     int ii;
@@ -84,9 +84,9 @@ int main(int argc, char ** argv)
     diminuto_alarm_install(0);
 
     DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
-        "requested", "computed", "measured", "error");
+        "requested", "claimed", "measured", "error");
 
-    ASSERT(diminuto_timer_init_periodic(&timer, isr) == &timer);
+    ASSERT(diminuto_timer_init_periodic(&timer, callback) == &timer);
 
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
         ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) >= 0);
@@ -95,17 +95,18 @@ int main(int argc, char ** argv)
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
             remaining = diminuto_delay(requested * 2, !0);
+            EXPECT(remaining >= 0);
             EXPECT(diminuto_alarm_check());
             EXPECT(!diminuto_alarm_check());
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
             now = result;
-            computed = (requested * 2) - remaining;
+            claimed = (requested * 2) - remaining;
             measured = now - then;
             ASSERT(measured > 0);
             difference = measured - requested;
             delta = (100.0 * difference) / requested;
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
-            cs = (diminuto_time_duration(computed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
+            cs = (diminuto_time_duration(claimed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
             DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
                 , rs, rday, rhour, rminute, rsecond, rtick
