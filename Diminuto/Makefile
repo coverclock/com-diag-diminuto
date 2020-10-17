@@ -933,6 +933,7 @@ sanity:
 	unittest-memory
 	unittest-modulator
 	unittest-mutex
+	unittest-mux4 quick
 	unittest-number
 	unittest-observation && rm /tmp/diminuto-unittest-observation-*
 	unittest-offsetof

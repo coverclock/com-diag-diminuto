@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -168,10 +168,13 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
 int main(int argc, char ** argv)
 {
     extern int diminuto_alarm_debug;
+    int quick = 0;
 
     SETLOGMASK();
 
     diminuto_alarm_debug = !0;
+
+    quick = (argc > 1) && (strcmp(argv[1], "quick") == 0);
 
     {
         int fd;
@@ -701,6 +704,16 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    /*
+     * The unit tests below ran flawlessly for seven years, then
+     * with the upgrade to Ubuntu "focal" the behavior of select(2)
+     * changed subtly: even when stdin fd 0 is reassigned to
+     * /dev/null it reports ready to read. It looks like the
+     * kernel really wants me to read EOF on 0 and then close
+     * it. I can't really argue that this behavior is wrong; but
+     * it is different.
+     */
+
     {
         diminuto_mux_t mux;
         int socket;
@@ -718,39 +731,31 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_register_write(&mux, STDERR_FILENO) >= 0);
         ASSERT(diminuto_mux_register_accept(&mux, socket) >= 0);
 
-        CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
         COMMENT("rc=%d\n", rc);
-        ADVISE(rc == 2);
-        ASSERT(rc > 0);
-        CHECKPOINT();
+        ASSERT((rc == 2) || (rc == 3));
 
-        CHECKPOINT();
-        while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
-            COMMENT("fd=%d\n", fd);
-            ADVISE(fd < 0);
-        }
-        CHECKPOINT();
+        fd = diminuto_mux_ready_read(&mux);
+        COMMENT("fd=%d\n", fd);
+        ASSERT((fd < 0) || (fd == STDIN_FILENO));
+
+        fd = diminuto_mux_ready_read(&mux);
+        COMMENT("fd=%d\n", fd);
+        ASSERT(fd < 0);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
-        CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
         COMMENT("rc=%d\n", rc);
-        ADVISE(rc == 2);
-        ASSERT(rc > 0);
-        CHECKPOINT();
+        ASSERT((rc == 2) || (rc == 3));
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
 
-        CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
         COMMENT("rc=%d\n", rc);
-        ADVISE(rc == 2);
-        ASSERT(rc > 0);
-        CHECKPOINT();
+        ADVISE((rc == 2) || (rc == 3));
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
@@ -759,12 +764,9 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_unregister_read(&mux, STDIN_FILENO) >= 0);
         ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) >= 0);
 
-        CHECKPOINT();
         rc = diminuto_mux_wait(&mux, -1);
         COMMENT("rc=%d\n", rc);
-        ADVISE(rc == 1);
-        ASSERT(rc > 0);
-        CHECKPOINT();
+        ASSERT(rc == 1);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
@@ -774,9 +776,7 @@ int main(int argc, char ** argv)
 
         diminuto_mux_dump(&mux);
 
-        CHECKPOINT();
         ASSERT(diminuto_mux_wait(&mux, 0) == 0);
-        CHECKPOINT();
 
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
@@ -788,6 +788,7 @@ int main(int argc, char ** argv)
     {
         diminuto_mux_t mux;
         int rc;
+        int fd;
 
         TEST();
 
@@ -798,9 +799,15 @@ int main(int argc, char ** argv)
 
         rc = diminuto_mux_wait(&mux, -1);
         COMMENT("rc=%d\n", rc);
-        ADVISE(rc == 1);
+        ASSERT((rc == 1) || (rc == 2));
 
-        ASSERT(diminuto_mux_ready_read(&mux) < 0);
+        fd = diminuto_mux_ready_read(&mux);
+        COMMENT("fd=%d\n", fd);
+        ASSERT((fd < 0) || (fd == STDIN_FILENO));
+
+        fd = diminuto_mux_ready_read(&mux);
+        COMMENT("fd=%d\n", fd);
+        ASSERT(fd < 0);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
@@ -823,11 +830,7 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
-#if !0
-    {
-        EXIT();
-    }
-#endif
+    if (quick) { EXIT(); }
 
     {
         int listener;
