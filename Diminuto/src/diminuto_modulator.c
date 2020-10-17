@@ -193,23 +193,15 @@ int diminuto_modulator_stop(diminuto_modulator_t * mp)
 
 diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp)
 {
-    diminuto_timer_t * tp = (diminuto_timer_t *)0;
+    diminuto_modulator_t * result = (diminuto_modulator_t *)0;
 
-    do {
+    if (diminuto_timer_fini(&(mp->timer)) != (diminuto_timer_t *)0) {
+        result = mp;
+    }
 
-        tp = diminuto_timer_fini(&(mp->timer));
-        if (tp != (diminuto_timer_t *)0) {
-            break;
-        }
+    if ((mp->fp = diminuto_pin_unused(mp->fp, mp->pin)) != (FILE *)0) {
+        result = mp;
+    }
 
-        mp->fp = diminuto_pin_unused(mp->fp, mp->pin);
-        if (mp->fp != (FILE *)0) {
-            break;
-        }
-
-        mp = (diminuto_modulator_t *)0;
-
-    } while (0);
-
-    return mp;
+    return result;
 }

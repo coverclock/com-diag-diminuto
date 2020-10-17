@@ -84,22 +84,28 @@ int main(int argc, char ** argv)
     EXPECT(systemf("touch %s/class/gpio/gpio%u/edge", root, 99) == 0);
     EXPECT(systemf("touch %s/class/gpio/gpio%u/active_low", root, 99) == 0);
 
+    COMMENT("init");
     ASSERT(diminuto_modulator_init(&modulator, 99, 50) == &modulator);
 
+        COMMENT("start");
         ASSERT(diminuto_modulator_start(&modulator) >= 0);
 
             diminuto_delay(diminuto_frequency(), 0);
 
+            COMMENT("set");
             ASSERT(diminuto_modulator_set(&modulator, 20) >= 0);
 
             diminuto_delay(diminuto_frequency(), 0);
 
+            COMMENT("set");
             ASSERT(diminuto_modulator_set(&modulator, 60) >= 0);
 
             diminuto_delay(diminuto_frequency(), 0);
 
+        COMMENT("stop");
         ASSERT(diminuto_modulator_stop(&modulator) >= 0);
 
+   COMMENT("fini");
     ASSERT(diminuto_modulator_fini(&modulator) == (diminuto_modulator_t *)0);
 
     EXPECT(systemf("rm -rf %s", root) == 0);

@@ -150,16 +150,22 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
 
 diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp)
 {
-    diminuto_timer_t * result = tp;
+    diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
 
-    if ((rc = timer_delete(tp->timer)) < 0) {
+    if (timer_delete(tp->timer) < 0) {
         diminuto_perror("diminuto_timer_fini: timer_delete");
-    } else if ((rc = pthread_attr_destroy(&(tp->attributes))) != 0) {
+        result = tp;
+    }
+
+    if ((rc = pthread_attr_destroy(&(tp->attributes))) != 0) {
         errno = rc;
         diminuto_perror("diminuto_timer_fini: pthread_attr_init");
-    } else {
-        result = (diminuto_timer_t *)0;
+        result = tp;
+    }
+
+    if (diminuto_condition_fini(&(tp->condition)) != (diminuto_condition_t *)0) {
+        result = tp;
     }
 
     return result;
