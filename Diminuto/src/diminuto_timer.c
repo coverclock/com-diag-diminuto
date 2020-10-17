@@ -206,8 +206,8 @@ diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
 
             if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
                 tp->state = DIMINUTO_TIMER_STATE_DISARM;
+                later = diminuto_condition_clock() + (tp->ticks * 2); /* Clock time, not duration. */
                 while (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
-                    later = diminuto_condition_clock() + (tp->ticks * 2);
                     if ((rc = diminuto_condition_wait_until(&(tp->condition), later)) == DIMINUTO_CONDITION_TIMEDOUT) {
                         errno = rc;
                         diminuto_perror("diminuto_timer_stop");
