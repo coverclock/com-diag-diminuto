@@ -38,42 +38,44 @@ static void proxy(union sigval sv)
     tp = (diminuto_timer_t *)sv.sival_ptr;
 
     /*
-     * Mutex locking is relatively fast. The only time
-     * we will block is when the owner is trying to stop
-     * the timer, in which case some delay here is moot.
+     * We call the timer function first to keep the
+     * user-specified behavior as close to the beginning
+     * of the timer firing event as possible, to reduce
+     * the phase shift and possible variation thereof
+     * in the later code. This also allows us to
+     * combine what would otherwise be two different
+     * critical secitons.
      */
-
-    DIMINUTO_CONDITION_BEGIN(&(tp->condition));
-
-        if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
-            tp->state = DIMINUTO_TIMER_STATE_IDLE;
-            (void)diminuto_condition_signal(&(tp->condition));
-        }
-
-    DIMINUTO_CONDITION_END;
 
     if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
         tp->value = (*(tp->function))(tp->context);
     }
 
-    if (!tp->periodic) {
+    /*
+     * Mutex locking is relatively fast providing we don't
+     * blocl. The only time we will block is when the application
+     * is trying to stop the timer, in which case some delay
+     * here is moot. If we are a one-shot timer, then we might
+     * as well stop ourselves, which will prevent the need
+     * for the application to wait when they do stop the timer.
+     */
 
-        /*
-         * If we are a one-shot timer, then we might as
-         * well stop ourselves, which will prevent the need
-         * for the owner to wait.
-         */
+    DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
-        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
-
+        if (tp->periodic) {
+            if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
+                tp->state = DIMINUTO_TIMER_STATE_IDLE;
+                (void)diminuto_condition_signal(&(tp->condition));
+            }
+        } else {
             if (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
                 tp->state = DIMINUTO_TIMER_STATE_IDLE;
                 (void)diminuto_condition_signal(&(tp->condition));
             }
+        }
 
-        DIMINUTO_CONDITION_END;
+    DIMINUTO_CONDITION_END;
 
-     }
 }
 
 diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
