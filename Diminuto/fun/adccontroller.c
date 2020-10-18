@@ -378,11 +378,15 @@ int main(int argc, char ** argv) {
 
             printf("%6d %4llu %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", outputs, (long long unsigned int)elapsed, output, target, input, state.sample, state.proportional, state.integral, state.differential, state.total, state.delta, prime);
 
-            output = prime;
+            if ((outputs == 0) || (output != prime)) {
 
-            while (diminuto_modulator_set(&modulator, output) != 0) {
-                ticks = diminuto_delay(delay, !0);
-                assert(ticks >= 0);
+                output = prime;
+
+                while (diminuto_modulator_set(&modulator, output) != 0) {
+                    ticks = diminuto_delay(delay, !0);
+                    assert(ticks >= 0);
+                }
+
             }
 
             outputs += 1;
