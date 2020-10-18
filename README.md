@@ -66,85 +66,42 @@ in-flight entertainment systems, and special purpose Android platforms.
 
 # Platforms
 
-This code is typically regression tested against one or more of the following
-hardware targets and software platforms, depending on the feature.
+This code is typically regression tested against one or more of the
+following hardware targets and software platforms. (It has been built
+and used for specific projects are a much wider variety of targets
+and platforms.)
 
-Dell OptiPlex 7040  
-Intel x86_64 64-bit    
-Intel Core i7-6700T Skylake @ 2.80GHz x 4 x 2  
-Ubuntu 16.04.2 "xenial"  
-Linux 4.4.0  
-gcc 5.4.0    
+Intel NUC7i7BNH
+Arch="x86_64"
+Cc="gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0"
+Distro="Ubuntu 20.04.1 LTS (focal)"
+Kernel="5.4.0-48-generic"
+Libc="ldd (Ubuntu GLIBC 2.31-0ubuntu9.1) 2.31"
+Make="GNU Make 4.2.1"
 
-Intel NUC5i7RYH    
-Intel x86_64 64-bit    
-Intel Core i7-5557U @ 3.10GHz x 2 x 2   
-Ubuntu 16.04.4 "xenial"    
-Linux 4.13.0     
-gcc 5.4.0    
+Rasbberry Pi 3B+
+Arch="arm"
+Cc="gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516"
+Distro="Raspbian GNU/Linux 9.8 (stretch)"
+Kernel="4.14.98-v7+"
+Libc="ldd (Debian GLIBC 2.24-11+deb9u4) 2.24"
+Make="GNU Make 4.1"
 
-Intel NUC5i7RYH    
-Intel x86_64 64-bit    
-Intel Core i7-5557U @ 3.10GHz x 2 x 2    
-Ubuntu 18.04 "bionic"    
-Linux 4.15.0    
-gcc 7.3.0    
+Raspberry Pi 4B
+Arch="arm"
+Cc="gcc (Raspbian 8.3.0-6+rpi1) 8.3.0"
+Distro="Raspbian GNU/Linux 10 (buster)"
+Kernel="4.19.97-v7l+"
+Libc="ldd (Debian GLIBC 2.28-10+rpi1) 2.28"
+Make="GNU Make 4.2.1"
 
-Raspberry Pi 2B    
-ARMv7 32-bit    
-Broadcom BCM2836 Cortex-A7 @ 900MHz x 4  
-Raspbian 8.0 "jessie"  
-Linux 4.4.34  
-gcc 4.9.2    
-
-Raspberry Pi 3B  
-ARMv7 64-bit    
-Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4  
-Raspbian 8.0 "jessie"  
-Linux 4.4.34  
-gcc 4.9.2    
-
-Raspberry Pi 3B with special HW test fixture    
-ARMv7 64-bit    
-Broadcom BCM2837 Cortex-A53 @ 1.2GHz x 4    
-Raspbian 8.0 "jessie"    
-Linux 4.4.34    
-gcc 4.9.2    
-
-Raspberry Pi 3B+    
-ARMv7 64-bit    
-Broadcom BCM2837B0 Cortex-A53 @ 1.4GHz x 4      
-Raspbian 9.4 "stretch"    
-Linux 4.14.34    
-gcc 6.3.0    
-
-Raspberry Pi 4B    
-ARMv8 64-bit    
-Broadcom BCM2711 Cortex-A72 @ 1.5GHz x 4    
-Raspbian 10 "Buster"    
-Linux 4.19.58    
-gcc 8.3.0    
-
-VM running under Windows 10    
-Intel x86_64 64-bit    
-Intel Core i7-3520M @ 2.90GHz x 2    
-Ubuntu 19.10 "Eoan"    
-Linux 5.3.0    
-gcc 9.2.1    
-
-HP Mini 110-1100    
-Intel i686 32-bit    
-Intel Atom N270 @ 1.6GHz x 2    
-Mint 19.3 "Tricia"    
-Linux 5.0.0    
-gcc 7.5.0    
-
-GPD Micro PC    
-Intel x86_64    
-Intel Celeron N4100 @ 1.10GHz x 2 x 2    
-Ubuntu MATE 19.10 "eoan"    
-Linux 5.3.0    
-gcc 9.2.1    
+Raspberry Pi 3B
+Arch="arm"
+Cc="gcc (Raspbian 4.9.2-10+deb8u2) 4.9.2"
+Distro="Raspbian GNU/Linux 8.0 (jessie)"
+Kernel="4.9.35-v7+"
+Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"
+Make="GNU Make 4.0"
 
 # Features
 
