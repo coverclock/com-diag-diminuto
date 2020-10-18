@@ -183,7 +183,7 @@ static int ti_ads1115_print(int fd, int device, FILE * fp)
     for (ii = 0; ii < countof(REGISTERS); ++ii) {
         rc = diminuto_i2c_get_word(fd, device, REGISTERS[ii], &datum);
         if (rc < 0) { break; }
-        fprintf(fp, "APDS9310: 0x%02x[0x%02x] = 0x%04x\n", device, REGISTERS[ii], ti_ads1115_dtoh(datum));
+        fprintf(fp, "APDS1115: 0x%02x[0x%02x] = 0x%04x\n", device, REGISTERS[ii], ti_ads1115_dtoh(datum));
     }
 
     return rc;
