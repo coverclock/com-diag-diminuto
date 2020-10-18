@@ -79,15 +79,15 @@ typedef struct DiminutoModulator {
     FILE * fp;
     int pin;
     diminuto_timer_t timer;
+    volatile bool state;
     volatile diminuto_modulator_cycle_t duty;
     volatile diminuto_modulator_cycle_t on;
     volatile diminuto_modulator_cycle_t off;
-    volatile bool set;
-    volatile diminuto_modulator_cycle_t total;
     volatile diminuto_modulator_cycle_t cycle;
+    volatile diminuto_modulator_cycle_t total;
+    volatile bool set;
     volatile diminuto_modulator_cycle_t ton;
     volatile diminuto_modulator_cycle_t toff;
-    volatile bool condition;
 } diminuto_modulator_t;
 
 /**
