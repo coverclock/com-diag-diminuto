@@ -71,37 +71,37 @@ following hardware targets and software platforms. (It has been built
 and used for specific projects are a much wider variety of targets
 and platforms.)
 
-Intel NUC7i7BNH
-Arch="x86_64"
-Cc="gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0"
-Distro="Ubuntu 20.04.1 LTS (focal)"
-Kernel="5.4.0-48-generic"
-Libc="ldd (Ubuntu GLIBC 2.31-0ubuntu9.1) 2.31"
-Make="GNU Make 4.2.1"
+Intel NUC7i7BNH    
+Arch="x86_64"    
+Cc="gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0"    
+Distro="Ubuntu 20.04.1 LTS (focal)"    
+Kernel="5.4.0-48-generic"    
+Libc="ldd (Ubuntu GLIBC 2.31-0ubuntu9.1) 2.31"    
+Make="GNU Make 4.2.1"    
 
-Rasbberry Pi 3B+
-Arch="arm"
-Cc="gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516"
-Distro="Raspbian GNU/Linux 9.8 (stretch)"
-Kernel="4.14.98-v7+"
-Libc="ldd (Debian GLIBC 2.24-11+deb9u4) 2.24"
-Make="GNU Make 4.1"
+Rasbberry Pi 3B+    
+Arch="arm"    
+Cc="gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516"    
+Distro="Raspbian GNU/Linux 9.8 (stretch)"    
+Kernel="4.14.98-v7+"    
+Libc="ldd (Debian GLIBC 2.24-11+deb9u4) 2.24"    
+Make="GNU Make 4.1"    
 
-Raspberry Pi 4B
-Arch="arm"
-Cc="gcc (Raspbian 8.3.0-6+rpi1) 8.3.0"
-Distro="Raspbian GNU/Linux 10 (buster)"
-Kernel="4.19.97-v7l+"
-Libc="ldd (Debian GLIBC 2.28-10+rpi1) 2.28"
-Make="GNU Make 4.2.1"
+Raspberry Pi 4B    
+Arch="arm"    
+Cc="gcc (Raspbian 8.3.0-6+rpi1) 8.3.0"    
+Distro="Raspbian GNU/Linux 10 (buster)"    
+Kernel="4.19.97-v7l+"    
+Libc="ldd (Debian GLIBC 2.28-10+rpi1) 2.28"    
+Make="GNU Make 4.2.1"    
 
-Raspberry Pi 3B
-Arch="arm"
-Cc="gcc (Raspbian 4.9.2-10+deb8u2) 4.9.2"
-Distro="Raspbian GNU/Linux 8.0 (jessie)"
-Kernel="4.9.35-v7+"
-Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"
-Make="GNU Make 4.0"
+Raspberry Pi 3B    
+Arch="arm"    
+Cc="gcc (Raspbian 4.9.2-10+deb8u2) 4.9.2"    
+Distro="Raspbian GNU/Linux 8.0 (jessie)"    
+Kernel="4.9.35-v7+"    
+Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"    
+Make="GNU Make 4.0"    
 
 # Features
 
