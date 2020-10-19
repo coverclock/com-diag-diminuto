@@ -267,6 +267,39 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
+# Documentation
+
+All of the Diminuto code has embedded within it Doxygen comments. You can
+build hundreds of pages of man pages, HTML-based documentation, and PDF
+reference manuals for Diminuto by installing the doxygen and LaTeX tools
+(see below under Dependencies) and running the following make targets.
+
+    make documentation
+    make manuals
+
+The documentation will be in the directories
+
+    out/${TARGET}/doc/html
+    out/${TARGET}/doc/man
+    out/${TARGET}/doc/pdf
+
+whose exact path depends upon for what target you are building. The
+value of the TARGET variable will typically be "host" unless you are
+cross-compiling for an embedded target (an ability I confess I haven't
+tested in years).
+
+You can view the HTML, and probably the PDF, using your web browser.
+
+The easiest approach to using the documentation is to find the feature
+or utility you think you might want to know about in the list above,
+then look it up in the generated HTML, man, or PDF documentation.
+(The public APIs for the Diminuto library are documented in their
+header or .h files. Their source or .c files may have some documentation
+regarding any private API they might have.)
+
+The unit tests (./tst)  and functional tests (./fun) also have a wealth
+of examples of how to use the public APIs.
+
 # Remarks
 
 Diminuto started out many years ago as a project to build a minimal

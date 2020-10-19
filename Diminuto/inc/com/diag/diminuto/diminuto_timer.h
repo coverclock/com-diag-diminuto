@@ -113,7 +113,6 @@ static inline diminuto_timer_t * diminuto_timer_init(diminuto_timer_t * tp, int 
  * is active. The timer calls a function. The timer is initialized in the
  * disarmed (idle) state.
  * @param tp points to the timer object.
- * @param periodic if true makes the timer periodic, else a one-shot.
  * @param fp points to the timer function or NULL.
  * @return a pointer to the timer object if successful or NULL otherwise.
  */
@@ -127,7 +126,6 @@ static inline diminuto_timer_t * diminuto_timer_init_oneshot(diminuto_timer_t * 
  * is active. The timer calls a function. The timer is initialized in the
  * disarmed (idle) state.
  * @param tp points to the timer object.
- * @param periodic if true makes the timer periodic, else a one-shot.
  * @param fp points to the timer function or NULL.
  * @return a pointer to the timer object if successful or NULL otherwise.
  */
@@ -145,19 +143,19 @@ static inline diminuto_timer_t * diminuto_timer_init_periodic(diminuto_timer_t *
 extern diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp);
 
 /**
- * Start the timer of a timer object. This arms the timer a.k.a. places
- 0* it in the active state.
+ * Start the timer of a timer object. This arms the timer i.e. places
+ * it in the active state.
  * @param tp points to the timer object.
+ * @param ticks is the period or duration of the timer in Diminuto ticks.
  * @param cp points to a context that is passed to the optional timer function.
  * @return the number of ticks left on the timer or <0 if an error occurred.
  */
 extern diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t ticks, void * cp);
 
 /**
- * Stop the timer of a timer object. This disarms the timer a.k.a. places
+ * Stop the timer of a timer object. This disarms the timer i.e. places
  * it in the inactive state.
  * @param tp points to the timer object.
- * @param cp points to a context that is passed to the optional timer function.
  * @return the number of ticks left on the timer or <0 if an error occurred.
  */
 extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
