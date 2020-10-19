@@ -2,10 +2,17 @@
 /**
  * @file
  *
- * Copyright 2013-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ *
+ * N.B. This unit test suite really stresses the underlying POSIX and
+ * GNU time functions because it specifically tests edge cases where the
+ * values are at the limits of what the underlying integer type can hold.
+ * Specifically, on Raspbian 8 (glib 2.19) and Raspbian 10 (glibc 2.28),
+ * where time_t is only 32-bits, localtime_r(3) and timegm(2) seem to be
+ * troubled. I'd like to think this is my bug (because then I could fix it).
  *
  * REFERENCES
  *
@@ -21,6 +28,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
 #define SANITY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
@@ -165,15 +173,15 @@ static void epoch(diminuto_sticks_t now, int verbose)
     offset = diminuto_frequency_ticks2wholeseconds(now);
     diminuto_time_zulu(now, &zyear, &zmonth, &zday, &zhour, &zminute, &zsecond, &ztick);
     zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
-    diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     timezone = diminuto_time_timezone(now);
     daylightsaving = diminuto_time_daylightsaving(now);
+    diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
     hertz = diminuto_frequency();
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
-        DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld %20lld %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15d %15d\n"
+        DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
             , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
             , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
             , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
@@ -209,20 +217,33 @@ int main(int argc, char ** argv)
 {
     diminuto_sticks_t now;
     diminuto_sticks_t hertz;
+    extern char *tzname[2];
+    extern long timezone;
+    extern int daylight;
 
     SETLOGMASK();
 
-    diminuto_core_enable();
+    TEST();
 
     hertz = diminuto_frequency();
+    tzset();
+    printf("hertz          %lld\n", (long long int)hertz);
+    printf("timezone       %ld\n", (long int)timezone);
+    printf("daylight       %d\n", (int)daylight);
 
-    TEST(/* 0 */);
+    STATUS();
+
+    TEST();
 
     test0();
 
-    TEST(/* 1 */);
+    STATUS();
+
+    TEST();
 
     test1();
+
+    STATUS();
 
     /*
      * test0 and test1 are basic sanity tests.
@@ -231,7 +252,7 @@ int main(int argc, char ** argv)
      * edge cases are pretty out there.
      */
 
-    TEST(/* 2 */);
+    TEST();
 
     epoch(0xffffffff80000000LL * hertz, !0);
     VERIFY(1901, 12, 13, 20, 45, 52, 0);
@@ -260,6 +281,8 @@ int main(int argc, char ** argv)
     epoch(1400000000LL * hertz, !0);
     VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
+    STATUS();
+
 #if 0
     /*
      * This unit test used to work. With no changes
@@ -272,42 +295,54 @@ int main(int argc, char ** argv)
     VERIFY(2038, 1, 19, 3, 14, 7, 0);
 #endif
 
-    TEST(/* 3 */);
+    TEST();
 
     epoch(LOW * hertz, !0);
     epoch(-hertz, !0);
     epoch(0, !0);
     epoch(HIGH * hertz, !0);
 
-    TEST(/* 4 */);
+    STATUS();
+
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (365 * 24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    TEST(/* 5 */);
+    STATUS();
+
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    TEST(/* 6 */);
+    STATUS();
+
+    TEST();
 
     for (now = LOW; now <= HIGH; now += (60 * 60)) {
         epoch(now * hertz, 0);
     }
 
-    TEST(/* 7 */);
+    STATUS();
+
+    TEST();
 
     for (now = LOW; now <= HIGH; now += 60) {
         epoch(now * hertz, 0);
     }
 
-    TEST(/* 8 */);
+    STATUS();
+
+    TEST();
 
     for (now = LOW; now <= HIGH; now += 1) {
         epoch(now * hertz, 0);
     }
+
+    STATUS();
 
     EXIT();
 }

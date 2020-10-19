@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -107,7 +107,8 @@ diminuto_sticks_t diminuto_time_thread()
 
 diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks)
 {
-    diminuto_sticks_t west;
+    diminuto_sticks_t result = 0;
+    diminuto_sticks_t west = 0;
     extern long timezone;
     extern int daylight;
 
@@ -126,14 +127,18 @@ diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks)
 
     west = -timezone;
 
-    return diminuto_frequency_seconds2ticks(west, 0, 1);
+    result = diminuto_frequency_seconds2ticks(west, 0, 1);
+
+    return result;
 }
 
 diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
 {
+    diminuto_sticks_t result = 0;
     diminuto_sticks_t dst = 0;
-    struct tm datetime;
-    time_t juliet;
+    struct tm datetime = { 0, };
+    time_t juliet = 0;
+    extern long timezone;
     extern int daylight;
 
     /*
@@ -154,14 +159,16 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
         }
     }
 
-    return diminuto_frequency_seconds2ticks(dst, 0, 1);
+    result = diminuto_frequency_seconds2ticks(dst, 0, 1);
+
+    return result;
 }
 
 diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t timezone, diminuto_sticks_t daylightsaving)
 {
-    diminuto_sticks_t ticks;
-    struct tm datetime;
-    time_t juliet;
+    diminuto_sticks_t ticks = 0;
+    struct tm datetime = { 0, };
+    time_t juliet = 0;
 
     datetime.tm_year = year - 1900;
     datetime.tm_mon = month - 1;
@@ -248,9 +255,9 @@ static void diminuto_time_stamp(const struct tm *datetimep, diminuto_sticks_t ti
 int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
     int rc = 0;
-    struct tm datetime;
-    struct tm * datetimep;
-    time_t zulu;
+    struct tm datetime = { 0, };
+    struct tm * datetimep = (struct tm *)0;
+    time_t zulu = 0;
 
     zulu = diminuto_frequency_ticks2wholeseconds(ticks);
     if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
@@ -267,9 +274,9 @@ int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int *
 int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
     int rc = 0;
-    struct tm datetime;
-    struct tm * datetimep;
-    time_t juliet;
+    struct tm datetime = { 0, };
+    struct tm * datetimep = (struct tm *)0;
+    time_t juliet = 0;
 
     juliet = diminuto_frequency_ticks2wholeseconds(ticks);
     if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
@@ -287,7 +294,7 @@ int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int
  */
 char diminuto_time_zonename(diminuto_sticks_t ticks) {
     char name = 'J';
-    diminuto_sticks_t factor;
+    diminuto_sticks_t factor = 0;
     static char NAMES[] = {
         'Y', 'X', 'W', 'V', 'U',
         'T', 'S', 'R', 'Q', 'P',
@@ -311,8 +318,8 @@ char diminuto_time_zonename(diminuto_sticks_t ticks) {
 
 int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
-    int rc;
-    diminuto_sticks_t divisor;
+    int rc = 0;
+    diminuto_sticks_t divisor = 0;
 
     if (ticks < 0) {
         ticks = -ticks;
@@ -341,7 +348,7 @@ uint64_t diminuto_time_logical(void)
 {
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static uint64_t counter = 0;
-    uint64_t result;
+    uint64_t result = 0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
         result = counter++;
