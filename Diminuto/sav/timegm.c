@@ -44,7 +44,7 @@ void main(void) {
     printf("problematic=%lld=0x%llx\n", (long long)problematic, (long long)problematic);
 
     seconds = problematic;
-    pointer = localtime_r(&problematic, &zulu);
+    pointer = localtime_r(&seconds, &zulu);
     if (pointer == (struct tm *)0) { perror("localtime_r"); }
     printf("zulu=%d/%d/%dT%d:%d:%d+%d\n", zulu.tm_year + 1900, zulu.tm_mon, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
 
