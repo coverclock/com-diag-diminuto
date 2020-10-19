@@ -8,6 +8,8 @@ void main(void) {
     struct tm later = { 0, };;
     struct tm * pointer = (struct tm *)0;
 
+    printf("sizeof=%zu\n", sizeof(time_t));
+
     earlier.tm_year = 1901 - 1900;
     earlier.tm_mon = 12 - 1;
     earlier.tm_mday = 13;
