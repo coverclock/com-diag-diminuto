@@ -3,12 +3,26 @@
 #include <errno.h>
 
 void main(void) {
+    time_t problematic = 0;
+    struct tm zulu = { 0, };
+    struct tm juliet = { 0, };
     struct tm earlier = { 0, };
     time_t seconds = 0;
     struct tm later = { 0, };;
     struct tm * pointer = (struct tm *)0;
 
     printf("sizeof=%zu\n", sizeof(time_t));
+
+    problematic = 0x80000000;
+    printf("problematic=%ld=0x%lx\n", problematic, problematic);
+
+    pointer = localtime_r(&problematic, &zulu);
+    if (pointer == (struct tm *)0) { perror("localtime_r"); }
+    printf("zulu=%d/%d/%dT%d:%d:%d+%d\n", zulu.tm_year, zulu.tm_mon, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
+
+    pointer = localtime_r(&problematic, &juliet);
+    if (pointer == (struct tm *)0) { perror("localtime_r"); }
+    printf("juliet=%d/%d/%dT%d:%d:%d+%d\n", juliet.tm_year, juliet.tm_mon, juliet.tm_mday, juliet.tm_hour, juliet.tm_min, juliet.tm_sec, juliet.tm_isdst);
 
     earlier.tm_year = 1901 - 1900;
     earlier.tm_mon = 12 - 1;
