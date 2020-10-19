@@ -7,44 +7,17 @@
  * Chip Overclock (coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
+ * REFERENCES
+ *
+ * Wikipedia, "Unix time", http://en.wikipedia.org/wiki/Unix_time, 2014-10-24
+ *
  * N.B. This unit test suite really stresses the underlying POSIX and
  * GNU time functions because it specifically tests edge cases where the
  * values are at the limits of what the underlying integer type can hold.
  * Specifically, on Raspbian 8 (glib 2.19) and Raspbian 10 (glibc 2.28),
  * where time_t is only 32-bits, localtime_r(3) and timegm(2) seem to be
  * troubled. I'd like to think this is my bug (because then I could fix it).
- * The experiement sav/timegm.c illustrates this. The Raspberry Pis timegm(3)
- * report an error using (time_t)-1 but do not set errno, and localtime_r(3)
- * on each silently fails in a different way.
- * 
- * Given the problematic date: 1901/12/13T13:13:45:52
- *
- * x86_64 glibc 2.31 (correct):
- * $ sav/timegm
- * sizeof=8
- * earlier=1/11/13T13:45:52+0
- * seconds=-2147508848=0xffffffff7fff9d90
- * later=1/11/13T6:45:52+0
- *
- * armv7 glibc 2.28:
- * $ sav/timegm
- * sizeof=4
- * earlier=1/11/13T13:45:52+0
- * timegm: Success
- * seconds=-1=0xffffffff
- * later=69/11/31T16:59:59+0
- *
- * armv7 glibc 2.19:
- * $ sav/timegm
- * sizeof=4
- * timegm: Success
- * earlier=1/11/13T13:45:52+0
- * seconds=-1=0xffffffff
- * later=69/11/31T23:59:59+0
- *
- * REFERENCES
- *
- * Wikipedia, "Unix time", http://en.wikipedia.org/wiki/Unix_time, 2014-10-24
+ * See the saved experimental stub sav/timegm.c.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
