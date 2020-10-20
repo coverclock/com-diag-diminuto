@@ -226,6 +226,7 @@ Make="GNU Make 4.0"
 * pinchange - Multiplexing of GPIO pins (Pin).
 * pincleanup - Clean up pins exported to hardware test fixture (Pin).
 * pintest - Setting and getting GPIO pins (Pin).
+* timestuff - Tries out the underlying glibc time functions.
 * walker - Walk the file system tree starting at a specified root (FS).
 
 (Some of these functional tests depend upon hardware test fixtures I

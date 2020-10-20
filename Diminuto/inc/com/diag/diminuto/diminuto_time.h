@@ -136,7 +136,10 @@ extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
 /**
  * Return the number of ticks after the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 for the specified date and time. If the
- * specified date or time is invalid, the results are unspecified.
+ * specified date or time is invalid or causes an overflow during the conversion
+ *,the results are unspecified. (This function uses timegm(3). If timegm(3)
+ * fails, it returns a -1. But -1 is a valid time offset prior to the Epoch.
+ * On some systems, timegm(3) also does not set errno when it returns -1.)
  * @param year is the year including the century in the range [1970..].
  * @param month is the month of the year in the range [1..12].
  * @param day is the day of the month in the range [1..31].
