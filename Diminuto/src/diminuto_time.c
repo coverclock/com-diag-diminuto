@@ -275,7 +275,7 @@ int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int *
 
     zulu = diminuto_frequency_ticks2wholeseconds(ticks);
     if ((datetimep = gmtime_r(&zulu, &datetime)) == (struct tm *)0) {
-        diminuto_perror("diminuto_time_timestamp: gmtime_r");
+        perror("diminuto_time_timestamp: gmtime_r");
         rc = -1;
     } else {
         diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);

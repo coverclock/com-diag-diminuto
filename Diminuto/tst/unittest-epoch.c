@@ -265,27 +265,59 @@ int main(int argc, char ** argv)
     prior = -1;
 
 #if 0
-/* From fun/timestuff.c: */
+
+From fun/timestuff.c@2020-10-20:
+
+sizeof(time_t)=8
+
+tzname[0]="MST"
+tzname[1]="MDT"
+timezone=25200
+daylight=01
 
 seconds=-2147483648=0xffffffff80000000
-zulu=1901/11/13T20:45:52~0
-result=-2147483648=0xffffffff80000000
+zulu=1901/12/13T20:45:52~0
+juliet=1901/12/13T13:45:52~0
 
-seconds=2130706432=0x7f000000
-zulu=2037/6/8T22:53:52~0
-result=2130706432=0x7f000000
+seconds=-1=0xffffffffffffffff
+zulu=1969/12/31T23:59:59~0
+juliet=1969/12/31T16:59:59~0
+
+seconds=0=0x00000000
+zulu=1970/01/01T00:00:00~0
+juliet=1969/12/31T17:00:00~0
+
+seconds=2147483647=0x7fffffff
+zulu=2038/01/19T03:14:07~0
+juliet=2038/01/18T20:14:07~0
+
+data=1901/12/13T13:45:00~0
+result=-2147508900=0xffffffff7fff9d5c
+zulu=2038/01/19T03:14:07~0
 
 seconds=-2147483648=0xffffffff80000000
-juliet=1901/11/13T13:45:52~0
+zulu=1901/12/13T20:45:52~0
 result=-2147483648=0xffffffff80000000
 
-seconds=2130706432=0x7f000000
-juliet=2037/6/8T16:53:52~1
-result=2130706432=0x7f000000
+seconds=2147483647=0x7fffffff
+zulu=2038/01/19T03:14:07~0
+result=2147483647=0x7fffffff
+
+seconds=-2147483648=0xffffffff80000000
+juliet=1901/12/13T13:45:52~0
+result=-2147483648=0xffffffff80000000
+
+seconds=2147483647=0x7fffffff
+juliet=2038/01/18T20:14:07~0
+result=2147483647=0x7fffffff
+
 #endif
 
     epoch(0xffffffff80000000LL * hertz, !0);
-    VERIFY(1901, 11, 13, 20, 45, 52, 0);
+    VERIFY(1901, 12, 13, 20, 45, 52, 0);
+
+    epoch(-1 * hertz, !0);
+    VERIFY(1969, 12, 31, 23, 59, 59, 0);
 
     epoch(0, !0);
     VERIFY(1970, 1, 1, 0, 0, 0, 0);
@@ -312,7 +344,7 @@ result=2130706432=0x7f000000
     VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
     epoch(0x000000007fffffffLL * hertz, !0);
-    VERIFY(2037, 6, 8, 16, 53, 52, 0);
+    VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
     STATUS();
 
