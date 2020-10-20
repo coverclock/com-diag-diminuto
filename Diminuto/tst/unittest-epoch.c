@@ -41,7 +41,18 @@
         ASSERT((0 <= _TICK_) && (_TICK_ <= 999999999LL)); \
     } while (0)
 
-static void test0(void)
+#define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
+    do { \
+        EXPECT(zyear == (_YEAR_)); \
+        EXPECT(zmonth == (_MONTH_)); \
+        EXPECT(zday == (_DAY_)); \
+        EXPECT(zhour == (_HOUR_)); \
+        EXPECT(zminute == (_MINUTE_)); \
+        EXPECT(zsecond == (_SECOND_)); \
+        EXPECT(ztick == (_TICK_)); \
+    } while (0)
+
+static void sanity0(void)
 {
     int rc = -1;
     diminuto_sticks_t now = -1;
@@ -84,7 +95,7 @@ static void test0(void)
     ASSERT(delta == 0);
 }
 
-static void test1(void)
+static void sanity1(void)
 {
     int rc = -1;
     diminuto_sticks_t now = -1;
@@ -134,7 +145,8 @@ static int zhour = -1;
 static int zminute = -1;
 static int zsecond = -1;
 static diminuto_ticks_t ztick = (diminuto_ticks_t)-1;
-static int count = 0;
+static int notfirst = 0;
+static int prior = -1;
 
 static void epoch(diminuto_sticks_t now, int verbose)
 {
@@ -154,13 +166,11 @@ static void epoch(diminuto_sticks_t now, int verbose)
     diminuto_sticks_t juliet;
     diminuto_sticks_t timezone;
     diminuto_sticks_t daylightsaving;
-    diminuto_sticks_t hertz;
     int zh;
     int zm;
     int dh;
     int dm;
     int rc;
-    static int prior = -1;
     time_t offset;
 
     zyear = -1;
@@ -178,15 +188,15 @@ static void epoch(diminuto_sticks_t now, int verbose)
     daylightsaving = diminuto_time_daylightsaving(now);
     diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
-    hertz = diminuto_frequency();
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
-        if (((count++) % 24) == 0) {
+        if (!notfirst) {
             DIMINUTO_LOG_DEBUG("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
                 , "NOW", "ZULU", "JULIET", "OFFSET"
                 , "ZULU", "JULIET", "DURATION"
                 , "TIMEZONE", "DAYLIGHTSAVING");
+            notfirst = !0;
         }
         DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
             , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
@@ -196,26 +206,15 @@ static void epoch(diminuto_sticks_t now, int verbose)
             , timezone, daylightsaving
         );
     }
-    ASSERT(now == zulu);
-    ASSERT(now == juliet);
+    EXPECT(now == zulu);
+    EXPECT(now == juliet);
     SANITY(zyear, zmonth, zday, zhour, zminute, zsecond, ztick);
     SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
     SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
-    ASSERT((rc < 0) || (rc > 0));
+    EXPECT((rc < 0) || (rc > 0));
 
     prior = zyear;
 }
-
-#define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
-    do { \
-        ASSERT(zyear == (_YEAR_)); \
-        ASSERT(zmonth == (_MONTH_)); \
-        ASSERT(zday == (_DAY_)); \
-        ASSERT(zhour == (_HOUR_)); \
-        ASSERT(zminute == (_MINUTE_)); \
-        ASSERT(zsecond == (_SECOND_)); \
-        ASSERT(ztick == (_TICK_)); \
-    } while (0)
 
 int main(int argc, char ** argv)
 {
@@ -232,13 +231,8 @@ int main(int argc, char ** argv)
     hertz = diminuto_frequency();
     tzset();
 
-    if (sizeof(time_t) == sizeof(int64_t)) {
-        low = 0xffffffff80000000LL;
-        high = 0x000000007fffffffLL - (7 * 3600) - 3600;
-    } else {
-        low = 0xffffffff80000000LL;
-        high = 0x000000007fffffffLL - (7 * 3600) - 3600;
-    }
+    low = 0xffffffff80000000LL;
+    high = 0x000000007fffffffLL - (7 * 3600) - 3600;
 
     printf("hertz          %lld\n", (long long int)hertz);
     printf("timezone       %lld\n", (long long int)timezone);
@@ -248,18 +242,18 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    test0();
+    sanity0();
 
     STATUS();
 
     TEST();
 
-    test1();
+    sanity1();
 
     STATUS();
 
     /*
-     * test0 and test1 are basic sanity tests.
+     * sanity0 and sanity1 are basic sanity tests.
      * But if they pass, the code is probably
      * okay. Some of the subsequent tests for
      * edge cases are pretty out there.
@@ -267,12 +261,31 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
-    if (sizeof(time_t) == sizeof(int64_t)) {
-        epoch(0xffffffff80000000LL * hertz, !0);
-        VERIFY(1901, 12, 13, 20, 45, 52, 0);
-    }
+#if 0
+/* From fun/timestuff.c: */
+
+seconds=-2147483648=0xffffffff80000000
+zulu=1901/11/13T20:45:52~0
+result=-2147483648=0xffffffff80000000
+
+seconds=2130706432=0x7f000000
+zulu=2037/6/8T22:53:52~0
+result=2130706432=0x7f000000
+
+seconds=-2147483648=0xffffffff80000000
+juliet=1901/11/13T13:45:52~0
+result=-2147483648=0xffffffff80000000
+
+seconds=2130706432=0x7f000000
+juliet=2037/6/8T16:53:52~1
+result=2130706432=0x7f000000
+#endif
+
+    epoch(0xffffffff80000000LL * hertz, !0);
+    VERIFY(1901, 11, 13, 20, 45, 52, 0);
 
     epoch(0, !0);
     VERIFY(1970, 1, 1, 0, 0, 0, 0);
@@ -298,16 +311,15 @@ int main(int argc, char ** argv)
     epoch(1400000000LL * hertz, !0);
     VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-    if (sizeof(time_t) == sizeof(int64_t)) {
-        epoch(0x000000007fffffffLL * hertz, !0);
-        VERIFY(2038, 1, 19, 3, 14, 7, 0);
-    }
+    epoch(0x000000007fffffffLL * hertz, !0);
+    VERIFY(2037, 6, 8, 16, 53, 52, 0);
 
     STATUS();
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     epoch(low * hertz, !0);
     epoch(-hertz, !0);
@@ -318,7 +330,8 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     for (now = low; now <= high; now += (365 * 24 * 60 * 60)) {
         epoch(now * hertz, 0);
@@ -328,7 +341,8 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     for (now = low; now <= high; now += (24 * 60 * 60)) {
         epoch(now * hertz, 0);
@@ -338,7 +352,8 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     for (now = low; now <= high; now += (60 * 60)) {
         epoch(now * hertz, 0);
@@ -348,7 +363,8 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     for (now = low; now <= high; now += 60) {
         epoch(now * hertz, 0);
@@ -358,7 +374,8 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    count = 0;
+    notfirst = 0;
+    prior = -1;
 
     for (now = low; now <= high; now += 1) {
         epoch(now * hertz, 0);

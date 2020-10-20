@@ -168,7 +168,9 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 {
     diminuto_sticks_t ticks = 0;
     struct tm datetime = { 0, };
-    time_t juliet = 0;
+    time_t seconds = 0;
+
+    // DIMINUTO_LOG_NOTICE("%s[%d]: %d %d %d %d %d %d %d %lld %lld\n", __FILE__, __LINE__, year, month, day, hour, minute, seconds, tick, timezone, daylightsaving);
 
     datetime.tm_year = year - 1900;
     datetime.tm_mon = month - 1;
@@ -186,8 +188,8 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
      * indicates a date and time one second earlier than the Epoch.
      */
 
-    juliet = mktime(&datetime);
-    ticks = diminuto_frequency_seconds2ticks(juliet, 0, 1);
+    seconds = mktime(&datetime);
+    ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
 
     /*
      * mktime(3) assumes the time in the tm structure is local time and
@@ -199,8 +201,8 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
      * and of DST. This is really stupid.
      */
 
-    ticks += diminuto_time_timezone(juliet);
-    ticks += diminuto_time_daylightsaving(juliet);
+    ticks += diminuto_time_timezone(seconds);
+    ticks += diminuto_time_daylightsaving(seconds);
 
 #else
 
@@ -209,8 +211,13 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
      * but it sure solves a thorny problem.
      */
 
-    juliet = timegm(&datetime);
-    ticks = diminuto_frequency_seconds2ticks(juliet, 0, 1);
+    seconds = timegm(&datetime);
+
+    //  DIMINUTO_LOG_NOTICE("%s[%d]: %d\n", __FILE__, __LINE__, seconds);
+
+    ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
+
+    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
 
 #endif
 
@@ -223,13 +230,20 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
      */
 
     ticks -= timezone;
+
+    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
+
     ticks -= daylightsaving;
+
+    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
 
     /*
      * Finally, we add in the fractional second provided by the caller.
      */
 
     ticks += tick;
+
+    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
 
     return ticks;
 }
