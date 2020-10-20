@@ -175,6 +175,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
+DISTROVERSION		:=	$(shell lsb_release -d | sed 's/^.*:\t*//') $(shell lsb_release -c | sed 's/^.*:\t*//')
 
 ########## Build Artifacts
 
@@ -455,6 +456,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Cc=\"$(CCVERSION)\"\n"' >> $@
 	echo '    "Contact=\"$(CONTACT)\"\n"' >> $@
 	echo '    "Copyright=\"$(COPYRIGHT)\"\n"' >> $@
+	echo '    "Distro=\"$(DISTROVERSION)\"\n"' >> $@
 	echo '    "Homepage=\"$(HOMEPAGE)\"\n"' >> $@
 	echo '    "Host=\"$(HOST)\"\n"' >> $@
 	echo '    "Kernel=\"$(KERNEL_REV)\"\n"' >> $@
@@ -536,6 +538,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Cc=\\"$(CCVERSION)\\"\\n"' >> $@
 	echo '    "Contact=\\"$(CONTACT)\\"\\n"' >> $@
 	echo '    "Copyright=\\"$(COPYRIGHT)\\"\\n"' >> $@
+	echo '    "Distro=\\"$(DISTROVERSION)\\"\\n"' >> $@
 	echo '    "Homepage=\\"$(HOMEPAGE)\\"\\n"' >> $@
 	echo '    "Host=\\"$(HOST)\\"\\n"' >> $@
 	echo '    "Kernel=\\"$(KERNEL_REV)\\"\\n"' >> $@
@@ -722,7 +725,7 @@ drivers-make:
 
 ########## Helpers
 
-.PHONY:	makeversion ccversion libcversion implicit defines iquotes isystems
+.PHONY:	makeversion ccversion distroversion libcversion implicit defines iquotes isystems
 
 makeversion:
 	echo "$(MAKEVERSION)"
@@ -732,6 +735,9 @@ ccversion:
 
 libcversion:
 	echo "$(LIBCVERSION)"
+
+distroversion:
+	echo "$(DISTROVERSION)"
 
 implicit:
 	@$(CC) $(CFLAGS) -dM -E - < /dev/null
