@@ -14,10 +14,9 @@
  * N.B. This unit test suite really stresses the underlying POSIX and
  * GNU time functions because it specifically tests edge cases where the
  * values are at the limits of what the underlying integer type can hold.
- * Specifically, on Raspbian 8 (glib 2.19) and Raspbian 10 (glibc 2.28),
- * where time_t is only 32-bits, localtime_r(3) and timegm(2) seem to be
- * troubled. I'd like to think this is my bug (because then I could fix it).
- * See the saved experimental stub sav/timegm.c.
+ * Specifically, on the Raspberry Pi SBC,  on Raspbian 8 (glib 2.19) and
+ * Raspbian 10 (glibc 2.28), where time_t is only 32-bits, some of these
+ * test cases are problematic.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -135,6 +134,7 @@ static int zhour = -1;
 static int zminute = -1;
 static int zsecond = -1;
 static diminuto_ticks_t ztick = (diminuto_ticks_t)-1;
+static int count = 0;
 
 static void epoch(diminuto_sticks_t now, int verbose)
 {
@@ -182,6 +182,12 @@ static void epoch(diminuto_sticks_t now, int verbose)
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
+        if (((count++) % 24) == 0) {
+            DIMINUTO_LOG_DEBUG("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
+                , "NOW", "ZULU", "JULIET", "OFFSET"
+                , "ZULU", "JULIET", "DURATION"
+                , "TIMEZONE", "DAYLIGHTSAVING");
+        }
         DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
             , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
             , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
@@ -200,9 +206,6 @@ static void epoch(diminuto_sticks_t now, int verbose)
     prior = zyear;
 }
 
-static const diminuto_sticks_t LOW = 0xffffffff80000000LL;
-static const diminuto_sticks_t HIGH = 0x000000007fffffffLL - (7 * 3600) - 3600;
-
 #define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
         ASSERT(zyear == (_YEAR_)); \
@@ -218,21 +221,30 @@ int main(int argc, char ** argv)
 {
     diminuto_sticks_t now;
     diminuto_sticks_t hertz;
+    diminuto_sticks_t low;
+    diminuto_sticks_t high;
     extern char *tzname[2];
     extern long timezone;
     extern int daylight;
 
     SETLOGMASK();
 
-    TEST();
-
     hertz = diminuto_frequency();
     tzset();
-    printf("hertz          %lld\n", (long long int)hertz);
-    printf("timezone       %ld\n", (long int)timezone);
-    printf("daylight       %d\n", (int)daylight);
 
-    STATUS();
+    if (sizeof(time_t) == sizeof(int64_t)) {
+        low = 0xffffffff80000000LL;
+        high = 0x000000007fffffffLL - (7 * 3600) - 3600;
+    } else {
+        low = 0xffffffff80000000LL;
+        high = 0x000000007fffffffLL - (7 * 3600) - 3600;
+    }
+
+    printf("hertz          %lld\n", (long long int)hertz);
+    printf("timezone       %lld\n", (long long int)timezone);
+    printf("daylight       %lld\n", (long long int)daylight);
+    printf("low            %lld\n", (long long int)low);
+    printf("high           %lld\n", (long long int)high);
 
     TEST();
 
@@ -255,8 +267,12 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    epoch(0xffffffff80000000LL * hertz, !0);
-    VERIFY(1901, 12, 13, 20, 45, 52, 0);
+    count = 0;
+
+    if (sizeof(time_t) == sizeof(int64_t)) {
+        epoch(0xffffffff80000000LL * hertz, !0);
+        VERIFY(1901, 12, 13, 20, 45, 52, 0);
+    }
 
     epoch(0, !0);
     VERIFY(1970, 1, 1, 0, 0, 0, 0);
@@ -282,32 +298,29 @@ int main(int argc, char ** argv)
     epoch(1400000000LL * hertz, !0);
     VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-    STATUS();
+    if (sizeof(time_t) == sizeof(int64_t)) {
+        epoch(0x000000007fffffffLL * hertz, !0);
+        VERIFY(2038, 1, 19, 3, 14, 7, 0);
+    }
 
-#if 0
-    /*
-     * This unit test used to work. With no changes
-     * in the Diminuto code, it started failing.
-     * It sure looks like some kind of arithmetic
-     * overflow, caused by turning the number of
-     * Epoch seconds up to eleven.
-     */
-    epoch(0x000000007fffffffLL * hertz, !0);
-    VERIFY(2038, 1, 19, 3, 14, 7, 0);
-#endif
+    STATUS();
 
     TEST();
 
-    epoch(LOW * hertz, !0);
+    count = 0;
+
+    epoch(low * hertz, !0);
     epoch(-hertz, !0);
     epoch(0, !0);
-    epoch(HIGH * hertz, !0);
+    epoch(high * hertz, !0);
 
     STATUS();
 
     TEST();
 
-    for (now = LOW; now <= HIGH; now += (365 * 24 * 60 * 60)) {
+    count = 0;
+
+    for (now = low; now <= high; now += (365 * 24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
@@ -315,7 +328,9 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    for (now = LOW; now <= HIGH; now += (24 * 60 * 60)) {
+    count = 0;
+
+    for (now = low; now <= high; now += (24 * 60 * 60)) {
         epoch(now * hertz, 0);
     }
 
@@ -323,7 +338,9 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    for (now = LOW; now <= HIGH; now += (60 * 60)) {
+    count = 0;
+
+    for (now = low; now <= high; now += (60 * 60)) {
         epoch(now * hertz, 0);
     }
 
@@ -331,7 +348,9 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    for (now = LOW; now <= HIGH; now += 60) {
+    count = 0;
+
+    for (now = low; now <= high; now += 60) {
         epoch(now * hertz, 0);
     }
 
@@ -339,7 +358,9 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    for (now = LOW; now <= HIGH; now += 1) {
+    count = 0;
+
+    for (now = low; now <= high; now += 1) {
         epoch(now * hertz, 0);
     }
 
