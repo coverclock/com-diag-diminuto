@@ -58,6 +58,11 @@ void main(void) {
 
     printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
+    memset(&data, ~0, sizeof(data));
+    printf("data=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", data.tm_year + 1900, data.tm_mon + 1, data.tm_mday, data.tm_hour, data.tm_min, data.tm_sec, data.tm_isdst);
+
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
+
     seconds = (time_t)MINIMUM;
     printf("seconds=%lld=0x%llx\n", (long long)seconds, (long long)seconds);
 
