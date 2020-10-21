@@ -206,10 +206,21 @@ static void epoch(diminuto_sticks_t now, int verbose)
             , timezone, daylightsaving
         );
     }
+    /*
+     * The conversion between ticks, time_t, and dddd/mm/yyThh:mm:ss should always
+     * work for UTC (zulu) time. But at the boundaries of the maximum and minimum
+     * the local (juliet) time may not work because the timezone and daylightsaving
+     * offsets will place the values outside of the maximum or minimum. Detecting
+     * this is made more difficult by the fact that the documented error return
+     * for timegm(3) and timelocal(3) is (time_t)-1, but -1 is a valid epoch time
+     * value. It's made even more difficult by the fact that at least for some
+     * glibc versions errno is not set and returns as zero (the man pages suggest
+     * EOVERFLOW), making any distinction impossible.
+     */
     EXPECT(now == zulu);
-    EXPECT(now == juliet);
+    ADVISE(now == juliet);
     SANITY(zyear, zmonth, zday, zhour, zminute, zsecond, ztick);
-    SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
+    if (now == juliet) { SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick); }
     SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
     EXPECT((rc < 0) || (rc > 0));
 
@@ -264,54 +275,9 @@ int main(int argc, char ** argv)
     notfirst = 0;
     prior = -1;
 
-#if 0
-
-From fun/timestuff.c@2020-10-20:
-
-sizeof(time_t)=8
-
-tzname[0]="MST"
-tzname[1]="MDT"
-timezone=25200
-daylight=01
-
-seconds=-2147483648=0xffffffff80000000
-zulu=1901/12/13T20:45:52~0
-juliet=1901/12/13T13:45:52~0
-
-seconds=-1=0xffffffffffffffff
-zulu=1969/12/31T23:59:59~0
-juliet=1969/12/31T16:59:59~0
-
-seconds=0=0x00000000
-zulu=1970/01/01T00:00:00~0
-juliet=1969/12/31T17:00:00~0
-
-seconds=2147483647=0x7fffffff
-zulu=2038/01/19T03:14:07~0
-juliet=2038/01/18T20:14:07~0
-
-data=1901/12/13T13:45:00~0
-result=-2147508900=0xffffffff7fff9d5c
-zulu=2038/01/19T03:14:07~0
-
-seconds=-2147483648=0xffffffff80000000
-zulu=1901/12/13T20:45:52~0
-result=-2147483648=0xffffffff80000000
-
-seconds=2147483647=0x7fffffff
-zulu=2038/01/19T03:14:07~0
-result=2147483647=0x7fffffff
-
-seconds=-2147483648=0xffffffff80000000
-juliet=1901/12/13T13:45:52~0
-result=-2147483648=0xffffffff80000000
-
-seconds=2147483647=0x7fffffff
-juliet=2038/01/18T20:14:07~0
-result=2147483647=0x7fffffff
-
-#endif
+    /*
+     * See also fun/timestuff.c
+     */
 
     epoch(0xffffffff80000000LL * hertz, !0);
     VERIFY(1901, 12, 13, 20, 45, 52, 0);
