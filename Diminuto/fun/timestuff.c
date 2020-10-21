@@ -8,7 +8,17 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * This program helps me reverse engineer the underlying
- * time handling stuff.
+ * time handling stuff. I've seen some minor differences
+ * between platforms - all distros based on Debian - mostly
+ * because of the difference in sizeof(time_t): 32-bits on
+ * some platforms, 64-bits on others. Another complication is
+ * the fact that timegm(3) and timelocal(3) are documented as
+ * returning (time_t)-1 as an error value; -1 is a valid epoch
+ * value to return, since time_t is signed, and timegm(3),
+ * timelocal(3), gmtime_r(3), and localtime_r(3) all use
+ * negative time_t values to encode times before the epoch.
+ * Also, as far as I can tell, sometimes the functions return
+ * (time_t)-1 meaning error, but leave errno unset.
  */
 #include <stdio.h>
 #include <time.h>
