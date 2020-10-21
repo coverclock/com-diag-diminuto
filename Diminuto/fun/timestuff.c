@@ -35,16 +35,18 @@ void main(void) {
 
     tzset();
 
+    printf("%s[%d]:\n\n", __FILE__, __LINE__);
+
     printf("sizeof(time_t)=%zu\n", sizeof(time_t));
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     printf("tzname[0]=\"%s\"\n", tzname[0]);
     printf("tzname[1]=\"%s\"\n", tzname[1]);
     printf("timezone=%ld\n", timezone);
     printf("daylight=%02d\n", daylight);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     seconds = (time_t)MINIMUM;
     printf("seconds=%lld=0x%8.8llx\n", (long long)seconds, (long long)seconds);
@@ -57,7 +59,7 @@ void main(void) {
     if (pointer == (struct tm *)0) { perror("localtime_r"); }
     printf("juliet=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", juliet.tm_year + 1900, juliet.tm_mon + 1, juliet.tm_mday, juliet.tm_hour, juliet.tm_min, juliet.tm_sec, juliet.tm_isdst);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     seconds = (time_t)NEGATIVE;
     printf("seconds=%lld=0x%8.8llx\n", (long long)seconds, (long long)seconds);
@@ -70,7 +72,7 @@ void main(void) {
     if (pointer == (struct tm *)0) { perror("localtime_r"); }
     printf("juliet=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", juliet.tm_year + 1900, juliet.tm_mon + 1, juliet.tm_mday, juliet.tm_hour, juliet.tm_min, juliet.tm_sec, juliet.tm_isdst);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     seconds = (time_t)ZERO;
     printf("seconds=%lld=0x%8.8llx\n", (long long)seconds, (long long)seconds);
@@ -83,7 +85,7 @@ void main(void) {
     if (pointer == (struct tm *)0) { perror("localtime_r"); }
     printf("juliet=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", juliet.tm_year + 1900, juliet.tm_mon + 1, juliet.tm_mday, juliet.tm_hour, juliet.tm_min, juliet.tm_sec, juliet.tm_isdst);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     seconds = (time_t)MAXIMUM;
     printf("seconds=%lld=0x%8.8llx\n", (long long)seconds, (long long)seconds);
@@ -96,14 +98,14 @@ void main(void) {
     if (pointer == (struct tm *)0) { perror("localtime_r"); }
     printf("juliet=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", juliet.tm_year + 1900, juliet.tm_mon + 1, juliet.tm_mday, juliet.tm_hour, juliet.tm_min, juliet.tm_sec, juliet.tm_isdst);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     data.tm_year = 1901 - 1900;
     data.tm_mon = 12 - 1;
     data.tm_mday = 13;
-    data.tm_hour = 13;
+    data.tm_hour = 20;
     data.tm_min = 45;
-    data.tm_sec = 0;
+    data.tm_sec = 51;
     data.tm_isdst = 0;
     printf("data=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", data.tm_year + 1900, data.tm_mon + 1, data.tm_mday, data.tm_hour, data.tm_min, data.tm_sec, data.tm_isdst);
     result = timegm(&data);
@@ -113,7 +115,58 @@ void main(void) {
     if (pointer == (struct tm *)0) { perror("gmtime_r"); }
     printf("zulu=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", zulu.tm_year + 1900, zulu.tm_mon + 1, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
+
+    data.tm_year = 1901 - 1900;
+    data.tm_mon = 12 - 1;
+    data.tm_mday = 13;
+    data.tm_hour = 20;
+    data.tm_min = 45;
+    data.tm_sec = 52;
+    data.tm_isdst = 0;
+    printf("data=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", data.tm_year + 1900, data.tm_mon + 1, data.tm_mday, data.tm_hour, data.tm_min, data.tm_sec, data.tm_isdst);
+    result = timegm(&data);
+    if (result == (time_t)-1) { perror("timegm"); }
+    printf("result=%lld=0x%8.8llx\n", (long long)result, (long long)result);
+    pointer = gmtime_r(&seconds, &zulu);
+    if (pointer == (struct tm *)0) { perror("gmtime_r"); }
+    printf("zulu=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", zulu.tm_year + 1900, zulu.tm_mon + 1, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
+
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
+
+    data.tm_year = 2038 - 1900;
+    data.tm_mon = 1 - 1;
+    data.tm_mday = 19;
+    data.tm_hour = 3;
+    data.tm_min = 14;
+    data.tm_sec = 7;
+    data.tm_isdst = 0;
+    printf("data=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", data.tm_year + 1900, data.tm_mon + 1, data.tm_mday, data.tm_hour, data.tm_min, data.tm_sec, data.tm_isdst);
+    result = timegm(&data);
+    if (result == (time_t)-1) { perror("timegm"); }
+    printf("result=%lld=0x%8.8llx\n", (long long)result, (long long)result);
+    pointer = gmtime_r(&seconds, &zulu);
+    if (pointer == (struct tm *)0) { perror("gmtime_r"); }
+    printf("zulu=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", zulu.tm_year + 1900, zulu.tm_mon + 1, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
+
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
+
+    data.tm_year = 2038 - 1900;
+    data.tm_mon = 1 - 1;
+    data.tm_mday = 19;
+    data.tm_hour = 3;
+    data.tm_min = 14;
+    data.tm_sec = 8;
+    data.tm_isdst = 0;
+    printf("data=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", data.tm_year + 1900, data.tm_mon + 1, data.tm_mday, data.tm_hour, data.tm_min, data.tm_sec, data.tm_isdst);
+    result = timegm(&data);
+    if (result == (time_t)-1) { perror("timegm"); }
+    printf("result=%lld=0x%8.8llx\n", (long long)result, (long long)result);
+    pointer = gmtime_r(&seconds, &zulu);
+    if (pointer == (struct tm *)0) { perror("gmtime_r"); }
+    printf("zulu=%04d/%02d/%02dT%02d:%02d:%02d~%d\n", zulu.tm_year + 1900, zulu.tm_mon + 1, zulu.tm_mday, zulu.tm_hour, zulu.tm_min, zulu.tm_sec, zulu.tm_isdst);
+
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     for (datum = MINIMUM; datum <= MAXIMUM; datum++) {
 
@@ -132,7 +185,7 @@ void main(void) {
 
     }
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     for (datum = MAXIMUM; datum >= MINIMUM; datum--) {
 
@@ -151,7 +204,7 @@ void main(void) {
 
     }
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     for (datum = MINIMUM; datum <= MAXIMUM; datum++) {
 
@@ -170,7 +223,7 @@ void main(void) {
 
     }
 
-    putchar('\n');
+    printf("\n%s[%d]:\n\n", __FILE__, __LINE__);
 
     for (datum = MAXIMUM; datum >= MINIMUM; datum--) {
 
