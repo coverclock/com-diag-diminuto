@@ -45,7 +45,7 @@ static void proxy(union sigval sv)
          * the phase shift and possible variation thereof
          * in the later code. This also allows us to
          * combine what would otherwise be two different
-         * critical secitons.
+         * critical sections.
          */
     
         if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
@@ -54,7 +54,7 @@ static void proxy(union sigval sv)
     
         /*
          * Mutex locking is relatively fast providing we don't
-         * blocl. The only time we will block is when the application
+         * block. The only time we will block is when the application
          * is trying to stop the timer, in which case some delay
          * here is moot. If we are a one-shot timer, then we might
          * as well stop ourselves, which will prevent the need
