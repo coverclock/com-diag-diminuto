@@ -63,21 +63,29 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     }
 
     /*
-     * Yeah, this is sketchy. But blocking the modulator interrupt service routine on a mutex
-     * messes up what little real-time goodness we have.
+     * Update the duty cycle in the fields shared with the callback.
+     * If the callback hasn't used the prior duty cycle, return an
+     * error.
      */
 
-    DIMINUTO_COHERENT_SECTION_BEGIN;
+    DIMINUTO_CONDITION_BEGIN(&(mp->condition));
 
-        if (!mp->set) {
-            mp->duty = duty;
-            mp->ton = on;
-            mp->toff = off;
+        mp->duty = duty;
+        mp->ton = on;
+        mp->toff = off;
+        if (!(mp->set)) { 
             mp->set = !0;
+            do {
+                if ((rc = diminuto_condition_wait(&(mp->condition))) != 0) {
+                    errno = rc;
+                    break;
+                }
+            } while (mp->set);
+        } else {
             rc = 0;
         }
 
-    DIMINUTO_COHERENT_SECTION_END;
+    DIMINUTO_CONDITION_END;
 
     return rc;
 }
@@ -90,31 +98,21 @@ static void * callback(void * vp)
 
     do {
 
+        /*
+         * Complete the current on or off cycle.
+         */
+
         if (mp->cycle > 0) {
             mp->cycle -= 1;
             break;
         }
 
         /*
-         * We update the duty cycle only at the end of a
-         * complete 100% cycle (or at the very beginning).
+         * We change the pin state only at the end
+         * of a complete cycle. We check for the edge
+         * cases of 100% (always on) and 0% (always
+         * off).
          */
-
-        mp->total += 1;
-        if (mp->total >= DIMINUTO_MODULATOR_DUTY_MAX) {
-
-            DIMINUTO_COHERENT_SECTION_BEGIN;
-
-                if (mp->set) {
-                    mp->on = mp->ton;
-                    mp->off = mp->toff;
-                    mp->set = 0;
-                }
-
-            DIMINUTO_COHERENT_SECTION_END;
-
-            mp->total = 0;
-        }
 
         if (mp->state) {
             if (mp->off > 0) {
@@ -134,6 +132,37 @@ static void * callback(void * vp)
             }
         }
 
+        /*
+         * Complete the current 100% period, after which
+         * the output will be in the off state.
+         */
+
+        if (mp->period > 0) {
+            mp->period -= 1;
+            break;
+        }
+        mp->period = DIMINUTO_MODULATOR_DUTY_MAX;
+
+        /*
+         * We update the duty cycle only at the end of
+         * a complete period. This code may occasionally
+         * block, but it will do so after updating the
+         * output state for the prior settings, which
+         * occurs as close to the beginning of the timer
+         * firing as we can get it.
+         */
+
+        DIMINUTO_CONDITION_BEGIN(&(mp->condition));
+
+            if (mp->set) {
+                mp->on = mp->ton;
+                mp->off = mp->toff;
+                mp->set = 0;
+                (void)diminuto_condition_signal(&(mp->condition));
+            }
+
+        DIMINUTO_CONDITION_END;
+
     } while (0);
 
     return (void *)(uintptr_t)(mp->cycle);
@@ -142,8 +171,9 @@ static void * callback(void * vp)
 diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty)
 {
     diminuto_modulator_t * result = (diminuto_modulator_t *)0;
-    int rc = -1;
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
+    diminuto_condition_t * cp = (diminuto_condition_t *)0;
+    int rc = -1;
 
     do {
 
@@ -159,12 +189,18 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->on = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->off = DIMINUTO_MODULATOR_DUTY_MAX;
         mp->cycle = 0;
-        mp->total = DIMINUTO_MODULATOR_DUTY_MAX - 1;
+        mp->period = 0;
+        mp->set = !0;
         mp->ton = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
         tp = diminuto_timer_init_periodic(&(mp->timer), callback);
         if (tp == (diminuto_timer_t *)0) {
+            break;
+        }
+
+        cp = diminuto_condition_init(&(mp->condition));
+        if (cp == (diminuto_condition_t *)0) {
             break;
         }
 
@@ -179,6 +215,10 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         if (rc < 0) {
             diminuto_perror("diminuto_modulator_init: diminuto_modulator_set");
         }
+
+#if 0
+        DIMINUTO_LOG_DEBUG("%s[%d]: pin=%d state=%d duty=%d on=%d off=%d cycle=%d period=%d set=%d ton=%d toff=%d\n", __FILE__, __LINE__, mp->pin, mp->state, mp->duty, mp->on, mp->off, mp->cycle, mp->period, mp->set, mp->ton, mp->toff);
+#endif
 
         result = mp;
 
@@ -209,6 +249,10 @@ int diminuto_modulator_stop(diminuto_modulator_t * mp)
 diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp)
 {
     diminuto_modulator_t * result = (diminuto_modulator_t *)0;
+
+    if (diminuto_condition_fini(&(mp->condition)) != (diminuto_condition_t *)0) {
+        result = mp;
+    }
 
     if (diminuto_timer_fini(&(mp->timer)) != (diminuto_timer_t *)0) {
         result = mp;

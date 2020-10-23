@@ -36,7 +36,11 @@ static void proxy(union sigval sv)
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
 
     tp = (diminuto_timer_t *)sv.sival_ptr;
-    if (tp != (diminuto_timer_t *)0) {
+    if (tp == (diminuto_timer_t *)0) {
+        /* Do nothing. */
+    } else if (tp->state == DIMINUTO_TIMER_STATE_IDLE) {
+        /* Do nothing. */
+    } else {
     
         /*
          * We call the timer function first to keep the
@@ -47,10 +51,14 @@ static void proxy(union sigval sv)
          * combine what would otherwise be two different
          * critical sections.
          */
+
+        DIMINUTO_COHERENT_SECTION_BEGIN;
     
-        if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
-            tp->value = (*(tp->function))(tp->context);
-        }
+            if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+                tp->value = (*(tp->function))(tp->context);
+            }
+
+        DIMINUTO_COHERENT_SECTION_END;
     
         /*
          * Mutex locking is relatively fast providing we don't
@@ -215,15 +223,15 @@ diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
             if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+                later = diminuto_condition_clock() + (tp->ticks * 3); /* Clock time, not duration. */
                 tp->state = DIMINUTO_TIMER_STATE_DISARM;
-                later = diminuto_condition_clock() + (tp->ticks * 2); /* Clock time, not duration. */
-                while (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
+                do {
                     if ((rc = diminuto_condition_wait_until(&(tp->condition), later)) == DIMINUTO_CONDITION_TIMEDOUT) {
                         errno = rc;
                         diminuto_perror("diminuto_timer_stop");
                         break;
                     }
-                }
+                } while (tp->state != DIMINUTO_TIMER_STATE_IDLE);
             }
 
         DIMINUTO_CONDITION_END;

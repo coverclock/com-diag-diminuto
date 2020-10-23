@@ -93,12 +93,12 @@ int main(int argc, char ** argv)
             diminuto_delay(diminuto_frequency(), 0);
 
             COMMENT("set");
-            ASSERT(diminuto_modulator_set(&modulator, 20) >= 0);
+            ASSERT(diminuto_modulator_set(&modulator, 20) == 0);
 
             diminuto_delay(diminuto_frequency(), 0);
 
             COMMENT("set");
-            ASSERT(diminuto_modulator_set(&modulator, 60) >= 0);
+            ASSERT(diminuto_modulator_set(&modulator, 60) == 0);
 
             diminuto_delay(diminuto_frequency(), 0);
 

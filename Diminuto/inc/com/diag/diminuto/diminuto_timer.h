@@ -154,7 +154,8 @@ extern diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ti
 
 /**
  * Stop the timer of a timer object. This disarms the timer i.e. places
- * it in the inactive state.
+ * it in the inactive state. This function blocks the caller until the
+ * timer acknowledges that it is stopped.
  * @param tp points to the timer object.
  * @return the number of ticks left on the timer or <0 if an error occurred.
  */

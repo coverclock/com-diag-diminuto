@@ -31,6 +31,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_pin.h"
+#include "com/diag/diminuto/diminuto_condition.h"
 #include <stdio.h>
 #include <signal.h>
 #include <time.h>
@@ -76,18 +77,19 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
+    diminuto_timer_t timer;
+    diminuto_condition_t condition;
     FILE * fp;
     int pin;
-    diminuto_timer_t timer;
-    volatile bool state;
-    volatile diminuto_modulator_cycle_t duty;
-    volatile diminuto_modulator_cycle_t on;
-    volatile diminuto_modulator_cycle_t off;
-    volatile diminuto_modulator_cycle_t cycle;
-    volatile diminuto_modulator_cycle_t total;
-    volatile bool set;
-    volatile diminuto_modulator_cycle_t ton;
-    volatile diminuto_modulator_cycle_t toff;
+    bool state;
+    diminuto_modulator_cycle_t duty;
+    diminuto_modulator_cycle_t on;
+    diminuto_modulator_cycle_t off;
+    diminuto_modulator_cycle_t cycle;
+    diminuto_modulator_cycle_t period;
+    bool set;
+    diminuto_modulator_cycle_t ton;
+    diminuto_modulator_cycle_t toff;
 } diminuto_modulator_t;
 
 /**
@@ -119,7 +121,9 @@ extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_
 extern int diminuto_modulator_start(diminuto_modulator_t * mp);
 
 /**
- * Stops a modulator
+ * Stops a modulator. THis function blocks the caller until the
+ * underlying Diminuto timer has acknowledged that is has been
+ * disarmed.
  * @param mp points to the modulator structure.
  * @return 0 for success, <0 if an error occured.
  */
