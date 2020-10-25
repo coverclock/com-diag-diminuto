@@ -13,7 +13,12 @@ g++ -o cxxcapi -I inc sav/cxxcapi.cpp out/host/arc/libdiminuto.a -lpthread -lrt 
 
 #include <stdio.h>
 
+CXXCINLINE void notice1() { DIMINUTO_LOG_NOTICE("Hello, world 1!\n"); }
+
+CXXCAPI void notice2() { DIMINUTO_LOG_NOTICE("Hello, world 2!\n"); }
+
 int main(void)
 {
-    DIMINUTO_LOG_NOTICE("Hello, world!\n");
+    notice1();
+    notice2();
 }
