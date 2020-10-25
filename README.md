@@ -260,6 +260,7 @@ or as a user - e.g. pi - that is in the gpio group.)
 * log - captures of some unit and functional test utility output.
 * mod - user space dynamically linkable module source files.
 * out - build artifacts.
+* sav - saved stuff that is not part of the build.
 * src - feature implementation and private header source files.
 * tst - unit test source files.
 * txt - notes and other useful stuff.
