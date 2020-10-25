@@ -142,7 +142,9 @@ extern void diminuto_buffer_fini(void);
 extern size_t diminuto_buffer_prealloc(size_t nmemb, size_t size);
 
 /**
- * Call diminuto_buffer_prealloc.
+ * Call diminuto_buffer_prealloc. Note that nothing is returned, so there
+ * is no indication taht the preallocation failed. This API is provided
+ * just to conform to the init/fini pattern.
  * @param nmemb is the number of buffers to preallocate from the heap.
  * @param size is the size of each buffer in bytes.
  */
