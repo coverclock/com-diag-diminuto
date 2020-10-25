@@ -268,6 +268,7 @@ int main(void)
         node.color = DIMINUTO_TREE_COLOR_BLACK;
         ASSERT(diminuto_tree_isblack(&node));
         ASSERT(!diminuto_tree_isred(&node));
+        ASSERT(diminuto_tree_fini(&node) == (diminuto_tree_t *)0);
     }
 
     {
@@ -291,6 +292,7 @@ int main(void)
         node.color = DIMINUTO_TREE_COLOR_BLACK;
         ASSERT(diminuto_tree_isblack(&node));
         ASSERT(!diminuto_tree_isred(&node));
+        ASSERT(diminuto_tree_fini(&node) == (diminuto_tree_t *)0);
     }
 
     {
@@ -313,6 +315,7 @@ int main(void)
         node.color = DIMINUTO_TREE_COLOR_BLACK;
         ASSERT(diminuto_tree_isblack(&node));
         ASSERT(!diminuto_tree_isred(&node));
+        ASSERT(diminuto_tree_fini(&node) == (diminuto_tree_t *)0);
     }
 
     {
@@ -346,6 +349,7 @@ int main(void)
         ASSERT(!diminuto_tree_isred(&node));
         ASSERT(diminuto_tree_isblack(&node));
         ASSERT(!diminuto_tree_clear(&node));
+        ASSERT(diminuto_tree_fini(&node) == (diminuto_tree_t *)0);
      }
 
     {

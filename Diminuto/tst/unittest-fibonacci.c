@@ -176,6 +176,8 @@ int main(void)
     ASSERT(x == y);
     y = x;
 
+    ASSERT(diminuto_fibonacci_fini(statep) == (diminuto_fibonacci_state_t *)0);
+
     STATUS();
 
     TEST();
@@ -216,6 +218,8 @@ int main(void)
         y = x;
     }
     ASSERT(x == 89);
+
+    ASSERT(diminuto_fibonacci_fini(statep) == (diminuto_fibonacci_state_t *)0);
 
     STATUS();
 

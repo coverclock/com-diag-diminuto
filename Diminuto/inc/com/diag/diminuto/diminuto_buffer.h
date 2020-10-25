@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Buffer feature is a prototype-compatible replacement for several
@@ -140,6 +140,16 @@ extern void diminuto_buffer_fini(void);
  * @return the total number of bytes allocated, including overhead.
  */
 extern size_t diminuto_buffer_prealloc(size_t nmemb, size_t size);
+
+/**
+ * Call diminuto_buffer_prealloc.
+ * @param nmemb is the number of buffers to preallocate from the heap.
+ * @param size is the size of each buffer in bytes.
+ */
+static inline void diminuto_buffer_init(size_t nmemb, size_t size)
+{
+    (void)diminuto_buffer_prealloc(nmemb, size);
+}
 
 /**
  * Enable or disable debug mode.

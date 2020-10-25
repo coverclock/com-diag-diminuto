@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The List feature implements an object which can be inserted into and
@@ -109,10 +109,7 @@ typedef struct DiminutoList {
  * functor returns a number greater than zero, it is then applied to the next
  * node. This proceeds until the functor returns zero.
  */
-typedef int (diminuto_list_functor_t)(
-    void * datap,
-    void * contextp
-);
+typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
 
 /*******************************************************************************
  * CONSTANTS
@@ -155,9 +152,7 @@ typedef int (diminuto_list_functor_t)(
  * @param nodep points to the node to become the root of the list.
  * @return a pointer to the new root node.
  */
-extern diminuto_list_t * diminuto_list_reroot(
-    diminuto_list_t * nodep
-);
+extern diminuto_list_t * diminuto_list_reroot(diminuto_list_t * nodep);
 
 /**
  * Remove the specified node from the list it is on. The node is
@@ -167,9 +162,7 @@ extern diminuto_list_t * diminuto_list_reroot(
  * @param nodep points to the node to be removed.
  * @return a pointer to the removed node.
  */
-extern diminuto_list_t * diminuto_list_remove(
-    diminuto_list_t * nodep
-);
+extern diminuto_list_t * diminuto_list_remove(diminuto_list_t * nodep);
 
 /**
  * Insert the specified node into list just after the specified root.
@@ -179,10 +172,7 @@ extern diminuto_list_t * diminuto_list_remove(
  * @param nodep points to the node to be inserted.
  * @return a pointer to the inserted node.
  */
-extern diminuto_list_t * diminuto_list_insert(
-    diminuto_list_t * queuep,
-    diminuto_list_t * nodep
-);
+extern diminuto_list_t * diminuto_list_insert(diminuto_list_t * queuep, diminuto_list_t * nodep);
 
 /**
  * Replace an old node with a new node on the same relative position on the
@@ -192,10 +182,7 @@ extern diminuto_list_t * diminuto_list_insert(
  * @param newp points to the new node.
  * return a pointer to the old node.
  */
-extern diminuto_list_t * diminuto_list_replace(
-    diminuto_list_t * oldp,
-    diminuto_list_t * newp
-);
+extern diminuto_list_t * diminuto_list_replace(diminuto_list_t * oldp, diminuto_list_t * newp);
 
 /**
  * Cut out a segment of a list, resulting in two lists: the original list
@@ -208,10 +195,7 @@ extern diminuto_list_t * diminuto_list_replace(
  * @param lastp points to the last node in the new segment to be cut.
  * @return a pointer to the first node in the new segment.
  */
-extern diminuto_list_t * diminuto_list_cut(
-    diminuto_list_t * firstp,
-    diminuto_list_t * lastp
-);
+extern diminuto_list_t * diminuto_list_cut(diminuto_list_t * firstp, diminuto_list_t * lastp);
 
 /**
  * Splice a list into another list. If the list to be sliced is already on the
@@ -221,10 +205,7 @@ extern diminuto_list_t * diminuto_list_cut(
  * @param fromp points to the node of the list to be spliced.
  * @return a pointer the node at the beginning of the splice.
  */
-extern diminuto_list_t * diminuto_list_splice(
-    diminuto_list_t * top,
-    diminuto_list_t * fromp
-);
+extern diminuto_list_t * diminuto_list_splice(diminuto_list_t * top, diminuto_list_t * fromp);
 
 /**
  * Apply the specified functor to successive nodes. If the functor
@@ -242,11 +223,7 @@ extern diminuto_list_t * diminuto_list_splice(
  * @param contextp points to the caller provided context or null.
  * @return a pointer to the node for which the functor returns zero.
  */
-extern diminuto_list_t * diminuto_list_apply(
-    diminuto_list_functor_t * funcp,
-    diminuto_list_t * nodep,
-    void * contextp
-);
+extern diminuto_list_t * diminuto_list_apply(diminuto_list_functor_t * funcp, diminuto_list_t * nodep, void * contextp);
 
 /*******************************************************************************
  * AUDITORS
@@ -256,9 +233,7 @@ extern diminuto_list_t * diminuto_list_apply(
  * Log details about a list node.
  * @param nodep points to a node.
  */
-extern void diminuto_list_log(
-    diminuto_list_t * nodep
-);
+extern void diminuto_list_log(diminuto_list_t * nodep); 
 
 /**
  * Audit a list. Return a pointer to the first node on the list that appears
@@ -269,9 +244,7 @@ extern void diminuto_list_log(
  * @param nodep points to a node on the list.
  * @return a pointer to the first incorrect node or null if none.
  */
-extern diminuto_list_t * diminuto_list_audit(
-    diminuto_list_t * nodep
-);
+extern diminuto_list_t * diminuto_list_audit(diminuto_list_t * nodep);
 
 /*******************************************************************************
  * SETTORS
@@ -283,13 +256,20 @@ extern diminuto_list_t * diminuto_list_audit(
  * @param nodep points to the node to be initialized.
  * @return a pointer to the initialized node.
  */
-static inline diminuto_list_t * diminuto_list_init(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_init(diminuto_list_t * nodep) {
     nodep->next = nodep;
     nodep->prev = nodep;
     nodep->root = nodep;
     return nodep;
+}
+
+/**
+ * Release any resources held by the node object.
+ * @param nodep points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_list_t * diminuto_list_fini(diminuto_list_t * nodep) {
+    return (diminuto_list_t *)0;
 }
 
 /**
@@ -298,10 +278,7 @@ static inline diminuto_list_t * diminuto_list_init(
  * @param datap points to the data.
  * @return a pointer to the node.
  */
-static inline diminuto_list_t * diminuto_list_dataset(
-    diminuto_list_t * nodep,
-    void * datap
-) {
+static inline diminuto_list_t * diminuto_list_dataset(diminuto_list_t * nodep, void * datap) {
     nodep->data = datap;
     return nodep;
 }
@@ -312,10 +289,7 @@ static inline diminuto_list_t * diminuto_list_dataset(
  * @param datap points to the data.
  * @return a pointer to the node.
  */
-static inline diminuto_list_t * diminuto_list_datainit(
-    diminuto_list_t * nodep,
-    void * datap
-)  {
+static inline diminuto_list_t * diminuto_list_datainit(diminuto_list_t * nodep, void * datap)  {
     return diminuto_list_dataset(diminuto_list_init(nodep), datap);
 }
 
@@ -324,9 +298,7 @@ static inline diminuto_list_t * diminuto_list_datainit(
  * @param nodep points to a node.
  * @return a pointer to the node.
  */
-static inline diminuto_list_t * diminuto_list_nullinit(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_nullinit(diminuto_list_t * nodep) {
     return diminuto_list_datainit(nodep, (void *)0);
 }
 
@@ -339,9 +311,7 @@ static inline diminuto_list_t * diminuto_list_nullinit(
  * @param nodep points to a node.
  * @return a pointer to the next node.
  */
-static inline diminuto_list_t * diminuto_list_next(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_next(diminuto_list_t * nodep) {
     return nodep->next;
 }
 
@@ -350,9 +320,7 @@ static inline diminuto_list_t * diminuto_list_next(
  * @param nodep points to a node.
  * @return a pointer to to the previous node.
  */
-static inline diminuto_list_t * diminuto_list_prev(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_prev(diminuto_list_t * nodep) {
     return nodep->prev;
 }
 
@@ -361,9 +329,7 @@ static inline diminuto_list_t * diminuto_list_prev(
  * @param nodep points to a node.
  * @return a pointer to the root node.
  */
-static inline diminuto_list_t * diminuto_list_root(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_root(diminuto_list_t * nodep) {
     return nodep->root;
 }
 
@@ -372,9 +338,7 @@ static inline diminuto_list_t * diminuto_list_root(
  * @param nodep points to a node.
  * @return a pointer to the data.
  */
-static inline void * diminuto_list_data(
-    diminuto_list_t * nodep
-) {
+static inline void * diminuto_list_data(diminuto_list_t * nodep) {
     return nodep->data;
 }
 
@@ -388,9 +352,7 @@ static inline void * diminuto_list_data(
  * @param nodep points to a node.
  * @return true if the list is empty, false otherwise.
  */
-static inline int diminuto_list_isempty(
-    const diminuto_list_t * nodep
-) {
+static inline int diminuto_list_isempty(const diminuto_list_t * nodep) {
     return (nodep == nodep->next);
 }
 
@@ -400,9 +362,7 @@ static inline int diminuto_list_isempty(
  * @param nodep points to a node.
  * @return true if the node is the root, false otherwise.
  */
-static inline int diminuto_list_isroot(
-    const diminuto_list_t * nodep
-) {
+static inline int diminuto_list_isroot(const diminuto_list_t * nodep) {
     return (nodep == nodep->root);
 }
 
@@ -412,10 +372,7 @@ static inline int diminuto_list_isroot(
  * @param nodep points to the node.
  * @return true the node is a member of the list with the root, false otherwise.
  */
-static inline int diminuto_list_ismember(
-    const diminuto_list_t * rootp,
-    const diminuto_list_t * nodep
-) {
+static inline int diminuto_list_ismember(const diminuto_list_t * rootp, const diminuto_list_t * nodep) {
     return (rootp == nodep->root);
 }
 
@@ -426,10 +383,7 @@ static inline int diminuto_list_ismember(
  * @param secondp points to the second node.
  * @return true if two nodes are members of the same list, false otherwise.
  */
-static inline int diminuto_list_aresiblings(
-    const diminuto_list_t * firstp,
-    const diminuto_list_t * secondp
-) {
+static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, const diminuto_list_t * secondp) {
     return (firstp->root == secondp->root);
 }
 
@@ -442,9 +396,7 @@ static inline int diminuto_list_aresiblings(
  * @param nodep points to a node or null if there is no node.
  * @return the data pointer for a node or null.
  */
-static inline void * diminuto_list_dataif(
-    diminuto_list_t * nodep
-) {
+static inline void * diminuto_list_dataif(diminuto_list_t * nodep) {
     return (nodep != DIMINUTO_LIST_NULL) ? nodep->data : (void *)0;
 }
 
@@ -454,9 +406,7 @@ static inline void * diminuto_list_dataif(
  * @param nodep points to a node.
  * @return a pointer to the first node on a list or null if the list is empty.
  */
-static inline diminuto_list_t * diminuto_list_head(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_head(diminuto_list_t * nodep) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
         ? DIMINUTO_LIST_NULL
         : diminuto_list_next(diminuto_list_root(nodep)));
@@ -468,9 +418,7 @@ static inline diminuto_list_t * diminuto_list_head(
  * @param nodep points to a node.
  * @return a pointer to the first node on a list or null if the list is empty.
  */
-static inline diminuto_list_t * diminuto_list_tail(
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_tail(diminuto_list_t * nodep) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
         ? DIMINUTO_LIST_NULL
         : diminuto_list_prev(diminuto_list_root(nodep)));
@@ -486,10 +434,7 @@ static inline diminuto_list_t * diminuto_list_tail(
  * @param nodep points to the node to be pushed onto the stack.
  * @return a pointer to the node that was pushed onto the stack.
  */
-static inline diminuto_list_t * diminuto_list_push(
-    diminuto_list_t * stackp,
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_push(diminuto_list_t * stackp, diminuto_list_t * nodep) {
     return diminuto_list_insert(diminuto_list_root(stackp), nodep);
 }
 
@@ -498,9 +443,7 @@ static inline diminuto_list_t * diminuto_list_push(
  * @param stackp points to a node that is on the stack (including the root).
  * @return a pointer to the node popped off or null if the stack was empty.
  */
-static inline diminuto_list_t * diminuto_list_pop(
-    diminuto_list_t * stackp
-) {
+static inline diminuto_list_t * diminuto_list_pop(diminuto_list_t * stackp) {
     return (diminuto_list_isempty(diminuto_list_root(stackp))
         ? DIMINUTO_LIST_NULL
         : diminuto_list_remove(diminuto_list_next(diminuto_list_root(stackp))));
@@ -516,10 +459,7 @@ static inline diminuto_list_t * diminuto_list_pop(
  * @param nodep points to the node to be enqueued.
  * @return a pointer to the node that was enqueued onto the queue.
  */
-static inline diminuto_list_t * diminuto_list_enqueue(
-    diminuto_list_t * queuep,
-    diminuto_list_t * nodep
-) {
+static inline diminuto_list_t * diminuto_list_enqueue(diminuto_list_t * queuep, diminuto_list_t * nodep) {
     return diminuto_list_insert(diminuto_list_prev(diminuto_list_root(queuep)), nodep);
 }
 
@@ -528,9 +468,7 @@ static inline diminuto_list_t * diminuto_list_enqueue(
  * @param queuep points to a node that is on the queue (including the root).
  * @return a pointer to a node that was dequeued or null if the queue was empty.
  */
-static inline diminuto_list_t * diminuto_list_dequeue(
-    diminuto_list_t * queuep
-) {
+static inline diminuto_list_t * diminuto_list_dequeue(diminuto_list_t * queuep) {
     return (diminuto_list_isempty(diminuto_list_root(queuep))
         ? DIMINUTO_LIST_NULL
         : diminuto_list_remove(diminuto_list_next(diminuto_list_root(queuep))));
@@ -545,9 +483,7 @@ static inline diminuto_list_t * diminuto_list_dequeue(
  * @param mboxp points to the mailbox.
  * @return a pointer to a message or null if the mailbox was empty.
  */
-static inline diminuto_list_t * diminuto_list_receive(
-    diminuto_list_t * mboxp
-) {
+static inline diminuto_list_t * diminuto_list_receive(diminuto_list_t * mboxp) {
     return diminuto_list_dequeue(mboxp);
 }
 
@@ -557,10 +493,7 @@ static inline diminuto_list_t * diminuto_list_receive(
  * @param mesgp points to the message to send.
  * @return a pointer to the message.
  */
-static inline diminuto_list_t * diminuto_list_send(
-    diminuto_list_t * mboxp,
-    diminuto_list_t * mesgp
-) {
+static inline diminuto_list_t * diminuto_list_send(diminuto_list_t * mboxp, diminuto_list_t * mesgp) {
     return diminuto_list_enqueue(mboxp, mesgp);
 }
 
@@ -571,10 +504,7 @@ static inline diminuto_list_t * diminuto_list_send(
  * @param mesgp points to the message to send.
  * @return pointer to the message.
  */
-static inline diminuto_list_t * diminuto_list_express(
-    diminuto_list_t * mboxp,
-    diminuto_list_t * mesgp
-) {
+static inline diminuto_list_t * diminuto_list_express(diminuto_list_t * mboxp, diminuto_list_t * mesgp) {
     return diminuto_list_push(mboxp, mesgp);
 }
 
@@ -583,9 +513,7 @@ static inline diminuto_list_t * diminuto_list_express(
  * @param mesgp points to the message to cancel.
  * @return a pointer to the message.
  */
-static inline diminuto_list_t * diminuto_list_cancel(
-    diminuto_list_t * mesgp
-) {
+static inline diminuto_list_t * diminuto_list_cancel(diminuto_list_t * mesgp) {
     return diminuto_list_remove(mesgp);
 }
 

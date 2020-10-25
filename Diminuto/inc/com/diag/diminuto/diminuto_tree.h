@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2015 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Tree feature implements a Red-Black Tree. This is intended to be used
@@ -399,6 +399,15 @@ static inline diminuto_tree_t * diminuto_tree_init(diminuto_tree_t * nodep)
     nodep->color = DIMINUTO_TREE_COLOR_RED;
     nodep->error = 0;
     return nodep;
+}
+
+/**
+ * Release any resources held by the tree object.
+ * @param nodep points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_tree_t * diminuto_tree_fini(diminuto_tree_t * nodep) {
+    return (diminuto_tree_t *)0;
 }
 
 /**

@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * This is the public API for the generic Buffer Pool feature. The Buffer
@@ -55,7 +55,18 @@ extern void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr)
  * Free all storage associated with the buffer pool.
  * @param poolp points to the pool.
  */
-extern void diminuto_buffer_pool_fini(diminuto_buffer_pool_t * poolp);
+extern void diminuto_buffer_pool_free(diminuto_buffer_pool_t * poolp);
+
+/**
+ * Call diminuto_buffer_pool_free.
+ * @param poolp points to the pool.
+ * @return a NULL.
+ */
+static inline diminuto_buffer_pool_t * diminuto_buffer_pool_fini(diminuto_buffer_pool_t * poolp)
+{
+    diminuto_buffer_pool_free(poolp);
+    return (diminuto_buffer_pool_t *)0;
+}
 
 /**
  * Dynamically allocate the specified number of buffers with the minimum
@@ -67,6 +78,18 @@ extern void diminuto_buffer_pool_fini(diminuto_buffer_pool_t * poolp);
  * @return the total number of bytes allocated.
  */
 extern size_t diminuto_buffer_pool_prealloc(diminuto_buffer_pool_t * poolp, size_t nmemb, size_t size);
+
+/**
+ * Call diminuto_buffer_pool_prealloc.
+ * @param poolp points to the pool.
+ * @param nmemb is the number of buffers to dynamically allocate.
+ * @param size is the minimum payload size of the buffers in bytes.
+ * @return a pointer to the pool if successful, NULL otherwise.
+ */
+static inline diminuto_buffer_pool_t * diminuto_buffer_pool_init(diminuto_buffer_pool_t * poolp, size_t nmemb, size_t size)
+{
+    return (diminuto_buffer_pool_prealloc(poolp, nmemb, size) > 0) ? poolp : (diminuto_buffer_pool_t *)0;
+}
 
 /**
  * Log information about a pool to the debug log.

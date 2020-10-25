@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Fibonacci feature implements a Fibonacci-sequence generator. This
@@ -64,6 +64,16 @@ static inline diminuto_fibonacci_state_t * diminuto_fibonacci_init(diminuto_fibo
     statep->x1 = x1;
     statep->xm = xm;
     return statep;
+}
+
+/**
+ * Release any resources held by the Finonacci object.
+ * @param statep points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_fibonacci_state_t * diminuto_fibonacci_fini(diminuto_fibonacci_state_t * statep)
+{
+    return (diminuto_fibonacci_state_t *)0;
 }
 
 /**

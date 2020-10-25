@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2016 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Store feature uses a Red-Black tree, a kind of self-balancing binary
@@ -346,6 +346,15 @@ static inline diminuto_store_t * diminuto_store_init(diminuto_store_t * nodep)
     diminuto_tree_datainit(diminuto_store_upcast(nodep), nodep);
     /* We don't initialize the key and value fields because they doesn't belong to us. */
     return nodep;
+}
+
+/**
+ * Release any resources held by the store object.
+ * @param nodep points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_store_t * diminuto_store_fini(diminuto_store_t * nodep) {
+    return (diminuto_store_t *)0;
 }
 
 /**

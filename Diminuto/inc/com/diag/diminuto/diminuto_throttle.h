@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Throttle feature implements a Generic Cell Rate Algorithm (GCRA) using
@@ -121,6 +121,15 @@ extern diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throt
  * @return a pointer to the throttle.
  */
 extern diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, diminuto_ticks_t increment, diminuto_ticks_t limit, diminuto_ticks_t now);
+
+/**
+ * Release any resources held by the throttle object.
+ * @param throttlep points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_throttle_t * diminuto_throttle_fini(diminuto_throttle_t * throttlep) {
+    return (diminuto_throttle_t *)0;
+}
 
 /*******************************************************************************
  * STATE CHANGE

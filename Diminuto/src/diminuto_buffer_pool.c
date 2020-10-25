@@ -65,7 +65,7 @@ void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr)
     }
 }
 
-void diminuto_buffer_pool_fini(diminuto_buffer_pool_t * poolp)
+void diminuto_buffer_pool_free(diminuto_buffer_pool_t * poolp)
 {
     diminuto_buffer_meta_t * that;
     int item;

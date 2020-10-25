@@ -32,7 +32,7 @@ int main(void)
         ASSERT((one = diminuto_buffer_pool_get(&mine, 1, 0)) != (void *)0);
         diminuto_buffer_pool_put(&mine, one);
         EXPECT(diminuto_buffer_pool_log(&mine) == 0);
-        diminuto_buffer_pool_fini(&mine);
+        diminuto_buffer_pool_free(&mine);
         EXPECT(diminuto_buffer_pool_log(&mine) == 0);
         STATUS();
     }
@@ -60,9 +60,21 @@ int main(void)
             diminuto_buffer_pool_put(&mine, buffer[ii][0]);
         }
         EXPECT(diminuto_buffer_pool_log(&mine) > 0);
-        diminuto_buffer_pool_fini(&mine);
+        diminuto_buffer_pool_free(&mine);
         EXPECT(diminuto_buffer_pool_log(&mine) == 0);
         STATUS();
+    }
+
+    {
+        size_t MYPOOL[] = { 10, 100, 1000 };
+        void * mypool[countof(MYPOOL)] = { (void *)0 };
+        diminuto_buffer_pool_t mine = { countof(MYPOOL), MYPOOL, mypool };
+        TEST();
+        EXPECT(diminuto_buffer_pool_init(&mine, 3, 10) == &mine);
+        EXPECT(diminuto_buffer_pool_init(&mine, 5, 100) == &mine);
+        EXPECT(diminuto_buffer_pool_init(&mine, 7, 1000) == &mine);
+        EXPECT(diminuto_buffer_pool_init(&mine, 11, 10000) == (diminuto_buffer_pool_t *)0);
+        EXPECT(diminuto_buffer_pool_fini(&mine) == (diminuto_buffer_pool_t *)0);
     }
 
     EXIT();

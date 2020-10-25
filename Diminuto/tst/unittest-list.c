@@ -204,21 +204,25 @@ int main(void)
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
+        ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
 
         ASSERT(diminuto_list_init(&head) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
+        ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
 
         ASSERT(diminuto_list_nullinit(&head) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT(diminuto_list_data(&head) == (void *)0);
+        ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
 
         ASSERT(diminuto_list_datainit(&head, datum) == &head);
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
+        ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
     }
     {
         /* Stack Operations */

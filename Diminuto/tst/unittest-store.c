@@ -133,6 +133,7 @@ int main(void)
         diminuto_store_keyvalueset(&first, KEY, VALUE);
         ASSERT(diminuto_store_keyget(&first) == KEY);
         ASSERT(diminuto_store_valueget(&first) == VALUE);
+        ASSERT(diminuto_store_fini(&first) == (diminuto_store_t *)0);
     }
 
     {

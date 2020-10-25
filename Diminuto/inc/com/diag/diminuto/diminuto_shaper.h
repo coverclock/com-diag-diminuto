@@ -5,7 +5,7 @@
 /**
  * @file
  *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
  * Licensed under the terms in LICENSE.txt.
  *
  * The Shaper feature uses two instances of the Throttle feature, a throttle
@@ -74,6 +74,15 @@ extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, di
  * @return a pointer to the shaper.
  */
 extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, diminuto_ticks_t bursttolerance, diminuto_ticks_t now);
+
+/**
+ * Release any resources held by the shaper object.
+ * @param shaperp points to the object.
+ * @return NULL if successful, a pointer to the object otherwise.
+ */
+static inline diminuto_shaper_t * diminuto_shaper_fini(diminuto_shaper_t * shaperp) {
+    return (diminuto_shaper_t *)0;
+}
 
 /*******************************************************************************
  * STATE CHANGE

@@ -194,7 +194,7 @@ void diminuto_buffer_fini(void)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-        diminuto_buffer_pool_fini((diminuto_buffer_pool_t *)&meta);
+        diminuto_buffer_pool_free((diminuto_buffer_pool_t *)&meta);
 
     DIMINUTO_CRITICAL_SECTION_END;
 }

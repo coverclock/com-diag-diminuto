@@ -440,5 +440,11 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        diminuto_buffer_init(10, 10);
+        diminuto_buffer_fini();
+        STATUS();
+    }
+
     EXIT();
 }

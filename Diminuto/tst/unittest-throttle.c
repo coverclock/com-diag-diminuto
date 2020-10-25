@@ -146,6 +146,7 @@ int main(int argc, char ** argv)
         ASSERT(throttle.alarmed2 == 0);
         ASSERT(diminuto_throttle_getexpected(&throttle) == throttle.expected);
         /**/
+        ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
     }
 
@@ -376,6 +377,7 @@ int main(int argc, char ** argv)
         ASSERT(!diminuto_throttle_cleared(tp));
         ASSERT(diminuto_throttle_getexpected(&throttle) == throttle.expected);
         /**/
+        ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
     }
 
@@ -517,6 +519,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, size));
         /**/
+        ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
     }
 
@@ -658,6 +661,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_throttle_request(tp, now) == 0);
         ASSERT(!diminuto_throttle_commitn(tp, (size = blocksize(BLOCKSIZE))));
         /**/
+        ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
     }
 
@@ -740,6 +744,7 @@ int main(int argc, char ** argv)
         ASSERT(fabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         ADVISE(fabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         /**/
+        ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
      }
 
