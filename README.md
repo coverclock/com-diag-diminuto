@@ -68,7 +68,7 @@ in-flight entertainment systems, and special purpose Android platforms.
 
 This code is typically regression tested against one or more of the
 following hardware targets and software platforms. (It has been built
-and used for specific projects are a much wider variety of targets
+and used for specific projects on a much wider variety of targets
 and platforms.)
 
 Intel NUC7i7BNH    
