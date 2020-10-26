@@ -12,3 +12,9 @@ I've saved some functional tests from the com-diag-hazer repository that
 are helpful in testing some of the GPIO support in the Pin feature. The
 scripts use GPIO pins, two different GNSS devices, and the Hazer gpstool.
 The gpstool application requires the Hazer library.
+
+Also included here is a test of the Diminuto CXXCAPI ("Sexy API") feature
+that provides support to integrate C++ and C code bases (e.g. legacy C
+code bases with new C++ development, or vice versa). It sits outside of
+the normal Diminuto build. See the comments in the makefile for more
+detail.
