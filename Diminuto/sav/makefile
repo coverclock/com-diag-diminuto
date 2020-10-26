@@ -22,7 +22,7 @@
 
 all:	thing
 
-thing:	thingc.o ../out/host/arc/libdiminuto.a
+thing:	thingc.o ../out/host/lib/libdiminuto.so
 	g++ -o thing -I . -I ../inc Thing.cpp thingc.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
 
 thingc.o:	thingc.c
