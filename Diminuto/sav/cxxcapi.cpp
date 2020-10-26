@@ -1,8 +1,9 @@
 /**
  * @file
  *
- * Copyright 2006-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * This file is part of the Digital Aggregates Grandote library.<BR>
+ * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
+ * Licensed under the terms in LICENSE.txt.<BR>
+ * This file is part of the Digital Aggregates Diminuto framework.<BR>
  */
 
 #if 0
