@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * Copyright 2006-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
+ * This file is part of the Digital Aggregates Grandote library.<BR>
+ */
+
 #if 0
 g++ -o cxxcapi -I inc sav/cxxcapi.cpp out/host/arc/libdiminuto.a -lpthread -lrt -ldl
 #endif
@@ -13,9 +20,9 @@ g++ -o cxxcapi -I inc sav/cxxcapi.cpp out/host/arc/libdiminuto.a -lpthread -lrt 
 
 #include <stdio.h>
 
-CXXCINLINE void notice1() { DIMINUTO_LOG_NOTICE("Hello, world 1!\n"); }
+CXXCINLINE void notice1() { DIMINUTO_LOG_NOTICE("Hello, world!\n"); }
 
-CXXCAPI void notice2() { DIMINUTO_LOG_NOTICE("Hello, world 2!\n"); }
+CXXCAPI void notice2() { DIMINUTO_LOG_NOTICE("NULL=%p\n", NULL); }
 
 int main(void)
 {

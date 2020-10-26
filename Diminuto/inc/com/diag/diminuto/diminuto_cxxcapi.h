@@ -28,32 +28,31 @@
  *  M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
  */
 
-#if !defined(NULL)
+#if defined(NULL)
     /*
      * I have recently been disabused of the notion that NULL is now
-     * a pre-defined symbol in later version of the GCC compiler.
+     * a pre-defined symbol in later versions of the GCC compiler.
      */
-#   if defined(__cplusplus)
-        /**
-         *  @def NULL
-         *
-         *  NULL is the value of the null pointer. The use of this manifest
-         *  constant should be avoided in C++, but may be necessary when
-         *  writing header files that may be included in either C or C++
-         *  translation units.
-         */
-#       define NULL (0)
-#   else
-        /**
-         *  @def NULL
-         *
-         *  NULL is the value of the null pointer. The use of this manifest
-         *  constant should be avoided in C++, but may be necessary when
-         *  writing header files that may be included in either C or C++
-         *  translation units.
-         */
-#       define NULL ((void*)0)
-#   endif
+#elif defined(__cplusplus)
+    /**
+     *  @def NULL
+     *
+     *  NULL is the value of the null pointer. The use of this manifest
+     *  constant should be avoided in C++, but may be necessary when
+     *  writing header files that may be included in either C or C++
+     *  translation units.
+     */
+#   define NULL (0)
+#else
+    /**
+     *  @def NULL
+     *
+     *  NULL is the value of the null pointer. The use of this manifest
+     *  constant should be avoided in C++, but may be necessary when
+     *  writing header files that may be included in either C or C++
+     *  translation units.
+     */
+#   define NULL ((void *)0)
 #endif
 
 #if defined(__cplusplus)
@@ -121,7 +120,7 @@
  *  has been deprecated by the later ANSI C++ standard but not having
  *  it produces warnings currently for compiles of C translation units.
  */
-# define CXXCINLINE inline
+#   define CXXCINLINE inline
 #else
 /**
  *  @def CXXCINLINE
