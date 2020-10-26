@@ -1093,9 +1093,11 @@ timers:
 	unittest-oneshot1
 	unittest-oneshot2
 	unittest-oneshot3
+	unittest-oneshot4
 	unittest-periodic1
 	unittest-periodic2
 	unittest-periodic3
+	unittest-periodic4
 	unittest-alarm
 	unittest-uninterruptible
 	unittest-modulator
