@@ -2,11 +2,9 @@
 #ifndef _THINGC_H_
 #define _THINGC_H_
 
-/**
- * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in README.h<BR>
+/*
+ * Copyright 2020 Digital Aggregates Corporation, Colorado, USA
+ * Licensed under the terms in README.h
  */
 
 #include "Thing.hpp"

@@ -1,9 +1,7 @@
 //* vi: set ts=4 expandtab shiftwidth=4: */
-/**
- * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in README.h<BR>
+/*
+ * Copyright 2020 Digital Aggregates Corporation, Colorado, USA
+ * Licensed under the terms in README.h
  */
 
 #include "com/diag/diminuto/diminuto_cxxcapi.h"
