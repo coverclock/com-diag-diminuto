@@ -6,18 +6,13 @@
  * Licensed under the terms in README.h<BR>
  */
 
-#if 0
-gcc -o thingc.o -I . -I ../inc -c thingc.c
-g++ -o thing -I . -I ../inc Thing.cpp thingc.o ../out/host/arc/libdiminuto.a -lpthread -lrt -ldl
-#endif
-
 #include "com/diag/diminuto/diminuto_cxxcapi.h"
 
 #include "Thing.hpp"
 
 #include "com/diag/diminuto/diminuto_begin.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "thingc.h"
+#   include "com/diag/diminuto/diminuto_log.h"
+#   include "thingc.h"
 #include "com/diag/diminuto/diminuto_end.h"
 
 Thing::Thing() { this->data = 0; }
