@@ -13,8 +13,19 @@
  * The CXXCAPI provides tools to make it easier for C and C++
  * applications to interoperate, and for inline functions and
  * macros to be included in either C or C++ translations units.
+ * (CXXCAPI is pronounced "sexy API".) You can use CXXCAPI to
+ * integrate new C++ code with legacy C code bases, or vice versa.
+ * For example, you can use it to integrate Diminuto itself into
+ * an existing C++ code base. CXXCAPI allows you to pass pointers
+ * to C++ objects into C code in a type safe manner, then pass
+ * them back, and to call functions written one language in the
+ * other. See the [Tt]hing* files in the sav directory for an example
+ * of how this works.
  *
- * Originally developed for the Digital Aggregates Grandote C++ framework.
+ * CXXCAPI was originally developed for the Digital Aggregates
+ * Desperado project, starting as far back as 2005. A subset of
+ * Desperado, including CXXCAPI, eventually became the Digital
+ * Aggregates Grandote project.
  *
  * This header file can included from both C++ and C translation units.
  */
