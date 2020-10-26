@@ -23,7 +23,7 @@ Thing::~Thing() { }
 
 int Thing::log() { DIMINUTO_LOG_NOTICE("this=%p data=0x%x null=%p\n", this, this->data, NULL); return this->data; }
 
-CXXCAPI int thing_log(Thing * that) { return that->log(); }
+CXXCAPI int thing_log(Thing * that) { return thing_get(that)->log(); }
 
 int main(void)
 {

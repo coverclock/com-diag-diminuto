@@ -26,7 +26,7 @@ public:
 
     ~Thing();
 
-    CXXCINLINE int set(int arg) { int prior = this->data; this->data = arg; return prior; }
+    inline int set(int arg) { int prior = this->data; this->data = arg; return prior; }
 
     int log();
 
@@ -41,5 +41,7 @@ typedef struct Thing Thing;
 #endif
 
 CXXCAPI int thing_log(Thing * that);
+
+CXXCINLINE Thing * thing_get(Thing * that) { return that; }
 
 #endif

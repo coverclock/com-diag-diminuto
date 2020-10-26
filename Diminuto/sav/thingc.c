@@ -11,4 +11,4 @@
 
 CXXCINLINE int logi(Thing * that) { return thing_log(that); }
 
-int logc(Thing * that) { return logi(that); }
+int logc(Thing * that) { return logi(thing_get(that)); }

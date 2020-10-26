@@ -17,15 +17,6 @@
  * Originally developed for the Digital Aggregates Grandote C++ framework.
  *
  * This header file can included from both C++ and C translation units.
- *
- * REFERENCES
- *
- *  M. Cline et al., <I>C++ FAQs</I>, 2nd edition,
- *  Addision-Wessley, 1999, pp. 538, "FAQ 36.05 How
- *  can an object of a C++ class be passed to or from
- *  a C function?"
- *
- *  M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
  */
 
 #if defined(NULL)
@@ -100,9 +91,10 @@
     /**
      *  @def inline
      *
-     *  This symbol allows applications to include system header
-     *  files that define inline functions into a C translation
-     *  units being compiled for strict ISO C compliance.
+     * This symbol is defined ot be the empty string, causing
+     * functions with which it is used in their declaration in
+     * the manner of "static inline" to become static local
+     * functions.
      */
 #   define inline
 #endif
@@ -134,7 +126,7 @@
  *  has been deprecated by the later ANSI C++ standard but not having
  *  it produces warnings currently for compiles of C translation units.
  */
-# define CXXCINLINE static inline
+#   define CXXCINLINE static inline
 #endif
 
 /**
