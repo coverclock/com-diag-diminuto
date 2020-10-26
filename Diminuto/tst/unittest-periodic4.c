@@ -28,8 +28,8 @@ static void * callback(void * cp)
     int rc = 0;
 
     DIMINUTO_CONDITION_BEGIN(&condition);
-        when = diminuto_time_elapsed();
-        rc = diminuto_condition_signal(&condition);
+        ASSERT((when = diminuto_time_elapsed()) >= 0);
+        ASSERT((rc = diminuto_condition_signal(&condition)) == 0);
     DIMINUTO_CONDITION_END;
 
     return (void *)(intptr_t)rc;
