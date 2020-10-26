@@ -3,8 +3,8 @@
 #define _THING_HPP_
 
 /*
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in README.h<BR>
+ * Copyright 2020 Digital Aggregates Corporation, Colorado, USA
+ * Licensed under the terms in README.h
  */
 
 #if defined(__cplusplus)
