@@ -119,7 +119,7 @@ Make="GNU Make 4.0"
 * countof - macro to compute array positions using sizeof operator.
 * criticalsection - macros to implement scoped pthread mutex serialization.
 * cue - logic level debouncer and edge detector.
-* cxxcapi - helpers to allow C code to call C++ functions.
+* cxxcapi - helpers to allow C code to call C++ functions with type safety.
 * debug - simple debug tools to help with Work In Progress (WIP).
 * daemon - process deamonizer.
 * datum - memory mapped register operators for device drivers.
