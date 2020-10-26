@@ -102,7 +102,7 @@
     /**
      *  @def inline
      *
-     * This symbol is defined ot be the empty string, causing
+     * This symbol is defined to be the empty string, causing
      * functions with which it is used in their declaration in
      * the manner of "static inline" to become static local
      * functions.
