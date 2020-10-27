@@ -9,36 +9,130 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_assert.h"
 #include <errno.h>
 
 int main(int argc, char ** argv)
 {
-    int condition;
 
-    condition = 1;
-    errno = 0;
-    diminuto_expect(condition > 0);
-    errno = 0;
-    diminuto_expect(condition < 0);
-    errno = 0;
-    diminuto_expect(condition == 0);
+/*
+ * Should print nothing.
+ */
 
-    condition = 0;
-    errno = EINVAL;
-    diminuto_expect(condition > 0);
-    errno = EBADF;
-    diminuto_expect(condition < 0);
-    errno = EACCES;
-    diminuto_expect(condition == 0);
+#define COM_DIAG_DIMINUTO_ASSERT_NDEBUG (!0)
+#include "com/diag/diminuto/diminuto_assert.h"
 
-    condition = 1;
-    errno = E2BIG;
-    diminuto_assert(condition);
+    {
+        int condition;
 
-    condition = 0;
-    errno = EAGAIN;
-    diminuto_assert(condition);
+        TEST();
+    
+        condition = 1;
+        errno = 0;
+        diminuto_expect(condition > 0);
+        errno = 0;
+        diminuto_expect(condition < 0);
+        errno = 0;
+        diminuto_expect(condition == 0);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition > 0);
+        errno = EBADF;
+        diminuto_expect(condition < 0);
+        errno = EACCES;
+        diminuto_expect(condition == 0);
+    
+        condition = 1;
+        errno = E2BIG;
+        diminuto_assert(condition);
+    
+        condition = 0;
+        errno = EAGAIN;
+        diminuto_assert(condition);
+
+        STATUS();
+    }
+
+/*
+ * Should print errors but succeed.
+ */
+
+#undef COM_DIAG_DIMINUTO_ASSERT_NDEBUG
+#define COM_DIAG_DIMINUTO_ASSERT_DEBUG (!0)
+#include "com/diag/diminuto/diminuto_assert.h"
+
+    {
+        int condition;
+
+        TEST();
+    
+        condition = 1;
+        errno = 0;
+        diminuto_expect(condition > 0);
+        errno = 0;
+        diminuto_expect(condition < 0);
+        errno = 0;
+        diminuto_expect(condition == 0);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition > 0);
+        errno = EBADF;
+        diminuto_expect(condition < 0);
+        errno = EACCES;
+        diminuto_expect(condition == 0);
+    
+        condition = 1;
+        errno = E2BIG;
+        diminuto_assert(condition);
+    
+        condition = 0;
+        errno = EAGAIN;
+        diminuto_assert(condition);
+
+        STATUS();
+    }
+
+/*
+ * Should print errors and abort.
+ */
+
+#undef COM_DIAG_DIMINUTO_ASSERT_DEBUG
+#include "com/diag/diminuto/diminuto_assert.h"
+
+    {
+        int condition;
+
+        TEST();
+    
+        condition = 1;
+        errno = 0;
+        diminuto_expect(condition > 0);
+        errno = 0;
+        diminuto_expect(condition < 0);
+        errno = 0;
+        diminuto_expect(condition == 0);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition > 0);
+        errno = EBADF;
+        diminuto_expect(condition < 0);
+        errno = EACCES;
+        diminuto_expect(condition == 0);
+    
+        condition = 1;
+        errno = E2BIG;
+        diminuto_assert(condition);
+    
+        condition = 0;
+        errno = EAGAIN;
+        diminuto_assert(condition);
+
+        STATUS();
+    }
+
+    EXIT();
 }
 
 /*
