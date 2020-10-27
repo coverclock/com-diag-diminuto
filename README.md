@@ -439,6 +439,12 @@ Chip Overclock, "When Learning By Doing Goes To Eleven", 2020-03,
 Chip Overclock, "Clock Time", 2020-10,
 <https://coverclock.blogspot.com/2020/10/clock-time.html>
 
+Chip Overclock, "Timer Threads", 2020-10,
+<https://coverclock.blogspot.com/2020/10/clock-time.html>
+
+Chip Overclock, "Layers", 2020-10,
+<https://coverclock.blogspot.com/2020/10/layers.html>
+
 # Build
 
 Clone, build, and sanity test Diminuto. (Some other unit and
