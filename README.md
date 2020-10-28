@@ -279,6 +279,7 @@ reference manuals for Diminuto by installing the doxygen and LaTeX tools
 
     make documentation
     make manuals
+    make readme
 
 The documentation will be in the directories
 
@@ -384,6 +385,7 @@ need to be installed.
     sudo apt-get install texlive-fonts-recommended
     sudo apt-get install texlive-fonts-extra
     sudo apt-get install texlive-science
+    sudo apt-get install grip
 
 ## Workflow
 
