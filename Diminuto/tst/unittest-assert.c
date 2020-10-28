@@ -42,6 +42,26 @@ int main(int argc, char ** argv)
         errno = EACCES;
         diminuto_expect(condition == 0);
     
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition++);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(condition++);
+        EXPECT(condition == 1);
+    
         condition = 1;
         errno = E2BIG;
         diminuto_assert(condition);
@@ -82,6 +102,26 @@ int main(int argc, char ** argv)
         errno = EACCES;
         diminuto_expect(condition == 0);
     
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition++);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(condition++);
+        EXPECT(condition == 1);
+    
         condition = 1;
         errno = E2BIG;
         diminuto_assert(condition);
@@ -120,6 +160,28 @@ int main(int argc, char ** argv)
         diminuto_expect(condition < 0);
         errno = EACCES;
         diminuto_expect(condition == 0);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(++condition);
+        EXPECT(condition == 1);
+    
+        condition = 0;
+        errno = EINVAL;
+        diminuto_expect(condition++);
+        EXPECT(condition == 1);
+   
+        /* 
+        condition = 0;
+        errno = EINVAL;
+        diminuto_assert(condition++);
+        EXPECT(condition == 1);
+        */
     
         condition = 1;
         errno = E2BIG;

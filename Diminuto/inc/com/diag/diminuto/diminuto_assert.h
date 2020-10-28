@@ -11,13 +11,20 @@
  * https://github.com/coverclock/com-diag-diminuto<BR>
  *
  * Implements assert and expect functions that under the hood use the
- * Diminuto log mechanism. If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined
- * (which should happen only under the most exceptional of circumstances
- * and perhaps only for debugging), these functions do nothing. If
- * COM_DIAG_DIMINUTO_ASSERT_DEBUG is defined, the asserts are turned into
- * expects (which do everything assert does except abort). If neither is
- * defined, assert and expect work as intended. This file can be included
- * more than once.
+ * Diminuto log mechanism.
+ *
+ * If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined (which should happen only
+ * under the most exceptional of circumstances and perhaps only for debugging),
+ *  these functions evaluate the condition but do nothing else.
+ *
+ * If COM_DIAG_DIMINUTO_ASSERT_DEBUG is defined, the asserts are turned into
+ * expects (which do everything assert does except the abort).
+ *
+ * If neither is defined, assert and expect work as intended; if the
+ * condition is not met, either logs an error, and assert aborts while
+ * expect merely returns.
+ *
+ * This file can be included more than once.
  */
 
 #include <errno.h>
@@ -44,29 +51,25 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
 #   undef diminuto_expect
 #endif
 
-/*
- * The symbol below should be defined under only the most extraordinary
- * circumstances, and even then perhaps only for debugging.
- */
-
 #if defined(COM_DIAG_DIMINUTO_ASSERT_NDEBUG)
 
 /*
- * N.B. In this case, the condition isn't evaluated at all, so any
- *      side effects will not occur.
+ * As bizzare as it sounds, we still evaluate the condition in order
+ * to produce any side effects, then throw the result away. We let the
+ * compiler optimize away the code if there is nothing to be achieved.
  */
 
 /**
  * @def diminuto_assert
- * Do nothing.
+ * Evaluate @a _CONDITION_ and throw the result away.
  */
-#   define diminuto_assert(_CONDITION_) ((void)0)
+#   define diminuto_assert(_CONDITION_) ((void)(_CONDITION_))
 
 /**
  * @def diminuto_expect
- * Do nothing.
+ * Evaluate @a _CONDITION_ and throw the result away.
  */
-#   define diminuto_expect(_CONDITION_) ((void)0)
+#   define diminuto_expect(_CONDITION_) ((void)(_CONDITION_))
 
 #elif defined(COM_DIAG_DIMINUTO_ASSERT_DEBUG)
 
