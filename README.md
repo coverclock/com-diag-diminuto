@@ -427,14 +427,26 @@ these by default (e.g. Raspbian).
 
 # Articles
 
+Chip Overclock, "Being Evidence-Based Using the sizeof Operator", 2015-03,
+<https://coverclock.blogspot.com/2015/03/being-evidence-based-using-sizeof.html>
+
+Chip Overclock, "Buried Treasure", 2017-01,
+<https://coverclock.blogspot.com/2017/01/buried-treasure.html>
+
 Chip Overclock, "Some Stuff That Has Worked For Me In C", 2017-04,
 <https://coverclock.blogspot.com/2017/04/some-stuff-that-has-worked-for-me-in-c.html>
+
+Chip Overclock, "renameat2(2)", 2018-04,
+<https://coverclock.blogspot.com/2018/04/renameat22.html>
 
 Chip Overclock, "When The Silicon Meets The Road", 2018-07,
 <https://coverclock.blogspot.com/2018/07/when-silicon-meets-road.html>
 
 Chip Overclock, "When Learning By Doing Goes To Eleven", 2020-03,
 <https://coverclock.blogspot.com/2020/03/when-learning-by-doing-goes-to-eleven.html>
+
+Chip Overclock, "Headless", 2020-06,
+<https://coverclock.blogspot.com/2020/06/headless.html>
 
 Chip Overclock, "Clock Time", 2020-10,
 <https://coverclock.blogspot.com/2020/10/clock-time.html>
