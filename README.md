@@ -278,6 +278,65 @@ or as a user - e.g. pi - that is in the gpio group.)
 * tst - unit test source files.
 * txt - notes and other useful stuff.
 
+# Dependencies
+
+## Libraries
+
+The Diminuto Makefile references the following libraries. They may
+not be installed on all platforms. (Although they are part of the
+versions of Ubuntu and Raspbian that I've been using).
+
+    -lpthread   # POSIX Threads
+    -lrt        # POSIX Real-Time
+    -ldl        # Dynamic Linker
+    -lm         # Math
+
+## IPv6
+
+Diminuto's ipc6 feature requires IPv6 support. IPv6 is not enabled by
+default on all platforms (in particular the Raspberry Pi). Under
+Raspbian 10, I added a line "ipv6" to /etc/modules and rebooted.
+The command "modprobe ipv6" also worked albeit non-persistently.
+
+    sudo modprobe ipv6
+    sudo echo "ipv6" >> /etc/modules
+
+## Building
+
+On some distros I had to install gcc, g++, and make.
+
+    sudo apt-get install gcc
+    sudo apt-get install g++
+    sudo apt-get install make
+
+## Documentation
+
+If you want to make documentation, doxygen and related tools will
+need to be installed.
+
+    sudo apt-get install doxygen
+    sudo apt-get install texlive-base
+    sudo apt-get install texlive-fonts-recommended
+    sudo apt-get install texlive-fonts-extra
+    sudo apt-get install texlive-science
+    sudo apt-get install grip
+
+## Workflow
+
+For my own workflow, I installed the following tools.
+
+    sudo apt-get install openssh-server
+    sudo apt-get install git
+    sudo apt-get install vim
+    sudo apt-get install screen
+
+## inotifywait
+
+The observe script requires the inotify tools. Not all distros install
+these by default (e.g. Raspbian).
+
+    sudo apt-get install inotify-tools
+
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
@@ -317,7 +376,7 @@ like PATH and LD_LIBRARY_PATH. Your mileage may vary.
 All of the Diminuto code has embedded within it Doxygen comments. You can
 build hundreds of pages of man pages, HTML-based documentation, and PDF
 reference manuals for Diminuto by installing the doxygen and LaTeX tools
-(see below under Dependencies) and running the following make targets.
+(see under Dependencies) and running the following make targets.
 
     make documentation
     make readme
@@ -396,65 +455,6 @@ Another good example is the survey and census functional tests in the
 Placer project (ditto). The file system walker in Diminuto is a good
 example of how a need in another project leads to a kind of organic
 growth in Diminuto.
-
-# Dependencies
-
-## Libraries
-
-The Diminuto Makefile references the following libraries. They may
-not be installed on all platforms. (Although they are part of the
-versions of Ubuntu and Raspbian that I've been using).
-
-    -lpthread   # POSIX Threads
-    -lrt        # POSIX Real-Time
-    -ldl        # Dynamic Linker
-    -lm         # Math
-
-## IPv6
-
-Diminuto's ipc6 feature requires IPv6 support. IPv6 is not enabled by
-default on all platforms (in particular the Raspberry Pi). Under
-Raspbian 10, I added a line "ipv6" to /etc/modules and rebooted.
-The command "modprobe ipv6" also worked albeit non-persistently.
-
-    sudo modprobe ipv6
-    sudo echo "ipv6" >> /etc/modules
-
-## Building
-
-On some distros I had to install gcc, g++, and make.
-
-    sudo apt-get install gcc
-    sudo apt-get install g++
-    sudo apt-get install make
-
-## Documentation
-
-If you want to make documentation, doxygen and related tools will
-need to be installed.
-
-    sudo apt-get install doxygen
-    sudo apt-get install texlive-base
-    sudo apt-get install texlive-fonts-recommended
-    sudo apt-get install texlive-fonts-extra
-    sudo apt-get install texlive-science
-    sudo apt-get install grip
-
-## Workflow
-
-For my own workflow, I installed the following tools.
-
-    sudo apt-get install openssh-server
-    sudo apt-get install git
-    sudo apt-get install vim
-    sudo apt-get install screen
-
-## inotifywait
-
-The observe script requires the inotify tools. Not all distros install
-these by default (e.g. Raspbian).
-
-    sudo apt-get install inotify-tools
 
 # Repository
 
