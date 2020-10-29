@@ -278,8 +278,8 @@ reference manuals for Diminuto by installing the doxygen and LaTeX tools
 (see below under Dependencies) and running the following make targets.
 
     make documentation
-    make manuals
     make readme
+    make manuals
 
 The documentation will be in the directories
 
