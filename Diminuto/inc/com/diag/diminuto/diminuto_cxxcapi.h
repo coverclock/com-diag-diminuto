@@ -6,7 +6,7 @@
  * @file
  *
  * Copyright 2006-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * This file is part of the Digital Aggregates Grandote library.<BR>
+ * This file is part of the Digital Aggregates Diminuto library.<BR>
  *
  * Defines the symbols and macros necessary for the Diminuto
  * C++/C-language Application Programming Interface (CXXCAPI).
