@@ -270,6 +270,40 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
+# Build
+
+Clone, build, and sanity test Diminuto. The use of the src directory
+is just my own convention.
+
+    cd ~
+    mkdir -p src
+    cd src
+    git clone https://github.com/coverclock/com-diag-diminuto
+    cd com-diag-diminuto/Diminuto
+    make pristine
+    make depend
+    make all
+    . out/host/bin/setup
+    make sanity
+
+Run more extended tests that may take a lunch break to complete.
+
+    make extended
+
+Run long term tests that may take overnight to complete.
+
+    make geologic
+
+Optionally install Diminuto headers, library, and utilities in /usr/local
+subdirectories. You can override the make variable INSTALL_DIR to change
+/usr/local to something else (like /opt or whatnot).
+
+    sudo make install
+
+I typically never bother with this for development and instead let the
+out/host/bin/setup bash source script set my environmental variables
+like PATH and LD_LIBRARY_PATH. Your mileage may vary.
+
 # Documentation
 
 All of the Diminuto code has embedded within it Doxygen comments. You can
@@ -458,32 +492,6 @@ Chip Overclock, "Timer Threads", 2020-10,
 
 Chip Overclock, "Layers", 2020-10,
 <https://coverclock.blogspot.com/2020/10/layers.html>
-
-# Build
-
-Clone, build, and sanity test Diminuto. (Some other unit and
-functional tests may require you be root, require nohup, or even
-require a purpose-built hardware test fixture.)
-
-    cd ~
-    mkdir -p src
-    cd src
-    git clone https://github.com/coverclock/com-diag-diminuto
-    cd com-diag-diminuto/Diminuto
-    make pristine
-    make depend
-    make all
-    . out/host/bin/setup
-    make sanity
-
-Optionally install Diminuto headers, library, and utilities in /usr/local
-subdirectories. (I typically never bother with this.)
-
-    sudo make install
-
-Optionally build documentation based on embedded doxygen comments.
-
-    make documentation
 
 # Acknowledgements
 
