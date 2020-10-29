@@ -278,7 +278,7 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
-# Build
+# Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
 is just my own convention.
