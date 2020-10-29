@@ -405,10 +405,10 @@ The Diminuto Makefile references the following libraries. They may
 not be installed on all platforms. (Although they are part of the
 versions of Ubuntu and Raspbian that I've been using).
 
-    -lpthread	# POSIX Threads
-    -lrt	# POSIX Real-Time
-    -ldl	# Dynamic Linker
-    -lm		# Math
+    -lpthread   # POSIX Threads
+    -lrt        # POSIX Real-Time
+    -ldl        # Dynamic Linker
+    -lm	        # Math
 
 ## IPv6
 
