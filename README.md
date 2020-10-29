@@ -351,8 +351,8 @@ of examples of how to use the public APIs.
 Diminuto started out many years ago as a project to build a minimal
 Linux-based embedded system for an ARMv4 processor that seems laughbly
 small now. It consisted of a stripped down 2.4 (later, 2.6) Linux
-kernel with just the stuff I needed, Busybox, and an application. The
-application was built around a small C-based library I developed that
+kernel with just the stuff I needed, uClibc, Busybox, and an application.
+The application was built around a small C-based library I developed that
 contained functions to support the kinds of systems work that I am
 typically called upon to do. In the fullness of time the library became
 more important than the project as some or all of it found its way into
