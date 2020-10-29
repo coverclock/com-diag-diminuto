@@ -187,6 +187,8 @@ Make="GNU Make 4.0"
  
 # Utilities
  
+* bakepi - monitors Raspberry Pi core temperature which throttles at 82C.
+* bucketbrigade - read from a serial port and forward to another serial port.
 * coreable - enable core dumps.
 * datesink - consume verbose timestamp stream.
 * datesource - produce verbose timestamp stream.
@@ -202,6 +204,7 @@ Make="GNU Make 4.0"
 * hex - display an argument number in hexidecimal.
 * internettool - verify internet connectectivity.
 * ipcalc - calculate IPv4 addresses and masks.
+* iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
 * juliet - display the local time in ISO 8601 format.
 * log - log from command line and/or stdin using Diminuto log functions.
 * logging - display the configuration and state of the log feature.
@@ -213,6 +216,7 @@ Make="GNU Make 4.0"
 * phex - display standard input in a printable form.
 * pinchange - execute a command when a GPIO pin changes state.
 * pintool - manipulate GPIO pins.
+* pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin.
 * renametool - atomically rename or swap files in the same file system.
 * serialtool - manipulate serial ports.
 * shaper - shape traffic in a pipeline.
