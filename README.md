@@ -79,6 +79,14 @@ Kernel="5.4.0-48-generic"
 Libc="ldd (Ubuntu GLIBC 2.31-0ubuntu9.1) 2.31"    
 Make="GNU Make 4.2.1"    
 
+Intel NUC5i7RYH    
+Arch="x86_64"    
+Cc="gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0"    
+Distro="Ubuntu 18.04.5 LTS bionic"    
+Kernel="4.15.0-122-generic"    
+Libc="ldd (Ubuntu GLIBC 2.27-3ubuntu1.2) 2.27"    
+Make="GNU Make 4.1"    
+
 Rasbberry Pi 3B+    
 Arch="arm"    
 Cc="gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516"    
