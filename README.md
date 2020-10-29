@@ -274,10 +274,6 @@ or as a user - e.g. pi - that is in the gpio group.)
 * tst - unit test source files.
 * txt - notes and other useful stuff.
 
-# Soundtrack
-
-<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
-
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
@@ -468,6 +464,10 @@ these by default (e.g. Raspbian).
 # References
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
+
+# Soundtrack
+
+<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
 # Articles
 
