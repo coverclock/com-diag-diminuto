@@ -399,6 +399,17 @@ growth in Diminuto.
 
 # Dependencies
 
+## Libraries
+
+The Diminuto Makefile references the following libraries. They may
+not be installed on all platforms. (Although they are part of the
+versions of Ubuntu and Raspbian that I've been using).
+
+    -lpthread	# POSIX Threads
+    -lrt	# POSIX Real-Time
+    -ldl	# Dynamic Linker
+    -lm		# Math
+
 ## IPv6
 
 Diminuto's ipc6 feature requires IPv6 support. IPv6 is not enabled by
