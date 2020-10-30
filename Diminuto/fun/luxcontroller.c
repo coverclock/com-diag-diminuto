@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2018 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is part of the Modulator and Controller functional test using the lux sensor.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * ABSTRACT
  *
@@ -44,7 +45,7 @@
  *
  * One weird thing about my hardware test fixture: the ADPS 9301 sensor
  * does *not* measure the highest reading with the duty cycle of the LED
- * is 100%, where the LED is fully on and not modulated at all.. It's moreu
+ * is 100%, where the LED is fully on and not modulated at all.. It's more
  * like 74%. Still trying to figure that one out.
  */
 

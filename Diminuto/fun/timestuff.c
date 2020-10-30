@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is part of the Time functional test.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * This program helps me reverse engineer the underlying
  * time handling stuff. I've seen some minor differences
@@ -20,6 +21,7 @@
  * Also, as far as I can tell, sometimes the functions return
  * (time_t)-1 meaning error, but leave errno unset.
  */
+
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
