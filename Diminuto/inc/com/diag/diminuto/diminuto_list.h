@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a circular doubly-linked list.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The List feature implements an object which can be inserted into and
  * removed from a circular doubly-linked list, in which insertions and
@@ -24,7 +27,7 @@
  * removed from a list.
  *
  * The circularity is a simplification, not a complication, as
- * it eliminates all the special cases present with null-terminated
+ * it eliminates all the special cases present with NULL-terminated
  * doubly-linked lists. The next and previous pointers allow any list
  * node to be inserted into or removed from any arbitrary position in
  * the list in O(1) time.
@@ -50,10 +53,10 @@
  *
  * Accessing the next, previous or root pointers of a list node
  * always returns a valid pointer to a list node (possibly the same
- * list node). There is never a null moment with a list.
+ * list node). There is never a NULL moment with a list.
  *
  * Each list node also has a data pointer. The data pointer is a
- * void pointer. It is the only pointer in a list node that may be null. The
+ * void pointer. It is the only pointer in a list node that may be NULL. The
  * data pointer can be accessed and set by the application or optionally
  * when a list node is initialized.
  *
@@ -79,8 +82,8 @@
  * effect.
  *
  * Lists can be used to implement stacks (LIFO) or queues (FIFO), in which case
- * null pointers are returned to indicate that the container is empty. These
- * null pointers are not stored in the container itself but synthesized by the
+ * NULL pointers are returned to indicate that the container is empty. These
+ * NULL pointers are not stored in the container itself but synthesized by the
  * API when appropriate.
  */
 
@@ -117,7 +120,7 @@ typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
 
 /**
  * @def DIMINUTO_LIST_NULL
- * Defines the null pointer value used for those operations which may return it.
+ * Defines the NULL pointer value used for those operations which may return it.
  * (If this were C++ I would have used a static const. But that turns out to
  * have remarkably inconvenient implications in C regarding const correctness.)
  */
@@ -217,10 +220,10 @@ extern diminuto_list_t * diminuto_list_splice(diminuto_list_t * top, diminuto_li
  * to the functor each time it is called. If the functor needs to treat
  * the root node specially, it must recognize it solely from its data
  * pointer. A common approach is to set the data pointer of the root node
- * to null.
+ * to NULL.
  * @param funcp points to the functor.
  * @param nodep points to the initial node.
- * @param contextp points to the caller provided context or null.
+ * @param contextp points to the caller provided context or NULL.
  * @return a pointer to the node for which the functor returns zero.
  */
 extern diminuto_list_t * diminuto_list_apply(diminuto_list_functor_t * funcp, diminuto_list_t * nodep, void * contextp);
@@ -242,7 +245,7 @@ extern void diminuto_list_log(diminuto_list_t * nodep);
  * stops when an error is found or the traversals meet back at the original
  * node.
  * @param nodep points to a node on the list.
- * @return a pointer to the first incorrect node or null if none.
+ * @return a pointer to the first incorrect node or NULL if none.
  */
 extern diminuto_list_t * diminuto_list_audit(diminuto_list_t * nodep);
 
@@ -294,7 +297,7 @@ static inline diminuto_list_t * diminuto_list_datainit(diminuto_list_t * nodep, 
 }
 
 /**
- * Initialize a node and set its data pointer to null.
+ * Initialize a node and set its data pointer to NULL.
  * @param nodep points to a node.
  * @return a pointer to the node.
  */
@@ -334,7 +337,7 @@ static inline diminuto_list_t * diminuto_list_root(diminuto_list_t * nodep) {
 }
 
 /**
- * Return a pointer to the data. The returned pointer may be null.
+ * Return a pointer to the data. The returned pointer may be NULL.
  * @param nodep points to a node.
  * @return a pointer to the data.
  */
@@ -392,9 +395,9 @@ static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, cons
  ******************************************************************************/
 
 /**
- * Return the data pointer of a node or null if the node pointer is null.
- * @param nodep points to a node or null if there is no node.
- * @return the data pointer for a node or null.
+ * Return the data pointer of a node or NULL if the node pointer is NULL.
+ * @param nodep points to a node or NULL if there is no node.
+ * @return the data pointer for a node or NULL.
  */
 static inline void * diminuto_list_dataif(diminuto_list_t * nodep) {
     return (nodep != DIMINUTO_LIST_NULL) ? nodep->data : (void *)0;
@@ -402,9 +405,9 @@ static inline void * diminuto_list_dataif(diminuto_list_t * nodep) {
 
 /**
  * Return a pointer to the first node on a list of which a node is a member, or
- * null if the list is empty.
+ * NULL if the list is empty.
  * @param nodep points to a node.
- * @return a pointer to the first node on a list or null if the list is empty.
+ * @return a pointer to the first node on a list or NULL if the list is empty.
  */
 static inline diminuto_list_t * diminuto_list_head(diminuto_list_t * nodep) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
@@ -414,9 +417,9 @@ static inline diminuto_list_t * diminuto_list_head(diminuto_list_t * nodep) {
 
 /**
  * Return a pointer to the last node on a list of which a node is a member, or
- * null is the list is empty.
+ * NULL is the list is empty.
  * @param nodep points to a node.
- * @return a pointer to the first node on a list or null if the list is empty.
+ * @return a pointer to the first node on a list or NULL if the list is empty.
  */
 static inline diminuto_list_t * diminuto_list_tail(diminuto_list_t * nodep) {
     return (diminuto_list_isempty(diminuto_list_root(nodep))
@@ -441,7 +444,7 @@ static inline diminuto_list_t * diminuto_list_push(diminuto_list_t * stackp, dim
 /**
  * Pop a node off the top of a stack.
  * @param stackp points to a node that is on the stack (including the root).
- * @return a pointer to the node popped off or null if the stack was empty.
+ * @return a pointer to the node popped off or NULL if the stack was empty.
  */
 static inline diminuto_list_t * diminuto_list_pop(diminuto_list_t * stackp) {
     return (diminuto_list_isempty(diminuto_list_root(stackp))
@@ -466,7 +469,7 @@ static inline diminuto_list_t * diminuto_list_enqueue(diminuto_list_t * queuep, 
 /**
  * Dequeue a node from the head of a queue.
  * @param queuep points to a node that is on the queue (including the root).
- * @return a pointer to a node that was dequeued or null if the queue was empty.
+ * @return a pointer to a node that was dequeued or NULL if the queue was empty.
  */
 static inline diminuto_list_t * diminuto_list_dequeue(diminuto_list_t * queuep) {
     return (diminuto_list_isempty(diminuto_list_root(queuep))
@@ -481,7 +484,7 @@ static inline diminuto_list_t * diminuto_list_dequeue(diminuto_list_t * queuep) 
 /**
  * Receive a message from a mailbox.
  * @param mboxp points to the mailbox.
- * @return a pointer to a message or null if the mailbox was empty.
+ * @return a pointer to a message or NULL if the mailbox was empty.
  */
 static inline diminuto_list_t * diminuto_list_receive(diminuto_list_t * mboxp) {
     return diminuto_list_dequeue(mboxp);

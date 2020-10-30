@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a helper function to interpret boolean user input.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Testify feature provides a standard way to interpret strings in
  * configuration files or user input that are intended to be boolean.

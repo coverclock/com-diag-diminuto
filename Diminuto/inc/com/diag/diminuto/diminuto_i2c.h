@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements some convenience functions for using I-squared-C.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The I2C feature implements some I-squared-C convenience functions.
  * This is not a general purpose I2C API. It implements an API on top

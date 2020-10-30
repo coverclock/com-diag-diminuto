@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements an interface to the virtual memory system.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Memory feature provides an interface to determine useful (sometimes)
  * properties of the underlying virtual memory system.

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2012-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2012-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a Hamming(8,4) encode and decode.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Hamming feature implements a Hamming(8,4) encode and decode
  * function.

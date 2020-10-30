@@ -2,10 +2,12 @@
 
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms in LICENSE.txt.<BR>
- *
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief When included starts a C linkage section.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  * This header file can included from both C++ and C translation units.
  * If included in a C++ program, begins a C linkage section.
  * If included in a C program, does nothing.

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a common logging API.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Log feature provides a logging capabilility that uses the
  * system log if the caller is a daemon, standard error if the

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides some alternative string handling functions.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The String feature provides some alternate string handling functions.
  * IMPORTANT SAFETY TIP: depending on the implementation, any alternative

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides convenience functions for using SIGTERM.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
 
  * The Terminator feature provides a convenient API for using SIGTERM.
  * It propagates the SIGTERM signal to appropriate processes (children or

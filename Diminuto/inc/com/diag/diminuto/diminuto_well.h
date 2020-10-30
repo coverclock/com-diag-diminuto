@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a framework for page aligned dynamic memory management.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Well feature is like a Pool except the linked lists and allocated user
  * objects are kept in separately allocated sections of memory. Both sections

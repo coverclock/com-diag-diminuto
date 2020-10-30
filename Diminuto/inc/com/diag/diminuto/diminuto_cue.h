@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a digital signal debouncer and edge detector.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Cue feature provides a software debouncer and edge detector. It can be
  * used with the pin feature which manipulates GPIO pins using the sysfs
@@ -16,7 +19,7 @@
  *
  * The name was taken from "cue" as in "I missed my cue."
  *
- * Ported from the pin feature of the Telegraph library.
+ * Ported from the Pin feature of the deprecated Telegraph library.
  *
  * REFERENCES
  *

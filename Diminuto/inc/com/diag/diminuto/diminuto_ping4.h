@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a function to send an IPv4 ICMP ECHO REQUEST and receive a response.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Ping4 feature is a programmatic version of ping(1): send an ICMP ECHO
  * REQUEST to an IPv4 address and (hopefully) receive an ICMP ECHO REPLY back.

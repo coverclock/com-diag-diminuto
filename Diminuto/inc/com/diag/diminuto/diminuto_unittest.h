@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a simple unit test framework.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Unit Test feature is a dirt simple unit testing framework for C
  * programs. If you are using C++ (or even if you are using C but are

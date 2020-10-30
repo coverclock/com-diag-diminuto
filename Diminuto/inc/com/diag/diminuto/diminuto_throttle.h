@@ -4,17 +4,19 @@
 
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a GCRA using a virtual scheduler.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Throttle feature implements a Generic Cell Rate Algorithm (GCRA) using
- * a Virtual Scheduler.
- * This can in turn be used to implement a variety of traffic shaping and rate
- * control algorithms. The VS works by monitoring the inter-arrival interval of
- * events and comparing that interval to the expected value. When the cumulative
- * error in the inter-arrival interval exceeds a threshold, the throttle becomes
- * "alarmed" and the traffic stream is in violation of its contract. In the
+ * a Virtual Scheduler. This can in turn be used to implement a variety of traffic
+ * shaping and rate control algorithms. The VS works by monitoring the inter-arrival
+ * interval of events and comparing that interval to the expected value. When the
+ * cumulative error in the inter-arrival interval exceeds a threshold, the throttle
+ * becomes "alarmed" and the traffic stream is in violation of its contract. In the
  * original TM spec, an event was the emission (if traffic shaping) or arrival
  * (if traffic policing) of an ATM cell, but it could be data blocks, error
  * reports, or any other kind of real-time activity. In this implementation,

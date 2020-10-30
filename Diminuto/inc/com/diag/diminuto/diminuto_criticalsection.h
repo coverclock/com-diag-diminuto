@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements critical section begin and end operators.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Critical Section feature implements a critical section of
  * code using a POSIX pthread mutex. The mutex is automatically
@@ -15,6 +18,10 @@
 
 #include <pthread.h>
 
+/**
+ * This is the thread cleanup action.
+ * @param voidp is the pointer POSIX passes to the cleanup function.
+ */
 extern void diminuto_criticalsection_cleanup(void * voidp);
 
 /**

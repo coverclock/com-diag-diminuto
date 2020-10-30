@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a compile-time offsetof operator.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Offset Of feature computes the offset of a field from the
  * beginning of its structure without actually having an instance

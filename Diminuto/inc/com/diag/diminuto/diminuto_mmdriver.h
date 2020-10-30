@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a user-space interace to the mememory mapped device driver.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * THe Memory Mapped Driver feature  describes the user space interface to
  * the Diminuto Generic Memory Mapped Device Driver. At compile or install

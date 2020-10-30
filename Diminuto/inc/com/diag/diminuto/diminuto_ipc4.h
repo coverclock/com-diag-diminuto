@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a slightly simpler interface to stream and datagram IPv4 sockets.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The IPC4 feature provides a slightly more abstract interface to stream
  * and datagram IPv4 sockets. It was ported from the Digital Aggregates

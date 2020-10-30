@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a traffic shaper using a peak and sustained rate throttle.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Shaper feature uses two instances of the Throttle feature, a throttle
  * being an implementation of the Generic Cell Rate Algorithm (GCRA) using a

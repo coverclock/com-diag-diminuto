@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Defines the fundamental unit of time for all other features.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Frequency feature defines the Diminuto fundamental unit of time, in terms
  * of the duration of a single Diminuto tick, represented as the inverse of this

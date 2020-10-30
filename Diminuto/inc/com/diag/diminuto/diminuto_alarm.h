@@ -4,11 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
- *
- * The Alarm feature provides a convenient API to using SIGALRM.
+ * @copyright Copyright 2009-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides convenience functions for using SIGALRM.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

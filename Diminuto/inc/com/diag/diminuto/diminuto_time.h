@@ -4,17 +4,19 @@
 
 /**
  * @file
- *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a consistent interface for dealing with time;
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Time feature provides an API for dealing with durations, Time Of Day
- * (TOD), and time and date stamps.
- * Important safety tip: although UNIX (and POSIX) professes to keep the time
- * in Coordinated Universal Time (UTC), it doesn't account for the occasional
- * leap second. This means it isn't strictly UTC. Worse, the time may appear
- * discontinuous if and when the system clock is manually adjusted. This has
- * no effect on the monotonically increasing clock, which is why that's the
+ * (TOD), and time and date stamps. Important safety tip: although UNIX (and POSIX)
+ * professes to keep the time in Coordinated Universal Time (UTC), it doesn't
+ * account for the occasional leap second. This means it isn't strictly UTC. Worse,
+ * the time may appear discontinuous if and when the system clock is manually adjusted.
+ * This has no effect on the monotonically increasing clock, which is why that's the
  * clock you should use to measure the passage of time. So UNIX doesn't quite
  * do UTC, but it also doesn't quite do International Atomic Time (IAT) either,
  * which also doesn't do leap seconds. (I think GPS time falls into this

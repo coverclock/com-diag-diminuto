@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a dependency injection for replace malloc() and free().
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Heap feature provides a mechanism to use the Proxy feature to
  * dynamically replace the malloc(3), free(3), calloc(3), and realloc(3)

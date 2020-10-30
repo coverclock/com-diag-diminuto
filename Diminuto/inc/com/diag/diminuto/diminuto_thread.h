@@ -4,13 +4,14 @@
 
 /**
  * @file
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a framework to use POSIX threads.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms in LICENSE.txt.<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * This module creates a framework that implements POSIX thread
+ * The Thread feature creates a framework that implements POSIX thread
  * operations using a very specific model of behavior: all threads
  * contain a dedicated condition (and therefore a dedicated mutex);
  * all threads allow deferred cancellation (but discourage its use

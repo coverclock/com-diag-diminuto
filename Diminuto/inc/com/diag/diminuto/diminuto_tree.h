@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a Red-Black tree.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Tree feature implements a Red-Black Tree. This is intended to be used
  * to build more complex data structures, such as those that have

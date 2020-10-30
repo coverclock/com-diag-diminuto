@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides convenience functions for using SIGINT.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Interrupter feature provides a convenient API for using SIGINT.
  * It propagates a SIGINT signal to appropriate processes

@@ -1,12 +1,15 @@
-/* vim: set ts=4 expandtab shiftwidth=4: */
+/* vi: set ts=4 expandtab shiftwidth=4: */
 #ifndef _COM_DIAG_DIMINUTO_CXXCAPI_H_
 #define _COM_DIAG_DIMINUTO_CXXCAPI_H_
 
 /**
  * @file
- *
- * Copyright 2006-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * This file is part of the Digital Aggregates Diminuto library.<BR>
+ * @copyright Copyright 2006-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Defines the C++/C-language interoperability API.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * Defines the symbols and macros necessary for the Diminuto
  * C++/C-language Application Programming Interface (CXXCAPI).

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides an interface to handle GPIO pins via the /sys file system.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Pin feature implements an interface to interrogate and manipulate
  * General Purpose I/O pins. On most platforms, this will require running

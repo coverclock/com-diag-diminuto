@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides functions to do formatted memory dumps to an output stream.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Dump feature implements a variety of memory dump functions to a
  * FILE stream. This facility was inspired by countless dump programs the

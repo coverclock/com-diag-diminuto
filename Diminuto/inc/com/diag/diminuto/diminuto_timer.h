@@ -6,10 +6,11 @@
  * @file
  * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Support POSIX timers using a rate monotonic clock.
+ * @brief Implements monotonic one-shot and periodic timers using POSIX timers.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ *
  * The Timer feature uses the real-time POSIX timer_create(2) and
  * timer_settime(2) facilites to mimic the setitimer(2) semantics, but
  * with a monotonic clock. The resulting one-shot or periodic timer is,

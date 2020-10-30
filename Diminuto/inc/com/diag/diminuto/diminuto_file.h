@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2019 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2019 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a horrifyingly brittle mechanism to compute bytes buffered in an input stream.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The File feature calculates how many characters are available
  * in a standard I/O FILE object by violently breaking the object's

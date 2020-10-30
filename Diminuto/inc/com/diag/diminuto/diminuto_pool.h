@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a buffer pool to simplify some use cases for dynamic memory.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Pool feature implements a buffer pool that might simplify the
  * dynamic memory management in some applications. Or not.

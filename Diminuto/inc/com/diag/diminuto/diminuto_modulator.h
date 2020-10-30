@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a PWM generator.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Modulator feature implements a pulse width modulation (PWM) generator
  * in software. By default controls a GPIO pin using the Diminuto pin feature,

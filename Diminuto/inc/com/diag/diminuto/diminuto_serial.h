@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2019 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements an interface for using things that act like serial ports.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Serial feature provides a convenient way to configure and
  * manage serial ports (including, very usefully, USB serial adaptors).

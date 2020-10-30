@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a Fibonacci sequence generator.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Fibonacci feature implements a Fibonacci-sequence generator. This
  * has turned out to be useful, in the author's experience, for a variety

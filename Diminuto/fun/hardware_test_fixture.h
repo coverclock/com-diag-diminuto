@@ -4,11 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2018-2020 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Support the functional test fixture.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * Defines the pinins and pinouts of the hardware test fixture
  * on which I run the functional tests. The HTF is a breadboard

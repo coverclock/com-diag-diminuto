@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a preprocessor framework for dependency injection.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Proxy feature provides a method of replacing what functions an
  * application uses at run-time. It is used by the Heap feature.

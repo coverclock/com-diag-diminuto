@@ -1,11 +1,14 @@
-/* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms in LICENSE.txt.<BR>
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements some simple debugging tools for works in progress.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * Defines some simple tools to fascilite debugging of Works In Progress (WIP).
+ *
  * This file can be included more than once.
  */
 

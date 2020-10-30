@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides convenience functions for managing file descriptors.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The FD feature implements convenience functions for doing I/O on
  * file descriptors, including sockets.

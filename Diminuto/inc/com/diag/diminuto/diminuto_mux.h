@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a model for doing multiplexing using pselect(2).
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Mux feature implements an easily used file descriptor and socket
  * multiplexer that uses the pselect(2) system call. It was inspired by

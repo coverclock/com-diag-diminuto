@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a key-value memory store using a Red-Black tree.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Store feature uses a Red-Black tree, a kind of self-balancing binary
  * tree, to implement a key-value store in memory, a kind of associative

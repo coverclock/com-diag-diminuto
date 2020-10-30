@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides an interface to the user-space loadable module feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Module feature implements an interface to the Linux user-space
  * module feature, where a linked object module can be loaded into memory and

@@ -4,14 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * Implements assert and expect functions that under the hood use the
- * Diminuto log mechanism.
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements assert and expect functions that use the Diminuto log mechanism.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined (which should happen only
  * under the most exceptional of circumstances and perhaps only for debugging),

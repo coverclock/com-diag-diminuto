@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a simple mechanism to determine processor endianess.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Endianess feature provides a simple mechanism for a caller to
  * determine whether its host processor is little-endian or big-endian.

@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements old-school atomic locks using the file system.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Lock feature provides a mechanism to implement old-school atomic
  * locks using the file system.

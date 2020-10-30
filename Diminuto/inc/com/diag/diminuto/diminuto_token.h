@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements helper macros for tokenizing preprocessor input.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Token feature pre-processes and then stringifies a preprocessor symbol.
  * This is a common trick trick to get C to turn the value of a preprocessor

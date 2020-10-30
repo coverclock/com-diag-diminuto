@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a containerof compile-time operator.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Container Of feature provides a mechanism to derive a
  * container base pointer from the pointer to a field in the

@@ -4,13 +4,14 @@
 
 /**
  * @file
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a framework to use POSIX mutexen.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms in LICENSE.txt.<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * This module creates a framework that implements POSIX mutual
+ * The Mutex feature creates a framework that implements POSIX mutual
  * exclusion (mutex) operations using a very specific model of
  * behavior: all mutexen are recursive (an attribute which
  * greatly simplifies writing reusable multi-threaded subroutines).

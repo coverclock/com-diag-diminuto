@@ -4,12 +4,16 @@
 
 /**
  * @file
- *
- * Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.tx.
+ * @copyright Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements functions like strtoll(3) and strtoull(3).
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Number feature implements a strtoll(3) and strotull(3) like
- * capability. (Honestly, these days I just use the GLIBC functions.)
+ * capability. (Honestly, these days I just use the GLIBC functions.
+ * This was written before I had access to those functions.)
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

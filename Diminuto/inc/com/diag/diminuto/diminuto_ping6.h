@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2016 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.tx.
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a function to send an IPv6 ICMP ECHO REQUEST and receive a response.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Ping6 feature is a programmatic version of ping(1): send an ICMP6 ECHO
  * REQUEST to an IPv6 address and (hopefully) receive an ICMP6 ECHO REPLY back.

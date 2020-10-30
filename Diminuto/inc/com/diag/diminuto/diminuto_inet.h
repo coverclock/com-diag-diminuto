@@ -1,12 +1,15 @@
-//* vi: set ts=4 expandtab shiftwidth=4: */
+/* vi: set ts=4 expandtab shiftwidth=4: */
 #ifndef _H_COM_DIAG_DIMINUTO_INET_
 #define _H_COM_DIAG_DIMINUTO_INET_
 
 /**
  * @file
- *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements the standard Internet checksum algorithm.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  * 
  * The Inet feature implements the standard Internet checksum
  * algorithm.

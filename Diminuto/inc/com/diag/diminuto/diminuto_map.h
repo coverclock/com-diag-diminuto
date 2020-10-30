@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2008-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides an interface to virtual memory mapping and unmapping.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Map feature provides an API for virtual memory mapping and unmapping
  * for code compiled in the context of the kernel build system, or for

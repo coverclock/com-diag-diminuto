@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements macros to begin and end sections that cannot be interrupted by kill(2) signals.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Uninterruptible Section feature provides a code section that
  * cannot be interrupted by a signal.

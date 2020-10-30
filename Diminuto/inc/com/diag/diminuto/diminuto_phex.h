@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013 Digital Aggregates Corporation, Arvada CO USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Emits characters to a stream, encoding non-printables to C-style escape sequences.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The PHex feature emits characters to a FILE stream, encoding non-printable
  * characters as C-style escape sequences. Can automatically inserts newlines to

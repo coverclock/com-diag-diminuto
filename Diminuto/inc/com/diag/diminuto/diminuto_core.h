@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2008-2016 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2008-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements functions that enable and cause core dumps.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Core feature provides mechanisms to enable core dumps (which
  * are typically not enabled by default), and to terminate the caller

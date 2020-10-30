@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements macros to to begin and end sections serialized with spin locks.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Serialized Section feature uses the Barrier feature to implement
  * a code section serialized between multiple processors. This is experimental.

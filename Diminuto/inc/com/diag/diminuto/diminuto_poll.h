@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides a model for doing multiplexing using poll(2).
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Poll feature is a socket multiplexer that uses the ppoll(2) system
  * call instead of the pselect(2) system call used by the mux feature. This

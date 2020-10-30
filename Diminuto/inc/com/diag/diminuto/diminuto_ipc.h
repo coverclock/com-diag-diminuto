@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides capabilities common to stream and datagram IPv4 and IPv6 sockets.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The IPC feature provides  socket and other interprocess/interprocessor
  * communication capabilities that are agnostic as to whether IPv4 or IPv6

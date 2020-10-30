@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements functions to collapse and expand C-style escape sequences in strings.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Escape feature implements functions to collapse and expand
  * C-style escape sequences. This is especially useful for processing

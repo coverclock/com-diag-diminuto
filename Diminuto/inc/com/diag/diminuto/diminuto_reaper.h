@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides convenience functions for using SIGCHLD.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Reaper feature provides a SIGCHLD signal handler and functions to reap
  * any terminating children via a waitpid(2), and optionally logging their

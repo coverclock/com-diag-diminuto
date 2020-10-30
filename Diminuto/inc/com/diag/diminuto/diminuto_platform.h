@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Provides helper macros for determining the underlying platform.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Platform feature tries to infer the underlying platform. it is
  * sometimes successful. It has been tested on Ubuntu 14.04 for both

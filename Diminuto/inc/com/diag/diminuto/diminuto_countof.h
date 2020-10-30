@@ -4,9 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2010, 2014 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
+ * @copyright Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Implements a countof compile-time operator.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * The Count Of feature returns the number of positions in an
  * array, providing the sizeof the total array and the sizeof the
