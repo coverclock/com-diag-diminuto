@@ -4,11 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2018 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Support the Avago APDS-9301 in the functional test fixture.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * Implements a simple API to the Avago APDS-9301 ambient light sensor.
  * In a normal application these functions would be outlined into
