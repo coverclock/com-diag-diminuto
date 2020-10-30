@@ -1,19 +1,20 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Manipulate GPIO pins using the /sys file system.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * EXAMPLES
  *
- * pintool -p 20 -x -i -b 10000
- * pintool -p 20 -x -i; pintool -b 10000
- * pintool -p 20 -x -i -B -U -M
- * pintool -p 20 -x -i -B -U -m 1000000
- * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n
+ * pintool -p 20 -x -i -b 10000<BR>
+ * pintool -p 20 -x -i; pintool -b 10000<BR>
+ * pintool -p 20 -x -i -B -U -M<BR>
+ * pintool -p 20 -x -i -B -U -m 1000000<BR>
+ * pintool -p 160 -x -o -H -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n<BR>
  *
  * ABSTRACT
  *

@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2009-2013 Digital Aggregates Corporation, Colorado USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2009-2013 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Manipulate memory registers using memory-mapped I/O.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * USAGE
  *
@@ -15,8 +16,8 @@
  *
  * (These two commands are equivalent.)
  *
- * memtool -a 0xffff8000 -l 4096 -4 0x4        -s 0x1 -u 1000 -c 0x1 -4 0x8        -r
- * memtool                       -4 0xffff8004 -s 0x1 -u 1000 -c 0x1 -4 0xffff8008 -r
+ * memtool -a 0xffff8000 -l 4096 -4 0x4        -s 0x1 -u 1000 -c 0x1 -4 0x8        -r<BR>
+ * memtool                       -4 0xffff8004 -s 0x1 -u 1000 -c 0x1 -4 0xffff8008 -r<BR>
  *
  * ABSTRACT
  *

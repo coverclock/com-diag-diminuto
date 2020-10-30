@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Print on stdout the sizeof various useful things.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * There's a lot of duplication here, but I'm paranoid that way. Remarkably,
  * I once worked on an embedded project using a proprietary non-GNU C compiler

@@ -1,6 +1,13 @@
-/*
- * Copyright 2019 Digital Aggregates Corporation, Arvada Colorado USA.
- * mailto:coverclock@diag.com
+/* vi: set ts=4 expandtab shiftwidth=4: */
+/**
+ * @file
+ * @copyright Copyright 2019 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Maybe *this* time I can finally remember how this works.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ *
  * Maybe *this* time I can finally remember how this works.
  */
 #include <stdio.h>

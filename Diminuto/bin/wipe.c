@@ -1,15 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms of the GNU Public License (GPL) v2.<BR>
- * Author: Chip Overclock<BR>
- * mailto:coverclock@diag.com<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- * NO WARRANTY IS EXPRESSED OR IMPLIED!<BR>
- * Digital Aggregates Corporation is a registered trademark.<BR>
- * Chip Overclock is a registered trademark.<BR>
+ * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Wipe a storage device by writing over it.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * USAGE
  *
@@ -51,6 +48,8 @@
  * from the "f3" flash testing software, which I believe borrowed it from the
  * h2testw Windows flash testing tool.
  *
+ * NO WARRANTY IS EXPRESSED OR IMPLIED!<BR>
+ *
  * REFERENCES
  *
  * Chip Overclock, "Data Remanance and Solid State Drives", 2011-06-20,
@@ -66,14 +65,14 @@
  *
  * I use these commands to reinitialize a wiped USB thumb drive.
  *
- * sudo fdisk /dev/sdj
- * n p 1 8192 CTRL-r
- * t c
- * w
- * sudo mkfs.vfat /dev/sdj1
- * sudo mount /dev/sdj1 /mnt
- * sudo mount
- * sudo umount /mnt
+ * sudo fdisk /dev/sdj<BR>
+ * n p 1 8192 CTRL-r<BR>
+ * t c<BR>
+ * w<BR>
+ * sudo mkfs.vfat /dev/sdj1<BR>
+ * sudo mount /dev/sdj1 /mnt<BR>
+ * sudo mount<BR>
+ * sudo umount /mnt<BR>
  */
 
 #include <sys/types.h>

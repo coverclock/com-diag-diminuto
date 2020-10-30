@@ -1,11 +1,14 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
+ * @copyright Copyright 2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Display the hex encoding and rendering of all UTF-8 characters.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
- * Copyright 2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * Display the hex encoding and rendering of all UTF-8 characters.
  */
 
 #include <stdio.h>

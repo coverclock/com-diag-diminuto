@@ -1,18 +1,21 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Print on stdout the credentials of the calling process.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * Displays on standard output the calling processes' process id,
  * its session id, it's parent's process id, and it's parents's
  * session id. Here is a useful command line in a script (yes,
  * both less-than signs are necessary; I'm not sure why).
+ *
+ * EXAMPLE
  * 
- *  read MYPID MYSID MYPPID MYPSID < <(printids)
+ * read MYPID MYSID MYPPID MYPSID < <(printids)
  */
 
 #include "com/diag/diminuto/diminuto_log.h"

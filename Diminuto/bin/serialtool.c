@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Manipulate serial-ish ports.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * ABSTRACT
  *
@@ -22,8 +23,8 @@
  *
  * EXAMPLES
  *
- * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d
- * originator:  serialtool -D /dev/ttyS0 -b 115200 -8 -1 -n -l -B -d
+ * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d<BR>
+ * originator:  serialtool -D /dev/ttyS0 -b 115200 -8 -1 -n -l -B -d<BR>
  *
  * e.g. GPS:    serialtool -D /dev/ttyUSB0 -b 4800 -8 -1 -n -l -v
  *

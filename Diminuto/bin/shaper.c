@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Traffic shape and measure throughput from stdin to stdout.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * USAGE
  *
@@ -17,11 +18,9 @@
  *
  * EXAMPLES
  *
- * source | shaper | sink
- *
- * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink
- *
- * dd if=/dev/urandom bs=512 count=100 | shaper -b 512 | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper -b 512 > /dev/null
+ * source | shaper | sink<BR>
+ * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
+ * dd if=/dev/urandom bs=512 count=100 | shaper -b 512 | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper -b 512 > /dev/null<BR>
  *
  * ABSTRACT
  *

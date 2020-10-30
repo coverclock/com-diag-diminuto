@@ -1,13 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2016-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * ABSTRACT
+ * @copyright Copyright 2016-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Tests internet connectivity.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
  * internettool is used to test internet connectivity using application
  * protocols like Transmission Control Protocol or TCP (-t), or User Datagram
@@ -19,20 +18,18 @@
  * the data to the server, and receives from the server and writes the data
  * to standard output. It can bind its socket to a specific interface (-i) or
  * address (-a).
- */
-
-/*
+ *
  * EXAMPLES
  *
- * server:      internettool -v -6 -t -p 5555
- * client1:     timesource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink
- * client2:     timesource | internettool -4 -t -A 192.168.1.237 -P 5555 | timesink
- * client3:     timesource | internettool -6 -t -A ::ffff:192.168.1.237 | timesink
+ * server:      internettool -v -6 -t -p 5555<BR>
+ * client1:     timesource | internettool -6 -t -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink<BR>
+ * client2:     timesource | internettool -4 -t -A 192.168.1.237 -P 5555 | timesink<BR>
+ * client3:     timesource | internettool -6 -t -A ::ffff:192.168.1.237 | timesink<BR>
  *
- * server:      internettool -v -6 -u -p 5555
- * client1:     timesource | internettool -6 -u -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink
- * client2:     timesource | internettool -4 -u -A 192.168.1.237 -P 5555 | timesink
- * client3:     timesource | internettool -6 -u -A ::ffff:192.168.1.237 | timesink
+ * server:      internettool -v -6 -u -p 5555<BR>
+ * client1:     timesource | internettool -6 -u -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -P 5555 | timesink<BR>
+ * client2:     timesource | internettool -4 -u -A 192.168.1.237 -P 5555 | timesink<BR>
+ * client3:     timesource | internettool -6 -u -A ::ffff:192.168.1.237 | timesink<BR>
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
