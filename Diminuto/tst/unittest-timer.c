@@ -1,11 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Unit test the timer feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -21,20 +22,24 @@ int main(int argc, char ** argv)
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, 0) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, SIGALRM) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }
@@ -42,8 +47,10 @@ int main(int argc, char ** argv)
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }
@@ -51,20 +58,24 @@ int main(int argc, char ** argv)
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, 0) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, !0, callback, SIGALRM) == (diminuto_timer_t *)0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         STATUS();
     }
     {
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, !0, callback, 0) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_init_generic(&timer, !0, callback, 0) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }
@@ -72,8 +83,10 @@ int main(int argc, char ** argv)
         diminuto_timer_t timer;
         TEST();
         ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
         STATUS();
     }

@@ -74,6 +74,7 @@ int main(int argc, char ** argv)
 
     for (requested = hertz / 1000; requested <= (hertz * 9 * 60); requested *= 2) {
         EXPECT(!diminuto_alarm_check());
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) != (diminuto_sticks_t)-1);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
@@ -83,10 +84,13 @@ int main(int argc, char ** argv)
          * to fire and interrupt this period.
          */
         remaining = diminuto_delay(requested * 2, !0);
+        EXPECT(remaining >= 0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         now = result;
         ASSERT(now >= then);
         ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
+        ASSERT(diminuto_timer_error(&timer) == 0);
         EXPECT(diminuto_alarm_check());
         EXPECT(!diminuto_alarm_check());
         claimed = (requested * 2) - remaining;

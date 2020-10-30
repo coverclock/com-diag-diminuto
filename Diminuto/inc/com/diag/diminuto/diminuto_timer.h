@@ -4,10 +4,12 @@
 
 /**
  * @file
- *
- * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
- * Licensed under the terms in LICENSE.txt.
- *
+ * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Support POSIX timers using a rate monotonic clock.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  * The Timer feature uses the real-time POSIX timer_create(2) and
  * timer_settime(2) facilites to mimic the setitimer(2) semantics, but
  * with a monotonic clock. The resulting one-shot or periodic timer is,
@@ -80,6 +82,7 @@ typedef struct DiminutoTimer {
     void * value;
     int periodic;
     diminuto_timer_state_t state;
+    int error;
 } diminuto_timer_t;
 
 /**
@@ -161,6 +164,21 @@ extern diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ti
  */
 extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
 
+/**
+ * Return any error code produced during the execution of code in
+ * support of the caller-specified callback function (for example:
+ * a failure in a condition signal). This error field is cleared when
+ * the timer is initialized, and again when it is started. The error
+ * field not applicable for timers that are not configured to invoke
+ * a callback function.
+ * @param tp points to the timer object.
+ * @return an error code or zero if none.
+ */
+static inline int diminuto_timer_error(diminuto_timer_t * tp)
+{
+    return tp->error;
+}
+
 /*******************************************************************************
  * The API below emulates an older Diminuto implementation that found its
  * way into a lot of code. It used the older setitimer(2) system call. Unlike
@@ -169,6 +187,21 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  * example, NTP adjustments. Most of the unit tests were originally written
  * using this older API.
  ******************************************************************************/
+
+
+/**
+ * Start a singleton timer for the specified number of ticks. When the
+ * timer expires, the calling process will receive a SIGALRM. If a timer is
+ * already running, the amount of time left in the prior timer will be returned.
+ * The actual timer duration will be approximate depending on the
+ * granularity of the system clock and latency in the implementation.
+ * Calling with zero ticks cancels any prior timer.
+ * @param ticks is the desired timer duration in ticks.
+ * @param periodic if true starts a periodic timer, else a one-shot timer.
+ * @return the number of ticks remaining in prior timer if a timer was already
+ * running, or <0 if an error occurred.
+ */
+extern diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic);
 
 /**
  * Start a singleton one-shot timer for the specified number of ticks. When the
@@ -184,7 +217,6 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  */
 static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic);
     return diminuto_timer_setitimer(ticks, 0);
 }
 
@@ -202,7 +234,6 @@ static inline diminuto_sticks_t diminuto_timer_oneshot(diminuto_ticks_t ticks)
  */
 static inline diminuto_sticks_t diminuto_timer_periodic(diminuto_ticks_t ticks)
 {
-    extern diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic);
     return diminuto_timer_setitimer(ticks, !0);
 }
 

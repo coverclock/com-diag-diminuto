@@ -73,12 +73,15 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
 
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_start(&timer, requested, (void *)0) >= 0);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
             remaining = diminuto_delay(requested * 2, !0);
+            EXPECT(remaining >= 0);
+            ASSERT(diminuto_timer_error(&timer) == 0);
             EXPECT(diminuto_alarm_check());
             EXPECT(!diminuto_alarm_check());
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
@@ -100,6 +103,7 @@ int main(int argc, char ** argv)
             then = now;
         }
         ASSERT(diminuto_timer_stop(&timer) >= 0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
     }
 
     ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);

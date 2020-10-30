@@ -1,12 +1,12 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
+ * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief Support POSIX timers using a rate monotonic clock.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  * The condition is necessary because, at least in this POSIX implementation,
  * there is a race condition in which we can already be in the timer
  * callback function as we stop the timer. Deallocating resources
@@ -34,6 +34,7 @@
 static void proxy(union sigval sv)
 {
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
+    int rc = 0;
 
     tp = (diminuto_timer_t *)sv.sival_ptr;
     if (tp == (diminuto_timer_t *)0) {
@@ -74,12 +75,14 @@ static void proxy(union sigval sv)
             if (tp->periodic) {
                 if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
                     tp->state = DIMINUTO_TIMER_STATE_IDLE;
-                    (void)diminuto_condition_signal(&(tp->condition));
+                    rc = diminuto_condition_signal(&(tp->condition));
+                    if (rc != 0) { tp->error = rc; }
                 }
             } else {
                 if (tp->state != DIMINUTO_TIMER_STATE_IDLE) {
                     tp->state = DIMINUTO_TIMER_STATE_IDLE;
-                    (void)diminuto_condition_signal(&(tp->condition));
+                    rc = diminuto_condition_signal(&(tp->condition));
+                    if (rc != 0) { tp->error = rc; }
                 }
             }
     
@@ -101,6 +104,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         tp->function = (diminuto_timer_function_t *)0;
         tp->context = (void *)0;
         tp->value = (void *)0;
+        tp->error = 0;
 
         if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
             errno = rc;
@@ -190,6 +194,7 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     tp->context = cp;
     tp->ticks = ticks;
     tp->state = DIMINUTO_TIMER_STATE_ARM;
+    tp->error = 0;
 
     tp->current.it_value.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
     tp->current.it_value.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_timer_frequency());

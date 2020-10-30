@@ -76,6 +76,7 @@ int main(int argc, char ** argv)
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
             remaining = diminuto_delay(requested * 2, !0);
+            EXPECT(remaining >= 0);
             EXPECT(diminuto_alarm_check());
             EXPECT(!diminuto_alarm_check());
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);

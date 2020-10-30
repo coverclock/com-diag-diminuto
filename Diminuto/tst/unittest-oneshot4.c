@@ -91,9 +91,12 @@ int main(int argc, char ** argv)
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
         DIMINUTO_CONDITION_BEGIN(&condition);
+            ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT(diminuto_timer_start(&timer, requested, (void *)0) != (diminuto_sticks_t)-1);
             ASSERT(diminuto_condition_wait_until(&condition, diminuto_condition_clock() + (requested * 2)) == 0);
+            ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
+            ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
             now = result;
             actual = when;

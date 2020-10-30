@@ -89,6 +89,7 @@ int main(int argc, char ** argv)
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
+        ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_start(&timer, requested, (void *)0) >= 0);
         for (ii = 0; ii < 5; ++ii) {
             DIMINUTO_CONDITION_BEGIN(&condition);
@@ -97,6 +98,7 @@ int main(int argc, char ** argv)
                 now = result;
                 actual = when;
             DIMINUTO_CONDITION_END;
+            ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT(actual >= then);
             ASSERT(now >= then);
             ASSERT(now >= actual);
@@ -120,6 +122,7 @@ int main(int argc, char ** argv)
             then = now;
         }
         ASSERT(diminuto_timer_stop(&timer) >= 0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
     }
 
     ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
