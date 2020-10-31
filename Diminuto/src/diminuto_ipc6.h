@@ -4,19 +4,20 @@
 
 /**
  * @file
+ * @copyright Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This describes the IPC6 private API.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
  *
- * Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * This is the ipc6 feature private API.
+ * This describes the IPC6 private API.
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_endianess.h"
+#include <sys/types.h>
+#include <sys/socket.h>
 
 /**
  * Swap an IPv6 address variable from network to host byte order in place.
