@@ -18,4 +18,5 @@ find ${INCDIR} ${GENDIR} -type f -name '*.h' -print | awk '
 cat << EOF >> ${SRCFIL}
 int main(void) { }
 EOF
+cat ${SRCFIL}
 gcc -I ${INCDIR} -I ${GENDIR} -D__USE_GNU -D_GNU_SOURCE -o ${OBJFIL} ${SRCFIL} && exit 0 || exit 1
