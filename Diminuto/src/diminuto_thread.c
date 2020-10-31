@@ -1,28 +1,30 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2020 Digital Aggregates Corporation, Colorado, USA.<BR>
- * Licensed under the terms in LICENSE.txt.<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is the implementation of the Thread feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is the implementation of the Thread feature.
  */
 
 /***********************************************************************
  * PREREQUISITES
  **********************************************************************/
 
+#include "com/diag/diminuto/diminuto_thread.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_coherentsection.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <time.h>
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
 #include <sched.h>
-#include "com/diag/diminuto/diminuto_thread.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "com/diag/diminuto/diminuto_coherentsection.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_log.h"
 
 /***********************************************************************
  * GLOBALS

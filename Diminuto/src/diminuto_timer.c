@@ -3,10 +3,12 @@
  * @file
  * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Support POSIX timers using a rate monotonic clock.
+ * @brief This is the implementation of the Timer feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * This is the implementation of the Timer feature.
+ *
  * The condition is necessary because, at least in this POSIX implementation,
  * there is a race condition in which we can already be in the timer
  * callback function as we stop the timer. Deallocating resources

@@ -1,15 +1,17 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is the implementation of the Pin feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is the implementation of the Pin feature.
  *
  * REFERENCES
  *
- * "GPIO Interfaces", Documentation/gpio.txt, Linux 3.10.24
+ * Linux 3.10.24, "GPIO Interfaces", Documentation/gpio.txt
  */
 
 #include "com/diag/diminuto/diminuto_pin.h"

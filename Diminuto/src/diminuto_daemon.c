@@ -1,13 +1,17 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
+ * @copyright Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is the implementation of the Daemon feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is the implementation of the Daemon feature.
  *
- * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * REFERENCES
  *
- * @see http://www-theorie.physik.unizh.ch/~dpotter/howto/daemonize
+ * http://www-theorie.physik.unizh.ch/~dpotter/howto/daemonize
  */
 
 #include "com/diag/diminuto/diminuto_daemon.h"
