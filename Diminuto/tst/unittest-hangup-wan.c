@@ -1,11 +1,13 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * @copyright Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is a unit test of the Hangup feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is a unit test of the Hangup feature.
  *
  * Model: parent forks child, waits for child to create lock file, signals
  * child to exit with SIGHUP, waits for child to remove lock file.

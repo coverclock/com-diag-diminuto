@@ -1,15 +1,13 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- *
- * Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock (coverclock@diag.com)<BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * REFERENCES
- *
- * Wikipedia, "Unix time", http://en.wikipedia.org/wiki/Unix_time, 2014-10-24
+ * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is a unit test of the Epoch portion of the Time feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is a unit test of the Epoch portion of the Time feature.
  *
  * N.B. This unit test suite really stresses the underlying POSIX and
  * GNU time functions because it specifically tests edge cases where the
@@ -17,6 +15,10 @@
  * Specifically, on the Raspberry Pi SBC,  on Raspbian 8 (glib 2.19) and
  * Raspbian 10 (glibc 2.28), where time_t is only 32-bits, some of these
  * test cases are problematic.
+ *
+ * REFERENCES
+ *
+ * Wikipedia, "Unix time", http://en.wikipedia.org/wiki/Unix_time, 2014-10-24
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"

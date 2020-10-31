@@ -1,13 +1,15 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
+ * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is a unit test of the array_t feature.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is a unit test of the array_t feature.
  *
- * Copyright 2015 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
- *
- * Compiling this translation unit will produce all kinds of warnings.
+ * Compiling this translation unit may produce all kinds of warnings.
  *
  * This unit test toys with the ability to declare arrays as a type. IT
  * WILL GENERATE WARNINGS because the compiler thinks I don't know what

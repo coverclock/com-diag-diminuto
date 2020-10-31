@@ -1,15 +1,23 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
+ * @copyright Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+ * @note Licensed under the terms in LICENSE.txt.
+ * @brief This is a unit test of the Time feature Cost.
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @details
+ * This is a unit test of the Time feature Cost.
  *
- * Copyright 2013 Digital Aggregates Corporation, Colorado, USA<BR>
- * Licensed under the terms in LICENSE.txt<BR>
- * Chip Overclock <coverclock@diag.com><BR>
- * https://github.com/coverclock/com-diag-diminuto<BR>
+ * USAGE
  *
- * usage:    unittest-time-cost [ iterations [ monotonic ] ]
- * examples: unittest-time-cost 1000000000
- *           unittest-time-cost 1000000000 monotonic
+ * unittest-time-cost [ iterations [ monotonic ] ]
+ *
+ * EXAMPLES
+ *
+ * unittest-time-cost 1000000000
+ *
+ * unittest-time-cost 1000000000 monotonic
  *
  * This program measures (approximately) the cost of reading the system clock.
  * It can be used to read either the real-time clock (wall clock) or the
