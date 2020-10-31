@@ -816,7 +816,7 @@ $(OUT)/%:	%.sh
 	D=`dirname $@`; mkdir -p $$D
 	cp $< $@
 	chmod 755 $@
-	
+
 .SECONDARY:
 
 $(OUT)/$(BIN_DIR)/%:	$(OUT)/$(SYM_DIR)/%
@@ -932,6 +932,7 @@ sanity:
 	unittest-fletcher
 	unittest-frequency
 	unittest-fs
+	unittest-guards
 	unittest-hamming
 	unittest-heap
 	unittest-interrupter
