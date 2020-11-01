@@ -18,7 +18,7 @@
 /**
  * @def DIMINUTO_SWAP
  * Swap the contents of variables @a _A_ and @a _B_ that are both of the same
- * fundamental type without using any temporary storage. This is a clever
+ * integer type without using any temporary storage. This is a clever
  * hack applicable to only the most resource constrained environments.
  */
 #define DIMINUTO_SWAP(_A_, _B_) \
