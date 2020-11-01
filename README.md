@@ -299,7 +299,8 @@ Raspbian 10, I added a line "ipv6" to /etc/modules and rebooted.
 The command "modprobe ipv6" also worked albeit non-persistently.
 
     sudo modprobe ipv6
-    sudo echo "ipv6" >> /etc/modules
+    sudo su
+    echo "ipv6" >> /etc/modules
 
 ## Building
 
