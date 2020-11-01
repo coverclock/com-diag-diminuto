@@ -42,6 +42,8 @@ int main(void)
 	    STATUS(); \
     }
 
+    TEST_SWAP(int, 0xdeadbeef, 0xc0edbabe)
+
     TEST_SWAP(int8_t, 0xa5, 0x5a);
     TEST_SWAP(uint8_t, 0xa5, 0x5a);
 
