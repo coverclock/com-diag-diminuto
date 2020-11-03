@@ -3,8 +3,15 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-
+#
+# ABSTRACT
+#
 # This uses a serial loopback test fixture that I built.
+#
+# USAGE
+#
+# lbkttest [ DEVICE [ SPEED [ MODULOREPORT ] ] ]
+#
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 

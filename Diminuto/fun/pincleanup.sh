@@ -4,7 +4,18 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 #
+# ABSTRACT
+#
 # Unexports all of the pins used by the hardware text fixture.
+#
+# USAGE
+#
+# pincleanup
+#
+# SEE ALSO
+#
+# hardware_test_fixture.sh
+#
 
 . $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
 

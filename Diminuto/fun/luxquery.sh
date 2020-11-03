@@ -3,15 +3,24 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-
+#
+# ABSTRACT
+#
 # Simple script that uses the platform's I2C tools to play
 # with the Avago APDS 9301 lux sensor chip that is part of
 # my breadboarded HW test fixture.
-
+#
+# luxquery [ I2CBUS [ I2CDEVICE [ GPIOPIN ] ] ]
+#
+# SEE ALSO
+#
+# hardware_test_fixture.sh
+#
 # REFERENCES
 #
 # Avago, "APDS-9301 Miniature Ambient Light Photo Sensor with Digital
 # (I2C) Output", Avago Technologies, AV02-2315EN, 2010-01-07
+#
 
 . $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
 

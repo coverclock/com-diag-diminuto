@@ -3,7 +3,9 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-
+#
+# ABSTRACT
+#
 # I use a NaviSys Technology GR-701W USB GPS device to test
 # the Diminuto Serial feature's support of data carrier detect
 # (DCD). The GR supports one pulse per second (1PPS) by toggling
@@ -12,6 +14,11 @@
 # 9600 8N1. There will be some garbage characters initially that
 # I believe are due to data being decoded at the wrong baud rate
 # before serialtool has established the serial port parameters.
+#
+# USAGE
+#
+# dcdtest [ DEVICE [ SPEED ] ]
+#
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 

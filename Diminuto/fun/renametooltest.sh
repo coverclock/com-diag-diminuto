@@ -3,6 +3,19 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+#
+# ABSTRACT
+#
+# Test the renametool.
+#
+# NOTE
+#
+# This doesn't test the atomic-ness of renametool.
+#
+# USAGE
+#
+# renametooltest
+#
 
 BASE=$(basename $0)
 ROOT="/tmp"
@@ -64,4 +77,5 @@ rm -f ${SRCE} ${DEST}
 test -f ${SRCE} && exit 1
 test -f ${DEST} && exit 2
 
+echo "SUCCESS." 1>&2
 exit 0

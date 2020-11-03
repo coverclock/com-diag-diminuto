@@ -3,13 +3,24 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-
+#
+# ABSTRACT
+#
 # This is built for a specific test fixture I breadboarded up.
 # After the values of input pins 22 and 27 are read and displayed,
 # and the LEDs on output pins 16, 20, and 21 cycle on and off,
 # press the button on pin 27 to advance the 3-bit binary counter
 # displayed on the LEDs, or press the button pn pin 22 simultaneously
 # with pin 27 to exit. You will probably have to run this as root.
+#
+# SEE ALSO
+#
+# hardware_test_fixture.sh
+#
+# USAGE
+#
+# pintest
+#
 
 PROGRAM=$(basename $0)
 

@@ -3,7 +3,9 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-
+#
+# ABSTRACT
+#
 # This is built for a specific test fixture I breadboarded up.
 # This runs the pintool in multiplex mode, monitoring edge
 # changes on pin 22, and running this script with arguments
@@ -14,6 +16,19 @@
 # an argument - anything will work, e.g. "pinchange daemon"
 # - when you run this command and it will run as a daemon;
 # you'll need to kill it explicitly to get rid of it.)
+#
+# NOTE
+#
+# This script calls itself in a kind of shallow recursion.
+#
+# SEE ALSO
+#
+# hardware_test_fixture.sh
+#
+# USAGE
+#
+# pinchange [ daemon ]
+#
 
 . $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
 
