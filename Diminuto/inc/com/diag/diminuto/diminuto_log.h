@@ -264,8 +264,9 @@ static inline int diminuto_log_interactive()
 /**
  * Set the global default log mask from the environment. By default, the name
  * of the log mask environmental variable is "COM_DIAG_DIMINUTO_LOG_MASK" and
- * its value is a string number in decimal, octal, or hexadecimal format as
- * understood by strtoul(3), e.g. 255, 0x377, 0xff, 0xFF.
+ * its value is a number string in decimal, octal, or hexadecimal format as
+ * understood by strtoul(3), e.g. "255", "0x377", "0xff", "0xFF", etc. As an
+ * extension, if the value is "~0", all eight log levels are enabled.
  * @return the log mask value.
  */
 extern diminuto_log_mask_t diminuto_log_setmask(void);
@@ -284,7 +285,8 @@ extern void diminuto_log_open_syslog(const char * name, int option, int facility
  * Open the underlying system log communication channel (whatever that is)
  * if it is not already open, and (if possible) provide it with an identifying
  * name. This just calls diminuto_log_open_syslog() with the default options and
- * facility.
+ * facility. The system log channel is otherwise opened automatically the first
+ * time it is used.
  * @param name points to a identifying name string or null to use the default.
  */
 extern void diminuto_log_open(const char * name);
