@@ -654,7 +654,6 @@ $(OUT)/$(BIN_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
-	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xfc' >> $@
 	chmod 755 $@
 
 # For generating a setup script for a bash shell (for example, "bash generate > setup").
@@ -666,7 +665,6 @@ $(OUT)/$(SYM_DIR)/generate:	Makefile
 	echo 'echo export LD_DRIVER_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(DRV_DIR)' >> $@
 	echo 'echo export LD_LIBRARY_PATH=\\$$LD_LIBRARY_PATH:$$COM_DIAG_$(SYMBOL)_ROOT/../$(LIB_DIR)' >> $@
 	echo 'echo export LD_MODULE_PATH=$$COM_DIAG_$(SYMBOL)_ROOT/../$(MOD_DIR)' >> $@
-	echo 'echo export COM_DIAG_$(SYMBOL)_LOG_MASK=0xfc' >> $@
 	chmod 755 $@
 
 # For sourcing into a bash shell (for example, ". setup").
