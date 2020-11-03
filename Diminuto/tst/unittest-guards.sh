@@ -3,8 +3,16 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+#
+# ABSTRACT
+#
 # Tests the hearder guards by generating a C file that includes all of them
 # twice and then compiles it.
+#
+# USAGE
+#
+# unittest-guards
+#
 
 ARCDIR=$(readlink -e $(dirname ${0})/../arc)
 INCDIR=$(readlink -e $(dirname ${0})/../../../inc)
