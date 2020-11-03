@@ -15,7 +15,7 @@
 #
 # USAGE
 #
-# observe OUTFILE [ PIDFILE ]
+# observe [ OUTFILE [ PIDFILE ] ]
 #
 # EXAMPLE
 #

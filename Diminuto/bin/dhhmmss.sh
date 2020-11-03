@@ -3,6 +3,16 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+#
+# ABSTRACT
+#
+# Convert an elapsed time duration in seconds into a day, hours
+# minutes, seconds format.
+#
+# USAGE
+#
+# dhhmmss SECONDSELAPSED
+#
 
 ELAPSED=${1:-0}
 DAYS=$(( ${ELAPSED} / 86400 ))

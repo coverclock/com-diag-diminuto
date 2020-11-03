@@ -3,9 +3,21 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+#
+# ABSTRACT
+#
 # Use Diminuto's serialtool to read the output from a GNSS device on
 # one serial port, then direct that output to another serial device,
 # perhaps to be consumed by some other application or device.
+#
+# USAGE
+#
+# bucketbrigade SOURCEDEVICE SOURCESPEED SINKDEVICE SINKSPEED
+#
+# EXAMPLES
+#
+# bucketbrigade /dev/ttyACM0 9600 /dev/ttyUSB0 9600
+#
 
 SOURCE=${1:-"/dev/ttyUSB0"}
 SOURCING=${2:-115200}

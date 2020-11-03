@@ -4,7 +4,14 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 #
+# ABSTRACT
+#
 # Sends a SIGHUP to a currently running observe script via its PID file.
+#
+# USAGE
+#
+# headsup [ OBSERVEPIDFILE ]
+#
 
 PIDFIL=${1:-"/tmp/observe.pid"}
 
