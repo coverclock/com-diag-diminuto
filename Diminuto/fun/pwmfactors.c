@@ -27,6 +27,9 @@
 #include <string.h>
 #include <math.h>
 
+static const uint64_t MIN = 0;
+static const uint64_t MAX = 65535;
+
 static const uint16_t PRIMES[] = {
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 
     31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 
@@ -692,7 +695,7 @@ static const uint16_t PRIMES[] = {
  * 100% on or 100% off are special cases.
  * Small scores are better.
  */
-static uint32_t flicker(uint32_t on, uint32_t off, uint32_t max)
+static uint32_t flicker(uint32_t on, uint32_t off)
 {
     double score;
     if (off == 0) {
@@ -702,10 +705,10 @@ static uint32_t flicker(uint32_t on, uint32_t off, uint32_t max)
     } else {
         double accum;
         accum = abs(off - on);
-        accum /= max;
+        accum /= MAX;
         score = accum;
         accum = abs(off + on);
-        accum /= max;
+        accum /= MAX;
         score += accum;
         score /= 2.0;
         score *= 100.0;
@@ -716,23 +719,27 @@ static uint32_t flicker(uint32_t on, uint32_t off, uint32_t max)
 int main(int argc, char * argv[])
 {
     int index;
-    uint32_t duty;
-    uint16_t prime;
-    uint32_t on;
-    uint32_t off;
-    uint32_t on0;
-    uint32_t off0;
+    uint64_t duty;
+    uint64_t on;
+    uint64_t off;
+    uint64_t on0;
+    uint64_t off0;
     uint32_t limit;
-    uint32_t used[countof(PRIMES)];
-    uint32_t count;
+    uint16_t prime;
+    uint16_t used[countof(PRIMES)];
+    uint16_t count;
+    uint16_t most;
     uint32_t score;
-    static const uint32_t MIN = 0;
-    static const uint32_t MAX = 0xffff;
+
+    printf("%10s %10s %10s %10s %5s %5s %s\n", "DUTY", "LIMIT", "ON", "OFF", "SCORE", "COUNT", "FACTORS");
+
+    most = 0;
 
     for (duty = MIN; duty <= MAX; ++duty) {
 
         on = duty;
-        off = MAX - duty;
+        off = MAX - on;
+        //printf("%llu %llu %llu %llu\n", (unsigned long long)duty, (unsigned long long)on, (unsigned long long)off, (unsigned long long)MAX);
 
         assert((MAX % (on + off)) == 0);
 
@@ -756,15 +763,24 @@ int main(int argc, char * argv[])
 
         assert((MAX % (on + off)) == 0);
 
-        score = flicker(on, off, MAX);
+        if (count < most) {
+            continue;
+        }
 
-        printf("%9u %9u %9u %9u %9u <", duty, on, off, score, count);
+        if (count > most) {
+            most = count;
+        }
+
+        score = flicker(on, off);
+
+        printf("%10llu %10llu %10llu %10llu %5u %5u ", (unsigned long long)duty, (unsigned long long)limit, (unsigned long long)on, (unsigned long long)off, score, count);
+
         for (index = 0; index < countof(used); ++index) {
             if (used[index] > 0) {
-                printf(" %9u", index);
+                printf(" %u^%u,", index, used[index]);
             }
         }
-        printf(" >\n");
+        printf("\n");
 
     }
 
