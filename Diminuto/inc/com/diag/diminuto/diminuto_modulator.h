@@ -22,10 +22,17 @@
  *
  * No guarantees as to jitter, equivalent output voltage, or how it scales as
  * generators are added. See the functional test bin/pwmrheostat.c for a
- * working example. If I were building a product where accurate PWM control
- * was necessary, I would use a microcontroller with a hardware PWM generator.
- * (I've used eight-bit Atmel AVR and Microchip PIC microcontrollers in this
- * role, but there are lots of other choices.)
+ * working example.
+ *
+ * This has been an interesting experiment. But if I were building a product
+ * where accurate PWM control was necessary, I would use a microcontroller with
+ * a hardware PWM generator. I've successfully used eight-bit Atmel AVR and
+ * Microchip PIC parts in this capacity, but there are lots of other choices.
+ *
+ * The Diminuto sav directory has an open source clean room re-implementaton of
+ * an algorithm for a PID controller for PWM control that I've successful used in
+ * a tiny PIC microcontroller with no multiplication or division (much less
+ * floating point).
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

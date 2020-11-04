@@ -28,9 +28,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     diminuto_modulator_cycle_t prime = 0;
     diminuto_modulator_cycle_t on0 = 0;
     diminuto_modulator_cycle_t off0 = 0;
-    static const diminuto_modulator_cycle_t PRIMES[] = {
-         17,  13,  11,   7,   5,   3,   2,
-    };
+    static const diminuto_modulator_cycle_t PRIMES[] = { 17,  13,  11,   7,   5,   3,   2, };
     int ii = 0;
 
     /*
