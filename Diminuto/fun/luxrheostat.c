@@ -50,7 +50,7 @@ static const int LED = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_LUX;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_LUX;
-static const int DUTY = 100;
+static const int DUTY = 255;
 static const int SUSTAIN = 3;
 
 int main(int argc, char ** argv) {
@@ -209,8 +209,8 @@ int main(int argc, char ** argv) {
             printf("%s: PWM %3d %% on %3u off %3u Lux %7.2f lx Period %3lld ms\n", program, duty, modulator.on, modulator.off, lux, (long long int)elapsed);
 
             duty += increment;
-            if (duty > 100) {
-                duty = 99;
+            if (duty > 255) {
+                duty = 254;
                 increment = -1;
             } else if (duty < 0) {
                 break;

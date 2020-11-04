@@ -26,24 +26,25 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     diminuto_modulator_cycle_t on = 0;
     diminuto_modulator_cycle_t off = 0;
     diminuto_modulator_cycle_t prime = 0;
-    static const diminuto_modulator_cycle_t PRIMES[] = { 7, 5, 3, 2 };
+    diminuto_modulator_cycle_t on0 = 0;
+    diminuto_modulator_cycle_t off0 = 0;
+    static const diminuto_modulator_cycle_t PRIMES[] = {
+         17,  13,  11,   7,   5,   3,   2,
+    };
     int ii = 0;
 
     /*
-     * 0% <= on <=  100%
-     * 0% <= off <=  100%
+     * We don't have to check for the range of the duty cycle, since the
+     * duty cycle can assume the full range of allowable integer values.
+     */
+
+    /*
+     * 0% (0) <= on  <= 100% (255)
+     * 0% (0) <= off <= 100% (255)
      * on = duty cycle
      * off = 100% - duty cycle
      * on + off == 100%
      */
-
-    if (duty < DIMINUTO_MODULATOR_DUTY_MIN) {
-        duty = DIMINUTO_MODULATOR_DUTY_MIN;
-    } else if (duty > DIMINUTO_MODULATOR_DUTY_MAX) {
-        duty = DIMINUTO_MODULATOR_DUTY_MAX;
-    } else {
-       /* Do nothing. */
-    }
 
     on = duty;
     off = DIMINUTO_MODULATOR_DUTY_MAX - duty;
@@ -51,16 +52,19 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     /*
      * Remove the common prime factors from the on and off cycles.
      * This smooths out the on versus off cycles and reduces visible flicker.
-     * Note that there is no point in trying a prime factor larger than the
-     * square root of 100, which is 10. This code is so counter intuitive that
-     * a year after writing it, I had no idea what I was doing at first.
      */
 
-    for (ii = 0; ii < countof(PRIMES); ++ii) {
-        prime = PRIMES[ii];
-        while (((on / prime) > 0) && ((on % prime) == 0) && ((off / prime) > 0) && ((off % prime) == 0)) {
-            on /= prime;
-            off /= prime;
+    if (on == 0) {
+        /* Fully off. */
+    } else if (off == 0) {
+        /* Fully on. */
+    } else {
+        for (ii = 0; ii < countof(PRIMES); ++ii) {
+            prime = PRIMES[ii];
+            while (((on0 = (on / prime)) > 0) && ((on % prime) == 0) && ((off0 = (off / prime)) > 0) && ((off % prime) == 0)) {
+                on = on0;
+                off = off0;
+            }
         }
     }
 
@@ -95,6 +99,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
 static void * callback(void * vp)
 {
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
+    int rc = 0;
 
     mp = (diminuto_modulator_t *)vp;
 
@@ -118,7 +123,8 @@ static void * callback(void * vp)
 
         if (mp->state) {
             if (mp->off > 0) {
-                (void)diminuto_pin_clear(mp->fp);
+                rc = diminuto_pin_clear(mp->fp);
+                if (rc < 0) { mp->error = errno; }
                 mp->cycle = mp->off;
                 mp->state = 0;
             } else {
@@ -126,7 +132,8 @@ static void * callback(void * vp)
             }
         } else {
             if (mp->on > 0) {
-                (void)diminuto_pin_set(mp->fp);
+                rc = diminuto_pin_set(mp->fp);
+                if (rc < 0) { mp->error = errno; }
                 mp->cycle = mp->on;
                 mp->state = !0;
             } else {
@@ -143,6 +150,7 @@ static void * callback(void * vp)
             mp->period -= 1;
             break;
         }
+
         mp->period = DIMINUTO_MODULATOR_DUTY_MAX;
 
         /*
@@ -160,7 +168,8 @@ static void * callback(void * vp)
                 mp->on = mp->ton;
                 mp->off = mp->toff;
                 mp->set = 0;
-                (void)diminuto_condition_signal(&(mp->condition));
+                rc = diminuto_condition_signal(&(mp->condition));
+                if (rc != 0) { mp->error = rc; }
             }
 
         DIMINUTO_CONDITION_END;
@@ -186,6 +195,7 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
          */
 
         mp->pin = pin;
+        mp->error = 0;
         mp->state = 0;
         mp->duty = duty;
         mp->on = DIMINUTO_MODULATOR_DUTY_MIN;
@@ -195,6 +205,11 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->set = !0;
         mp->ton = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
+
+        rc = diminuto_pin_unexport_ignore(pin);
+        if (rc < 0) {
+            break;
+        }
 
         tp = diminuto_timer_init_periodic(&(mp->timer), callback);
         if (tp == (diminuto_timer_t *)0) {
@@ -206,8 +221,6 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
             break;
         }
 
-        (void)diminuto_pin_unexport_ignore(pin);
-
         mp->fp = diminuto_pin_output(pin);
         if (mp->fp == (FILE *)0) {
             break;
@@ -215,7 +228,7 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
 
         rc = diminuto_modulator_set(mp, duty);
         if (rc < 0) {
-            diminuto_perror("diminuto_modulator_init: diminuto_modulator_set");
+            break;
         }
 
 #if 0
@@ -232,6 +245,8 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
 int diminuto_modulator_start(diminuto_modulator_t * mp)
 {
     diminuto_sticks_t ticks = -1;
+
+    mp->error = 0;
 
     ticks = diminuto_frequency() / diminuto_modulator_frequency();
     ticks = diminuto_timer_start(&(mp->timer), ticks, mp);

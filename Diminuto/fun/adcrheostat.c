@@ -49,7 +49,7 @@ static const int PWM = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
 static const int DEVICE = HARDWARE_TEST_FIXTURE_DEV_I2C_ADC;
 static const int INTERRUPT = HARDWARE_TEST_FIXTURE_PIN_INT_ADC;
-static const int DUTY = 100;
+static const int DUTY = 255;
 static const int SUSTAIN = 4;
 static const int MEASURE = 5;
 
@@ -222,8 +222,8 @@ int main(int argc, char ** argv) {
             measure = MEASURE;
 
             duty += increment;
-            if (duty > 100) {
-                duty = 99;
+            if (duty > 255) {
+                duty = 254;
                 increment = -1;
             } else if (duty < 0) {
                 break;

@@ -175,7 +175,7 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  * @param tp points to the timer object.
  * @return an error code or zero if none.
  */
-static inline int diminuto_timer_error(diminuto_timer_t * tp)
+static inline int diminuto_timer_error(const diminuto_timer_t * tp)
 {
     return tp->error;
 }
