@@ -726,6 +726,7 @@ int main(int argc, char * argv[])
     uint64_t off0;
     uint32_t limit;
     uint16_t prime;
+    uint16_t highest;
     uint16_t used[countof(PRIMES)];
     uint16_t count;
     uint16_t most;
@@ -734,12 +735,12 @@ int main(int argc, char * argv[])
     printf("%10s %10s %10s %10s %5s %5s %s\n", "DUTY", "LIMIT", "ON", "OFF", "SCORE", "COUNT", "FACTORS");
 
     most = 0;
+    highest = 0;
 
     for (duty = MIN; duty <= MAX; ++duty) {
 
         on = duty;
         off = MAX - on;
-        //printf("%llu %llu %llu %llu\n", (unsigned long long)duty, (unsigned long long)on, (unsigned long long)off, (unsigned long long)MAX);
 
         assert((MAX % (on + off)) == 0);
 
@@ -758,6 +759,7 @@ int main(int argc, char * argv[])
                 assert(prime < countof(used));
                 used[prime]++;
                 count++;
+                if (prime > highest) { highest = prime; }
             }
         }
 
@@ -780,7 +782,7 @@ int main(int argc, char * argv[])
                 printf(" %u^%u,", index, used[index]);
             }
         }
-        printf("\n");
+        printf(" (%u)\n", highest);
 
     }
 
