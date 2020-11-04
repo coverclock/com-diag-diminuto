@@ -28,7 +28,7 @@
 #include <math.h>
 
 static const uint64_t MIN = 0;
-static const uint64_t MAX = 65535;
+static const uint64_t MAX = 255;
 
 static const uint16_t PRIMES[] = {
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 
