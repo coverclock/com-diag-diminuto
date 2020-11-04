@@ -100,9 +100,9 @@ int main(int argc, char * argv[])
      */
 
     duty[0] = 0;
-    duty[1] = duty[0] + 33;
-    duty[2] = duty[1] + 33;
-    duty[3] = duty[2] + 33;
+    duty[1] = duty[0] + (255 / 4);
+    duty[2] = duty[1] + (255 / 4);
+    duty[3] = duty[2] + (255 / 4);
 
     for (ii = 0; ii < countof(pin); ++ii) {
         if (pin[ii] >= 0) {
@@ -148,8 +148,8 @@ int main(int argc, char * argv[])
         } else {
             if (!reverse) {
                 duty[0] += 1;
-                if (duty[0] > 100) {
-                    duty[0] = 99;
+                if (duty[0] > 255) {
+                    duty[0] = 254;
                     reverse = !0;
                 }
             } else {
@@ -159,9 +159,9 @@ int main(int argc, char * argv[])
                     break;
                 }
             }
-            duty[1] = (duty[0] + 33) % 101;
-            duty[2] = (duty[1] + 33) % 101;
-            duty[3] = (duty[2] + 33) % 101;
+            duty[1] = (duty[0] + (255 / 4)) % (255 + 1);
+            duty[2] = (duty[1] + (255 / 4)) % (255 + 1);
+            duty[3] = (duty[2] + (255 / 4)) % (255 + 1);
             for (ii = 0; ii < countof(pin); ++ii) {
                 if (pin[ii] >= 0) {
                     fprintf(stderr, "%s: setting %d %d\n", program, pin[ii], duty[ii]);

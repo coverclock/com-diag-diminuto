@@ -16,7 +16,7 @@
  * hardware text fixture I use to exercise a number of Diminuto functional
  * tests.
  *
- * The PWM modulator duty cycle ranges from 0 (off) to 100 (on).
+ * The PWM modulator duty cycle ranges from 0 (off) to 255 (on).
  *
  * The ADC output ranges functionally from approximately -6.14V to 6.14V,
  * and emperically with this test fixture from approximately -0.003V to
@@ -94,9 +94,9 @@ static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
 
 static const diminuto_controller_value_t PID_INPUT_WINDUP = 3300;
 static const diminuto_controller_output_t PID_OUTPUT_MINIMUM = 0;
-static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 100;
+static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 255;
 static const diminuto_controller_output_t PID_OUTPUT_LOWER = 0;
-static const diminuto_controller_output_t PID_OUTPUT_UPPER = 100;
+static const diminuto_controller_output_t PID_OUTPUT_UPPER = 255;
 static const diminuto_controller_factor_t PID_KP_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 10;
 static const diminuto_controller_factor_t PID_KI_NUMERATOR = 1;
@@ -108,11 +108,11 @@ static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 33;
 static const bool PID_FILTER = 0;
 
 /*
- * These are the beginning PWM duty cycle (OUTPUT) in percent [0..100],
+ * These are the beginning PWM duty cycle (OUTPUT) [0..255],
  * and the default ADC target value (INPUT) in millivolts [-6144..6144].
  */
 
-static const diminuto_controller_output_t PWM_DUTY = 50;
+static const diminuto_controller_output_t PWM_DUTY = 127;
 static const diminuto_controller_input_t TARGET_MILLIVOLTS = 2475;
 static const bool DEBUG = 0;
 
@@ -121,7 +121,7 @@ static const bool DEBUG = 0;
  * (Neither is allowed to be negative.)
  */
 
-static const diminuto_controller_output_t MAXIMUM_DUTY = 100;
+static const diminuto_controller_output_t MAXIMUM_DUTY = 255;
 static const diminuto_controller_input_t MAXIMUM_MILLIVOLTS = 6144;
 
 int main(int argc, char ** argv) {
@@ -282,7 +282,7 @@ int main(int argc, char ** argv) {
 
 
     /*
-     * Pulse width moddulator.
+     * Pulse width modulator.
      */
 
     mp = diminuto_modulator_init(&modulator, led, output);

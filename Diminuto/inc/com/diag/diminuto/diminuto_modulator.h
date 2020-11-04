@@ -14,7 +14,7 @@
  * The Modulator feature implements a pulse width modulation (PWM) generator
  * in software. By default controls a GPIO pin using the Diminuto pin feature,
  * but can be programmed to call a user-supplied function instead. The duty
- * cycle must be a value between 0 (fully off) and 100 (fully on). The duty
+ * cycle must be a value between 0 (fully off) and 255 (fully on). The duty
  * cycle can be modified as the PWM generator runs. Multiple PWM generators can
  * be active concurrently up to the limit of the CPU. Each generator runs a
  * thread-ish function every 100us (100000ns) i.e. 10000Hz. Has been
@@ -26,13 +26,6 @@
  * was necessary, I would use a microcontroller with a hardware PWM generator.
  * (I've used eight-bit Atmel AVR and Microchip PIC microcontrollers in this
  * role, but there are lots of other choices.)
- *
- * Important safety tip: I've worked with microcontrollers whose hardware
- * PWM generators had duty cycles in the range [0..255]. I thought about
- * implementing Modulator this way; it would have been easy. But using
- * the range [0..100] not only seems more intuitive (it's clearly a
- * percentage), but the value 100 yields more prime factors than 255,
- * which turns out to be useful in the implementation.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -78,7 +71,7 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = 0;
 /**
  * This is the largest duty cycle value.
  */
-static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 255;
 
 /**
  * Defines the structure containing the state of a PWM generator.
@@ -88,6 +81,7 @@ typedef struct DiminutoModulator {
     diminuto_condition_t condition;
     FILE * fp;
     int pin;
+    int error;
     bool state;
     diminuto_modulator_cycle_t duty;
     diminuto_modulator_cycle_t on;
@@ -101,10 +95,10 @@ typedef struct DiminutoModulator {
 
 /**
  * Initializes a modulator structure with the default function, a pin number,
- * and a duty cycle.
+ * and a duty cycle. A duty cycle of 0 is fully off, and 255 is fully on.
  * @param mp points to the modulator structure.
  * @param pin is the GPIO pin number.
- * @param duty is the initial duty cycle in the range [0..100].
+ * @param duty is the initial duty cycle in the range [0..255].
  * @return a pointer to the object for success, NULL if an error occurred.
  */
 extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
@@ -113,9 +107,10 @@ extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp,
  * Changes the duty cycle of a modulator. Can be called any time after
  * initialization and before finishing, including while the modulator
  * is running. The modulator will assume the new duty cycle after the current
- * complete cycle of 100 firings has completed.
+ * complete cycle of 255 firings has completed. A duty cycle of 0 is fully
+ * off, and 255 is fully on.
  * @param mp points to the modulator structure.
- * @param duty is the new duty cycle in the range [0..100].
+ * @param duty is the new duty cycle in the range [0..255].
  * @return 0 for success, <0 if an error occured.
  */
 extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty);
@@ -126,6 +121,20 @@ extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_
  * @return 0 for success, <0 if an error occured.
  */
 extern int diminuto_modulator_start(diminuto_modulator_t * mp);
+
+/**
+ * Return any error code produced during the execution of code in
+ * support of the modulator callback function (for example:
+ * a failure in a condition signal, or in pin control). This error
+ * field is cleared when the modulator is initialized, and again
+ * when it is started.
+ * @param tp points to the modulator object.
+ * @return an error code or zero if none.
+ */
+static inline int diminuto_modulator_error(const diminuto_modulator_t * mp)
+{
+    return mp->error;
+}
 
 /**
  * Stops a modulator. THis function blocks the caller until the

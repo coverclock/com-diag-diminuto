@@ -45,7 +45,7 @@
  *
  * One weird thing about my hardware test fixture: the ADPS 9301 sensor
  * does *not* measure the highest reading with the duty cycle of the LED
- * is 100%, where the LED is fully on and not modulated at all.. It's more
+ * is 100%, where the LED is fully on and not modulated at all. It's more
  * like 74%. Still trying to figure that one out.
  */
 
@@ -99,9 +99,9 @@ static const int OUTPUT_GPIO_PIN = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
 
 static const diminuto_controller_value_t PID_INPUT_WINDUP = 20000;
 static const diminuto_controller_output_t PID_OUTPUT_MINIMUM = 0;
-static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 100;
+static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 255;
 static const diminuto_controller_output_t PID_OUTPUT_LOWER = 0;
-static const diminuto_controller_output_t PID_OUTPUT_UPPER = 100;
+static const diminuto_controller_output_t PID_OUTPUT_UPPER = 255;
 static const diminuto_controller_factor_t PID_KP_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 4;
 static const diminuto_controller_factor_t PID_KI_NUMERATOR = 1;
@@ -113,11 +113,11 @@ static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 200;
 static const bool PID_FILTER = 0;
 
 /*
- * These are the beginning PWM duty cycle (OUTPUT) in percent [0..100],
+ * These are the beginning PWM duty cycle (OUTPUT) [0..255],
  * and the default sensor target value (INPUT) in decilux [0..19922].
  */
 
-static const diminuto_controller_output_t PWM_DUTY = 50;
+static const diminuto_controller_output_t PWM_DUTY = 127;
 static const diminuto_controller_input_t TARGET_DECILUX= 10000;
 static const bool DEBUG = 0;
 
@@ -126,7 +126,7 @@ static const bool DEBUG = 0;
  * (Neither is allowed to be negative.)
  */
 
-static const diminuto_controller_output_t MAXIMUM_DUTY = 100;
+static const diminuto_controller_output_t MAXIMUM_DUTY = 255;
 static const diminuto_controller_input_t MAXIMUM_DECILUX = 20000;
 
 int main(int argc, char ** argv) {

@@ -88,7 +88,7 @@ int main(int argc, char * argv[])
     assert(modulator.pin == pin);
     assert(modulator.fp != (FILE *)0);
     assert(modulator.duty == duty);
-    assert((100 % (modulator.ton + modulator.toff)) == 0);
+    assert((255 % (modulator.ton + modulator.toff)) == 0);
 
     /*
      * Start the modulator.

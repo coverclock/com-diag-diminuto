@@ -52,6 +52,7 @@ int main(int argc, char ** argv)
     const char * prior;
     char buffer[PATH_MAX];
     diminuto_modulator_t modulator;
+    int duty;
 
     SETLOGMASK();
 
@@ -86,28 +87,43 @@ int main(int argc, char ** argv)
     EXPECT(systemf("touch %s/class/gpio/gpio%u/edge", root, 99) == 0);
     EXPECT(systemf("touch %s/class/gpio/gpio%u/active_low", root, 99) == 0);
 
-    COMMENT("init");
-    ASSERT(diminuto_modulator_init(&modulator, 99, 50) == &modulator);
+    for (duty = 255; duty >= 0; --duty) {
+        ASSERT(diminuto_modulator_init(&modulator, 99, duty) == &modulator);
+        COMMENT("init duty %d on %u off %u sum %u mod %u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff));
+        ASSERT(modulator.duty == duty);
+        ASSERT(0 <= modulator.ton);
+        ASSERT(modulator.ton <= 255);
+        ASSERT(0 <= modulator.toff);
+        ASSERT(modulator.toff <= 255);
+        ASSERT(0 <= (modulator.ton + modulator.toff));
+        ASSERT((modulator.ton + modulator.toff) <= 255);
+        ASSERT((255 % (modulator.ton + modulator.toff)) == 0);
+    }
 
         COMMENT("start");
+        ASSERT(diminuto_modulator_error(&modulator) == 0);
         ASSERT(diminuto_modulator_start(&modulator) >= 0);
+        diminuto_delay(diminuto_frequency(), 0);
 
-            diminuto_delay(diminuto_frequency(), 0);
-
-            COMMENT("set");
-            ASSERT(diminuto_modulator_set(&modulator, 20) == 0);
-
-            diminuto_delay(diminuto_frequency(), 0);
-
-            COMMENT("set");
-            ASSERT(diminuto_modulator_set(&modulator, 60) == 0);
-
-            diminuto_delay(diminuto_frequency(), 0);
+            for (duty = 0; duty <= 255; ++duty) {
+                ASSERT(diminuto_modulator_set(&modulator, duty) == 0);
+                COMMENT("set duty %d on %u off %u sum %u mod %u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff));
+                ASSERT(modulator.duty == duty);
+                ASSERT(0 <= modulator.ton);
+                ASSERT(modulator.ton <= 255);
+                ASSERT(0 <= modulator.toff);
+                ASSERT(modulator.toff <= 255);
+                ASSERT(0 <= (modulator.ton + modulator.toff));
+                ASSERT((modulator.ton + modulator.toff) <= 255);
+                ASSERT((255 % (modulator.ton + modulator.toff)) == 0);
+                diminuto_delay(diminuto_frequency(), 0);
+            }
 
         COMMENT("stop");
         ASSERT(diminuto_modulator_stop(&modulator) >= 0);
+        ASSERT(diminuto_modulator_error(&modulator) == 0);
 
-   COMMENT("fini");
+    COMMENT("fini");
     ASSERT(diminuto_modulator_fini(&modulator) == (diminuto_modulator_t *)0);
 
     EXPECT(systemf("rm -rf %s", root) == 0);
