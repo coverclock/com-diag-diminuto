@@ -46,35 +46,6 @@ static int systemf(const char * format, ...)
     return rc;
 }
 
-/*
- * This function tries to give a score to how well the modulator
- * on and off cycles are likely to work.
- * It is better for the on and off cycles to be close in value.
- * It is better for the on and off cycles to be small in value.
- * 100% on or 100% off are special cases.
- * Small scores are better.
- */
-static unsigned int flicker(const diminuto_modulator_t * mp)
-{
-    double score;
-    if (mp->toff == 0) {
-        score = 0.0;
-    } else if (mp->ton == 0) {
-        score = 0.0;
-    } else {
-        double accum;
-        accum = abs(mp->toff - mp->ton);
-        accum /= 255.0;
-        score = accum;
-        accum = abs(mp->toff + mp->ton);
-        accum /= 255.0;
-        score += accum;
-        score /= 2.0;
-        score *= 100.0;
-    }
-    return (unsigned int)score;
-}
-
 int main(int argc, char ** argv)
 {
     const char * root;
@@ -82,6 +53,7 @@ int main(int argc, char ** argv)
     char buffer[PATH_MAX];
     diminuto_modulator_t modulator;
     int duty;
+    unsigned int flicker;
 
     SETLOGMASK();
 
@@ -118,7 +90,10 @@ int main(int argc, char ** argv)
 
     for (duty = 255; duty >= 0; --duty) {
         ASSERT(diminuto_modulator_init(&modulator, 99, duty) == &modulator);
-        COMMENT("init duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker(&modulator));
+        flicker = diminuto_modulator_flicker(&modulator);
+        ASSERT(0 <= flicker);
+        ASSERT(flicker <= 100);
+        COMMENT("init duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
         ASSERT(modulator.duty == duty);
         ASSERT(0 <= modulator.ton);
         ASSERT(modulator.ton <= 255);
@@ -139,7 +114,10 @@ int main(int argc, char ** argv)
 
             for (duty = 0; duty <= 255; ++duty) {
                 ASSERT(diminuto_modulator_set(&modulator, duty) == 0);
-                COMMENT("set duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker(&modulator));
+                flicker = diminuto_modulator_flicker(&modulator);
+                ASSERT(0 <= flicker);
+                ASSERT(flicker <= 100);
+                COMMENT("set duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
                 ASSERT(0 <= modulator.ton);
                 ASSERT(modulator.ton <= 255);
                 ASSERT(0 <= modulator.toff);

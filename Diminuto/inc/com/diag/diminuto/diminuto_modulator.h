@@ -122,6 +122,19 @@ extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp,
  */
 extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty);
 
+/*
+ * This function tries to give a score to how well the modulator
+ * on and off cycles are likely to work by computing a "flicker"
+ * value between 0 and 100. SMALL scores are better. It uses
+ * the transitional variables set by the set function.
+ * It is better for the on and off cycles to be close in value.
+ * It is better for the on and off cycles to be small in value.
+ * 100% on or 100% off are special cases with perfect scores.
+ * @param mp points to the modulator structure.
+ * @return a flicker score between 0 (best) and 100 (worst).
+ */
+extern unsigned int diminuto_modulator_flicker(const diminuto_modulator_t * mp);
+
 /**
  * Starts a modulator.
  * @param mp points to the modulator structure.

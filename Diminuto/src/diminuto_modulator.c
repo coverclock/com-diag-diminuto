@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty)
 {
@@ -92,6 +93,27 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     DIMINUTO_CONDITION_END;
 
     return rc;
+}
+
+unsigned int diminuto_modulator_flicker(const diminuto_modulator_t * mp)
+{
+    double score;
+    if (mp->toff == 0) {
+        score = 0.0;
+    } else if (mp->ton == 0) {
+        score = 0.0;
+    } else {
+        double accum;
+        accum = abs(mp->toff - mp->ton);
+        accum /= 255.0;
+        score = accum;
+        accum = abs(mp->toff + mp->ton);
+        accum /= 255.0;
+        score += accum;
+        score /= 2.0;
+        score *= 100.0;
+    }
+    return (unsigned int)score;
 }
 
 static void * callback(void * vp)
