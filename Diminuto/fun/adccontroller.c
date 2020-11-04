@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is part of the Modulator and Controller functional test using the ADC.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -98,11 +98,11 @@ static const diminuto_controller_output_t PID_OUTPUT_MAXIMUM = 255;
 static const diminuto_controller_output_t PID_OUTPUT_LOWER = 0;
 static const diminuto_controller_output_t PID_OUTPUT_UPPER = 255;
 static const diminuto_controller_factor_t PID_KP_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 8;
+static const diminuto_controller_factor_t PID_KP_DENOMINATOR = 16;
 static const diminuto_controller_factor_t PID_KI_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KI_DENOMINATOR = 8;
+static const diminuto_controller_factor_t PID_KI_DENOMINATOR = 16;
 static const diminuto_controller_factor_t PID_KD_NUMERATOR = 1;
-static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 8;
+static const diminuto_controller_factor_t PID_KD_DENOMINATOR = 16;
 static const diminuto_controller_factor_t PID_KC_NUMERATOR = 1;
 static const diminuto_controller_factor_t PID_KC_DENOMINATOR = 3300 / 256;
 static const bool PID_FILTER = 0;
