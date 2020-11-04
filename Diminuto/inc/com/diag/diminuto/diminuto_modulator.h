@@ -19,9 +19,13 @@
  * be active concurrently up to the limit of the CPU. Each generator runs a
  * thread-ish function every 100us (100000ns) i.e. 10000Hz. Has been
  * successfully run on a HW test fixture controlling four LEDs simultaneously.
+ *
  * No guarantees as to jitter, equivalent output voltage, or how it scales as
  * generators are added. See the functional test bin/pwmrheostat.c for a
- * working example.
+ * working example. If I were building a product where accurate PWM control
+ * was necessary, I would use a microcontroller with a hardware PWM generator.
+ * (I've used eight-bit Atmel AVR and Microchip PIC microcontrollers in this
+ * role, but there are lots of other choices.)
  *
  * Important safety tip: I've worked with microcontrollers whose hardware
  * PWM generators had duty cycles in the range [0..255]. I thought about
@@ -72,7 +76,7 @@ typedef uint8_t diminuto_modulator_cycle_t;
 static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = 0;
 
 /**
- * This is the largest uty cycle value.
+ * This is the largest duty cycle value.
  */
 static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 100;
 
