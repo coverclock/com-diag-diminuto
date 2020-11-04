@@ -28,11 +28,6 @@
  * where accurate PWM control was necessary, I would use a microcontroller with
  * a hardware PWM generator. I've successfully used eight-bit Atmel AVR and
  * Microchip PIC parts in this capacity, but there are lots of other choices.
- *
- * The Diminuto sav directory has an open source clean room re-implementaton of
- * an algorithm for a PID controller for PWM control that I've successful used in
- * a tiny PIC microcontroller with no multiplication or division (much less
- * floating point).
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
