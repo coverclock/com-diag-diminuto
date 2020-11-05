@@ -919,6 +919,7 @@ sanity:
 	unittest-countof
 	unittest-criticalsection
 	unittest-cue
+	make -C cxx clean run
 	unittest-daemon
 	unittest-datum
 	unittest-dump
@@ -939,7 +940,6 @@ sanity:
 	unittest-lock
 	unittest-log
 	unittest-memory
-	unittest-modulator
 	unittest-mutex
 	unittest-mux4 quick
 	unittest-number
@@ -988,6 +988,7 @@ extended:
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
+	unittest-modulator
 	unittest-mux4 || true # Temporary
 	unittest-mux6
 	unittest-mux-eventloop

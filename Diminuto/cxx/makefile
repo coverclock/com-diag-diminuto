@@ -20,13 +20,16 @@
 #  M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
 #
 
-all:	thing
+all:	unittest-cxxcapi
 
-thing:	thingc.o ../out/host/lib/libdiminuto.so
-	g++ -o thing -I . -I ../inc Thing.cpp thingc.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
+unittest-cxxcapi:	thingc.o ../out/host/lib/libdiminuto.so
+	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cpp thingc.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
 
 thingc.o:	thingc.c
 	gcc -o thingc.o -I . -I ../inc -c thingc.c
 
 clean:
-	rm -f thingc.o thing
+	rm -f thingc.o unittest-cxxcapi
+
+run:	unittest-cxxcapi
+	./unittest-cxxcapi

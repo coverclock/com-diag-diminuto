@@ -9,6 +9,7 @@
 #include "Thing.hpp"
 
 #include "com/diag/diminuto/diminuto_begin.h"
+#   include "com/diag/diminuto/diminuto_unittest.h"
 #   include "com/diag/diminuto/diminuto_log.h"
 #   include "thingc.h"
 #include "com/diag/diminuto/diminuto_end.h"
@@ -25,16 +26,25 @@ CXXCAPI int thing_log(Thing * that) { return thing_get(that)->log(); }
 
 int main(void)
 {
+    int result = -1;
+
+    TEST();
 
     Thing thing(0xdeadbeef);
 
-    thing.log();
+    result = thing.log();
+    EXPECT(result == 0xdeadbeef);
 
     thing.set(0xc0edbabe);
 
-    thing.log();
+    result = thing.log();
+    EXPECT(result == 0xc0edbabe);
 
-    int result = logc(&thing);
-
+    result = logc(&thing);
     DIMINUTO_LOG_NOTICE("result=0x%x\n", result);
+    EXPECT(result == 0xc0edbabe);
+
+    STATUS();
+
+    EXIT();
 }
