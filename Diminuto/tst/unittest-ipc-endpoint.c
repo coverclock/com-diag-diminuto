@@ -136,7 +136,6 @@ int main(int argc, char * argv[])
         EXPECT(rc == 0);
         DISPLAY;
         VERIFYINET(&parse, unspecified4, unspecified6, port, port);
-
         STATUS();
     }
 
