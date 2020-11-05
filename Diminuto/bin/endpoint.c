@@ -57,7 +57,7 @@ int main(int argc, char **argv)
             buffer[sizeof(buffer) - 1] = '\0';
             printf("endpoint \"%s\" type %s ipv4 %s ipv6 %s tcp %d udp %d path \"%s\"\n",
                 argv[ii],
-                (endpoint.type == AF_INET) ? "AF_INET" : (endpoint.type == AF_UNIX) ? "AF_UNIX" : buffer,
+                (endpoint.type == AF_INET) ? "AF_INET" : (endpoint.type == AF_INET6) ? "AF_INET6" : (endpoint.type == AF_UNIX) ? "AF_UNIX" : buffer,
                 diminuto_ipc4_address2string(endpoint.ipv4, ipv4buffer, sizeof(ipv4buffer)),
                 diminuto_ipc6_address2string(endpoint.ipv6, ipv6buffer, sizeof(ipv6buffer)),
                 endpoint.tcp, endpoint.udp,

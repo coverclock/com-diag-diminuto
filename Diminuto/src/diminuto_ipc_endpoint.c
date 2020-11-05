@@ -323,14 +323,11 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         if (fqdn != (char *)0) {
-            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(fqdn);
             endpoint->ipv6 = diminuto_ipc6_address(fqdn);
         } else if (ipv4 != (char *)0) {
-            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(ipv4);
         } else if (ipv6 != (char *)0) {
-            endpoint->type = AF_INET;
             endpoint->ipv6 = diminuto_ipc6_address(ipv6);
         } else {
             /* Do nothing. */
@@ -352,32 +349,42 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (name == (char *)0) {
             /* Do nothing. */
         } else {
-            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(name);
             endpoint->ipv6 = diminuto_ipc6_address(name);
             if (service != (char *)0) {
                 /* Do nothing. */
             } else if (port != (char *)0) {
                 /* Do nothing. */
-            } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
-                /* Do nothing. */
             } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
                 /* Do nothing. */
+            } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+                /* Do nothing. */
             } else {
-                endpoint->type = AF_INET;
                 endpoint->tcp = diminuto_ipc_port(name, "tcp");
                 endpoint->udp = diminuto_ipc_port(name, "udp");
             }
         }
 
         if (service != (char *)0) {
-            endpoint->type = AF_INET;
             endpoint->tcp = diminuto_ipc_port(service, "tcp");
             endpoint->udp = diminuto_ipc_port(service, "udp");
         } else if (port != (char *)0) {
-            endpoint->type = AF_INET;
             endpoint->tcp = atoi(port);
             endpoint->udp = endpoint->tcp;
+        } else {
+            /* Do nothing. */
+        }
+
+        if (endpoint->path != (const char *)0) {
+            endpoint->type = AF_UNIX;
+        } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+            endpoint->type = AF_INET6;
+        } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+            endpoint->type = AF_INET;
+        } else if (endpoint->tcp != 0) {
+            endpoint->type = AF_INET;
+        } else if (endpoint->udp != 0) {
+            endpoint->type = AF_INET;
         } else {
             /* Do nothing. */
         }
