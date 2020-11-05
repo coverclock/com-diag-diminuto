@@ -139,8 +139,13 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     mark = here;
                     here += 1;
                     state = S_LETTER;
+                } else if (*here == '\0') {
+                    mark = here;
+                    state = S_STOP;
+                    rc = 0;
                 } else {
                     mark = here;
+                    here += 1;
                     state = S_PATH;
                 }
                 break;
@@ -446,7 +451,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * caller can always check the IPv4 address field explicitly.
          * If just an IPv4 address resolved, the type is AF_INET4.
          * In either case, there may be a port, and that port could
-         * have resolved to be either TCP or UDP or both.
+         * have resolved to be either TCP or UDP or both. Finally,
+         * ephemeral ports are a special case where everything is zero
+         * but the parser succeeded; examples: "[::]", "0.0.0.0", "0".
          */
 
         if (endpoint->path != (char *)0) {
@@ -459,8 +466,14 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             endpoint->type = AF_INET;
         } else if (endpoint->udp != 0) {
             endpoint->type = AF_INET;
-        } else {
+        } else if (fqdn != (char *)0) {
             /* Do nothing. */
+        } else if (service != (char *)0) {
+            /* Do nothing. */
+        } else if (rc < 0) {
+            /* Do nothing. */
+        } else {
+            endpoint->type = AF_INET;
         }
 
     } while (0);

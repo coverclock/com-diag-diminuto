@@ -22,6 +22,7 @@
 #define IPV6 "2607:f8b0:400f:805::200e"
 #define SERVICE "http"
 #define PORT "80"
+#define UNIX "unix-domain.sock"
 
 #define VERIFYINET(_POINTER_, _IPV4_, _IPV6_, _TCP_, _UDP_) \
     { \
@@ -30,8 +31,19 @@
         EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &(_IPV6_)) == 0); \
         EXPECT(_pp_->tcp == (_TCP_)); \
         EXPECT(_pp_->udp == (_UDP_)); \
-        EXPECT(((diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) && (_pp_->type == AF_INET6)) || ((diminuto_ipc4_compare(&(_pp_->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) && (_pp_->type == AF_INET)) || ((_pp_->tcp != 0) && (_pp_->type == AF_INET)) || ((_pp_->udp != 0) && (_pp_->type == AF_INET)) || (_pp_->type == AF_UNSPEC)); \
         EXPECT(_pp_->path == (const char *)0); \
+        EXPECT(((diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) && (_pp_->type == AF_INET6)) || ((diminuto_ipc4_compare(&(_pp_->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) && (_pp_->type == AF_INET)) || ((_pp_->tcp != 0) && (_pp_->type == AF_INET)) || ((_pp_->udp != 0) && (_pp_->type == AF_INET)) || (_pp_->type == AF_INET)); \
+    }
+
+#define VERIFYUNIX(_POINTER_, _PATH_) \
+    { \
+        const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
+        EXPECT(diminuto_ipc4_compare(&(_pp_->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) == 0); \
+        EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) == 0); \
+        EXPECT(_pp_->tcp == 0); \
+        EXPECT(_pp_->udp == 0); \
+        EXPECT(strcmp(_pp_->path, (_PATH_)) == 0); \
+        EXPECT(_pp_->type == AF_UNIX); \
     }
 
 int main(int argc, char * argv[])
@@ -58,6 +70,7 @@ int main(int argc, char * argv[])
     COMMENT("IPV6=\"%s\"\n", IPV6);
     COMMENT("SERVICE=\"%s\"\n", SERVICE);
     COMMENT("PORT=\"%s\"\n", PORT);
+    COMMENT("UNIX=\"%s\"\n", UNIX);
 
     unspecified4 = DIMINUTO_IPC4_UNSPECIFIED;
     unspecified6 = DIMINUTO_IPC6_UNSPECIFIED;
@@ -344,6 +357,66 @@ int main(int argc, char * argv[])
         int rc;
 
         TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "0", &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYINET(&parse, unspecified4, unspecified6, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0", &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYINET(&parse, unspecified4, unspecified6, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:0", &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYINET(&parse, unspecified4, unspecified6, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "", &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYINET(&parse, unspecified4, unspecified6, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]", &parse);
         EXPECT(rc == 0);
         COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
@@ -412,13 +485,13 @@ int main(int argc, char * argv[])
     }
 
     {
-        TEST();
         char * endpoint;
         diminuto_ipv4_buffer_t ipv4buffer;
         diminuto_ipv6_buffer_t ipv6buffer;
         diminuto_ipc_endpoint_t parse;
         int rc;
 
+        TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:" SERVICE, &parse);
         EXPECT(rc == 0);
         COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
@@ -426,6 +499,125 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "/" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "./" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "../" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "/run/" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "./run/" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "../run/" UNIX, &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        char * endpoint;
+        diminuto_ipv4_buffer_t ipv4buffer;
+        diminuto_ipv6_buffer_t ipv6buffer;
+        diminuto_ipc_endpoint_t parse;
+        int rc;
+
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "I-hope-this-os-an-unresolvable-domain-name.com", &parse);
+        EXPECT(rc == 0);
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path);
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
 
     EXIT();
 }
