@@ -28,6 +28,8 @@ unittest-cxxcapi:	thingc.o ../out/host/lib/libdiminuto.so
 thingc.o:	thingc.c
 	gcc -o thingc.o -I . -I ../inc -c thingc.c
 
+.PHONY:	clean run 
+
 clean:
 	rm -f thingc.o unittest-cxxcapi
 

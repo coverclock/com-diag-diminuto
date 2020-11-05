@@ -919,7 +919,7 @@ sanity:
 	unittest-countof
 	unittest-criticalsection
 	unittest-cue
-	make -C cxx clean run
+	make -C cxx all run clean
 	unittest-daemon
 	unittest-datum
 	unittest-dump
