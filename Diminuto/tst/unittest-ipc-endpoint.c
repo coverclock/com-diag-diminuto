@@ -30,8 +30,8 @@
         EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &(_IPV6_)) == 0); \
         EXPECT(_pp_->tcp == (_TCP_)); \
         EXPECT(_pp_->udp == (_UDP_)); \
-        EXPECT(_pp_->path == (const char *)0); \
         EXPECT(((diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) && (_pp_->type == AF_INET6)) || ((diminuto_ipc4_compare(&(_pp_->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) && (_pp_->type == AF_INET)) || ((_pp_->tcp != 0) && (_pp_->type == AF_INET)) || ((_pp_->udp != 0) && (_pp_->type == AF_INET)) || (_pp_->type == AF_UNSPEC)); \
+        EXPECT(_pp_->path == (const char *)0); \
     }
 
 int main(int argc, char * argv[])
