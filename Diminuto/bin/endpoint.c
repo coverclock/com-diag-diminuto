@@ -63,7 +63,7 @@ int main(int argc, char **argv)
                 endpoint.tcp, endpoint.udp,
                 (endpoint.path == (const char *)0) ? "" : endpoint.path);
         } else {
-            printf("endpoint %s\n", argv[ii]);
+            printf("endpoint \"%s\"\n", argv[ii]);
         }
 
     }

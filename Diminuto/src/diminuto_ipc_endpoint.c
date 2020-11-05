@@ -63,8 +63,9 @@ static inline const char * ps(const char * str)
  * [2607:f8b0:400f:805::200e]
  * [2607:f8b0:400f:805::200e]:80
  * [2607:f8b0:400f:805::200e]:http
- * ./unixdomain.sock
- * /tmp/unixdomain.sock
+ * ./path
+ * /tmp/path
+ * home/sock/path
  */
 
 typedef enum State {
@@ -78,7 +79,9 @@ typedef enum State {
     S_PORT		= 'P',
     S_FQDN		= 'D',
     S_SERVICE	= 'S',
-    S_NEXT		= '-',
+    S_HYPHEN    = '-',
+    S_NEXT		= 'X',
+    S_PATH      = 'U',
     S_STOP		= '>',
 } state_t;
 
@@ -94,6 +97,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * ipv6 = (char *)0;
     char * port = (char *)0;
     char * service = (char *)0;
+    char * path = (char *)0;
     char buffer[PATH_MAX] = { '\0', };
 
     endpoint->type = AF_UNSPEC;
@@ -136,7 +140,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     here += 1;
                     state = S_LETTER;
                 } else {
-                    state = S_STOP;
+                    mark = here;
+                    state = S_PATH;
                 }
                 break;
 
@@ -152,6 +157,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else if ((('a' <= *here) && (*here <= 'z')) || (('A' <= *here) && (*here <= 'Z'))) {
                     here += 1;
                     state = S_LETTER;
+                } else if (*here == '/') {
+                    state = S_PATH;
                 } else if (*here == '\0') {
                     port = mark;
                     state = S_STOP;
@@ -202,6 +209,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     here += 1;
                 } else if ((('a' <= *here) && (*here <= 'z')) || (('A' <= *here) && (*here <= 'Z'))) {
                     here += 1;
+                } else if (*here == '/') {
+                    state = S_PATH;
                 } else if (*here == '\0') {
                     name = mark;
                     state = S_STOP;
@@ -224,6 +233,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     *(here++) = '\0';
                     fqdn = mark;
                     state = S_COLON;
+                } else if (*here == '/') {
+                    state = S_PATH;
                 } else if (*here == '\0') {
                     fqdn = mark;
                     state = S_STOP;
@@ -306,6 +317,16 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 }
                 break;
 
+            case S_PATH:
+                if (*here == '\0') {
+                    path = mark;
+                    state = S_STOP;
+                    rc = 0;
+                } else {
+                    here += 1;
+                }
+                break;
+
             default:
                 state = S_STOP;
                 break;
@@ -319,8 +340,17 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         if (debug) {
-            DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" rc=%d\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), rc);
+            DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\" rc=%d\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path), rc);
         }
+
+        /*
+         * If the endpoint included a FQDN, we resolve the addresses
+         * (there may be both an IPv4 and an IPv6 address) using the
+         * usual DNS mechanism. This can take awhile (seconds; the latency
+         * is often noticable, particularly on the initial call when the
+         * underlying glibc DNS infrastructure initializes), or may
+         * fail altogether.
+         */
 
         if (fqdn != (char *)0) {
             endpoint->ipv4 = diminuto_ipc4_address(fqdn);
@@ -375,7 +405,51 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             /* Do nothing. */
         }
 
-        if (endpoint->path != (const char *)0) {
+        /*
+         * If the endpoint is a pathname for a UNIX domain socket, then we
+         * must pass back a pointer into the original string that the caller
+         * passed into us, not into the temporary buffer that we allocated
+         * on the stack for parsing. So we compute the offset from the
+         * beginning of our buffer and add it to the pointer to the string.
+         * There is no requirement that a UNIX domain socket actually exists
+         * with that path, just as there is no requirement for IPv4 or IPv6
+         * addresses that such a host exists at that address. (There is a
+         * requirement however that any FQDN resolves to an IPv4 or IPv6
+         * address, although that address may not be reachable.) Since
+         * file system paths can be just about anything, if an FQDN did not
+         * did not resolve, we assume it was a UNIX domain socket path name.
+         * This allows, unfortunately, for a great deal of ambiguity. For
+         * example, a port number or service name could also be a path name.
+         */
+
+        if (path != (char *)0) {
+            endpoint->path = string + (path - buffer);
+        } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+            /* Do nothing. */
+        } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+            /* Do nothing. */
+        } else if (endpoint->tcp != 0) {
+            /* Do nothing. */
+        } else if (endpoint->udp != 0) {
+            /* Do nothing. */
+        } else if (fqdn != (char *)0) {
+            endpoint->path = string + (fqdn - buffer);
+        } else {
+            /* Do nothing. */
+        }
+
+        /*
+         * Now we finally figure out what kind of IPC connection we
+         * have. If the endpoint included a FQDN, there may be both
+         * an IPv4 and an IPv6 address resolved for it; in that case
+         * the type is AF_INET6 (which reflects my own bias). The
+         * caller can always check the IPv4 address field explicitly.
+         * If just an IPv4 address resolved, the type is AF_INET4.
+         * In either case, there may be a port, and that port could
+         * have resolved to be either TCP or UDP or both.
+         */
+
+        if (endpoint->path != (char *)0) {
             endpoint->type = AF_UNIX;
         } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
             endpoint->type = AF_INET6;
@@ -390,6 +464,10 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
     } while (0);
+
+    /*
+     * We return success in all but the most difficult of circumstances.
+     */
 
     return rc;
 }

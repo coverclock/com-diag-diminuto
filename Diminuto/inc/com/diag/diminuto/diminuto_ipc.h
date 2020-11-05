@@ -260,7 +260,10 @@ extern char ** diminuto_ipc_interfaces(void);
  * This type defines the structure that is populated when an endpoint string
  * is parsed. The parser (such as it is) tries to fill in all of the fields.
  * For example, it is possible that a fully qualified domain name will have
- * both IPv4 and IPv6 addresses. Fields that are not used will be zero.
+ * both IPv4 and IPv6 addresses, in this case, the type will be AF_INET6,
+ * and the application can always check for a non-zero IPv4 address if that
+ * is its preference. If the path field is non-NULL, it will point into the
+ * original endpoint string. Fields that are not used will be zero (NULL).
  */
 typedef struct DiminutoIpcEndpoint {
     int type;
@@ -277,7 +280,7 @@ typedef struct DiminutoIpcEndpoint {
  * string, or service name, into a usable IPv4 or IPv6 binary address and a
  * binary port number. Here are some examples: "80", ":80", ":http",
  * "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
- * "[::ffff:172.217.1.206]:80", and "[2607:f8b0:400f:805::200e]:80".
+ * "[::ffff:172.217.1.206]:80", "[2607:f8b0:400f:805::200e]:80", "/tmp/unix.sock".
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
  * @return 0 if no really obvious syntax errors were encountered, <0 otherwise.
