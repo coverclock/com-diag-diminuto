@@ -18,6 +18,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include <sys/socket.h> /* For AF_UNIX, AF_INET, etc. */
 
 /**
  * Defines the prototype of a function used for dependency injection.
@@ -262,10 +263,12 @@ extern char ** diminuto_ipc_interfaces(void);
  * both IPv4 and IPv6 addresses. Fields that are not used will be zero.
  */
 typedef struct DiminutoIpcEndpoint {
+    int type;
     diminuto_ipv4_t ipv4;
     diminuto_ipv6_t ipv6;
     diminuto_port_t tcp;
     diminuto_port_t udp;
+    const char * path;
 } diminuto_ipc_endpoint_t;
 
 /**

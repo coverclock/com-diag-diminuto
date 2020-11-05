@@ -37,6 +37,7 @@ int main(int argc, char **argv)
     diminuto_ipc_endpoint_t endpoint;
     diminuto_ipv4_buffer_t ipv4buffer;
     diminuto_ipv6_buffer_t ipv6buffer;
+    char buffer[(sizeof(int) * 3)];
     extern int diminuto_ipc_endpoint_debug(int);
 
     diminuto_log_setmask();
@@ -52,7 +53,15 @@ int main(int argc, char **argv)
         } else if (strcmp(argv[ii], "-D") == 0) {
             (void)diminuto_ipc_endpoint_debug(0);
         } else if (diminuto_ipc_endpoint(argv[ii], &endpoint) >= 0) {
-            printf("endpoint %s ipv4 %s ipv6 %s tcp %d udp %d\n", argv[ii], diminuto_ipc4_address2string(endpoint.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(endpoint.ipv6, ipv6buffer, sizeof(ipv6buffer)), endpoint.tcp, endpoint.udp);
+            snprintf(buffer, sizeof(buffer), "%d", endpoint.type);
+            buffer[sizeof(buffer) - 1] = '\0';
+            printf("endpoint \"%s\" type %s ipv4 %s ipv6 %s tcp %d udp %d path \"%s\"\n",
+                argv[ii],
+                (endpoint.type == AF_INET) ? "AF_INET" : (endpoint.type == AF_UNIX) ? "AF_UNIX" : buffer,
+                diminuto_ipc4_address2string(endpoint.ipv4, ipv4buffer, sizeof(ipv4buffer)),
+                diminuto_ipc6_address2string(endpoint.ipv6, ipv6buffer, sizeof(ipv6buffer)),
+                endpoint.tcp, endpoint.udp,
+                (endpoint.path == (const char *)0) ? "" : endpoint.path);
         } else {
             printf("endpoint %s\n", argv[ii]);
         }

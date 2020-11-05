@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sys/param.h>
 
 static int debug = 0;
 
@@ -62,6 +63,8 @@ static inline const char * ps(const char * str)
  * [2607:f8b0:400f:805::200e]
  * [2607:f8b0:400f:805::200e]:80
  * [2607:f8b0:400f:805::200e]:http
+ * ./unixdomain.sock
+ * /tmp/unixdomain.sock
  */
 
 typedef enum State {
@@ -83,7 +86,6 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 {
     int rc = -1;
     state_t state = S_START;
-    char * buffer = (char *)0;
     char * here = (char *)0;
     char * mark = (char *)0;
     char * name = (char *)0;
@@ -92,17 +94,20 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * ipv6 = (char *)0;
     char * port = (char *)0;
     char * service = (char *)0;
+    char buffer[PATH_MAX] = { '\0', };
 
+    endpoint->type = AF_UNSPEC;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
     memcpy(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(endpoint->ipv6));
     endpoint->tcp = 0;
     endpoint->udp = 0;
+    endpoint->path = (const char *)0;
 
     do {
 
-        buffer = strdup(string);
-        if (buffer == (char *)0) { break; }
-        here = buffer;
+        (void)strncpy(buffer, string, sizeof(buffer));
+        if (buffer[sizeof(buffer) - 1] != '\0') { break; }
+        here = &(buffer[0]);
 
         do {
 
@@ -318,11 +323,14 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         if (fqdn != (char *)0) {
+            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(fqdn);
             endpoint->ipv6 = diminuto_ipc6_address(fqdn);
         } else if (ipv4 != (char *)0) {
+            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(ipv4);
         } else if (ipv6 != (char *)0) {
+            endpoint->type = AF_INET;
             endpoint->ipv6 = diminuto_ipc6_address(ipv6);
         } else {
             /* Do nothing. */
@@ -344,6 +352,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (name == (char *)0) {
             /* Do nothing. */
         } else {
+            endpoint->type = AF_INET;
             endpoint->ipv4 = diminuto_ipc4_address(name);
             endpoint->ipv6 = diminuto_ipc6_address(name);
             if (service != (char *)0) {
@@ -355,15 +364,18 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
                 /* Do nothing. */
             } else {
+                endpoint->type = AF_INET;
                 endpoint->tcp = diminuto_ipc_port(name, "tcp");
                 endpoint->udp = diminuto_ipc_port(name, "udp");
             }
         }
 
         if (service != (char *)0) {
+            endpoint->type = AF_INET;
             endpoint->tcp = diminuto_ipc_port(service, "tcp");
             endpoint->udp = diminuto_ipc_port(service, "udp");
         } else if (port != (char *)0) {
+            endpoint->type = AF_INET;
             endpoint->tcp = atoi(port);
             endpoint->udp = endpoint->tcp;
         } else {
@@ -371,10 +383,6 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
     } while (0);
-
-    if (buffer != (char *)0) {
-        free(buffer);
-    }
 
     return rc;
 }
