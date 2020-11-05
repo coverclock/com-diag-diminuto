@@ -31,8 +31,34 @@
         diminuto_ipc_endpoint_t parse; \
         int rc \
 
+static const char * type2string(int type)
+{
+    static char buffer[sizeof(int) * 3];
+    const char * result = "invalid";
+    switch (type) {
+    case AF_UNSPEC: result = "AF_UNSPEC";   break;
+    case AF_INET:   result = "AF_INET";     break;
+    case AF_INET6:  result = "AF_INET6";    break;
+    case AF_UNIX:   result = "AF_UNIX";     break;
+    default:
+        snprintf(buffer, sizeof(buffer), "%d", type);
+        buffer[sizeof(buffer) - 1] = '\0';
+        result = buffer;
+        break;
+    }
+    return result;
+}
+
 #define DISPLAY \
-        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", endpoint, (parse.type == AF_INET) ? "AF_INET" : (parse.type == AF_INET6) ? "AF_INET6" : (parse.type == AF_UNIX) ? "AF_UNIX" : "?", diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), parse.tcp, parse.udp, (parse.path == (const char *)0) ? "" : parse.path)
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d path=\"%s\"\n", \
+            endpoint, \
+            type2string(parse.type), \
+            diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), \
+            diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), \
+            parse.tcp, \
+            parse.udp, \
+            (parse.path == (const char *)0) ? "" : parse.path \
+        )
 
 #define VERIFYINET(_POINTER_, _IPV4_, _IPV6_, _TCP_, _UDP_) \
     do { \
