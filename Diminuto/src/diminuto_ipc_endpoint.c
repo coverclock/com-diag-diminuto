@@ -110,7 +110,6 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     diminuto_path_buffer_t local = { '\0', };
     bool is_ipv4 = false;
     bool is_ipv6 = false;
-    bool error = false;
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
@@ -371,17 +370,39 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         /*
+         * If (rc < 0) at this point, our simple little parser
+         * found a yntax error, even it recognized it. No
+         * point in continuing.
+         */
+
+        if (rc < 0) {
+            errno = EINVAL;
+            diminuto_perror(string);
+            return rc;
+        }
+
+        /*
          * If the endpoint included a FQDN, we resolve the addresses
          * (there may be both an IPv4 and an IPv6 address) using the
          * usual DNS mechanism. This can take awhile (seconds; the latency
          * is often noticable, particularly on the initial call when the
          * underlying glibc DNS infrastructure initializes), or may
-         * fail altogether.
+         * fail altogether. For this not to be an error, the FQDN must
+         * must resolve to at least one of the IPv4 or IPv6 addresses.
          */
 
         if (fqdn != (char *)0) {
             endpoint->ipv4 = diminuto_ipc4_address(fqdn);
             endpoint->ipv6 = diminuto_ipc6_address(fqdn);
+            if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+                /* Do nothing. */
+            } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+                /* Do nothing. */
+            } else {
+                errno = EINVAL;
+                diminuto_perror(string);
+                rc = -2;
+            }
         } else if (ipv4 != (char *)0) {
             endpoint->ipv4 = diminuto_ipc4_address(ipv4);
         } else if (ipv6 != (char *)0) {
@@ -420,8 +441,14 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else {
                 endpoint->tcp = diminuto_ipc_port(name, "tcp");
                 endpoint->udp = diminuto_ipc_port(name, "udp");
-                if ((endpoint->tcp == 0) && (endpoint->udp == 0)) {
-                    error = true;
+                if (endpoint->tcp != 0) {
+                    /* Do nothing. */
+                } else if (endpoint->udp != 0) {
+                    /* Do nothing. */
+                } else {
+                    errno = EINVAL;
+                    diminuto_perror(string);
+                    rc = -3;
                 }
             }
         }
@@ -436,8 +463,14 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         if (service != (char *)0) {
             endpoint->tcp = diminuto_ipc_port(service, "tcp");
             endpoint->udp = diminuto_ipc_port(service, "udp");
-            if ((endpoint->tcp == 0) && (endpoint->udp == 0)) {
-                error = true;
+            if (endpoint->tcp != 0) {
+                /* Do nothing. */
+            } else if  (endpoint->udp != 0) {
+                /* Do nothing. */
+            } else {
+                errno = EINVAL;
+                diminuto_perror(string);
+                rc = -4;
             }
         } else if (port != (char *)0) {
             endpoint->tcp = atoi(port);
@@ -469,7 +502,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             if ((file = strrchr(path, '/')) == (char *)0) {
                 errno = EINVAL;
                 diminuto_perror(path);
-                error = true;
+                rc = -5;
                 break;
             }
 
@@ -479,7 +512,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
                 if (realpath(path, local) == (char *)0) {
                     diminuto_perror(path);
-                    error = true;
+                    rc = -6;
                     break;
                 }
 
@@ -488,7 +521,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 if ((strlen(local) + 1 /* '/' */ + strlen(file) + 1 /* '\0' */) > sizeof(endpoint->local)) {
                     errno = EINVAL;
                     diminuto_perror(path);
-                    error = true;
+                    rc = -7;
                     break;  
                 }
 
@@ -501,7 +534,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 if ((strlen(path) + 1 /* '\0' */) > sizeof(endpoint->local)) {
                     errno = EINVAL;
                     diminuto_perror(path);
-                    error = true;
+                    rc = -8;
                     break;  
                 }
 
@@ -512,6 +545,16 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             endpoint->local[sizeof(endpoint->local) - 1] = '\0';
 
         } while (0);
+
+        /*
+         * If (rc < 0) at this point, we had a semantic error.
+         * No point in continuing. (We've already displayed an
+         * error message.)
+         */
+
+        if (rc < 0) {
+            return rc;
+        }
 
         /*
          * Now we finally figure out what kind of IPC connection we
@@ -529,11 +572,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * in the current directory.
          */
 
-        if (rc < 0) {
-            /* Do nothing. */
-        } else if (error) {
-            /* Do nothing. */
-        } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+        if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
         } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
@@ -549,10 +588,5 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
     } while (0);
 
-    /*
-     * (rc < 0) means there was a syntax error in the parse.
-     * (error) means there was a semantic error in the processing.
-     */
-
-    return error ? -1 : rc;
+    return 0;
 }

@@ -122,6 +122,11 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
+    if ((argc > 1) && (strcmp(argv[1], "-d") == 0)) {
+        extern int diminuto_ipc_endpoint_debug(int);
+        (void)diminuto_ipc_endpoint_debug(!0);
+    }
+
     COMMENT("FQDN=\"%s\"\n", FQDN);
     COMMENT("IPV4=\"%s\"\n", IPV4);
     COMMENT("IPV6=\"%s\"\n", IPV6);
