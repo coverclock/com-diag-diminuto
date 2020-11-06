@@ -10,14 +10,14 @@
  * This is the implementation of the Endpoint portion of the IPC feature.
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <stdlib.h>
-#include <linux/limits.h> /* For PATH_MAX. */
-#include <linux/un.h> /* For UNIX_PATH_MAX. */
+#include <errno.h>
 
 static int debug = 0;
 
@@ -105,14 +105,19 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * port = (char *)0;
     char * service = (char *)0;
     char * path = (char *)0;
-    char buffer[PATH_MAX] = { '\0', }; /* PATH_MAX includes terminating NUL. */
+    char * file = (char *)0;
+    diminuto_path_buffer_t buffer = { '\0', };
+    diminuto_path_buffer_t local = { '\0', };
+    bool is_ipv4 = false;
+    bool is_ipv6 = false;
+    bool error = false;
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
     memcpy(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(endpoint->ipv6));
     endpoint->tcp = 0;
     endpoint->udp = 0;
-    endpoint->path = (const char *)0;
+    endpoint->local[0] = '\0';
 
     do {
 
@@ -146,6 +151,14 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     mark = here;
                     here += 1;
                     state = S_LETTER;
+                } else if (*here == '/') {
+                    mark = here;
+                    here += 1;
+                    state = S_PATH;
+                } else if (*here == '.') {
+                    mark = here;
+                    here += 1;
+                    state = S_PATH;
                 } else if (*here == '\0') {
                     mark = here;
                     state = S_STOP;
@@ -153,7 +166,6 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else {
                     mark = here;
                     here += 1;
-                    state = S_PATH;
                 }
                 break;
 
@@ -170,6 +182,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     here += 1;
                     state = S_LETTER;
                 } else if (*here == '/') {
+                    here += 1;
                     state = S_PATH;
                 } else if (*here == '\0') {
                     port = mark;
@@ -188,6 +201,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     state = S_FQDN;
                 } else if (*here == ':') {
                     ipv4 = mark;
+                    is_ipv4 = true;
                     *here = '\0';
                     here += 1;
                     state = S_COLON;
@@ -198,6 +212,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     state = S_LETTER;
                 } else if (*here == '\0') {
                     ipv4 = mark;
+                    is_ipv4 = true;
                     state = S_STOP;
                     rc = 0;
                 } else {
@@ -222,6 +237,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else if ((('a' <= *here) && (*here <= 'z')) || (('A' <= *here) && (*here <= 'Z'))) {
                     here += 1;
                 } else if (*here == '/') {
+                    here += 1;
                     state = S_PATH;
                 } else if (*here == '\0') {
                     name = mark;
@@ -242,10 +258,12 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else if ((('a' <= *here) && (*here <= 'z')) || (('A' <= *here) && (*here <= 'Z'))) {
                     here += 1;
                 } else if (*here == ':') {
-                    *(here++) = '\0';
+                    *here = '\0';
+                    here += 1;
                     fqdn = mark;
                     state = S_COLON;
                 } else if (*here == '/') {
+                    here += 1;
                     state = S_PATH;
                 } else if (*here == '\0') {
                     fqdn = mark;
@@ -260,6 +278,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 if (*here == ']') {
                     *(here++) = '\0';
                     ipv6 = mark;
+                    is_ipv6 = true;
                     state = S_NEXT;
                 } else if (*here == ':') {
                     here += 1;
@@ -348,10 +367,6 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } while (state != S_STOP);
 
         if (debug) {
-            DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
-        }
-
-        if (debug) {
             DIMINUTO_LOG_INFORMATION("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\" rc=%d\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path), rc);
         }
 
@@ -379,7 +394,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * Something that looks like it might be a service name could also be
          * a host name that is not a domain name, e.g. "localhost". We first
          * try to resolve such names as host names unless it's really clear
-         * that they were meant as service names.
+         * that they were meant as service names. It's an error thought to
+         * have such a name and not have it to resolve to something.
          */
 
         if (fqdn != (char *)0) {
@@ -404,12 +420,25 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else {
                 endpoint->tcp = diminuto_ipc_port(name, "tcp");
                 endpoint->udp = diminuto_ipc_port(name, "udp");
+                if ((endpoint->tcp == 0) && (endpoint->udp == 0)) {
+                    error = true;
+                }
             }
         }
+
+        /*
+         * Similarly, we try to resolve the service name, but
+         * it is an error for such a name to not resolve.
+         * Note that it is perfectly okay for the port number
+         * to be zero, indicating an ephemeral port.
+         */
 
         if (service != (char *)0) {
             endpoint->tcp = diminuto_ipc_port(service, "tcp");
             endpoint->udp = diminuto_ipc_port(service, "udp");
+            if ((endpoint->tcp == 0) && (endpoint->udp == 0)) {
+                error = true;
+            }
         } else if (port != (char *)0) {
             endpoint->tcp = atoi(port);
             endpoint->udp = endpoint->tcp;
@@ -419,36 +448,70 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         /*
          * If the endpoint is a pathname for a UNIX domain socket, then we
-         * must pass back a pointer into the original string that the caller
-         * passed into us, not into the temporary buffer that we allocated
-         * on the stack for parsing. So we compute the offset from the
-         * beginning of our buffer and add it to the pointer to the string.
-         * There is no requirement that a UNIX domain socket actually exists
-         * with that path, just as there is no requirement for IPv4 or IPv6
-         * addresses that such a host exists at that address. (There is a
-         * requirement however that any FQDN resolves to an IPv4 or IPv6
-         * address, although that address may not be reachable.) Since
-         * file system paths can be just about anything, if an FQDN did not
-         * did not resolve, we assume it was a UNIX domain socket path name.
-         * This allows, unfortunately, for a great deal of ambiguity. For
-         * example, a port number or service name could also be a path name.
+         * try to resolve all the soft links in the path to get an absolute
+         * path name. All but the final component in the path (the actual
+         * file name in the parent directory) must exist.  UNIX domain
+         * socket names have a much shorter length limitation than file
+         * system paths, so the resulting Local address must conform to
+         * that limitation. There is no requirement that the final path
+         * component exists, just as there is no requirement for IPv4 or IPv6
+         * addresses that such a host exists at that address. This path
+         * resolution is necessary so that UNIX domain socket names that
+         * may have resulted from different soft links can be compared.
          */
 
-        if (path != (char *)0) {
-            endpoint->path = string + (path - buffer);
-        } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
-            /* Do nothing. */
-        } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
-            /* Do nothing. */
-        } else if (endpoint->tcp != 0) {
-            /* Do nothing. */
-        } else if (endpoint->udp != 0) {
-            /* Do nothing. */
-        } else if (fqdn != (char *)0) {
-            endpoint->path = string + (fqdn - buffer);
-        } else {
-            /* Do nothing. */
-        }
+        do {
+
+            if (path == (char *)0) {
+                break;
+            }
+
+            if ((file = strrchr(path, '/')) == (char *)0) {
+                errno = EINVAL;
+                diminuto_perror(path);
+                error = true;
+                break;
+            }
+
+            if (file > path) {
+
+                *(file++) = '\0';
+
+                if (realpath(path, local) == (char *)0) {
+                    diminuto_perror(path);
+                    error = true;
+                    break;
+                }
+
+                local[sizeof(local) - 1] = '\0';
+
+                if ((strlen(local) + 1 /* '/' */ + strlen(file) + 1 /* '\0' */) > sizeof(endpoint->local)) {
+                    errno = EINVAL;
+                    diminuto_perror(path);
+                    error = true;
+                    break;  
+                }
+
+                strcpy(endpoint->local, local);
+                strcat(endpoint->local, "/");
+                strcat(endpoint->local, file);
+
+            } else {
+
+                if ((strlen(path) + 1 /* '\0' */) > sizeof(endpoint->local)) {
+                    errno = EINVAL;
+                    diminuto_perror(path);
+                    error = true;
+                    break;  
+                }
+
+                strcpy(endpoint->local, path);
+
+            }
+
+            endpoint->local[sizeof(endpoint->local) - 1] = '\0';
+
+        } while (0);
 
         /*
          * Now we finally figure out what kind of IPC connection we
@@ -458,27 +521,28 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * caller can always check the IPv4 address field explicitly.
          * If just an IPv4 address resolved, the type is IPV4.
          * In either case, there may be a port, and that port could
-         * have resolved to be either TCP or UDP or both. Finally,
-         * ephemeral ports are a special case where everything is zero
-         * but the parser succeeded; examples: "[::]", "0.0.0.0", "0".
+         * have resolved to be either TCP or UDP or both. Ephemeral
+         * ports are a special case where everything is zero but the
+         * parser succeeded; examples: "[::]", "0.0.0.0", "0". There
+         * is some ambiguity: for example, "google.com" could actually
+         * be the name of a UNIX domain socket (which may not yet exist)
+         * in the current directory.
          */
 
-        if (endpoint->path != (char *)0) {
-            endpoint->type = DIMINUTO_IPC_TYPE_LOCAL;
+        if (rc < 0) {
+            /* Do nothing. */
+        } else if (error) {
+            /* Do nothing. */
         } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
         } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
-        } else if (endpoint->tcp != 0) {
+        } else if (endpoint->local[0] != '\0') {
+            endpoint->type = DIMINUTO_IPC_TYPE_LOCAL;
+        } else if (is_ipv6) {
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+        } else if (is_ipv4) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
-        } else if (endpoint->udp != 0) {
-            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
-        } else if (fqdn != (char *)0) {
-            /* Do nothing. */
-        } else if (service != (char *)0) {
-            /* Do nothing. */
-        } else if (rc < 0) {
-            /* Do nothing. */
         } else {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         }
@@ -486,8 +550,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     } while (0);
 
     /*
-     * We return success in all but the most difficult of circumstances.
+     * (rc < 0) means there was a syntax error in the parse.
+     * (error) means there was a semantic error in the processing.
      */
 
-    return rc;
+    return error ? -1 : rc;
 }

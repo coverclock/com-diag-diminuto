@@ -55,13 +55,13 @@ int main(int argc, char **argv)
         } else if (diminuto_ipc_endpoint(argv[ii], &endpoint) >= 0) {
             snprintf(buffer, sizeof(buffer), "%d", endpoint.type);
             buffer[sizeof(buffer) - 1] = '\0';
-            printf("endpoint \"%s\" type %s ipv4 %s ipv6 %s tcp %d udp %d path \"%s\"\n",
+            printf("endpoint \"%s\" type %s ipv4 %s ipv6 %s tcp %d udp %d local \"%s\"\n",
                 argv[ii],
-                (endpoint.type == AF_INET) ? "AF_INET" : (endpoint.type == AF_INET6) ? "AF_INET6" : (endpoint.type == AF_UNIX) ? "AF_UNIX" : buffer,
+                (endpoint.type == DIMINUTO_IPC_TYPE_IPV4) ? "IPV4" : (endpoint.type == DIMINUTO_IPC_TYPE_IPV6) ? "IPV6" : (endpoint.type == DIMINUTO_IPC_TYPE_LOCAL) ? "LOCAL" : buffer,
                 diminuto_ipc4_address2string(endpoint.ipv4, ipv4buffer, sizeof(ipv4buffer)),
                 diminuto_ipc6_address2string(endpoint.ipv6, ipv6buffer, sizeof(ipv6buffer)),
                 endpoint.tcp, endpoint.udp,
-                (endpoint.path == (const char *)0) ? "" : endpoint.path);
+                endpoint.local);
         } else {
             printf("endpoint \"%s\"\n", argv[ii]);
         }

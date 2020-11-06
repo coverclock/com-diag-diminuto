@@ -273,11 +273,17 @@ typedef enum DiminutoIpcType {
 /**
  * This type defines the structure that is populated when an endpoint string
  * is parsed. The parser (such as it is) tries to fill in all of the fields.
- * For example, it is possible that a fully qualified domain name will have
- * both IPv4 and IPv6 addresses, in this case, the type will be IPV6,
+ * For example, it is possible that a Fully Qualified Domain Name (FQDN) will
+ * have both IPv4 and IPv6 addresses, in this case, the type will be IPV6,
  * and the application can always check for a non-zero IPv4 address if that
- * is its preference. If the path field is non-NULL, it will point into the
- * original endpoint string. Fields that are not used will be zero (NULL).
+ * is its preference. Fields that are not used will be zero or zero length.
+ * Although the FQDN may resolve, there is no guarantee that the IPv4 or
+ * IPv6 addresses are reachable; the service may be defined, but the
+ * port may not be instantiated; the Local address may have been specified,
+ * but the corresponding UNIX domain socket may not exist. Also, the Local
+ * address may contain soft links that when resolved result in a different
+ * effective file system path. Port values of zero can be legitimate,
+ * indicating an ephemeral (dynamically assigned and temporary) port number.
  */
 typedef struct DiminutoIpcEndpoint {
     diminuto_ipc_type_t type;
@@ -285,17 +291,20 @@ typedef struct DiminutoIpcEndpoint {
     diminuto_ipv6_t ipv6;
     diminuto_port_t tcp;
     diminuto_port_t udp;
-    const char * path;
+    diminuto_local_buffer_t local;
 } diminuto_ipc_endpoint_t;
 
 /**
- * Try to parse an endpoint string that has some combination of host name, fully
- * qualified domain name, IPv4 address string, IPv6 address string, port number
- * string, or service name, into a usable IPv4 or IPv6 binary address and a
- * binary port number. Here are some examples: "80", ":80", ":http",
- * "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
+ * Try to parse an endpoint string that has some combination of host name, Fully
+ * Qualified Domain Name (FQDN), IPv4 address string, IPv6 address string, port
+ * number string or service name, or UNIX domain path, into a usable IPv4 or IPv6
+ * binary address and a binary port number, or an absolute path in the file system of
+ * which all but the last path component must exist. Here are some examples: "80",
+ * ":80", ":http", "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
  * "[::ffff:172.217.1.206]:80", "[2607:f8b0:400f:805::200e]:80", "/tmp/unix.sock",
- * "./unix.sock", "path/unix.sock", "[::]", "0.0.0.0", "0", "".
+ * "./unix.sock", "path/unix.sock", "[::]", "0.0.0.0", "0", "". UNIX domain paths
+ * must contain a slash ("/") somewhere in them to discriminate between a path name
+ * and a FQDN that could also be a file name in the current directory.
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
  * @return 0 if no really obvious syntax errors were encountered, <0 otherwise.
