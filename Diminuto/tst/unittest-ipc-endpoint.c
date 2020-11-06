@@ -692,6 +692,7 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = LOCAL, &parse);
         DISPLAY;
         EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
         STATUS();
     }
 
@@ -701,6 +702,7 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = "/I-hope-this-directory-does-not-exist/" LOCAL, &parse);
         DISPLAY;
         EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
         STATUS();
     }
 
@@ -710,6 +712,17 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = "I-hope-this-domain-name-is-unresolvable.com", &parse);
         DISPLAY;
         EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "(I-hope-this-does-not-look-like-anything-valid)", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
         STATUS();
     }
 
