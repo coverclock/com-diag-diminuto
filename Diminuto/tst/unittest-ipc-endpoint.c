@@ -726,5 +726,65 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = ":undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN ":undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = IPV4 ":undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:undefinedthing", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
     EXIT();
 }

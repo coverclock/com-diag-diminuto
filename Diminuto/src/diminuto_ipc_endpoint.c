@@ -400,7 +400,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 /* Do nothing. */
             } else {
                 errno = EINVAL;
-                diminuto_perror(string);
+                diminuto_perror(fqdn);
                 rc = -2;
             }
         } else if (ipv4 != (char *)0) {
@@ -447,7 +447,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     /* Do nothing. */
                 } else {
                     errno = EINVAL;
-                    diminuto_perror(string);
+                    diminuto_perror(name);
                     rc = -3;
                 }
             }
@@ -469,7 +469,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 /* Do nothing. */
             } else {
                 errno = EINVAL;
-                diminuto_perror(string);
+                diminuto_perror(service);
                 rc = -4;
             }
         } else if (port != (char *)0) {
