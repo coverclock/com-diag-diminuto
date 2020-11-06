@@ -16,7 +16,8 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <stdlib.h>
-#include <sys/param.h>
+#include <linux/limits.h> /* For PATH_MAX. */
+#include <linux/un.h> /* For UNIX_PATH_MAX. */
 
 static int debug = 0;
 
@@ -41,31 +42,37 @@ static inline const char * ps(const char * str)
 }
 
 /*
- * 80
- * :80
- * http
- * :http
- * localhost
- * localhost:80
- * localhost:http
- * google.com
- * google.com:80
- * google.com:http
- * 172.217.1.206
- * 172.217.1.206:80
- * 172.217.1.206:http
- * [::]
- * [::]:80
- * [::]:http
- * [::ffff:172.217.1.206]
- * [::ffff:172.217.1.206]:80
- * [::ffff:172.217.1.206]:http
- * [2607:f8b0:400f:805::200e]
- * [2607:f8b0:400f:805::200e]:80
- * [2607:f8b0:400f:805::200e]:http
- * ./path
- * /tmp/path
- * home/sock/path
+ * ""
+ * "0"
+ * "80"
+ * ":0"
+ * ":80"
+ * "http"
+ * ":http"
+ * "localhost"
+ * "localhost:80"
+ * "localhost:http"
+ * "google.com"
+ * "google.com:80"
+ * "google.com:http"
+ * "0.0.0.0"
+ * "0.0.0.0:80"
+ * "0.0.0.0:http"
+ * "172.217.1.206"
+ * "172.217.1.206:80"
+ * "172.217.1.206:http"
+ * "[::]"
+ * "[::]:80"
+ * "[::]:http"
+ * "[::ffff:172.217.1.206]"
+ * "[::ffff:172.217.1.206]:80"
+ * "[::ffff:172.217.1.206]:http"
+ * "[2607:f8b0:400f:805::200e]"
+ * "[2607:f8b0:400f:805::200e]:80"
+ * "[2607:f8b0:400f:805::200e]:http"
+ * "./path"
+ * "/tmp/path"
+ * "home/sock/path"
  */
 
 typedef enum State {
@@ -98,9 +105,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * port = (char *)0;
     char * service = (char *)0;
     char * path = (char *)0;
-    char buffer[PATH_MAX] = { '\0', };
+    char buffer[PATH_MAX] = { '\0', }; /* PATH_MAX includes terminating NUL. */
 
-    endpoint->type = AF_UNSPEC;
+    endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
     memcpy(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED, sizeof(endpoint->ipv6));
     endpoint->tcp = 0;
@@ -447,9 +454,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * Now we finally figure out what kind of IPC connection we
          * have. If the endpoint included a FQDN, there may be both
          * an IPv4 and an IPv6 address resolved for it; in that case
-         * the type is AF_INET6 (which reflects my own bias). The
+         * the type is IPV6 (which reflects my own bias). The
          * caller can always check the IPv4 address field explicitly.
-         * If just an IPv4 address resolved, the type is AF_INET4.
+         * If just an IPv4 address resolved, the type is IPV4.
          * In either case, there may be a port, and that port could
          * have resolved to be either TCP or UDP or both. Finally,
          * ephemeral ports are a special case where everything is zero
@@ -457,15 +464,15 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          */
 
         if (endpoint->path != (char *)0) {
-            endpoint->type = AF_UNIX;
+            endpoint->type = DIMINUTO_IPC_TYPE_LOCAL;
         } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
-            endpoint->type = AF_INET6;
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
         } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
-            endpoint->type = AF_INET;
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         } else if (endpoint->tcp != 0) {
-            endpoint->type = AF_INET;
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         } else if (endpoint->udp != 0) {
-            endpoint->type = AF_INET;
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         } else if (fqdn != (char *)0) {
             /* Do nothing. */
         } else if (service != (char *)0) {
@@ -473,7 +480,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (rc < 0) {
             /* Do nothing. */
         } else {
-            endpoint->type = AF_INET;
+            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         }
 
     } while (0);

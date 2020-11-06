@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides capabilities common to stream and datagram IPv4 and IPv6 sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -18,7 +18,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-#include <sys/socket.h> /* For AF_UNIX, AF_INET, etc. */
+#include <sys/socket.h> /* For AF_UNSPEC, AF_UNIX, AF_INET. */
 
 /**
  * Defines the prototype of a function used for dependency injection.
@@ -257,16 +257,30 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
 extern char ** diminuto_ipc_interfaces(void);
 
 /**
+ * These are the different types of Interprocess Communication Systems (IPC)
+ * that the IPC feature supports (or soon will support). Rather than do my
+ * usual thing of making the enumerations printable characters, these use
+ * the appropriate Address Family (AF) value so that they can be directly
+ * applied to the socket structure.
+ */
+typedef enum DiminutoIpcType {
+    DIMINUTO_IPC_TYPE_UNSPECIFIED  = AF_UNSPEC,
+    DIMINUTO_IPC_TYPE_IPV4         = AF_INET,
+    DIMINUTO_IPC_TYPE_IPV6         = AF_INET6,
+    DIMINUTO_IPC_TYPE_LOCAL        = AF_UNIX,
+} diminuto_ipc_type_t;
+
+/**
  * This type defines the structure that is populated when an endpoint string
  * is parsed. The parser (such as it is) tries to fill in all of the fields.
  * For example, it is possible that a fully qualified domain name will have
- * both IPv4 and IPv6 addresses, in this case, the type will be AF_INET6,
+ * both IPv4 and IPv6 addresses, in this case, the type will be IPV6,
  * and the application can always check for a non-zero IPv4 address if that
  * is its preference. If the path field is non-NULL, it will point into the
  * original endpoint string. Fields that are not used will be zero (NULL).
  */
 typedef struct DiminutoIpcEndpoint {
-    int type;
+    diminuto_ipc_type_t type;
     diminuto_ipv4_t ipv4;
     diminuto_ipv6_t ipv6;
     diminuto_port_t tcp;
@@ -281,7 +295,7 @@ typedef struct DiminutoIpcEndpoint {
  * binary port number. Here are some examples: "80", ":80", ":http",
  * "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
  * "[::ffff:172.217.1.206]:80", "[2607:f8b0:400f:805::200e]:80", "/tmp/unix.sock",
- * "./unix.sock", "path/unix.sock", "[::]", "0.0.0.0", "0".
+ * "./unix.sock", "path/unix.sock", "[::]", "0.0.0.0", "0", "".
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
  * @return 0 if no really obvious syntax errors were encountered, <0 otherwise.
