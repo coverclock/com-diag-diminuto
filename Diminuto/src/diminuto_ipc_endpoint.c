@@ -506,13 +506,20 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 break;
             }
 
+            if (*(file + 1) == '\0') {
+                errno = EINVAL;
+                diminuto_perror(path);
+                rc = -6;
+                break;
+            }
+
             if (file > path) {
 
                 *(file++) = '\0';
 
                 if (realpath(path, local) == (char *)0) {
                     diminuto_perror(path);
-                    rc = -6;
+                    rc = -7;
                     break;
                 }
 
@@ -521,7 +528,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 if ((strlen(local) + 1 /* '/' */ + strlen(file) + 1 /* '\0' */) > sizeof(endpoint->local)) {
                     errno = EINVAL;
                     diminuto_perror(path);
-                    rc = -7;
+                    rc = -8;
                     break;  
                 }
 
@@ -534,7 +541,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 if ((strlen(path) + 1 /* '\0' */) > sizeof(endpoint->local)) {
                     errno = EINVAL;
                     diminuto_perror(path);
-                    rc = -8;
+                    rc = -9;
                     break;  
                 }
 

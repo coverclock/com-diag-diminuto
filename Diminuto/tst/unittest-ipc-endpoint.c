@@ -771,6 +771,16 @@ int main(int argc, char * argv[])
     {
         SETUP;
         TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/", &parse);
+        DISPLAY;
+        EXPECT(rc < 0);
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
         rc = diminuto_ipc_endpoint(endpoint = "I-hope-this-domain-name-is-unresolvable.com", &parse);
         DISPLAY;
         EXPECT(rc < 0);
