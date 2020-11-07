@@ -17,7 +17,8 @@
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 
-#define FQDN "diag.com"
+#define FQDN4 "diag.com"
+#define FQDN6 "google.com"
 #define IPV4 "205.178.189.131"
 #define IPV6 "2607:f8b0:400f:805::200e"
 #define PORT "8888"
@@ -100,13 +101,16 @@ static const char * type2string(diminuto_ipc_type_t type)
 
 int main(int argc, char * argv[])
 {
-    const char fqdn[] = FQDN;
+    const char fqdn4[] = FQDN4;
+    const char fqdn6[] = FQDN6;
     diminuto_ipv4_t unspecified4;
     diminuto_ipv6_t unspecified6;
     diminuto_ipv4_t localhost4;
     diminuto_ipv6_t localhost6;
-    diminuto_ipv4_t fqdn4;
-    diminuto_ipv6_t fqdn6;
+    diminuto_ipv4_t fqdn44;
+    diminuto_ipv6_t fqdn46;
+    diminuto_ipv4_t fqdn64;
+    diminuto_ipv6_t fqdn66;
     diminuto_ipv4_t address4;
     diminuto_ipv6_t address46;
     diminuto_ipv6_t address6;
@@ -127,7 +131,8 @@ int main(int argc, char * argv[])
         (void)diminuto_ipc_endpoint_debug(!0);
     }
 
-    COMMENT("FQDN=\"%s\"\n", FQDN);
+    COMMENT("FQDN4=\"%s\"\n", FQDN4);
+    COMMENT("FQDN6=\"%s\"\n", FQDN6);
     COMMENT("IPV4=\"%s\"\n", IPV4);
     COMMENT("IPV6=\"%s\"\n", IPV6);
     COMMENT("PORT=\"%s\"\n", PORT);
@@ -140,8 +145,10 @@ int main(int argc, char * argv[])
     unspecified6 = DIMINUTO_IPC6_UNSPECIFIED;
     localhost4 = diminuto_ipc4_address("localhost");
     localhost6 = diminuto_ipc6_address("localhost");
-    fqdn4 = diminuto_ipc4_address(fqdn);
-    fqdn6 = diminuto_ipc6_address(fqdn);
+    fqdn44 = diminuto_ipc4_address(fqdn4);
+    fqdn46 = diminuto_ipc6_address(fqdn4);
+    fqdn64 = diminuto_ipc4_address(fqdn6);
+    fqdn66 = diminuto_ipc6_address(fqdn6);
     address4 = diminuto_ipc4_address(IPV4);
     address46 = diminuto_ipc6_address("::ffff:" IPV4);
     address6 = diminuto_ipc6_address(IPV6);
@@ -162,8 +169,10 @@ int main(int argc, char * argv[])
         COMMENT("unspecified6=%s\n", diminuto_ipc6_address2string(unspecified6, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("localhost4=%s\n", diminuto_ipc4_address2string(localhost4, ipv4buffer, sizeof(ipv4buffer)));
         COMMENT("localhost6=%s\n", diminuto_ipc6_address2string(localhost6, ipv6buffer, sizeof(ipv6buffer)));
-        COMMENT("fqdn4=%s\n", diminuto_ipc4_address2string(fqdn4, ipv4buffer, sizeof(ipv4buffer)));
-        COMMENT("fqdn6=%s\n", diminuto_ipc6_address2string(fqdn6, ipv6buffer, sizeof(ipv6buffer)));
+        COMMENT("fqdn44=%s\n", diminuto_ipc4_address2string(fqdn44, ipv4buffer, sizeof(ipv4buffer)));
+        COMMENT("fqdn46=%s\n", diminuto_ipc6_address2string(fqdn46, ipv6buffer, sizeof(ipv6buffer)));
+        COMMENT("fqdn64=%s\n", diminuto_ipc4_address2string(fqdn64, ipv4buffer, sizeof(ipv4buffer)));
+        COMMENT("fqdn66=%s\n", diminuto_ipc6_address2string(fqdn66, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address4=%s\n", diminuto_ipc4_address2string(address4, ipv4buffer, sizeof(ipv4buffer)));
         COMMENT("address46=%s\n", diminuto_ipc6_address2string(address46, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address6=%s\n", diminuto_ipc6_address2string(address6, ipv6buffer, sizeof(ipv6buffer)));
@@ -294,53 +303,53 @@ int main(int argc, char * argv[])
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN, &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4, &parse);
         DISPLAY;
-        VERIFYINET6(&parse, fqdn4, fqdn6, ephemeral, ephemeral);
+        VERIFYINET4(&parse, fqdn44, fqdn46, ephemeral, ephemeral);
         STATUS();
     }
 
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":0", &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":0", &parse);
         DISPLAY;
-        VERIFYINET6(&parse, fqdn4, fqdn6, ephemeral, ephemeral);
+        VERIFYINET4(&parse, fqdn44, fqdn46, ephemeral, ephemeral);
         STATUS();
     }
 
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":" PORT, &parse);
-        VERIFYINET6(&parse, fqdn4, fqdn6, porttcp, portudp);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" PORT, &parse);
+        VERIFYINET4(&parse, fqdn44, fqdn46, porttcp, portudp);
         STATUS();
     }
 
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":" TCP, &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" TCP, &parse);
         DISPLAY;
-        VERIFYINET6(&parse, fqdn4, fqdn6, tcptcp, tcpudp);
+        VERIFYINET4(&parse, fqdn44, fqdn46, tcptcp, tcpudp);
         STATUS();
     }
 
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":" UDP, &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" UDP, &parse);
         DISPLAY;
-        VERIFYINET6(&parse, fqdn4, fqdn6, udptcp, udpudp);
+        VERIFYINET4(&parse, fqdn44, fqdn46, udptcp, udpudp);
         STATUS();
     }
 
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":" EITHER, &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" EITHER, &parse);
         DISPLAY;
-        VERIFYINET6(&parse, fqdn4, fqdn6, eithertcp, eitherudp);
+        VERIFYINET4(&parse, fqdn44, fqdn46, eithertcp, eitherudp);
         STATUS();
     }
 
@@ -449,6 +458,59 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" EITHER, &parse);
         DISPLAY;
         VERIFYINET4(&parse, address4, unspecified6, eithertcp, eitherudp);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6, &parse);
+        DISPLAY;
+        VERIFYINET6(&parse, fqdn64, fqdn66, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6 ":0", &parse);
+        DISPLAY;
+        VERIFYINET6(&parse, fqdn64, fqdn66, ephemeral, ephemeral);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6 ":" PORT, &parse);
+        VERIFYINET6(&parse, fqdn64, fqdn66, porttcp, portudp);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6 ":" TCP, &parse);
+        DISPLAY;
+        VERIFYINET6(&parse, fqdn64, fqdn66, tcptcp, tcpudp);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6 ":" UDP, &parse);
+        DISPLAY;
+        VERIFYINET6(&parse, fqdn64, fqdn66, udptcp, udpudp);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = FQDN6 ":" EITHER, &parse);
+        DISPLAY;
+        VERIFYINET6(&parse, fqdn64, fqdn66, eithertcp, eitherudp);
         STATUS();
     }
 
@@ -749,7 +811,7 @@ int main(int argc, char * argv[])
     {
         SETUP;
         TEST();
-        rc = diminuto_ipc_endpoint(endpoint = FQDN ":undefinedthing", &parse);
+        rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":undefinedthing", &parse);
         DISPLAY;
         EXPECT(rc < 0);
         EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);

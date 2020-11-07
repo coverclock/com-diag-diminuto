@@ -13,6 +13,11 @@
  *
  * The IPCL features offers an IPC-style API to UNIX (or Local) Domain sockets
  * (AF_UNIX a.k.a. AF_LOCAL).
+ *
+ * REFERENCES
+ *
+ * C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets",
+ * CopyConstruct, August 2020
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
@@ -23,9 +28,9 @@
 
 /**
  * Compares two Local addresses. This is not as simple as doing a string
- * comparison: all of the soft links etc. in each path is resolved before the
- * comparison. This means Local addresses that look quite different may in
- * fact resolve to the same UNIX domain socket.
+ * comparison: all of the soft links and special directory characters in
+ * each path is resolved before the comparison. This means Local addresses
+ * that look quite different may in fact resolve to the same UNIX domain socket.
  * @param address1p points to the first Local address.
  * @param address2p points to the second Local address.
  * @return 0 if equal, <0 if less than, >0 if greater than.
@@ -38,27 +43,23 @@ extern int diminuto_ipcl_compare(const diminuto_local_t address1p, const diminut
 
 /**
  * Convert an Local address in host byte order into a printable Local address
- * string in dot notation.
+ * string in dot notation. This has the side effect of resolving all the soft
+ * links and special directory characters in the address in the output buffer,
+ * and can be used specifically for that purpose.
  * @param address is the Local address in host byte order.
  * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
  */
-static inline const char * diminuto_ipcl_address2string(const diminuto_local_t address, char * buffer, size_t length) {
-    return diminuto_ipcl_dotnotation(address, buffer, length);
-}
+extern const char * diminuto_ipcl_address2string(const diminuto_local_t address, char * buffer, size_t length);
 
 /*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
 /**
- * Bind an existing socket to a specific address and port. The address and port
- * are in host byte order. If the address is zero, the socket will be bound to
- * any appropriate interface. If the port is zero, an unused ephemeral port is
- * allocated.
+ * Bind an existing socket to a specific address.
  * @param fd is the socket.
  * @param address is the address to which to bind.
- * @param port is the port to which to bind.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipcl_source(int fd, const diminuto_local_t address);
@@ -88,60 +89,43 @@ static inline int diminuto_ipcl_close(int fd) {
 
 /**
  * Create a provider-side stream socket bound to a specific address and with
- * a specific connection backlog. The address and port are in host byte order.
- * If the address is zero, the socket will be bound to any appropriate
- * interface. If the port is zero, an unused ephemeral port is allocated;
- * its value can be determined using the nearend function. If an optional
- * function is provided by the caller, invoke it to set socket options before
- * the listen(2) is performed.
+ * a specific connection backlog. If an optional function is provided by the
+ * caller, invoke it to set socket options before the listen(2) is performed.
  * @param address is the address of the interface that will be used.
- * @param port is the port number at which connection requests will rendezvous.
- * @param interface points to the interface name, or NULL.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_provider_base(const diminuto_local_t address, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_stream_provider_base(const diminuto_local_t address, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
  * Create a provider-side stream socket bound to a specific address and with
- * a specific connection backlog. The address and port are in host byte order.
- * If the address is zero, the socket will be bound to any appropriate
- * interface. If the port is zero, an unused ephemeral port is allocated;
- * its value can be determined using the nearend function.
+ * a specific connection backlog.
  * @param address is the address of the interface that will be used.
- * @param port is the port number at which connection requests will rendezvous.
- * @param interface points to the interface name, or NULL.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_provider_generic(const diminuto_local_t address, const char * interface, int backlog) {
-    return diminuto_ipcl_stream_provider_base(address, port, interface, backlog, diminuto_ipc_inject_defaults, (void *)0);
+static inline int diminuto_ipcl_stream_provider_generic(const diminuto_local_t address, int backlog) {
+    return diminuto_ipcl_stream_provider_base(address, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
- * The port is in host byte order. If the port is zero, an unused ephemeral port
- * is allocated; its value can be determined using the nearend function.
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_provider(diminuto_port_t port) {
-    return diminuto_ipcl_stream_provider_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0, -1);
+static inline int diminuto_ipcl_stream_provider(const diminuto_local_t address) {
+    return diminuto_ipcl_stream_provider_generic(address, -1);
 }
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket. Optionally return the address and port of the requestor.
+ * stream socket.
  * @param fd is the provider-side stream socket.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_accept_generic(int fd, const diminuto_local_t * addressp, diminuto_port_t * portp);
+extern int diminuto_ipcl_stream_accept_generic(int fd);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -150,37 +134,27 @@ extern int diminuto_ipcl_stream_accept_generic(int fd, const diminuto_local_t * 
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_accept(int fd) {
-    return diminuto_ipcl_stream_accept_generic(fd, (const diminuto_local_t *)0, (diminuto_port_t *)0);
+    return diminuto_ipcl_stream_accept_generic(fd);
 }
 
 /**
- * Request a consumer-side stream socket to a provider using a specific address,
- * port, and interface on the near end. If an optional function is provided by
- * the caller, invoke it to set socket options before the connect(2) is
- * performed.
- * @param address is the provider's Local address in host byte order.
- * @param port is the provider's port in host byte order.
- * @param address0 is the address to which to bind the socket, or zero.
- * @param port0 is the port to which to bind the socket, or zero
- * @param interface points to the name of the interface, or NULL.
+ * Request a consumer-side stream socket to a provider using a specific address.
+ * If an optional function is provided by the caller, invoke it to set socket
+ * options before the connect(2) is performed.
+ * @param address is the provider's Local address.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_consumer_base(const diminuto_local_t address, const diminuto_local_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_stream_consumer_base(const diminuto_local_t address, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Request a consumer-side stream socket to a provider using a specific address,
- * port, and interface on the near end.
- * @param address is the provider's Local address in host byte order.
- * @param port is the provider's port in host byte order.
- * @param address0 is the address to which to bind the socket, or zero.
- * @param port0 is the port to which to bind the socket, or zero
- * @param interface points to the name of the interface, or NULL.
+ * Request a consumer-side stream socket to a provider using a specific address.
+ * @param address is the provider's Local address.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_consumer_generic(const diminuto_local_t address, const diminuto_local_t address0, diminuto_port_t port0, const char * interface) {
-    return diminuto_ipcl_stream_consumer_base(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
+static inline int diminuto_ipcl_stream_consumer_generic(const diminuto_local_t address) {
+    return diminuto_ipcl_stream_consumer_base(address, (diminuto_ipc_injector_t *)0, (void *)0);
 }
 
 /**
@@ -190,7 +164,7 @@ static inline int diminuto_ipcl_stream_consumer_generic(const diminuto_local_t a
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const diminuto_local_t address) {
-    return diminuto_ipcl_stream_consumer_generic(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
+    return diminuto_ipcl_stream_consumer_generic(address);
 }
 
 /**
@@ -248,30 +222,22 @@ static inline ssize_t diminuto_ipcl_stream_write(int fd, const void * buffer, si
  ******************************************************************************/
 
 /**
- * Request a peer datagram socket. The address and port are in host byte order.
- * If the port is zero, an unused ephemeral port is allocated; its value can
- * be determined using the nearend function. If an optional function is
- * provided by the caller, invoke it to set socket options.
+ * Request a peer datagram socket. If an optional function is provided by the
+ * caller, invoke it to set socket options.
  * @param address is the Local address of the interface to use.
- * @param port is the port number.
- * @param interface points to the name of the interface, or NULL.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipcl_datagram_peer_base(const diminuto_local_t address, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_datagram_peer_base(const diminuto_local_t address, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Request a peer datagram socket. The address and port are in host byte order.
- * If the port is zero, an unused ephemeral port is allocated; its value can
- * be determined using the nearend function.
+ * Request a peer datagram socket.
  * @param address is the Local address of the interface to use.
- * @param port is the port number.
- * @param interface points to the name of the interface, or NULL.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_datagram_peer_generic(const diminuto_local_t address, const char * interface) {
-    return diminuto_ipcl_datagram_peer_base(address, port, interface, diminuto_ipc_inject_defaults, (void *)0);
+static inline int diminuto_ipcl_datagram_peer_generic(const diminuto_local_t address) {
+    return diminuto_ipcl_datagram_peer_base(address, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
@@ -281,8 +247,8 @@ static inline int diminuto_ipcl_datagram_peer_generic(const diminuto_local_t add
  * @param port is the port number.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_datagram_peer(diminuto_port_t port) {
-    return diminuto_ipcl_datagram_peer_generic(DIMINUTO_IPC4_UNSPECIFIED, port, (const char *)0);
+static inline int diminuto_ipcl_datagram_peer(const diminuto_local_t address) {
+    return diminuto_ipcl_datagram_peer_generic(address);
 }
 
 /**

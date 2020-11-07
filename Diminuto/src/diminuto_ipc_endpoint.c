@@ -569,11 +569,20 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * parser succeeded; examples: "[::]", "0.0.0.0", "0". There
          * is some ambiguity: for example, "google.com" could actually
          * be the name of a UNIX domain socket (which may not yet exist)
-         * in the current directory.
+         * in the current directory. If there is both an IPv6 and an IPv4
+         * address, and the IPv6 address is merely the IPv4 address in
+         * IPv6 form, we use the IPv4 address, since there is nothing to
+         * be gained from using the IPv6 address.
          */
 
         if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
-            endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+            if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) == 0) {
+                endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+            } else if (diminuto_ipc6_is_v4mapped(&(endpoint->ipv6))) {
+                endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
+            } else {
+                endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+            }
         } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         } else if (endpoint->local[0] != '\0') {

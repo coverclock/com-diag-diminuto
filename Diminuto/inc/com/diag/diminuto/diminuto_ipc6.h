@@ -133,7 +133,7 @@ static inline int diminuto_ipc6_is_v4mapped(const diminuto_ipv6_t * addressp) {
 }
 
 /**
- * Return true if the IPv6 address in host byte order is embedded IPv4, false
+ * Return true if the IPv6 address in host byte order is IPv4 compatible, false
  * otherwise.
  * @param addressp points to an IPv6 address.
  * @return true or false.
