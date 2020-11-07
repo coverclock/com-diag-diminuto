@@ -274,40 +274,61 @@ typedef enum DiminutoIpcType {
  * This type defines the structure that is populated when an endpoint string
  * is parsed. The parser (such as it is) tries to fill in all of the fields.
  * For example, it is possible that a Fully Qualified Domain Name (FQDN) will
- * have both IPv4 and IPv6 addresses, in this case, the type will be IPV6,
- * and the application can always check for a non-zero IPv4 address if that
- * is its preference. Fields that are not used will be zero or zero length.
+ * have both IPv4 and IPv6 addresses, in which case the type will be IPV4 if
+ * the IPv6 address is merely an IPv4 address in IPv6-compatible form,
+ * otherwise IPV6. The application can always check the IPv4 and IPv6 address
+ * fields explicitly. Fields that are not used will be zero or zero length.
  * Although the FQDN may resolve, there is no guarantee that the IPv4 or
  * IPv6 addresses are reachable; the service may be defined, but the
- * port may not be instantiated; the Local address may have been specified,
- * but the corresponding UNIX domain socket may not exist. Also, the Local
- * address may contain soft links that when resolved result in a different
- * effective file system path. Port values of zero can be legitimate,
- * indicating an ephemeral (dynamically assigned and temporary) port number.
+ * port may not be instantiated; the Local address (UNIX domain socket path)
+ * may have been specified, but the corresponding file may not exist. Port
+ * values of zero can be legitimate, indicating an ephemeral (dynamically
+ * assigned and temporary) port number is being requested. The type field
+ * can be used directly as the Address Family (AF) value. The IP addresses
+ * and port numbers will be in Host Byte Order, NOT Network Byte Order. The
+ * UNIX domain path will be an absolute path with all soft links resolved
+ * and all path meta-characters resolved and removed.
  */
 typedef struct DiminutoIpcEndpoint {
-    diminuto_ipc_type_t type;
-    diminuto_ipv4_t ipv4;
-    diminuto_ipv6_t ipv6;
-    diminuto_port_t tcp;
-    diminuto_port_t udp;
-    diminuto_local_buffer_t local;
+    diminuto_ipc_type_t type;       /* Address Family */
+    diminuto_ipv4_t ipv4;           /* Host Byte Order */
+    diminuto_ipv6_t ipv6;           /* Host Byte Order */
+    diminuto_port_t tcp;            /* Host Byte Order */
+    diminuto_port_t udp;            /* Host Byte Order */
+    diminuto_local_buffer_t local;  /* Absolute Path */
 } diminuto_ipc_endpoint_t;
 
 /**
  * Try to parse an endpoint string that has some combination of host name, Fully
  * Qualified Domain Name (FQDN), IPv4 address string, IPv6 address string, port
- * number string or service name, or UNIX domain path, into a usable IPv4 or IPv6
- * binary address and a binary port number, or an absolute path in the file system of
- * which all but the last path component must exist. Here are some examples: "80",
- * ":80", ":http", "localhost", "localhost:80", "google.com:http", "172.217.1.206:80",
- * "[::ffff:172.217.1.206]:80", "[2607:f8b0:400f:805::200e]:80", "/tmp/unix.sock",
- * "./unix.sock", "path/unix.sock", "[::]", "0.0.0.0", "0", "". UNIX domain paths
- * must contain a slash ("/") somewhere in them to discriminate between a path name
- * and a FQDN that could also be a file name in the current directory.
+ * number string or service name, or Local path (UNIX domain path), into a
+ * usable IPv4 or IPv6 binary address, binary TCP and/or UDP port numbers, or
+ * an absolute path in the file system of which all but the last path component
+ * must exist.  Local paths must contain a slash ("/") somewhere in them to
+ * discriminate between a path name and other possible interpretations. An
+ * empty string is a valid endpoint, indicating an ephemeral port on the local
+ * host. Here are just a few examples of valid endpoints:
+ * "80",
+ * ":80",
+ * ":http", 
+ * "localhost",
+ * "localhost:80",
+ * "myhostname",
+ * "diag.com",
+ * "diag.com:http",
+ * "172.217.1.206:80",
+ * "[::ffff:172.217.1.206]:80",
+ * "[2607:f8b0:400f:805::200e]:80",
+ * "/tmp/unix.sock",
+ * "./unix.sock",
+ * "run/unix.sock",
+ * "[::]",
+ * "0.0.0.0",
+ * "0",
+ * "".
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
- * @return 0 if no really obvious syntax errors were encountered, <0 otherwise.
+ * @return 0 if both syntactically and semantically successful, <0 otherwise.
  */
 extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
 
