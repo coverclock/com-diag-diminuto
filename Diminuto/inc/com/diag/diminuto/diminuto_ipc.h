@@ -198,7 +198,7 @@ extern diminuto_ipc_injector_t diminuto_ipc_inject_defaults;
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
  * @return the number of bytes received, 0 if the far end closed,
- * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * or <0 if an error occurred (errno will be EAGAIN for non-blocking,
  * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_read_generic(int fd, void * buffer, size_t min, size_t max) {
@@ -211,7 +211,7 @@ static inline ssize_t diminuto_ipc_stream_read_generic(int fd, void * buffer, si
  * @param buffer points to the buffer into which data is read.
  * @param size is the maximum number of bytes to be read.
  * @return the number of bytes received, 0 if the far end closed,
- * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * or <0 if an error occurred (errno will be EAGAIN for non-blocking,
  * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t size) {
@@ -227,7 +227,7 @@ static inline ssize_t diminuto_ipc_stream_read(int fd, void * buffer, size_t siz
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
  * @return the number of bytes received, 0 if the far end closed,
- * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * or <0 if an error occurred (errno will be EAGAIN for non-blocking,
  * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_write_generic(int fd, const void * buffer, size_t min, size_t max) {
@@ -240,7 +240,7 @@ static inline ssize_t diminuto_ipc_stream_write_generic(int fd, const void * buf
  * @param buffer points to the buffer from which data is written.
  * @param size is the maximum number of bytes to be written.
  * @return the number of bytes received, 0 if the far end closed,
- * or <0 if an error occurred (errno will be EGAIN for non-blocking,
+ * or <0 if an error occurred (errno will be EAGAIN for non-blocking,
  * EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, size_t size) {

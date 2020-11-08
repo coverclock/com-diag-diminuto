@@ -477,7 +477,7 @@ static inline int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminut
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_stream_read_generic(int fd, void * buffer, size_t min, size_t max) {
     return diminuto_ipc_stream_read_generic(fd, buffer, min, max);
@@ -488,7 +488,7 @@ static inline ssize_t diminuto_ipc6_stream_read_generic(int fd, void * buffer, s
  * @param fd is an open stream socket.
  * @param buffer points to the buffer into which data is read.
  * @param size is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_stream_read(int fd, void * buffer, size_t size) {
     return diminuto_ipc_stream_read(fd, buffer, size);
@@ -502,7 +502,7 @@ static inline ssize_t diminuto_ipc6_stream_read(int fd, void * buffer, size_t si
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_stream_write_generic(int fd, const void * buffer, size_t min, size_t max) {
     return diminuto_ipc_stream_write_generic(fd, buffer, min, max);
@@ -513,7 +513,7 @@ static inline ssize_t diminuto_ipc6_stream_write_generic(int fd, const void * bu
  * @param fd is an open stream socket.
  * @param buffer points to the buffer from which data is written.
  * @param size is the maximum number of bytes to be written.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_stream_write(int fd, const void * buffer, size_t size) {
     return diminuto_ipc_stream_write(fd, buffer, size);
@@ -571,7 +571,7 @@ static inline int diminuto_ipc6_datagram_peer(diminuto_port_t port) {
  * @param addressp if non-NULL points to where the address will be stored.
  * @param portp if non-NULL points to where the port will be stored.
  * @param flags is the recvfrom(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc6_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv6_t * addressp, diminuto_port_t * portp, int flags);
 
@@ -582,7 +582,7 @@ extern ssize_t diminuto_ipc6_datagram_receive_generic(int fd, void * buffer, siz
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size_t size) {
     return diminuto_ipc6_datagram_receive_generic(fd, buffer, size, (diminuto_ipv6_t *)0, (diminuto_port_t *)0, 0);
@@ -600,7 +600,7 @@ static inline ssize_t diminuto_ipc6_datagram_receive(int fd, void * buffer, size
  * @param address is the receiver's address.
  * @param port is the receiver's port.
  * @param flags is the sendto(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipc6_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port, int flags);
 
@@ -614,7 +614,7 @@ extern ssize_t diminuto_ipc6_datagram_send_generic(int fd, const void * buffer, 
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
  * @param port is the receiver's port.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipc6_datagram_send(int fd, const void * buffer, size_t size, diminuto_ipv6_t address, diminuto_port_t port) {
     return diminuto_ipc6_datagram_send_generic(fd, buffer, size, address, port, 0);

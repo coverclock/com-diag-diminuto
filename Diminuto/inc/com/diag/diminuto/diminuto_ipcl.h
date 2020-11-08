@@ -6,7 +6,7 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Provides a slightly simpler interface to stream and datagram Local sockets.
+ * @brief Provides a interface to stream, datagram, and packet Local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -160,7 +160,6 @@ static inline int diminuto_ipcl_stream_consumer_generic(const diminuto_local_t a
 /**
  * Request a consumer-side stream socket to a provider.
  * @param address is the provider's Local address in host byte order.
- * @param port is the provider's port in host byte order.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const diminuto_local_t address) {
@@ -175,7 +174,7 @@ static inline int diminuto_ipcl_stream_consumer(const diminuto_local_t address) 
  * @param buffer points to the buffer into which data is read.
  * @param min is the minimum number of bytes to be read.
  * @param max is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_stream_read_generic(int fd, void * buffer, size_t min, size_t max) {
     return diminuto_ipc_stream_read_generic(fd, buffer, min, max);
@@ -186,7 +185,7 @@ static inline ssize_t diminuto_ipcl_stream_read_generic(int fd, void * buffer, s
  * @param fd is an open stream socket.
  * @param buffer points to the buffer into which data is read.
  * @param size is the maximum number of bytes to be read.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_stream_read(int fd, void * buffer, size_t size) {
     return diminuto_ipc_stream_read(fd, buffer, size);
@@ -200,7 +199,7 @@ static inline ssize_t diminuto_ipcl_stream_read(int fd, void * buffer, size_t si
  * @param buffer points to the buffer from which data is written.
  * @param min is the minimum number of bytes to be written.
  * @param max is the maximum number of bytes to be written.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_stream_write_generic(int fd, const void * buffer, size_t min, size_t max) {
     return diminuto_ipc_stream_write_generic(fd, buffer, min, max);
@@ -211,7 +210,7 @@ static inline ssize_t diminuto_ipcl_stream_write_generic(int fd, const void * bu
  * @param fd is an open stream socket.
  * @param buffer points to the buffer from which data is written.
  * @param size is the number of bytes to be written.
- * @return the number of bytes sent, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes sent, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_stream_write(int fd, const void * buffer, size_t size) {
     return diminuto_ipc_stream_write(fd, buffer, size);
@@ -241,10 +240,8 @@ static inline int diminuto_ipcl_datagram_peer_generic(const diminuto_local_t add
 }
 
 /**
- * Request a peer datagram socket. The port is in host byte order. If the port
- * is zero, an unused ephemeral port is allocated; its value can be determined
- * using the nearend function.
- * @param port is the port number.
+ * Request a peer datagram socket.
+ * @param address is the Local address of the interface to use.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_datagram_peer(const diminuto_local_t address) {
@@ -253,32 +250,28 @@ static inline int diminuto_ipcl_datagram_peer(const diminuto_local_t address) {
 
 /**
  * Receive a datagram from a datagram socket using the specified flags.
- * Optionally return the address and port of the sender. Flags may be specified
- * for recvfrom(2) such as MSG_DONTWAIT, MSG_WAITALL, or MSG_OOB. (This function
- * can legitimately be also used with a stream socket.)
+ * Flags may be specified for recvfrom(2) such as MSG_DONTWAIT, MSG_WAITALL,
+ * or MSG_OOB. (This function can legitimately be also used with a stream
+ * socket.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param addressp if non-NULL points to where the address will be stored
- * in host byte order.
- * @param portp if non-NULL points to where the port will be stored
- * in host byte order.
  * @param flags is the recvfrom(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, const diminuto_local_t * addressp, diminuto_port_t * portp, int flags);
+extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, int flags);
 
 /**
- * Receive a datagram from a datagram socket using no flags. Optionally return
- * the address and port of the sender. (This function can legitimately be also
+ * Receive a datagram from a datagram socket using no flags. (This function can
+ * legitimately be also
  * used with a stream socket.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size_t size) {
-    return diminuto_ipcl_datagram_receive_generic(fd, buffer, size, (const diminuto_local_t *)0, (diminuto_port_t *)0, 0);
+    return diminuto_ipcl_datagram_receive_generic(fd, buffer, size, 0);
 }
 
 /**
@@ -290,9 +283,8 @@ static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
- * @param port is the receiver's port.
  * @param flags is the sendto(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t size, const diminuto_local_t address, int flags);
 
@@ -304,26 +296,10 @@ extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, 
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
- * @param port is the receiver's port.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EGAIN for non-blocking, EINTR for timer expiry).
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, size_t size, const diminuto_local_t address) {
-    return diminuto_ipcl_datagram_send_generic(fd, buffer, size, address, port, 0);
+    return diminuto_ipcl_datagram_send_generic(fd, buffer, size, address, 0);
 }
-
-/*******************************************************************************
- * INTERFACES
- ******************************************************************************/
-
-/**
- * Return a list of Local addresses associated with the specified network
- * interface. The addresses will be in host byte order. Since a single
- * interface can map to multiple addresses, this returns a list of addresses
- * in dynamically acquired memory. The last entry will be all zeros. The
- * list must be freed by the application using free(3).
- * @param interface points to the interface name string.
- * @return an array or NULL if no such interface or the string is invalid.
- */
-extern const diminuto_local_t * diminuto_ipcl_interface(const char * interface);
 
 #endif
