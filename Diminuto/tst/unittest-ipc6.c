@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the IPC feature for IPv6.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -252,16 +252,16 @@ int main(int argc, char * argv[])
          * Long pause here, not sure why. strace(1) suggests it's blocked in
          * a poll(2) in the resolver waiting on a socket to "127.0.1.1", which
          * is a variant of the localhost IPv4 loopback address, trying to
-         * resolve "diag.com". I'm seeing some long delays on "copper", the
-         * RaspberryPi 3 too, that seem to be related to DNS6 over the
-         * Hurricane Electric tunnel.
+         * resolve "prairiethorn.org", my test domain. I'm seeing some long
+         * delays on "copper", a RaspberryPi 3 too, that seem to be related
+         * to DNS6 over the Hurricane Electric tunnel.
          */
 
-        address6 = diminuto_ipc6_address("www.diag.com");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        address6 = diminuto_ipc6_address("prairiethorn.org");
+        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(!diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "www.diag.com", buffer);
+        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "prairiethorn.org", buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
         DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
@@ -419,16 +419,16 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc6_addresses("diag.com");
+        addresses = diminuto_ipc6_addresses("prairiethorn.org");
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "diag.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "diag.com", buffer);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "prairiethorn.org", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -644,7 +644,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("prairiethorn.org"), diminuto_ipc6_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
