@@ -17,7 +17,7 @@
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 
-#define FQDN4 "diag.com"
+#define FQDN4 "prairiethorn.org"
 #define FQDN6 "google.com"
 #define IPV4 "205.178.189.131"
 #define IPV6 "2607:f8b0:400f:805::200e"

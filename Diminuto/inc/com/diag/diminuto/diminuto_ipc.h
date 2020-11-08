@@ -12,8 +12,8 @@
  * @details
  *
  * The IPC feature provides  socket and other interprocess/interprocessor
- * communication capabilities that are agnostic as to whether IPv4 or IPv6
- * is being used.
+ * communication capabilities that are agnostic as to whether IPv4, IPv6,
+ * or UNIX domain communication channels are being used.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -318,7 +318,7 @@ typedef struct DiminutoIpcEndpoint {
  * "diag.com:http",
  * "172.217.1.206:80",
  * "[::ffff:172.217.1.206]:80",
- * "[2607:f8b0:400f:805::200e]:80",
+ * "[2607:f8b0:400f:805::200e]:http",
  * "/tmp/unix.sock",
  * "./unix.sock",
  * "run/unix.sock",
