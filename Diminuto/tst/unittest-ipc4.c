@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the IPC feature for IPv4.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -129,8 +129,8 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", address, DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
-        address = diminuto_ipc4_address("www.diag.com");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "www.diag.com", address, 0UL);
+        address = diminuto_ipc4_address("prairiethorn.org");
+        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", address, 0UL);
         EXPECT(address != 0UL);
 
         address = diminuto_ipc4_address("invalid.domain");
@@ -226,11 +226,11 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc4_addresses("www.diag.com");
+        addresses = diminuto_ipc4_addresses("prairiethorn.org");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "www.diag.com", addresses[ii], 0UL);
+            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -326,7 +326,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.diag.com"), diminuto_ipc4_port("http", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("prairiethorn.org"), diminuto_ipc4_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
         EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("http", NULL))) >= 0);
