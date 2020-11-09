@@ -24,7 +24,6 @@
 #endif
 #include "com/diag/diminuto/diminuto_debug.h"
 #include <errno.h>
-#include <sys/param.h>
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -64,7 +63,7 @@ int diminuto_pin_configure_generic(const char * format, int pin, const char * st
 {
     int result = -1;
     int rc = -1;
-    char filename[PATH_MAX] = { '\0', };
+    diminuto_path_t filename = { '\0', };
     struct stat status = { 0, };
     FILE * fp = (FILE *)0;
     int tt = 0;
@@ -220,7 +219,7 @@ int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
 FILE * diminuto_pin_open(int pin, int output)
 {
     FILE * fp = (FILE *)0;
-    char filename[PATH_MAX];
+    diminuto_path_t filename;
     int rc = -1;
     struct stat status;
     const char * mode = (const char *)0;

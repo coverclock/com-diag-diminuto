@@ -119,11 +119,10 @@ int main(void)
     printsizeof(diminuto_ipv6_t);
     printsizeof(diminuto_ipv6_buffer_t);
     printsignof(diminuto_port_t);
-    printsizeof(diminuto_local_t);
     printsizeof(diminuto_local_buffer_t);
     printsignof(diminuto_unsigned_t);
     printsignof(diminuto_signed_t);
-    printsizeof(diminuto_path_buffer_t);
+    printsizeof(diminuto_path_t);
 #if defined(PROBLEMATIC)
     printsizeof(struct Zero);
     printsizeof(Array);

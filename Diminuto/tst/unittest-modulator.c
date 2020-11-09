@@ -11,6 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
@@ -22,7 +23,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/param.h>
 
 static const char TMP[] = "/tmp";
 
@@ -31,7 +31,7 @@ static int systemf(const char * format, ...)
 {
     int rc;
     va_list ap;
-    char buffer[PATH_MAX];
+    diminuto_path_t buffer;
 
     DIMINUTO_LOG_DEBUG("%sformat=\"%s\"", DIMINUTO_LOG_HERE, format);
 
@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
 {
     const char * root;
     const char * prior;
-    char buffer[PATH_MAX];
+    diminuto_path_t buffer;
     diminuto_modulator_t modulator;
     int duty;
     unsigned int flicker;

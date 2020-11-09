@@ -125,4 +125,15 @@ extern int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, v
  */
 extern int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all);
 
+/**
+ * Expand a path into an absolute path, resolving all soft links and directory
+ * operators (like "./" or "../") and removing duplicate separators (like "//").
+ * All but the final path component must already exist.
+ * @param path is the original directory path.
+ * @param absolutepath is the new directory path.
+ * @param size is the size of the absolute path buffer in bytes.
+ * @return 0 for success, <0 if an error occurred.
+ */
+extern int diminuto_fs_resolve(const char * path, char * absolutepath, size_t size);
+
 #endif

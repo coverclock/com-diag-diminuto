@@ -106,8 +106,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * service = (char *)0;
     char * path = (char *)0;
     char * file = (char *)0;
-    diminuto_path_buffer_t buffer = { '\0', };
-    diminuto_path_buffer_t local = { '\0', };
+    diminuto_path_t buffer = { '\0', };
+    diminuto_path_t local = { '\0', };
     bool is_ipv4 = false;
     bool is_ipv6 = false;
 

@@ -11,11 +11,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_observation.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
-#include <sys/param.h>
 #include <errno.h>
 #include <stdlib.h>
 
@@ -32,14 +32,14 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
 
     do {
 
-        if (sizeof(SUFFIX) > PATH_MAX) {
+        if (sizeof(SUFFIX) > sizeof(diminuto_path_t)) {
             errno = E2BIG;
             diminuto_perror("diminuto_observation_create: sizeof");
             break;
         }
 
         length = strlen(path);
-        if (length > (PATH_MAX - sizeof(SUFFIX) - 1)) {
+        if (length > (sizeof(diminuto_path_t) - sizeof(SUFFIX) - 1)) {
             errno = ENAMETOOLONG;
             diminuto_perror("diminuto_observation_create: strlen");
             break;
@@ -91,7 +91,7 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
     do {
 
         length = strlen(*tempp);
-        if (!((sizeof(SUFFIX) < length) && (length < PATH_MAX))) {
+        if (!((sizeof(SUFFIX) < length) && (length < sizeof(diminuto_path_t)))) {
             errno = ENAMETOOLONG;
             diminuto_perror("diminuto_observation_commit: strlen");
             break;
@@ -156,7 +156,7 @@ FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
     do {
 
         length = strlen(*tempp);
-        if (!((sizeof(SUFFIX) < length) && (length < PATH_MAX))) {
+        if (!((sizeof(SUFFIX) < length) && (length < sizeof(diminuto_path_t)))) {
             errno = ENAMETOOLONG;
             diminuto_perror("diminuto_observation_checkpoint: strlen");
             break;

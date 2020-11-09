@@ -27,42 +27,42 @@
  ******************************************************************************/
 
 /**
- * Compares two Local addresses. This is not as simple as doing a string
+ * Compares two Local paths. This is not as simple as doing a string
  * comparison: all of the soft links and special directory characters in
- * each path is resolved before the comparison. This means Local addresses
+ * each path is resolved before the comparison. This means Local paths
  * that look quite different may in fact resolve to the same UNIX domain socket.
- * @param address1p points to the first Local address.
- * @param address2p points to the second Local address.
+ * @param path1p points to the first Local path.
+ * @param path2p points to the second Local path.
  * @return 0 if equal, <0 if less than, >0 if greater than.
  */
-extern int diminuto_ipcl_compare(const diminuto_local_t address1p, const diminuto_local_t address2p);
+extern int diminuto_ipcl_compare(const char * path1p, const char * path2p);
 
 /*******************************************************************************
  * STRINGIFIERS
  ******************************************************************************/
 
 /**
- * Convert an Local address in host byte order into a printable Local address
+ * Convert an Local path in host byte order into a printable Local path
  * string in dot notation. This has the side effect of resolving all the soft
- * links and special directory characters in the address in the output buffer,
+ * links and special directory characters in the path in the output buffer,
  * and can be used specifically for that purpose.
- * @param address is the Local address in host byte order.
+ * @param path is the Local path in host byte order.
  * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
  */
-extern const char * diminuto_ipcl_address2string(const diminuto_local_t address, char * buffer, size_t length);
+extern const char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t length);
 
 /*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
 /**
- * Bind an existing socket to a specific address.
+ * Bind an existing socket to a specific path.
  * @param fd is the socket.
- * @param address is the address to which to bind.
+ * @param path is the path to which to bind.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipcl_source(int fd, const diminuto_local_t address);
+extern int diminuto_ipcl_source(int fd, const char * path);
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.
@@ -88,26 +88,26 @@ static inline int diminuto_ipcl_close(int fd) {
  ******************************************************************************/
 
 /**
- * Create a provider-side stream socket bound to a specific address and with
+ * Create a provider-side stream socket bound to a specific path and with
  * a specific connection backlog. If an optional function is provided by the
  * caller, invoke it to set socket options before the listen(2) is performed.
- * @param address is the address of the interface that will be used.
+ * @param path is the path of the interface that will be used.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_provider_base(const diminuto_local_t address, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_stream_provider_base(const char * path, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Create a provider-side stream socket bound to a specific address and with
+ * Create a provider-side stream socket bound to a specific path and with
  * a specific connection backlog.
- * @param address is the address of the interface that will be used.
+ * @param path is the path of the interface that will be used.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_provider_generic(const diminuto_local_t address, int backlog) {
-    return diminuto_ipcl_stream_provider_base(address, backlog, diminuto_ipc_inject_defaults, (void *)0);
+static inline int diminuto_ipcl_stream_provider_generic(const char * path, int backlog) {
+    return diminuto_ipcl_stream_provider_base(path, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
@@ -115,8 +115,8 @@ static inline int diminuto_ipcl_stream_provider_generic(const diminuto_local_t a
  * @param port is the port number at which connection requests will rendezvous.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_provider(const diminuto_local_t address) {
-    return diminuto_ipcl_stream_provider_generic(address, -1);
+static inline int diminuto_ipcl_stream_provider(const char * path) {
+    return diminuto_ipcl_stream_provider_generic(path, -1);
 }
 
 /**
@@ -138,32 +138,32 @@ static inline int diminuto_ipcl_stream_accept(int fd) {
 }
 
 /**
- * Request a consumer-side stream socket to a provider using a specific address.
+ * Request a consumer-side stream socket to a provider using a specific path.
  * If an optional function is provided by the caller, invoke it to set socket
  * options before the connect(2) is performed.
- * @param address is the provider's Local address.
+ * @param path is the provider's Local path.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_consumer_base(const diminuto_local_t address, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Request a consumer-side stream socket to a provider using a specific address.
- * @param address is the provider's Local address.
+ * Request a consumer-side stream socket to a provider using a specific path.
+ * @param path is the provider's Local path.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_consumer_generic(const diminuto_local_t address) {
-    return diminuto_ipcl_stream_consumer_base(address, (diminuto_ipc_injector_t *)0, (void *)0);
+static inline int diminuto_ipcl_stream_consumer_generic(const char * path) {
+    return diminuto_ipcl_stream_consumer_base(path, (diminuto_ipc_injector_t *)0, (void *)0);
 }
 
 /**
  * Request a consumer-side stream socket to a provider.
- * @param address is the provider's Local address in host byte order.
+ * @param path is the provider's Local path in host byte order.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_consumer(const diminuto_local_t address) {
-    return diminuto_ipcl_stream_consumer_generic(address);
+static inline int diminuto_ipcl_stream_consumer(const char * path) {
+    return diminuto_ipcl_stream_consumer_generic(path);
 }
 
 /**
@@ -223,29 +223,29 @@ static inline ssize_t diminuto_ipcl_stream_write(int fd, const void * buffer, si
 /**
  * Request a peer datagram socket. If an optional function is provided by the
  * caller, invoke it to set socket options.
- * @param address is the Local address of the interface to use.
+ * @param path is the Local path of the interface to use.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-extern int diminuto_ipcl_datagram_peer_base(const diminuto_local_t address, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
  * Request a peer datagram socket.
- * @param address is the Local address of the interface to use.
+ * @param path is the Local path of the interface to use.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_datagram_peer_generic(const diminuto_local_t address) {
-    return diminuto_ipcl_datagram_peer_base(address, diminuto_ipc_inject_defaults, (void *)0);
+static inline int diminuto_ipcl_datagram_peer_generic(const char * path) {
+    return diminuto_ipcl_datagram_peer_base(path, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
  * Request a peer datagram socket.
- * @param address is the Local address of the interface to use.
+ * @param path is the Local path of the interface to use.
  * @return a peer datagram socket or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_datagram_peer(const diminuto_local_t address) {
-    return diminuto_ipcl_datagram_peer_generic(address);
+static inline int diminuto_ipcl_datagram_peer(const char * path) {
+    return diminuto_ipcl_datagram_peer_generic(path);
 }
 
 /**
@@ -278,28 +278,28 @@ static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size
  * Send a datagram to a datagram socket using the specified flags. Flags may be
  * specified for sendto(2) such as MSG_DONTWAIT, MSG_WAITALL, or MSG_OOB. (This
  * function can legitimately be also used with a stream socket by passing zero
- * as the port number, in which case the address is ignored.)
+ * as the port number, in which case the path is ignored.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
- * @param address is the receiver's address.
+ * @param path is the receiver's path.
  * @param flags is the sendto(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t size, const diminuto_local_t address, int flags);
+extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t size, const char * path, int flags);
 
 /**
  * Send a datagram to a datagram socket using no flags. (This function can
  * legitimately be also used with a stream socket by passing zero as the port
- * number, in which case the address is ignored.)
+ * number, in which case the path is ignored.)
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
- * @param address is the receiver's address.
+ * @param path is the receiver's path.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
-static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, size_t size, const diminuto_local_t address) {
-    return diminuto_ipcl_datagram_send_generic(fd, buffer, size, address, 0);
+static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, size_t size, const char * path) {
+    return diminuto_ipcl_datagram_send_generic(fd, buffer, size, path, 0);
 }
 
 #endif

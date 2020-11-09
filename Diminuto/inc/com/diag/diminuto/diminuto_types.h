@@ -98,69 +98,66 @@ typedef struct { uint16_t u16[128 / 8 / sizeof(uint16_t)]; } diminuto_ipv6_t;
  */
 typedef uint16_t diminuto_port_t;
 
-/**
- * This type describes the declaration of a variable containing a path
- * name that can be used as a UNIX (or Local) domain socket address in
- * the file system. File system path names are limited in size to
- * PATH_MAX (which is quite large, typically 4096 bytes). UNIX domain
- * socket paths are limited to UNIX_PATH_MAX
+/*
+ * I don't define a type for Local (UNIX domain) paths because I tried
+ * that and I just found that it obfuscated what was going on.
  */
-typedef char * diminuto_local_t;
 
 /**
- * @def DIMINUTO_IPV4_BUFSIZE
+ * @def DIMINUTO_IPV4_SIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv4 address string.
  */
-#define DIMINUTO_IPV4_BUFSIZE sizeof("255.255.255.255")
+#define DIMINUTO_IPV4_SIZE sizeof("255.255.255.255")
 
 /**
  * This defines a type of character array that can contain an IPv4 address
  * string.
  */
-typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_BUFSIZE];
+typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_SIZE];
 
 /**
- * @def DIMINUTO_IPV6_BUFSIZE
+ * @def DIMINUTO_IPV6_SIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv6 address string.
  */
-#define DIMINUTO_IPV6_BUFSIZE sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+#define DIMINUTO_IPV6_SIZE sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
 
 /**
  * This defines a type of character array that can contain an IPv6 address
  * string.
  */
-typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_BUFSIZE];
+typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
 
 /**
- * @def DIMINUTO_LOCAL_BUFSIZE
+ * @def DIMINUTO_LOCAL_SIZE
  * This defines the buffer size, including the terminating NUL, needed
  * to express a Local (UNIX domain socket path) string.
  * UNIX domain socket names have a smaller size limit than full
  * blown file system names; a full path may be reduced to a smaller
  * length once soft links etc. are resolved.
  */
-#define DIMINUTO_LOCAL_BUFSIZE UNIX_PATH_MAX
+#define DIMINUTO_LOCAL_SIZE UNIX_PATH_MAX
 
 /**
  * This defines a type of character array that can contain a Local
- * (UNIX domain socket path) string.
+ * (UNIX domain socket path) string. This is NOT large enough to
+ * hold any arbitary file system path.
  */
-typedef char (diminuto_local_buffer_t)[DIMINUTO_LOCAL_BUFSIZE];
+typedef char (diminuto_local_buffer_t)[DIMINUTO_LOCAL_SIZE];
 
 /**
- * @def DIMINUTO_PATH_BUFSIZE
+ * @def DIMINUTO_PATH_SIZE
  * This defines the buffer size, including the terminating NUL, needed
  * to express a full file system path. This can be quite large,
  * typically 4096 bytes (4KB).
  */
-#define DIMINUTO_PATH_BUFSIZE PATH_MAX
+#define DIMINUTO_PATH_SIZE PATH_MAX
 
 /**
  * This defines a type of character array that can contain a file
  * system path including its terminating NUL.
  */
-typedef char (diminuto_path_buffer_t)[DIMINUTO_PATH_BUFSIZE];
+typedef char (diminuto_path_t)[DIMINUTO_PATH_SIZE];
 
 #endif

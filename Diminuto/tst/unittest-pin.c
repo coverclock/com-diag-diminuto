@@ -28,7 +28,7 @@ static int systemf(const char * format, ...)
 {
     int rc;
     va_list ap;
-    char buffer[PATH_MAX];
+    diminuto_path_t buffer;
 
     DIMINUTO_LOG_DEBUG("%sformat=\"%s\"", DIMINUTO_LOG_HERE, format);
 
@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
 {
     const char * root;
     const char * prior;
-    char buffer[PATH_MAX];
+    diminuto_path_t buffer;
     FILE * pin98;
     FILE * pin99;
 

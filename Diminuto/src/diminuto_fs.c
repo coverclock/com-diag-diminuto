@@ -10,6 +10,7 @@
  * This is the implementation of the File System (FS) feature.
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
@@ -87,7 +88,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
          * it as well. This is just a safety valve.
          */
 
-        if (depth > (PATH_MAX / 2)) {
+        if (depth > (sizeof(diminuto_path_t) / 2)) {
             errno = E2BIG;
             diminuto_perror(path);
             xc = -3;
@@ -101,13 +102,13 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
          * string could not be represented.
          */
 
-        length = strnlen(name, PATH_MAX);
+        length = strnlen(name, sizeof(diminuto_path_t));
         if (length == 0) {
             errno = EINVAL;
             diminuto_perror(path);
             xc = -4;
             break;
-        } else if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > PATH_MAX) {
+        } else if ((total + 1 /* '/' */ + length + 1 /* '\0' */) > sizeof(diminuto_path_t)) {
             errno = EFBIG;
             diminuto_perror(path);
             xc = -5;
@@ -254,8 +255,8 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep)
 {
     int rc = 0;
-    char real[PATH_MAX] = { '\0', };
-    char path[PATH_MAX] = { '\0', };
+    diminuto_path_t real = { '\0', };
+    diminuto_path_t path = { '\0', };
 
     if (realpath(root, real) == (char *)0) {
         diminuto_perror(root);
@@ -279,7 +280,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
     do {
 
         length = strlen(path);
-        if (length >= PATH_MAX) {
+        if (length >= sizeof(diminuto_path_t)) {
             rc = -1;
             errno = ENAMETOOLONG;
             break;
@@ -333,6 +334,32 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
 
     if (sink != (char *)0) {
         free(sink);
+    }
+
+    return rc;
+}
+
+int diminuto_fs_resolve(const char * path, char * absolutepath, size_t size)
+{
+    int rc = -1;
+    char * file = (char *)0;
+    diminuto_path_t buffer = { '\0', };
+
+    if ((file = strrchr(path, '/')) > path) {
+        *(file++) = '\0';
+    }
+
+    if (realpath(path, buffer) == (char *)0) {
+        diminuto_perror(path);
+    } else {
+        strncpy(absolutepath, buffer, size);
+        size -= strlen(absolutepath);
+        if (file > path) {
+            strncat(absolutepath, "/", size);
+            size -= 1;
+            strncat(absolutepath, file, size);
+        }
+        rc = 0;
     }
 
     return rc;

@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Path feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -11,13 +11,13 @@
  */
 
 #include "com/diag/diminuto/diminuto_path.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 
 char * diminuto_path_scan(const char * string, const char * file)
 {
@@ -47,7 +47,7 @@ char * diminuto_path_scan(const char * string, const char * file)
 
         while ((prefix = strtok_r(here, ":", &context)) != (char *)0) {
 
-            char candidate[PATH_MAX];
+            diminuto_path_t candidate;
             size = snprintf(candidate, sizeof(candidate), "%s/%s", prefix, file);
             if (size >= sizeof(candidate)) {
                 break;
