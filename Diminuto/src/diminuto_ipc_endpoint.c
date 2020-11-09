@@ -497,12 +497,15 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         if (path == (char *)0) {
             /* Do nothing. */
         } else if (diminuto_fs_resolve(path, endpoint->local, sizeof(endpoint->local)) < 0) {
+            /* FS Resolve failed. */
             rc = -5;
         } else if ((length = strlen(endpoint->local)) < 2) {
+            /* Must be at least "/x". */
             errno = EINVAL;
             diminuto_perror(path);
             rc = -6;
         } else if (endpoint->local[length - 1] == '/') {
+            /* FS Resolve gave us "/path/" so no file name. */
             errno = EINVAL;
             diminuto_perror(path);
             rc = -6;
