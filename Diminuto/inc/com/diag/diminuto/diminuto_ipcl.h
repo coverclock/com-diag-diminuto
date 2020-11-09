@@ -23,6 +23,22 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
+
+/**
+ * Convert an Local path into a printable Local path string.
+ * This has the side effect of canonicalizing all the soft links and special
+ * directory characters in the path in the output buffer, and can be used
+ * specifically for that purpose.
+ * @param path is the Local path.
+ * @param buffer points to the buffer into to which the string is stored.
+ * @param size is the length of the buffer in bytes.
+ * @return a pointer to the output buffer or NULL if an error occurred.
+ */
+extern char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t size);
+
+/*******************************************************************************
  * COMPARATORS
  ******************************************************************************/
 
@@ -38,21 +54,6 @@
 extern int diminuto_ipcl_compare(const char * path1p, const char * path2p);
 
 /*******************************************************************************
- * STRINGIFIERS
- ******************************************************************************/
-
-/**
- * Convert an Local path in host byte order into a printable Local path
- * string in dot notation. This has the side effect of resolving all the soft
- * links and special directory characters in the path in the output buffer,
- * and can be used specifically for that purpose.
- * @param path is the Local path in host byte order.
- * @param buffer points to the buffer into to which the string is stored.
- * @param length is the length of the buffer in bytes.
- */
-extern const char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t length);
-
-/*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
@@ -66,7 +67,7 @@ extern int diminuto_ipcl_source(int fd, const char * path);
 
 /**
  * Shutdown a socket. This eliminates the transmission of any pending data.
- * @param fd is an open socket of any type.
+e* @param fd is an open socket of any type.
  * @return 0 for success or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_shutdown(int fd) {
@@ -159,7 +160,7 @@ static inline int diminuto_ipcl_stream_consumer_generic(const char * path) {
 
 /**
  * Request a consumer-side stream socket to a provider.
- * @param path is the provider's Local path in host byte order.
+ * @param path is the provider's Local path.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const char * path) {

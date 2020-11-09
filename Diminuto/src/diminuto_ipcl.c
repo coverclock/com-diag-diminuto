@@ -3,18 +3,18 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is the implementation of the IPC feature for IPv4.
+ * @brief This is the implementation of the IPC feature for Local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is the implementation of the IPC feature for IPv4.
+ * This is the implementation of the IPC feature for Local (UNIX Domain)
+ * sockets.
  */
 
 #include "com/diag/diminuto/diminuto_ipcl.h"
-#include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -29,11 +29,36 @@
 #include <linux/limits.h>
 #include <net/if.h>
 
-int diminuto_ipcl_compare(const char * path1p, const char * path2p)
+char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t size)
 {
+    char * result = (char *)0;
+    diminuto_local_buffer_t local = { '\0', };
+    size_t length = 0;
+
+    if (diminuto_fs_canonicalize(path, local, sizeof(local)) < 0) {
+        /* Canonicalization failed. */
+    } else if ((length = strlen(local)) < 2) {
+        /* Must be at least "/x". */
+        errno = EINVAL;
+        diminuto_perror(path);
+    } else if (local[length - 1] == '/') {
+        /* Canonicalization gave us "/path/" but no file name. */
+        errno = EINVAL;
+        diminuto_perror(path);
+    } else if (length >= size) {
+        /* Too long. */
+        errno = ENAMETOOLONG;
+        diminuto_perror(path);
+    } else {
+        strncpy(buffer, local, size);
+        buffer[size - 1] = '\0';
+        result = buffer;
+    }
+
+    return result;
 }
 
-const char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t length)
+int diminuto_ipcl_compare(const char * path1p, const char * path2p)
 {
 }
 

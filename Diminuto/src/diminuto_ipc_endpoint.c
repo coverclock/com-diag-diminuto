@@ -14,7 +14,7 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
-#include "com/diag/diminuto/diminuto_fs.h"
+#include "com/diag/diminuto/diminuto_ipcl.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <stdlib.h>
@@ -496,21 +496,10 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         if (path == (char *)0) {
             /* Do nothing. */
-        } else if (diminuto_fs_canonicalize(path, endpoint->local, sizeof(endpoint->local)) < 0) {
-            /* FS Resolve failed. */
-            rc = -5;
-        } else if ((length = strlen(endpoint->local)) < 2) {
-            /* Must be at least "/x". */
-            errno = EINVAL;
-            diminuto_perror(path);
-            rc = -6;
-        } else if (endpoint->local[length - 1] == '/') {
-            /* FS Resolve gave us "/path/" so no file name. */
-            errno = EINVAL;
-            diminuto_perror(path);
-            rc = -6;
-        } else {
+        } else if (diminuto_ipcl_path2string(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
             /* Do nothing. */
+        } else {
+            rc = -5;
         }
 
         /*
