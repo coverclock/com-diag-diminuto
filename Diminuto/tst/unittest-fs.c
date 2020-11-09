@@ -366,7 +366,7 @@ int main(int argc, char * argv[])
         TEST();
         path = "";
         buffer[0] = '!';
-        rc = diminuto_fs_resolve(path, buffer, 0);
+        rc = diminuto_fs_canonicalize(path, buffer, 0);
         ASSERT(rc < 0);
         ASSERT(buffer[0] == '!');
         STATUS();
@@ -380,7 +380,7 @@ int main(int argc, char * argv[])
         path = "/tmp/file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, 0);
+        rc = diminuto_fs_canonicalize(path, buffer, 0);
         ASSERT(rc < 0);
         ASSERT(buffer[0] == '!');
         STATUS();
@@ -394,7 +394,7 @@ int main(int argc, char * argv[])
         path = "/tmp/file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, 2);
+        rc = diminuto_fs_canonicalize(path, buffer, 2);
         ASSERT(rc < 0);
         ASSERT(buffer[0] == '!');
         STATUS();
@@ -408,7 +408,7 @@ int main(int argc, char * argv[])
         path = "/tmp/file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("relative=\"%s\"", path);
         COMMENT("absolute=\"%s\"", buffer);
@@ -424,7 +424,7 @@ int main(int argc, char * argv[])
         path = "/file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
@@ -439,7 +439,7 @@ int main(int argc, char * argv[])
         path = "/tmp/";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
@@ -454,7 +454,7 @@ int main(int argc, char * argv[])
         path = ".//file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         /* Don't really know what the result will be. */
@@ -469,7 +469,7 @@ int main(int argc, char * argv[])
         path = "..//file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         /* Don't really know what the result will be. */
@@ -484,7 +484,7 @@ int main(int argc, char * argv[])
         path = "/var/tmp/../run/./file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         /* Don't really know what the result will be. */
@@ -499,7 +499,7 @@ int main(int argc, char * argv[])
         path = "..///./file";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         /* Don't really know what the result will be. */
@@ -514,7 +514,7 @@ int main(int argc, char * argv[])
         path = "/";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
@@ -529,7 +529,7 @@ int main(int argc, char * argv[])
         path = "/.";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/") == 0);
@@ -544,7 +544,7 @@ int main(int argc, char * argv[])
         path = "/..";
         buffer[0] = '!';
         COMMENT("relative=\"%s\"", path);
-        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/") == 0);

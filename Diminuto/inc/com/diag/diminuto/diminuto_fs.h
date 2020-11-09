@@ -135,6 +135,6 @@ extern int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all);
  * @param size is the size of the absolute path buffer in bytes.
  * @return 0 for success, <0 if an error occurred.
  */
-extern int diminuto_fs_resolve(const char * path, char * buffer, size_t size);
+extern int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size);
 
 #endif

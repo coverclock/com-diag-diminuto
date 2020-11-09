@@ -339,7 +339,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
     return rc;
 }
 
-int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
+int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
 {
     int rc = -1;
     const char * file = (char *)0;
@@ -350,7 +350,7 @@ int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
 
     do {
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: relative=\"%s\"\n", path); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: relative=\"%s\"\n", path); }
 
         /*
          * There are a number of special or pathological cases that
@@ -408,7 +408,7 @@ int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
          * path and file are valid at this point.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: path=\"%s\" file=\"%s\"\n", path, file); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\" file=\"%s\"\n", path, file); }
 
         if (path[0] == '\0') {
             prefix = "";
@@ -424,7 +424,7 @@ int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
          * prefix is valid at this point.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: prefix=\"%s\"\n", prefix); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: prefix=\"%s\"\n", prefix); }
 
         if (length >= size) {
             errno = ENAMETOOLONG;
@@ -436,7 +436,7 @@ int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
         strcat(buffer, "/");
         strcat(buffer, file);
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: absolute=\"%s\"\n", buffer); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: absolute=\"%s\"\n", buffer); }
 
         rc = 0;
 

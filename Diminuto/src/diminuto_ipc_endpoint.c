@@ -496,7 +496,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         if (path == (char *)0) {
             /* Do nothing. */
-        } else if (diminuto_fs_resolve(path, endpoint->local, sizeof(endpoint->local)) < 0) {
+        } else if (diminuto_fs_canonicalize(path, endpoint->local, sizeof(endpoint->local)) < 0) {
             /* FS Resolve failed. */
             rc = -5;
         } else if ((length = strlen(endpoint->local)) < 2) {
