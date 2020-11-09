@@ -117,7 +117,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
             /* Do nothing. */
         }
 
-        if (Debug) { fprintf(stderr, "%s@%d: \"%s\" [%zu] \"%s\" [%zu]\n", __FILE__, __LINE__, path, total, name, length); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu] name=\"%s\"[%zu]\n", path, total, name, length); }
 
         /*
          * Contstruct a path (maybe be relative or absolute depending
@@ -136,7 +136,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
         strcat(path, name);
         total += length;
 
-        if (Debug) { fprintf(stderr, "%s@%d: \"%s\" [%zu]\n", __FILE__, __LINE__, path, total); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, total); }
 
         /*
          * Get the attributes for the file identified by the path. SOme errors
@@ -236,7 +236,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 
         path[prior] = '\0';
 
-        if (Debug) { fprintf(stderr, "%s@%d: \"%s\" [%zu]\n", __FILE__, __LINE__, path, prior); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, prior); }
 
     } while (0);
 
@@ -288,7 +288,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
             break;
         }
 
-        if (Debug) { fprintf(stderr, "%s@%d: path=\"%s\"\n", __FILE__, __LINE__, path); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: path=\"%s\"\n", path); }
 
         source = strdup(path);
 
@@ -302,19 +302,19 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
             *token = '\0';
         }
 
-        if (Debug) { fprintf(stderr, "%s@%d: source=\"%s\"\n", __FILE__, __LINE__, source); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: source=\"%s\"\n", source); }
 
         sink = (char *)calloc(length + 1, sizeof(char));
 
         target = source;
 
         while ((token = strtok_r(target, SLASH, &saveptr)) != (char *)0) {
-            if (Debug) { fprintf(stderr, "%s@%d: token=\"%s\"\n", __FILE__, __LINE__, token); }
+            if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: token=\"%s\"\n", token); }
             if (token != source) {
                 strcat(sink, SLASH);
             }
             strcat(sink, token);
-            if (Debug) { fprintf(stderr, "%s@%d: sink=\"%s\"\n", __FILE__, __LINE__, sink); }
+            if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: sink=\"%s\"\n", sink); }
             rc = mkdir(sink, mode);
             if (rc == 0) {
                 /* Do nothing. */
@@ -339,28 +339,108 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
     return rc;
 }
 
-int diminuto_fs_resolve(const char * path, char * absolutepath, size_t size)
+int diminuto_fs_resolve(const char * path, char * buffer, size_t size)
 {
     int rc = -1;
-    char * file = (char *)0;
-    diminuto_path_t buffer = { '\0', };
+    const char * file = (char *)0;
+    char * prefix = (char *)0;
+    diminuto_path_t relativepath = { '\0', };
+    diminuto_path_t absolutepath = { '\0', };
+    size_t length = 1; /* '/' */
 
-    if ((file = strrchr(path, '/')) > path) {
-        *(file++) = '\0';
-    }
+    do {
 
-    if (realpath(path, buffer) == (char *)0) {
-        diminuto_perror(path);
-    } else {
-        strncpy(absolutepath, buffer, size);
-        size -= strlen(absolutepath);
-        if (file > path) {
-            strncat(absolutepath, "/", size);
-            size -= 1;
-            strncat(absolutepath, file, size);
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: relative=\"%s\"\n", path); }
+
+        /*
+         * There are a number of special or pathological cases that
+         * realpath(3) doesn't quite handle to my satisfaction.
+         */
+
+        if (path[0] == '\0') {
+            /* There is no path or file: "". */
+            errno = EINVAL;
+            diminuto_perror(path);
+            break;
+        } else if ((path[0] == '/') && (path[1] == '\0')) {
+            /* There is only the root directory: "/". */
+            path = "";
+            file = "";
+        } else if ((path[0] == '/') && (path[1] == '.') && (path[2] == '\0')) {
+            /* There is only the root directory: "/.". */
+            path = "";
+            file = "";
+        } else if ((path[0] == '/') && (path[1] == '.') && (path[2] == '.') && (path[3] == '\0')) {
+            /* There is only the root directory: "/..". */
+            path = "";
+            file = "";
+        } else if ((file = strrchr(path, '/')) == (const char *)0) {
+            /* There is no path preceeding the file name: "file". */
+            file = path;
+            path = "./";
+        } else if (file[1] == '\0') {
+            /* There is no file name: "path/". */
+            file = "";
+        } else if ((file[1] == '.') && (file[2] == '\0')) {
+            /* There is no file name: "path/.". */
+            file = "";
+        } else if ((file[1] == '.') && (file[2] == '.') && (file[3] == '\0')) {
+            /* There is no file name: "path/..". */
+            file = "";
+        } else if (file <= path) {
+            /* The file resides in the root directory: "/file". */
+            file++;
+            path = "";
+        } else if (strlen(path) >= sizeof(relativepath)) {
+            /* Path name too long. */
+            errno = ENAMETOOLONG;
+            diminuto_perror(path);
+            break;
+        } else {
+            /* Nominal case: "path/file". */
+            file++;
+            strncpy(relativepath, path, file - path);
+            path = relativepath;
         }
+        length += strlen(file);
+
+        /*
+         * path and file are valid at this point.
+         */
+
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: path=\"%s\" file=\"%s\"\n", path, file); }
+
+        if (path[0] == '\0') {
+            prefix = "";
+        } else if ((prefix = realpath(path, absolutepath)) == (char *)0) {
+            diminuto_perror(path);
+            break;
+        } else {
+            absolutepath[sizeof(absolutepath) - 1] = '\0';
+        }
+        length += strlen(prefix);
+
+        /*
+         * prefix is valid at this point.
+         */
+
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: prefix=\"%s\"\n", prefix); }
+
+        if (length >= size) {
+            errno = ENAMETOOLONG;
+            diminuto_perror(path);
+            break;
+        }
+
+        strcpy(buffer, prefix);
+        strcat(buffer, "/");
+        strcat(buffer, file);
+
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_resolve: absolute=\"%s\"\n", buffer); }
+
         rc = 0;
-    }
+
+    } while (0);
 
     return rc;
 }

@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <string.h>
 #include <stdlib.h>
@@ -371,7 +372,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         /*
          * If (rc < 0) at this point, our simple little parser
-         * found a yntax error, even it recognized it. No
+         * found a syntax error, even it recognized it. No
          * point in continuing.
          */
 
@@ -500,6 +501,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             }
 
             if ((file = strrchr(path, '/')) == (char *)0) {
+                /* Should be impossible. */
                 errno = EINVAL;
                 diminuto_perror(path);
                 rc = -5;
@@ -507,6 +509,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             }
 
             if (*(file + 1) == '\0') {
+                /* There is no file name component. */
                 errno = EINVAL;
                 diminuto_perror(path);
                 rc = -6;
@@ -518,6 +521,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 *(file++) = '\0';
 
                 if (realpath(path, local) == (char *)0) {
+                    /* Resolution failed. */
                     diminuto_perror(path);
                     rc = -7;
                     break;
@@ -526,7 +530,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 local[sizeof(local) - 1] = '\0';
 
                 if ((strlen(local) + 1 /* '/' */ + strlen(file) + 1 /* '\0' */) > sizeof(endpoint->local)) {
-                    errno = EINVAL;
+                    /* Too long to be a UNIX domain socket. */
+                    errno = ENAMETOOLONG;
                     diminuto_perror(path);
                     rc = -8;
                     break;  
@@ -539,7 +544,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else {
 
                 if ((strlen(path) + 1 /* '\0' */) > sizeof(endpoint->local)) {
-                    errno = EINVAL;
+                    /* Too long to be a UNIX domain socket. */
+                    errno = ENAMETOOLONG;
                     diminuto_perror(path);
                     rc = -9;
                     break;  

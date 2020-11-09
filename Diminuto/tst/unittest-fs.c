@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
 static int callback(void * vp, const char * name, const char * path, size_t depth, const struct stat * statp)
 {
@@ -36,10 +37,19 @@ static int callback(void * vp, const char * name, const char * path, size_t dept
     }
 }
 
-int main(void)
+int main(int argc, char * argv[])
 {
+    int debug;
 
     SETLOGMASK();
+
+    if (argc <= 1) {
+        /* Do nothing. */
+    } else if  (strcmp(argv[1], "-d") != 0) {
+        /* Do nothing. */
+    } else { 
+        debug = diminuto_fs_debug(!0);
+    }
 
     {
         TEST();
@@ -49,7 +59,7 @@ int main(void)
     }
 
     {
-        mode_t mode = 0;
+        mode_t mode;
         diminuto_fs_type_t type = DIMINUTO_FS_TYPE_NONE;
         int ii;
         TEST();
@@ -64,28 +74,31 @@ int main(void)
     }
 
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk(".", callback, (void *)0);
         EXPECT(rc == -123);
         STATUS();
     }
+
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk(".", callback, "");
         EXPECT(rc == -456);
         STATUS();
     }
+
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk("/usr/local/bin", callback, "/usr/local/bin");
         EXPECT(rc == 123);
         STATUS();
     }
+
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk("/bin", callback, "/bin/true");
         /*
@@ -97,15 +110,17 @@ int main(void)
         EXPECT(rc == 123);
         STATUS();
     }
+
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk("/usr/local", callback, "/usr/local/bin");
         EXPECT(rc == 123);
         STATUS();
     }
+
     {
-        int rc = 0;
+        int rc;
         TEST();
         rc = diminuto_fs_walk("/usr/local", callback, "/usr/local/include/com-diag-diminuto-fs-non-existent");
         EXPECT(rc == 0);
@@ -113,19 +128,16 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
         TEST();
-        debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("", 0755, 0);
         ASSERT(rc == 0);
-        diminuto_fs_debug(debug);
         STATUS();
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         TEST();
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("", 0755, !0);
@@ -135,8 +147,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         TEST();
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("/", 0755, 0);
@@ -146,8 +158,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         TEST();
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("/", 0755, !0);
@@ -157,8 +169,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -172,8 +184,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -190,8 +202,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -205,8 +217,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -223,8 +235,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -238,8 +250,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -256,8 +268,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -278,8 +290,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -300,8 +312,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -322,8 +334,8 @@ int main(void)
     }
 
     {
-        int rc = 0;
-        int debug = 0;
+        int rc;
+        int debug;
         struct stat status;
         TEST();
         debug = diminuto_fs_debug(!0);
@@ -342,6 +354,204 @@ int main(void)
         diminuto_fs_debug(debug);
         STATUS();
     }
+
+    /*
+     * In the tests below I deliberately use _POSIX_PATH_MAX instead of PATH_MAX.
+     */
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "";
+        buffer[0] = '!';
+        rc = diminuto_fs_resolve(path, buffer, 0);
+        ASSERT(rc < 0);
+        ASSERT(buffer[0] == '!');
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/tmp/file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, 0);
+        ASSERT(rc < 0);
+        ASSERT(buffer[0] == '!');
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/tmp/file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, 2);
+        ASSERT(rc < 0);
+        ASSERT(buffer[0] == '!');
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/tmp/file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("relative=\"%s\"", path);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, path) == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, path) == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/tmp/";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, path) == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = ".//file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        /* Don't really know what the result will be. */
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "..//file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        /* Don't really know what the result will be. */
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/var/tmp/../run/./file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        /* Don't really know what the result will be. */
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "..///./file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        /* Don't really know what the result will be. */
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, path) == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/.";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, "/") == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/..";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_resolve(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, "/") == 0);
+        STATUS();
+    }
+
+    diminuto_fs_debug(debug);
 
     EXIT();
 }
