@@ -11,10 +11,12 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -38,6 +40,13 @@ int main(void)
 {
 
     SETLOGMASK();
+
+    {
+        TEST();
+        EXPECT(sizeof(diminuto_path_t) == PATH_MAX);
+        EXPECT(sizeof(diminuto_local_buffer_t) == UNIX_PATH_MAX);
+        STATUS();
+    }
 
     {
         mode_t mode = 0;
