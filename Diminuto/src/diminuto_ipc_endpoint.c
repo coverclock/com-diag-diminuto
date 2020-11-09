@@ -108,9 +108,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     char * path = (char *)0;
     char * file = (char *)0;
     diminuto_path_t buffer = { '\0', };
-    diminuto_path_t local = { '\0', };
     bool is_ipv4 = false;
     bool is_ipv6 = false;
+    size_t length = 0;
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
@@ -494,70 +494,21 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * may have resulted from different soft links can be compared.
          */
 
-        do {
-
-            if (path == (char *)0) {
-                break;
-            }
-
-            if ((file = strrchr(path, '/')) == (char *)0) {
-                /* Should be impossible. */
-                errno = EINVAL;
-                diminuto_perror(path);
-                rc = -5;
-                break;
-            }
-
-            if (*(file + 1) == '\0') {
-                /* There is no file name component. */
-                errno = EINVAL;
-                diminuto_perror(path);
-                rc = -6;
-                break;
-            }
-
-            if (file > path) {
-
-                *(file++) = '\0';
-
-                if (realpath(path, local) == (char *)0) {
-                    /* Resolution failed. */
-                    diminuto_perror(path);
-                    rc = -7;
-                    break;
-                }
-
-                local[sizeof(local) - 1] = '\0';
-
-                if ((strlen(local) + 1 /* '/' */ + strlen(file) + 1 /* '\0' */) > sizeof(endpoint->local)) {
-                    /* Too long to be a UNIX domain socket. */
-                    errno = ENAMETOOLONG;
-                    diminuto_perror(path);
-                    rc = -8;
-                    break;  
-                }
-
-                strcpy(endpoint->local, local);
-                strcat(endpoint->local, "/");
-                strcat(endpoint->local, file);
-
-            } else {
-
-                if ((strlen(path) + 1 /* '\0' */) > sizeof(endpoint->local)) {
-                    /* Too long to be a UNIX domain socket. */
-                    errno = ENAMETOOLONG;
-                    diminuto_perror(path);
-                    rc = -9;
-                    break;  
-                }
-
-                strcpy(endpoint->local, path);
-
-            }
-
-            endpoint->local[sizeof(endpoint->local) - 1] = '\0';
-
-        } while (0);
+        if (path == (char *)0) {
+            /* Do nothing. */
+        } else if (diminuto_fs_resolve(path, endpoint->local, sizeof(endpoint->local)) < 0) {
+            rc = -5;
+        } else if ((length = strlen(endpoint->local)) < 2) {
+            errno = EINVAL;
+            diminuto_perror(path);
+            rc = -6;
+        } else if (endpoint->local[length - 1] == '/') {
+            errno = EINVAL;
+            diminuto_perror(path);
+            rc = -6;
+        } else {
+            /* Do nothing. */
+        }
 
         /*
          * If (rc < 0) at this point, we had a semantic error.

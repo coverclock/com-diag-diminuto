@@ -733,6 +733,15 @@ int main(int argc, char * argv[])
     {
         SETUP;
         TEST();
+        rc = diminuto_ipc_endpoint(endpoint = ".//..///.////" LOCAL, &parse);
+        DISPLAY;
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/run/" LOCAL, &parse);
         DISPLAY;
         VERIFYUNIX(&parse, endpoint);
@@ -743,6 +752,15 @@ int main(int argc, char * argv[])
         SETUP;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/" LOCAL, &parse);
+        DISPLAY;
+        VERIFYUNIX(&parse, endpoint);
+        STATUS();
+    }
+
+    {
+        SETUP;
+        TEST();
+        rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/../run/" LOCAL, &parse);
         DISPLAY;
         VERIFYUNIX(&parse, endpoint);
         STATUS();
