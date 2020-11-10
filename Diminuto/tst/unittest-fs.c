@@ -552,6 +552,36 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/../file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, "/file") == 0);
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        TEST();
+        path = "/./.file";
+        buffer[0] = '!';
+        COMMENT("relative=\"%s\"", path);
+        rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        COMMENT("absolute=\"%s\"", buffer);
+        ASSERT(strcmp(buffer, "/.file") == 0);
+        STATUS();
+    }
+
     diminuto_fs_debug(debug);
 
     EXIT();

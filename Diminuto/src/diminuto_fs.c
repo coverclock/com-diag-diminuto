@@ -349,6 +349,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
     size_t length = 1; /* '/' */
     size_t plength = 0;
     size_t flength = 0;
+    size_t xlength = 0;
 
     do {
 
@@ -356,10 +357,10 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
 
         /*
          * There are a number of special or pathological cases that
-         * realpath(3) doesn't quite handle to my satisfaction. Our
-         * goal here is to end up with a string in the form of
-         * "path/file" where either or both path and file may
-         * degenerate into empty strings.
+         * we can simplify or even eliminate before asking realpath(3)
+         * to actually walk the file system. Our goal here is to end
+         * up with a string in the form of "path/file" where either
+         * or both path and file may degenerate into empty strings.
          */
 
         if ((plength = strnlen(path, sizeof(relativepath))) >= sizeof(relativepath)) { /* path and length are set. */
@@ -423,7 +424,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
          * path, plength, file, and flength are set.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\"[%zu] file=\"%s\"[%zu]\n", path, plength, file, flength); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\"[%zu] file=\"%s\"[%zu]\n", path, plength - flength, file, flength); }
 
         /*
          * plength is only zero if the only path is the root directory,
@@ -438,10 +439,10 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
         } else {
             absolutepath[sizeof(absolutepath) - 1] = '\0';
         }
-        length += strlen(prefix);
+        length += (xlength = strlen(prefix));
 
         /*
-         * prefix is set. length is set to the total length.
+         * prefix is set. xlength is set. length is set to the total length.
          */
 
         if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: prefix=\"%s\"\n", prefix); }
@@ -452,8 +453,15 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
             break;
         }
 
+        /*
+         * There are some cases in which realpath(3) returns a string with
+         * a '/' at the end, e.g. "/../file".
+    `    */
+
         strcpy(buffer, prefix);
-        strcat(buffer, "/");
+        if (prefix[xlength - 1] != '/') {
+            strcat(buffer, "/");
+        }
         strcat(buffer, file);
 
         if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: absolute=\"%s\"\n", buffer); }

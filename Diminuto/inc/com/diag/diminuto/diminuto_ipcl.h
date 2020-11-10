@@ -20,6 +20,7 @@
  * CopyConstruct, August 2020
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include <string.h>
 
@@ -30,14 +31,20 @@
 /**
  * Compares two Local paths. This does little except perform a string
  * comparison. The paths should be canonicalized beforehand or the result
- * may be unexpected.
+ * may be unexpected (e.g. different softlinks may ultimately point to the
+ * same file). Does a NULL pointer check so that the canonicalize function
+ * (which can return NULL) can be used directly as an argument.
  * @param path1p points to the first Local path.
  * @param path2p points to the second Local path.
  * @return 0 if equal, >0 if greater than, or <0 if less than.
  */
 static inline int diminuto_ipcl_compare(const char * path1p, const char * path2p)
 {
-    return strcmp(path1p, path2p);
+    return (path1p == (const char *)0)
+        ? (((int)1) << ((sizeof(int) * 8) - 1))
+        : (path2p == (const char *)0) 
+            ? (~(((int)1) << ((sizeof(int) * 8) - 1)))
+            : strncmp(path1p, path2p, sizeof(diminuto_path_t));
 }
 
 /*******************************************************************************
@@ -62,13 +69,14 @@ extern char * diminuto_ipcl_canonicalize(const char * path, char * buffer, size_
 /**
  * Convert an Local path into a printable Local path string. This does little
  * but return a pointer to the Local path. For best results the path should
- * have been canonicalized.
+ * be canonicalized. Includes a NULL pointer check so taht the canonicalize
+ * function (which can return NULL) can be used directly as an argument.
  * @param path is the Local path.
  * @return a pointer to the output buffer.
  */
 static inline const char * diminuto_ipcl_path2string(const char * path)
 {
-    return path;
+    return (path == (const char *)0) ? "" : path;
 }
 
 /*******************************************************************************
