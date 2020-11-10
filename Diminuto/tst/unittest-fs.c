@@ -458,7 +458,7 @@ int main(int argc, char * argv[])
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
-        /* Don't really know what the result will be. */
+        ASSERT(buffer[0] == '/');
         STATUS();
     }
 
@@ -473,7 +473,7 @@ int main(int argc, char * argv[])
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
-        /* Don't really know what the result will be. */
+        ASSERT(buffer[0] == '/');
         STATUS();
     }
 
@@ -488,7 +488,7 @@ int main(int argc, char * argv[])
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
-        /* Don't really know what the result will be. */
+        ASSERT(buffer[0] == '/');
         STATUS();
     }
 
@@ -503,7 +503,7 @@ int main(int argc, char * argv[])
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         COMMENT("absolute=\"%s\"", buffer);
-        /* Don't really know what the result will be. */
+        ASSERT(buffer[0] == '/');
         STATUS();
     }
 

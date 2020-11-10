@@ -57,34 +57,41 @@ int main(int argc, char * argv[])
 
     hertz = diminuto_frequency();
 
-#define CANONICALIZE(_PATH_, _RESULT_) \
+#define CANONICALIZE(_PATH_, _FILE_, _RESULT_) \
     do { \
+        static const char file[] = _FILE_; \
         const char * relative = (_PATH_); \
         diminuto_local_buffer_t absolute = { '\0', }; \
         char * result; \
+        size_t minimum = 0; \
+        size_t actual = 0; \
+        minimum = strlen(file); \
         result = diminuto_ipcl_canonicalize(relative, absolute, sizeof(absolute)); \
+        actual = strlen(absolute); \
         COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, absolute, (result == absolute) ? "GOOD" : "BAD"); \
-        EXPECT(((_RESULT_) && (result == absolute) && (absolute[0] != '\0')) || ((!(_RESULT_)) && (result == (char *)0) && (absolute[0] == '\0'))); \
+        EXPECT(((_RESULT_) && (result == absolute) && (absolute[0] == '/') && (strlen(absolute) >= minimum) && (strcmp(absolute + actual - minimum, file) == 0)) || ((!(_RESULT_)) && (result == (char *)0) && (absolute[0] == '\0'))); \
     } while (0)
 
     {
         TEST();
-        CANONICALIZE("/", 0); 
-        CANONICALIZE("/.", 0); 
-        CANONICALIZE("/..", 0); 
-        CANONICALIZE("/tmp/", 0); 
-        CANONICALIZE("/var/tmp/", 0); 
-        CANONICALIZE("/var/tmp/../run/", 0); 
-        CANONICALIZE("/var/does-not-exist/unix.sock", 0); 
-        CANONICALIZE("/unix.sock", !0); 
-        CANONICALIZE("/.unix.sock", !0); 
-        CANONICALIZE("/../unix.sock", !0); 
-        CANONICALIZE("/tmp/unix.sock", !0); 
-        CANONICALIZE("/var/tmp/unix.sock", !0); 
-        CANONICALIZE("/var/tmp/../../run/unix.sock", !0); 
-        CANONICALIZE("unix.sock", !0); 
-        CANONICALIZE("./unix.sock", !0); 
-        CANONICALIZE("../unix.sock", !0); 
+        CANONICALIZE("/", "", 0); 
+        CANONICALIZE("/.", "", 0); 
+        CANONICALIZE("/..", "", 0); 
+        CANONICALIZE("/tmp/", "", 0); 
+        CANONICALIZE("/var/tmp/", "", 0); 
+        CANONICALIZE("/var/tmp/../run/", "", 0); 
+        CANONICALIZE("/var/does-not-exist/unix.sock", "", 0); 
+        CANONICALIZE("/unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("/.unix.sock", "/.unix.sock", !0); 
+        CANONICALIZE("/../unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("/tmp/unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("/var/tmp/unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("/var/tmp/../../run/unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("/var/tmp/../../run/./unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("unix.sock", "/unix.sock", !0); 
+        CANONICALIZE(".unix.sock", "/.unix.sock", !0); 
+        CANONICALIZE("./unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("../unix.sock", "/unix.sock", !0); 
         STATUS();
     }
 

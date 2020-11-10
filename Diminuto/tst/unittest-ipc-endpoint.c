@@ -88,11 +88,9 @@ static const char * type2string(diminuto_ipc_type_t type)
     } while (0)
 
 /*
- * I didn't explicitly check the value returned for UNIX domain
- * paths since the specific value will depend on the file system
- * of the host on which the unit test is run. That differs even
- * in my case since I run this unit test on a variety of computers
- * with different configurations and different user accounts.
+ * The exact value returned upon success will depend on
+ * specifics of the file system on which the test is
+ * being run.
  */
 
 #define VERIFYUNIX(_POINTER_, _PATH_) \
@@ -103,9 +101,16 @@ static const char * type2string(diminuto_ipc_type_t type)
         EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) == 0); \
         EXPECT(_pp_->tcp == 0); \
         EXPECT(_pp_->udp == 0); \
-        EXPECT(_pp_->local[0] != '\0'); \
+        EXPECT(_pp_->local[0] == '/'); \
         EXPECT(_pp_->type == AF_UNIX); \
     } while (0)
+
+#define VERIFYFAIL(_POINTER_) \
+    do { \
+        const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
+        EXPECT(rc < 0); \
+        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED); \
+    } while (0); \
 
 int main(int argc, char * argv[])
 {
@@ -779,8 +784,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = LOCAL, &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -789,8 +793,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/I-hope-this-directory-does-not-exist/" LOCAL, &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -799,8 +802,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -809,8 +811,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "I-hope-this-domain-name-is-unresolvable.com", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -819,8 +820,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "(I-hope-this-does-not-look-like-anything-valid)", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -829,8 +829,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -839,8 +838,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -849,8 +847,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -859,8 +856,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -869,8 +865,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
@@ -879,8 +874,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:undefinedthing", &parse);
         DISPLAY;
-        EXPECT(rc < 0);
-        EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED);
+        VERIFYFAIL(&parse);
         STATUS();
     }
 
