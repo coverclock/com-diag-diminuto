@@ -210,11 +210,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address6 = diminuto_ipc6_address("::1");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "::1", DIMINUTO_IPC6_LOOPBACK.u16[0], DIMINUTO_IPC6_LOOPBACK.u16[1], DIMINUTO_IPC6_LOOPBACK.u16[2], DIMINUTO_IPC6_LOOPBACK.u16[3], DIMINUTO_IPC6_LOOPBACK.u16[4], DIMINUTO_IPC6_LOOPBACK.u16[5], DIMINUTO_IPC6_LOOPBACK.u16[6], DIMINUTO_IPC6_LOOPBACK.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "::1", DIMINUTO_IPC6_LOOPBACK.u16[0], DIMINUTO_IPC6_LOOPBACK.u16[1], DIMINUTO_IPC6_LOOPBACK.u16[2], DIMINUTO_IPC6_LOOPBACK.u16[3], DIMINUTO_IPC6_LOOPBACK.u16[4], DIMINUTO_IPC6_LOOPBACK.u16[5], DIMINUTO_IPC6_LOOPBACK.u16[6], DIMINUTO_IPC6_LOOPBACK.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(diminuto_ipc6_is_loopback(&address6));
 
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, "::1");
+        COMMENT("\"%s\" \"%s\"\n", buffer, "::1");
         EXPECT(strcmp(buffer, "::1") == 0);
 
         STATUS();
@@ -227,7 +227,7 @@ int main(int argc, char * argv[])
         TEST();
 
         address6 = diminuto_ipc6_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * This next test depends on how the local host is administered with an
          * IPv6 local host address, or whether we get back a IPv4 local host
@@ -235,10 +235,10 @@ int main(int argc, char * argv[])
          */
         EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
+        COMMENT("\"%s\" \"%s\"\n", "localhost", buffer);
 
         address6 = diminuto_ipc6_address("ip6-localhost");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "ip6-localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "ip6-localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * This next test depends on how the local host is administered with an
          * IPv6 local host address, or whether we get back a IPv4 local host
@@ -246,7 +246,7 @@ int main(int argc, char * argv[])
          */
         EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "ip6-localhost", buffer);
+        COMMENT("\"%s\" \"%s\"\n", "ip6-localhost", buffer);
 
         /*
          * Long pause here, not sure why. strace(1) suggests it's blocked in
@@ -258,13 +258,13 @@ int main(int argc, char * argv[])
          */
 
         address6 = diminuto_ipc6_address("prairiethorn.org");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "prairiethorn.org", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(!diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "prairiethorn.org", buffer);
+        COMMENT("\"%s\" \"%s\"\n", "prairiethorn.org", buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * Damned internet service providers map invalid domains to a "help"
          * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
@@ -272,7 +272,7 @@ int main(int argc, char * argv[])
          */
         ADVISE(diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "invalid.domain", buffer);
+        COMMENT("\"%s\" \"%s\"\n", "invalid.domain", buffer);
 
         STATUS();
     }
@@ -296,7 +296,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT(diminuto_ipc6_colonnotation(address, buffer0, sizeof(buffer0)) == buffer0);
-        DIMINUTO_LOG_DEBUG("%s CON \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer0, address.u16[0], address.u16[1], address.u16[2], address.u16[3], address.u16[4], address.u16[5], address.u16[6], address.u16[7]);
+        COMMENT("CON \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer0, address.u16[0], address.u16[1], address.u16[2], address.u16[3], address.u16[4], address.u16[5], address.u16[6], address.u16[7]);
 
         hints.ai_family = AF_INET6;
         rc = getaddrinfo(HOSTNAME, (const char *)0, &hints, &infop);
@@ -306,23 +306,23 @@ int main(int argc, char * argv[])
 #define IN6ADDR (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr)
 #define IN6ADDR16 (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr16)
         ASSERT(inet_ntop(infop->ai_family, IN6ADDR, buffer1, sizeof(buffer1)) == buffer1);
-        DIMINUTO_LOG_DEBUG("%s RAW \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer1, IN6ADDR16[0], IN6ADDR16[1], IN6ADDR16[2], IN6ADDR16[3], IN6ADDR16[4], IN6ADDR16[5], IN6ADDR16[6], IN6ADDR16[7]);
+        COMMENT("RAW \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer1, IN6ADDR16[0], IN6ADDR16[1], IN6ADDR16[2], IN6ADDR16[3], IN6ADDR16[4], IN6ADDR16[5], IN6ADDR16[6], IN6ADDR16[7]);
         freeaddrinfo(infop);
 
         host = diminuto_ipc6_address(HOSTNAME);
         ASSERT(diminuto_ipc6_colonnotation(host, buffer2, sizeof(buffer2)) == buffer2);
-        DIMINUTO_LOG_DEBUG("%s HBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer2, host.u16[0], host.u16[1], host.u16[2], host.u16[3], host.u16[4], host.u16[5], host.u16[6], host.u16[7]);
+        COMMENT("HBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer2, host.u16[0], host.u16[1], host.u16[2], host.u16[3], host.u16[4], host.u16[5], host.u16[6], host.u16[7]);
 
         network = host;
         diminuto_ipc6_hton6(&network);
         ASSERT(inet_ntop(AF_INET6, &network, buffer3, sizeof(buffer3)) == buffer3);
-        DIMINUTO_LOG_DEBUG("%s NBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer3, network.u16[0], network.u16[1], network.u16[2], network.u16[3], network.u16[4], network.u16[5], network.u16[6], network.u16[7]);
+        COMMENT("NBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer3, network.u16[0], network.u16[1], network.u16[2], network.u16[3], network.u16[4], network.u16[5], network.u16[6], network.u16[7]);
 
         prime = network;
         diminuto_ipc6_ntoh6(&prime);
         ASSERT(diminuto_ipc6_compare(&host, &prime) == 0);
         ASSERT(diminuto_ipc6_colonnotation(prime, buffer4, sizeof(buffer4)) == buffer4);
-        DIMINUTO_LOG_DEBUG("%s PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
+        COMMENT("PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
 
         STATUS();
     }
@@ -338,12 +338,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "localhost", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "localhost", buffer);
+            COMMENT("\"%s\" \"%s\"\n", "localhost", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -364,12 +364,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "google.com", buffer);
+            COMMENT("\"%s\" \"%s\"\n", "google.com", buffer);
         }
         /*
          * "nslookup google.com" used to resolve as multiple addresses. But
@@ -397,12 +397,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "amazon.com", buffer);
+            COMMENT("\"%s\" \"%s\"\n", "amazon.com", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -423,12 +423,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "prairiethorn.org", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, "prairiethorn.org", buffer);
+            COMMENT("\"%s\" \"%s\"\n", "prairiethorn.org", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -444,63 +444,63 @@ int main(int argc, char * argv[])
         TEST();
 
         port = diminuto_ipc6_port("80", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "(null)", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("80", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "tcp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("80", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "udp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("http", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "http", "(null)", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
         EXPECT(port == 80);    
 
         port = diminuto_ipc6_port("http", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "http", "tcp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("tftp", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "tftp", "udp", port, 69);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
         EXPECT(port == 69);
 
         port = diminuto_ipc6_port("login", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "(null)", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("login", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "tcp", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("login", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "udp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("who", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "(null)", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("who", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "tcp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("who", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "udp", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("unknown", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "(null)", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("unknown", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "tcp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("unknown", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "udp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
         EXPECT(port == 0);
 
         STATUS();
@@ -520,7 +520,7 @@ int main(int argc, char * argv[])
         EXPECT(port != TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %u\n", DIMINUTO_LOG_HERE, buffer, port);
+        COMMENT("\"%s\" %u\n", buffer, port);
 
         STATUS();
     }
@@ -540,7 +540,7 @@ int main(int argc, char * argv[])
         EXPECT(port != 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" %u\n", DIMINUTO_LOG_HERE, buffer, port);
+        COMMENT("\"%s\" %u\n", buffer, port);
 
         STATUS();
     }
@@ -1149,7 +1149,7 @@ int main(int argc, char * argv[])
                     EXPECT((outputqueued = diminuto_ipc_stream_get_pending(producer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("producer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
+                    COMMENT("producer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     here += sent;
                     used -= sent;
@@ -1173,7 +1173,7 @@ int main(int argc, char * argv[])
                 ASSERT(received <= available);
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("producer received %zd %zd %zu\n", received, inputqueued, totalreceived);
+                COMMENT("producer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 there += received;
                 available -= received;
@@ -1229,7 +1229,7 @@ int main(int argc, char * argv[])
                 ASSERT(received <= sizeof(buffer));
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("consumer received %zd %zd %zu\n", received, inputqueued, totalreceived);
+                COMMENT("consumer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 if (received == 0) {
                     break;
@@ -1243,7 +1243,7 @@ int main(int argc, char * argv[])
                     EXPECT((outputqueued = diminuto_ipc_stream_get_pending(consumer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("consumer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
+                    COMMENT("consumer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     received -= sent;
                 }

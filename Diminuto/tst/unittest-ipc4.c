@@ -74,11 +74,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_UNSPECIFIED);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_UNSPECIFIED);
         EXPECT(address == DIMINUTO_IPC4_UNSPECIFIED);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        COMMENT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -92,11 +92,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_LOOPBACK);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        COMMENT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -110,11 +110,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, name, address, DIMINUTO_IPC4_LOOPBACK2);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK2);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK2);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\"\n", DIMINUTO_LOG_HERE, buffer, name);
+        COMMENT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -126,15 +126,15 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", address, DIMINUTO_IPC4_LOOPBACK);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", address, DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         address = diminuto_ipc4_address("prairiethorn.org");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", address, 0UL);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", address, 0UL);
         EXPECT(address != 0UL);
 
         address = diminuto_ipc4_address("invalid.domain");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "invalid.domain", address, 0UL);
+        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "invalid.domain", address, 0UL);
 
         /*
          * Damned internet service providers map invalid domains to a "help"
@@ -156,7 +156,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "localhost", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -179,7 +179,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "google.com", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "google.com", addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -207,7 +207,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "amazon.com", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "amazon.com", addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -230,7 +230,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            DIMINUTO_LOG_DEBUG("%s \"%s\" 0x%8.8x 0x%8.8x\n", DIMINUTO_LOG_HERE, "prairiethorn.org", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -248,63 +248,63 @@ int main(int argc, char * argv[])
         TEST();
 
         port = diminuto_ipc4_port("80", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "(null)", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("80", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "tcp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("80", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "80", "udp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("http", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "http", "(null)", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
         EXPECT(port == 80);    
 
         port = diminuto_ipc4_port("http", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "http", "tcp", port, 80);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("tftp", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "tftp", "udp", port, 69);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
         EXPECT(port == 69);
 
         port = diminuto_ipc4_port("login", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "(null)", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("login", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "tcp", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("login", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "login", "udp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("who", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "(null)", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("who", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "tcp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("who", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "who", "udp", port, 513);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("unknown", NULL);
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "(null)", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("unknown", "tcp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "tcp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("unknown", "udp");
-        DIMINUTO_LOG_DEBUG("%s \"%s\" \"%s\" %d %d\n", DIMINUTO_LOG_HERE, "unknown", "udp", port, 0);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
         EXPECT(port == 0);
 
         STATUS();
@@ -430,7 +430,7 @@ int main(int argc, char * argv[])
         TEST();
 
         binding = diminuto_ipc4_address("localhost");
-        DIMINUTO_LOG_DEBUG("%s 0 0x%8.8x %d\n", DIMINUTO_LOG_HERE, binding, 0);
+        COMMENT("0x%8.8x %d\n", binding, 0);
 
         EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd1, &address1, &port1) >= 0);
@@ -759,7 +759,7 @@ int main(int argc, char * argv[])
                     EXPECT((outputqueued = diminuto_ipc_stream_get_pending(producer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("producer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
+                    COMMENT("producer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     here += sent;
                     used -= sent;
@@ -783,7 +783,7 @@ int main(int argc, char * argv[])
                 ASSERT(received <= available);
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("producer received %zd %zd %zu\n", received, inputqueued, totalreceived);
+                COMMENT("producer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 there += received;
                 available -= received;
@@ -839,7 +839,7 @@ int main(int argc, char * argv[])
                 ASSERT(received <= sizeof(buffer));
 
                 totalreceived += received;
-                DIMINUTO_LOG_DEBUG("consumer received %zd %zd %zu\n", received, inputqueued, totalreceived);
+                COMMENT("consumer received %zd %zd %zu\n", received, inputqueued, totalreceived);
 
                 if (received == 0) {
                     break;
@@ -853,7 +853,7 @@ int main(int argc, char * argv[])
                     EXPECT((outputqueued = diminuto_ipc_stream_get_pending(consumer)) >= 0);
 
                     totalsent += sent;
-                    DIMINUTO_LOG_DEBUG("consumer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
+                    COMMENT("consumer sent %zd %zd %zu\n", sent, outputqueued, totalsent);
 
                     received -= sent;
                 }
