@@ -229,6 +229,10 @@ int main(int argc, char * argv[])
         diminuto_local_buffer_t local3;
         diminuto_local_buffer_t local4;
 
+        /*
+         * UNNAMED can send twice to LOCAL2.
+         */
+
         TEST();
 
         EXPECT((fd1 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
@@ -269,6 +273,10 @@ int main(int argc, char * argv[])
         diminuto_local_buffer_t local3;
         diminuto_local_buffer_t local4;
 
+        /*
+         * LOCAL1 can send to LOCAL2, and LOCAL2 can reply.
+         */
+
         TEST();
 
         EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
@@ -289,7 +297,7 @@ int main(int argc, char * argv[])
         EXPECT(strcmp(local3, LOCAL1) == 0);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), local3)) == sizeof(MSG2));
         EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
         COMMENT("local4=\"%s\"\n", local4);
         EXPECT(strcmp(local4, LOCAL2) == 0);
