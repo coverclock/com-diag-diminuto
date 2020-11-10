@@ -3,11 +3,11 @@
  * @file
  * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the IPC feature for IPv4.
+ * @brief This is a unit test of the IPC feature for Local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the IPC feature for IPv4.
+ * This is a unit test of the IPC feature for Local (UNIX Domain) sockets.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -29,6 +29,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+static const char LOCAL[] = "/tmp/unix.sock";
+static const char UNNAMED[] = "";
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;
 
@@ -63,16 +65,23 @@ int main(int argc, char * argv[])
         const char * relative = (_PATH_); \
         diminuto_local_buffer_t absolute = { '\0', }; \
         char * result; \
+        const char * printable; \
         size_t minimum = 0; \
         size_t actual = 0; \
         minimum = strlen(file); \
         result = diminuto_ipcl_canonicalize(relative, absolute, sizeof(absolute)); \
         actual = strlen(absolute); \
-        COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, absolute, (result == absolute) ? "GOOD" : "BAD"); \
+        printable = diminuto_ipcl_path2string(result); \
+        EXPECT(printable != (const char *)0); \
+        COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, printable, (result != (char *)0) ? "GOOD" : "BAD"); \
         EXPECT(((_RESULT_) && (result == absolute) && (absolute[0] == '/') && (strlen(absolute) >= minimum) && (strcmp(absolute + actual - minimum, file) == 0)) || ((!(_RESULT_)) && (result == (char *)0) && (absolute[0] == '\0'))); \
     } while (0)
 
     {
+        /*
+         * See also the unit tests for FS Canonicalize and IPC Endpoint
+         * which test the same underlying realpath(3)-based capability.
+         */
         TEST();
         CANONICALIZE("/", "", 0); 
         CANONICALIZE("/.", "", 0); 
@@ -95,247 +104,84 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-#if 0
     {
-        const char name[] = "0.0.0.0";
-        diminuto_ipv4_t address = 0xffffffffUL;
-        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
-
         TEST();
 
-        address = diminuto_ipcl_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_UNSPECIFIED);
-        EXPECT(address == DIMINUTO_IPC4_UNSPECIFIED);
-
-        EXPECT(diminuto_ipcl_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
-        EXPECT(strcmp(buffer, name) == 0);
+        ADVISE(diminuto_ipcl_remove(LOCAL) < 0);
 
         STATUS();
     }
 
     {
-        const char name[] = "127.0.0.1";
-        diminuto_ipv4_t address = 0x00000000UL;
-        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
+        int fd;
+        diminuto_local_buffer_t local;
 
         TEST();
 
-        address = diminuto_ipcl_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK);
-        EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
-
-        EXPECT(diminuto_ipcl_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
-        EXPECT(strcmp(buffer, name) == 0);
+        COMMENT("endpoint=\"%s\"\n", LOCAL);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
+        COMMENT("datagram peer nearend=\"%s\"\n", local);
+        EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) < 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
 
         STATUS();
     }
 
     {
-        const char name[] = "127.0.0.2";
-        diminuto_ipv4_t address = 0x00000000UL;
-        char buffer[sizeof("NNN.NNN.NNN.NNN")] = { 0 };
+        int fd;
+        diminuto_local_buffer_t local;
 
         TEST();
 
-        address = diminuto_ipcl_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK2);
-        EXPECT(address == DIMINUTO_IPC4_LOOPBACK2);
-
-        EXPECT(diminuto_ipcl_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
-        EXPECT(strcmp(buffer, name) == 0);
+        COMMENT("endpoint=\"%s\"\n", UNNAMED);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
+        COMMENT("datagram peer nearend=\"%s\"\n", local);
+        EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
 
         STATUS();
     }
 
     {
-        diminuto_ipv4_t address;
+        int fd;
+        diminuto_local_buffer_t local;
 
         TEST();
 
-        address = diminuto_ipcl_address("localhost");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", address, DIMINUTO_IPC4_LOOPBACK);
-        EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
-
-        address = diminuto_ipcl_address("prairiethorn.org");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", address, 0UL);
-        EXPECT(address != 0UL);
-
-        address = diminuto_ipcl_address("invalid.domain");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "invalid.domain", address, 0UL);
-
-        /*
-         * Damned internet service providers map invalid domains to a "help"
-         * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
-         * a.k.a. "search5.comcast.com". That's not helpful!
-         */
-        ADVISE(address == 0UL);
+        COMMENT("endpoint=\"%s\"\n", LOCAL);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
+        COMMENT("stream provider nearend=\"%s\"\n", local);
+        EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) < 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
 
         STATUS();
     }
 
     {
-        diminuto_ipv4_t * addresses;
-        size_t ii;
+        int fd;
+        diminuto_local_buffer_t local;
 
         TEST();
 
-        addresses = diminuto_ipcl_addresses("localhost");
-        ASSERT(addresses != (diminuto_ipv4_t *)0);
-
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", addresses[ii], 0UL);
-            if (addresses[ii] == 0UL) {
-                break;
-            }
-        }
-        EXPECT(ii > 0);
-        EXPECT(ii < LIMIT);
-
-        free(addresses);
-
-        STATUS();
-    }
-
-    {
-        diminuto_ipv4_t * addresses;
-        size_t ii;
-
-        TEST();
-
-        addresses = diminuto_ipcl_addresses("google.com");
-        ASSERT(addresses != (diminuto_ipv4_t *)0);
-
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "google.com", addresses[ii], 0UL);
-            if (addresses[ii] == 0UL) {
-                break;
-            }
-        }
-        /*
-         * "nslookup google.com" used to resolve as multiple addresses. But
-         * today it doesn't. So I added the "amazon.com" test below. So far
-         * Amazon.com still resolves as multiple addresses.
-         */
-        EXPECT(ii > 0);
-        EXPECT(ii < LIMIT);
-
-        free(addresses);
-
-        STATUS();
-    }
-
-    {
-        diminuto_ipv4_t * addresses;
-        size_t ii;
-
-        TEST();
-
-        addresses = diminuto_ipcl_addresses("amazon.com");
-        ASSERT(addresses != (diminuto_ipv4_t *)0);
-
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "amazon.com", addresses[ii], 0UL);
-            if (addresses[ii] == 0UL) {
-                break;
-            }
-        }
-        EXPECT(ii > 1);
-        EXPECT(ii < LIMIT);
-
-        free(addresses);
-
-        STATUS();
-    }
-
-    {
-        diminuto_ipv4_t * addresses;
-        size_t ii;
-
-        TEST();
-
-        addresses = diminuto_ipcl_addresses("prairiethorn.org");
-        ASSERT(addresses != (diminuto_ipv4_t *)0);
-
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", addresses[ii], 0UL);
-            if (addresses[ii] == 0UL) {
-                break;
-            }
-        }
-        EXPECT(ii == 1);
-
-        free(addresses);
-
-        STATUS();
-    }
-
-    {
-        diminuto_port_t port;
-
-        TEST();
-
-        port = diminuto_ipcl_port("80", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
-        EXPECT(port == 80);
-
-        port = diminuto_ipcl_port("80", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
-        EXPECT(port == 80);
-
-        port = diminuto_ipcl_port("80", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
-        EXPECT(port == 80);
-
-        port = diminuto_ipcl_port("http", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
-        EXPECT(port == 80);    
-
-        port = diminuto_ipcl_port("http", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
-        EXPECT(port == 80);
-
-        port = diminuto_ipcl_port("tftp", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
-        EXPECT(port == 69);
-
-        port = diminuto_ipcl_port("login", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
-        EXPECT(port == 513);
-
-        port = diminuto_ipcl_port("login", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
-        EXPECT(port == 513);
-
-        port = diminuto_ipcl_port("login", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
-        EXPECT(port == 0);
-
-        port = diminuto_ipcl_port("who", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
-        EXPECT(port == 513);
-
-        port = diminuto_ipcl_port("who", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
-        EXPECT(port == 0);
-
-        port = diminuto_ipcl_port("who", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
-        EXPECT(port == 513);
-
-        port = diminuto_ipcl_port("unknown", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
-        EXPECT(port == 0);
-
-        port = diminuto_ipcl_port("unknown", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
-        EXPECT(port == 0);
-
-        port = diminuto_ipcl_port("unknown", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
-        EXPECT(port == 0);
+        COMMENT("endpoint=\"%s\"\n", UNNAMED);
+        EXPECT((fd = diminuto_ipcl_stream_provider(UNNAMED)) < 0);
 
         STATUS();
     }
@@ -345,43 +191,8 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipcl_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipcl_close(fd) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipcl_stream_consumer(diminuto_ipcl_address("prairiethorn.org"), diminuto_ipcl_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipcl_close(fd) >= 0);
-
-        EXPECT((fd = diminuto_ipcl_stream_consumer(diminuto_ipcl_address("www.amazon.com"), diminuto_ipcl_port("http", NULL))) >= 0);
-        EXPECT(diminuto_ipcl_close(fd) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipcl_stream_provider(0)) >= 0);
-        EXPECT(diminuto_ipcl_close(fd) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int fd;
-
-        TEST();
-
-        EXPECT((fd = diminuto_ipcl_stream_provider(0)) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
 
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
@@ -405,40 +216,46 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+#if 0
     {
         int fd1;
         int fd2;
         const char MSG1[] = "Chip Overclock";
         const char MSG2[] = "Digital Aggregates Corporation";
         char buffer[64];
-        diminuto_ipv4_t address = 0;
-        diminuto_port_t port = 0;
-        diminuto_port_t port1 = 0;
-        diminuto_port_t port2 = 0;
+        diminuto_local_buffer_t local1;
+        diminuto_local_buffer_t local2;
+        diminuto_local_buffer_t local3;
+        diminuto_local_buffer_t local4;
 
         TEST();
 
-        EXPECT((fd1 = diminuto_ipcl_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(fd1, (diminuto_ipv4_t *)0, &port1) >= 0);
-        EXPECT((fd2 = diminuto_ipcl_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(fd2, (diminuto_ipv4_t *)0, &port2) >= 0);
+        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
+        COMMENT("local1=\"%s\"\n", local1);
+        EXPECT(strcmp(local1, LOCAL) == 0);
+        EXPECT((fd2 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
+        COMMENT("local2=\"%s\"\n", local2);
+        EXPECT(strcmp(local2, UNNAMED) == 0);
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipcl_address("localhost"), port2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
-        EXPECT(address == diminuto_ipcl_address("localhost"));
-        EXPECT(port == port1);
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL)) == sizeof(MSG1));
+        COMMENT("SENT\n");
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
+        COMMENT("RECEIVED\n");
+        EXPECT(strcmp(local3, LOCAL) == 0);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipcl_address("localhost"), port1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
-        EXPECT(address == diminuto_ipcl_address("localhost"));
-        EXPECT(port == port2);
+        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
+        EXPECT(strcmp(local4, LOCAL) == 0);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
 
         STATUS();
     }
@@ -703,7 +520,9 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+#endif
 
+#if 0
     /*
      * There's a subtle design flaw in the next unit test which I first ran
      * first about fifteen years ago when doing socket programming under SunOS.

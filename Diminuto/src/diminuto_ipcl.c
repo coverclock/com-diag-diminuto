@@ -107,12 +107,65 @@ int diminuto_ipcl_source(int fd, const char * path)
     struct sockaddr_un sa = { 0 };
     socklen_t length = sizeof(sa);
 
-    sa.sun_family = AF_UNIX;
-    strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+    /*
+     * We handle a NULL pointer as a special case
+     * so that the canonicalize function can be used
+     * directly as an argument. Similarly, a path
+     * that is zero length represents an unnamed
+     * socket, which is unnamed and unbound; this
+     * is not an error.
+     */
 
-    if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
-        diminuto_perror("diminuto_ipcl_source: bind");
-        rc = -61;
+    if (path == (const char *)0) {
+
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipcl_source: NULL");
+        rc = -60;
+
+    } else if (path[0] == '\0') {
+
+        /* Do nothing. */
+
+    } else {
+
+        sa.sun_family = AF_UNIX;
+        strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+
+        if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+            diminuto_perror("diminuto_ipcl_source: bind");
+            rc = -61;
+        }
+
+    }
+
+    return rc;
+}
+
+int diminuto_ipcl_remove(const char * path)
+{
+    int rc = 0;
+
+    /*
+     * We handle a NULL pointer as a special case
+     * so that the canonicalize function can be used
+     * directly as an argument.
+     */
+
+    if (path == (const char *)0) {
+
+        errno = EINVAL;
+        diminuto_perror("diminuto_ipcl_remove: NULL");
+        rc = -62;
+
+    } else if (unlink(path) < 0) {
+
+        diminuto_perror("diminuto_ipcl_remove: unlink");
+        rc = -63;
+
+    } else {
+
+        /* Do nothing. */
+
     }
 
     return rc;
@@ -140,7 +193,7 @@ int diminuto_ipcl_stream_provider_base(const char * path, int backlog, diminuto_
     } else if (listen(fd, backlog) < 0) {
         diminuto_perror("diminuto_ipcl_stream_provider_base: listen");
         diminuto_ipcl_close(fd);
-        rc = -62;
+        rc = -64;
     } else {
         /* Do nothing. */
     }
@@ -156,7 +209,7 @@ int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize)
 
     if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipcl_accept_generic: accept");
-        rc = -63;
+        rc = -65;
     } else {
         diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
     }
@@ -182,7 +235,7 @@ int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_injector_
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
         diminuto_ipcl_close(fd);
-        rc = -64;
+        rc = -66;
     } else {
         /* Do nothing. */
     }
@@ -195,7 +248,7 @@ int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_injector_t 
     int rc = -1;
     int fd = -1;
 
-    if ((rc = fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    if ((rc = fd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_datagram_peer_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipcl_close(fd);
@@ -236,7 +289,7 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
 
     if (path != (const char *)0) {
         length = sizeof(sa);
-        sa.sun_family = AF_INET;
+        sa.sun_family = AF_UNIX;
         strncpy(sa.sun_path, path, sizeof(sa.sun_path));
         sap = (struct sockaddr *)&sa;
     } else {

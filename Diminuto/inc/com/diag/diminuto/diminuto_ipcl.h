@@ -110,9 +110,10 @@ extern int diminuto_ipcl_farend(int fd, char * pathp, size_t psize);
  ******************************************************************************/
 
 /**
- * Bind an existing socket to a specific path.
+ * Bind an existing socket to a specific path. For best results, the
+ * path should be canonicalized.
  * @param fd is the socket.
- * @param path is the canonizalized path to which to bind.
+ * @param path is the path to which to bind.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipcl_source(int fd, const char * path);
@@ -135,6 +136,16 @@ static inline int diminuto_ipcl_shutdown(int fd) {
 static inline int diminuto_ipcl_close(int fd) {
     return diminuto_ipc_close(fd);
 }
+
+/**
+ * Remove the name from the file system associated with a Local
+ * socket. For best results, the path should be canonicalized. This
+ * does not happen automatically when the associated socket is closed,
+ * and in fact the name in the file system can be reused.
+ * @param path is the name to be removed.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipcl_remove(const char * path);
 
 /*******************************************************************************
  * STREAM SOCKETS
