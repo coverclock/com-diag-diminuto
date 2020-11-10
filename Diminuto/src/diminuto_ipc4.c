@@ -79,10 +79,10 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
 diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
 {
     diminuto_ipv4_t * addresses = (diminuto_ipv4_t *)0;
-    struct  hostent * hostp;
-    struct in_addr inaddr;
-    size_t index;
-    size_t limit;
+    struct  hostent * hostp = (struct hostent *)0;
+    struct in_addr inaddr = { 0, };
+    size_t index = 0;
+    size_t limit = 0;
 
     if (inet_aton(hostname, &inaddr)) {
         addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * 2);
@@ -113,8 +113,8 @@ diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
 diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
 {
     diminuto_ipv4_t address = (diminuto_ipv4_t)0;
-    struct  hostent * hostp;
-    struct in_addr inaddr;
+    struct  hostent * hostp = (struct hostent *)0;
+    struct in_addr inaddr = { 0, };
 
     if (inet_aton(hostname, &inaddr)) {
         address = ntohl(inaddr.s_addr);
@@ -133,8 +133,8 @@ diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
 
 const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)
 {
-    struct in_addr inaddr;
-    char * dot;
+    struct in_addr inaddr = { 0, };;
+    char * dot = (char *)0;
 
     if (length > 0) {
         inaddr.s_addr = htonl(address);
@@ -153,7 +153,7 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
 int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 {
     int rc = fd;
-    struct sockaddr_in sa = { 0 };
+    struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
     sa.sin_family = AF_INET;
@@ -175,8 +175,8 @@ int diminuto_ipc4_source(int fd, diminuto_ipv4_t address, diminuto_port_t port)
 
 int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, int backlog, diminuto_ipc_injector_t * functionp, void * datap)
 {
-    int rc;
-    int fd;
+    int rc = -1;
+    int fd = -1;
 
     if (backlog > SOMAXCONN) {
         backlog = SOMAXCONN;
@@ -207,8 +207,8 @@ int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t 
 
 int diminuto_ipc4_stream_accept_generic(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
-    int rc;
-    struct sockaddr_in sa = { 0 };
+    int rc = -1;
+    struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
     if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
@@ -223,9 +223,9 @@ int diminuto_ipc4_stream_accept_generic(int fd, diminuto_ipv4_t * addressp, dimi
 
 int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap)
 {
-    int rc;
-    int fd;
-    struct sockaddr_in sa = { 0 };
+    int rc = -1;
+    int fd = -1;
+    struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
     sa.sin_family = AF_INET;
@@ -257,8 +257,8 @@ int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t 
 
 int diminuto_ipc4_datagram_peer_base(diminuto_ipv4_t address, diminuto_port_t port, const char * interface, diminuto_ipc_injector_t * functionp, void * datap)
 {
-    int rc;
-    int fd;
+    int rc = -1;
+    int fd = -1;
 
     if ((rc = fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_datagram_peer_base: socket");
@@ -277,8 +277,8 @@ int diminuto_ipc4_datagram_peer_base(diminuto_ipv4_t address, diminuto_port_t po
 
 ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t size, diminuto_ipv4_t * addressp, diminuto_port_t * portp, int flags)
 {
-    ssize_t total;
-    struct sockaddr_in sa = { 0 };
+    ssize_t total = -1;
+    struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
     if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
@@ -288,7 +288,7 @@ ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t siz
     } else if ((errno != EINTR) && (errno != EAGAIN)) { 
         diminuto_perror("diminuto_ipc4_datagram_receive_generic: recvfrom");
     } else {
-        /* Do nothing: timeout or poll. */
+        /* Do nothing: interrupt, timeout, or poll. */
     }
 
     return total;
@@ -296,10 +296,10 @@ ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t siz
 
 ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t size, diminuto_ipv4_t address, diminuto_port_t port, int flags)
 {
-    ssize_t total;
-    struct sockaddr_in sa;
-    struct sockaddr * sap;
-    socklen_t length;
+    ssize_t total = -1;
+    struct sockaddr_in sa = { 0, };
+    struct sockaddr * sap = (struct sockaddr *)0;
+    socklen_t length = 0;
 
     if (port > 0) {
         length = sizeof(sa);
@@ -320,7 +320,7 @@ ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t 
     } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
         diminuto_perror("diminuto_ipc4_datagram_send_generic: sendto");
     } else {
-        /* Do nothing: timeout or poll. */
+        /* Do nothing: interrupt, timeout, or poll. */
     }
 
     return total;
@@ -332,8 +332,8 @@ ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t 
 
 int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
-    int rc;
-    struct sockaddr_in sa = { 0 };
+    int rc = -1;
+    struct sockaddr_in sa = { 0,  };
     socklen_t length = sizeof(sa);
 
     if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
@@ -347,8 +347,8 @@ int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * 
 
 int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
-    int rc;
-    struct sockaddr_in sa = { 0 };
+    int rc = -1;
+    struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
     if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
@@ -368,10 +368,10 @@ diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
 {
     diminuto_ipv4_t * rp = (diminuto_ipv4_t *)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;
-    struct ifaddrs * ip;
-    diminuto_ipv4_t * vp;
+    struct ifaddrs * ip = (struct ifaddrs *)0;;
+    diminuto_ipv4_t * vp = (diminuto_ipv4_t *)0;
     size_t vs = sizeof(diminuto_ipv4_t);
-    int rc;
+    int rc = -1;
 
     do {
 

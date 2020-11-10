@@ -21,37 +21,81 @@
  */
 
 #include "com/diag/diminuto/diminuto_ipc.h"
-
-/*******************************************************************************
- * STRINGIFIERS
- ******************************************************************************/
-
-/**
- * Convert an Local path into a printable Local path string.
- * This has the side effect of canonicalizing all the soft links and special
- * directory characters in the path in the output buffer, and can be used
- * specifically for that purpose.
- * @param path is the Local path.
- * @param buffer points to the buffer into to which the string is stored.
- * @param size is the length of the buffer in bytes.
- * @return a pointer to the output buffer or NULL if an error occurred.
- */
-extern char * diminuto_ipcl_path2string(const char * path, char * buffer, size_t size);
+#include <string.h>
 
 /*******************************************************************************
  * COMPARATORS
  ******************************************************************************/
 
 /**
- * Compares two Local paths. This is not as simple as doing a string
- * comparison: all of the soft links and special directory characters in
- * each path is resolved before the comparison. This means Local paths
- * that look quite different may in fact resolve to the same UNIX domain socket.
+ * Compares two Local paths. This does little except perform a string
+ * comparison. The paths should be canonicalized beforehand or the result
+ * may be unexpected.
  * @param path1p points to the first Local path.
  * @param path2p points to the second Local path.
- * @return 0 if equal, <0 if less than, >0 if greater than.
+ * @return 0 if equal, >0 if greater than, or <0 if less than.
  */
-extern int diminuto_ipcl_compare(const char * path1p, const char * path2p);
+static inline int diminuto_ipcl_compare(const char * path1p, const char * path2p)
+{
+    return strcmp(path1p, path2p);
+}
+
+/*******************************************************************************
+ * CANONICALIZERS
+ ******************************************************************************/
+
+/**
+ * Expand, canonicalize, and validate a Local path string. This resolves all
+ * of the softlinks, expands all of the path meta characters, and verifies that
+ * all but the last path component exists.
+ * @param path points to the Local path string.
+ * @param buffer points to the buffer where the canonicalized string is stored.
+ * @param size is the size of the output buffer in bytes.
+ * @return a pointer to the output buffer or NULL if an error occurred.
+ */
+extern char * diminuto_ipcl_canonicalize(const char * path, char * buffer, size_t size);
+
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
+
+/**
+ * Convert an Local path into a printable Local path string. This does little
+ * but return a pointer to the Local path. For best results the path should
+ * have been canonicalized.
+ * @param path is the Local path.
+ * @return a pointer to the output buffer.
+ */
+static inline const char * diminuto_ipcl_path2string(const char * path)
+{
+    return path;
+}
+
+/*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
+
+/**
+ * Return the address and port of the near end of the socket if it can be
+ * determined. If it cannot be determined, the path variable will remain
+ * unchanged.
+ * @param fd is a socket.
+ * @param pathp if non-NULL points to where the path will be stored.
+ * @param psize is the size of the path variable in bytes.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipcl_nearend(int fd, char * pathp, size_t psize);
+
+/**
+ * Return the address and port of the far end of the socket if it can be
+ * determined. If it cannot be determined, the path variable will remain
+ * unchanged.
+ * @param fd is a socket.
+ * @param pathp if non-NULL points to where the path will be stored.
+ * @param psize isa the size of th epath variable in bytes.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipcl_farend(int fd, char * pathp, size_t psize);
 
 /*******************************************************************************
  * SOCKETS
@@ -60,7 +104,7 @@ extern int diminuto_ipcl_compare(const char * path1p, const char * path2p);
 /**
  * Bind an existing socket to a specific path.
  * @param fd is the socket.
- * @param path is the path to which to bind.
+ * @param path is the canonizalized path to which to bind.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipcl_source(int fd, const char * path);
@@ -89,7 +133,7 @@ static inline int diminuto_ipcl_close(int fd) {
  ******************************************************************************/
 
 /**
- * Create a provider-side stream socket bound to a specific path and with
+ * Create a provider-side stream socket bound to a specific Local path and with
  * a specific connection backlog. If an optional function is provided by the
  * caller, invoke it to set socket options before the listen(2) is performed.
  * @param path is the path of the interface that will be used.
@@ -124,9 +168,11 @@ static inline int diminuto_ipcl_stream_provider(const char * path) {
  * Wait for and accept a connection request from a consumer on a provider-side
  * stream socket.
  * @param fd is the provider-side stream socket.
+ * @param pathp if non-NULL points to where the path will be stored.
+ * @param psize is the size of the path variable in bytes.
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_accept_generic(int fd);
+extern int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize);
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
@@ -135,7 +181,7 @@ extern int diminuto_ipcl_stream_accept_generic(int fd);
  * @return a data stream socket to the requestor or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_accept(int fd) {
-    return diminuto_ipcl_stream_accept_generic(fd);
+    return diminuto_ipcl_stream_accept_generic(fd, (char *)0, 0);
 }
 
 /**
@@ -257,10 +303,12 @@ static inline int diminuto_ipcl_datagram_peer(const char * path) {
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
+ * @param pathp if non-NULL points to where the path will be stored.
+ * @param psize is the size of the path variable in bytes.
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, int flags);
+extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, char * path, size_t psize, int flags);
 
 /**
  * Receive a datagram from a datagram socket using no flags. (This function can
@@ -272,7 +320,7 @@ extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, siz
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size_t size) {
-    return diminuto_ipcl_datagram_receive_generic(fd, buffer, size, 0);
+    return diminuto_ipcl_datagram_receive_generic(fd, buffer, size, (char *)0, 0, 0);
 }
 
 /**

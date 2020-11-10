@@ -496,7 +496,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         if (path == (char *)0) {
             /* Do nothing. */
-        } else if (diminuto_ipcl_path2string(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
+        } else if (diminuto_ipcl_canonicalize(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
             /* Do nothing. */
         } else {
             rc = -5;
