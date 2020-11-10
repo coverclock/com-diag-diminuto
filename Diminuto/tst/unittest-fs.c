@@ -357,6 +357,8 @@ int main(int argc, char * argv[])
 
     /*
      * In the tests below I deliberately use _POSIX_PATH_MAX instead of PATH_MAX.
+     * See also the unit test suite for the IPC Endpoint function, which uses the
+     * FS Canonicalize function and has its own long list of unit tests.
      */
 
     {

@@ -87,6 +87,14 @@ static const char * type2string(diminuto_ipc_type_t type)
         EXPECT(_pp_->type == AF_INET6); \
     } while (0)
 
+/*
+ * I didn't explicitly check the value returned for UNIX domain
+ * paths since the specific value will depend on the file system
+ * of the host on which the unit test is run. That differs even
+ * in my case since I run this unit test on a variety of computers
+ * with different configurations and different user accounts.
+ */
+
 #define VERIFYUNIX(_POINTER_, _PATH_) \
     do { \
         const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
@@ -95,7 +103,7 @@ static const char * type2string(diminuto_ipc_type_t type)
         EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) == 0); \
         EXPECT(_pp_->tcp == 0); \
         EXPECT(_pp_->udp == 0); \
-        ADVISE(strcmp(_pp_->local, (_PATH_)) == 0); \
+        EXPECT(_pp_->local[0] != '\0'); \
         EXPECT(_pp_->type == AF_UNIX); \
     } while (0)
 
