@@ -11,8 +11,11 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * The IPCL features offers an IPC-style API to UNIX (or Local) Domain sockets
- * (AF_UNIX a.k.a. AF_LOCAL).
+ * The IPCL features offers an IPC-style API to Local (UNIX domain) sockets
+ * (AF_UNIX a.k.a. AF_LOCAL). Local sockets use paths in the file system
+ * instead of IP addresses and ports to identify the endpoints of the
+ * connection. They are only useful for peers, providers, or consumers
+ * that are running in the same process environment and file system.
  *
  * REFERENCES
  *
@@ -111,9 +114,12 @@ extern int diminuto_ipcl_farend(int fd, char * pathp, size_t psize);
 
 /**
  * Bind an existing socket to a specific path. For best results, the
- * path should be canonicalized.
+ * path should be canonicalized. An empty string ("") suppresses the
+ * bind and is not otherwise an error. A NULL pointer is an error, and
+ * is checked for explicitly so that the output of the canonicalize
+ * function can be used directly as an argument.
  * @param fd is the socket.
- * @param path is the path to which to bind.
+ * @param path is the path to which to bind or "" for an unnamed socket.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipcl_source(int fd, const char * path);
@@ -138,10 +144,14 @@ static inline int diminuto_ipcl_close(int fd) {
 }
 
 /**
- * Remove the name from the file system associated with a Local
+ * Remove the name in the file system associated with a Local
  * socket. For best results, the path should be canonicalized. This
- * does not happen automatically when the associated socket is closed,
- * and in fact the name in the file system can be reused.
+ * does not happen automatically when the associated socket is closed
+ * but the file system name can be removed while the file descriptor
+ * remains open; this is really only useful when using stream (connection-
+ * oriented) sockets.  A NULL pointer is an error, and is checked for
+ * explicitly so that the output of the canonicalize function can be
+ * used directly as an argument.
  * @param path is the name to be removed.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -155,7 +165,7 @@ extern int diminuto_ipcl_remove(const char * path);
  * Create a provider-side stream socket bound to a specific Local path and with
  * a specific connection backlog. If an optional function is provided by the
  * caller, invoke it to set socket options before the listen(2) is performed.
- * @param path is the path of the interface that will be used.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
@@ -166,7 +176,7 @@ extern int diminuto_ipcl_stream_provider_base(const char * path, int backlog, di
 /**
  * Create a provider-side stream socket bound to a specific path and with
  * a specific connection backlog.
- * @param path is the path of the interface that will be used.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
@@ -176,7 +186,7 @@ static inline int diminuto_ipcl_stream_provider_generic(const char * path, int b
 
 /**
  * Create a provider-side stream socket with the maximum connection backlog.
- * @param port is the port number at which connection requests will rendezvous.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @return a provider-side stream socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_provider(const char * path) {
@@ -207,7 +217,7 @@ static inline int diminuto_ipcl_stream_accept(int fd) {
  * Request a consumer-side stream socket to a provider using a specific path.
  * If an optional function is provided by the caller, invoke it to set socket
  * options before the connect(2) is performed.
- * @param path is the provider's Local path.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a data stream socket to the provider or <0 if an error occurred.
@@ -216,7 +226,7 @@ extern int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_in
 
 /**
  * Request a consumer-side stream socket to a provider using a specific path.
- * @param path is the provider's Local path.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer_generic(const char * path) {
@@ -225,7 +235,7 @@ static inline int diminuto_ipcl_stream_consumer_generic(const char * path) {
 
 /**
  * Request a consumer-side stream socket to a provider.
- * @param path is the provider's Local path.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const char * path) {
@@ -289,7 +299,7 @@ static inline ssize_t diminuto_ipcl_stream_write(int fd, const void * buffer, si
 /**
  * Request a peer datagram socket. If an optional function is provided by the
  * caller, invoke it to set socket options.
- * @param path is the Local path of the interface to use.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a peer datagram socket or <0 if an error occurred.
@@ -298,7 +308,7 @@ extern int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_inje
 
 /**
  * Request a peer datagram socket.
- * @param path is the Local path of the interface to use.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_datagram_peer_generic(const char * path) {
@@ -307,7 +317,7 @@ static inline int diminuto_ipcl_datagram_peer_generic(const char * path) {
 
 /**
  * Request a peer datagram socket.
- * @param path is the Local path of the interface to use.
+ * @param path is the path in the file system or "" for an unnamed socket.
  * @return a peer datagram socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_datagram_peer(const char * path) {
@@ -322,7 +332,7 @@ static inline int diminuto_ipcl_datagram_peer(const char * path) {
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer into which data is received.
  * @param size is the maximum number of bytes to be received.
- * @param pathp if non-NULL points to where the path will be stored.
+ * @param pathp if non-NULL points to where sending the path will be stored.
  * @param psize is the size of the path variable in bytes.
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
@@ -350,7 +360,7 @@ static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
- * @param path is the receiver's path.
+ * @param path is the receiver's file system path.
  * @param flags is the sendto(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
@@ -363,7 +373,7 @@ extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, 
  * @param fd is an open datagram socket.
  * @param buffer points to the buffer from which data is send.
  * @param size is the maximum number of bytes to be sent.
- * @param path is the receiver's path.
+ * @param path is the receiver's file system path.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, size_t size, const char * path) {

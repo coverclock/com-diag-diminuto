@@ -226,11 +226,11 @@ int main(int argc, char * argv[])
         char buffer[64];
         diminuto_local_buffer_t local1;
         diminuto_local_buffer_t local2;
-        diminuto_local_buffer_t local3;
-        diminuto_local_buffer_t local4;
 
         /*
-         * UNNAMED can send twice to LOCAL2.
+         * UNNAMED can send more than once to LOCAL2. Note that unix(7)
+         * says that the sending socket name "should not be inspected"
+         * when it is unnamed (it appears to be garbage to my code).
          */
 
         TEST();
@@ -248,17 +248,16 @@ int main(int argc, char * argv[])
         /* This only works because the kernel buffers socket data. */
 
         EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
-        COMMENT("local3=\"%s\"\n", local3);
+        EXPECT((diminuto_ipcl_datagram_receive(fd2, buffer, sizeof(buffer))) == sizeof(MSG1));
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         EXPECT((diminuto_ipcl_datagram_send(fd1, MSG2, sizeof(MSG2), LOCAL2)) == sizeof(MSG2));
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
-        COMMENT("local4=\"%s\"\n", local4);
+        EXPECT((diminuto_ipcl_datagram_receive(fd2, buffer, sizeof(buffer))) == sizeof(MSG2));
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
+
         EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
     }
 
@@ -306,6 +305,7 @@ int main(int argc, char * argv[])
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
+
         EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
         EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
 
@@ -355,55 +355,14 @@ int main(int argc, char * argv[])
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
+
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
         EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
 
         STATUS();
     }
 
 #if 0
-    {
-        int fd1;
-        int fd2;
-        const char MSG1[] = "Chip Overclock";
-        const char MSG2[] = "Digital Aggregates Corporation";
-        char buffer[64];
-        diminuto_local_buffer_t local1;
-        diminuto_local_buffer_t local2;
-        diminuto_local_buffer_t local3;
-        diminuto_local_buffer_t local4;
-
-        TEST();
-
-        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
-        COMMENT("local1=\"%s\"\n", local1);
-        EXPECT(strcmp(local1, LOCAL1) == 0);
-        EXPECT((fd2 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
-        COMMENT("local2=\"%s\"\n", local2);
-        EXPECT(strcmp(local2, UNNAMED) == 0);
-
-        /* This only works because the kernel buffers socket data. */
-
-        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL1)) == sizeof(MSG1));
-        COMMENT("SENT\n");
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
-        COMMENT("RECEIVED\n");
-        EXPECT(strcmp(local3, LOCAL1) == 0);
-        EXPECT(strcmp(buffer, MSG1) == 0);
-
-        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
-        EXPECT(strcmp(local4, LOCAL1) == 0);
-        EXPECT(strcmp(buffer, MSG2) == 0);
-
-        EXPECT(diminuto_ipcl_close(fd1) >= 0);
-        EXPECT(diminuto_ipcl_close(fd2) >= 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
-
-        STATUS();
-    }
-
     {
         int fd1;
         int fd2;
@@ -522,10 +481,11 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+#endif
 
+#if 0
     {
         diminuto_ipv4_t address;
-        diminuto_port_t port;
         diminuto_port_t rendezvous;
         int service;
         pid_t pid;
