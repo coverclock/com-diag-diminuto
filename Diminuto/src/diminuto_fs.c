@@ -347,6 +347,8 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
     diminuto_path_t relativepath = { '\0', };
     diminuto_path_t absolutepath = { '\0', };
     size_t length = 1; /* '/' */
+    size_t plength = 0;
+    size_t flength = 0;
 
     do {
 
@@ -354,63 +356,81 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
 
         /*
          * There are a number of special or pathological cases that
-         * realpath(3) doesn't quite handle to my satisfaction.
+         * realpath(3) doesn't quite handle to my satisfaction. Our
+         * goal here is to end up with a string in the form of
+         * "path/file" where either or both path and file may
+         * degenerate into empty strings.
          */
 
-        if (path[0] == '\0') {
-            /* There is no path or file: "". */
-            errno = EINVAL;
-            diminuto_perror(path);
-            break;
-        } else if ((path[0] == '/') && (path[1] == '\0')) {
-            /* There is only the root directory: "/". */
-            path = "";
-            file = "";
-        } else if ((path[0] == '/') && (path[1] == '.') && (path[2] == '\0')) {
-            /* There is only the root directory: "/.". */
-            path = "";
-            file = "";
-        } else if ((path[0] == '/') && (path[1] == '.') && (path[2] == '.') && (path[3] == '\0')) {
-            /* There is only the root directory: "/..". */
-            path = "";
-            file = "";
-        } else if ((file = strrchr(path, '/')) == (const char *)0) {
-            /* There is no path preceeding the file name: "file". */
-            file = path;
-            path = "./";
-        } else if (file[1] == '\0') {
-            /* There is no file name: "path/". */
-            file = "";
-        } else if ((file[1] == '.') && (file[2] == '\0')) {
-            /* There is no file name: "path/.". */
-            file = "";
-        } else if ((file[1] == '.') && (file[2] == '.') && (file[3] == '\0')) {
-            /* There is no file name: "path/..". */
-            file = "";
-        } else if (file <= path) {
-            /* The file resides in the root directory: "/file". */
-            file++;
-            path = "";
-        } else if (strlen(path) >= sizeof(relativepath)) {
+        if ((plength = strnlen(path, sizeof(relativepath))) >= sizeof(relativepath)) { /* path and length are set. */
             /* Path name too long. */
             errno = ENAMETOOLONG;
             diminuto_perror(path);
             break;
+        } else if (plength == 0) {
+            /* There is no path or file: "". */
+            errno = EINVAL;
+            diminuto_perror(path);
+            break;
+        } else if (strcmp(path, "/") == 0) {
+            /* There is only the root directory: "/". */
+            path = "";
+            plength = 0;
+            file = "";
+            flength = 0;
+        } else if (strcmp(path, "/.") == 0) {
+            /* There is still only the root directory: "/.". */
+            path = "";
+            plength = 0;
+            file = "";
+            flength = 0;
+        } else if (strcmp(path, "/..") == 0) {
+            /* There really is only the root directory: "/..". */
+            path = "";
+            plength = 0;
+            file = "";
+            flength = 0;
+        } else if ((file = strrchr(path, '/')) == (const char *)0) { /* file is set. */
+            /* There is no path: "file". */
+            file = path;
+            flength = plength;
+            path = ".";
+            plength = 1;
+        } else if ((flength = strnlen(++file, sizeof(relativepath))) == 0) { /* flength is set. file has been incremented. */
+            /* There is no file: "path/". */
+            file = "";
+            flength = 0;
+        } else if (strcmp(file, ".") == 0) {
+            /* There is no file name: "path/.". */
+            file = "";
+            flength = 0;
+        } else if (strcmp(file, "..") == 0) {
+            /* There is no file name: "path/..". */
+            file = "";
+            flength = 0;
+        } else if (file <= (path + 1)) {
+            /* There is no path: "/file". */
+            path = "";
+            plength = 0;
         } else {
             /* Nominal case: "path/file". */
-            file++;
             strncpy(relativepath, path, file - path);
             path = relativepath;
         }
-        length += strlen(file);
+        length += flength;
 
         /*
-         * path and file are valid at this point.
+         * path, plength, file, and flength are set.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\" file=\"%s\"\n", path, file); }
+        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\"[%zu] file=\"%s\"[%zu]\n", path, plength, file, flength); }
 
-        if (path[0] == '\0') {
+        /*
+         * plength is only zero if the only path is the root directory,
+         * which needs no canonicalization.
+         */
+
+        if (plength == 0) {
             prefix = "";
         } else if ((prefix = realpath(path, absolutepath)) == (char *)0) {
             diminuto_perror(path);
@@ -421,7 +441,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
         length += strlen(prefix);
 
         /*
-         * prefix is valid at this point.
+         * prefix is set. length is set to the total length.
          */
 
         if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: prefix=\"%s\"\n", prefix); }

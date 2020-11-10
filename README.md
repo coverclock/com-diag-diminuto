@@ -135,7 +135,7 @@ Make="GNU Make 4.0"
 * dump - a variety of formatted memory dump functions.
 * emit - example of how to use the log feature to make your own log output.
 * endianess - determine processor endianess.
-* endpoint - parse a string containing host:service into an IP address and port.
+* endpoint - parse a string containing host:service into an IP address and port, or path/file into a UNIX domain path.
 * escape - collapse and expand escape sequences in strings.
 * fd - general handling of file descriptors (including sockets).
 * frequency - determine common library time frequency.
@@ -145,6 +145,7 @@ Make="GNU Make 4.0"
 * i2c - Simplified thread-safe API around Linux I2C API.
 * ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
+* ipcl - UNIX domain ("local") socket interface.
 * list - doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
 * log - generic logging mechanism for applications, daemons, and kernel modules.

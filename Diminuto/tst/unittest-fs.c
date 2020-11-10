@@ -410,7 +410,6 @@ int main(int argc, char * argv[])
         COMMENT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("relative=\"%s\"", path);
         COMMENT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
         STATUS();
