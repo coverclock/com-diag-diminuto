@@ -29,7 +29,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-static const char LOCAL[] = "/tmp/unix.sock";
+static const char LOCAL1[] = "/tmp/one.sock";
+static const char LOCAL2[] = "/tmp/two.sock";
 static const char UNNAMED[] = "";
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;
@@ -107,7 +108,8 @@ int main(int argc, char * argv[])
     {
         TEST();
 
-        ADVISE(diminuto_ipcl_remove(LOCAL) < 0);
+        ADVISE(diminuto_ipcl_remove(LOCAL1) < 0);
+        ADVISE(diminuto_ipcl_remove(LOCAL2) < 0);
 
         STATUS();
     }
@@ -118,17 +120,17 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        COMMENT("endpoint=\"%s\"\n", LOCAL);
-        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        COMMENT("endpoint=\"%s\"\n", LOCAL1);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("datagram peer nearend=\"%s\"\n", local);
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
-        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) < 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
-        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) < 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
+        EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         STATUS();
     }
@@ -159,17 +161,17 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        COMMENT("endpoint=\"%s\"\n", LOCAL);
-        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
+        COMMENT("endpoint=\"%s\"\n", LOCAL1);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("stream provider nearend=\"%s\"\n", local);
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
-        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) < 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
-        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL1)) < 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         STATUS();
     }
@@ -191,8 +193,8 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL)) >= 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
         EXPECT(diminuto_ipc_set_nonblocking(fd, 0) >= 0);
@@ -216,6 +218,134 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        int fd1;
+        int fd2;
+        const char MSG1[] = "Chip Overclock";
+        const char MSG2[] = "Digital Aggregates Corporation";
+        char buffer[64];
+        diminuto_local_buffer_t local1;
+        diminuto_local_buffer_t local2;
+        diminuto_local_buffer_t local3;
+        diminuto_local_buffer_t local4;
+
+        TEST();
+
+        EXPECT((fd1 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
+        COMMENT("local1=\"%s\"\n", local1);
+        EXPECT(strcmp(local1, UNNAMED) == 0);
+
+        EXPECT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
+        COMMENT("local2=\"%s\"\n", local2);
+        EXPECT(strcmp(local2, LOCAL2) == 0);
+
+        /* This only works because the kernel buffers socket data. */
+
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
+        COMMENT("local3=\"%s\"\n", local3);
+        EXPECT(strcmp(buffer, MSG1) == 0);
+
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG2, sizeof(MSG2), LOCAL2)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
+        COMMENT("local4=\"%s\"\n", local4);
+        EXPECT(strcmp(buffer, MSG2) == 0);
+
+        EXPECT(diminuto_ipcl_close(fd1) >= 0);
+        EXPECT(diminuto_ipcl_close(fd2) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
+    }
+
+    {
+        int fd1;
+        int fd2;
+        const char MSG1[] = "Chip Overclock";
+        const char MSG2[] = "Digital Aggregates Corporation";
+        char buffer[64];
+        diminuto_local_buffer_t local1;
+        diminuto_local_buffer_t local2;
+        diminuto_local_buffer_t local3;
+        diminuto_local_buffer_t local4;
+
+        TEST();
+
+        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
+        COMMENT("local1=\"%s\"\n", local1);
+        EXPECT(strcmp(local1, LOCAL1) == 0);
+
+        EXPECT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
+        COMMENT("local2=\"%s\"\n", local2);
+        EXPECT(strcmp(local2, LOCAL2) == 0);
+
+        /* This only works because the kernel buffers socket data. */
+
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
+        COMMENT("local3=\"%s\"\n", local3);
+        EXPECT(strcmp(local3, LOCAL1) == 0);
+        EXPECT(strcmp(buffer, MSG1) == 0);
+
+        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
+        COMMENT("local4=\"%s\"\n", local4);
+        EXPECT(strcmp(local4, LOCAL2) == 0);
+        EXPECT(strcmp(buffer, MSG2) == 0);
+
+        EXPECT(diminuto_ipcl_close(fd1) >= 0);
+        EXPECT(diminuto_ipcl_close(fd2) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
+
+        STATUS();
+    }
+
+    {
+        int fd1;
+        int fd2;
+        const char MSG1[] = "Chip Overclock";
+        const char MSG2[] = "Digital Aggregates Corporation";
+        char buffer[64];
+        diminuto_local_buffer_t local1;
+        diminuto_local_buffer_t local2;
+        diminuto_local_buffer_t local3;
+        diminuto_local_buffer_t local4;
+
+        TEST();
+
+        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
+        COMMENT("local1=\"%s\"\n", local1);
+        EXPECT(strcmp(local1, LOCAL1) == 0);
+        EXPECT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
+        COMMENT("local2=\"%s\"\n", local2);
+        EXPECT(strcmp(local2, LOCAL2) == 0);
+
+        /* This only works because the kernel buffers socket data. */
+
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
+        COMMENT("local3=\"%s\"\n", local3);
+        EXPECT(strcmp(local3, LOCAL1) == 0);
+        EXPECT(strcmp(buffer, MSG1) == 0);
+
+        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
+        COMMENT("local4=\"%s\"\n", local4);
+        EXPECT(strcmp(local4, LOCAL2) == 0);
+        EXPECT(strcmp(buffer, MSG2) == 0);
+
+        EXPECT(diminuto_ipcl_close(fd1) >= 0);
+        EXPECT(diminuto_ipcl_close(fd2) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL2) >= 0);
+
+        STATUS();
+    }
+
 #if 0
     {
         int fd1;
@@ -230,10 +360,10 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL)) >= 0);
+        EXPECT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
         COMMENT("local1=\"%s\"\n", local1);
-        EXPECT(strcmp(local1, LOCAL) == 0);
+        EXPECT(strcmp(local1, LOCAL1) == 0);
         EXPECT((fd2 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
         COMMENT("local2=\"%s\"\n", local2);
@@ -241,21 +371,21 @@ int main(int argc, char * argv[])
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL)) == sizeof(MSG1));
+        EXPECT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL1)) == sizeof(MSG1));
         COMMENT("SENT\n");
         EXPECT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
         COMMENT("RECEIVED\n");
-        EXPECT(strcmp(local3, LOCAL) == 0);
+        EXPECT(strcmp(local3, LOCAL1) == 0);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL)) == sizeof(MSG2));
+        EXPECT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
         EXPECT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
-        EXPECT(strcmp(local4, LOCAL) == 0);
+        EXPECT(strcmp(local4, LOCAL1) == 0);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
-        EXPECT(diminuto_ipcl_remove(LOCAL) >= 0);
+        EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         STATUS();
     }
