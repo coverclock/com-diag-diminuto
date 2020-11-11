@@ -690,18 +690,76 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-#if 0
     {
-        diminuto_ipv4_t address;
-        diminuto_port_t port;
-        diminuto_port_t rendezvous;
         int service;
         pid_t pid;
 
+        /*
+         * Streamlined.
+         */
+
+        ASSERT((service = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+            int status;
+
+            ASSERT((producer = diminuto_ipcl_stream_accept(service)) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipcl_close(producer) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+            EXPECT(diminuto_ipcl_close(service) >= 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipcl_close(service) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            ASSERT((consumer = diminuto_ipcl_stream_consumer(LOCAL1)) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipcl_close(consumer) >= 0);
+
+            EXIT();
+
+        }
+
+        ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+
+        STATUS();
+    }
+
+    {
+        int service;
+        pid_t pid;
+
+        /*
+         * Reversed,
+         */
+
         TEST();
 
-        EXPECT((service = diminuto_ipcl_stream_provider(0)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(service, (diminuto_ipv4_t *)0, &rendezvous) >= 0);
+        EXPECT((service = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -709,12 +767,14 @@ int main(int argc, char * argv[])
 
             int producer;
 
-            EXPECT((producer = diminuto_ipcl_stream_accept_generic(service, &address, &port)) >= 0);
+            EXPECT((producer = diminuto_ipcl_stream_accept(service)) >= 0);
 
             diminuto_delay(hertz / 1000, !0);
 
             EXPECT(diminuto_ipcl_close(producer) >= 0);
             EXPECT(diminuto_ipcl_close(service) >= 0);
+
+            EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
             EXIT();
 
@@ -727,20 +787,7 @@ int main(int argc, char * argv[])
 
             diminuto_delay(hertz / 1000, !0);
 
-            EXPECT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_address("localhost"), rendezvous)) >= 0);
-
-            address = 0;
-            port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipcl_farend(consumer, &address, &port) >= 0);
-            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
-            EXPECT(port == rendezvous);
-
-            address = 0;
-            port = (diminuto_port_t)-1;
-            EXPECT(diminuto_ipcl_nearend(consumer, &address, &port) >= 0);
-            EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
-            EXPECT(port != (diminuto_port_t)-1);
-            EXPECT(port != rendezvous);
+            EXPECT((consumer = diminuto_ipcl_stream_consumer(LOCAL1)) >= 0);
 
             EXPECT(diminuto_ipcl_close(consumer) >= 0);
 
@@ -773,21 +820,19 @@ int main(int argc, char * argv[])
      */
 
     {
-        diminuto_ipv4_t provider;
-        diminuto_ipv4_t source;
-        diminuto_port_t rendezvous;
-        diminuto_ipv4_t address;
-        diminuto_port_t port;
+        const char * pointer;
+        diminuto_local_t provider;
+        diminuto_local_t source;
+        diminuto_local_t path;
         int service;
         pid_t pid;
 
         TEST();
 
-        ASSERT((provider = diminuto_ipcl_address("localhost")) == 0x7f000001);
-        ASSERT((service = diminuto_ipcl_stream_provider_generic(provider, 0, (const char *)0, 16)) >= 0);
-        EXPECT(diminuto_ipcl_nearend(service, &source, &rendezvous) >= 0);
-        EXPECT(source == provider);
-        EXPECT(rendezvous != 0);
+        ASSERT((pointer = diminuto_ipcl_canonicalize(LOCAL1, provider, sizeof(provider))) != (const char *)0);
+        ASSERT((service = diminuto_ipcl_stream_provider_generic(pointer, 16)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(service, source, sizeof(source)) >= 0);
+        EXPECT(diminuto_ipcl_compare(source, provider) == 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -810,7 +855,7 @@ int main(int argc, char * argv[])
             size_t totalreceived;
             int status;
 
-            ASSERT((producer = diminuto_ipcl_stream_accept_generic(service, &address, &port)) >= 0);
+            ASSERT((producer = diminuto_ipcl_stream_accept_generic(service, path, sizeof(path))) >= 0);
 
             here = output;
             used = sizeof(output);
@@ -896,6 +941,8 @@ int main(int argc, char * argv[])
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
+            EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
+
         } else {
 
             int consumer;
@@ -911,7 +958,7 @@ int main(int argc, char * argv[])
 
             diminuto_delay(hertz / 1000, !0);
 
-            ASSERT((consumer = diminuto_ipcl_stream_consumer(provider, rendezvous)) >= 0);
+            ASSERT((consumer = diminuto_ipcl_stream_consumer(source)) >= 0);
 
             totalreceived = 0;
             totalsent = 0;
@@ -955,7 +1002,6 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
-#endif
 
     EXIT();
 }
