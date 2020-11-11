@@ -30,8 +30,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-static const char LOCAL1[] = "/tmp/one.sock";
-static const char LOCAL2[] = "/tmp/two.sock";
+static const char LOCAL1[] = "/tmp/com-diag-diminuto-unittest-ipcl-1.sock";
+static const char LOCAL2[] = "/tmp/com-diag-diminuto-unittest-ipcl-2.sock";
 static const char * UNNAMED = DIMINUTO_IPCL_UNNAMED;
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;

@@ -176,7 +176,7 @@ int main(int argc, char ** argv)
 
     diminuto_alarm_debug = !0;
 
-    quick = (argc > 1) && (strcmp(argv[1], "quick") == 0);
+    quick = (argc > 1) && (strcmp(argv[1], "-q") == 0);
 
     {
         int fd;

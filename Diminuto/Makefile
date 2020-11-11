@@ -936,12 +936,16 @@ sanity:
 	unittest-heap
 	unittest-interrupter
 	unittest-ipc-endpoint
+	unittest-ipc
+	unittest-ipc4
+	unittest-ipc6
+	unittest-ipcl
 	unittest-list
 	unittest-lock
 	unittest-log
 	unittest-memory
 	unittest-mutex
-	unittest-mux4 quick
+	unittest-mux4 -q
 	unittest-number
 	unittest-observation && rm /tmp/diminuto-unittest-observation-*
 	unittest-offsetof
@@ -985,12 +989,10 @@ extended:
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
-	unittest-ipc
-	unittest-ipc4
-	unittest-ipc6
 	unittest-modulator
-	unittest-mux4 || true # Temporary
+	unittest-mux4
 	unittest-mux6
+	unittest-muxl
 	unittest-mux-eventloop
 	unittest-oneshot1
 	unittest-oneshot2
@@ -1000,6 +1002,7 @@ extended:
 	unittest-periodic3
 	unittest-poll4
 	unittest-poll6
+	unittest-polll
 	unittest-poll-eventloop
 	unittest-time
 	unittest-time-cost
@@ -1037,6 +1040,7 @@ gnuish:
 	unittest-mutex
 	unittest-poll4
 	unittest-poll6
+	unittest-polll
 	unittest-poll-eventloop
 	unittest-renameat2
 	unittest-thread
@@ -1109,11 +1113,14 @@ sockets:
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
+	unittest-ipcl
 	unittest-mux4
 	unittest-mux6
+	unittest-muxl
 	unittest-mux-eventloop
 	unittest-poll4
 	unittest-poll6
+	unittest-polll
 	unittest-poll-eventloop
 
 renameat2:
