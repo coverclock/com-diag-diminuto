@@ -32,7 +32,7 @@
 
 static const char LOCAL1[] = "/tmp/one.sock";
 static const char LOCAL2[] = "/tmp/two.sock";
-static const char UNNAMED[] = "";
+static const char * UNNAMED = DIMINUTO_IPCL_UNNAMED;
 static const size_t LIMIT = 256;
 static const size_t TOTAL = 1024 * 1024 * 100;
 
@@ -61,11 +61,63 @@ int main(int argc, char * argv[])
 
     hertz = diminuto_frequency();
 
+    {
+        TEST();
+
+        EXPECT(!diminuto_ipcl_is_unnamed(LOCAL1));
+        EXPECT(!diminuto_ipcl_is_unnamed(LOCAL2));
+        EXPECT(diminuto_ipcl_is_unnamed(UNNAMED));
+        EXPECT(!diminuto_ipcl_is_unnamed(NULL));
+
+        STATUS();
+    }
+
+    {
+        int rc;
+
+        TEST();
+
+        rc = diminuto_ipcl_compare("/unix.sock", "/unix.sock");
+        COMMENT("rc=%d\n", rc);
+        rc = diminuto_ipcl_compare("/unix.sock1", "/unix.sock2");
+        COMMENT("rc=%d\n", rc);
+        rc = diminuto_ipcl_compare("/unix.sock2", "/unix.sock1");
+        COMMENT("rc=%d\n", rc);
+        rc = diminuto_ipcl_compare(NULL, "/unix.sock");
+        COMMENT("rc=%d\n", rc);
+        rc = diminuto_ipcl_compare("/unix.sock", NULL);
+        COMMENT("rc=%d\n", rc);
+        rc = diminuto_ipcl_compare(NULL, NULL);
+        COMMENT("rc=%d\n", rc);
+
+        EXPECT(diminuto_ipcl_compare(LOCAL1, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL1, LOCAL2) != 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL1, UNNAMED) != 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL1, NULL) != 0);
+
+        EXPECT(diminuto_ipcl_compare(LOCAL2, LOCAL1) != 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL2, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL2, UNNAMED) != 0);
+        EXPECT(diminuto_ipcl_compare(LOCAL2, NULL) != 0);
+
+        EXPECT(diminuto_ipcl_compare(UNNAMED, LOCAL1) != 0);
+        EXPECT(diminuto_ipcl_compare(UNNAMED, LOCAL2) != 0);
+        EXPECT(diminuto_ipcl_compare(UNNAMED, UNNAMED) == 0);
+        EXPECT(diminuto_ipcl_compare(UNNAMED, NULL) != 0);
+
+        EXPECT(diminuto_ipcl_compare(NULL, LOCAL1) != 0);
+        EXPECT(diminuto_ipcl_compare(NULL, LOCAL2) != 0);
+        EXPECT(diminuto_ipcl_compare(NULL, UNNAMED) != 0);
+        EXPECT(diminuto_ipcl_compare(NULL, NULL) != 0);
+
+        STATUS();
+    }
+
 #define CANONICALIZE(_PATH_, _FILE_, _RESULT_) \
     do { \
         static const char file[] = _FILE_; \
         const char * relative = (_PATH_); \
-        diminuto_local_t absolute = { '\0', }; \
+        diminuto_local_t absolute = { '\xa5', }; \
         char * result; \
         const char * printable; \
         size_t minimum = 0; \
@@ -76,15 +128,29 @@ int main(int argc, char * argv[])
         printable = diminuto_ipcl_path2string(result); \
         EXPECT(printable != (const char *)0); \
         COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, printable, (result != (char *)0) ? "GOOD" : "BAD"); \
-        EXPECT(((_RESULT_) && (result == absolute) && (absolute[0] == '/') && (strlen(absolute) >= minimum) && (strcmp(absolute + actual - minimum, file) == 0)) || ((!(_RESULT_)) && (result == (char *)0) && (absolute[0] == '\0'))); \
+        EXPECT(\
+            ((_RESULT_) && \
+                (result == absolute) && \
+                (absolute[0] == '/') && \
+                (strlen(absolute) >= minimum) && \
+                (strcmp(absolute + actual - minimum, file) == 0)) || \
+            ((_RESULT_) && \
+                (result == absolute) && \
+                (relative[0] == '\0') && \
+                (absolute[0] == '\0')) || \
+            ((!(_RESULT_)) && \
+                (result == (char *)0) && \
+                (absolute[0] == '\xa5'))); \
     } while (0)
 
     {
+        TEST();
+
         /*
          * See also the unit tests for FS Canonicalize and IPC Endpoint
          * which test the same underlying realpath(3)-based capability.
          */
-        TEST();
+
         CANONICALIZE("/", "", 0); 
         CANONICALIZE("/.", "", 0); 
         CANONICALIZE("/..", "", 0); 
@@ -103,6 +169,26 @@ int main(int argc, char * argv[])
         CANONICALIZE(".unix.sock", "/.unix.sock", !0); 
         CANONICALIZE("./unix.sock", "/unix.sock", !0); 
         CANONICALIZE("../unix.sock", "/unix.sock", !0); 
+        CANONICALIZE("", "", !0); 
+
+        STATUS();
+    }
+
+    {
+        diminuto_local_t first;
+        diminuto_local_t second;
+
+        TEST();
+
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("", first, sizeof(first)), diminuto_ipcl_canonicalize("", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("./unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("./unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/run/../tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock1", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock2", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/IMBAD/unix.sock", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/IMBAD/unix.sock", second, sizeof(second))) != 0);
+
         STATUS();
     }
 
@@ -146,6 +232,7 @@ int main(int argc, char * argv[])
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("datagram peer nearend=\"%s\"\n", local);
+        EXPECT(diminuto_ipcl_is_unnamed(local));
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
@@ -241,12 +328,12 @@ int main(int argc, char * argv[])
         EXPECT((fd1 = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
         COMMENT("local1=\"%s\"\n", local1);
-        EXPECT(strcmp(local1, UNNAMED) == 0);
+        EXPECT(diminuto_ipcl_is_unnamed(local1));
 
         EXPECT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
         COMMENT("local2=\"%s\"\n", local2);
-        EXPECT(strcmp(local2, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(local2, LOCAL2) == 0);
 
         /* This only works because the kernel buffers socket data. */
 
@@ -285,25 +372,25 @@ int main(int argc, char * argv[])
         ASSERT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
         COMMENT("local1=\"%s\"\n", local1);
-        EXPECT(strcmp(local1, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(local1, LOCAL1) == 0);
 
         ASSERT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
         COMMENT("local2=\"%s\"\n", local2);
-        EXPECT(strcmp(local2, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(local2, LOCAL2) == 0);
 
         /* This only works because the kernel buffers socket data. */
 
         ASSERT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
         COMMENT("local3=\"%s\"\n", local3);
-        EXPECT(strcmp(local3, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(local3, LOCAL1) == 0);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         ASSERT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), LOCAL1)) == sizeof(MSG2));
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
         COMMENT("local4=\"%s\"\n", local4);
-        EXPECT(strcmp(local4, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(local4, LOCAL2) == 0);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
@@ -337,24 +424,24 @@ int main(int argc, char * argv[])
         ASSERT((fd1 = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
         COMMENT("local1=\"%s\"\n", local1);
-        EXPECT(strcmp(local1, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(local1, LOCAL1) == 0);
         ASSERT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
         COMMENT("local2=\"%s\"\n", local2);
-        EXPECT(strcmp(local2, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(local2, LOCAL2) == 0);
 
         /* This only works because the kernel buffers socket data. */
 
         ASSERT((diminuto_ipcl_datagram_send(fd1, MSG1, sizeof(MSG1), LOCAL2)) == sizeof(MSG1));
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd2, buffer, sizeof(buffer), local3, sizeof(local3), 0)) == sizeof(MSG1));
         COMMENT("local3=\"%s\"\n", local3);
-        EXPECT(strcmp(local3, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(local3, LOCAL1) == 0);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         ASSERT((diminuto_ipcl_datagram_send(fd2, MSG2, sizeof(MSG2), local3)) == sizeof(MSG2));
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd1, buffer, sizeof(buffer), local4, sizeof(local4), 0)) == sizeof(MSG2));
         COMMENT("local4=\"%s\"\n", local4);
-        EXPECT(strcmp(local4, LOCAL2) == 0);
+        EXPECT(diminuto_ipcl_compare(local4, LOCAL2) == 0);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         EXPECT(diminuto_ipcl_close(fd1) >= 0);
@@ -377,13 +464,13 @@ int main(int argc, char * argv[])
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
-        EXPECT(strcmp(rendezvous, UNNAMED) == 0);
+        EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
 
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd, buffer, sizeof(buffer), local, sizeof(local), 0)) < 0);
         EXPECT(errno == EAGAIN);
         COMMENT("local=\"%s\"", local);
-        EXPECT(strcmp(local, "UNCHANGED") == 0);
+        EXPECT(diminuto_ipcl_compare(local, "UNCHANGED") == 0);
 
         EXPECT(diminuto_ipcl_close(fd) >= 0);
 
@@ -401,12 +488,12 @@ int main(int argc, char * argv[])
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
-        EXPECT(strcmp(rendezvous, UNNAMED) == 0);
+        EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
 
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd, buffer, sizeof(buffer), local, sizeof(local), MSG_DONTWAIT)) < 0);
         EXPECT(errno == EAGAIN);
         COMMENT("local=\"%s\"", local);
-        EXPECT(strcmp(local, "UNCHANGED") == 0);
+        EXPECT(diminuto_ipcl_compare(local, "UNCHANGED") == 0);
 
         EXPECT(diminuto_ipcl_close(fd) >= 0);
 
@@ -426,7 +513,7 @@ int main(int argc, char * argv[])
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
-        EXPECT(strcmp(rendezvous, UNNAMED) == 0);
+        EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
 
         EXPECT(diminuto_alarm_install(0) >= 0);
         EXPECT(diminuto_timer_oneshot(2000000ULL) == 0);
@@ -435,7 +522,7 @@ int main(int argc, char * argv[])
         ASSERT((diminuto_ipcl_datagram_receive_generic(fd, buffer, sizeof(buffer), local, sizeof(local), 0)) < 0);
         EXPECT(errno == EINTR);
         COMMENT("local=\"%s\"", local);
-        EXPECT(strcmp(local, "UNCHANGED") == 0);
+        EXPECT(diminuto_ipcl_compare(local, "UNCHANGED") == 0);
 
         EXPECT((after = diminuto_time_elapsed()) >= 0);
         EXPECT(diminuto_timer_oneshot(0ULL) >= 0);
@@ -461,7 +548,7 @@ int main(int argc, char * argv[])
         ASSERT((service = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(service, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"\n", rendezvous);
-        EXPECT(strcmp(rendezvous, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(rendezvous, LOCAL1) == 0);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -473,17 +560,17 @@ int main(int argc, char * argv[])
             local[0] = '\0';
             ASSERT((producer = diminuto_ipcl_stream_accept_generic(service, local, sizeof(local))) >= 0);
             COMMENT("local=\"%s\"\n", local);
-            EXPECT(strcmp(local, LOCAL2) == 0);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL2) == 0);
 
             local[0] = '\0';
             EXPECT(diminuto_ipcl_nearend(producer, local, sizeof(local)) >= 0);
             COMMENT("local=\"%s\"\n", local);
-            EXPECT(strcmp(local, LOCAL1) == 0);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL1) == 0);
 
             local[0] = '\0';
             EXPECT(diminuto_ipcl_farend(producer, local, sizeof(local)) >= 0);
             COMMENT("local=\"%s\"\n", local);
-            EXPECT(strcmp(local, LOCAL2) == 0);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL2) == 0);
 
             diminuto_delay(hertz / 1000, !0);
 
@@ -539,7 +626,7 @@ int main(int argc, char * argv[])
         ASSERT((service = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
         EXPECT(diminuto_ipcl_nearend(service, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"\n", rendezvous);
-        EXPECT(strcmp(rendezvous, LOCAL1) == 0);
+        EXPECT(diminuto_ipcl_compare(rendezvous, LOCAL1) == 0);
 
         EXPECT((pid = fork()) >= 0);
 
@@ -551,15 +638,17 @@ int main(int argc, char * argv[])
             strcpy(local, "UNCHANGED");
             ASSERT((producer = diminuto_ipcl_stream_accept_generic(service, local, sizeof(local))) >= 0);
             COMMENT("local=\"%s\"\n", local);
+            ADVISE(diminuto_ipcl_is_unnamed(local)); /* Unexpected. */
 
             strcpy(local, "UNCHANGED");
             EXPECT(diminuto_ipcl_nearend(producer, local, sizeof(local)) >= 0);
             COMMENT("local=\"%s\"\n", local);
-            EXPECT(strcmp(local, LOCAL1) == 0);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL1) == 0); /* Expected. */
 
             strcpy(local, "UNCHANGED");
             EXPECT(diminuto_ipcl_farend(producer, local, sizeof(local)) >= 0);
             COMMENT("local=\"%s\"\n", local);
+            ADVISE(diminuto_ipcl_is_unnamed(local)); /* Unexpected. */
 
             diminuto_delay(hertz / 1000, !0);
 

@@ -46,7 +46,7 @@ static const char * type2string(diminuto_ipc_type_t type)
 }
 
 #define SETUP \
-    char * endpoint = ""; \
+    char * endpoint = (char *)0; \
     diminuto_ipv4_buffer_t ipv4buffer = { '\0', }; \
     diminuto_ipv6_buffer_t ipv6buffer = { '\0', }; \
     diminuto_ipc_endpoint_t parse = { DIMINUTO_IPC_TYPE_UNSPECIFIED, }; \
@@ -101,7 +101,7 @@ static const char * type2string(diminuto_ipc_type_t type)
         EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) == 0); \
         EXPECT(_pp_->tcp == 0); \
         EXPECT(_pp_->udp == 0); \
-        EXPECT(_pp_->local[0] == '/'); \
+        EXPECT((((_PATH_)[0] == '\0') && (_pp_->local[0] == '\0')) || (_pp_->local[0] == '/')); \
         EXPECT(_pp_->type == AF_UNIX); \
     } while (0)
 
@@ -712,7 +712,7 @@ int main(int argc, char * argv[])
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "", &parse);
         DISPLAY;
-        VERIFYINET4(&parse, unspecified4, unspecified6, ephemeral, ephemeral);
+        VERIFYUNIX(&parse, endpoint);
         STATUS();
     }
 

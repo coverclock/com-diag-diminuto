@@ -110,6 +110,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     diminuto_path_t buffer = { '\0', };
     bool is_ipv4 = false;
     bool is_ipv6 = false;
+    bool is_ipcl = false;
     size_t length = 0;
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
@@ -161,6 +162,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                     state = S_PATH;
                 } else if (*here == '\0') {
                     mark = here;
+                    path = mark;
                     state = S_STOP;
                     rc = 0;
                 } else {
@@ -395,19 +397,21 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         if (fqdn != (char *)0) {
             endpoint->ipv4 = diminuto_ipc4_address(fqdn);
             endpoint->ipv6 = diminuto_ipc6_address(fqdn);
-            if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
-                /* Do nothing. */
-            } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
-                /* Do nothing. */
+            if (!diminuto_ipc6_is_unspecified(&(endpoint->ipv6))) {
+                is_ipv6 = true;
+            } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
+                is_ipv4 = true;
             } else {
                 errno = EINVAL;
                 diminuto_perror(fqdn);
                 rc = -2;
             }
-        } else if (ipv4 != (char *)0) {
-            endpoint->ipv4 = diminuto_ipc4_address(ipv4);
         } else if (ipv6 != (char *)0) {
             endpoint->ipv6 = diminuto_ipc6_address(ipv6);
+            is_ipv6 = true;
+        } else if (ipv4 != (char *)0) {
+            endpoint->ipv4 = diminuto_ipc4_address(ipv4);
+            is_ipv4 = true;
         } else {
             /* Do nothing. */
         }
@@ -435,9 +439,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 /* Do nothing. */
             } else if (port != (char *)0) {
                 /* Do nothing. */
-            } else if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+            } else if (!diminuto_ipc6_is_unspecified(&(endpoint->ipv6))) {
                 /* Do nothing. */
-            } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
+            } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
                 /* Do nothing. */
             } else {
                 endpoint->tcp = diminuto_ipc_port(name, "tcp");
@@ -481,10 +485,10 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         /*
-         * If the endpoint is a pathname for a UNIX domain socket, then we
-         * try to resolve all the soft links in the path to get an absolute
-         * path name. All but the final component in the path (the actual
-         * file name in the parent directory) must exist.  UNIX domain
+         * If the endpoint is a pathname for a Local (UNIX domain) socket,
+         * then we try to resolve all the soft links in the path to get an
+         * absolute path name. All but the final component in the path (the
+         * actual file name in the parent directory) must exist. UNIX domain
          * socket names have a much shorter length limitation than file
          * system paths, so the resulting Local address must conform to
          * that limitation. There is no requirement that the final path
@@ -492,12 +496,17 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * addresses that such a host exists at that address. This path
          * resolution is necessary so that UNIX domain socket names that
          * may have resulted from different soft links can be compared.
+         * The empty string ("") is a special case and represents an
+         * unnamed Local socket.
          */
 
         if (path == (char *)0) {
             /* Do nothing. */
+        } else if (diminuto_ipcl_is_unnamed(path)) {
+            endpoint->local[0] = '\0';
+            is_ipcl = true;
         } else if (diminuto_ipcl_canonicalize(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
-            /* Do nothing. */
+            is_ipcl = true;
         } else {
             rc = -5;
         }
@@ -513,42 +522,54 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         }
 
         /*
-         * Now we finally figure out what kind of IPC connection we
-         * have. If the endpoint included a FQDN, there may be both
+         * If the endpoint included a FQDN, there may be both
          * an IPv4 and an IPv6 address resolved for it; in that case
-         * the type is IPV6 (which reflects my own bias). The
-         * caller can always check the IPv4 address field explicitly.
-         * If just an IPv4 address resolved, the type is IPV4.
-         * In either case, there may be a port, and that port could
-         * have resolved to be either TCP or UDP or both. Ephemeral
-         * ports are a special case where everything is zero but the
-         * parser succeeded; examples: "[::]", "0.0.0.0", "0". There
-         * is some ambiguity: for example, "google.com" could actually
-         * be the name of a UNIX domain socket (which may not yet exist)
-         * in the current directory. If there is both an IPv6 and an IPv4
-         * address, and the IPv6 address is merely the IPv4 address in
-         * IPv6 form, we use the IPv4 address, since there is nothing to
-         * be gained from using the IPv6 address.
+         * the type is IPV6 (which reflects my own bias), except in
+         * those cases where the IPv6 address is merely an IPv4
+         * address mapped into IPv6 format, in which case we use
+         * IPv4 rather than using the IPv6 stack for IPv4 connections
+         * (which is entirely doable). The caller can always check the
+         * IPv4 and IPv6 address fields explicitly. If just an IPv4
+         * address resolved, the type is IPV4. In either case, there
+         * may be a service, and that service could have resolved to be
+         * either a TCP or UDP port or both. Ephemeral ports are a
+         * special case where everything is zero but the parser succeeded;
+         * examples: "[::]", "0.0.0.0", "0".
          */
 
-        if (diminuto_ipc6_compare(&(endpoint->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
-            if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) == 0) {
-                endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+        if (!diminuto_ipc6_is_unspecified(&(endpoint->ipv6))) {
+            if (diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
+                is_ipv6 = true;
+                is_ipv4 = false;
             } else if (diminuto_ipc6_is_v4mapped(&(endpoint->ipv6))) {
-                endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
+                is_ipv6 = false;
+                is_ipv4 = true;
             } else {
-                endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
+                is_ipv6 = true;
+                is_ipv4 = false;
             }
-        } else if (diminuto_ipc4_compare(&(endpoint->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) != 0) {
-            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
-        } else if (endpoint->local[0] != '\0') {
+        } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
+            is_ipv6 = false;
+            is_ipv4 = true;
+        } else {
+            is_ipv4 = true;
+        }
+
+        /*
+         * We finally decide on what kind of endpoint this is.
+         * There is some ambiguity: for example, "google.com" could actually
+         * be the name of a UNIX domain socket (which may not yet exist)
+         * in the current directory.
+         */
+
+        if (is_ipcl) {
             endpoint->type = DIMINUTO_IPC_TYPE_LOCAL;
         } else if (is_ipv6) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV6;
         } else if (is_ipv4) {
             endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
         } else {
-            endpoint->type = DIMINUTO_IPC_TYPE_IPV4;
+            /* Do nothing. */
         }
 
     } while (0);

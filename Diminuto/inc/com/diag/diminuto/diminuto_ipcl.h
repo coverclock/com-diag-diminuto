@@ -28,6 +28,15 @@
 #include <string.h>
 
 /*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
+/**
+ * This is the Diminuto Local path that is unnamed.
+ */
+extern const char DIMINUTO_IPCL_UNNAMED[];
+
+/*******************************************************************************
  * COMPARATORS
  ******************************************************************************/
 
@@ -36,7 +45,8 @@
  * comparison. The paths should be canonicalized beforehand or the result
  * may be unexpected (e.g. different softlinks may ultimately point to the
  * same file). Does a NULL pointer check so that the canonicalize function
- * (which can return NULL) can be used directly as an argument.
+ * (which can return NULL) can be used directly as an argument. NULL pointers
+ * are not considered equal.
  * @param path1p points to the first Local path.
  * @param path2p points to the second Local path.
  * @return 0 if equal, >0 if greater than, or <0 if less than.
@@ -48,6 +58,19 @@ static inline int diminuto_ipcl_compare(const char * path1p, const char * path2p
         : (path2p == (const char *)0) 
             ? (~(((int)1) << ((sizeof(int) * 8) - 1)))
             : strncmp(path1p, path2p, sizeof(diminuto_path_t));
+}
+
+/*******************************************************************************
+ * CLASSIFIERS
+ ******************************************************************************/
+
+/**
+ * Return true if the Local path is unnamed.
+ * @param pathp points to a Local path.
+ * @return true or false.
+ */
+static inline int diminuto_ipcl_is_unnamed(const char * pathp) {
+    return ((pathp != (const char *)0) && (pathp[0] == '\0'));
 }
 
 /*******************************************************************************

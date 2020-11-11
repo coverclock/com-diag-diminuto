@@ -26,13 +26,23 @@
 #include <linux/un.h>
 #include "../src/diminuto_ipcl.h"
 
+const char DIMINUTO_IPCL_UNNAMED[1] = { '\0' };
+
 char * diminuto_ipcl_canonicalize(const char * path, char * buffer, size_t size)
 {
     char * result = (char *)0;
     diminuto_local_buffer_t local = { '\0', };
     size_t length = 0;
 
-    if (diminuto_fs_canonicalize(path, local, sizeof(local)) < 0) {
+    if (size <= 0) {
+        /* Too long. */
+        errno = ENAMETOOLONG;
+        diminuto_perror(path);
+    } else if (path[0] == '\0') {
+        /* Unnamed Local socket. */
+        buffer[0] = '\0';
+        result = buffer;
+    } else if (diminuto_fs_canonicalize(path, local, sizeof(local)) < 0) {
         /* Canonicalization failed. */
     } else if ((length = strlen(local)) < 2) {
         /* Must be at least "/x". */
