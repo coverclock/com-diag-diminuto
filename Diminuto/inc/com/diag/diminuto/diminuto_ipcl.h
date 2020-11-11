@@ -217,29 +217,31 @@ static inline int diminuto_ipcl_stream_accept(int fd) {
  * Request a consumer-side stream socket to a provider using a specific path.
  * If an optional function is provided by the caller, invoke it to set socket
  * options before the connect(2) is performed.
- * @param path is the path in the file system or "" for an unnamed socket.
+ * @param path is the provider path in the file system.
+ * @param path0 is the consumer path in the file system or "" for unnamed.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-extern int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_injector_t * functionp, void * datap);
+extern int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
  * Request a consumer-side stream socket to a provider using a specific path.
- * @param path is the path in the file system or "" for an unnamed socket.
+ * @param path is the provider path in the file system.
+ * @param path0 is the consumer path in the file system or "" for unnamed.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
-static inline int diminuto_ipcl_stream_consumer_generic(const char * path) {
-    return diminuto_ipcl_stream_consumer_base(path, (diminuto_ipc_injector_t *)0, (void *)0);
+static inline int diminuto_ipcl_stream_consumer_generic(const char * path, const char * path0) {
+    return diminuto_ipcl_stream_consumer_base(path, path0, (diminuto_ipc_injector_t *)0, (void *)0);
 }
 
 /**
  * Request a consumer-side stream socket to a provider.
- * @param path is the path in the file system or "" for an unnamed socket.
+ * @param path is the provider path in the file system.
  * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const char * path) {
-    return diminuto_ipcl_stream_consumer_generic(path);
+    return diminuto_ipcl_stream_consumer_generic(path, "");
 }
 
 /**

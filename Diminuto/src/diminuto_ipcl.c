@@ -217,7 +217,7 @@ int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize)
     return rc;
 }
 
-int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_injector_t * functionp, void * datap)
+int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap)
 {
     int rc = -1;
     int fd = -1;
@@ -225,12 +225,13 @@ int diminuto_ipcl_stream_consumer_base(const char * path, diminuto_ipc_injector_
     socklen_t length = sizeof(sa);
 
     sa.sun_family = AF_UNIX;
+    strncpy(sa.sun_path, path, sizeof(sa.sun_path));
 
     if ((rc = fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
         diminuto_ipcl_close(fd);
-    } else if ((rc = diminuto_ipcl_source(fd, path)) < 0) {
+    } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
         diminuto_ipcl_close(fd);
     } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
