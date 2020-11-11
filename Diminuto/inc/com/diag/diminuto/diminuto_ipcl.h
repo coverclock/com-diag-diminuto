@@ -362,7 +362,7 @@ static inline int diminuto_ipcl_datagram_peer(const char * path) {
  * @param flags is the recvfrom(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
-extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, char * path, size_t psize, int flags);
+extern ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, char * pathp, size_t psize, int flags);
 
 /**
  * Receive a datagram from a datagram socket using no flags. (This function can

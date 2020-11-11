@@ -143,7 +143,7 @@ extern int diminuto_modulator_start(diminuto_modulator_t * mp);
  * a failure in a condition signal, or in pin control). This error
  * field is cleared when the modulator is initialized, and again
  * when it is started.
- * @param tp points to the modulator object.
+ * @param mp points to the modulator object.
  * @return an error code or zero if none.
  */
 static inline int diminuto_modulator_error(const diminuto_modulator_t * mp)
