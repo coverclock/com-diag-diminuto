@@ -19,10 +19,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <linux/un.h>
 #include "../src/diminuto_ipcl.h"
 

@@ -26,6 +26,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include <string.h>
+#include <sys/socket.h>
 
 /*******************************************************************************
  * GLOBALS

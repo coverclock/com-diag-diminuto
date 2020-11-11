@@ -857,6 +857,16 @@ int main(int argc, char * argv[])
 
             ASSERT((producer = diminuto_ipcl_stream_accept_generic(service, path, sizeof(path))) >= 0);
 
+            /*
+             * We can remove the UNIX domain socket from the file
+             * system as long as no other consumer wants to
+             * connect with us. The accepted socket stays open
+             * until we're done with it.
+             */
+
+            ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+            ASSERT(diminuto_ipcl_remove(LOCAL1) < 0);
+
             here = output;
             used = sizeof(output);
             sent = 0;
@@ -940,8 +950,6 @@ int main(int argc, char * argv[])
             CHECKPOINT("pid=%d status=%d\n", pid, status);
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
-
-            EXPECT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         } else {
 
