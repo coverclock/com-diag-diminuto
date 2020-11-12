@@ -34,29 +34,35 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 
-static const char ENDPOINT[] = "/tmp/com-diag-diminuto-unittest-polll.sock";
-
 #if defined(__arm__)
 static const size_t TOTAL = 1024 * 1024 * 100;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
 
+static const char ENDPOINT[] = "/tmp/com-diag-diminuto-unittest-polll.sock";
+
 int main(int argc, char ** argv)
 {
     extern int diminuto_alarm_debug;
 
     SETLOGMASK();
+
     diminuto_alarm_debug = !0;
 
     {
         int listener;
+        diminuto_local_t local;
+        const char * canonical;
         pid_t pid;
-        diminuto_local_t rendezvous;
 
         TEST();
 
-        ASSERT((listener = diminuto_ipcl_stream_provider(diminuto_ipcl_path(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
+        ASSERT((canonical = diminuto_ipcl_path(ENDPOINT, local, sizeof(local))) == local);
+
+        ADVISE(diminuto_ipcl_remove(canonical) < 0);
+
+        ASSERT((listener = diminuto_ipcl_stream_provider(canonical)) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -255,6 +261,8 @@ int main(int argc, char ** argv)
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
+            ASSERT(diminuto_ipcl_remove(canonical) >= 0);
+
             STATUS();
 
         } else {
@@ -279,7 +287,7 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_poll_init(&poll) == &poll);
 
-            ASSERT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_path(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
+            ASSERT((consumer = diminuto_ipcl_stream_consumer(canonical)) >= 0);
             ASSERT(diminuto_poll_register_read(&poll, consumer) >= 0);
             ASSERT(diminuto_poll_register_urgent(&poll, consumer) >= 0);
 

@@ -52,17 +52,8 @@ int main(int argc, char ** argv)
     extern int diminuto_alarm_debug;
 
     SETLOGMASK();
+
     diminuto_alarm_debug = !0;
-
-    {
-        diminuto_local_t local;
-
-        TEST();
-
-        ADVISE(diminuto_ipcl_remove(diminuto_ipcl_path(ENDPOINT, local, sizeof(local))) >= 0);
-
-        STATUS();
-    }
 
     {
         int listener;
@@ -72,7 +63,11 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT((listener = diminuto_ipcl_stream_provider(canonical = diminuto_ipcl_path(ENDPOINT, local, sizeof(local)))) >= 0);
+        ASSERT((canonical = diminuto_ipcl_path(ENDPOINT, local, sizeof(local))) == local);
+
+        ADVISE(diminuto_ipcl_remove(canonical) < 0);
+
+        ASSERT((listener = diminuto_ipcl_stream_provider(canonical)) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
