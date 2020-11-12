@@ -38,7 +38,7 @@ int diminuto_ipcl_identify(struct sockaddr * sap, char * pathp, size_t size)
     int rc = 0;
 
     if (sap->sa_family != AF_UNIX) {
-        rc = -60;
+        rc = -1;
     } else if (pathp == (char *)0) {
         /* Do nothing. */
     } else {
@@ -113,7 +113,7 @@ int diminuto_ipcl_source(int fd, const char * path)
 
         errno = EINVAL;
         diminuto_perror("diminuto_ipcl_source: NULL");
-        rc = -60;
+        rc = -1;
 
     } else if (path[0] == '\0') {
 
@@ -124,9 +124,8 @@ int diminuto_ipcl_source(int fd, const char * path)
         sa.sun_family = AF_UNIX;
         strncpy(sa.sun_path, path, sizeof(sa.sun_path));
 
-        if (bind(fd, (struct sockaddr *)&sa, length) < 0) {
+        if ((rc = bind(fd, (struct sockaddr *)&sa, length)) < 0) {
             diminuto_perror("diminuto_ipcl_source: bind");
-            rc = -61;
         }
 
     }
@@ -148,12 +147,12 @@ int diminuto_ipcl_remove(const char * path)
 
         errno = EINVAL;
         diminuto_perror("diminuto_ipcl_remove: NULL");
-        rc = -62;
+        rc = -1;
 
     } else if (unlink(path) < 0) {
 
         diminuto_perror("diminuto_ipcl_remove: unlink");
-        rc = -63;
+        rc = -1;
 
     } else {
 
@@ -184,18 +183,18 @@ int diminuto_ipcl_stream_provider_base(const char * path, int backlog, diminuto_
     if ((rc = fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_provider_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_perror("diminuto_ipcl_stream_provider_base: injector");
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if (listen(fd, backlog) < 0) {
+    } else if ((rc = listen(fd, backlog)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_provider_base: listen");
         diminuto_ipcl_close(fd);
-        rc = -64;
     } else {
         /* Do nothing. */
     }
 
-    return rc;
+    return (rc < 0) ? rc : fd;
 }
 
 int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize)
@@ -206,7 +205,6 @@ int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize)
 
     if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
         diminuto_perror("diminuto_ipcl_accept_generic: accept");
-        rc = -65;
     } else {
         diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
     }
@@ -227,18 +225,18 @@ int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, di
     if ((rc = fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_perror("diminuto_ipcl_stream_consumer_base: injector");
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
         diminuto_ipcl_close(fd);
-        rc = -66;
     } else {
         /* Do nothing. */
     }
 
-    return rc;
+    return (rc < 0) ? rc : fd;
 }
 
 /*******************************************************************************
@@ -253,6 +251,7 @@ int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_injector_t 
     if ((rc = fd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_datagram_peer_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_perror("diminuto_ipcl_datagram_peer_base: injector");
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path)) < 0) {
         diminuto_ipcl_close(fd);
@@ -260,7 +259,7 @@ int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_injector_t 
         /* Do nothing. */
     }
 
-    return rc;
+    return (rc < 0) ? rc : fd;
 }
 
 ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t size, char * pathp, size_t psize, int flags)
@@ -285,7 +284,7 @@ ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t siz
 ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t size, const char * path, int flags)
 {
     ssize_t total = -1;
-    struct sockaddr_un sa = { 0, };;
+    struct sockaddr_un sa = { 0, };
     struct sockaddr * sap = (struct sockaddr *)0;
     socklen_t length = 0;
 
@@ -332,18 +331,18 @@ int diminuto_ipcl_packet_provider_base(const char * path, int backlog, diminuto_
     if ((rc = fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_packet_provider_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_perror("diminuto_ipcl_packet_provider_base: injector");
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if (listen(fd, backlog) < 0) {
+    } else if ((rc = listen(fd, backlog)) < 0) {
         diminuto_perror("diminuto_ipcl_packet_provider_base: listen");
         diminuto_ipcl_close(fd);
-        rc = -67;
     } else {
         /* Do nothing. */
     }
 
-    return rc;
+    return (rc < 0) ? rc : fd;
 }
 
 int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap)
@@ -359,18 +358,18 @@ int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, di
     if ((rc = fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_packet_consumer_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_perror("diminuto_ipcl_packet_consumer_base: injector");
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
         diminuto_ipcl_close(fd);
-        rc = -68;
     } else {
         /* Do nothing. */
     }
 
-    return rc;
+    return (rc < 0) ? rc : fd;
 }
 
 /*******************************************************************************
