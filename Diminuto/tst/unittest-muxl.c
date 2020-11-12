@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ADVISE(diminuto_ipcl_remove(diminuto_ipcl_canonicalize(ENDPOINT, local, sizeof(local))) >= 0);
+        ADVISE(diminuto_ipcl_remove(diminuto_ipcl_path(ENDPOINT, local, sizeof(local))) >= 0);
 
         STATUS();
     }
@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT((listener = diminuto_ipcl_stream_provider(canonical = diminuto_ipcl_canonicalize(ENDPOINT, local, sizeof(local)))) >= 0);
+        ASSERT((listener = diminuto_ipcl_stream_provider(canonical = diminuto_ipcl_path(ENDPOINT, local, sizeof(local)))) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -298,7 +298,7 @@ int main(int argc, char ** argv)
 
             diminuto_mux_init(&mux);
 
-            ASSERT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_canonicalize(ENDPOINT, local, sizeof(local)))) >= 0);
+            ASSERT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_path(ENDPOINT, local, sizeof(local)))) >= 0);
             ASSERT(diminuto_mux_register_read(&mux, consumer) >= 0);
             ASSERT(diminuto_mux_register_urgent(&mux, consumer) >= 0);
 

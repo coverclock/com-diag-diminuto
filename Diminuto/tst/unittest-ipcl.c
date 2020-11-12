@@ -123,11 +123,11 @@ int main(int argc, char * argv[])
         size_t minimum = 0; \
         size_t actual = 0; \
         minimum = strlen(file); \
-        result = diminuto_ipcl_canonicalize(relative, absolute, sizeof(absolute)); \
+        result = diminuto_ipcl_path(relative, absolute, sizeof(absolute)); \
         actual = strlen(absolute); \
         printable = diminuto_ipcl_path2string(result); \
         EXPECT(printable != (const char *)0); \
-        COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, printable, (result != (char *)0) ? "GOOD" : "BAD"); \
+        COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, printable, (result == (char *)0) ? "INVALID" : diminuto_ipcl_is_unnamed(result) ? "UNNAMED" : "PATH"); \
         EXPECT(\
             ((_RESULT_) && \
                 (result == absolute) && \
@@ -180,14 +180,14 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("", first, sizeof(first)), diminuto_ipcl_canonicalize("", second, sizeof(second))) == 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) == 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("./unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("./unix.sock", second, sizeof(second))) == 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/run/../tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) == 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock1", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock2", second, sizeof(second))) != 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/tmp/unix.sock", second, sizeof(second))) != 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/IMBAD/unix.sock", second, sizeof(second))) != 0);
-        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_canonicalize("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_canonicalize("/IMBAD/unix.sock", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("", first, sizeof(first)), diminuto_ipcl_path("", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_path("/tmp/unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("./unix.sock", first, sizeof(first)), diminuto_ipcl_path("./unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/run/../tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_path("/tmp/unix.sock", second, sizeof(second))) == 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/tmp/unix.sock1", first, sizeof(first)), diminuto_ipcl_path("/tmp/unix.sock2", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_path("/tmp/unix.sock", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/tmp/unix.sock", first, sizeof(first)), diminuto_ipcl_path("/IMBAD/unix.sock", second, sizeof(second))) != 0);
+        EXPECT(diminuto_ipcl_compare(diminuto_ipcl_path("/IMBAD/unix.sock", first, sizeof(first)), diminuto_ipcl_path("/IMBAD/unix.sock", second, sizeof(second))) != 0);
 
         STATUS();
     }
@@ -829,7 +829,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        ASSERT((pointer = diminuto_ipcl_canonicalize(LOCAL1, provider, sizeof(provider))) != (const char *)0);
+        ASSERT((pointer = diminuto_ipcl_path(LOCAL1, provider, sizeof(provider))) != (const char *)0);
         ASSERT((service = diminuto_ipcl_stream_provider_generic(pointer, 16)) >= 0);
         EXPECT(diminuto_ipcl_nearend(service, source, sizeof(source)) >= 0);
         EXPECT(diminuto_ipcl_compare(source, provider) == 0);

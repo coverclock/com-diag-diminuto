@@ -25,7 +25,7 @@
 
 const char DIMINUTO_IPCL_UNNAMED[1] = { '\0' };
 
-char * diminuto_ipcl_canonicalize(const char * path, char * buffer, size_t size)
+char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
 {
     char * result = (char *)0;
     diminuto_local_buffer_t local = { '\0', };

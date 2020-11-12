@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT((listener = diminuto_ipcl_stream_provider(diminuto_ipcl_canonicalize(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
+        ASSERT((listener = diminuto_ipcl_stream_provider(diminuto_ipcl_path(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
 
         ASSERT((pid = fork()) >= 0);
 
@@ -279,7 +279,7 @@ int main(int argc, char ** argv)
 
             ASSERT(diminuto_poll_init(&poll) == &poll);
 
-            ASSERT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_canonicalize(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
+            ASSERT((consumer = diminuto_ipcl_stream_consumer(diminuto_ipcl_path(ENDPOINT, rendezvous, sizeof(rendezvous)))) >= 0);
             ASSERT(diminuto_poll_register_read(&poll, consumer) >= 0);
             ASSERT(diminuto_poll_register_urgent(&poll, consumer) >= 0);
 
