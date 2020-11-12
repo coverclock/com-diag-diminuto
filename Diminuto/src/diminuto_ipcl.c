@@ -23,7 +23,35 @@
 #include <linux/un.h>
 #include "../src/diminuto_ipcl.h"
 
+/*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
 const char DIMINUTO_IPCL_UNNAMED[1] = { '\0' };
+
+/*******************************************************************************
+ * EXTRACTORS
+ ******************************************************************************/
+
+int diminuto_ipcl_identify(struct sockaddr * sap, char * pathp, size_t size)
+{
+    int rc = 0;
+
+    if (sap->sa_family != AF_UNIX) {
+        rc = -60;
+    } else if (pathp == (char *)0) {
+        /* Do nothing. */
+    } else {
+        strncpy(pathp, ((struct sockaddr_un *)sap)->sun_path, size);
+        pathp[size - 1] = '\0';
+    }
+
+    return rc;
+}
+
+/*******************************************************************************
+ * RESOLVERS
+ ******************************************************************************/
 
 char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
 {
@@ -62,51 +90,9 @@ char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
     return result;
 }
 
-int diminuto_ipcl_identify(struct sockaddr * sap, char * pathp, size_t size)
-{
-    int rc = 0;
-
-    if (sap->sa_family != AF_UNIX) {
-        rc = -60;
-    } else if (pathp == (char *)0) {
-        /* Do nothing. */
-    } else {
-        strncpy(pathp, ((struct sockaddr_un *)sap)->sun_path, size);
-        pathp[size - 1] = '\0';
-    }
-
-    return rc;
-}
-
-int diminuto_ipcl_nearend(int fd, char * pathp, size_t psize)
-{
-    int rc = -1;
-    struct sockaddr_un sa = { 0,  };
-    socklen_t length = sizeof(sa);
-
-    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipcl_nearend: getsockname");
-    } else {
-        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
-    }
-
-    return rc;
-}
-
-int diminuto_ipcl_farend(int fd, char * pathp, size_t psize)
-{
-    int rc = -1;
-    struct sockaddr_un sa = { 0 };
-    socklen_t length = sizeof(sa);
-
-    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipcl_farend: getpeername");
-    } else {
-        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
-    }
-
-    return rc;
-}
+/*******************************************************************************
+ * SOCKETS
+ ******************************************************************************/
 
 int diminuto_ipcl_source(int fd, const char * path)
 {
@@ -177,6 +163,10 @@ int diminuto_ipcl_remove(const char * path)
 
     return rc;
 }
+
+/*******************************************************************************
+ * STREAM SOCKETS
+ ******************************************************************************/
 
 int diminuto_ipcl_stream_provider_base(const char * path, int backlog, diminuto_ipc_injector_t * functionp, void * datap)
 {
@@ -251,6 +241,10 @@ int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, di
     return rc;
 }
 
+/*******************************************************************************
+ * DATAGRAM SOCKETS
+ ******************************************************************************/
+
 int diminuto_ipcl_datagram_peer_base(const char * path, diminuto_ipc_injector_t * functionp, void * datap)
 {
     int rc = -1;
@@ -316,4 +310,38 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
     }
 
     return total;
+}
+
+/*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
+
+int diminuto_ipcl_nearend(int fd, char * pathp, size_t psize)
+{
+    int rc = -1;
+    struct sockaddr_un sa = { 0,  };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipcl_nearend: getsockname");
+    } else {
+        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+    }
+
+    return rc;
+}
+
+int diminuto_ipcl_farend(int fd, char * pathp, size_t psize)
+{
+    int rc = -1;
+    struct sockaddr_un sa = { 0 };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipcl_farend: getpeername");
+    } else {
+        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+    }
+
+    return rc;
 }

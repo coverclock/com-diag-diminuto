@@ -41,7 +41,7 @@ const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK = 0x7f000001UL;
 const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2 = 0x7f000002UL;
 
 /*******************************************************************************
- * HELPERS
+ * EXTRACTORS
  ******************************************************************************/
 
 /*
@@ -73,7 +73,7 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
 }
 
 /*******************************************************************************
- * STRING TO ADDRESS AND VICE VERSA
+ * RESOLVERS
  ******************************************************************************/
 
 diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
@@ -130,6 +130,10 @@ diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
 
     return address;
 }
+
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
 
 const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)
 {
