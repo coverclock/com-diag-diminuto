@@ -515,6 +515,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
         EXPECT(diminuto_ipc6_compare(&address6, &TEST6) != 0);
         EXPECT(port != TEST_PORT);
@@ -534,6 +535,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc6_stream_provider(0)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_nearend(fd, &address6, &port) == 0);
         EXPECT(diminuto_ipc6_compare(&address6, &TEST6) != 0);
         EXPECT(port != TEST_PORT);
@@ -645,9 +647,11 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("prairiethorn.org"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
         STATUS();

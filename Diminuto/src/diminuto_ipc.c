@@ -86,6 +86,25 @@ int diminuto_ipc_shutdown(int fd)
 }
 
 /*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
+
+int diminuto_ipc_type(int fd)
+{
+    int rc = AF_UNSPEC;
+    struct sockaddr sa = { 0,  };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipc_type: getsockname");
+    } else {
+        rc = sa.sa_family;
+    }
+
+    return rc;
+}
+
+/*******************************************************************************
  * HELPERS
  ******************************************************************************/
 

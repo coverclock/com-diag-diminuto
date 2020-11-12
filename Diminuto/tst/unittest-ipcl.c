@@ -209,6 +209,7 @@ int main(int argc, char * argv[])
 
         COMMENT("endpoint=\"%s\"\n", LOCAL1);
         ASSERT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("datagram peer nearend=\"%s\"\n", local);
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
@@ -216,6 +217,7 @@ int main(int argc, char * argv[])
         EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) < 0);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
@@ -230,14 +232,17 @@ int main(int argc, char * argv[])
 
         COMMENT("endpoint=\"%s\"\n", UNNAMED);
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("datagram peer nearend=\"%s\"\n", local);
         EXPECT(diminuto_ipcl_is_unnamed(local));
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
 
         STATUS();
@@ -251,6 +256,7 @@ int main(int argc, char * argv[])
 
         COMMENT("endpoint=\"%s\"\n", LOCAL1);
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
         COMMENT("stream provider nearend=\"%s\"\n", local);
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
@@ -258,6 +264,7 @@ int main(int argc, char * argv[])
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) < 0);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
@@ -282,6 +289,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
 
         EXPECT(diminuto_ipc_set_nonblocking(fd, !0) >= 0);
@@ -425,6 +433,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipcl_nearend(fd1, local1, sizeof(local1)) >= 0);
         COMMENT("local1=\"%s\"\n", local1);
         EXPECT(diminuto_ipcl_compare(local1, LOCAL1) == 0);
+
         ASSERT((fd2 = diminuto_ipcl_datagram_peer(LOCAL2)) >= 0);
         EXPECT(diminuto_ipcl_nearend(fd2, local2, sizeof(local2)) >= 0);
         COMMENT("local2=\"%s\"\n", local2);
@@ -462,6 +471,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
         EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
@@ -486,6 +496,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
         EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
@@ -511,6 +522,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT((fd = diminuto_ipcl_datagram_peer(UNNAMED)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
         EXPECT(diminuto_ipcl_nearend(fd, rendezvous, sizeof(rendezvous)) >= 0);
         COMMENT("rendezvous=\"%s\"", rendezvous);
         EXPECT(diminuto_ipcl_is_unnamed(rendezvous));
@@ -676,6 +688,7 @@ int main(int argc, char * argv[])
             diminuto_delay(hertz / 1000, !0);
 
             ASSERT((consumer = diminuto_ipcl_stream_consumer(LOCAL1)) >= 0);
+            EXPECT(diminuto_ipc_type(consumer) == AF_LOCAL);
 
             diminuto_delay(hertz / 1000, !0);
 
@@ -735,6 +748,7 @@ int main(int argc, char * argv[])
             diminuto_delay(hertz / 1000, !0);
 
             ASSERT((consumer = diminuto_ipcl_stream_consumer(LOCAL1)) >= 0);
+            EXPECT(diminuto_ipc_type(consumer) == AF_LOCAL);
 
             diminuto_delay(hertz / 1000, !0);
 
@@ -788,6 +802,7 @@ int main(int argc, char * argv[])
             diminuto_delay(hertz / 1000, !0);
 
             EXPECT((consumer = diminuto_ipcl_stream_consumer(LOCAL1)) >= 0);
+            EXPECT(diminuto_ipc_type(consumer) == AF_LOCAL);
 
             EXPECT(diminuto_ipcl_close(consumer) >= 0);
 
@@ -967,6 +982,7 @@ int main(int argc, char * argv[])
             diminuto_delay(hertz / 1000, !0);
 
             ASSERT((consumer = diminuto_ipcl_stream_consumer(source)) >= 0);
+            EXPECT(diminuto_ipc_type(consumer) == AF_LOCAL);
 
             totalreceived = 0;
             totalsent = 0;

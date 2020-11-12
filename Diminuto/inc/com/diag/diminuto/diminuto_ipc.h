@@ -271,6 +271,16 @@ typedef enum DiminutoIpcType {
 } diminuto_ipc_type_t;
 
 /**
+ * Return the Address Family for the specified socket. If created by
+ * one of the Diminuto IPC functions, this value will be AF_INET for
+ * IPC4, AF_INET6 for IPC6, or AF_UNIX (a.k.a. AF_LOCAL) for IPCL. But
+ * if created through some other means, it may be some other value.
+ * @param fd is the socket to be queried.
+ * @return the Address Family value or <0 if an error occurred.
+ */
+extern int diminuto_ipc_type(int fd);
+
+/**
  * This type defines the structure that is populated when an endpoint string
  * is parsed. The parser (such as it is) tries to fill in all of the fields.
  * For example, it is possible that a Fully Qualified Domain Name (FQDN) will

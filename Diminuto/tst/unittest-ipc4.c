@@ -316,6 +316,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc4_datagram_peer(0)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
         STATUS();
@@ -327,9 +328,11 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("prairiethorn.org"), diminuto_ipc4_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
         EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("http", NULL))) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
         STATUS();
@@ -341,6 +344,7 @@ int main(int argc, char * argv[])
         TEST();
 
         EXPECT((fd = diminuto_ipc4_stream_provider(0)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
         STATUS();
