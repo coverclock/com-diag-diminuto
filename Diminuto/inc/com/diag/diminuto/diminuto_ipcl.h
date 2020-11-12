@@ -226,7 +226,7 @@ static inline int diminuto_ipcl_stream_provider(const char * path) {
  * @param fd is the provider-side stream socket.
  * @param pathp if non-NULL points to where the path will be stored.
  * @param psize is the size of the path variable in bytes.
- * @return a data stream socket to the requestor or <0 if an error occurred.
+ * @return a data stream socket to the provider or <0 if an error occurred.
  */
 extern int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize);
 
@@ -234,7 +234,7 @@ extern int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psiz
  * Wait for and accept a connection request from a consumer on a provider-side
  * stream socket.
  * @param fd is the provider-side stream socket.
- * @return a data stream socket to the requestor or <0 if an error occurred.
+ * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_accept(int fd) {
     return diminuto_ipcl_stream_accept_generic(fd, (char *)0, 0);
@@ -248,7 +248,7 @@ static inline int diminuto_ipcl_stream_accept(int fd) {
  * @param path0 is the consumer path in the file system or "" for unnamed.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 extern int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap);
 
@@ -256,7 +256,7 @@ extern int diminuto_ipcl_stream_consumer_base(const char * path, const char * pa
  * Request a consumer-side stream socket to a provider using a specific path.
  * @param path is the provider path in the file system.
  * @param path0 is the consumer path in the file system or "" for unnamed.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer_generic(const char * path, const char * path0) {
     return diminuto_ipcl_stream_consumer_base(path, path0, (diminuto_ipc_injector_t *)0, (void *)0);
@@ -265,7 +265,7 @@ static inline int diminuto_ipcl_stream_consumer_generic(const char * path, const
 /**
  * Request a consumer-side stream socket to a provider.
  * @param path is the provider path in the file system.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer(const char * path) {
     return diminuto_ipcl_stream_consumer_generic(path, "");
@@ -407,6 +407,99 @@ extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, 
  */
 static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, size_t size, const char * path) {
     return diminuto_ipcl_datagram_send_generic(fd, buffer, size, path, 0);
+}
+
+/*******************************************************************************
+ * SEQUENTIAL PACKET SOCKETS
+ ******************************************************************************/
+
+/**
+ * Create a provider-side sequential packet socket bound to a specific Local
+ * path and with a specific connection backlog. If an optional function is
+ * provided by the caller, invoke it to set socket options before the listen(2)
+ * is performed.
+ * @param path is the path in the file system or "" for an unnamed socket.
+ * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
+ * @param functionp points to an optional function to set socket options.
+ * @param datap is passed to the optional function.
+ * @return a provider-side sequential packet socket or <0 if an error occurred.
+ */
+extern int diminuto_ipcl_packet_provider_base(const char * path, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
+
+/**
+ * Create a provider-side sequential packet socket bound to a specific path and
+ * with a specific connection backlog.
+ * @param path is the path in the file system or "" for an unnamed socket.
+ * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
+ * @return a provider-side sequential packet socket or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_provider_generic(const char * path, int backlog) {
+    return diminuto_ipcl_packet_provider_base(path, backlog, diminuto_ipc_inject_defaults, (void *)0);
+}
+
+/**
+ * Create a provider-side sequential packet socket with the maximum connection
+ * backlog.
+ * @param path is the path in the file system or "" for an unnamed socket.
+ * @return a provider-side sequential packet socket or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_provider(const char * path) {
+    return diminuto_ipcl_packet_provider_generic(path, -1);
+}
+
+/**
+ * Wait for and accept a connection request from a consumer on a provider-side
+ * sequential packet socket.
+ * @param fd is the provider-side sequential packet socket.
+ * @param pathp if non-NULL points to where the path will be stored.
+ * @param psize is the size of the path variable in bytes.
+ * @return a packet socket to the provider or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_accept_generic(int fd, char * pathp, size_t psize)
+{
+    return diminuto_ipcl_stream_accept_generic(fd, pathp, psize);
+}
+
+/**
+ * Wait for and accept a connection request from a consumer on a provider-side
+ * sequential packet socket.
+ * @param fd is the provider-side sequential packet socket.
+ * @return a packet socket to the provider or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_accept(int fd) {
+    return diminuto_ipcl_stream_accept(fd);
+}
+
+/**
+ * Request a consumer-side sequential packet socket to a provider using a
+ * specific path. If an optional function is provided by the caller, invoke
+ * it to set socket options before the connect(2) is performed.
+ * @param path is the provider path in the file system.
+ * @param path0 is the consumer path in the file system or "" for unnamed.
+ * @param functionp points to an optional function to set socket options.
+ * @param datap is passed to the optional function.
+ * @return a packet socket to the consumer or <0 if an error occurred.
+ */
+extern int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap);
+
+/**
+ * Request a consumer-side sequential packet socket to a provider using a
+ * specific path.
+ * @param path is the provider path in the file system.
+ * @param path0 is the consumer path in the file system or "" for unnamed.
+ * @return a packet socket to the consumer or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_consumer_generic(const char * path, const char * path0) {
+    return diminuto_ipcl_packet_consumer_base(path, path0, (diminuto_ipc_injector_t *)0, (void *)0);
+}
+
+/**
+ * Request a consumer-side sequential packet socket to a provider.
+ * @param path is the provider path in the file system.
+ * @return a packet socket to the consumer or <0 if an error occurred.
+ */
+static inline int diminuto_ipcl_packet_consumer(const char * path) {
+    return diminuto_ipcl_packet_consumer_generic(path, "");
 }
 
 #endif

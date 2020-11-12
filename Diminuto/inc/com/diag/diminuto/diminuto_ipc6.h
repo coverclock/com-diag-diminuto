@@ -409,12 +409,12 @@ static inline int diminuto_ipc6_stream_provider(diminuto_port_t port) {
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * stream socket. Optionally return the address and port in host byte order of
- * the requestor.
+ * stream socket. Optionally return the address and port in host byte order to
+ * the provider.
  * @param fd is the provider-side stream socket.
  * @param addressp if non-NULL points to where the address will be stored.
  * @param portp if non-NULL points to where the port will be stored.
- * @return a data stream socket to the requestor or <0 if an error occurred.
+ * @return a data stream socket to the provider or <0 if an error occurred.
  */
 extern int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
@@ -422,7 +422,7 @@ extern int diminuto_ipc6_stream_accept_generic(int fd, diminuto_ipv6_t * address
  * Wait for and accept a connection request from a consumer on a provider-side
  * stream socket.
  * @param fd is the provider-side stream socket.
- * @return a data stream socket to the requestor or <0 if an error occurred.
+ * @return a data stream socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_accept(int fd) {
     return diminuto_ipc6_stream_accept_generic(fd, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
@@ -440,7 +440,7 @@ static inline int diminuto_ipc6_stream_accept(int fd) {
  * @param interface points to the name of the interface, or NULL.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 extern int diminuto_ipc6_stream_consumer_base(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
 
@@ -452,7 +452,7 @@ extern int diminuto_ipc6_stream_consumer_base(diminuto_ipv6_t address, diminuto_
  * @param address0 is the address to which to bind the socket, or zero.
  * @param port0 is the port to which to bind the socket, or zero
  * @param interface points to the name of the interface, or NULL.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface) {
     return diminuto_ipc6_stream_consumer_base(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
@@ -463,7 +463,7 @@ static inline int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address,
  * are in host byte order.
  * @param address is the provider's IPv6 address.
  * @param port is the provider's port.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_consumer(diminuto_ipv6_t address, diminuto_port_t port) {
     return diminuto_ipc6_stream_consumer_generic(address, port, DIMINUTO_IPC6_UNSPECIFIED, 0, (const char *)0);

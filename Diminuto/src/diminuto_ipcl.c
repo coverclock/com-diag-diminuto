@@ -313,6 +313,67 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
 }
 
 /*******************************************************************************
+ * SEQUENTIAL PACKET SOCKETS
+ ******************************************************************************/
+
+int diminuto_ipcl_packet_provider_base(const char * path, int backlog, diminuto_ipc_injector_t * functionp, void * datap)
+{
+    int rc = -1;
+    int fd = -1;
+
+    if (backlog > SOMAXCONN) {
+        backlog = SOMAXCONN;
+    } else if (backlog < 0) {
+        backlog = SOMAXCONN;
+    } else {
+        /* Do nothing. */
+    }
+
+    if ((rc = fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) < 0) {
+        diminuto_perror("diminuto_ipcl_packet_provider_base: socket");
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_ipcl_close(fd);
+    } else if ((rc = diminuto_ipcl_source(fd, path)) < 0) {
+        diminuto_ipcl_close(fd);
+    } else if (listen(fd, backlog) < 0) {
+        diminuto_perror("diminuto_ipcl_packet_provider_base: listen");
+        diminuto_ipcl_close(fd);
+        rc = -67;
+    } else {
+        /* Do nothing. */
+    }
+
+    return rc;
+}
+
+int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap)
+{
+    int rc = -1;
+    int fd = -1;
+    struct sockaddr_un sa = { 0 };
+    socklen_t length = sizeof(sa);
+
+    sa.sun_family = AF_UNIX;
+    strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+
+    if ((rc = fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) < 0) {
+        diminuto_perror("diminuto_ipcl_packet_consumer_base: socket");
+    } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
+        diminuto_ipcl_close(fd);
+    } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
+        diminuto_ipcl_close(fd);
+    } else if (connect(fd, (struct sockaddr *)&sa, length) < 0) {
+        diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
+        diminuto_ipcl_close(fd);
+        rc = -68;
+    } else {
+        /* Do nothing. */
+    }
+
+    return rc;
+}
+
+/*******************************************************************************
  * INTERROGATORS
  ******************************************************************************/
 

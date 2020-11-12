@@ -319,7 +319,7 @@ static inline int diminuto_ipc4_stream_accept(int fd) {
  * @param interface points to the name of the interface, or NULL.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 extern int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface, diminuto_ipc_injector_t * functionp, void * datap);
 
@@ -331,7 +331,7 @@ extern int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_
  * @param address0 is the address to which to bind the socket, or zero.
  * @param port0 is the port to which to bind the socket, or zero
  * @param interface points to the name of the interface, or NULL.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address, diminuto_port_t port, diminuto_ipv4_t address0, diminuto_port_t port0, const char * interface) {
     return diminuto_ipc4_stream_consumer_base(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
@@ -341,7 +341,7 @@ static inline int diminuto_ipc4_stream_consumer_generic(diminuto_ipv4_t address,
  * Request a consumer-side stream socket to a provider.
  * @param address is the provider's IPv4 address in host byte order.
  * @param port is the provider's port in host byte order.
- * @return a data stream socket to the provider or <0 if an error occurred.
+ * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipc4_stream_consumer(diminuto_ipv4_t address, diminuto_port_t port) {
     return diminuto_ipc4_stream_consumer_generic(address, port, DIMINUTO_IPC4_UNSPECIFIED, 0, (const char *)0);
