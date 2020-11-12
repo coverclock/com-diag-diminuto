@@ -95,7 +95,7 @@ int diminuto_ipc_type(int fd)
     struct sockaddr sa = { 0,  };
     socklen_t length = sizeof(sa);
 
-    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+    if (getsockname(fd, (struct sockaddr *)&sa, &length) < 0) {
         diminuto_perror("diminuto_ipc_type: getsockname");
     } else {
         rc = sa.sa_family;

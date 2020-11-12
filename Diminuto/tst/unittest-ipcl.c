@@ -215,6 +215,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) < 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_UNSPEC);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
         EXPECT((fd = diminuto_ipcl_datagram_peer(LOCAL1)) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
@@ -262,6 +263,7 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
         EXPECT(diminuto_ipcl_close(fd) >= 0);
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) < 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_UNSPEC);
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
         ASSERT((fd = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);

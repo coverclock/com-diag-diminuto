@@ -276,7 +276,7 @@ typedef enum DiminutoIpcType {
  * IPC4, AF_INET6 for IPC6, or AF_UNIX (a.k.a. AF_LOCAL) for IPCL. But
  * if created through some other means, it may be some other value.
  * @param fd is the socket to be queried.
- * @return the Address Family value or <0 if an error occurred.
+ * @return the Address Family value include AF_UNSPEC is an error occurred.
  */
 extern int diminuto_ipc_type(int fd);
 
