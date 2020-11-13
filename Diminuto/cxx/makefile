@@ -20,7 +20,7 @@
 #  M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
 #
 
-all:	unittest-cxxcapi
+all:	clean run
 
 unittest-cxxcapi:	thingc.o ../out/host/lib/libdiminuto.so
 	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cpp thingc.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl

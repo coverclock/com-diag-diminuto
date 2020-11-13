@@ -531,8 +531,6 @@ static inline ssize_t diminuto_ipcl_packet_receive(int fd, struct msghdr * messa
  * Send a message to a packet socket using flags.
  * @param fd is an open datagram socket.
  * @param message points to the buffer from which the message is sent.
- * @param size is the maximum number of bytes to be sent.
- * @param path is the receiver's file system path.
  * @param flags is the sendmsg(2) flags to be used.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
@@ -542,8 +540,6 @@ extern ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * m
  * Send a message to a packet socket with no flags.
  * @param fd is an open datagram socket.
  * @param message points to the buffer from which the message is sent.
- * @param size is the maximum number of bytes to be sent.
- * @param path is the receiver's file system path.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_packet_send(int fd, const struct msghdr * message) {
