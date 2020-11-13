@@ -472,9 +472,7 @@ If you'd like to see a non-trivial application that makes heavy use
 of many Diminuto features in exactly the way I envisioned them being
 used, check out the gpstool utility in the Hazer project (repo URL
 below). gpstool is the Swiss Army knife of Hazer, a library that parses
-output from GPS devices. The fact that gpstool can do so much in a single
-file of not much more than a thousand lines of C code is a testimony to
-how useful Diminuto can be (and how much time it can save you).
+output from GPS devices.
 
 Another good example is the survey and census functional tests in the
 Placer project (ditto). The file system walker in Diminuto is a good
