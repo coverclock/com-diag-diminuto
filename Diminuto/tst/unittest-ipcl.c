@@ -20,6 +20,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -957,6 +958,9 @@ int main(int argc, char * argv[])
 
             } while (totalreceived < TOTAL);
 
+            COMMENT("totalsent=%zu totalreceived=%zu\n", totalsent, totalreceived);
+            EXPECT(totalsent == totalreceived);
+
             EXPECT(diminuto_ipcl_shutdown(producer) >= 0);
             EXPECT(diminuto_ipcl_shutdown(service) >= 0);
 
@@ -1127,6 +1131,193 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
         ASSERT(diminuto_ipcl_remove(LOCAL2) >= 0);
+
+        STATUS();
+    }
+
+    {
+        const char * pointer;
+        diminuto_local_t provider;
+        diminuto_local_t source;
+        diminuto_local_t path;
+        int service;
+        pid_t pid;
+
+        TEST();
+
+        ASSERT((pointer = diminuto_ipcl_path(LOCAL1, provider, sizeof(provider))) != (const char *)0);
+        ASSERT((service = diminuto_ipcl_packet_provider_generic(pointer, 16)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(service, source, sizeof(source)) >= 0);
+        EXPECT(diminuto_ipcl_compare(source, provider) == 0);
+
+        ASSERT((pid = fork()) >= 0);
+
+        if (pid) {
+
+            int producer;
+            uint8_t output[256];
+            uint8_t input[countof(output)];
+            uint8_t datum;
+            ssize_t sent;
+            ssize_t received;
+            size_t totalsent;
+            size_t totalreceived;
+            int status;
+            struct msghdr message;
+            struct iovec vector[1];
+
+            ASSERT((producer = diminuto_ipcl_packet_accept_generic(service, path, sizeof(path))) >= 0);
+
+            /*
+             * We can remove the UNIX domain socket from the file
+             * system as long as no other consumer wants to
+             * connect with us. The accepted socket stays open
+             * until we're done with it.
+             */
+
+            ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+            ASSERT(diminuto_ipcl_remove(LOCAL1) < 0);
+
+            sent = 0;
+            received = 0;
+
+            totalsent = 0;
+            totalreceived = 0;
+
+            datum = 0;
+            do {
+                output[datum] = datum;
+            } while ((++datum) > 0);
+
+            memset(input, 0, sizeof(input));
+
+            do {
+
+                if (totalsent < TOTAL) {
+
+                    vector[0].iov_base = output;
+                    vector[0].iov_len = sizeof(output);
+
+                    message.msg_name = (void *)0;
+                    message.msg_namelen = 0;
+                    message.msg_iov = vector;
+                    message.msg_iovlen = countof(vector);
+                    message.msg_control = (void *)0;
+                    message.msg_controllen = 0;
+                    message.msg_flags = 0;
+
+                    ASSERT((sent = diminuto_ipcl_packet_send(producer, &message)) > 0);
+
+                    totalsent += message.msg_iov[0].iov_len;
+                    COMMENT("producer sent %zd %zd %zu\n", sent, message.msg_iov[0].iov_len, totalsent);
+
+                }
+
+                vector[0].iov_base = input;
+                vector[0].iov_len = sizeof(input);
+
+                message.msg_name = (void *)0;
+                message.msg_namelen = 0;
+                message.msg_iov = vector;
+                message.msg_iovlen = countof(vector);
+                message.msg_control = (void *)0;
+                message.msg_controllen = 0;
+                message.msg_flags = 0;
+
+                ASSERT((received = diminuto_ipcl_packet_receive(producer, &message)) > 0);
+
+                totalreceived += message.msg_iov[0].iov_len;
+                COMMENT("producer received %zd %zd %zu\n", received, message.msg_iov[0].iov_len, totalreceived);
+
+                ASSERT(memcmp(input, output, sizeof(input)) == 0);
+                memset(input, 0, sizeof(input));
+
+            } while (totalreceived < TOTAL);
+
+            COMMENT("totalsent=%zu totalreceived=%zu\n", totalsent, totalreceived);
+            EXPECT(totalsent == totalreceived);
+
+            EXPECT(diminuto_ipcl_shutdown(producer) >= 0);
+            EXPECT(diminuto_ipcl_shutdown(service) >= 0);
+
+            ASSERT(diminuto_ipcl_close(producer) >= 0);
+            ASSERT(diminuto_ipcl_close(service) >= 0);
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+        } else {
+
+            int consumer;
+            uint8_t buffer[256];
+            ssize_t sent;
+            ssize_t received;
+            size_t totalsent;
+            size_t totalreceived;
+            struct msghdr message;
+            struct iovec vector[1];
+
+            ASSERT(diminuto_ipcl_close(service) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            ASSERT((consumer = diminuto_ipcl_packet_consumer(source)) >= 0);
+            EXPECT(diminuto_ipc_type(consumer) == AF_LOCAL);
+
+            sent = 0;
+            received = 0;
+
+            totalreceived = 0;
+            totalsent = 0;
+
+            while (!0) {
+
+                vector[0].iov_base = buffer;
+                vector[0].iov_len = sizeof(buffer);
+
+                message.msg_name = (void *)0;
+                message.msg_namelen = 0;
+                message.msg_iov = vector;
+                message.msg_iovlen = countof(vector);
+                message.msg_control = (void *)0;
+                message.msg_controllen = 0;
+                message.msg_flags = 0;
+
+                ASSERT((received = diminuto_ipcl_packet_receive(consumer, &message)) >= 0);
+
+                if (received > 0) { totalreceived += message.msg_iov[0].iov_len; }
+                COMMENT("consumer received %zd %zd %zu\n", received, message.msg_iov[0].iov_len, totalreceived);
+
+                if (received == 0) {
+                    break;
+                }
+
+                vector[0].iov_base = buffer;
+                vector[0].iov_len = sizeof(buffer);
+
+                message.msg_name = (void *)0;
+                message.msg_namelen = 0;
+                message.msg_iov = vector;
+                message.msg_iovlen = countof(vector);
+                message.msg_control = (void *)0;
+                message.msg_controllen = 0;
+                message.msg_flags = 0;
+
+                ASSERT((sent = diminuto_ipcl_packet_send(consumer, &message)) > 0);
+
+                totalsent += message.msg_iov[0].iov_len;
+                COMMENT("consumer sent %zd %zd %zu\n", sent, message.msg_iov[0].iov_len, totalsent);
+
+            }
+
+            EXPECT(diminuto_ipcl_shutdown(consumer) >= 0);
+
+            ASSERT(diminuto_ipcl_close(consumer) >= 0);
+
+            EXIT();
+        }
 
         STATUS();
     }
