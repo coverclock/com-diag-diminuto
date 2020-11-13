@@ -11,7 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_cxxcapi.h"
-#include "thingc.h"
+#include "thing.h"
 
 /**
  * Call the C++ thing_log function.

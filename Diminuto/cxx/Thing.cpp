@@ -17,7 +17,7 @@
 #include "com/diag/diminuto/diminuto_begin.h"
 #   include "com/diag/diminuto/diminuto_unittest.h"
 #   include "com/diag/diminuto/diminuto_log.h"
-#   include "thingc.h"
+#   include "thing.h"
 #include "com/diag/diminuto/diminuto_end.h"
 
 Thing::Thing() { this->data = 0; }

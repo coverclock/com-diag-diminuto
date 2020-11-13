@@ -20,18 +20,21 @@
 #  M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
 #
 
-all:	clean run
+all:	clean run reclean
 
-unittest-cxxcapi:	thingc.o ../out/host/lib/libdiminuto.so
-	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cpp thingc.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
+unittest-cxxcapi:	thing.o ../out/host/lib/libdiminuto.so
+	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cpp thing.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
 
-thingc.o:	thingc.c
-	gcc -o thingc.o -I . -I ../inc -c thingc.c
+thing.o:	thing.c
+	gcc -o thing.o -I . -I ../inc -c thing.c
 
-.PHONY:	clean run 
+.PHONY:	clean run reclean
 
 clean:
-	rm -f thingc.o unittest-cxxcapi
+	rm -f thing.o unittest-cxxcapi
+
+reclean:
+	rm -f thing.o unittest-cxxcapi
 
 run:	unittest-cxxcapi
 	./unittest-cxxcapi

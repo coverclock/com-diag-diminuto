@@ -902,7 +902,7 @@ install-include:
 
 ########## Sanity
 
-.PHONY: extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers
+.PHONY: cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers
 
 sanity:
 	vintage
@@ -919,7 +919,7 @@ sanity:
 	unittest-countof
 	unittest-criticalsection
 	unittest-cue
-	make -C cxx all run clean
+	make -C cxx
 	unittest-daemon
 	unittest-datum
 	unittest-dump
@@ -1127,3 +1127,6 @@ renameat2:
 	unittest-renameat2
 	unittest-lock
 	renametooltest && echo "SUCCESS." || echo "FAILED!"
+
+cxxcapi:
+	make -C cxx
