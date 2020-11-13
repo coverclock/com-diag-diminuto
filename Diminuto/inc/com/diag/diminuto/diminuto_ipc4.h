@@ -475,7 +475,7 @@ static inline ssize_t diminuto_ipc4_datagram_receive(int fd, void * buffer, size
  * function can legitimately be also used with a stream socket by passing zero
  * as the port number, in which case the address is ignored.)
  * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
+ * @param buffer points to the buffer from which data is sent.
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
  * @param port is the receiver's port.
@@ -489,7 +489,7 @@ extern ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, 
  * legitimately be also used with a stream socket by passing zero as the port
  * number, in which case the address is ignored.)
  * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
+ * @param buffer points to the buffer from which data is sent.
  * @param size is the maximum number of bytes to be sent.
  * @param address is the receiver's address.
  * @param port is the receiver's port.

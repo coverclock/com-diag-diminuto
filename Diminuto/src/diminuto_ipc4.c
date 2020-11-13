@@ -151,6 +151,106 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
 }
 
 /*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
+
+int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    int rc = -1;
+    struct sockaddr_in sa = { 0,  };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipc4_nearend: getsockname");
+    } else {
+        diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
+    }
+
+    return rc;
+}
+
+int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    int rc = -1;
+    struct sockaddr_in sa = { 0, };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipc4_farend: getpeername");
+    } else {
+        diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
+    }
+
+    return rc;
+}
+
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
+
+diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
+{
+    diminuto_ipv4_t * rp = (diminuto_ipv4_t *)0;
+    struct ifaddrs * ifa = (struct ifaddrs *)0;
+    struct ifaddrs * ip = (struct ifaddrs *)0;
+    diminuto_ipv4_t * vp = (diminuto_ipv4_t *)0;
+    size_t vs = sizeof(diminuto_ipv4_t);
+    int rc = -1;
+
+    do {
+
+        if ((rc = getifaddrs(&ifa)) < 0) {
+            diminuto_perror("diminuto_ipc4_interface: getifaddrs");
+            break;
+        }
+
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                vs += sizeof(diminuto_ipv4_t);
+            }
+        }
+
+        rp = (diminuto_ipv4_t *)malloc(vs);
+        vp = rp;
+
+        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
+            if (ip->ifa_name == (char *)0) {
+                continue;
+            } else if (ip->ifa_addr == (struct sockaddr *)0) {
+                continue;
+            } else if (ip->ifa_addr->sa_family != AF_INET) {
+                continue;
+            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
+                continue;
+            } else {
+                *(vp++) = ntohl(((struct sockaddr_in *)(ip->ifa_addr))->sin_addr.s_addr);
+            }
+        }
+
+        *vp = 0;
+
+#if 0
+        diminuto_dump(stderr, rp, vs);
+#endif
+
+    } while (0);
+
+    if (ifa != (struct ifaddrs *)0) {
+        freeifaddrs(ifa);
+    }
+
+    return rp;
+}
+
+/*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
@@ -327,104 +427,4 @@ ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t 
     }
 
     return total;
-}
-
-/*******************************************************************************
- * INTERROGATORS
- ******************************************************************************/
-
-int diminuto_ipc4_nearend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
-{
-    int rc = -1;
-    struct sockaddr_in sa = { 0,  };
-    socklen_t length = sizeof(sa);
-
-    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipc4_nearend: getsockname");
-    } else {
-        diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
-    }
-
-    return rc;
-}
-
-int diminuto_ipc4_farend(int fd, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
-{
-    int rc = -1;
-    struct sockaddr_in sa = { 0, };
-    socklen_t length = sizeof(sa);
-
-    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipc4_farend: getpeername");
-    } else {
-        diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
-    }
-
-    return rc;
-}
-
-/*******************************************************************************
- * INTERFACES
- ******************************************************************************/
-
-diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
-{
-    diminuto_ipv4_t * rp = (diminuto_ipv4_t *)0;
-    struct ifaddrs * ifa = (struct ifaddrs *)0;
-    struct ifaddrs * ip = (struct ifaddrs *)0;
-    diminuto_ipv4_t * vp = (diminuto_ipv4_t *)0;
-    size_t vs = sizeof(diminuto_ipv4_t);
-    int rc = -1;
-
-    do {
-
-        if ((rc = getifaddrs(&ifa)) < 0) {
-            diminuto_perror("diminuto_ipc4_interface: getifaddrs");
-            break;
-        }
-
-        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
-            if (ip->ifa_name == (char *)0) {
-                continue;
-            } else if (ip->ifa_addr == (struct sockaddr *)0) {
-                continue;
-            } else if (ip->ifa_addr->sa_family != AF_INET) {
-                continue;
-            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
-                continue;
-            } else {
-                vs += sizeof(diminuto_ipv4_t);
-            }
-        }
-
-        rp = (diminuto_ipv4_t *)malloc(vs);
-        vp = rp;
-
-        for (ip = ifa; ip != (struct ifaddrs *)0; ip = ip->ifa_next) {
-            if (ip->ifa_name == (char *)0) {
-                continue;
-            } else if (ip->ifa_addr == (struct sockaddr *)0) {
-                continue;
-            } else if (ip->ifa_addr->sa_family != AF_INET) {
-                continue;
-            } else if (strncmp(ip->ifa_name, interface, NAME_MAX) != 0) {
-                continue;
-            } else {
-                *(vp++) = ntohl(((struct sockaddr_in *)(ip->ifa_addr))->sin_addr.s_addr);
-            }
-        }
-
-        *vp = 0;
-
-#if 0
-        diminuto_dump(stderr, rp, vs);
-#endif
-
-    } while (0);
-
-    if (ifa != (struct ifaddrs *)0) {
-        freeifaddrs(ifa);
-    }
-
-    return rp;
 }

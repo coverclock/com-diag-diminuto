@@ -15,18 +15,24 @@
  * (AF_UNIX a.k.a. AF_LOCAL). Local sockets use paths in the file system
  * instead of IP addresses and ports to identify the endpoints of the
  * connection. They are only useful for peers, providers, or consumers
- * that are running in the same process environment and file system.
+ * that are running in the same process environment and file system. In
+ * addition to the stream and datagram APIs that the IPC4 and IPC6
+ * features provide, IPCL also provides sockets that can be used with
+ * sequential packets via the more specialised sendmsg(2) and recvmsg(2)
+ * system calls.
  *
  * REFERENCES
  *
  * C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets",
  * CopyConstruct, August 2020
+ *
+ * unix(7) man page
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_ipc.h"
 #include <string.h>
-#include <sys/socket.h>
+#include <sys/socket.h> /* _GNU_SOURCE_ must have been defined. */
 
 /*******************************************************************************
  * GLOBALS
@@ -387,7 +393,7 @@ static inline ssize_t diminuto_ipcl_datagram_receive(int fd, void * buffer, size
  * function can legitimately be also used with a stream socket by passing zero
  * as the port number, in which case the path is ignored.)
  * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
+ * @param buffer points to the buffer from which data is sent.
  * @param size is the maximum number of bytes to be sent.
  * @param path is the receiver's file system path.
  * @param flags is the sendto(2) flags to be used.
@@ -400,7 +406,7 @@ extern ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, 
  * legitimately be also used with a stream socket by passing zero as the port
  * number, in which case the path is ignored.)
  * @param fd is an open datagram socket.
- * @param buffer points to the buffer from which data is send.
+ * @param buffer points to the buffer from which data is sent.
  * @param size is the maximum number of bytes to be sent.
  * @param path is the receiver's file system path.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
@@ -500,6 +506,48 @@ static inline int diminuto_ipcl_packet_consumer_generic(const char * path, const
  */
 static inline int diminuto_ipcl_packet_consumer(const char * path) {
     return diminuto_ipcl_packet_consumer_generic(path, "");
+}
+
+/**
+ * Receive a message from a packet socket using flags.
+ * @param fd is an open packet socket.
+ * @param message points to the buffer into which the message is received.
+ * @param flags is the sendmsg(2) flags to be used.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
+ */
+extern ssize_t diminuto_ipcl_packet_receive_generic(int fd, struct msghdr * message, int flags);
+
+/**
+ * Receive a message from a packet socket with no flags.
+ * @param fd is an open packet socket.
+ * @param message points to the buffer into which the message is received.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
+ */
+static inline ssize_t diminuto_ipcl_packet_receive(int fd, struct msghdr * message) {
+    return diminuto_ipcl_packet_receive_generic(fd, message, 0);
+}
+
+/**
+ * Send a message to a packet socket using flags.
+ * @param fd is an open datagram socket.
+ * @param message points to the buffer from which the message is sent.
+ * @param size is the maximum number of bytes to be sent.
+ * @param path is the receiver's file system path.
+ * @param flags is the sendmsg(2) flags to be used.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
+ */
+extern ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * message, int flags);
+
+/**
+ * Send a message to a packet socket with no flags.
+ * @param fd is an open datagram socket.
+ * @param message points to the buffer from which the message is sent.
+ * @param size is the maximum number of bytes to be sent.
+ * @param path is the receiver's file system path.
+ * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
+ */
+static inline ssize_t diminuto_ipcl_packet_send(int fd, const struct msghdr * message) {
+    return diminuto_ipcl_packet_send_generic(fd, message, 0);
 }
 
 #endif

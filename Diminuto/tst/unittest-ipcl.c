@@ -1029,5 +1029,107 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        int fd;
+        diminuto_local_t local;
+
+        TEST();
+
+        COMMENT("endpoint=\"%s\"\n", LOCAL1);
+        ASSERT((fd = diminuto_ipcl_packet_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
+        EXPECT(diminuto_ipcl_nearend(fd, local, sizeof(local)) >= 0);
+        COMMENT("packet provider nearend=\"%s\"\n", local);
+        EXPECT(diminuto_ipcl_farend(fd, local, sizeof(local)) < 0);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        ASSERT((fd = diminuto_ipcl_packet_provider(LOCAL1)) < 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_UNSPEC);
+        ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+        ASSERT((fd = diminuto_ipcl_packet_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipc_type(fd) == AF_LOCAL);
+        EXPECT(diminuto_ipcl_close(fd) >= 0);
+        ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_local_t rendezvous;
+        diminuto_local_t local;
+        int service;
+        pid_t pid;
+
+        /*
+         * Named consumer.
+         */
+
+        ASSERT((service = diminuto_ipcl_packet_provider(LOCAL1)) >= 0);
+        EXPECT(diminuto_ipcl_nearend(service, rendezvous, sizeof(rendezvous)) >= 0);
+        COMMENT("rendezvous=\"%s\"\n", rendezvous);
+        EXPECT(diminuto_ipcl_compare(rendezvous, LOCAL1) == 0);
+
+        EXPECT((pid = fork()) >= 0);
+
+        if (pid != 0) {
+
+            int producer;
+            int status;
+
+            local[0] = '\0';
+            ASSERT((producer = diminuto_ipcl_packet_accept_generic(service, local, sizeof(local))) >= 0);
+            COMMENT("local=\"%s\"\n", local);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL2) == 0);
+
+            local[0] = '\0';
+            EXPECT(diminuto_ipcl_nearend(producer, local, sizeof(local)) >= 0);
+            COMMENT("local=\"%s\"\n", local);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL1) == 0);
+
+            local[0] = '\0';
+            EXPECT(diminuto_ipcl_farend(producer, local, sizeof(local)) >= 0);
+            COMMENT("local=\"%s\"\n", local);
+            EXPECT(diminuto_ipcl_compare(local, LOCAL2) == 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipcl_close(producer) >= 0);
+
+            /*
+             * If you don't wait for the child to exit, it may not yet have
+             * closed its end of the socket thereby releasing the bound IP
+             * address by the time the next unit test begins.
+             */
+
+            EXPECT(waitpid(pid, &status, 0) == pid);
+            CHECKPOINT("pid=%d status=%d\n", pid, status);
+            EXPECT(WIFEXITED(status));
+            EXPECT(WEXITSTATUS(status) == 0);
+
+            EXPECT(diminuto_ipcl_close(service) >= 0);
+
+        } else {
+
+            int consumer;
+
+            EXPECT(diminuto_ipcl_close(service) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            ASSERT((consumer = diminuto_ipcl_packet_consumer_generic(LOCAL1, LOCAL2)) >= 0);
+
+            diminuto_delay(hertz / 1000, !0);
+
+            EXPECT(diminuto_ipcl_close(consumer) >= 0);
+
+            EXIT();
+
+        }
+
+        ASSERT(diminuto_ipcl_remove(LOCAL1) >= 0);
+        ASSERT(diminuto_ipcl_remove(LOCAL2) >= 0);
+
+        STATUS();
+    }
+
     EXIT();
 }

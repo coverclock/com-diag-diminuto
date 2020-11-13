@@ -91,6 +91,40 @@ char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
 }
 
 /*******************************************************************************
+ * INTERROGATORS
+ ******************************************************************************/
+
+int diminuto_ipcl_nearend(int fd, char * pathp, size_t psize)
+{
+    int rc = -1;
+    struct sockaddr_un sa = { 0,  };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipcl_nearend: getsockname");
+    } else {
+        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+    }
+
+    return rc;
+}
+
+int diminuto_ipcl_farend(int fd, char * pathp, size_t psize)
+{
+    int rc = -1;
+    struct sockaddr_un sa = { 0 };
+    socklen_t length = sizeof(sa);
+
+    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
+        diminuto_perror("diminuto_ipcl_farend: getpeername");
+    } else {
+        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+    }
+
+    return rc;
+}
+
+/*******************************************************************************
  * SOCKETS
  ******************************************************************************/
 
@@ -372,36 +406,36 @@ int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, di
     return (rc < 0) ? rc : fd;
 }
 
-/*******************************************************************************
- * INTERROGATORS
- ******************************************************************************/
-
-int diminuto_ipcl_nearend(int fd, char * pathp, size_t psize)
+ssize_t diminuto_ipcl_packet_receive_generic(int fd, struct msghdr * message, int flags)
 {
-    int rc = -1;
-    struct sockaddr_un sa = { 0,  };
-    socklen_t length = sizeof(sa);
+    ssize_t total = -1;
 
-    if ((rc = getsockname(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipcl_nearend: getsockname");
+    if ((total = recvmsg(fd, message, flags)) == 0) {
+        /* Do nothing: far end closed. */
+    } else if (total > 0) {
+        /* Do nothing: nominal case. */
+    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+        diminuto_perror("diminuto_ipcl_packet_receive_generic: recvmsg");
     } else {
-        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+        /* Do nothing: interrupt, timeout, or poll. */
     }
 
-    return rc;
+    return total;
 }
 
-int diminuto_ipcl_farend(int fd, char * pathp, size_t psize)
+ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * message, int flags)
 {
-    int rc = -1;
-    struct sockaddr_un sa = { 0 };
-    socklen_t length = sizeof(sa);
+    ssize_t total = -1;
 
-    if ((rc = getpeername(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipcl_farend: getpeername");
+    if ((total = sendmsg(fd, message, flags)) == 0) {
+        /* Do nothing: far end closed. */
+    } else if (total > 0) {
+        /* Do nothing: nominal case. */
+    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+        diminuto_perror("diminuto_ipcl_packet_receive_generic: sendmsg");
     } else {
-        diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+        /* Do nothing: interrupt, timeout, or poll. */
     }
 
-    return rc;
+    return total;
 }
