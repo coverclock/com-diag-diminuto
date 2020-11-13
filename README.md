@@ -3,13 +3,11 @@ com-diag-diminuto
 
 A Linux/GNU systems programming library in C.
 
-# Thanks
-
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
-
 # Copyright
 
 Copyright 2008-2020 by the Digital Aggregates Corporation, Colorado, USA.
+
+This software is an original work of its author.
 
 # License
 
@@ -24,9 +22,12 @@ Wheat Ridge CO 80033 USA
 <http://www.diag.com>    
 <mailto:coverclock@diag.com>    
 
+# Thanks
+
+[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
+
 # Abstract
 
-This file is part of the Digital Aggregates Corporation Diminuto package.
 Diminuto ("tiny") is an open source library of systems programming
 functions and tools written in C to simplify the writing of device
 drivers, daemons, and systems applications for the Linux operating
@@ -38,7 +39,29 @@ to validate features when they change, and a suite of functional tests
 that require a purpose-built hardware test fixture used to validate
 features that depend on hardware (like GPIO).
 
-This software is an original work of its author.
+Here are just a few examples of the capabilities, or "features", that
+Diminuto provides:
+
+* smart logging that automatically determines whether to write to standard error or to the system log (```diminuto_log```);
+* simple unit test framework (```diminuto_unittest```) and programmatic enabling of core dumps (```diminuto_core```).
+* POSIX mutual exclusion semaphores (```diminuto_mutex```), condition variables (```diminuto_condition```), and threads (```diminuto_thread```);
+* POSIX timers (```diminuto_timer```);
+* socket interprocess communication (IPC) using IPv4 (```diminuto_ipc4```), IPv6 (```diminuto_ipc6```), and UNIX domain (local) paths (```diminuto_ipcl```);
+* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using trees (```diminuto_store```);
+* traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
+* monitoring applications that run on a headless host (```diminuto_observation```);
+* expanding and collapsing C-style escape sequences in strings (```diminuto_escape```) and generating expanded output in real-time (```diminuto_phex```);
+* displaying dumps of data structures to the console (```diminuto_dump```);
+* display stack traces to the console (```diminuto_stacktrace```);
+* daemonizing applications (```diminuto_daemon```);
+* using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
+* an extensive collection of unit tests and functional tests that provide working examples of using the library features;
+* an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```).
+
+Diminuto also provides many command-line utilities using the features
+of the library that are especially useful in shell scripts.
+
+See the Features section below for a more complete list.
 
 # Details
 
