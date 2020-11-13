@@ -51,7 +51,7 @@ Diminuto provides:
 * traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
 * monitoring applications that run on a headless host (```diminuto_observation```);
 * expanding and collapsing C-style escape sequences in strings (```diminuto_escape```) and generating expanded output in real-time (```diminuto_phex```);
-* displaying dumps of data structures to the console (```diminuto_dump```);
+* displaying hexadecimal dumps of data structures to the console (```diminuto_dump```);
 * display stack traces to the console (```diminuto_stacktrace```);
 * daemonizing applications (```diminuto_daemon```);
 * using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
