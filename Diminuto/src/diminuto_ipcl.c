@@ -56,7 +56,7 @@ int diminuto_ipcl_identify(struct sockaddr * sap, char * pathp, size_t size)
 char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
 {
     char * result = (char *)0;
-    diminuto_local_buffer_t local = { '\0', };
+    diminuto_local_t canonical = { '\0', };
     size_t length = 0;
 
     if (size <= 0) {
@@ -67,13 +67,13 @@ char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
         /* Unnamed Local socket. */
         buffer[0] = '\0';
         result = buffer;
-    } else if (diminuto_fs_canonicalize(path, local, sizeof(local)) < 0) {
+    } else if (diminuto_fs_canonicalize(path, canonical, sizeof(canonical)) < 0) {
         /* Canonicalization failed. */
-    } else if ((length = strlen(local)) < 2) {
+    } else if ((length = strlen(canonical)) < 2) {
         /* Must be at least "/x". */
         errno = EINVAL;
         diminuto_perror(path);
-    } else if (local[length - 1] == '/') {
+    } else if (canonical[length - 1] == '/') {
         /* Canonicalization gave us "/path/" but no file name. */
         errno = EINVAL;
         diminuto_perror(path);
@@ -82,7 +82,7 @@ char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
         errno = ENAMETOOLONG;
         diminuto_perror(path);
     } else {
-        strncpy(buffer, local, size);
+        strncpy(buffer, canonical, size);
         buffer[size - 1] = '\0';
         result = buffer;
     }

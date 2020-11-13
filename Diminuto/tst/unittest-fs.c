@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
     {
         TEST();
         EXPECT(sizeof(diminuto_path_t) == PATH_MAX);
-        EXPECT(sizeof(diminuto_local_buffer_t) == UNIX_PATH_MAX);
+        EXPECT(sizeof(diminuto_local_t) == UNIX_PATH_MAX);
         STATUS();
     }
 

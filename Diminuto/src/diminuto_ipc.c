@@ -16,7 +16,6 @@
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
-#include <fcntl.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,14 +23,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <ifaddrs.h>
-#include <asm/ioctls.h>
 #include <linux/limits.h>
-#include <linux/sockios.h>
 #include "../src/diminuto_ipc.h"
 
 /*******************************************************************************
@@ -181,26 +176,6 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
     return fd;
 }
 
-int diminuto_ipc_set_nonblocking(int fd, int enable)
-{
-    return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
-}
-
-int diminuto_ipc_set_reuseaddress(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
-}
-
-int diminuto_ipc_set_keepalive(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_KEEPALIVE, !!enable);
-}
-
-int diminuto_ipc_set_debug(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_DEBUG, !!enable);
-}
-
 /*
  * https://github.com/coverclock/com-diag-desperadito/blob/master/Desperadito/inc/com/diag/desperado/generics.h
  */
@@ -250,48 +225,6 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     }
 
     return fd;
-}
-
-int diminuto_ipc_set_nodelay(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
-}
-
-int diminuto_ipc_set_quickack(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
-}
-
-int diminuto_ipc6_set_ipv6only(int fd, int enable)
-{
-    return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
-}
-
-ssize_t diminuto_ipc_stream_get_available(int fd)
-{
-    return diminuto_ipc_get_control(fd, SIOCINQ);
-}
-
-ssize_t diminuto_ipc_stream_get_pending(int fd)
-{
-    return diminuto_ipc_get_control(fd, SIOCOUTQ);
-}
-
-/*
- * IPV6_ADDRFORM appears to have been deprecated in the latest pertinent
- * internet standard, RFC 3943. And perusing the implementation of it in
- * the 4.2 kernel code I had some WTF moments (e.g. UDP is supported but
- * the socket has to have TCP Established set). Seems pretty sketchy to me.
- */
-
-int diminuto_ipc6_stream_set_ipv6toipv4(int fd)
-{
-    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
-}
-
-int diminuto_ipc6_datagram_set_ipv6toipv4(int fd)
-{
-    return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }
 
 /*******************************************************************************

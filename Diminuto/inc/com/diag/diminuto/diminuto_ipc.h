@@ -19,11 +19,24 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include <sys/socket.h> /* For AF_UNSPEC, AF_UNIX, AF_INET. */
+#include <netinet/in.h> /* IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IPV6. */
+#include <netinet/tcp.h> /* for TCP_NODELAY, TCP_QUICKACK. */
+#include <fcntl.h> /* for O_NONBLOCK. */
+#include <linux/sockios.h> /* For SIOCINQ, SIOCOUTQ. */
+#include <asm/ioctls.h> /* For FIONREAD, TIOCOUTQ. */
+
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
 
 /**
  * Defines the prototype of a function used for dependency injection.
  */
 typedef int (diminuto_ipc_injector_t)(int fd, void *);
+
+/*******************************************************************************
+ * RESOLVERS
+ ******************************************************************************/
 
 /**
  * Convert a service name or a port number string into a port in host byte
@@ -34,36 +47,17 @@ typedef int (diminuto_ipc_injector_t)(int fd, void *);
  */
 extern diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol);
 
-/**
- * Shutdown a socket. This eliminates the transmission of any pending data.
- * @param fd is an open socket of any type.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern int diminuto_ipc_shutdown(int fd);
+/*******************************************************************************
+ * OPTIONS
+ ******************************************************************************/
 
 /**
- * Close a socket. Unless the socket has been shutdown, pending data will
- * still be transmitted.
- * @param fd is an open socket of any type.
- * @return >=0 for success or <0 if an error occurred.
+ * Get an I/O control option (ioctl(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param option is the option to get.
+ * @return the value of the option, or <0 for error.
  */
-extern int diminuto_ipc_close(int fd);
-
-/**
- * Return the number of bytes available on the input queue waiting to be
- * received by the application.
- * @param fd is an open stream socket.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern ssize_t diminuto_ipc_stream_get_available(int fd);
-
-/**
- * Return the number of bytes pending on the output queue waiting to be
- * transmitted by the kernel.
- * @param fd is an open stream socket.
- * @return >=0 for success or <0 if an error occurred.
- */
-extern ssize_t diminuto_ipc_stream_get_pending(int fd);
+extern int diminuto_ipc_get_control(int fd, int option);
 
 /**
  * Bind a socket to a particular interface identified by name, e.g. "eth0"
@@ -78,12 +72,33 @@ extern ssize_t diminuto_ipc_stream_get_pending(int fd);
 extern int diminuto_ipc_set_interface(int fd, const char * interface);
 
 /**
+ * Enable or disable a file control option (fcntl(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param enable is true to enable, false to disable.
+ * @param mask is a bit mask indication the option to enable or disable.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_ipc_set_status(int fd, int enable, long mask);
+
+/**
+ * Set a socket option (setsockopt(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param level is the level in the protocol stack at which to set.
+ * @param option is the option to set.
+ * @param value is the value (if any) to apply to the option.
+ * @return >=0 for success, <0 for error.
+ */
+extern int diminuto_ipc_set_socket(int fd, int level, int option, int value);
+
+/**
  * Enable or disable the non-blocking status.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_nonblocking(int fd, int enable);
+static inline int diminuto_ipc_set_nonblocking(int fd, int enable) {
+    return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
+}
 
 /**
  * Enable or disable the address reuse option.
@@ -91,7 +106,9 @@ extern int diminuto_ipc_set_nonblocking(int fd, int enable);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
+static inline int diminuto_ipc_set_reuseaddress(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
+}
 
 /**
  * Enable or disable the keep alive option.
@@ -99,7 +116,9 @@ extern int diminuto_ipc_set_reuseaddress(int fd, int enable);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_keepalive(int fd, int enable);
+static inline int diminuto_ipc_set_keepalive(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_KEEPALIVE, !!enable);
+}
 
 /**
  * Enable or disable the debug option (only available to root on most systems).
@@ -107,7 +126,9 @@ extern int diminuto_ipc_set_keepalive(int fd, int enable);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_debug(int fd, int enable);
+static inline int diminuto_ipc_set_debug(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_DEBUG, !!enable);
+}
 
 /**
  * Enable or disable the linger option.
@@ -125,7 +146,9 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_nodelay(int fd, int enable);
+static inline int diminuto_ipc_set_nodelay(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
+}
 
 /**
  * Enable or disable the TCP Quick Acknowledgement option. (Useful for
@@ -134,7 +157,9 @@ extern int diminuto_ipc_set_nodelay(int fd, int enable);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc_set_quickack(int fd, int enable);
+static inline int diminuto_ipc_set_quickack(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
+}
 
 /**
  * Change the send TCP buffer size. (Useful for setting to the bandwidth-
@@ -161,33 +186,104 @@ extern int diminuto_ipc_set_receive(int fd, ssize_t size);
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc6_set_ipv6only(int fd, int enable);
+static inline int diminuto_ipc6_set_ipv6only(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, !!enable);
+}
 
 /**
- * Convert a IPv6 stream socket into an IPv4 stream socket (DEPRECATED and
- * SKETCHY in the kernel, NOT RECOMMENDED).
+ * Convert a IPv6 stream socket into an IPv4 stream socket.
+ * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
+ * IPV6_ADDRFORM appears to have been deprecated in the latest pertinent
+ * internet standard, RFC 3943. And perusing the implementation of it in
+ * the 4.2 kernel code I had some WTF moments (e.g. UDP is supported but
+ * the socket has to have TCP Established set). Seems pretty sketchy to me.
  * @param fd is an open IPv6 stream socket.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc6_stream_set_ipv6toipv4(int fd);
+static inline int diminuto_ipc6_stream_set_ipv6toipv4(int fd) {
+    return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
+}
 
 /**
- * Convert a IPv6 datagram socket into an IPv4 datagram socket (DEPRECATED and
- * SKETCHY in the kernel, NOT RECOMMENDED).
+ * Convert a IPv6 datagram socket into an IPv4 datagram socket.
+ * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
+ * IPV6_ADDRFORM appears to have been deprecated in the latest pertinent
+ * internet standard, RFC 3943. And perusing the implementation of it in
+ * the 4.2 kernel code I had some WTF moments (e.g. UDP is supported but
+ * the socket has to have TCP Established set). Seems pretty sketchy to me.
  * @param fd is an open IPv6 datagram socket.
  * @return >=0 for success or <0 if an error occurred.
  */
-extern int diminuto_ipc6_datagram_set_ipv6toipv4(int fd);
+static inline int diminuto_ipc6_datagram_set_ipv6toipv4(int fd) {
+    return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
+}
 
 /*
  * (Many other options are possible, but these are the ones I have used.)
  */
+
+/*******************************************************************************
+ * INJECTORS
+ ******************************************************************************/
 
 /**
  * Dependency injector used to set the the socket options in the
  * ipc4 and ipc6 APIs.
  */
 extern diminuto_ipc_injector_t diminuto_ipc_inject_defaults;
+
+/*******************************************************************************
+ * SOCKETS
+ ******************************************************************************/
+
+/**
+ * Return the Address Family for the specified socket. If created by
+ * one of the Diminuto IPC functions, this value will be AF_INET for
+ * IPC4, AF_INET6 for IPC6, or AF_UNIX (a.k.a. AF_LOCAL) for IPCL. But
+ * if created through some other means, it may be some other value.
+ * @param fd is the socket to be queried.
+ * @return the Address Family value include AF_UNSPEC is an error occurred.
+ */
+extern int diminuto_ipc_type(int fd);
+
+/**
+ * Return the number of bytes available on the input queue waiting to be
+ * received by the application.
+ * @param fd is an open stream socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline ssize_t diminuto_ipc_stream_get_available(int fd) {
+    return diminuto_ipc_get_control(fd, SIOCINQ);
+}
+
+/**
+ * Return the number of bytes pending on the output queue waiting to be
+ * transmitted by the kernel.
+ * @param fd is an open stream socket.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline ssize_t diminuto_ipc_stream_get_pending(int fd) {
+    return diminuto_ipc_get_control(fd, SIOCOUTQ);
+}
+
+/**
+ * Shutdown a socket. This eliminates the transmission of any pending data.
+ * @param fd is an open socket of any type.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_shutdown(int fd);
+
+/**
+ * Close a socket. Unless the socket has been shutdown, pending data will
+ * still be transmitted.
+ * @param fd is an open socket of any type.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_close(int fd);
+
+/*******************************************************************************
+ * STREAM SOCKETS
+ ******************************************************************************/
 
 /**
  * Read bytes from a stream socket into a buffer until at least a minimum
@@ -247,6 +343,10 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
     return diminuto_fd_write(fd, buffer, size);
 }
 
+/*******************************************************************************
+ * INTERFACES
+ ******************************************************************************/
+
 /**
  * Return an array of strings containing a list of the network interfaces
  * available on the host. This is a single block of dynamically allocated
@@ -255,6 +355,10 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
  * @return a list of available network interfaces or NULL if an error occurred.
  */
 extern char ** diminuto_ipc_interfaces(void);
+
+/*******************************************************************************
+ * ENDPOINTS
+ ******************************************************************************/
 
 /**
  * These are the different types of Interprocess Communication Systems (IPC)
@@ -269,16 +373,6 @@ typedef enum DiminutoIpcType {
     DIMINUTO_IPC_TYPE_IPV6         = AF_INET6,
     DIMINUTO_IPC_TYPE_LOCAL        = AF_UNIX,
 } diminuto_ipc_type_t;
-
-/**
- * Return the Address Family for the specified socket. If created by
- * one of the Diminuto IPC functions, this value will be AF_INET for
- * IPC4, AF_INET6 for IPC6, or AF_UNIX (a.k.a. AF_LOCAL) for IPCL. But
- * if created through some other means, it may be some other value.
- * @param fd is the socket to be queried.
- * @return the Address Family value include AF_UNSPEC is an error occurred.
- */
-extern int diminuto_ipc_type(int fd);
 
 /**
  * This type defines the structure that is populated when an endpoint string
@@ -305,7 +399,7 @@ typedef struct DiminutoIpcEndpoint {
     diminuto_ipv6_t ipv6;           /* Host Byte Order */
     diminuto_port_t tcp;            /* Host Byte Order */
     diminuto_port_t udp;            /* Host Byte Order */
-    diminuto_local_buffer_t local;  /* Absolute Path */
+    diminuto_local_t local;         /* Absolute Path */
 } diminuto_ipc_endpoint_t;
 
 /**

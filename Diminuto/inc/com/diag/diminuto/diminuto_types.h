@@ -150,15 +150,6 @@ typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_SIZE];
 typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
 
 /**
- * This defines a type of character array that can contain a Local
- * (UNIX domain) socket path as a printable string. This is NOT large
- * enough to hold any arbitary file system path. (You're not imagining
- * things; it's exactly the same as diminuto_local_t. I just define
- * two types to follow the IPv4 and IPv6 conventions.)
- */
-typedef char (diminuto_local_buffer_t)[DIMINUTO_LOCAL_SIZE];
-
-/**
  * This defines a type of character array that can contain a file
  * system path including its terminating NUL. This array is quite
  * large: 4096 on Linux systems. It allows the maximum Linux path
