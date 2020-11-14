@@ -50,11 +50,16 @@ Diminuto provides:
 * doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using trees (```diminuto_store```);
 * traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
 * monitoring applications that run on a headless host (```diminuto_observation```);
+* programmatic management of lock files (```diminuto_lock```);
 * expanding and collapsing C-style escape sequences in strings (```diminuto_escape```) and generating expanded output in real-time (```diminuto_phex```);
 * displaying hexadecimal dumps of data structures to the console (```diminuto_dump```);
 * display stack traces to the console (```diminuto_stacktrace```);
 * daemonizing applications (```diminuto_daemon```);
 * using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
+* consistent implementation of time keeping (```diminuto_time```) and delays (```diminuto_delay```);
+* Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
+* Pulse Width Modulation (PWM) (```diminuto_modulator```);
+* programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
 * an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```).
 
