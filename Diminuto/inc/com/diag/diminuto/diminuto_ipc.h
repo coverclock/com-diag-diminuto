@@ -11,14 +11,14 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * The IPC feature provides  socket and other interprocess/interprocessor
- * communication capabilities that are agnostic as to whether IPv4, IPv6,
- * or UNIX domain communication channels are being used.
+ * The IPC feature provides socket and other interprocess/interprocessor
+ * communication capabilities using IPv4, IPv6, and UNIX Domain (local)
+ * sockets.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-#include <sys/socket.h> /* For AF_UNSPEC, AF_UNIX, AF_INET. */
+#include <sys/socket.h> /* For AF_UNSPEC, AF_UNIX, AF_INET, struct msghdr. */
 #include <netinet/in.h> /* IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IPV6. */
 #include <netinet/tcp.h> /* for TCP_NODELAY, TCP_QUICKACK. */
 #include <fcntl.h> /* for O_NONBLOCK. */
@@ -50,14 +50,6 @@ extern diminuto_port_t diminuto_ipc_port(const char * service, const char * prot
 /*******************************************************************************
  * OPTIONS
  ******************************************************************************/
-
-/**
- * Get an I/O control option (ioctl(2)) on a socket.
- * @param fd is an open socket file descriptor.
- * @param option is the option to get.
- * @return the value of the option, or <0 for error.
- */
-extern int diminuto_ipc_get_control(int fd, int option);
 
 /**
  * Bind a socket to a particular interface identified by name, e.g. "eth0"
@@ -245,6 +237,14 @@ extern diminuto_ipc_injector_t diminuto_ipc_inject_defaults;
  * @return the Address Family value include AF_UNSPEC is an error occurred.
  */
 extern int diminuto_ipc_type(int fd);
+
+/**
+ * Get an I/O control option (ioctl(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param option is the option to get.
+ * @return the value of the option, or <0 for error.
+ */
+extern int diminuto_ipc_get_control(int fd, int option);
 
 /**
  * Return the number of bytes available on the input queue waiting to be
