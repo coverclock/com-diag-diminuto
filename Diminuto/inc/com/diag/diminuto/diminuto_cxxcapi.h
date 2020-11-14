@@ -22,13 +22,30 @@
  * an existing C++ code base. CXXCAPI allows you to pass pointers
  * to C++ objects into C code in a type safe manner, then pass
  * them back, and to call functions written one language in the
- * other. See the [Tt]hing* files in the sav directory for an example
- * of how this works.
+ * other.
+ *
+ * Note that if you mix C and C++ code, the main program must be
+ * C++ to insure that the C++ run time system is included and
+ * initialized correctly. This is particularly important for the
+ * C++ static constructors being invoked before the main program begins.
  *
  * CXXCAPI was originally developed for the Digital Aggregates
  * Desperado project, starting as far back as 2005. A subset of
  * Desperado, including CXXCAPI, eventually became the Digital
  * Aggregates Grandote project.
+ *
+ * Because the unit test for CXXCAPI contains both C and C++ translation
+ * units, it is in a seperate directory: cxx. The unit test is a tiny
+ * example of how to mix C and C++ code, including handling C++ pointers
+ * in C. You can run the CXXCAPI unit test from the main makefile
+ *
+ * make cxxcapi
+ *
+ * or alternatively by invoking the makefile
+ *
+ * make -C cxx
+ *
+ * in the cxx subdirectory.
  *
  * This header file can included from both C++ and C translation units.
  */
