@@ -55,6 +55,7 @@ Diminuto provides:
 * displaying hexadecimal dumps of data structures to the console (```diminuto_dump```);
 * display stack traces to the console (```diminuto_stacktrace```);
 * daemonizing applications (```diminuto_daemon```);
+* helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
 * using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
 * consistent implementation of time keeping (```diminuto_time```) and delays (```diminuto_delay```);
 * Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
