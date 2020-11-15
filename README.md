@@ -515,6 +515,12 @@ growth in Diminuto.
 
 # Articles
 
+Chip Overclock, "In Praise of do while (false)", 2009-12,
+<https://coverclock.blogspot.com/2009/12/in-praise-of-do-while-false.html>
+
+Chip Overclock, "Can't We All Jut Get Along, C++ and C", 2011-02,
+<https://coverclock.blogspot.com/2011/02/cant-we-all-just-get-along-c-and-c.html>
+
 Chip Overclock, "Being Evidence-Based Using the sizeof Operator", 2015-03,
 <https://coverclock.blogspot.com/2015/03/being-evidence-based-using-sizeof.html>
 
