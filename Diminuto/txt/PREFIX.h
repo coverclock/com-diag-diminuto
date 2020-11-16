@@ -11,3 +11,5 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  */
+
+#endif
