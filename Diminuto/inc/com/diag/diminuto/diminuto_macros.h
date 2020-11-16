@@ -38,4 +38,36 @@
 
 #define IF_ELSE(_CONDITION_) _IF_ELSE(BOOL(_CONDITION_))
 
+#define EVAL(...) EVAL1024(__VA_ARGS__)
+#define EVAL1024(...) EVAL512(EVAL512(__VA_ARGS__))
+#define EVAL512(...) EVAL256(EVAL256(__VA_ARGS__))
+#define EVAL256(...) EVAL128(EVAL128(__VA_ARGS__))
+#define EVAL128(...) EVAL64(EVAL64(__VA_ARGS__))
+#define EVAL64(...) EVAL32(EVAL32(__VA_ARGS__))
+#define EVAL32(...) EVAL16(EVAL16(__VA_ARGS__))
+#define EVAL16(...) EVAL8(EVAL8(__VA_ARGS__))
+#define EVAL8(...) EVAL4(EVAL4(__VA_ARGS__))
+#define EVAL4(...) EVAL2(EVAL2(__VA_ARGS__))
+#define EVAL2(...) EVAL1(EVAL1(__VA_ARGS__))
+#define EVAL1(...) __VA_ARGS__
+
+#define EMPTY()
+
+#define A(_N_) _N_
+
+#define DEFER1(_M_) _M_ EMPTY()
+#define DEFER2(_M_) _M_ EMPTY EMPTY()()
+#define DEFER3(_M_) _M_ EMPTY EMPTY EMPTY()()()
+#define DEFER4(_M_) _M_ EMPTY EMPTY EMPTY EMPTY()
+
+#define FIRST(_A_, ...) a
+
+#define _END_OF_ARGUMENTS_() 0
+
+#define HAS_ARGS(...) BOOL(FIRST(_END_OF_ARGUMENTS_ __VA_ARGS__)())
+
+#define MAP(_M_, _FIRST_, ...) _M_(_FIRST_) IF_ELSE(HAS_ARGS(__VA_ARGS__))(DEFER2(_MAP)()(_M_, __VA_ARGS__))()
+
+#define _MAP() MAP
+
 #endif
