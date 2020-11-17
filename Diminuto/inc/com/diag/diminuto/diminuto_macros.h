@@ -157,7 +157,7 @@
 
 /**
  * @def APPLY
- * Generate code when drive by FORALL by applying the macro in the first
+ * Generate code when driven by FORALL by applying the macro in the first
  * argument @a _MACRO_ to the first @a _FIRST_ and every successive
  * argument in the variable length argument list.
  */
