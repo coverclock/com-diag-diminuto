@@ -8,6 +8,15 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is the unit test of the code generator macros.
+ *
+ * Try the command
+ *
+ * cpp -I inc < tst/unittest-macros.c
+ *
+ * just to see what the generated code looks like. (The
+ * unit test macros busy up the output; the macros under
+ * test here just generate one line of code.)
+ *
  * See the comments in the macro header file for more information
  * about this C preprocessor madness.
  */
@@ -113,7 +122,7 @@ int main(void)
 
 #define DISPLAY(_STRING_) display(_STRING_);
 
-        FORALL(APPLY(DISPLAY, "A", B, "CCC", D));
+        FORALL(APPLY(DISPLAY, "A", B, "CCC", D))
 
         STATUS();
     }
