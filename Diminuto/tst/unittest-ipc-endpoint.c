@@ -8,6 +8,11 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is a unit test of the Endpoint portion of the IPC feature.
+ *
+ * It's really hard to test against production domain names like
+ * "google.com": their name servers may return different IPv4 or IPv6
+ * addresses for each query, balancing the load across multiple
+ * physical servers.
  */
 
 #include <stdlib.h>
@@ -79,8 +84,8 @@ static const char * type2string(diminuto_ipc_type_t type)
     do { \
         const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
         EXPECT(rc == 0); \
-        EXPECT(diminuto_ipc4_compare(&(_pp_->ipv4), &(_IPV4_)) == 0); \
-        EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &(_IPV6_)) == 0); \
+        ADVISE(diminuto_ipc4_compare(&(_pp_->ipv4), &(_IPV4_)) == 0); \
+        ADVISE(diminuto_ipc6_compare(&(_pp_->ipv6), &(_IPV6_)) == 0); \
         EXPECT(_pp_->tcp == (_TCP_)); \
         EXPECT(_pp_->udp == (_UDP_)); \
         EXPECT(_pp_->local[0] == '\0'); \
