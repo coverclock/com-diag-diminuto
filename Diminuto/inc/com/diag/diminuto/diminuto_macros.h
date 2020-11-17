@@ -16,8 +16,8 @@
  * To avoid collisions with the application in the C preprocessor name space,
  * macros that are intended to be used by the application have relatively simple
  * names, while those that are used internally have names beginning with
- * COM_DIAG_DIMINUTO_MACROS_. (Some of these macros are exposed with simple names
- * mostly for unit testing.)
+ * COM_DIAG_DIMINUTO_MACROS_. Some of these macros are exposed with simple
+ * names mostly for unit testing.
  *
  * I really admire Dr. Heathcoat; not only am I pretty sure I would never have
  * figured this out, I'm pretty certain I would never thought to do it in the
