@@ -109,7 +109,7 @@ int main(void)
 #define SQUARE(_X_) square(_X_);
 
         total = 0;
-        FORALL(APPLY(SQUARE, 2, 3, 5, 7, 9))
+        FOREACH(APPLY(SQUARE, 2, 3, 5, 7, 9))
         ASSERT(total == 168);
 
         STATUS();
@@ -122,7 +122,7 @@ int main(void)
 
 #define DISPLAY(_STRING_) display(_STRING_);
 
-        FORALL(APPLY(DISPLAY, "A", B, "CCC", D))
+        FOREACH(APPLY(DISPLAY, "A", B, "CCC", D))
 
         STATUS();
     }
