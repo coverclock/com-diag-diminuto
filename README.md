@@ -288,7 +288,7 @@ or as a user - e.g. pi - that is in the gpio group.)
 * privileged - these unit tests require "sudo make privileged" to run.
 * sanity - these unit tests take a coffee break to run.
 * signals - these unit tests exercise the kill signal handlers.
-* sockets - these unit tests test the IPv4 and IPv6 ipc, mux, and poll features.
+* sockets - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
 * threads - these unit tests exercise the POSIX thread-based features.
 * timers - these unit tests exercise the timer feature.
 
