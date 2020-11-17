@@ -178,6 +178,7 @@ Make="GNU Make 4.0"
 * list - doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
+* macros - insane macros to implement conditional and recursive code generation.
 * map - memory mapping in user or kernel state.
 * memory - query system for memory architecture.
 * mmdriver - kernel module implementing memory mapped I/O.
