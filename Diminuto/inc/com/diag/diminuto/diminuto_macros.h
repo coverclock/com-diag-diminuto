@@ -6,11 +6,11 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implement IF ELSE, EVAL, and APPLY preprocessor macros.
+ * @brief Implement IF ELSE, FOR EACH, and APPLY preprocessor macros.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Implement IF ELSE, EVAL, and APPLY preprocessor macros as described by
+ * Implement IF ELSE, FOR EACH, and APPLY preprocessor macros as described by
  * Jonathan Heathcoat of BBC R&D.
  *
  * To avoid collisions with the application in the C preprocessor name space,
