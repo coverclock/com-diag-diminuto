@@ -943,6 +943,7 @@ sanity:
 	unittest-list
 	unittest-lock
 	unittest-log
+	unittest-macros
 	unittest-memory
 	unittest-mutex
 	unittest-mux4 -q
