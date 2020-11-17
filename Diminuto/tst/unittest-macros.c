@@ -3,10 +3,13 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief
+ * @brief This is the unit test of the code generator macros.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * This is the unit test of the code generator macros.
+ * See the comments in the macro header file for more information
+ * about this C preprocessor madness.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"

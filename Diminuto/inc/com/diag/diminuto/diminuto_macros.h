@@ -16,7 +16,7 @@
  * To avoid collisions with the application in the C preprocessor name space,
  * macros that are intended to be used by the application have relatively simple
  * names, while those that are used internally have names beginning with
- * COM_DIAG_DIMINUTO_. (Some of these macros are exposed with simple names
+ * COM_DIAG_DIMINUTO_MACROS_. (Some of these macros are exposed with simple names
  * mostly for unit testing.)
  *
  * I really admire Dr. Heathcoat; not only am I pretty sure I would never have
@@ -40,84 +40,128 @@
  * PUBLIC
  ******************************************************************************/
 
+/**
+ * @def EMPTY
+ * Generate no code.
+ */
 #define EMPTY()
 
+/**
+ * @def CONCATENATE
+ * Concatenate two arguments @a _A_ and @a _B_ into a single token.
+ */
 #define CONCATENATE(_A_, _B_) _A_ ## _B_
 
+/**
+ * @def FIRST
+ * Generate the first argument @a _FIRST_ in a variable length argument list.
+ */
 #define FIRST(_FIRST_, ...) _FIRST_
 
+/**
+ * @def SECOND
+ * Ignore the first argument @a _FIRST_ and return the second argument
+ * @a _SECOND_ in a variable length argument list.
+ */
 #define SECOND(_FIRST_, _SECOND_, ...) _SECOND_
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_IS_COM_DIAG_DIMINUTO_PROBE(...) SECOND(__VA_ARGS__, 0)
+#define COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(...) SECOND(__VA_ARGS__, 0)
 
-#define COM_DIAG_DIMINUTO_PROBE() ~, 1
+#define COM_DIAG_DIMINUTO_MACROS_PROBE() ~, 1
 
-#define COM_DIAG_DIMINUTO_NOT_0 COM_DIAG_DIMINUTO_PROBE()
+#define COM_DIAG_DIMINUTO_MACROS_NOT_0 COM_DIAG_DIMINUTO_MACROS_PROBE()
 
 /*******************************************************************************
  * PUBLIC
  ******************************************************************************/
 
-#define NOT(_X_) COM_DIAG_DIMINUTO_IS_COM_DIAG_DIMINUTO_PROBE(CONCATENATE(COM_DIAG_DIMINUTO_NOT_, _X_))
+/**
+ * @def NOT
+ * Generate the logical inverse of the argument @a _X_: 1 for 0, 0 for not 0.
+ */
+#define NOT(_X_) COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(CONCATENATE(COM_DIAG_DIMINUTO_MACROS_NOT_, _X_))
 
+/**
+ * @def BOOL
+ * Generate the boolean of the argument @a _X_: 0 for 0, 1 for not 0.
+ */
 #define BOOL(_X_) NOT(NOT(_X_))
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_IF_1_ELSE(...)
-#define COM_DIAG_DIMINUTO_IF_0_ELSE(...) __VA_ARGS__
+#define COM_DIAG_DIMINUTO_MACROS_IF_1_ELSE(...)
+#define COM_DIAG_DIMINUTO_MACROS_IF_0_ELSE(...) __VA_ARGS__
 
-#define COM_DIAG_DIMINUTO_IF_1(...) __VA_ARGS__ COM_DIAG_DIMINUTO_IF_1_ELSE
-#define COM_DIAG_DIMINUTO_IF_0(...)             COM_DIAG_DIMINUTO_IF_0_ELSE
+#define COM_DIAG_DIMINUTO_MACROS_IF_1(...) __VA_ARGS__ COM_DIAG_DIMINUTO_MACROS_IF_1_ELSE
+#define COM_DIAG_DIMINUTO_MACROS_IF_0(...)             COM_DIAG_DIMINUTO_MACROS_IF_0_ELSE
 
-#define COM_DIAG_DIMINUTO_IF_ELSE(_CONDITION_) CONCATENATE(COM_DIAG_DIMINUTO_IF_, _CONDITION_)
+#define COM_DIAG_DIMINUTO_MACROS_IF_ELSE(_CONDITION_) CONCATENATE(COM_DIAG_DIMINUTO_MACROS_IF_, _CONDITION_)
 
 /*******************************************************************************
  * PUBLIC
  ******************************************************************************/
 
-#define IF_ELSE(_CONDITION_) COM_DIAG_DIMINUTO_IF_ELSE(BOOL(_CONDITION_))
+/**
+ * @def IF_ELSE
+ * If argument @a _CONDITION_ is true, generate the first following
+ * parenthesized expression, otherwise generate the second following
+ * parenthesized expression. Note that neither parenthesized expression
+ * are actually referenced in the macro.
+ */
+#define IF_ELSE(_CONDITION_) COM_DIAG_DIMINUTO_MACROS_IF_ELSE(BOOL(_CONDITION_))
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_FORALL1024(...) COM_DIAG_DIMINUTO_FORALL512(COM_DIAG_DIMINUTO_FORALL512(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL512(...) COM_DIAG_DIMINUTO_FORALL256(COM_DIAG_DIMINUTO_FORALL256(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL256(...) COM_DIAG_DIMINUTO_FORALL128(COM_DIAG_DIMINUTO_FORALL128(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL128(...) COM_DIAG_DIMINUTO_FORALL64(COM_DIAG_DIMINUTO_FORALL64(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL64(...) COM_DIAG_DIMINUTO_FORALL32(COM_DIAG_DIMINUTO_FORALL32(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL32(...) COM_DIAG_DIMINUTO_FORALL16(COM_DIAG_DIMINUTO_FORALL16(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL16(...) COM_DIAG_DIMINUTO_FORALL8(COM_DIAG_DIMINUTO_FORALL8(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL8(...) COM_DIAG_DIMINUTO_FORALL4(COM_DIAG_DIMINUTO_FORALL4(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL4(...) COM_DIAG_DIMINUTO_FORALL2(COM_DIAG_DIMINUTO_FORALL2(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL2(...) COM_DIAG_DIMINUTO_FORALL1(COM_DIAG_DIMINUTO_FORALL1(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_FORALL1(...) __VA_ARGS__
+#define COM_DIAG_DIMINUTO_MACROS_FORALL1024(...) COM_DIAG_DIMINUTO_MACROS_FORALL512(COM_DIAG_DIMINUTO_MACROS_FORALL512(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL512(...) COM_DIAG_DIMINUTO_MACROS_FORALL256(COM_DIAG_DIMINUTO_MACROS_FORALL256(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL256(...) COM_DIAG_DIMINUTO_MACROS_FORALL128(COM_DIAG_DIMINUTO_MACROS_FORALL128(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL128(...) COM_DIAG_DIMINUTO_MACROS_FORALL64(COM_DIAG_DIMINUTO_MACROS_FORALL64(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL64(...) COM_DIAG_DIMINUTO_MACROS_FORALL32(COM_DIAG_DIMINUTO_MACROS_FORALL32(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL32(...) COM_DIAG_DIMINUTO_MACROS_FORALL16(COM_DIAG_DIMINUTO_MACROS_FORALL16(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL16(...) COM_DIAG_DIMINUTO_MACROS_FORALL8(COM_DIAG_DIMINUTO_MACROS_FORALL8(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL8(...) COM_DIAG_DIMINUTO_MACROS_FORALL4(COM_DIAG_DIMINUTO_MACROS_FORALL4(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL4(...) COM_DIAG_DIMINUTO_MACROS_FORALL2(COM_DIAG_DIMINUTO_MACROS_FORALL2(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL2(...) COM_DIAG_DIMINUTO_MACROS_FORALL1(COM_DIAG_DIMINUTO_MACROS_FORALL1(__VA_ARGS__))
+#define COM_DIAG_DIMINUTO_MACROS_FORALL1(...) __VA_ARGS__
 
-#define COM_DIAG_DIMINUTO_DEFER1(_M_) _M_ EMPTY()
-#define COM_DIAG_DIMINUTO_DEFER2(_M_) _M_ EMPTY EMPTY()()
-#define COM_DIAG_DIMINUTO_DEFER3(_M_) _M_ EMPTY EMPTY EMPTY()()()
-#define COM_DIAG_DIMINUTO_DEFER4(_M_) _M_ EMPTY EMPTY EMPTY EMPTY()()()()
+#define COM_DIAG_DIMINUTO_MACROS_DEFER(_MACRO_) _MACRO_ EMPTY EMPTY()()
 
-#define COM_DIAG_DIMINUTO_END_OF_ARGUMENTS_() 0
+#define COM_DIAG_DIMINUTO_MACROS_END_OF_ARGUMENTS() 0
 
-#define COM_DIAG_DIMINUTO_APPLY() APPLY
+#define COM_DIAG_DIMINUTO_MACROS_APPLY() APPLY
 
 /*******************************************************************************
  * PUBLIC
  ******************************************************************************/
 
-#define HAS_ARGUMENTS(...) BOOL(FIRST(COM_DIAG_DIMINUTO_END_OF_ARGUMENTS_ __VA_ARGS__)())
+/**
+ * @def HAS_ARGUMENTS
+ * Generate 1 if the macro has arguments, 0 otherwise.
+ */
+#define HAS_ARGUMENTS(...) BOOL(FIRST(COM_DIAG_DIMINUTO_MACROS_END_OF_ARGUMENTS __VA_ARGS__)())
 
-#define FORALL(...) COM_DIAG_DIMINUTO_FORALL1024(__VA_ARGS__)
+/**
+ * @def FORALL
+ * Generate code iteratively (actually, recursively) driving the APPLY macro until
+ * all arguments are consumed.
+ */
+#define FORALL(...) COM_DIAG_DIMINUTO_MACROS_FORALL1024(__VA_ARGS__)
 
-#define APPLY(_M_, _FIRST_, ...) _M_(_FIRST_) IF_ELSE(HAS_ARGUMENTS(__VA_ARGS__))(COM_DIAG_DIMINUTO_DEFER2(COM_DIAG_DIMINUTO_APPLY)()(_M_, __VA_ARGS__))(/**/)
+/**
+ * @def APPLY
+ * Generate code when drive by FORALL by applying the macro in the first
+ * argument @a _MACRO_ to the first @a _FIRST_ and every successive
+ * argument in the variable length argument list.
+ */
+#define APPLY(_MACRO_, _FIRST_, ...) _MACRO_(_FIRST_) IF_ELSE(HAS_ARGUMENTS(__VA_ARGS__))(COM_DIAG_DIMINUTO_MACROS_DEFER(COM_DIAG_DIMINUTO_MACROS_APPLY)()(_MACRO_, __VA_ARGS__))()
 
 /*******************************************************************************
  * END
