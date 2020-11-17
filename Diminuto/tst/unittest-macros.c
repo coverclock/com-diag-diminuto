@@ -54,8 +54,8 @@ int main(void)
         TEST();
 
         ASSERT(CONCATENATE(5, 7)  == 57);
-        ASSERT(FIRST(2, 3, 5, 7) == 2);
-        ASSERT(SECOND(2, 3, 5, 7) == 3);
+        ASSERT(TAKE_FIRST(2, 3, 5, 7) == 2);
+        ASSERT(TAKE_SECOND(2, 3, 5, 7) == 3);
 
         STATUS();
     }
@@ -63,10 +63,10 @@ int main(void)
     {
         TEST();
 
-        ASSERT(BOOL(0) == 0);
-        ASSERT(BOOL(1) == 1);
-        ASSERT(BOOL(123) == 1);
-        ASSERT(BOOL(anything) == 1);
+        ASSERT(BOOLIFY(0) == 0);
+        ASSERT(BOOLIFY(1) == 1);
+        ASSERT(BOOLIFY(123) == 1);
+        ASSERT(BOOLIFY(anything) == 1);
 
         STATUS();
     }

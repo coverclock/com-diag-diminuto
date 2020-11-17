@@ -53,23 +53,23 @@
 #define CONCATENATE(_A_, _B_) _A_ ## _B_
 
 /**
- * @def FIRST
+ * @def TAKE_FIRST
  * Generate the first argument @a _FIRST_ in a variable length argument list.
  */
-#define FIRST(_FIRST_, ...) _FIRST_
+#define TAKE_FIRST(_FIRST_, ...) _FIRST_
 
 /**
- * @def SECOND
+ * @def TAKE_SECOND
  * Ignore the first argument @a _FIRST_ and return the second argument
  * @a _SECOND_ in a variable length argument list.
  */
-#define SECOND(_FIRST_, _SECOND_, ...) _SECOND_
+#define TAKE_SECOND(_FIRST_, _SECOND_, ...) _SECOND_
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(...) SECOND(__VA_ARGS__, 0)
+#define COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(...) TAKE_SECOND(__VA_ARGS__, 0)
 
 #define COM_DIAG_DIMINUTO_MACROS_PROBE() ~, 1
 
@@ -86,10 +86,10 @@
 #define NOT(_X_) COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(CONCATENATE(COM_DIAG_DIMINUTO_MACROS_NOT_, _X_))
 
 /**
- * @def BOOL
+ * @def BOOLIFY
  * Generate the boolean of the argument @a _X_: 0 for 0, 1 for not 0.
  */
-#define BOOL(_X_) NOT(NOT(_X_))
+#define BOOLIFY(_X_) NOT(NOT(_X_))
 
 /*******************************************************************************
  * PRIVATE
@@ -114,7 +114,7 @@
  * parenthesized expression. Note that neither parenthesized expression
  * are actually referenced in the macro.
  */
-#define IF_ELSE(_CONDITION_) COM_DIAG_DIMINUTO_MACROS_IF_ELSE(BOOL(_CONDITION_))
+#define IF_ELSE(_CONDITION_) COM_DIAG_DIMINUTO_MACROS_IF_ELSE(BOOLIFY(_CONDITION_))
 
 /*******************************************************************************
  * PRIVATE
@@ -134,7 +134,7 @@
 
 #define COM_DIAG_DIMINUTO_MACROS_DEFER(_MACRO_) _MACRO_ EMPTY EMPTY()()
 
-#define COM_DIAG_DIMINUTO_MACROS_END_OF_ARGUMENTS() 0
+#define COM_DIAG_DIMINUTO_MACROS_END() 0
 
 #define COM_DIAG_DIMINUTO_MACROS_APPLY() APPLY
 
@@ -146,7 +146,7 @@
  * @def HAS_ARGUMENTS
  * Generate 1 if the macro has arguments, 0 otherwise.
  */
-#define HAS_ARGUMENTS(...) BOOL(FIRST(COM_DIAG_DIMINUTO_MACROS_END_OF_ARGUMENTS __VA_ARGS__)())
+#define HAS_ARGUMENTS(...) BOOLIFY(TAKE_FIRST(COM_DIAG_DIMINUTO_MACROS_END __VA_ARGS__)())
 
 /**
  * @def FORALL
