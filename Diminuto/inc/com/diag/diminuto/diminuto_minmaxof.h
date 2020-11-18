@@ -6,7 +6,7 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements a minimumof and maximumof compile-time operators.
+ * @brief Implements generic integer minimum and maximum code generators.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details

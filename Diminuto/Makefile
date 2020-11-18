@@ -945,6 +945,7 @@ sanity:
 	unittest-log
 	unittest-macros
 	unittest-memory
+	unittest-minmaxof
 	unittest-mutex
 	unittest-mux4 -q
 	unittest-number

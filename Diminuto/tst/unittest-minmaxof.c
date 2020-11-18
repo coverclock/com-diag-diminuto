@@ -3,15 +3,16 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the Minimum and Maximum Of feature.
+ * @brief This is a unit test of the integer Generics feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the Minimum and Maximum Of feature.
+ * This is a unit test of the integer Generics feature.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_rangeof.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_widthof.h"
 #include <stdint.h>
 
 int main(void)
