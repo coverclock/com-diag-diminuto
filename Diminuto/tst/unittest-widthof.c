@@ -10,9 +10,9 @@
  * This is a unit test of the Width Of feature.
  */
 
-#include <stdint.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
+#include <stdint.h>
 
 int main(void)
 {
