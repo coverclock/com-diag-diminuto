@@ -13,9 +13,10 @@
  *
  * cpp -I inc < tst/unittest-macros.c
  *
- * just to see what the generated code looks like. (The
+ * just to see what the generated code looks like. The
  * unit test macros busy up the output; the macros under
- * test here just generate one line of code.)
+ * test here just generate one line of code... although it
+ * may be a very long line.
  *
  * See the comments in the macro header file for more information
  * about this C preprocessor madness.
