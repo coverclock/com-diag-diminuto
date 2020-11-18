@@ -12,7 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_cxxcapi.h"
 
-#include "Thing.hpp"
+#include "Thing.hxx"
 
 #include "com/diag/diminuto/diminuto_begin.h"
 #   include "com/diag/diminuto/diminuto_unittest.h"

@@ -13,15 +13,22 @@
  * Implement IF ELSE, FOR EACH, and APPLY preprocessor macros as described by
  * Jonathan Heathcoat of BBC R&D.
  *
- * To avoid collisions with the application in the C preprocessor name space,
- * macros that are intended to be used by the application have relatively simple
- * names, while those that are used internally have names beginning with
- * COM_DIAG_DIMINUTO_MACROS_. Some of these macros are exposed with simple
- * names mostly for unit testing.
+ * Important safety tip: if you have a compile error in the code genreated
+ * by the user-specified macro you pass as the first argument to APPLY,
+ * the recursive action of FOREACH will create an explosion of error
+ * output from the compiler. The root cause will typically be in the
+ * very first line of error output.
  *
- * I really admire Dr. Heathcoat; not only am I pretty sure I would never have
- * figured this out, I'm pretty certain I would never thought to do it in the
- * first place.
+ * To avoid collisions with the application in the C preprocessor name
+ * space, macros that are intended to be used by the application have
+ * relatively simple names, while those that are used internally have
+ * names beginning with the prefix DIMINUTO_MACROS_. Some of the macros
+ * are exposed with simple names mostly for unit testing. Even the simple
+ * names are made longer to prevent collisions.
+ *
+ * I really admire Dr. Heathcoat; not only am I pretty sure I would never
+ * have figured this out, I'm pretty certain I would never thought to do
+ * it in the first place.
  *
  * See the unit test for some examples of how to use these macros.
  *
@@ -39,12 +46,6 @@
 /*******************************************************************************
  * PUBLIC
  ******************************************************************************/
-
-/**
- * @def EMPTY
- * Generate no code.
- */
-#define EMPTY()
 
 /**
  * @def CONCATENATE
@@ -69,39 +70,41 @@
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(...) TAKE_SECOND(__VA_ARGS__, 0)
+#define DIMINUTO_MACROS_EMPTY()
 
-#define COM_DIAG_DIMINUTO_MACROS_PROBE() ~, 1
+#define DIMINUTO_MACROS_IS_PROBE(...) TAKE_SECOND(__VA_ARGS__, 0)
 
-#define COM_DIAG_DIMINUTO_MACROS_NOT_0 COM_DIAG_DIMINUTO_MACROS_PROBE()
+#define DIMINUTO_MACROS_PROBE() ~, 1
+
+#define DIMINUTO_MACROS_LOGICAL_NOT_0 DIMINUTO_MACROS_PROBE()
 
 /*******************************************************************************
  * PUBLIC
  ******************************************************************************/
 
 /**
- * @def NOT
+ * @def LOGICAL_NOT
  * Generate the logical inverse of the argument @a _X_: 1 for 0, 0 for not 0.
  */
-#define NOT(_X_) COM_DIAG_DIMINUTO_MACROS_IS_COM_DIAG_DIMINUTO_MACROS_PROBE(CONCATENATE(COM_DIAG_DIMINUTO_MACROS_NOT_, _X_))
+#define LOGICAL_NOT(_X_) DIMINUTO_MACROS_IS_PROBE(CONCATENATE(DIMINUTO_MACROS_LOGICAL_NOT_, _X_))
 
 /**
- * @def BOOLIFY
+ * @def MAKE_BOOLEAN
  * Generate the boolean of the argument @a _X_: 0 for 0, 1 for not 0.
  */
-#define BOOLIFY(_X_) NOT(NOT(_X_))
+#define MAKE_BOOLEAN(_X_) LOGICAL_NOT(LOGICAL_NOT(_X_))
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_MACROS_IF_1_ELSE(...)
-#define COM_DIAG_DIMINUTO_MACROS_IF_0_ELSE(...) __VA_ARGS__
+#define DIMINUTO_MACROS_IF_1_ELSE(...)
+#define DIMINUTO_MACROS_IF_0_ELSE(...) __VA_ARGS__
 
-#define COM_DIAG_DIMINUTO_MACROS_IF_1(...) __VA_ARGS__ COM_DIAG_DIMINUTO_MACROS_IF_1_ELSE
-#define COM_DIAG_DIMINUTO_MACROS_IF_0(...)             COM_DIAG_DIMINUTO_MACROS_IF_0_ELSE
+#define DIMINUTO_MACROS_IF_1(...) __VA_ARGS__ DIMINUTO_MACROS_IF_1_ELSE
+#define DIMINUTO_MACROS_IF_0(...)             DIMINUTO_MACROS_IF_0_ELSE
 
-#define COM_DIAG_DIMINUTO_MACROS_IF_ELSE(_CONDITION_) CONCATENATE(COM_DIAG_DIMINUTO_MACROS_IF_, _CONDITION_)
+#define DIMINUTO_MACROS_IF_ELSE(_CONDITION_) CONCATENATE(DIMINUTO_MACROS_IF_, _CONDITION_)
 
 /*******************************************************************************
  * PUBLIC
@@ -114,29 +117,29 @@
  * parenthesized expression. Note that neither parenthesized expression
  * are actually referenced in the macro.
  */
-#define IF_ELSE(_CONDITION_) COM_DIAG_DIMINUTO_MACROS_IF_ELSE(BOOLIFY(_CONDITION_))
+#define IF_ELSE(_CONDITION_) DIMINUTO_MACROS_IF_ELSE(MAKE_BOOLEAN(_CONDITION_))
 
 /*******************************************************************************
  * PRIVATE
  ******************************************************************************/
 
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH1024(...) COM_DIAG_DIMINUTO_MACROS_FOREACH512(COM_DIAG_DIMINUTO_MACROS_FOREACH512(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH512(...) COM_DIAG_DIMINUTO_MACROS_FOREACH256(COM_DIAG_DIMINUTO_MACROS_FOREACH256(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH256(...) COM_DIAG_DIMINUTO_MACROS_FOREACH128(COM_DIAG_DIMINUTO_MACROS_FOREACH128(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH128(...) COM_DIAG_DIMINUTO_MACROS_FOREACH64(COM_DIAG_DIMINUTO_MACROS_FOREACH64(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH64(...) COM_DIAG_DIMINUTO_MACROS_FOREACH32(COM_DIAG_DIMINUTO_MACROS_FOREACH32(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH32(...) COM_DIAG_DIMINUTO_MACROS_FOREACH16(COM_DIAG_DIMINUTO_MACROS_FOREACH16(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH16(...) COM_DIAG_DIMINUTO_MACROS_FOREACH8(COM_DIAG_DIMINUTO_MACROS_FOREACH8(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH8(...) COM_DIAG_DIMINUTO_MACROS_FOREACH4(COM_DIAG_DIMINUTO_MACROS_FOREACH4(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH4(...) COM_DIAG_DIMINUTO_MACROS_FOREACH2(COM_DIAG_DIMINUTO_MACROS_FOREACH2(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH2(...) COM_DIAG_DIMINUTO_MACROS_FOREACH1(COM_DIAG_DIMINUTO_MACROS_FOREACH1(__VA_ARGS__))
-#define COM_DIAG_DIMINUTO_MACROS_FOREACH1(...) __VA_ARGS__
+#define DIMINUTO_MACROS_FOREACH1024(...) DIMINUTO_MACROS_FOREACH512(DIMINUTO_MACROS_FOREACH512(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH512(...) DIMINUTO_MACROS_FOREACH256(DIMINUTO_MACROS_FOREACH256(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH256(...) DIMINUTO_MACROS_FOREACH128(DIMINUTO_MACROS_FOREACH128(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH128(...) DIMINUTO_MACROS_FOREACH64(DIMINUTO_MACROS_FOREACH64(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH64(...) DIMINUTO_MACROS_FOREACH32(DIMINUTO_MACROS_FOREACH32(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH32(...) DIMINUTO_MACROS_FOREACH16(DIMINUTO_MACROS_FOREACH16(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH16(...) DIMINUTO_MACROS_FOREACH8(DIMINUTO_MACROS_FOREACH8(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH8(...) DIMINUTO_MACROS_FOREACH4(DIMINUTO_MACROS_FOREACH4(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH4(...) DIMINUTO_MACROS_FOREACH2(DIMINUTO_MACROS_FOREACH2(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH2(...) DIMINUTO_MACROS_FOREACH1(DIMINUTO_MACROS_FOREACH1(__VA_ARGS__))
+#define DIMINUTO_MACROS_FOREACH1(...) __VA_ARGS__
 
-#define COM_DIAG_DIMINUTO_MACROS_DEFER(_MACRO_) _MACRO_ EMPTY EMPTY()()
+#define DIMINUTO_MACROS_DEFER2(_MACRO_) _MACRO_ DIMINUTO_MACROS_EMPTY DIMINUTO_MACROS_EMPTY()()
 
-#define COM_DIAG_DIMINUTO_MACROS_END() 0
+#define DIMINUTO_MACROS_END() 0
 
-#define COM_DIAG_DIMINUTO_MACROS_APPLY() APPLY
+#define DIMINUTO_MACROS_APPLY() APPLY
 
 /*******************************************************************************
  * PUBLIC
@@ -146,14 +149,14 @@
  * @def HAS_ARGUMENTS
  * Generate 1 if the macro has arguments, 0 otherwise.
  */
-#define HAS_ARGUMENTS(...) BOOLIFY(TAKE_FIRST(COM_DIAG_DIMINUTO_MACROS_END __VA_ARGS__)())
+#define HAS_ARGUMENTS(...) MAKE_BOOLEAN(TAKE_FIRST(DIMINUTO_MACROS_END __VA_ARGS__)())
 
 /**
  * @def FOREACH
  * Generate code iteratively (actually, recursively) driving the APPLY macro until
  * all arguments are consumed.
  */
-#define FOREACH(...) COM_DIAG_DIMINUTO_MACROS_FOREACH1024(__VA_ARGS__)
+#define FOREACH(...) DIMINUTO_MACROS_FOREACH1024(__VA_ARGS__)
 
 /**
  * @def APPLY
@@ -161,7 +164,7 @@
  * argument @a _MACRO_ to the first @a _FIRST_ and every successive
  * argument in the variable length argument list.
  */
-#define APPLY(_MACRO_, _FIRST_, ...) _MACRO_(_FIRST_) IF_ELSE(HAS_ARGUMENTS(__VA_ARGS__))(COM_DIAG_DIMINUTO_MACROS_DEFER(COM_DIAG_DIMINUTO_MACROS_APPLY)()(_MACRO_, __VA_ARGS__))()
+#define APPLY(_MACRO_, _FIRST_, ...) _MACRO_(_FIRST_) IF_ELSE(HAS_ARGUMENTS(__VA_ARGS__))(DIMINUTO_MACROS_DEFER2(DIMINUTO_MACROS_APPLY)()(_MACRO_, __VA_ARGS__))()
 
 /*******************************************************************************
  * END

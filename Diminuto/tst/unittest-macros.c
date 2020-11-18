@@ -23,6 +23,8 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_macros.h"
+#include "com/diag/diminuto/diminuto_dump.h"
+#include <stdio.h>
 
 static int result(int arg)
 {
@@ -63,10 +65,10 @@ int main(void)
     {
         TEST();
 
-        ASSERT(BOOLIFY(0) == 0);
-        ASSERT(BOOLIFY(1) == 1);
-        ASSERT(BOOLIFY(123) == 1);
-        ASSERT(BOOLIFY(anything) == 1);
+        ASSERT(MAKE_BOOLEAN(0) == 0);
+        ASSERT(MAKE_BOOLEAN(1) == 1);
+        ASSERT(MAKE_BOOLEAN(123) == 1);
+        ASSERT(MAKE_BOOLEAN(anything) == 1);
 
         STATUS();
     }
@@ -74,10 +76,10 @@ int main(void)
     {
         TEST();
 
-        ASSERT(NOT(0) == 1);
-        ASSERT(NOT(1) == 0);
-        ASSERT(NOT(123) == 0);
-        ASSERT(NOT(anything) == 0);
+        ASSERT(LOGICAL_NOT(0) == 1);
+        ASSERT(LOGICAL_NOT(1) == 0);
+        ASSERT(LOGICAL_NOT(123) == 0);
+        ASSERT(LOGICAL_NOT(anything) == 0);
 
         STATUS();
     }
@@ -106,7 +108,7 @@ int main(void)
     {
         TEST();
 
-#define SQUARE(_X_) square(_X_);
+#define SQUARE(_NUMBER_) square(_NUMBER_);
 
         total = 0;
         FOREACH(APPLY(SQUARE, 2, 3, 5, 7, 9))
@@ -123,6 +125,33 @@ int main(void)
 #define DISPLAY(_STRING_) display(_STRING_);
 
         FOREACH(APPLY(DISPLAY, "A", B, "CCC", D))
+
+        STATUS();
+    }
+
+    {
+        size_t total = 0;
+        uint8_t eight = 0x12U;
+        uint16_t sixteen = 0x3456U;
+        uint32_t thirtytwo = 0x789abcdeUL;
+        uint64_t sixtyfour = 0xf0123456789abcdeULL;
+
+        TEST();
+
+#define DUMP(_OBJECT_) \
+    { \
+        void * pointer; \
+        size_t size; \
+        pointer = &_OBJECT_; \
+        size = sizeof(_OBJECT_); \
+        total += size; \
+        fprintf(stderr, "%s:\n", #_OBJECT_); \
+        diminuto_dump(stderr, pointer, size); \
+    }
+
+        FOREACH(APPLY(DUMP, eight, sixteen, thirtytwo, sixtyfour))
+
+        ASSERT(total == 15);
 
         STATUS();
     }

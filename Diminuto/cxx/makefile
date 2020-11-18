@@ -23,7 +23,7 @@
 all:	clean run reclean
 
 unittest-cxxcapi:	thing.o ../out/host/lib/libdiminuto.so
-	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cpp thing.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
+	g++ -o unittest-cxxcapi -I . -I ../inc Thing.cxx thing.o -L../out/host/lib -ldiminuto -lpthread -lrt -ldl
 
 thing.o:	thing.c
 	gcc -o thing.o -I . -I ../inc -c thing.c
