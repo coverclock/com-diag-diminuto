@@ -6,7 +6,7 @@
  * @file
  * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Provides capabilities common to stream and datagram IPv4 and IPv6 sockets.
+ * @brief Provides capabilities common to IPv4, IPv6, and local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -14,6 +14,11 @@
  * The IPC feature provides socket and other interprocess/interprocessor
  * communication capabilities using IPv4, IPv6, and UNIX Domain (local)
  * sockets.
+ *
+ * REFERENCES
+ *
+ * M. Vaner, "40 millisecond bug", 2020-11-06,
+ * <https://vorner.github.io/2020/11/06/40-ms-bug.html>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
