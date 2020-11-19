@@ -10,7 +10,6 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * The minimumof operator generates the minimum value of a signed or
  * unsigned integer type. The maximumof operator generates the maximum value
  * of a signed or unsigned integer type.
