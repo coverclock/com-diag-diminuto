@@ -411,25 +411,28 @@ typedef struct DiminutoIpcEndpoint {
  * must exist.  Local paths must contain a slash ("/") somewhere in them to
  * discriminate between a path name and other possible interpretations. An
  * empty string is a valid endpoint, indicating an ephemeral port on the local
- * host. Here are just a few examples of valid endpoints:
- * "80",
- * ":80",
- * ":http", 
- * "localhost",
- * "localhost:80",
- * "myhostname",
- * "diag.com",
- * "diag.com:http",
- * "172.217.1.206:80",
- * "[::ffff:172.217.1.206]:80",
- * "[2607:f8b0:400f:805::200e]:http",
- * "/tmp/unix.sock",
- * "./unix.sock",
- * "run/unix.sock",
- * "[::]",
- * "0.0.0.0",
- * "0",
- * "".
+ * host. Here are just a few examples of valid endpoints and their
+ * interpretations:
+ * "80" (port),
+ * ":80" (port),
+ * ":http" (service), 
+ * "localhost" (host),
+ * "localhost:80" (host and port),
+ * "myhostname" (host),
+ * "diag.com" (domain),
+ * "diag.com:http" (domain and service),
+ * "diag.com:80" (domain and port),
+ * "172.217.1.206:http" (IPv4 and service),
+ * "172.217.1.206:80" (IPv4 and port),
+ * "[::ffff:172.217.1.206]:80" (IPv6 and port),
+ * "[2607:f8b0:400f:805::200e]:http" (IPv6 and service),
+ * "/tmp/unix.sock" (path),
+ * "./unix.sock" (path),
+ * "run/unix.sock" (path),
+ * "[::]" (IPv6 with ephemeral),
+ * "0.0.0.0" (IPv4 with ephemeral),
+ * "0" (emphemeral),
+ * "" (unnamed path).
  * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
  * @return 0 if both syntactically and semantically successful, <0 otherwise.
