@@ -281,8 +281,10 @@ unsigned int diminuto_thread_notifications()
             pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
                 notifications = tp->notifications;
                 tp->notifications = 0;
+                if (notifications > 0) {
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_notifications: NOTIFICATIONS %p [%u]", tp, notifications);
+                }
                 (void)diminuto_thread_signal(tp);
-                DIMINUTO_LOG_DEBUG("diminuto_thread_notifications: NOTIFICATIONS %p [%u]", tp, notifications);
             pthread_cleanup_pop(!0);
         }
     }
