@@ -117,10 +117,10 @@ static void * server(void * arg)
 
     while (!0) {
 
-        if ((ready = diminuto_mux_wait(&mux, -1)) > 0) {
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
             /* Do nothing. */
         } else if (ready == 0) {
-            FATAL("server: diminuto_mux_wait: timeout");
+            continue;
         } else if (errno == EINTR) {
             continue;
         } else {
@@ -191,10 +191,10 @@ static void * listener(void * arg)
             pending = 0;
         }
 
-        if ((ready = diminuto_mux_wait(&mux, -1)) > 0) {
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
             /* Do nothing. */
         } else if (ready == 0) {
-            FATAL("listener: diminuto_mux_wait: timeout");
+            continue;
         } else if (errno == EINTR) {
             continue;
         } else {
@@ -216,6 +216,9 @@ static void * listener(void * arg)
         pending = !0;
 
     }
+
+    COMMENT("listener %d notified\n",
+        listensocket);
 
     if (pending) {
         ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
@@ -263,6 +266,9 @@ int main(int argc, char argv[])
     ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)11) == 0);
     ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
     ASSERT((intptr_t)result == 11);
+
+    COMMENT("main %d notifying\n",
+        listensocket);
 
     ASSERT(diminuto_thread_notify(&listenerthread) == 0);
     ASSERT(diminuto_thread_join(&listenerthread, &result) == 0);

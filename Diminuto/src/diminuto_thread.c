@@ -282,6 +282,7 @@ unsigned int diminuto_thread_notifications()
                 notifications = tp->notifications;
                 tp->notifications = 0;
                 (void)diminuto_thread_signal(tp);
+                DIMINUTO_LOG_DEBUG("diminuto_thread_notifications: NOTIFICATIONS %p [%u]", tp, notifications);
             pthread_cleanup_pop(!0);
         }
     }
