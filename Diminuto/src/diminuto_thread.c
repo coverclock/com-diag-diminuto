@@ -164,7 +164,7 @@ static void setup()
                     thread.notifications = 0;
                     thread.state = DIMINUTO_THREAD_STATE_RUNNING;
                     setupped = !0;
-                    DIMINUTO_LOG_INFORMATION("diminuto_thread:setup: SETUP %p", &thread);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread:setup: SETUP %p", &thread);
                 }
             DIMINUTO_CRITICAL_SECTION_END;
         }
@@ -345,7 +345,7 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
                     errno = rc;
                     diminuto_perror("diminuto_thread_start: pthread_create");
                     tp->state = DIMINUTO_THREAD_STATE_FAILED;
-                    DIMINUTO_LOG_WARNING("diminuto_thread_start: FAILED %p", tp);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_start: FAILED %p", tp);
                     (void)diminuto_thread_signal(tp);
                 } else {
                     tp->state = DIMINUTO_THREAD_STATE_STARTED;
@@ -377,7 +377,7 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
                  * to all the other notification stuff.
                  */
                 if (tp->notifications == (~((unsigned int)0))) {
-                    DIMINUTO_LOG_WARNING("diminuto_thread_notify: NOTIFIED %p [*]", tp);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread_notify: NOTIFIED %p [*]", tp);
                 } else {
                     ++tp->notifications;
                     DIMINUTO_LOG_DEBUG("diminuto_thread_notify: NOTIFIED %p [%u]", tp, tp->notifications);

@@ -30,6 +30,8 @@
 #include "com/diag/diminuto/diminuto_ipcl.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_thread.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -42,32 +44,29 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+diminuto_ipv4_t serveraddress = 0;
+diminuto_port_t serverport = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int sn = 0;
-int serverport = 0;
 
 static void * client(void * arg)
 {
-    uintptr_t count = 0;
-    diminuto_ipv4_t address = 0;
+    int count = 0;
     int streamsocket = -1;
     diminuto_ipv4_buffer_t buffer = { '\0', };
-    uintptr_t ii = 0;
+    int ii = 0;
     int request = -1;
     int reply = -1;
 
-    count = (uintptr_t)arg;
+    count = (int)(intptr_t)arg;
 
     ASSERT(serverport != 0);
 
-    address = diminuto_ipc4_address("localhost");
-    ASSERT(!diminuto_ipc4_is_unspecified(&address));
-
-    ASSERT((streamsocket = diminuto_ipc4_stream_consumer(address, serverport)) >= 0);
+    ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
 
     COMMENT("client %d connected %s:%d for %d\n",
         streamsocket,
-        diminuto_ipc4_address2string(address, buffer, sizeof(buffer)),
+        diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)),
         serverport,
         count);
 
@@ -78,15 +77,15 @@ static void * client(void * arg)
         DIMINUTO_CRITICAL_SECTION_END;
         reply = ~request;
 
-        ASSERT(diminuto_ipc4_stream_write(streamsocket, &request, sizeof(request)) == sizeof(request));
-        ASSERT(diminuto_ipc4_stream_read(streamsocket, &reply, sizeof(reply)) == sizeof(reply));
+        ASSERT(diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request)) == sizeof(request));
+        ASSERT(diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply)) == sizeof(reply));
         ASSERT(request == reply);
 
     }
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
 
-    return (void *)ii;
+    return (void *)(intptr_t)ii;
 }
 
 static void * server(void * arg)
@@ -120,10 +119,11 @@ static void * server(void * arg)
         while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 
             ASSERT(fd == streamsocket);
-            ASSERT((length = diminuto_ipc4_stream_read(streamsocket, &datum, sizeof(datum))) >= 0);
+            ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &datum, sizeof(datum), sizeof(datum))) >= 0);
+            COMMENT("server %d read %zd\n", streamsocket, length);
             if (length == 0) { break; }
             ASSERT(length == sizeof(datum));
-            ASSERT(diminuto_ipc4_stream_write(streamsocket, &datum, length) ==  length);
+            ASSERT(diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length) ==  length);
             count += 1;
             total += length;
 
@@ -148,14 +148,18 @@ static void * listener(void * arg)
     diminuto_mux_t mux;
     int pending = 0;
     int ready = -1;
-    diminuto_thread_t thread;
+    diminuto_thread_t serverthread;
     int fd = -1;
+    int count = 0;
     diminuto_ipv4_t address = 0;
     diminuto_port_t port = 0;
     int streamsocket = -1;;
     diminuto_ipv4_buffer_t buffer = { '\0', };
+    void * result = 0;
 
     ASSERT((listensocket = (intptr_t)arg) >= 0);
+
+    ASSERT(diminuto_thread_init(&serverthread, server) == &serverthread);
 
     ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_mux_register_accept(&mux, listensocket) >= 0);
@@ -163,8 +167,7 @@ static void * listener(void * arg)
     while (diminuto_thread_notifications() == 0) {
 
         if (pending) {
-            ASSERT(diminuto_thread_wait(&thread) == 0);
-            ASSERT(diminuto_thread_fini(&thread) == (diminuto_thread_t *)0);
+            ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
             pending = 0;
         }
 
@@ -179,6 +182,7 @@ static void * listener(void * arg)
         }
 
         ASSERT((fd = diminuto_mux_ready_accept(&mux)) == listensocket);
+        count += 1;
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept_generic(listensocket, &address, &port)) >= 0);
 
@@ -188,28 +192,58 @@ static void * listener(void * arg)
             port,
             streamsocket);
 
-        ASSERT(diminuto_thread_init(&thread, server) == &thread);
-        ASSERT(diminuto_thread_start(&thread, (void *)(intptr_t)streamsocket) == 0);
+        ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;
 
     }
 
     if (pending) {
-        ASSERT(diminuto_thread_wait(&thread) == 0);
-        ASSERT(diminuto_thread_fini(&thread) == (diminuto_thread_t *)0);
+        ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
     }
-
-    ASSERT(diminuto_thread_fini(&thread) == (diminuto_thread_t *)0);
 
     ASSERT(diminuto_mux_unregister_accept(&mux, listensocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
-    return 0;
+    ASSERT(diminuto_thread_fini(&serverthread) == (diminuto_thread_t *)0);
+
+    return (void *)(intptr_t)count;
 }
 
 int main(int argc, char argv[])
 {
+    int listensocket = -1;
+    diminuto_thread_t listenerthread;
+    diminuto_thread_t clientthread;
+    void * result = (void *)0;
+
     SETLOGMASK();
+
+    ASSERT(diminuto_thread_init(&listenerthread, listener) == &listenerthread);
+    ASSERT(diminuto_thread_init(&clientthread, client) == &clientthread);
+
+    ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
+    ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
+
+    ASSERT(diminuto_thread_start(&listenerthread, (void *)(intptr_t)listensocket) == 0);
+
+    ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)5) == 0);
+    ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
+    ASSERT((intptr_t)result == 5);
+
+    ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)7) == 0);
+    ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
+    ASSERT((intptr_t)result == 7);
+
+    ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)11) == 0);
+    ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
+    ASSERT((intptr_t)result == 11);
+
+    ASSERT(diminuto_thread_notify(&listenerthread) == 0);
+    ASSERT(diminuto_thread_join(&listenerthread, &result) == 0);
+    ASSERT((intptr_t)result == 3);
+
+    ASSERT(diminuto_thread_fini(&clientthread) == (diminuto_thread_t *)0);
+    ASSERT(diminuto_thread_fini(&listenerthread) == (diminuto_thread_t *)0);
 
     EXIT();
 }
