@@ -115,7 +115,7 @@ static void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
     }
 }
 
-static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
+static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent)
 {
     int rc = -1;
 
@@ -128,15 +128,18 @@ static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * s
      * descriptor mask. Demoting the long returned by FD_ISSET(3) to an int
      * turns a return for file descriptor values from 32 to 63 (or any multiple
      * of those) into a zero. Using idioms like "!" and "!!" to reduce the long
-     * to whatever a boolean might be (int) eliminates this issue.
+     * to whatever a boolean might be (int) eliminates this issue. (I reported
+     * this to the Cygwin folks and they acknowledged it as a bug.)
      */
 
     if (!((0 <= fd) && (fd < FD_SETSIZE))) {
         errno = ERANGE;
         diminuto_perror("diminuto_mux_unregister");
     } else if (!FD_ISSET(fd, &setp->active)) {
-        errno = EINVAL;
-        diminuto_perror("diminuto_mux_unregister");
+        if (!silent) {
+            errno = EINVAL;
+            diminuto_perror("diminuto_mux_unregister");
+        }
     } else {
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
@@ -154,27 +157,27 @@ static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * s
 
 int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->read, fd);
+    return diminuto_mux_unregister(muxp, &muxp->read, fd, 0);
 }
 
 int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->write, fd);
+    return diminuto_mux_unregister(muxp, &muxp->write, fd, 0);
 }
 
 int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->accept, fd);
+    return diminuto_mux_unregister(muxp, &muxp->accept, fd, 0);
 }
 
 int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->urgent, fd);
+    return diminuto_mux_unregister(muxp, &muxp->urgent, fd, 0);
 }
 
 int diminuto_mux_unregister_interrupt(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->interrupt, fd);
+    return diminuto_mux_unregister(muxp, &muxp->interrupt, fd, 0);
 }
 
 int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
@@ -355,7 +358,7 @@ int diminuto_mux_ready_interrupt(diminuto_mux_t * muxp)
 
 int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
 {
-    int rc;
+    int rc = 0;
     int accepting;
     int reading;
     int writing;
@@ -370,19 +373,20 @@ int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
      * of any later terms.
      */
 
-    accepting = diminuto_mux_unregister_accept(muxp, fd);
-    reading = diminuto_mux_unregister_read(muxp, fd);
-    writing = diminuto_mux_unregister_write(muxp, fd);
-    urgenting = diminuto_mux_unregister_urgent(muxp, fd);
-    interrupting = diminuto_mux_unregister_urgent(muxp, fd);
+    accepting = diminuto_mux_unregister(muxp, &muxp->accept, fd, !0);
+    reading = diminuto_mux_unregister(muxp, &muxp->read, fd, !0);
+    writing = diminuto_mux_unregister(muxp, &muxp->write, fd, !0);
+    urgenting = diminuto_mux_unregister(muxp, &muxp->urgent, fd, !0);
+    interrupting = diminuto_mux_unregister(muxp, &muxp->interrupt, fd, !0);
 
     if ((accepting < 0) && (reading < 0) && (writing < 0) && (urgenting < 0) && (interrupting < 0)) {
         rc = -2;
         errno = EINVAL;
         diminuto_perror("diminuto_mux_close: unregister");
-    } else if ((rc = close(fd)) == 0) {
-        /* Do nothing. */
-    } else {
+    }
+
+    if (close(fd) < 0) {
+        rc = -1;
         diminuto_perror("diminuto_mux_close: close");
     }
 
