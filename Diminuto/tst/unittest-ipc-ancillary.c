@@ -236,6 +236,7 @@ static void workload(int count)
     for (ii = 0; ii < count; ++ii) {
         ASSERT(diminuto_thread_init(&clientthreads[ii], client) == &clientthreads[ii]);
         ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
+        diminuto_delay(diminuto_frequency()/100, !0);
     }
 
     while (diminuto_interrupter_check() <= 0) {
