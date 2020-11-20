@@ -48,9 +48,10 @@
 
 typedef int datum_t;
 
-diminuto_local_t localpath = "/tmp/unittest-ipc-ancillary.sock";
-diminuto_ipv4_t serveraddress = 0;
-diminuto_port_t serverport = 0;
+static const char LOCALPATH[] = "/tmp/unittest-ipc-ancillary.sock";
+
+static diminuto_ipv4_t serveraddress = 0;
+static diminuto_port_t serverport = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int sn = 0;
 
@@ -227,11 +228,11 @@ static void workload(int count)
     int ii = 0;
     void * result = (void *)0;
 
+    COMMENT("workload starting\n");
+
     ASSERT((clientthreads = (diminuto_thread_t *)calloc(count, sizeof(*clientthreads))) != (diminuto_thread_t *)0);
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
-
-    COMMENT("workload starting\n");
 
     for (ii = 0; ii < count; ++ii) {
         ASSERT(diminuto_thread_init(&clientthreads[ii], client) == &clientthreads[ii]);
@@ -255,16 +256,48 @@ static void workload(int count)
         ASSERT(diminuto_thread_fini(&clientthreads[ii]) == (diminuto_thread_t *)0);
     }
 
-    COMMENT("workload exiting\n");
-
     free(clientthreads);
+
+    COMMENT("workload exiting\n");
+}
+
+static void instance(int listensocket) 
+{
+    diminuto_thread_t dispatcherthread;
+    diminuto_mux_t mux;
+    void * result = (void *)0;
+
+    COMMENT("instance starting\n");
+
+    ASSERT(diminuto_interrupter_install(0) >= 0);
+
+    ASSERT(diminuto_mux_init(&mux) == &mux);
+
+    ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
+    ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)listensocket) == 0);
+
+    while (diminuto_interrupter_check() <= 0) {
+        diminuto_mux_wait(&mux, -1);
+    }
+
+    COMMENT("instance %d interrupted\n", listensocket);
+
+    ASSERT(diminuto_thread_notify(&dispatcherthread) == 0);
+    ASSERT(diminuto_thread_join(&dispatcherthread, &result) == 0);
+    ASSERT(diminuto_thread_fini(&dispatcherthread) == (diminuto_thread_t *)0);
+
+    ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
+    COMMENT("instance %d exiting\n", listensocket);
 }
 
 int main(int argc, char argv[])
 {
     int listensocket = -1;
     diminuto_ipv4_buffer_t buffer = { '\0', };
-    pid_t clientpid = -1;
+    pid_t workloadpid = -1;
+    pid_t instancepid = -1;
+    int status = -1;
 
     SETLOGMASK();
 
@@ -278,45 +311,40 @@ int main(int argc, char argv[])
      * us to use.
      */
     ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
-
     COMMENT("main %d listening %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport);
 
-    ASSERT((clientpid = fork()) >= 0);
-    if (clientpid == 0) {
+    ASSERT((instancepid = fork()) >= 0);
+    if (instancepid == 0) {
+        instance(listensocket);
+        EXIT();
+    }
+
+    ASSERT((workloadpid = fork()) >= 0);
+    if (workloadpid == 0) {
         (void)diminuto_ipc_close(listensocket);
         workload(10);
         EXIT();
     }
 
-    diminuto_thread_t dispatcherthread;
-    void * result = (void *)0;
-    int status = -1;
-
-    ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
-    ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)listensocket) == 0);
-
     /*
-     * It is during the delay below that all the work actually occurs.
+     * It is during this delay in which all the work gets done.
      */
-
-    COMMENT("parent %d delaying\n", listensocket);
     diminuto_delay(diminuto_frequency() * 10, !0);
 
-    COMMENT("parent %d killing\n", listensocket);
-    ASSERT(kill(clientpid, SIGINT) == 0);
-
-    ASSERT(waitpid(clientpid, &status, 0) == clientpid);
-    COMMENT("parent %d reaped %d status %d\n", listensocket, clientpid, status);
+    ASSERT(kill(workloadpid, SIGINT) == 0);
+    ASSERT(waitpid(workloadpid, &status, 0) == workloadpid);
+    COMMENT("main %d workload %d status %d\n", listensocket, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
-    COMMENT("parent %d notifying\n", listensocket);
-    ASSERT(diminuto_thread_notify(&dispatcherthread) == 0);
-    ASSERT(diminuto_thread_join(&dispatcherthread, &result) == 0);
-    ASSERT(diminuto_thread_fini(&dispatcherthread) == (diminuto_thread_t *)0);
+    ASSERT(kill(instancepid, SIGINT) == 0);
+    ASSERT(waitpid(instancepid, &status, 0) == instancepid);
+    COMMENT("main %d instance %d status %d\n", listensocket, instancepid, status);
+    ASSERT(WIFEXITED(status));
+    ASSERT(WEXITSTATUS(status) == 0);
 
     ASSERT(diminuto_ipc_close(listensocket) >= 0);
-    COMMENT("parent exiting\n");
+    COMMENT("main exiting\n");
 
     EXIT();
 }
