@@ -33,6 +33,8 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_interrupter.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -227,30 +229,50 @@ int main(int argc, char argv[])
     SETLOGMASK();
 
     ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
+    /*
+     * In any real application we would have a fixed port number,
+     * probably defined as a service, and would have an address
+     * that was resolved from a Fully Qualified Domain Name
+     * (FQDN). But this unit test is running on one computer,
+     * and we'll let the IP stack choose an ephemeral port for
+     * us to use.
+     */
     ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
 
     COMMENT("main %d listening %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport);
 
     ASSERT((pid = fork()) >= 0);
     if (pid == 0) {
-        diminuto_thread_t clientthread;
+        diminuto_thread_t clientthreads[10];
+        int ii = 0;
         void * result = (void *)0;
 
-        ASSERT(diminuto_thread_init(&clientthread, client) == &clientthread);
+        ASSERT(diminuto_interrupter_install(0) >= 0);
 
-        ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)5) == 0);
-        ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
-        ASSERT((intptr_t)result == 5);
+        COMMENT("child starting\n");
 
-        ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)7) == 0);
-        ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
-        ASSERT((intptr_t)result == 7);
+        for (ii = 0; ii < countof(clientthreads); ++ii) {
+            ASSERT(diminuto_thread_init(&clientthreads[ii], client) == &clientthreads[ii]);
+            ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
+        }
 
-        ASSERT(diminuto_thread_start(&clientthread, (void *)(intptr_t)11) == 0);
-        ASSERT(diminuto_thread_join(&clientthread, &result) == 0);
-        ASSERT((intptr_t)result == 11);
+        while (diminuto_interrupter_check() <= 0) {
+            for (ii = 0; ii < countof(clientthreads); ++ii) {
+                ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
+                ASSERT((intptr_t)result == ii);
+                ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
+            }
+        }
 
-        ASSERT(diminuto_thread_fini(&clientthread) == (diminuto_thread_t *)0);
+        COMMENT("child interrupted\n");
+
+        for (ii = 0; ii < countof(clientthreads); ++ii) {
+            ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
+            ASSERT((intptr_t)result == ii);
+            ASSERT(diminuto_thread_fini(&clientthreads[ii]) == (diminuto_thread_t *)0);
+        }
+
+        COMMENT("child exiting\n");
 
         EXIT();
 
@@ -263,22 +285,24 @@ int main(int argc, char argv[])
 
         ASSERT(diminuto_thread_start(&listenerthread, (void *)(intptr_t)listensocket) == 0);
 
-        COMMENT("main %d waiting\n", listensocket);
+        COMMENT("parent %d delaying\n", listensocket);
         diminuto_delay(diminuto_frequency() * 10, !0);
 
-        COMMENT("main %d notifying\n", listensocket);
-        ASSERT(diminuto_thread_notify(&listenerthread) == 0);
-        ASSERT(diminuto_thread_join(&listenerthread, &result) == 0);
-        ASSERT((intptr_t)result == 3);
-        ASSERT(diminuto_thread_fini(&listenerthread) == (diminuto_thread_t *)0);
+        COMMENT("parent %d killing\n", listensocket);
+        ASSERT(kill(pid, SIGINT) == 0);
 
         ASSERT(waitpid(pid, &status, 0) == pid);
-        COMMENT("main %d reaped %d status %d\n", listensocket, pid, status);
+        COMMENT("parent %d reaped %d status %d\n", listensocket, pid, status);
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == 0);
 
+        COMMENT("parent %d notifying\n", listensocket);
+        ASSERT(diminuto_thread_notify(&listenerthread) == 0);
+        ASSERT(diminuto_thread_join(&listenerthread, &result) == 0);
+        ASSERT(diminuto_thread_fini(&listenerthread) == (diminuto_thread_t *)0);
+
         ASSERT(diminuto_ipc_close(listensocket) >= 0);
-        COMMENT("main complete\n");
+        COMMENT("parent exiting\n");
 
         EXIT();
     }
