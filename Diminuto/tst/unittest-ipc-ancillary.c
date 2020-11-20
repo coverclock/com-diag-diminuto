@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+typedef int datum_t;
+
 diminuto_ipv4_t serveraddress = 0;
 diminuto_port_t serverport = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -55,8 +57,9 @@ static void * client(void * arg)
     int streamsocket = -1;
     diminuto_ipv4_buffer_t buffer = { '\0', };
     int ii = 0;
-    int request = -1;
-    int reply = -1;
+    datum_t request = -1;
+    datum_t reply = -1;
+    ssize_t length = 0;
 
     count = (int)(intptr_t)arg;
 
@@ -77,8 +80,16 @@ static void * client(void * arg)
         DIMINUTO_CRITICAL_SECTION_END;
         reply = ~request;
 
-        ASSERT(diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request)) == sizeof(request));
-        ASSERT(diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply)) == sizeof(reply));
+        ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request))) == sizeof(request));
+        COMMENT("client %d wrote %zd\n",
+            streamsocket,
+            length);
+
+        ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply))) == sizeof(reply));
+        COMMENT("client %d read %zd\n",
+            streamsocket,
+            length);
+
         ASSERT(request == reply);
 
     }
@@ -95,7 +106,7 @@ static void * server(void * arg)
     int ready = 0;
     int fd = -1;
     ssize_t length = -1;
-    diminuto_sticks_t datum = 0;
+    datum_t datum = 0;
     int count = 0;
     size_t total = 0;
 
@@ -120,18 +131,27 @@ static void * server(void * arg)
 
             ASSERT(fd == streamsocket);
             ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &datum, sizeof(datum), sizeof(datum))) >= 0);
-            COMMENT("server %d read %zd\n", streamsocket, length);
+            COMMENT("server %d read %zd after %d\n",
+                streamsocket,
+                length,
+                count);
             if (length == 0) { break; }
             ASSERT(length == sizeof(datum));
-            ASSERT(diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length) ==  length);
+            ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length)) ==  sizeof(datum));
+            COMMENT("server %d write %zd after %d\n",
+                streamsocket,
+                length,
+                count);
             count += 1;
             total += length;
 
         }
 
+        if (length == 0) { break; }
+
     }
 
-    COMMENT("server %d processed %d among %d\n",
+    COMMENT("server %d finished %d after %d\n",
         streamsocket,
         total,
         count);
@@ -212,6 +232,7 @@ static void * listener(void * arg)
 int main(int argc, char argv[])
 {
     int listensocket = -1;
+    diminuto_ipv4_buffer_t buffer = { '\0', };
     diminuto_thread_t listenerthread;
     diminuto_thread_t clientthread;
     void * result = (void *)0;
@@ -223,6 +244,11 @@ int main(int argc, char argv[])
 
     ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
     ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
+
+    COMMENT("main %d listening %s:%d\n",
+        listensocket,
+        diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)),
+        serverport);
 
     ASSERT(diminuto_thread_start(&listenerthread, (void *)(intptr_t)listensocket) == 0);
 
