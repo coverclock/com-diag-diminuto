@@ -263,20 +263,22 @@ int main(int argc, char argv[])
 
         ASSERT(diminuto_thread_start(&listenerthread, (void *)(intptr_t)listensocket) == 0);
 
+        COMMENT("main %d waiting\n", listensocket);
         diminuto_delay(diminuto_frequency() * 10, !0);
 
         COMMENT("main %d notifying\n", listensocket);
-
         ASSERT(diminuto_thread_notify(&listenerthread) == 0);
         ASSERT(diminuto_thread_join(&listenerthread, &result) == 0);
         ASSERT((intptr_t)result == 3);
-
         ASSERT(diminuto_thread_fini(&listenerthread) == (diminuto_thread_t *)0);
 
         ASSERT(waitpid(pid, &status, 0) == pid);
-        COMMENT("pid=%d status=%d\n", pid, status);
+        COMMENT("main %d reaped %d status %d\n", listensocket, pid, status);
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == 0);
+
+        ASSERT(diminuto_ipc_close(listensocket) >= 0);
+        COMMENT("main complete\n");
 
         EXIT();
     }
