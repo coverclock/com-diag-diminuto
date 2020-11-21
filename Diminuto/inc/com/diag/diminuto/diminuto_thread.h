@@ -102,14 +102,15 @@ typedef void * (diminuto_thread_function_t)(void *);
  * (for example, at compile time).
  */
 typedef enum DiminutoThreadState {
-    DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',     /* thread object allocated (if zeroed) */
-    DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /* thread object init performed */
-    DIMINUTO_THREAD_STATE_STARTED       = 'S',      /* thread object start performed */
-    DIMINUTO_THREAD_STATE_RUNNING       = 'R',      /* thread function running */
-    DIMINUTO_THREAD_STATE_COMPLETING    = 'C',      /* thread function completing */
-    DIMINUTO_THREAD_STATE_JOINED        = 'J',      /* thread object join performed */
-    DIMINUTO_THREAD_STATE_FINALIZED     = 'F',      /* thread object fini performed */
-    DIMINUTO_THREAD_STATE_FAILED        = '?',      /* thread object start failed */
+    DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',     /* allocated (if zeroed) */
+    DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /* init performed */
+    DIMINUTO_THREAD_STATE_STARTED       = 'S',      /* start performed */
+    DIMINUTO_THREAD_STATE_RUNNING       = 'R',      /* function running */
+    DIMINUTO_THREAD_STATE_COMPLETING    = 'C',      /* function completing */
+    DIMINUTO_THREAD_STATE_JOINED        = 'J',      /* join performed */
+    DIMINUTO_THREAD_STATE_FINALIZED     = 'F',      /* fini performed */
+    DIMINUTO_THREAD_STATE_FAILED        = '!',      /* start failed */
+    DIMINUTO_THREAD_STATE_UNKNOWN       = '?',      /* state undetermined */
 } diminuto_thread_state_t;
 
 /**
@@ -118,12 +119,12 @@ typedef enum DiminutoThreadState {
 typedef struct DiminutoThread {
     diminuto_condition_t condition;         /* Diminuto condition object */
     pthread_t thread;                       /* POSIX Thread thread object */
-    diminuto_thread_function_t * function;  /* pointer to thread function implementation */
-    void * context;                         /* pointer to thread function context */
+    diminuto_thread_function_t * function;  /* pointer to thread function */
+    void * context;                         /* pointer to thread context */
     void * value;                           /* final thread function value */
     diminuto_thread_state_t state;          /* Diminuto thread state */
-    int notify;                             /* kill signal used for notification or 0 if none */
-    int notifications;                      /* number of notifications received since last check */
+    int notify;                             /* kill for notification or 0 */
+    int notifications;                      /* notifications received */
 } diminuto_thread_t;
 
 /**
@@ -202,6 +203,17 @@ extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto
 extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
 
 /***********************************************************************
+ * GETTORS
+ **********************************************************************/
+
+/**
+ * Return the state of a Diminuto thread object.
+ * @param tp points to the object.
+ * @return the state of the thread object.
+ */
+extern diminuto_thread_state_t diminuto_thread_state(const diminuto_thread_t * tp);
+
+/***********************************************************************
  * HELPERS
  **********************************************************************/
 
@@ -212,8 +224,7 @@ extern diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp);
  * @return the number of ticks elapsed since the Epoch or -1 with
  * errno set if an error occurred.
  */
-static inline diminuto_sticks_t diminuto_thread_clock(void)
-{
+static inline diminuto_sticks_t diminuto_thread_clock(void) {
     return diminuto_condition_clock();
 }
 
@@ -227,8 +238,7 @@ static inline diminuto_sticks_t diminuto_thread_clock(void)
  * @param tp points to the object.
  * @return 0 or an error code if the lock failed.
  */
-static inline int diminuto_thread_lock(diminuto_thread_t * tp)
-{
+static inline int diminuto_thread_lock(diminuto_thread_t * tp) {
     return diminuto_condition_lock(&(tp->condition));
 }
 
@@ -240,8 +250,7 @@ static inline int diminuto_thread_lock(diminuto_thread_t * tp)
  * @param tp points to the object.
  * @return 0 or an error code if the lock failed.
  */
-static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
-{
+static inline int diminuto_thread_lock_try(diminuto_thread_t * tp) {
     return diminuto_condition_lock_try(&(tp->condition));
 }
 
@@ -251,8 +260,7 @@ static inline int diminuto_thread_lock_try(diminuto_thread_t * tp)
  * @param tp points to the object.
  * @return 0 or an error code if the unlock failed.
  */
-static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
-{
+static inline int diminuto_thread_unlock(diminuto_thread_t * tp) {
     return diminuto_condition_unlock(&(tp->condition));
 }
 
@@ -266,8 +274,7 @@ static inline int diminuto_thread_unlock(diminuto_thread_t * tp)
  * @param clocktime is the absolute clock time in Diminuto ticks.
  * @return 0 or an error code if the wait failed.
  */
-static inline int diminuto_thread_wait_until(diminuto_thread_t * tp, diminuto_ticks_t clocktime)
-{
+static inline int diminuto_thread_wait_until(diminuto_thread_t * tp, diminuto_ticks_t clocktime) {
     return diminuto_condition_wait_until(&(tp->condition), clocktime);
 }
 
@@ -277,8 +284,7 @@ static inline int diminuto_thread_wait_until(diminuto_thread_t * tp, diminuto_ti
  * @param tp points to the object.
  * @return 0 or an error code if the wait failed.
  */
-static inline int diminuto_thread_wait(diminuto_thread_t * tp)
-{
+static inline int diminuto_thread_wait(diminuto_thread_t * tp) {
     return diminuto_thread_wait_until(tp, DIMINUTO_CONDITION_INFINITY);
 }
 
@@ -288,8 +294,7 @@ static inline int diminuto_thread_wait(diminuto_thread_t * tp)
  * @param tp points to the object.
  * @return 0 or an error code if the signal failed.
  */
-static inline int diminuto_thread_signal(diminuto_thread_t * tp)
-{
+static inline int diminuto_thread_signal(diminuto_thread_t * tp) {
     return diminuto_condition_signal(&(tp->condition));
 }
 

@@ -37,7 +37,7 @@
  * Instruments, 2009-10
  *
  * Adafruit, "ADS1115 16-Bit ADC - 4 Channel with Programmable Gain
- * Amplifier, P/N 1085, https://www.adafruit.com/product/1085
+ * Amplifier, P/N 1085, <https://www.adafruit.com/product/1085>
  *
  * QUOTE
  *

@@ -64,23 +64,25 @@ static int sn = 0;
  * of exchanges is passed in as an argument. The thread exits when all of
  * the exchanges have been performed.
  */
-static void * client(void * arg /* count */)
+static void * client(void * arg /* limit */)
 {
-    int count = 0;
+    int limit = 0;
     int streamsocket = -1;
     diminuto_ipv4_buffer_t buffer = { '\0', };
     int ii = 0;
     datum_t request = -1;
     datum_t reply = -1;
     ssize_t length = 0;
+    int count = 0;
+    size_t total = 0;
 
-    count = (int)(intptr_t)arg;
+    limit = (int)(intptr_t)arg;
 
     ASSERT(serverport != 0);
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
-    CHECKPOINT("client %d connected %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport, count);
+    CHECKPOINT("client %d connected %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport, limit);
 
-    for (ii = 0; ii < count; ++ii) {
+    for (ii = 0; ii < limit; ++ii) {
 
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
             request = sn++;
@@ -88,14 +90,21 @@ static void * client(void * arg /* count */)
         reply = ~request;
 
         ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request))) == sizeof(request));
-        COMMENT("client %d wrote %zd\n", streamsocket, length);
+        COMMENT("client %d wrote %zd after %d\n", streamsocket, length, ii);
 
         ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply))) == sizeof(reply));
-        COMMENT("client %d read %zd\n", streamsocket, length);
+        COMMENT("client %d read %zd after %d\n", streamsocket, length, ii);
+
+        count += 1;
+        total += length;
 
         ASSERT(request == reply);
 
     }
+
+    CHECKPOINT("client %d finished %zu after %d\n", streamsocket, total, count);
+
+    ASSERT(count == limit);
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
 
@@ -150,7 +159,7 @@ static void * server(void * arg /* streamsocket */)
 
             ASSERT(length == sizeof(datum));
             ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length)) ==  sizeof(datum));
-            COMMENT("server %d write %zd after %d\n", streamsocket, length, count);
+            COMMENT("server %d wrote %zd after %d\n", streamsocket, length, count);
 
             count += 1;
             total += length;
@@ -163,7 +172,7 @@ static void * server(void * arg /* streamsocket */)
 
     }
 
-    CHECKPOINT("server %d finished %d after %d\n", streamsocket, total, count);
+    CHECKPOINT("server %d finished %zu after %d\n", streamsocket, total, count);
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);

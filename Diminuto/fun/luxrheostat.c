@@ -18,7 +18,7 @@
  * Wikipedia, "Lux", 2018-03-17
  *
  * Sparkfun, "SparkFun Ambient Light Sensor Breakout - APDS-9301",
- * SEN-14350, https://www.sparkfun.com/products/14350
+ * SEN-14350, <https://www.sparkfun.com/products/14350>
  */
 
 #include "com/diag/diminuto/diminuto_countof.h"

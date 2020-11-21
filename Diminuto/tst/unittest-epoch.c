@@ -18,7 +18,8 @@
  *
  * REFERENCES
  *
- * Wikipedia, "Unix time", http://en.wikipedia.org/wiki/Unix_time, 2014-10-24
+ * Wikipedia, "Unix time", 2014-10-24,
+ * <http://en.wikipedia.org/wiki/Unix_time>
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"

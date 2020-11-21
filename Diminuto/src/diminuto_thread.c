@@ -101,6 +101,7 @@ static void * proxy(void * ap)
                     DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
                     (void)diminuto_thread_signal(tp);
                 pthread_cleanup_pop(!0);
+
             }
 
         }
@@ -222,6 +223,27 @@ diminuto_thread_t * diminuto_thread_fini(diminuto_thread_t * tp)
     }
 
     return result;
+}
+
+/***********************************************************************
+ * GETTORS
+ **********************************************************************/
+
+diminuto_thread_state_t diminuto_thread_state(const diminuto_thread_t * tp)
+{
+    diminuto_thread_state_t state = DIMINUTO_THREAD_STATE_UNKNOWN;
+
+    /*
+     * Accessing the thread state should be atomic. We can't do this in
+     * a critical section because doing so would prevent us from
+     * seeing states like ALLOCATED or FINALIZED.
+     */
+
+    DIMINUTO_COHERENT_SECTION_BEGIN;
+        state = tp->state;
+    DIMINUTO_COHERENT_SECTION_END;
+
+    return state;
 }
 
 /***********************************************************************

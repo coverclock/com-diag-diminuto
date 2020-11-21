@@ -53,13 +53,13 @@
  * REFERENCES
  *
  * Chip Overclock, "Data Remanance and Solid State Drives", 2011-06-20,
- * http://coverclock.blogspot.com/2011/06/data-remanence-and-solid-state-disks.html
+ * <http://coverclock.blogspot.com/2011/06/data-remanence-and-solid-state-disks.html>
  *
  * Michel Machado, "F3 - an alternative to h2testw", Digirati, 2010,
- * http://oss.digirati.com.br/f3/
+ * <http://oss.digirati.com.br/f3/>
  *
  * Harald Begeholz, "H2test2 1.4", heise Download, 2013-04,
- * http://www.heise.de/download/h2testw.html
+ * <http://www.heise.de/download/h2testw.html>
  *
  * NOTES
  *

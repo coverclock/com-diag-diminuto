@@ -17,8 +17,26 @@
  *
  * REFERENCES
  *
+ * Wind River Systems, *VxWorks Reference Manual*, 5.4
+ *
+ * V. Jacobson et al., “TCP Extensions for High Performance”, RFC1323, 1992
+ *
+ * V. Welch, “A User’s Guide to TCP Windows”, NCSA, 1996
+ * 
+ * J. Mahdavi, “Enabling High Performance Data Transfers on Hosts”,
+ * Pittsburgh Supercomputing Center, 1996
+ *
+ * W. Stevens, *TCP/IP Illustrated Volume 1: The Protocols*,
+ * Addison-Wesley, 1994
+ * 
+ * G. Wright et al., *TCP/IP Illustrated Volume 2: The Implementation*,
+ * Addison-Wesley, 1995
+ *
  * M. Vaner, "40 millisecond bug", 2020-11-06,
  * <https://vorner.github.io/2020/11/06/40-ms-bug.html>
+ *
+ * W. Sewell, "Ephemeral port exhaustion and how to avoid it", 2018-05-22,
+ * <https://making.pusher.com/ephemeral-port-exhaustion-and-how-to-avoid-it/>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
