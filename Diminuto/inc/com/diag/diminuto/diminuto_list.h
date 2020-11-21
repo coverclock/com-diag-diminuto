@@ -400,7 +400,9 @@ static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, cons
  * @return the data pointer for a node or NULL.
  */
 static inline void * diminuto_list_dataif(diminuto_list_t * nodep) {
-    return (nodep != DIMINUTO_LIST_NULL) ? nodep->data : (void *)0;
+    return (nodep != DIMINUTO_LIST_NULL)
+        ? nodep->data
+        : (void *)0;
 }
 
 /**
