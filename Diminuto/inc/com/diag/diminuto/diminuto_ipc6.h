@@ -455,7 +455,7 @@ extern int diminuto_ipc6_stream_consumer_base(diminuto_ipv6_t address, diminuto_
  * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_consumer_generic(diminuto_ipv6_t address, diminuto_port_t port, diminuto_ipv6_t address0, diminuto_port_t port0, const char * interface) {
-    return diminuto_ipc6_stream_consumer_base(address, port, address0, port0, interface, (diminuto_ipc_injector_t *)0, (void *)0);
+    return diminuto_ipc6_stream_consumer_base(address, port, address0, port0, interface, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**

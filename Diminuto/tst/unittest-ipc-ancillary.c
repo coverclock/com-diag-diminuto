@@ -78,7 +78,7 @@ static void * client(void * arg /* count */)
 
     ASSERT(serverport != 0);
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
-    COMMENT("client %d connected %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport, count);
+    CHECKPOINT("client %d connected %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport, count);
 
     for (ii = 0; ii < count; ++ii) {
 
@@ -131,7 +131,7 @@ static void * server(void * arg /* streamsocket */)
         } else if (ready == 0) {
             continue;
         } else if (errno == EINTR) {
-            COMMENT("server %d interrupted\n", streamsocket);
+            CHECKPOINT("server %d interrupted\n", streamsocket);
             break;
         } else {
             FATAL("server: diminuto_mux_wait: error");
@@ -144,7 +144,7 @@ static void * server(void * arg /* streamsocket */)
             COMMENT("server %d read %zd after %d\n", streamsocket, length, count);
 
             if (length == 0) {
-                COMMENT("server %d completed\n", streamsocket);
+                CHECKPOINT("server %d completed\n", streamsocket);
                 break;
             }
 
@@ -163,7 +163,7 @@ static void * server(void * arg /* streamsocket */)
 
     }
 
-    COMMENT("server %d finished %d after %d\n", streamsocket, total, count);
+    CHECKPOINT("server %d finished %d after %d\n", streamsocket, total, count);
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
@@ -212,7 +212,7 @@ static void * dispatcher(void * arg /* listensocket */)
         } else if (ready == 0) {
             continue;
         } else if (errno == EINTR) {
-            COMMENT("dispatcher %d interrupted\n", listensocket);
+            CHECKPOINT("dispatcher %d interrupted\n", listensocket);
             continue;
         } else {
             FATAL("dispatcher: diminuto_mux_wait: error");
@@ -223,14 +223,14 @@ static void * dispatcher(void * arg /* listensocket */)
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept_generic(listensocket, &address, &port)) >= 0);
 
-        COMMENT("dispatcher %d accepted %s:%d on %d\n", listensocket, diminuto_ipc4_address2string(address, buffer, sizeof(buffer)), port, streamsocket);
+        CHECKPOINT("dispatcher %d accepted %s:%d on %d\n", listensocket, diminuto_ipc4_address2string(address, buffer, sizeof(buffer)), port, streamsocket);
 
         ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;
 
     }
 
-    COMMENT("dispatcher %d notified\n", listensocket);
+    CHECKPOINT("dispatcher %d notified\n", listensocket);
 
     if (pending) {
         ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
@@ -257,7 +257,7 @@ static void workload(int count)
     int ii = 0;
     void * result = (void *)0;
 
-    COMMENT("workload starting\n");
+    CHECKPOINT("workload starting\n");
 
     ASSERT((clientthreads = (diminuto_thread_t *)calloc(count, sizeof(*clientthreads))) != (diminuto_thread_t *)0);
 
@@ -277,7 +277,7 @@ static void workload(int count)
         }
     }
 
-    COMMENT("workload interrupted\n");
+    CHECKPOINT("workload interrupted\n");
 
     for (ii = 0; ii < count; ++ii) {
         ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
@@ -287,7 +287,7 @@ static void workload(int count)
 
     free(clientthreads);
 
-    COMMENT("workload exiting\n");
+    CHECKPOINT("workload exiting\n");
 }
 
 /*
@@ -302,7 +302,7 @@ static void instance(int listensocket)
     diminuto_mux_t mux;
     void * result = (void *)0;
 
-    COMMENT("instance starting\n");
+    CHECKPOINT("instance starting\n");
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
 
@@ -315,7 +315,7 @@ static void instance(int listensocket)
         diminuto_mux_wait(&mux, -1);
     }
 
-    COMMENT("instance %d interrupted\n", listensocket);
+    CHECKPOINT("instance %d interrupted\n", listensocket);
 
     ASSERT(diminuto_thread_notify(&dispatcherthread) == 0);
     ASSERT(diminuto_thread_join(&dispatcherthread, &result) == 0);
@@ -323,7 +323,7 @@ static void instance(int listensocket)
 
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
-    COMMENT("instance %d exiting\n", listensocket);
+    CHECKPOINT("instance %d exiting\n", listensocket);
 }
 
 int main(int argc, char argv[])
@@ -346,7 +346,7 @@ int main(int argc, char argv[])
      * us to use.
      */
     ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
-    COMMENT("main %d listening %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport);
+    CHECKPOINT("main %d listening %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport);
 
     ASSERT((instancepid = fork()) >= 0);
     if (instancepid == 0) {
@@ -368,18 +368,18 @@ int main(int argc, char argv[])
 
     ASSERT(kill(workloadpid, SIGINT) == 0);
     ASSERT(waitpid(workloadpid, &status, 0) == workloadpid);
-    COMMENT("main %d workload %d status %d\n", listensocket, workloadpid, status);
+    CHECKPOINT("main %d workload %d status %d\n", listensocket, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
     ASSERT(kill(instancepid, SIGINT) == 0);
     ASSERT(waitpid(instancepid, &status, 0) == instancepid);
-    COMMENT("main %d instance %d status %d\n", listensocket, instancepid, status);
+    CHECKPOINT("main %d instance %d status %d\n", listensocket, instancepid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
     ASSERT(diminuto_ipc_close(listensocket) >= 0);
-    COMMENT("main exiting\n");
+    CHECKPOINT("main exiting\n");
 
     EXIT();
 }

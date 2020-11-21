@@ -265,7 +265,7 @@ extern int diminuto_ipcl_stream_consumer_base(const char * path, const char * pa
  * @return a data stream socket to the consumer or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_stream_consumer_generic(const char * path, const char * path0) {
-    return diminuto_ipcl_stream_consumer_base(path, path0, (diminuto_ipc_injector_t *)0, (void *)0);
+    return diminuto_ipcl_stream_consumer_base(path, path0, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
