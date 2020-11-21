@@ -76,10 +76,10 @@
  *
  * Removing a list node from a list when it is not on a list has no effect.
  *
- * A node that is the root of its list cannot be removed from its list.
- * This is because removing such a node would orphan all of the root pointers
- * in all of the other nodes on the same list. Attempting to do so has no
- * effect.
+ * Removing a node that is the root of its list results in the root pointer
+ * of every remaining node in the list being redirected (re-rooted) to the
+ * node after the node being removed. Re-rooting requires that the entire
+ * list be walked.
  *
  * Lists can be used to implement stacks (LIFO) or queues (FIFO), in which case
  * NULL pointers are returned to indicate that the container is empty. These
