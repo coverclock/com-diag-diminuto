@@ -10,6 +10,9 @@
  * This is a unit test of the use of sendmsg(2) to send ancillary data
  * using Diminutos IPC4 and IPCL features. The test is complex enough
  * and uses multiple IPC features that it merited its own unit test.
+ * It is intended to simulate an actual application albeit on a small
+ * scale. It may "simulate" but all of the processes, threads, and
+ * sockets are the real thing.
  *
  * REFERENCES
  *
@@ -55,6 +58,12 @@ static diminuto_port_t serverport = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int sn = 0;
 
+/*
+ * This thread represents the client who exchanges several requests and
+ * replies with a server over a single IPv4 stream socket. The exact number
+ * of exchanges is passed in as an argument. The thread exits when all of
+ * the exchanges have been performed.
+ */
 static void * client(void * arg /* count */)
 {
     int count = 0;
@@ -93,6 +102,12 @@ static void * client(void * arg /* count */)
     return (void *)(intptr_t)ii;
 }
 
+/*
+ * This thread represents the server that replies to the requests of a 
+ * single client over a IPv4 stream socket that is already connected
+ * to the client. The stream socket is passed in as an argument. The
+ * thread exits when the far end closes the stream socket.
+ */
 static void * server(void * arg /* streamsocket */)
 {
     int streamsocket = -1;
@@ -156,6 +171,13 @@ static void * server(void * arg /* streamsocket */)
     return (void *)(uintptr_t)total;
 }
 
+/*
+ * This thread represents the dispatcher that listens on a IPv4 socket
+ * in the listen state, creates a new stream socket for every connection
+ * request from a client that it accepts, and dispatches a new server
+ * thread to handle the request. The listen socket is passed in as an
+ * argument. The thread exits when it is notified to do so.
+ */
 static void * dispatcher(void * arg /* listensocket */)
 {
     int listensocket = -1;
@@ -222,6 +244,13 @@ static void * dispatcher(void * arg /* listensocket */)
     return (void *)(intptr_t)count;
 }
 
+/*
+ * This process represents the workload for the system, creating and
+ * starting client threads running in parallel to make requests of the
+ * of the server. The number of client threads in concurrent play at
+ * any one time is passed in as an argument. The process exits when
+ * it receives a SIGINT signal.
+ */
 static void workload(int count)
 {
     diminuto_thread_t * clientthreads = (diminuto_thread_t *)0;
@@ -261,6 +290,12 @@ static void workload(int count)
     COMMENT("workload exiting\n");
 }
 
+/*
+ * This process represents the web server instance. It creates the
+ * dispatcher thread. The listen socket is passed in as an argument.
+ * When the instance receives a SIGINT signal, it notifies the dispatcher
+ * to terminate, it joins with the dispatcher, and then exits.
+ */
 static void instance(int listensocket) 
 {
     diminuto_thread_t dispatcherthread;
