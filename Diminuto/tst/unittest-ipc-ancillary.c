@@ -51,7 +51,7 @@
 
 typedef int datum_t;
 
-static const char LOCALPATH[] = "/tmp/unittest-ipc-ancillary.sock";
+static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
 
 static diminuto_ipv4_t serveraddress = 0;
 static diminuto_port_t serverport = 0;
@@ -322,11 +322,23 @@ static void workload(int count)
  */
 static void instance(int listensocket) 
 {
+    diminuto_local_t path;
+    diminuto_local_t nearendpath;
+    int instancesocket = -1;
     diminuto_thread_t dispatcherthread;
     diminuto_mux_t mux;
     void * result = (void *)0;
 
     CHECKPOINT("instance starting\n");
+
+    ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
+    ADVISE(diminuto_ipcl_remove(path) >= 0);
+    ASSERT((instancesocket = diminuto_ipcl_packet_provider(path)) >= 0);
+    ASSERT(diminuto_ipcl_nearend(instancesocket, nearendpath, sizeof(nearendpath)) >= 0);
+    CHECKPOINT("instance %d nearend \"%s\" farend \"%s\"\n", instancesocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+
+    ASSERT(diminuto_ipc_close(instancesocket) >= 0);
+    ASSERT(diminuto_ipcl_remove(path) >= 0);
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
 
