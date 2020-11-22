@@ -87,7 +87,7 @@ static void * client(void * arg /* limit */)
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
     ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-    CHECKPOINT("client %d connected %s:%d with %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, limit);
+    CHECKPOINT("client %d nearend %s:%d farend %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, limit);
 
     for (ii = 0; ii < limit; ++ii) {
 
@@ -242,7 +242,7 @@ static void * dispatcher(void * arg /* listensocket */)
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(listensocket)) >= 0);
         ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
         ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-        CHECKPOINT("dispatcher %d accepted %s:%d with %s:%d with %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, listensocket);
+        CHECKPOINT("dispatcher %d nearend %s:%d farend %s:%d via %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, listensocket);
 
         ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;
@@ -348,7 +348,8 @@ static void instance(int listensocket)
 int main(int argc, char argv[])
 {
     int listensocket = -1;
-    diminuto_ipv4_buffer_t buffer = { '\0', };
+    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
+    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     pid_t workloadpid = -1;
     pid_t instancepid = -1;
     int status = -1;
@@ -365,7 +366,7 @@ int main(int argc, char argv[])
      * us to use.
      */
     ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
-    CHECKPOINT("main %d listening %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport);
+    CHECKPOINT("main %d nearend %s:%d farend %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
 
     ASSERT((instancepid = fork()) >= 0);
     if (instancepid == 0) {
