@@ -68,7 +68,12 @@ static void * client(void * arg /* limit */)
 {
     int limit = 0;
     int streamsocket = -1;
-    diminuto_ipv4_buffer_t buffer = { '\0', };
+    diminuto_ipv4_t nearendaddress = 0;
+    diminuto_port_t nearendport = 0;
+    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
+    diminuto_ipv4_t farendaddress = 0;
+    diminuto_port_t farendport = 0;
+    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     int ii = 0;
     datum_t request = -1;
     datum_t reply = -1;
@@ -80,7 +85,9 @@ static void * client(void * arg /* limit */)
 
     ASSERT(serverport != 0);
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
-    CHECKPOINT("client %d connected %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(serveraddress, buffer, sizeof(buffer)), serverport, limit);
+    ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
+    ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
+    CHECKPOINT("client %d connected %s:%d with %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, limit);
 
     for (ii = 0; ii < limit; ++ii) {
 
@@ -153,7 +160,6 @@ static void * server(void * arg /* streamsocket */)
             COMMENT("server %d read %zd after %d\n", streamsocket, length, count);
 
             if (length == 0) {
-                CHECKPOINT("server %d completed\n", streamsocket);
                 break;
             }
 
@@ -196,10 +202,13 @@ static void * dispatcher(void * arg /* listensocket */)
     diminuto_thread_t serverthread;
     int fd = -1;
     int count = 0;
-    diminuto_ipv4_t address = 0;
-    diminuto_port_t port = 0;
     int streamsocket = -1;;
-    diminuto_ipv4_buffer_t buffer = { '\0', };
+    diminuto_ipv4_t nearendaddress = 0;
+    diminuto_port_t nearendport = 0;
+    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
+    diminuto_ipv4_t farendaddress = 0;
+    diminuto_port_t farendport = 0;
+    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = 0;
 
     ASSERT((listensocket = (intptr_t)arg) >= 0);
@@ -230,9 +239,10 @@ static void * dispatcher(void * arg /* listensocket */)
         ASSERT((fd = diminuto_mux_ready_accept(&mux)) == listensocket);
         count += 1;
 
-        ASSERT((streamsocket = diminuto_ipc4_stream_accept_generic(listensocket, &address, &port)) >= 0);
-
-        CHECKPOINT("dispatcher %d accepted %s:%d on %d\n", listensocket, diminuto_ipc4_address2string(address, buffer, sizeof(buffer)), port, streamsocket);
+        ASSERT((streamsocket = diminuto_ipc4_stream_accept(listensocket)) >= 0);
+        ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
+        ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
+        CHECKPOINT("dispatcher %d accepted %s:%d with %s:%d with %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, listensocket);
 
         ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;

@@ -359,8 +359,10 @@ For my own workflow, I installed the following tools.
 
     sudo apt-get install cscope
     sudo apt-get install git
+    sudo apt-get install net-tools
     sudo apt-get install openssh-server
     sudo apt-get install screen
+    sudo apt-get install valgrind
     sudo apt-get install vim
 
 ## inotifywait
