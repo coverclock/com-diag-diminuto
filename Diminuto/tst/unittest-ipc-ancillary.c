@@ -87,7 +87,7 @@ static void * client(void * arg /* limit */)
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
     ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-    CHECKPOINT("client %d nearend %s:%d farend %s:%d for %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, limit);
+    CHECKPOINT("client %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
     for (ii = 0; ii < limit; ++ii) {
 
@@ -242,7 +242,7 @@ static void * dispatcher(void * arg /* listensocket */)
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(listensocket)) >= 0);
         ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
         ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-        CHECKPOINT("dispatcher %d nearend %s:%d farend %s:%d via %d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport, listensocket);
+        CHECKPOINT("dispatcher %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
         ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;
@@ -283,6 +283,11 @@ static void workload(int count)
     ASSERT(diminuto_interrupter_install(0) >= 0);
 
     for (ii = 0; ii < count; ++ii) {
+        /*
+         * The first client will disconnect without ever doing any
+         * requests because its count will be zero; we want to test
+         * that too.
+         */
         ASSERT(diminuto_thread_init(&clientthreads[ii], client) == &clientthreads[ii]);
         ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
         diminuto_delay(diminuto_frequency()/100, !0);
