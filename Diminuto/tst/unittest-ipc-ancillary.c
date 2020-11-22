@@ -202,7 +202,7 @@ static void * dispatcher(void * arg /* listensocket */)
     diminuto_thread_t serverthread;
     int fd = -1;
     int count = 0;
-    int streamsocket = -1;;
+    int streamsocket = -1;
     diminuto_ipv4_t nearendaddress = 0;
     diminuto_port_t nearendport = 0;
     diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
@@ -322,8 +322,9 @@ static void workload(int count)
  */
 static void instance(int listensocket) 
 {
-    diminuto_local_t path;
-    diminuto_local_t nearendpath;
+    diminuto_local_t path = { '\0', };
+    diminuto_local_t nearendpath = { '\0', };
+    diminuto_local_t farendpath = { '\0', };
     int instancesocket = -1;
     diminuto_thread_t dispatcherthread;
     diminuto_mux_t mux;
@@ -331,20 +332,17 @@ static void instance(int listensocket)
 
     CHECKPOINT("instance starting\n");
 
+    ASSERT(diminuto_interrupter_install(0) >= 0);
+    ASSERT(diminuto_mux_init(&mux) == &mux);
+    ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
+
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
-    ADVISE(diminuto_ipcl_remove(path) >= 0);
-    ASSERT((instancesocket = diminuto_ipcl_packet_provider(path)) >= 0);
+    ASSERT((instancesocket = diminuto_ipcl_packet_consumer(path)) >= 0);
     ASSERT(diminuto_ipcl_nearend(instancesocket, nearendpath, sizeof(nearendpath)) >= 0);
-    CHECKPOINT("instance %d nearend \"%s\" farend \"%s\"\n", instancesocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+    ASSERT(diminuto_ipcl_farend(instancesocket, farendpath, sizeof(farendpath)) >= 0);
+    CHECKPOINT("main %d nearend \"%s\" farend \"%s\"\n", instancesocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
 
     ASSERT(diminuto_ipc_close(instancesocket) >= 0);
-    ASSERT(diminuto_ipcl_remove(path) >= 0);
-
-    ASSERT(diminuto_interrupter_install(0) >= 0);
-
-    ASSERT(diminuto_mux_init(&mux) == &mux);
-
-    ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
     ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)listensocket) == 0);
 
     while (diminuto_interrupter_check() <= 0) {
@@ -367,13 +365,17 @@ int main(int argc, char argv[])
     int listensocket = -1;
     diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
+    diminuto_local_t path = { '\0', };
+    diminuto_local_t nearendpath = { '\0', };
+    diminuto_local_t farendpath = { '\0', };
+    int instancesocket = -1;
+    int activationsocket = -1;
     pid_t workloadpid = -1;
     pid_t instancepid = -1;
     int status = -1;
 
     SETLOGMASK();
 
-    ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
     /*
      * In any real application we would have a fixed port number,
      * probably defined as a service, and would have an address
@@ -382,14 +384,15 @@ int main(int argc, char argv[])
      * and we'll let the IP stack choose an ephemeral port for
      * us to use.
      */
-    ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
-    CHECKPOINT("main %d nearend %s:%d farend %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
 
-    ASSERT((instancepid = fork()) >= 0);
-    if (instancepid == 0) {
-        instance(listensocket);
-        EXIT();
-    }
+    ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
+    ASSERT(diminuto_ipc4_nearend(listensocket, &serveraddress, &serverport) >= 0);
+    CHECKPOINT("listen %d nearend %s:%d farend %s:%d\n", listensocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
+
+    /*
+     * Workload will queue up clients on the listen socket requesting a
+     * connection to a server.
+     */
 
     ASSERT((workloadpid = fork()) >= 0);
     if (workloadpid == 0) {
@@ -399,9 +402,39 @@ int main(int argc, char argv[])
     }
 
     /*
+     * When an instance is ready to get a listen socket on which to
+     * service clients, it will contact us via this UNIX domain (local)
+     * socket. Just like clients will queue up on the listen socket,
+     * instances will queue up on the instance socket.
+     */
+
+    ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
+    ADVISE(diminuto_ipcl_remove(path) >= 0);
+    ASSERT((instancesocket = diminuto_ipcl_packet_provider(path)) >= 0);
+    ASSERT(diminuto_ipcl_nearend(instancesocket, nearendpath, sizeof(nearendpath)) >= 0);
+    CHECKPOINT("instance %d nearend \"%s\" farend \"%s\"\n", instancesocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+
+
+    ASSERT((instancepid = fork()) >= 0);
+    if (instancepid == 0) {
+        instance(listensocket);
+        EXIT();
+    }
+
+    ASSERT((activationsocket = diminuto_ipcl_packet_accept(instancesocket)) >= 0);
+    ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
+    ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
+    CHECKPOINT("activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+
+    /*
      * It is during this delay in which all the work gets done.
      */
+
     diminuto_delay(diminuto_frequency() * 10, !0);
+
+    /*
+     * Tell workload to exit.
+     */
 
     ASSERT(kill(workloadpid, SIGINT) == 0);
     ASSERT(waitpid(workloadpid, &status, 0) == workloadpid);
@@ -409,14 +442,26 @@ int main(int argc, char argv[])
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
+    /*
+     * Tell instance to exit.
+     */
+
     ASSERT(kill(instancepid, SIGINT) == 0);
     ASSERT(waitpid(instancepid, &status, 0) == instancepid);
     CHECKPOINT("main %d instance %d status %d\n", listensocket, instancepid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
-    ASSERT(diminuto_ipc_close(listensocket) >= 0);
+    /*
+     * Clean up.
+     */
+
     CHECKPOINT("main exiting\n");
+
+    ASSERT(diminuto_ipc_close(activationsocket) >= 0);
+    ASSERT(diminuto_ipc_close(instancesocket) >= 0);
+    ASSERT(diminuto_ipcl_remove(path) >= 0);
+    ASSERT(diminuto_ipc_close(listensocket) >= 0);
 
     EXIT();
 }
