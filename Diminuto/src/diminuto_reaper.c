@@ -83,12 +83,12 @@ int diminuto_reaper_check(void)
     return mysignaled;
 }
 
-static pid_t diminuto_reaper_reap_generic(int * statusp, int flag)
+pid_t diminuto_reaper_reap_generic(pid_t pids, int * statusp, int flag)
 {
     pid_t pid = -1;
     int status = -1;
 
-    pid = waitpid(-1, &status, flag);
+    pid = waitpid(pids, &status, flag);
     if ((pid < 0) && (errno == ECHILD)) {
         pid = 0; /* SHould never happen, but does. */
     } else if (pid < 0) {
@@ -106,20 +106,10 @@ static pid_t diminuto_reaper_reap_generic(int * statusp, int flag)
     } else if (statusp == (int *)0) {
         /* Do nothing. */
     } else {
-         *statusp = status;
+        *statusp = status;
     }
 
     return pid;
-}
-
-pid_t diminuto_reaper_reap(int * statusp)
-{
-    return diminuto_reaper_reap_generic(statusp, WNOHANG);
-}
-
-pid_t diminuto_reaper_wait(int * statusp)
-{
-    return diminuto_reaper_reap_generic(statusp, 0);
 }
 
 int diminuto_reaper_install(int restart)

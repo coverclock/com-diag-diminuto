@@ -17,7 +17,7 @@
 * from being infested with zombie processes.
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_types.h" /* For pid_t. */
 #include <sys/wait.h> /* For WIFEXISTED etc. macros. */
 
 /**
@@ -35,24 +35,39 @@ extern int diminuto_reaper_signal(pid_t pid);
 extern int diminuto_reaper_check(void);
 
 /**
+ * Reap the status of a single child that has terminated. A specific PID
+ * can be specified or any child can be reaped. If a child is reaped,
+ * its status is returned. Can be used in a polling or blocking manner.
+ * @param pids specifies the PID of a specific child or -1 for any child.
+ * @param statusp points to a variable into which the status is returned.
+ * @param flag is passed to the waitpid(2) e.g. WNOHANG to poll.
+ * @return PID of the terminated child process, or 0 if none, or <0 if error.
+ */
+extern pid_t diminuto_reaper_reap_generic(pid_t pids, int * statusp, int flag);
+
+/**
  * Return the process identifier, and the qualified exit status in a value
  * result parameter if the parameter is non-null, of a child process, or 0
  * if there is no terminated child process, or <0 if an error occurred.
  * If a PID is not returned, the value result parameter is left unchanged.
- * @param statusp points to a variable into which the
+ * @param statusp points to a variable into which the status is returned.
  * @return the PID of the terminated child process, or 0, or <0.
  */
-extern pid_t diminuto_reaper_reap(int * statusp);
+static inline pid_t diminuto_reaper_reap(int * statusp) {
+    return diminuto_reaper_reap_generic(-1, statusp, WNOHANG);
+}
 
 /**
  * Wait and Return the process identifier, and the qualified exit status
  * in a value result parameter if the parameter is non-null, of a child
  * process, or <0 if an error occurred. If a PID is not returned, the
  * value result parameter is left unchanged.
- * @param statusp points to a variable into which the
+ * @param statusp points to a variable into which the status is returned.
  * @return the PID of the terminated child process, or <0 if an error occurred.
  */
-extern pid_t diminuto_reaper_wait(int * statusp);
+static inline pid_t diminuto_reaper_wait(int * statusp) {
+    return diminuto_reaper_reap_generic(-1, statusp, 0);
+}
 
 /**
  * Install a SIGCHLD signal handler in the caller.
