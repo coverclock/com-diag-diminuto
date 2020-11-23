@@ -36,6 +36,10 @@
  * socket(7) man page
  *
  * sendmsg(2) man page
+ *
+ * recvmsg(2) man page
+ *
+ * cmsg(3) man page
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -50,6 +54,7 @@
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -117,7 +122,7 @@ static void * client(void * arg /* limit */)
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
     ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-    CHECKPOINT("client %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
+    CHECKPOINT("client: stream %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
     for (ii = 0; ii < limit; ++ii) {
 
@@ -127,10 +132,10 @@ static void * client(void * arg /* limit */)
         reply = ~request;
 
         ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request))) == sizeof(request));
-        COMMENT("client %d wrote %zd after %d\n", streamsocket, length, ii);
+        COMMENT("client: stream %d wrote %zd after %d\n", streamsocket, length, ii);
 
         ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply))) == sizeof(reply));
-        COMMENT("client %d read %zd after %d\n", streamsocket, length, ii);
+        COMMENT("client: stream %d read %zd after %d\n", streamsocket, length, ii);
 
         count += 1;
         total += length;
@@ -139,7 +144,7 @@ static void * client(void * arg /* limit */)
 
     }
 
-    CHECKPOINT("client %d finished %zu after %d\n", streamsocket, total, count);
+    CHECKPOINT("client: stream %d finished %zu after %d\n", streamsocket, total, count);
 
     ASSERT(count == limit);
 
@@ -161,7 +166,7 @@ static void workload(int count)
     int ii = 0;
     void * result = (void *)0;
 
-    CHECKPOINT("workload starting\n");
+    CHECKPOINT("workload: starting\n");
 
     ASSERT((clientthreads = (diminuto_thread_t *)calloc(count, sizeof(*clientthreads))) != (diminuto_thread_t *)0);
 
@@ -186,7 +191,7 @@ static void workload(int count)
         }
     }
 
-    CHECKPOINT("workload interrupted\n");
+    CHECKPOINT("workload: interrupted\n");
 
     for (ii = 0; ii < count; ++ii) {
         ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
@@ -194,7 +199,7 @@ static void workload(int count)
         ASSERT(diminuto_thread_fini(&clientthreads[ii]) == (diminuto_thread_t *)0);
     }
 
-    CHECKPOINT("workload exiting\n");
+    CHECKPOINT("workload: exiting\n");
 
     free(clientthreads);
 }
@@ -228,11 +233,12 @@ static void * server(void * arg /* streamsocket */)
 
     ASSERT((streamsocket = (intptr_t)arg) >= 0);
 
+    ASSERT(diminuto_mux_init(&mux) == &mux);
+
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
     ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-    CHECKPOINT("server %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
+    CHECKPOINT("server: stream %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
-    ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_mux_register_read(&mux, streamsocket) >= 0);
 
     while (!0) {
@@ -242,7 +248,7 @@ static void * server(void * arg /* streamsocket */)
         } else if (ready == 0) {
             continue;
         } else if (errno == EINTR) {
-            CHECKPOINT("server %d interrupted\n", streamsocket);
+            CHECKPOINT("server: stream %d interrupted\n", streamsocket);
             break;
         } else {
             FATAL("server: diminuto_mux_wait: error");
@@ -252,7 +258,7 @@ static void * server(void * arg /* streamsocket */)
 
             ASSERT(fd == streamsocket);
             ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &datum, sizeof(datum), sizeof(datum))) >= 0);
-            COMMENT("server %d read %zd after %d\n", streamsocket, length, count);
+            COMMENT("server: stream %d read %zd after %d\n", streamsocket, length, count);
 
             if (length == 0) {
                 break;
@@ -260,7 +266,7 @@ static void * server(void * arg /* streamsocket */)
 
             ASSERT(length == sizeof(datum));
             ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length)) ==  sizeof(datum));
-            COMMENT("server %d wrote %zd after %d\n", streamsocket, length, count);
+            COMMENT("server: stream %d wrote %zd after %d\n", streamsocket, length, count);
 
             count += 1;
             total += length;
@@ -273,7 +279,7 @@ static void * server(void * arg /* streamsocket */)
 
     }
 
-    CHECKPOINT("server %d finished %zu after %d\n", streamsocket, total, count);
+    CHECKPOINT("server: stream %d finished %zu after %d\n", streamsocket, total, count);
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
@@ -295,14 +301,13 @@ static void * dispatcher(void * arg /* requestsocket */)
     int pending = 0;
     int ready = -1;
     diminuto_thread_t serverthread;
-    int fd = -1;
     int count = 0;
     int streamsocket = -1;
     void * result = 0;
 
     ASSERT((requestsocket = (intptr_t)arg) >= 0);
 
-    CHECKPOINT("dispatcher %d starting\n", requestsocket);
+    CHECKPOINT("dispatcher: request %d starting\n", requestsocket);
 
     ASSERT(diminuto_thread_init(&serverthread, server) == &serverthread);
 
@@ -321,13 +326,13 @@ static void * dispatcher(void * arg /* requestsocket */)
         } else if (ready == 0) {
             continue;
         } else if (errno == EINTR) {
-            CHECKPOINT("dispatcher %d interrupted\n", requestsocket);
+            CHECKPOINT("dispatcher: request %d interrupted\n", requestsocket);
             continue;
         } else {
             FATAL("dispatcher: diminuto_mux_wait: error");
         }
 
-        ASSERT((fd = diminuto_mux_ready_accept(&mux)) == requestsocket);
+        ASSERT(diminuto_mux_ready_accept(&mux) == requestsocket);
         count += 1;
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
@@ -336,7 +341,7 @@ static void * dispatcher(void * arg /* requestsocket */)
 
     }
 
-    CHECKPOINT("dispatcher %d notified\n", requestsocket);
+    CHECKPOINT("dispatcher: request %d notified\n", requestsocket);
 
     if (pending) {
         ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
@@ -352,40 +357,78 @@ static void * dispatcher(void * arg /* requestsocket */)
 
 /*
  * This process represents the web server instance. It creates the
- * dispatcher thread. The listen socket is passed in as an argument.
- * When the instance receives a SIGINT signal, it notifies the dispatcher
- * to terminate, it joins with the dispatcher, and then exits.
+ * dispatcher thread. The listen socket is passed via a UNIX domain
+ * (local) socket using a control message. When the instance receives
+ * a SIGINT signal, it notifies the dispatcher to terminate, it
+ * joins with the dispatcher, and then exits.
  */
-static void instance(int requestsocket) 
+static void instance(void) 
 {
+    diminuto_mux_t mux;
+    diminuto_thread_t dispatcherthread;
+    int activationsocket = -1;
     diminuto_local_t path = { '\0', };
     diminuto_local_t nearendpath = { '\0', };
     diminuto_local_t farendpath = { '\0', };
-    int instancesocket = -1;
-    diminuto_thread_t dispatcherthread;
-    diminuto_mux_t mux;
+    char dummy[1] = { '\0' };
+    struct iovec vector[1];
+    struct msghdr message;
+    union { struct cmsghdr alignment; char data[CMSG_SPACE(sizeof(int))]; } control;
+    struct cmsghdr * cp = (struct cmsghdr *)0;
+    ssize_t length = -1;
+    int requestsocket = -1;
+    diminuto_ipv4_t nearendaddress = 0;
+    diminuto_port_t nearendport = 0;
+    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
+    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = (void *)0;
 
-    CHECKPOINT("instance starting\n");
+    CHECKPOINT("instance: starting\n");
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
     ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
 
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
-    ASSERT((instancesocket = diminuto_ipcl_packet_consumer(path)) >= 0);
-    ASSERT(diminuto_ipcl_nearend(instancesocket, nearendpath, sizeof(nearendpath)) >= 0);
-    ASSERT(diminuto_ipcl_farend(instancesocket, farendpath, sizeof(farendpath)) >= 0);
-    CHECKPOINT("instance %d nearend \"%s\" farend \"%s\"\n", instancesocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+    ASSERT((activationsocket = diminuto_ipcl_packet_consumer(path)) >= 0);
+    ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
+    ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
+    CHECKPOINT("instance: activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
 
-    ASSERT(diminuto_ipc_close(instancesocket) >= 0);
+    memset(&message, 0, sizeof(message));
+    memset(&control, 0, sizeof(control));
+
+    vector[0].iov_base = dummy; /* You have to receive at least one byte of payload. */
+    vector[0].iov_len = sizeof(dummy);
+
+    message.msg_iov = vector;
+    message.msg_iovlen = countof(vector);
+
+    message.msg_control = &control;
+    message.msg_controllen = sizeof(control);
+
+    ASSERT((length = diminuto_ipcl_packet_receive(activationsocket, &message)) == 1);
+
+    for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
+        if (cp->cmsg_level != SOL_SOCKET) { continue; }
+        if (cp->cmsg_type != SCM_RIGHTS) { continue; }
+        if (cp->cmsg_len != CMSG_LEN(sizeof(requestsocket))) { continue; }
+        memcpy(&requestsocket, CMSG_DATA(cp), sizeof(requestsocket));
+    }
+
+    ASSERT(requestsocket >= 0);
+    ASSERT(diminuto_ipc4_nearend(requestsocket, &nearendaddress, &nearendport) >= 0);
+    CHECKPOINT("instance: request %d nearend %s:%d farend %s:%d\n", requestsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
+
+    ASSERT(diminuto_ipc_close(activationsocket) >= 0);
+
     ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)requestsocket) == 0);
 
     while (diminuto_interrupter_check() <= 0) {
         diminuto_mux_wait(&mux, -1);
     }
 
-    CHECKPOINT("instance %d interrupted\n", requestsocket);
+    CHECKPOINT("instance: request %d interrupted\n", requestsocket);
 
     ASSERT(diminuto_thread_notify(&dispatcherthread) == 0);
     ASSERT(diminuto_thread_join(&dispatcherthread, &result) == 0);
@@ -393,7 +436,7 @@ static void instance(int requestsocket)
 
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
-    CHECKPOINT("instance %d exiting\n", requestsocket);
+    CHECKPOINT("instance: request %d exiting\n", requestsocket);
 }
 
 /*******************************************************************************
@@ -412,11 +455,20 @@ int main(int argc, char argv[])
     int activationsocket = -1;
     pid_t workloadpid = -1;
     pid_t instancepid = -1;
+    diminuto_mux_t mux;
+    int ready = -1;
+    char dummy[1] = { '\0' };
+    struct iovec vector[1];
+    struct msghdr message;
+    union { struct cmsghdr alignment; char data[CMSG_SPACE(sizeof(int))]; } control;
+    struct cmsghdr * cp = (struct cmsghdr *)0;
     int status = -1;
 
-    CHECKPOINT("main starting\n");
+    CHECKPOINT("main: starting\n");
 
     SETLOGMASK();
+
+    ASSERT(diminuto_mux_init(&mux) == &mux);
 
     /*
      * In any real application we would have a fixed port number,
@@ -429,7 +481,7 @@ int main(int argc, char argv[])
 
     ASSERT((requestsocket = diminuto_ipc4_stream_provider(0)) >= 0);
     ASSERT(diminuto_ipc4_nearend(requestsocket, &serveraddress, &serverport) >= 0);
-    CHECKPOINT("listen %d nearend %s:%d farend %s:%d\n", requestsocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
+    CHECKPOINT("main: request %d nearend %s:%d farend %s:%d\n", requestsocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
 
     /*
      * Workload will queue up clients on the listen socket requesting a
@@ -454,18 +506,78 @@ int main(int argc, char argv[])
     ADVISE(diminuto_ipcl_remove(path) >= 0);
     ASSERT((localsocket = diminuto_ipcl_packet_provider(path)) >= 0);
     ASSERT(diminuto_ipcl_nearend(localsocket, nearendpath, sizeof(nearendpath)) >= 0);
-    CHECKPOINT("local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+    CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+
+    ASSERT(diminuto_mux_register_accept(&mux, localsocket) >= 0);
 
     ASSERT((instancepid = fork()) >= 0);
     if (instancepid == 0) {
-        instance(requestsocket);
+        (void)diminuto_ipc_close(requestsocket);
+        requestsocket = -1;
+        (void)diminuto_ipc_close(localsocket);
+        localsocket = -1;
+        instance();
         EXIT();
     }
 
-    ASSERT((activationsocket = diminuto_ipcl_packet_accept(localsocket)) >= 0);
-    ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
-    ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
-    CHECKPOINT("activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+    while (!0) {
+
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
+            /* Do nothing. */
+        } else if (ready == 0) {
+            continue;
+        } else if (errno == EINTR) {
+            CHECKPOINT("main: local %d interrupted\n", localsocket);
+            break;
+        } else {
+            FATAL("main: diminuto_mux_wait: error");
+        }
+
+        ASSERT(diminuto_mux_ready_accept(&mux) == localsocket);
+
+        ASSERT((activationsocket = diminuto_ipcl_packet_accept(localsocket)) >= 0);
+        ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
+        ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
+        CHECKPOINT("main: activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+
+        /*
+         * Yeah, this is crazy: we're going to transfer an open file
+         * descriptor - in this case, our listen socket, to another
+         * process. It will be received on the far end and processed
+         * as if the receiver had done a dup(2) on our socket.
+         */
+
+        memset(&message, 0, sizeof(message));
+        memset(&control, 0, sizeof(control));
+
+        vector[0].iov_base = dummy; /* You have to send at least one byte of payload. */
+        vector[0].iov_len = sizeof(dummy);
+
+        message.msg_iov = vector;
+        message.msg_iovlen = countof(vector);
+
+        message.msg_control = &control;
+        message.msg_controllen = sizeof(control);
+
+        cp = CMSG_FIRSTHDR(&message);
+        cp->cmsg_level = SOL_SOCKET;
+        cp->cmsg_type = SCM_RIGHTS;
+        cp->cmsg_len = CMSG_LEN(sizeof(requestsocket));
+        memcpy(CMSG_DATA(cp), &requestsocket, sizeof(requestsocket));
+
+        ASSERT(diminuto_ipcl_packet_send(activationsocket, &message) > 0);
+
+        ASSERT(diminuto_ipc_close(activationsocket) >= 0);
+
+        /*
+         * In real life we would do this in a loop, passing the
+         * listen socket to a new instance process every time the
+         * prior one exited. 
+         */
+
+        break;
+
+    }
 
     /*
      * It is during this delay in which all the work gets done.
@@ -499,8 +611,8 @@ int main(int argc, char argv[])
 
     CHECKPOINT("main exiting\n");
 
-    ASSERT(diminuto_ipc_close(activationsocket) >= 0);
-    ASSERT(diminuto_ipc_close(localsocket) >= 0);
+    ASSERT(diminuto_mux_close(&mux, localsocket) >= 0);
+    ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
     ASSERT(diminuto_ipcl_remove(path) >= 0);
     ASSERT(diminuto_ipc_close(requestsocket) >= 0);
 
