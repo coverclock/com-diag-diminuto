@@ -99,7 +99,9 @@ typedef struct ThreadPool {
 
 static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
 
-static const int CONSUMERS = 10;
+static const unsigned int DURATION = 10;
+
+static const unsigned int FRACTION = 10;
 
 /*******************************************************************************
  * GLOBALS
@@ -107,15 +109,6 @@ static const int CONSUMERS = 10;
 
 static diminuto_ipv4_t serveraddress = 0;
 static diminuto_port_t serverport = 0;
-
-static thread_node_t provider[10];
-static thread_pool_t providers;
-
-static thread_node_t consumer[10];
-static thread_pool_t consumers;
-
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static int sn = 0;
 
 /*******************************************************************************
  * HELPERS
@@ -128,7 +121,7 @@ static void init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thr
     ASSERT(diminuto_condition_init(&(pp->condition)) == &(pp->condition));
     ASSERT(diminuto_list_nullinit(&(pp->head)) == &(pp->head));
     for (ii = 0; ii < nn; ++ii) {
-        ASSERT(diminuto_list_datainit(&na[ii].link, &na[ii].thread) == &na[ii].link);
+        ASSERT(diminuto_list_nullinit(&na[ii].link) == &na[ii].link);
         ASSERT(diminuto_list_enqueue(&(pp->head), &na[ii].link) == &na[ii].link);
         ASSERT(diminuto_thread_init(&na[ii].thread, fp) == &na[ii].thread);
     }
@@ -144,8 +137,8 @@ static thread_node_t * get(thread_pool_t * pp)
             ASSERT(diminuto_condition_wait(&(pp->condition)) == 0);
         }
         ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
-        ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
     DIMINUTO_CONDITION_END;
+    ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
 
     return np;
 }
@@ -169,16 +162,22 @@ static void fini(thread_pool_t * pp, size_t nn)
 
     for (ii = 0; ii < nn; ++ii) {
         np = get(pp);
-        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+        if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), (void **)0) == 0);
-            ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
         }
+        ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
     }
 }
 
 /*******************************************************************************
  * SIMULATED SERVICE CONSUMERS
  ******************************************************************************/
+
+static thread_node_t consumer[10];
+static thread_pool_t consumers;
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static int sn = 0;
 
 /*
  * This thread represents the client who exchanges several requests and
@@ -263,14 +262,14 @@ static void workload(void)
 
         np = get(&consumers);
 
-        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+        if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
-            ASSERT((intptr_t)result == (consumer - np));
+            ASSERT((intptr_t)result == (np - consumer));
         }
 
-        diminuto_delay(diminuto_frequency()/10, 0);
+        diminuto_delay(diminuto_frequency() / FRACTION, 0);
 
-        ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)(consumer - np)) == 0);
+        ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)(np - consumer)) == 0);
 
     }
 
@@ -284,6 +283,9 @@ static void workload(void)
 /*******************************************************************************
  * SIMULATED SERVICE PROVIDER
  ******************************************************************************/
+
+static thread_node_t provider[10];
+static thread_pool_t providers;
 
 /*
  * This thread represents the server that replies to the requests of a 
@@ -413,7 +415,7 @@ static void * dispatcher(void * arg /* requestsocket */)
 
         np = get(&providers);
 
-        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+        if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
         }
 
@@ -421,7 +423,7 @@ static void * dispatcher(void * arg /* requestsocket */)
 
     }
 
-    CHECKPOINT("dispatcher: request %d notified\n", requestsocket);
+    CHECKPOINT("dispatcher: request %d notified %d\n", requestsocket, count);
 
     fini(&providers, countof(provider));
 
@@ -671,7 +673,7 @@ int main(int argc, char argv[])
      * It is during this delay in which all the work gets done.
      */
 
-    diminuto_delay(diminuto_frequency() * 10, !0);
+    diminuto_delay(diminuto_frequency() * DURATION, !0);
     ASSERT(diminuto_reaper_check() == 0);
 
     /*
