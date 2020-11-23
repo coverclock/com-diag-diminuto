@@ -18,6 +18,16 @@
  * Test (a.k.a. gtest). Also, developers I know and trust have made good
  * use of CxxUnit, CppUnit, and CxxUnitLite. If you are using Java,
  * go directly to JUnit.
+ *
+ * COMMENT logs at the DEBUG level.
+ *
+ * CHECKPOINT logs at the INFORMATION level.
+ *
+ * TEST, ADVISE, STATUS, and EXIT log at the NOTICE level.
+ *
+ * FAILURE and EXPECT log at the WARNING level.
+ *
+ * FATAL, PANIC, and ASSERT log at the ERROR level.
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
@@ -140,9 +150,10 @@ extern int diminuto_unittest_errno;
  */
 #define FATAL(...) \
     do { \
+        diminuto_unittest_errno = errno; \
         ++diminuto_unittest_errors; \
         ++diminuto_unittest_total; \
-        DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "FATAL: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "FATAL: test=%d errors=%d total=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, "FAILURE!"); \
         fflush(stdout); \
         fflush(stderr); \
         exit(diminuto_unittest_total > 255 ? 255 : diminuto_unittest_total); \
@@ -155,9 +166,10 @@ extern int diminuto_unittest_errno;
  */
 #define PANIC(...) \
     do { \
+        diminuto_unittest_errno = errno; \
         ++diminuto_unittest_errors; \
         ++diminuto_unittest_total; \
-        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "PANIC: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "PANIC: test=%d errors=%d total=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, "PANIC!"); \
         fflush(stdout); \
         fflush(stderr); \
         diminuto_core_enable(); \
