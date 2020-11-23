@@ -52,18 +52,20 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_ipc4.h"
-#include "com/diag/diminuto/diminuto_ipcl.h"
-#include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_thread.h"
+#include "com/diag/diminuto/diminuto_containerof.h"
+#include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
-#include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
+#include "com/diag/diminuto/diminuto_ipcl.h"
+#include "com/diag/diminuto/diminuto_list.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_reaper.h"
+#include "com/diag/diminuto/diminuto_thread.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -81,12 +83,22 @@
 
 typedef int datum_t;
 
+typedef struct ThreadNode {
+    diminuto_list_t link;
+    diminuto_thread_t thread;
+} thread_node_t;
+
+typedef struct ThreadPool {
+    diminuto_condition_t condition;
+    diminuto_list_t head;
+} thread_pool_t;
+
 /*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
 static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
-static const int PROVIDERS = 10;
+
 static const int CONSUMERS = 10;
 
 /*******************************************************************************
@@ -95,11 +107,49 @@ static const int CONSUMERS = 10;
 
 static diminuto_ipv4_t serveraddress = 0;
 static diminuto_port_t serverport = 0;
+
+static thread_node_t provider[10];
+static thread_pool_t providers;
+
+static thread_node_t consumer[10];
+static thread_pool_t consumers;
+
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int sn = 0;
 
 /*******************************************************************************
- * SIMULATED WORKLOAD
+ * HELPERS
+ ******************************************************************************/
+
+static thread_node_t * get(thread_pool_t * pp)
+{
+    diminuto_list_t * lp = (diminuto_list_t *)0;
+    thread_node_t * np = (thread_node_t *)0;
+
+    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
+        while (diminuto_list_isempty(&(pp->head))) {
+            ASSERT(diminuto_condition_wait(&(pp->condition)) == 0);
+        }
+        ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
+        ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
+    DIMINUTO_CONDITION_END;
+
+    return np;
+}
+
+static void put(thread_pool_t * pp) {
+    diminuto_thread_t * tp = (diminuto_thread_t *)0;
+    thread_node_t * np = (thread_node_t *)0;
+
+    ASSERT((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0);
+    ASSERT((np = diminuto_containerof(thread_node_t, thread, tp)) != (thread_node_t *)0);
+    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
+        ASSERT(diminuto_list_enqueue(&(pp->head), &(np->link)) == &(np->link));
+    DIMINUTO_CONDITION_END;
+}
+
+/*******************************************************************************
+ * SIMULATED SERVICE CONSUMERS
  ******************************************************************************/
 
 /*
@@ -159,58 +209,61 @@ static void * client(void * arg /* limit */)
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
 
+    put(&consumers);
+
     return (void *)(intptr_t)ii;
 }
 
 /*
  * This process represents the workload for the system, creating and
  * starting client threads running in parallel to make requests of the
- * of the server. The number of client threads in concurrent play at
- * any one time is passed in as an argument. The process exits when
- * it receives a SIGINT signal.
+ * of the server. The process exits when it receives a SIGINT signal.
  */
-static void workload(int count)
+static void workload(void)
 {
-    diminuto_thread_t * clientthreads = (diminuto_thread_t *)0;
     int ii = 0;
+    thread_node_t * np = (thread_node_t *)0;
     void * result = (void *)0;
 
     CHECKPOINT("workload: starting\n");
 
-    ASSERT((clientthreads = (diminuto_thread_t *)calloc(count, sizeof(*clientthreads))) != (diminuto_thread_t *)0);
-
     ASSERT(diminuto_interrupter_install(0) >= 0);
 
-    for (ii = 0; ii < count; ++ii) {
-        /*
-         * The first client will disconnect without ever doing any
-         * requests because its count will be zero; we want to test
-         * that too.
-         */
-        ASSERT(diminuto_thread_init(&clientthreads[ii], client) == &clientthreads[ii]);
-        ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
-        diminuto_delay(diminuto_frequency()/100, !0);
+    ASSERT(diminuto_condition_init(&consumers.condition) == &consumers.condition);
+    ASSERT(diminuto_list_nullinit(&consumers.head) == &consumers.head);
+    for (ii = 0; ii < countof(consumer); ++ii) {
+        ASSERT(diminuto_thread_init(&consumer[ii].thread, client) == &consumer[ii].thread);
+        ASSERT(diminuto_list_datainit(&consumer[ii].link, &consumer[ii].thread) == &consumer[ii].link);
+        ASSERT(diminuto_list_enqueue(&consumers.head, &consumer[ii].link) == &consumer[ii].link);
     }
 
     while (diminuto_interrupter_check() <= 0) {
-        for (ii = 0; ii < count; ++ii) {
-            ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
-            ASSERT((intptr_t)result == ii);
-            ASSERT(diminuto_thread_start(&clientthreads[ii], (void *)(intptr_t)ii) == 0);
+
+        np = get(&consumers);
+
+        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+            ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+            ASSERT((intptr_t)result == (consumer - np));
         }
+
+        diminuto_delay(diminuto_frequency()/10, 0);
+
+        ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)(consumer - np)) == 0);
+
     }
 
     CHECKPOINT("workload: interrupted\n");
 
-    for (ii = 0; ii < count; ++ii) {
-        ASSERT(diminuto_thread_join(&clientthreads[ii], &result) == 0);
-        ASSERT((intptr_t)result == ii);
-        ASSERT(diminuto_thread_fini(&clientthreads[ii]) == (diminuto_thread_t *)0);
+    for (ii = 0; ii < countof(consumer); ++ii) {
+        np = get(&consumers);
+        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+            ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+            ASSERT((intptr_t)result == (consumer - np));
+            ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
+        }
     }
 
     CHECKPOINT("workload: exiting\n");
-
-    free(clientthreads);
 }
 
 /*******************************************************************************
@@ -293,6 +346,8 @@ static void * server(void * arg /* streamsocket */)
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
+    put(&providers);
+
     return (void *)(uintptr_t)total;
 }
 
@@ -306,10 +361,10 @@ static void * server(void * arg /* streamsocket */)
 static void * dispatcher(void * arg /* requestsocket */)
 {
     int requestsocket = -1;
+    int ii = -1;
     diminuto_mux_t mux;
-    int pending = 0;
     int ready = -1;
-    diminuto_thread_t serverthread;
+    thread_node_t * np = (thread_node_t *)0;
     int count = 0;
     int streamsocket = -1;
     void * result = 0;
@@ -318,17 +373,18 @@ static void * dispatcher(void * arg /* requestsocket */)
 
     CHECKPOINT("dispatcher: request %d starting\n", requestsocket);
 
-    ASSERT(diminuto_thread_init(&serverthread, server) == &serverthread);
-
     ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_mux_register_accept(&mux, requestsocket) >= 0);
 
-    while (diminuto_thread_notifications() == 0) {
+    ASSERT(diminuto_condition_init(&providers.condition) == &providers.condition);
+    ASSERT(diminuto_list_nullinit(&providers.head) == &providers.head);
+    for (ii = 0; ii < countof(provider); ++ii) {
+        ASSERT(diminuto_thread_init(&provider[ii].thread, server) == &provider[ii].thread);
+        ASSERT(diminuto_list_datainit(&provider[ii].link, &provider[ii].thread) == &provider[ii].link);
+        ASSERT(diminuto_list_enqueue(&providers.head, &provider[ii].link) == &provider[ii].link);
+    }
 
-        if (pending) {
-            ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
-            pending = 0;
-        }
+    while (diminuto_thread_notifications() == 0) {
 
         if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
             /* Do nothing. */
@@ -345,21 +401,29 @@ static void * dispatcher(void * arg /* requestsocket */)
         count += 1;
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
-        ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
-        pending = !0;
+
+        np = get(&providers);
+
+        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+            ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+        }
+
+        ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)streamsocket) == 0);
 
     }
 
     CHECKPOINT("dispatcher: request %d notified\n", requestsocket);
 
-    if (pending) {
-        ASSERT(diminuto_thread_join(&serverthread, &result) == 0);
+    for (ii = 0; ii < countof(provider); ++ii) {
+        np = get(&providers);
+        if (diminuto_thread_state(&(np->thread)) == DIMINUTO_THREAD_STATE_COMPLETING) {
+            ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+        }
+        ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
     }
 
     ASSERT(diminuto_mux_unregister_accept(&mux, requestsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
-
-    ASSERT(diminuto_thread_fini(&serverthread) == (diminuto_thread_t *)0);
 
     return (void *)(intptr_t)count;
 }
@@ -504,7 +568,7 @@ int main(int argc, char argv[])
     ASSERT((workloadpid = fork()) >= 0);
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
-        workload(CONSUMERS);
+        workload();
         EXIT();
     }
 
