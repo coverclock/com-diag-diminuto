@@ -20,7 +20,14 @@
  * is to verify that the complete range of ephemeral port numbers,
  * [32768..60999] on my development machine, are being used, and
  * reused. Even though ephemeral ports are being recycled, I have
- * seen this code fail because of port exaustion.
+ * seen this code occasionally fail because of port exaustion with the
+ * errno EADDRINUSE from bind(2):
+ *
+ * diminuto_ipc4_source: bind: "Address already in use" (98)
+ *
+ * My only working hypothesis at the moment is the recycling of ephemeral
+ * port numbers in the kernel is asynchronous with some latency
+ * (presumably on the close) and sometimes we can get ahead of it.
  *
  * Set the environmental variable COM_DIAG_DIMINUTO_LOG_MASK to the
  * value "0xfe" to dial down the log output; or set it to the value
@@ -407,7 +414,7 @@ static void instance(void)
     message.msg_control = &control;
     message.msg_controllen = sizeof(control);
 
-    ASSERT((length = diminuto_ipcl_packet_receive(activationsocket, &message)) == 1);
+    ASSERT((length = diminuto_ipcl_packet_receive(activationsocket, &message)) == sizeof(dummy));
 
     for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
         if (cp->cmsg_level != SOL_SOCKET) { continue; }
@@ -550,7 +557,15 @@ int main(int argc, char argv[])
         memset(&message, 0, sizeof(message));
         memset(&control, 0, sizeof(control));
 
-        vector[0].iov_base = dummy; /* You have to send at least one byte of payload. */
+        /*
+         * We have to send at least one byte of payload. Both the
+         * sendmsg(2) and recvmsg(2) will reflect this by returning
+         * the value 1 nominally, even though a bunch of other stuff
+         * is passed into the kernel and back out the other end of
+         * the Local socket with some processing in between.
+         */
+
+        vector[0].iov_base = dummy;
         vector[0].iov_len = sizeof(dummy);
 
         message.msg_iov = vector;
@@ -565,7 +580,7 @@ int main(int argc, char argv[])
         cp->cmsg_len = CMSG_LEN(sizeof(requestsocket));
         memcpy(CMSG_DATA(cp), &requestsocket, sizeof(requestsocket));
 
-        ASSERT(diminuto_ipcl_packet_send(activationsocket, &message) > 0);
+        ASSERT(diminuto_ipcl_packet_send(activationsocket, &message) == sizeof(dummy));
 
         ASSERT(diminuto_ipc_close(activationsocket) >= 0);
 
