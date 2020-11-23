@@ -28,6 +28,8 @@
  * My only working hypothesis at the moment is the recycling of ephemeral
  * port numbers in the kernel is asynchronous with some latency
  * (presumably on the close) and sometimes we can get ahead of it.
+ * Note that by default the sockets all have the REUSE ADDRESS option
+ * set by the underlying Diminuto library code.
  *
  * Set the environmental variable COM_DIAG_DIMINUTO_LOG_MASK to the
  * value "0xfe" to dial down the log output; or set it to the value
@@ -61,7 +63,7 @@
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_countof.h"
-#include "com/diag/diminuto/diminuto_dump.h"
+#include "com/diag/diminuto/diminuto_reaper.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -393,7 +395,9 @@ static void instance(void)
     CHECKPOINT("instance: starting\n");
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
+
     ASSERT(diminuto_mux_init(&mux) == &mux);
+
     ASSERT(diminuto_thread_init(&dispatcherthread, dispatcher) == &dispatcherthread);
 
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
@@ -474,6 +478,8 @@ int main(int argc, char argv[])
     CHECKPOINT("main: starting\n");
 
     SETLOGMASK();
+
+    ASSERT(diminuto_reaper_install(0) >= 0);
 
     ASSERT(diminuto_mux_init(&mux) == &mux);
 
@@ -599,13 +605,14 @@ int main(int argc, char argv[])
      */
 
     diminuto_delay(diminuto_frequency() * 10, !0);
+    ASSERT(diminuto_reaper_check() == 0);
 
     /*
      * Tell workload to exit.
      */
 
     ASSERT(kill(workloadpid, SIGINT) == 0);
-    ASSERT(waitpid(workloadpid, &status, 0) == workloadpid);
+    ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
     CHECKPOINT("main %d workload %d status %d\n", requestsocket, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
@@ -615,7 +622,7 @@ int main(int argc, char argv[])
      */
 
     ASSERT(kill(instancepid, SIGINT) == 0);
-    ASSERT(waitpid(instancepid, &status, 0) == instancepid);
+    ASSERT(diminuto_reaper_reap_generic(instancepid, &status, 0) == instancepid);
     CHECKPOINT("main %d instance %d status %d\n", requestsocket, instancepid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
