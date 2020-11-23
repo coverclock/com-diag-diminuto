@@ -613,7 +613,7 @@ int main(int argc, char argv[])
 
     ASSERT(kill(workloadpid, SIGINT) == 0);
     ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
-    CHECKPOINT("main %d workload %d status %d\n", requestsocket, workloadpid, status);
+    CHECKPOINT("main: request %d workload %d status %d\n", requestsocket, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
@@ -623,7 +623,7 @@ int main(int argc, char argv[])
 
     ASSERT(kill(instancepid, SIGINT) == 0);
     ASSERT(diminuto_reaper_reap_generic(instancepid, &status, 0) == instancepid);
-    CHECKPOINT("main %d instance %d status %d\n", requestsocket, instancepid, status);
+    CHECKPOINT("main: request %d instance %d status %d\n", requestsocket, instancepid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
@@ -631,7 +631,7 @@ int main(int argc, char argv[])
      * Clean up.
      */
 
-    CHECKPOINT("main exiting\n");
+    CHECKPOINT("main: request %d exiting\n", requestsocket);
 
     ASSERT(diminuto_mux_close(&mux, localsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
