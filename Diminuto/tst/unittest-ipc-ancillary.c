@@ -72,6 +72,8 @@ typedef int datum_t;
  ******************************************************************************/
 
 static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
+static const int PROVIDERS = 10;
+static const int CONSUMERS = 10;
 
 /*******************************************************************************
  * GLOBALS
@@ -210,6 +212,12 @@ static void workload(int count)
 static void * server(void * arg /* streamsocket */)
 {
     int streamsocket = -1;
+    diminuto_ipv4_t nearendaddress = 0;
+    diminuto_port_t nearendport = 0;
+    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
+    diminuto_ipv4_t farendaddress = 0;
+    diminuto_port_t farendport = 0;
+    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     diminuto_mux_t mux;
     int ready = 0;
     int fd = -1;
@@ -219,6 +227,10 @@ static void * server(void * arg /* streamsocket */)
     size_t total = 0;
 
     ASSERT((streamsocket = (intptr_t)arg) >= 0);
+
+    ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
+    ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
+    CHECKPOINT("server %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
     ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_mux_register_read(&mux, streamsocket) >= 0);
@@ -286,12 +298,6 @@ static void * dispatcher(void * arg /* requestsocket */)
     int fd = -1;
     int count = 0;
     int streamsocket = -1;
-    diminuto_ipv4_t nearendaddress = 0;
-    diminuto_port_t nearendport = 0;
-    diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
-    diminuto_ipv4_t farendaddress = 0;
-    diminuto_port_t farendport = 0;
-    diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = 0;
 
     ASSERT((requestsocket = (intptr_t)arg) >= 0);
@@ -325,10 +331,6 @@ static void * dispatcher(void * arg /* requestsocket */)
         count += 1;
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
-        ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
-        ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
-        CHECKPOINT("dispatcher %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
-
         ASSERT(diminuto_thread_start(&serverthread, (void *)(intptr_t)streamsocket) == 0);
         pending = !0;
 
@@ -437,7 +439,7 @@ int main(int argc, char argv[])
     ASSERT((workloadpid = fork()) >= 0);
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
-        workload(10);
+        workload(CONSUMERS);
         EXIT();
     }
 
