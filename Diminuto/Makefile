@@ -29,9 +29,9 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	68# API changes that may require that applications be modified.
-MINOR				:=	3# Only functionality or features added with no legacy API changes.
-BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
+MAJOR				:=	69# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -902,10 +902,15 @@ install-include:
 
 ########## Sanity
 
-.PHONY: cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers
+.PHONY: cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers unittest vintage
 
-sanity:
+vintage:
 	vintage
+
+unittest:	vintage
+	unittest-unittest
+
+sanity:	unittest
 	unittest-absolute
 	unittest-arraytype
 	unittest-assert && false || true
@@ -975,7 +980,6 @@ sanity:
 	unittest-time-zone
 	unittest-tree
 	unittest-uninterruptible
-	unittest-unittest
 	unittest-well
 	unittest-widthof
 

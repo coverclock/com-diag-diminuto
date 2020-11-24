@@ -12,8 +12,9 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 
+pthread_mutex_t diminuto_unittest_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int diminuto_unittest_test = -1;
 int diminuto_unittest_tests = 0;
 int diminuto_unittest_errors = 0;
 int diminuto_unittest_total = 0;
-int diminuto_unittest_errno = 0;

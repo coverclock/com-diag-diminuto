@@ -162,8 +162,16 @@ static void fini(thread_pool_t * pp, size_t nn)
 
     for (ii = 0; ii < nn; ++ii) {
         np = get(pp);
-        if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
+fprintf(stderr, "FINI %p %zu %zu %p\n", pp, nn, ii, np);
+        switch (diminuto_thread_state(&(np->thread))) {
+        case DIMINUTO_THREAD_STATE_STARTED:
+        case DIMINUTO_THREAD_STATE_RUNNING:
+        case DIMINUTO_THREAD_STATE_COMPLETING:
             ASSERT(diminuto_thread_join(&(np->thread), (void **)0) == 0);
+            break;
+        default:
+            /* Do nothing. */
+            break;
         }
         ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
     }

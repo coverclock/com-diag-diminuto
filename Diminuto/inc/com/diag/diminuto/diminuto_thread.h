@@ -176,7 +176,9 @@ extern int diminuto_thread_yield();
 extern unsigned int diminuto_thread_notifications(void);
 
 /**
- * Cause the calling thread to exit.
+ * Cause the calling thread to exit. This sets the Thread object
+ * state appropriately before calling the native POSIX thread exit
+ * function.
  * @param vp is the final value of the calling thread.
  */
 extern void diminuto_thread_exit(void * vp);
