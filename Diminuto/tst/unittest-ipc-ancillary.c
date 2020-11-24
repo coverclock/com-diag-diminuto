@@ -326,6 +326,7 @@ static void workload(void)
     thread_pool_fini(&consumers, countof(consumer));
 
     CHECKPOINT("workload: consuming %d\n", consumings);
+    ADVISE(consumings == countof(consumer));
 
     CHECKPOINT("workload: exiting\n");
 }
@@ -486,6 +487,7 @@ static void * dispatcher(void * arg /* requestsocket */)
     thread_pool_fini(&providers, countof(provider));
 
     CHECKPOINT("dispatcher: providing %d\n", providings);
+    ADVISE(providings == countof(provider));
 
     ASSERT(diminuto_mux_unregister_accept(&mux, requestsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
