@@ -210,6 +210,10 @@ static thread_pool_t consumers;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static int sn = 0;
+static int consuming = 0;
+static int consumings = 0;
+static int providing = 0;
+static int providings = 0;
 
 /*
  * This thread represents the client who exchanges several requests and
@@ -235,6 +239,10 @@ static void * client(void * arg /* limit */)
     size_t total = 0;
 
     limit = (int)(intptr_t)arg;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        if ((++consuming) > consumings) { consumings = consuming; }
+    DIMINUTO_CRITICAL_SECTION_END;
 
     ASSERT(serverport != 0);
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
@@ -268,6 +276,10 @@ static void * client(void * arg /* limit */)
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
 
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        --consuming;
+    DIMINUTO_CRITICAL_SECTION_END;
+
     thread_node_put(&consumers);
 
     return (void *)(intptr_t)ii;
@@ -299,15 +311,17 @@ static void workload(void)
             ASSERT((intptr_t)result == (np - consumer));
         }
 
-        diminuto_delay(diminuto_frequency() / FRACTION, 0);
-
         ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)(np - consumer)) == 0);
+
+        ASSERT(diminuto_thread_yield() == 0);
 
     }
 
     CHECKPOINT("workload: interrupted\n");
 
     thread_pool_fini(&consumers, countof(consumer));
+
+    CHECKPOINT("workload: consuming %d\n", consumings);
 
     CHECKPOINT("workload: exiting\n");
 }
@@ -343,6 +357,10 @@ static void * server(void * arg /* streamsocket */)
     size_t total = 0;
 
     ASSERT((streamsocket = (intptr_t)arg) >= 0);
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        if ((++providing) > providings) { providings = providing; }
+    DIMINUTO_CRITICAL_SECTION_END;
 
     ASSERT(diminuto_mux_init(&mux) == &mux);
 
@@ -394,6 +412,10 @@ static void * server(void * arg /* streamsocket */)
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        --providing;
+    DIMINUTO_CRITICAL_SECTION_END;
 
     thread_node_put(&providers);
 
@@ -458,6 +480,8 @@ static void * dispatcher(void * arg /* requestsocket */)
     CHECKPOINT("dispatcher: request %d notified %d\n", requestsocket, count);
 
     thread_pool_fini(&providers, countof(provider));
+
+    CHECKPOINT("dispatcher: providing %d\n", providings);
 
     ASSERT(diminuto_mux_unregister_accept(&mux, requestsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
@@ -732,7 +756,7 @@ int main(int argc, char argv[])
      * Clean up.
      */
 
-    CHECKPOINT("main: request %d exiting\n", requestsocket);
+    CHECKPOINT("main: exiting\n");
 
     ASSERT(diminuto_mux_close(&mux, localsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
