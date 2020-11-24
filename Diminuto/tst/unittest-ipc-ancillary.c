@@ -140,8 +140,8 @@ static thread_node_t * thread_node_get(thread_pool_t * pp)
             ASSERT(diminuto_condition_wait(&(pp->condition)) == 0);
         }
         ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
-        ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
     DIMINUTO_CONDITION_END;
+    ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
 
     return np;
 }
