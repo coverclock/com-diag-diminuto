@@ -47,6 +47,11 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_set_reuseaddress(sock, 0);
         EXPECT(rc >= 0);
 
+        rc = diminuto_ipc_set_reuseport(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_reuseport(sock, 0);
+        EXPECT(rc >= 0);
+
         rc = diminuto_ipc_set_keepalive(sock, !0);
         EXPECT(rc >= 0);
         rc = diminuto_ipc_set_keepalive(sock, 0);

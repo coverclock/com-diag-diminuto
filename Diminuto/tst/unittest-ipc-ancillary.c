@@ -40,6 +40,10 @@
  * C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets",
  * CopyConstruct, August 2020
  *
+ * U. Naseer et al., "Zero Downtime Release: Disruption-free Load
+ * Balancing of a Multi-Billion User Website", ACM SIGCOMM '20,
+ * August 2020
+ *
  * unix(7) man page
  *
  * socket(7) man page

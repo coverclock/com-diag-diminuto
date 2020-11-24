@@ -37,6 +37,17 @@
  *
  * W. Sewell, "Ephemeral port exhaustion and how to avoid it", 2018-05-22,
  * <https://making.pusher.com/ephemeral-port-exhaustion-and-how-to-avoid-it/>
+ *
+ * C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets",
+ * CopyConstruct, August 2020
+ *
+ * U. Naseer et al., "Zero Downtime Release: Disruption-free Load
+ * Balancing of a Multi-Billion User Website", ACM SIGCOMM '20,
+ * August 2020
+ *
+ * K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation",
+ * 2019-08-19,
+ * <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -123,6 +134,16 @@ static inline int diminuto_ipc_set_nonblocking(int fd, int enable) {
  */
 static inline int diminuto_ipc_set_reuseaddress(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
+}
+
+/**
+ * Enable or disable the port reuse option.
+ * @param fd is an open socket of any type.
+ * @param enable is !0 to enable, 0 to disable.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc_set_reuseport(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEPORT, !!enable);
 }
 
 /**
