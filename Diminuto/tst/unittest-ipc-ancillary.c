@@ -78,22 +78,6 @@
 #include <pthread.h>
 
 /*******************************************************************************
- * TYPES
- ******************************************************************************/
-
-typedef int datum_t;
-
-typedef struct ThreadNode {
-    diminuto_list_t link;
-    diminuto_thread_t thread;
-} thread_node_t;
-
-typedef struct ThreadPool {
-    diminuto_condition_t condition;
-    diminuto_list_t head;
-} thread_pool_t;
-
-/*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
@@ -111,10 +95,74 @@ static diminuto_ipv4_t serveraddress = 0;
 static diminuto_port_t serverport = 0;
 
 /*******************************************************************************
- * HELPERS
+ * TYPES
  ******************************************************************************/
 
-static void init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thread_function_t * fp)
+typedef int datum_t;
+
+/*******************************************************************************
+ * CLASSES
+ ******************************************************************************/
+
+/*
+ * A Thread Node is the combination of a Diminuto Thread object with a Diminuto
+ * List node object used to manage the Thread Node on a Diminuto List.
+ */
+typedef struct ThreadNode {
+    diminuto_list_t link;
+    diminuto_thread_t thread;
+} thread_node_t;
+
+/*
+ * A Thread Pool is a FIFO of Diminuto Thread Objects managed on a Diminuto
+ * List and synchronized using a Diminuto Condition.
+ */
+typedef struct ThreadPool {
+    diminuto_condition_t condition;
+    diminuto_list_t head;
+} thread_pool_t;
+
+/*
+ * Wait until there is a Thread Node on the Thread Pool, remove it from the
+ * Pool, and return a pointer to it.
+ */
+static thread_node_t * thread_node_get(thread_pool_t * pp)
+{
+    diminuto_list_t * lp = (diminuto_list_t *)0;
+    thread_node_t * np = (thread_node_t *)0;
+
+    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
+        while (diminuto_list_isempty(&(pp->head))) {
+            ASSERT(diminuto_condition_wait(&(pp->condition)) == 0);
+        }
+        ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
+        ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
+    DIMINUTO_CONDITION_END;
+
+    return np;
+}
+
+/*
+ * Insert a Thread Node on to the end of a Thread Pool and signaling any
+ * Pool users waiting for the Pool to be non-empty.
+ */
+static void thread_node_put(thread_pool_t * pp)
+{
+    diminuto_thread_t * tp = (diminuto_thread_t *)0;
+    thread_node_t * np = (thread_node_t *)0;
+
+    ASSERT((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0);
+    ASSERT((np = diminuto_containerof(thread_node_t, thread, tp)) != (thread_node_t *)0);
+    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
+        ASSERT(diminuto_list_enqueue(&(pp->head), &(np->link)) == &(np->link));
+        ASSERT(diminuto_condition_signal(&(pp->condition)) == 0);
+    DIMINUTO_CONDITION_END;
+}
+
+/*
+ * Initialize an array of Thread Nodes and place each one on a Thread Pool.
+ */
+static void thread_pool_init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thread_function_t * fp)
 {
     size_t ii = -1;
 
@@ -127,42 +175,18 @@ static void init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thr
     }
 }
 
-static thread_node_t * get(thread_pool_t * pp)
-{
-    diminuto_list_t * lp = (diminuto_list_t *)0;
-    thread_node_t * np = (thread_node_t *)0;
-
-    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
-        while (diminuto_list_isempty(&(pp->head))) {
-            ASSERT(diminuto_condition_wait(&(pp->condition)) == 0);
-        }
-        ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
-    DIMINUTO_CONDITION_END;
-    ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
-
-    return np;
-}
-
-static void put(thread_pool_t * pp)
-{
-    diminuto_thread_t * tp = (diminuto_thread_t *)0;
-    thread_node_t * np = (thread_node_t *)0;
-
-    ASSERT((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0);
-    ASSERT((np = diminuto_containerof(thread_node_t, thread, tp)) != (thread_node_t *)0);
-    DIMINUTO_CONDITION_BEGIN(&(pp->condition));
-        ASSERT(diminuto_list_enqueue(&(pp->head), &(np->link)) == &(np->link));
-    DIMINUTO_CONDITION_END;
-}
-
-static void fini(thread_pool_t * pp, size_t nn)
+/*
+ * Finalize a Thread Pool by removing every possible Thread Node,
+ * joining with each if it has not already been done so, and
+ * finalize by each one.
+ */
+static void thread_pool_fini(thread_pool_t * pp, size_t nn)
 {
     size_t ii = -1;
     thread_node_t * np = (thread_node_t *)0;
 
     for (ii = 0; ii < nn; ++ii) {
-        np = get(pp);
-fprintf(stderr, "FINI %p %zu %zu %p\n", pp, nn, ii, np);
+        np = thread_node_get(pp);
         switch (diminuto_thread_state(&(np->thread))) {
         case DIMINUTO_THREAD_STATE_STARTED:
         case DIMINUTO_THREAD_STATE_RUNNING:
@@ -244,7 +268,7 @@ static void * client(void * arg /* limit */)
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
 
-    put(&consumers);
+    thread_node_put(&consumers);
 
     return (void *)(intptr_t)ii;
 }
@@ -264,11 +288,11 @@ static void workload(void)
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
 
-    init(&consumers, consumer, countof(consumer), client);
+    thread_pool_init(&consumers, consumer, countof(consumer), client);
 
     while (diminuto_interrupter_check() <= 0) {
 
-        np = get(&consumers);
+        np = thread_node_get(&consumers);
 
         if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
@@ -283,7 +307,7 @@ static void workload(void)
 
     CHECKPOINT("workload: interrupted\n");
 
-    fini(&consumers, countof(consumer));
+    thread_pool_fini(&consumers, countof(consumer));
 
     CHECKPOINT("workload: exiting\n");
 }
@@ -371,7 +395,7 @@ static void * server(void * arg /* streamsocket */)
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
-    put(&providers);
+    thread_node_put(&providers);
 
     return (void *)(uintptr_t)total;
 }
@@ -401,7 +425,7 @@ static void * dispatcher(void * arg /* requestsocket */)
     ASSERT(diminuto_mux_init(&mux) == &mux);
     ASSERT(diminuto_mux_register_accept(&mux, requestsocket) >= 0);
 
-    init(&providers, provider, countof(provider), server);
+    thread_pool_init(&providers, provider, countof(provider), server);
 
     while (diminuto_thread_notifications() == 0) {
 
@@ -421,7 +445,7 @@ static void * dispatcher(void * arg /* requestsocket */)
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
 
-        np = get(&providers);
+        np = thread_node_get(&providers);
 
         if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
@@ -433,7 +457,7 @@ static void * dispatcher(void * arg /* requestsocket */)
 
     CHECKPOINT("dispatcher: request %d notified %d\n", requestsocket, count);
 
-    fini(&providers, countof(provider));
+    thread_pool_fini(&providers, countof(provider));
 
     ASSERT(diminuto_mux_unregister_accept(&mux, requestsocket) >= 0);
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
