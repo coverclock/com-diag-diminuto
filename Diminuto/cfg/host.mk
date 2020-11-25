@@ -16,11 +16,9 @@
 MACHINE				:=	$(shell uname -m)
 ifeq ($(MACHINE),x86_64)
 ARCH				:=	x86_64
-OPTARCH				:=
 endif
 ifeq ($(MACHINE),armv7l)
 ARCH				:=	arm
-OPTARCH				:=	-O0
 endif
 OS					:=	linux
 TOOLCHAIN			:=
@@ -31,7 +29,7 @@ KERNEL_DIR			:=	/lib/modules/$(KERNEL_REV)/build
 # Or:  sudo apt-get install raspberrypi-kernel-headers
 GNUARCH				:=	-D__USE_GNU -D_GNU_SOURCE
 CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV) $(GNUARCH)
-CARCH				:=	-rdynamic -fPIC $(OPTARCH)
+CARCH				:=	-rdynamic -fPIC
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT)/$(LIB_DIR)
 MOARCH				:=	-L$(OUT)/$(LIB_DIR)
