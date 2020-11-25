@@ -33,13 +33,13 @@ static int systemf(const char * format, ...)
     va_list ap;
     diminuto_path_t buffer;
 
-    DIMINUTO_LOG_DEBUG("%sformat=\"%s\"", DIMINUTO_LOG_HERE, format);
+    COMMENT("format=\"%s\"", format);
 
     va_start(ap, format);
     vsnprintf(buffer, sizeof(buffer), format, ap);
     va_end(ap);
 
-    DIMINUTO_LOG_DEBUG("%scommand=\"%s\"", DIMINUTO_LOG_HERE, buffer);
+    COMMENT("command=\"%s\"", buffer);
 
     ASSERT((rc = system(buffer)) >= 0);
 
@@ -59,24 +59,24 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    DIMINUTO_LOG_DEBUG("%ssizeof=%u", DIMINUTO_LOG_HERE, sizeof(buffer));
+    COMMENT("sizeof=%u", sizeof(buffer));
     ASSERT(argv[0] != (char *)0);
     root = strrchr(argv[0], '/');
     root = (root == (char *)0) ? argv[0] : root + 1;
     ASSERT(root != (const char *)0);
-    DIMINUTO_LOG_DEBUG("%sroot=\"%s\"", DIMINUTO_LOG_HERE, root);
+    COMMENT("root=\"%s\"", root);
     memset(&buffer, 0, sizeof(buffer));
     snprintf(buffer, sizeof(buffer), "%s/%s-XXXXXX", TMP, root);
     ASSERT(buffer[sizeof(buffer) - 1] == '\0');
-    DIMINUTO_LOG_DEBUG("%sbuffer=\"%s\"", DIMINUTO_LOG_HERE, buffer);
+    COMMENT("buffer=\"%s\"", buffer);
     root = mkdtemp(buffer);
     ASSERT(root != (const char *)0);
     ASSERT(*root != '\0');
-    DIMINUTO_LOG_DEBUG("%smkdtemp=\"%s\"", DIMINUTO_LOG_HERE, root);
+    COMMENT("mkdtemp=\"%s\"", root);
     prior = diminuto_pin_debug(root);
     ASSERT(prior != (const char *)0);
     ASSERT(*prior != '\0');
-    DIMINUTO_LOG_DEBUG("%sprior=\"%s\"", DIMINUTO_LOG_HERE, prior);
+    COMMENT("prior=\"%s\"", prior);
 
     EXPECT(systemf("mkdir -p %s/class/gpio/gpio%u", root, 99) == 0);
 
@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
         flicker = diminuto_modulator_flicker(&modulator);
         ASSERT(0 <= flicker);
         ASSERT(flicker <= 100);
-        COMMENT("init duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
+        CHECKPOINT("init duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
         ASSERT(modulator.duty == duty);
         ASSERT(0 <= modulator.ton);
         ASSERT(modulator.ton <= 255);
@@ -107,32 +107,29 @@ int main(int argc, char ** argv)
         }
     }
 
-        COMMENT("start");
-        ASSERT(diminuto_modulator_error(&modulator) == 0);
-        ASSERT(diminuto_modulator_start(&modulator) >= 0);
+    ASSERT(diminuto_modulator_error(&modulator) == 0);
+    ASSERT(diminuto_modulator_start(&modulator) >= 0);
+    diminuto_delay(diminuto_frequency(), 0);
+
+    for (duty = 0; duty <= 255; ++duty) {
+        ASSERT(diminuto_modulator_set(&modulator, duty) == 0);
+        flicker = diminuto_modulator_flicker(&modulator);
+        ASSERT(0 <= flicker);
+        ASSERT(flicker <= 100);
+        CHECKPOINT("set duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
+        ASSERT(0 <= modulator.ton);
+        ASSERT(modulator.ton <= 255);
+        ASSERT(0 <= modulator.toff);
+        ASSERT(modulator.toff <= 255);
+        ASSERT(0 <= (modulator.ton + modulator.toff));
+        ASSERT((modulator.ton + modulator.toff) <= 255);
+        ASSERT((255 % (modulator.ton + modulator.toff)) == 0);
         diminuto_delay(diminuto_frequency(), 0);
+    }
 
-            for (duty = 0; duty <= 255; ++duty) {
-                ASSERT(diminuto_modulator_set(&modulator, duty) == 0);
-                flicker = diminuto_modulator_flicker(&modulator);
-                ASSERT(0 <= flicker);
-                ASSERT(flicker <= 100);
-                COMMENT("set duty %3d on %3u off %3u sum %3u mod %u flk %3u\n", modulator.duty, modulator.ton, modulator.toff, modulator.ton + modulator.toff, 255 % (modulator.ton + modulator.toff), flicker);
-                ASSERT(0 <= modulator.ton);
-                ASSERT(modulator.ton <= 255);
-                ASSERT(0 <= modulator.toff);
-                ASSERT(modulator.toff <= 255);
-                ASSERT(0 <= (modulator.ton + modulator.toff));
-                ASSERT((modulator.ton + modulator.toff) <= 255);
-                ASSERT((255 % (modulator.ton + modulator.toff)) == 0);
-                diminuto_delay(diminuto_frequency(), 0);
-            }
+    ASSERT(diminuto_modulator_stop(&modulator) >= 0);
+    ASSERT(diminuto_modulator_error(&modulator) == 0);
 
-        COMMENT("stop");
-        ASSERT(diminuto_modulator_stop(&modulator) >= 0);
-        ASSERT(diminuto_modulator_error(&modulator) == 0);
-
-    COMMENT("fini");
     ASSERT(diminuto_modulator_fini(&modulator) == (diminuto_modulator_t *)0);
 
     EXPECT(systemf("rm -rf %s", root) == 0);
