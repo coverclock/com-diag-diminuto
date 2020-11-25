@@ -372,6 +372,35 @@ these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
 
+# Memory
+
+On a recent Raspberry Pi I have run out of memory compiling the unit
+tests. I admit I was completely taken by surprise by this. This was on
+a Raspberry Pi 4 running Raspbian 10 "buster" (Linux 5.4.51, GNU 8.3.0).
+
+    cc1: out of memory allocating 65536 bytes after a total of 1487814656 bytes
+
+I have added the make target
+
+    make notests
+
+to build everything except the unit tests, and
+
+    make onlytests
+
+to just build the unit tests.
+
+I believe the regression arose when I added code recently to make the
+unit test framework thread safe so that I could test multi-threaded
+features. The cpp (C PreProcessor) stage works just fine, but the C
+compiler chokes on compiling the preprocessed translation unit.
+
+Turning optimizations off with "-O0" didn't help. Nor did increasing
+the swap space.  This release is still a 32-bit kernel, which limits a
+process' address space to a maximum of 2GB of virutal memory. The script
+etc/rpiswap.sh constitutes my notes on how to increase the swap space
+on the RPi, although this alone doesn't fix the problem.
+
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
@@ -512,6 +541,8 @@ growth in Diminuto.
 # References
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
+
+<https://www.raspberrypi.org/forums/viewtopic.php?t=46472>
 
 # Soundtrack
 
