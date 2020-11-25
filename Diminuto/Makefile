@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	69# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -900,14 +900,17 @@ install-include:
 	tar -C $(OUT)/$(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
 	tar -C $(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
 
-########## Sanity
+########## Suites
 
-.PHONY: cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers unittest vintage
 
 vintage:
 	vintage
 
-unittest:	vintage
+criticalsection:	vintage
+	unittest-criticalsection
+
+unittest:	criticalsection
 	unittest-unittest
 
 sanity:	unittest
@@ -922,7 +925,6 @@ sanity:	unittest
 	unittest-containerof
 	unittest-coreable && false || true
 	unittest-countof
-	unittest-criticalsection
 	unittest-cue
 	make -C cxx
 	unittest-daemon

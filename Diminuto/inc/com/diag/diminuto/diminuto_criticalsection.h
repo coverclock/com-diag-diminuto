@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements critical section begin and end operators.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -31,11 +31,12 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
  */
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MUTEXP_) \
     do { \
-        pthread_mutex_t * _diminuto_criticalsection_mutexp_ = (_MUTEXP_); \
-        int _diminuto_criticalsection_rc_ = -1; \
-        _diminuto_criticalsection_rc_ = pthread_mutex_lock(_diminuto_criticalsection_mutexp_); \
-        if (_diminuto_criticalsection_rc_ == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
+        pthread_mutex_t * diminuto_criticalsection_mutexp = (pthread_mutex_t *)0; \
+        int diminuto_criticalsection_rc = -1; \
+        diminuto_criticalsection_mutexp = (_MUTEXP_); \
+        diminuto_criticalsection_rc = pthread_mutex_lock(diminuto_criticalsection_mutexp); \
+        if (diminuto_criticalsection_rc == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
             do { \
                 (void)0
 
@@ -47,11 +48,12 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
  */
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MUTEXP_) \
     do { \
-        pthread_mutex_t * _diminuto_criticalsection_mutexp_ = (_MUTEXP_); \
-        int _diminuto_criticalsection_rc_ = -1; \
-        _diminuto_criticalsection_rc_ = pthread_mutex_trylock(_diminuto_criticalsection_mutexp_); \
-        if (_diminuto_criticalsection_rc_ == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mutexp_); \
+        pthread_mutex_t * diminuto_criticalsection_mutexp = (pthread_mutex_t *)0; \
+        int diminuto_criticalsection_rc = -1; \
+        diminuto_criticalsection_mutexp = (_MUTEXP_); \
+        diminuto_criticalsection_rc = pthread_mutex_trylock(diminuto_criticalsection_mutexp); \
+        if (diminuto_criticalsection_rc == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
             do { \
                 (void)0
 

@@ -4,13 +4,12 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a simple unit test framework.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * The Unit Test feature is a dirt simple unit testing framework for C
  * programs. If you are using C++ (or even if you are using C but are
  * comfortable with C++) you would be better off using one of the
@@ -18,6 +17,25 @@
  * Test (a.k.a. gtest). Also, developers I know and trust have made good
  * use of CxxUnit, CppUnit, and CxxUnitLite. If you are using Java,
  * go directly to JUnit.
+ *
+ * The condition must be evaluated exactly once and only once, since
+ * it may contain intended side effects.
+ *
+ * It's important to capture the errno value right after testing for
+ * the condition, since the condition argument will typically either
+ * contain the function that sets the errno, or test the return from
+ * that function. Still, there is always the chance that the condition
+ * coded by the user somehow steps on the errno value from the thing
+ * they are trying to test.
+ *
+ * It's important to check the condition outside of the critical
+ * section, since the condition may have embedded in it the function
+ * or feature being tested, and placing the execution of that code
+ * inside the critical section may inadvertently hide thread-safety
+ * bugs in the code being tested due to that serialization.
+ *
+ * Judicious choices of using CHECKPOINT versus COMMENT can yield
+ * more flexibility in controlling the output from a unit test.
  *
  * COMMENT logs at the DEBUG level.
  *
@@ -194,7 +212,8 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define FATAL(...) \
     do { \
-        int diminuto_unittest_errno = errno; \
+        int diminuto_unittest_errno = 0; \
+        diminuto_unittest_errno = errno; \
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
@@ -212,7 +231,8 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define PANIC(...) \
     do { \
-        int diminuto_unittest_errno = errno; \
+        int diminuto_unittest_errno = 0; \
+        diminuto_unittest_errno = errno; \
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
             ++diminuto_unittest_errors; \
             ++diminuto_unittest_total; \
@@ -233,8 +253,10 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define ADVISE(_COND_) \
     do { \
-        int diminuto_unittest_condition = !!(_COND_); \
-        int diminuto_unittest_errno = errno; \
+        int diminuto_unittest_condition = 0; \
+        int diminuto_unittest_errno = 0; \
+        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_errno = errno; \
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
             if (!diminuto_unittest_condition) { \
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d errno=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, #_COND_); \
@@ -252,8 +274,10 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define EXPECT(_COND_) \
     do { \
-        int diminuto_unittest_condition = !!(_COND_); \
-        int diminuto_unittest_errno = errno; \
+        int diminuto_unittest_condition = 0; \
+        int diminuto_unittest_errno = 0; \
+        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_errno = errno; \
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
             if (!diminuto_unittest_condition) { \
                 ++diminuto_unittest_errors; \
@@ -273,8 +297,10 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define ASSERT(_COND_) \
     do { \
-        int diminuto_unittest_condition = !!(_COND_); \
-        int diminuto_unittest_errno = errno; \
+        int diminuto_unittest_condition = 0; \
+        int diminuto_unittest_errno = 0; \
+        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_errno = errno; \
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
             if (!diminuto_unittest_condition) { \
                 ++diminuto_unittest_errors; \
