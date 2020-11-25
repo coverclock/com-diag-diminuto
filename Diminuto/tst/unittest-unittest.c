@@ -59,12 +59,12 @@ int main(int argc, char ** argv)
 
         TEST("Thread 2");
 
-        diminuto_unittest_total = diminuto_unittest_errors = 0;
+        diminuto_unittest_errors = 0;
         ASSERT(pthread_create(&thread, (const pthread_attr_t *)0, function, (void *)(intptr_t)255) == 0);
         status = (void *)(intptr_t)256;
         ASSERT(pthread_join(thread, &status) == 0);
         EXPECT(status == (void *)(intptr_t)1);
-        diminuto_unittest_total = diminuto_unittest_errors = 0;
+        diminuto_unittest_errors = 0;
 
         STATUS();
     }

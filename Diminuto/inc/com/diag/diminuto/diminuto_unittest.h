@@ -28,12 +28,6 @@
  * coded by the user somehow steps on the errno value from the thing
  * they are trying to test.
  *
- * It's important to check the condition outside of the critical
- * section, since the condition may have embedded in it the function
- * or feature being tested, and placing the execution of that code
- * inside the critical section may inadvertently hide thread-safety
- * bugs in the code being tested due to that serialization.
- *
  * Judicious choices of using CHECKPOINT versus COMMENT can yield
  * more flexibility in controlling the output from a unit test.
  *
@@ -50,23 +44,12 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
-
-/**
- * Global mutual exclusion semaphore.
- */
-extern pthread_mutex_t diminuto_unittest_mutex;
-
-/**
- * Current test number.
- */
-extern int diminuto_unittest_test;
 
 /**
  * Total number of tests executed.
@@ -79,14 +62,31 @@ extern int diminuto_unittest_tests;
 extern int diminuto_unittest_errors;
 
 /**
- * Total number of errors.
- */
-extern int diminuto_unittest_total;
-
-/**
  * Maximum possible exit code (for processes).
  */
 static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
+
+/**
+ * Set the log mask from the environment and do other useful initialization.
+ */
+extern void diminuto_unittest_setlogmask(void);
+
+/**
+ * Advance the test number and return its new value.
+ * @return the new test number.
+ */
+extern int diminuto_unittest_test(void);
+
+/**
+ * Adance the error counter and return its new value.
+ * @return the new error counter.
+ */
+extern int diminuto_unittest_error(void);
+
+/**
+ * Flush the standard output and (if necessary) standard error file descriptors.
+ */
+extern void diminuto_unittest_flush(void);
 
 /**
  * @def SETLOGMASK()
@@ -97,13 +97,7 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  * is unbuffered, and enabling core dumps.
  */
 #define SETLOGMASK() \
-    do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            diminuto_log_setmask(); \
-            setvbuf(stderr, (char *)0, _IONBF, 0); \
-            diminuto_core_enable(); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-    } while (0)
+    diminuto_unittest_setlogmask()
 
 /**
  * @def TEST(...)
@@ -112,14 +106,10 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define TEST(...) \
     do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            diminuto_unittest_test += 1; \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: test=%d " __VA_ARGS__ "\n", diminuto_unittest_test); \
-            fflush(stdout); \
-            fflush(stderr); \
-            diminuto_unittest_errors = 0; \
-            diminuto_unittest_tests += 1; \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        int diminuto_unittest_number = 0; \
+        diminuto_unittest_number = diminuto_unittest_test(); \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: tests=%d " __VA_ARGS__ "\n", diminuto_unittest_number); \
+        diminuto_unittest_flush(); \
     } while (0)
 
 /**
@@ -127,22 +117,14 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  * Emit a notice message with the current translation unit file and line nunber.
  */
 #define CHECKPOINT(...) \
-    do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "CHECKPOINT: " __VA_ARGS__); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-    } while (0)
+    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "CHECKPOINT: " __VA_ARGS__); \
 
 /**
  * @def COMMENT(...)
  * Emit a debug message with the current translation unit file and line number.
  */
 #define COMMENT(...) \
-    do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "COMMENT: " __VA_ARGS__); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-    } while (0)
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "COMMENT: " __VA_ARGS__); \
 
 /**
  * @def STATUS()
@@ -150,11 +132,12 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define STATUS(...) \
     do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
-            fflush(stdout); \
-            fflush(stderr); \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_errors; \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_unittest_flush(); \
     } while (0)
 
 /**
@@ -164,11 +147,11 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define FAILURE(...) \
     do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            ++diminuto_unittest_errors; \
-            ++diminuto_unittest_total; \
-            DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "FAILURE: test=%d errors=%d total=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, "FAILURE!"); \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_error(); \
+        DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "FAILURE: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, "FAILURE!"); \
     } while (0)
 
 /**
@@ -179,12 +162,13 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define EXIT(...) \
     do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "EXIT: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
-            fflush(stdout); \
-            fflush(stderr); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-        exit(diminuto_unittest_total > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_total); \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_errors; \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "EXIT: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, (diminuto_unittest_count == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_unittest_flush(); \
+        exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
     } while (0)
 
 /**
@@ -197,12 +181,13 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define TEXIT(...) \
     do { \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEXIT: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_tests, diminuto_unittest_total, (diminuto_unittest_total == 0) ? "SUCCESS." : "FAILURE!"); \
-            fflush(stdout); \
-            fflush(stderr); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-        pthread_exit((void *)(intptr_t)(diminuto_unittest_total > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_total)); \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_errors; \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEXIT: tests=%d errors=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, (diminuto_unittest_count == 0) ? "SUCCESS." : "FAILURE!"); \
+        diminuto_unittest_flush(); \
+        pthread_exit((void *)(intptr_t)(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count)); \
     } while (0)
 
 /**
@@ -212,16 +197,15 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define FATAL(...) \
     do { \
-        int diminuto_unittest_errno = 0; \
+        int diminuto_unittest_errno; \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
         diminuto_unittest_errno = errno; \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            ++diminuto_unittest_errors; \
-            ++diminuto_unittest_total; \
-            DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "FATAL: test=%d errors=%d total=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, "FAILURE!"); \
-            fflush(stdout); \
-            fflush(stderr); \
-        DIMINUTO_CRITICAL_SECTION_END; \
-        exit(diminuto_unittest_total > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_total); \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_error(); \
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "FATAL: tests=%d errors=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, "FAILURE!"); \
+        diminuto_unittest_flush(); \
+        exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
     } while (0)
 
 /**
@@ -231,19 +215,18 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define PANIC(...) \
     do { \
-        int diminuto_unittest_errno = 0; \
+        int diminuto_unittest_errno; \
+        int diminuto_unittest_number; \
+        int diminuto_unittest_count; \
         diminuto_unittest_errno = errno; \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            ++diminuto_unittest_errors; \
-            ++diminuto_unittest_total; \
-            DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "PANIC: test=%d errors=%d total=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, "PANIC!"); \
-            fflush(stdout); \
-            fflush(stderr); \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        diminuto_unittest_number = diminuto_unittest_tests; \
+        diminuto_unittest_count = diminuto_unittest_error(); \
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "PANIC: tests=%d errors=%d errno=%d %s " __VA_ARGS__ "\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, "PANIC!"); \
+        diminuto_unittest_flush(); \
         diminuto_core_enable(); \
         diminuto_core_fatal(); \
         *((volatile char *)0); \
-        exit(diminuto_unittest_total > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_total); \
+        exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
     } while (0)
 
 /**
@@ -253,17 +236,18 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define ADVISE(_COND_) \
     do { \
-        int diminuto_unittest_condition = 0; \
-        int diminuto_unittest_errno = 0; \
+        int diminuto_unittest_condition; \
         diminuto_unittest_condition = !!(_COND_); \
-        diminuto_unittest_errno = errno; \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            if (!diminuto_unittest_condition) { \
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "ADVISE: test=%d errors=%d total=%d errno=%d !(%s).\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, #_COND_); \
-                fflush(stdout); \
-                fflush(stderr); \
-            } \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        if (!diminuto_unittest_condition) { \
+            int diminuto_unittest_errno; \
+            int diminuto_unittest_number; \
+            int diminuto_unittest_count; \
+            diminuto_unittest_errno = errno; \
+            diminuto_unittest_number = diminuto_unittest_tests; \
+            diminuto_unittest_count = diminuto_unittest_errors; \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "ADVISE: tests=%d errors=%d errno=%d !(%s).\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_COND_); \
+            diminuto_unittest_flush(); \
+        } \
     } while (0)
 
 /**
@@ -274,19 +258,18 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define EXPECT(_COND_) \
     do { \
-        int diminuto_unittest_condition = 0; \
-        int diminuto_unittest_errno = 0; \
+        int diminuto_unittest_condition; \
         diminuto_unittest_condition = !!(_COND_); \
-        diminuto_unittest_errno = errno; \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            if (!diminuto_unittest_condition) { \
-                ++diminuto_unittest_errors; \
-                ++diminuto_unittest_total; \
-                DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "EXPECT: test=%d errors=%d total=%d errno=%d !(%s)?\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno, #_COND_); \
-                fflush(stdout); \
-                fflush(stderr); \
-            } \
-        DIMINUTO_CRITICAL_SECTION_END; \
+        if (!diminuto_unittest_condition) { \
+            int diminuto_unittest_errno; \
+            int diminuto_unittest_number; \
+            int diminuto_unittest_count; \
+            diminuto_unittest_errno = errno; \
+            diminuto_unittest_number = diminuto_unittest_tests; \
+            diminuto_unittest_count = diminuto_unittest_error(); \
+            DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "EXPECT: tests=%d errors=%d errno=%d !(%s)?\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_COND_); \
+            diminuto_unittest_flush(); \
+        } \
     } while (0)
 
 /**
@@ -297,21 +280,18 @@ static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
  */
 #define ASSERT(_COND_) \
     do { \
-        int diminuto_unittest_condition = 0; \
-        int diminuto_unittest_errno = 0; \
+        int diminuto_unittest_condition; \
         diminuto_unittest_condition = !!(_COND_); \
-        diminuto_unittest_errno = errno; \
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_unittest_mutex); \
-            if (!diminuto_unittest_condition) { \
-                ++diminuto_unittest_errors; \
-                ++diminuto_unittest_total; \
-                DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "ASSERT: test=%d errors=%d total=%d errno=%d !(%s)!\n", diminuto_unittest_test, diminuto_unittest_errors, diminuto_unittest_total, diminuto_unittest_errno,  #_COND_); \
-                fflush(stdout); \
-                fflush(stderr); \
-            } \
-        DIMINUTO_CRITICAL_SECTION_END; \
         if (!diminuto_unittest_condition) { \
-            exit(diminuto_unittest_total > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_total); \
+            int diminuto_unittest_errno; \
+            int diminuto_unittest_number; \
+            int diminuto_unittest_count; \
+            diminuto_unittest_errno = errno; \
+            diminuto_unittest_number = diminuto_unittest_tests; \
+            diminuto_unittest_count = diminuto_unittest_error(); \
+            DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "ASSERT: tests=%d errors=%d errno=%d !(%s)!\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno,  #_COND_); \
+            diminuto_unittest_flush(); \
+            exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
         } \
     } while (0)
 

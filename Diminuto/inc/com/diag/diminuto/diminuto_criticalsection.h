@@ -38,7 +38,7 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
         if (diminuto_criticalsection_rc == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
             do { \
-                (void)0
+                do { } while (0)
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_TRY
@@ -55,7 +55,7 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
         if (diminuto_criticalsection_rc == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
             do { \
-                (void)0
+                do { } while (0)
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_END
