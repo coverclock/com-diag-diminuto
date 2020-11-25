@@ -944,6 +944,7 @@ sanity:	unittest
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
+	unittest-ipc-ancillary
 	unittest-ipcl
 	unittest-list
 	unittest-lock
@@ -1119,15 +1120,16 @@ sockets:
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
+	unittest-ipc-ancillary
 	unittest-ipcl
 	unittest-mux4
 	unittest-mux6
-	unittest-muxl
 	unittest-mux-eventloop
+	unittest-muxl
 	unittest-poll4
 	unittest-poll6
-	unittest-polll
 	unittest-poll-eventloop
+	unittest-polll
 
 renameat2:
 	unittest-renameat2
