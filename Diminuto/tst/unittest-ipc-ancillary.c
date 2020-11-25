@@ -370,7 +370,12 @@ static void * server(void * arg /* streamsocket */)
     ASSERT(diminuto_mux_init(&mux) == &mux);
 
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
-    ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
+    /*
+     * One out of ten (currently) simulated clients will close their sockets and
+     * disconnect without doing any requests. So it's possible for this to
+     * happen before the server interrogates the socket for the farend.
+     */
+    ADVISE(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
     CHECKPOINT("server: stream %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
 
     ASSERT(diminuto_mux_register_read(&mux, streamsocket) >= 0);
