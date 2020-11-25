@@ -752,6 +752,12 @@ iquotes:
 isystems:
 	@$(CC) -x c $(CPPFLAGS) $(CFLAGS) -E -v - < /dev/null 2>&1 | awk 'BEGIN { S=0; } ($$0=="#include <...> search starts here:") { S=1; next; } ($$0=="End of search list.") { S=0; next; } (S!=0) { print $$1; } { next; }'
 
+helptarget:
+	@$(CC) -Q --help=target
+
+compilationstages:
+	@$(CC) -v
+
 ########## Documentation
 
 # sudo apt-get install doxygen
