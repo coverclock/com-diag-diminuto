@@ -209,10 +209,11 @@ TARGETPROGRAMS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETUNITTESTS) $(TARGE
 TARGETALL			:=	$(TARGETLIBRARIES) $(TARGETLIBRARIESXX) $(TARGETPROGRAMS)
 TARGETMOST			:=	$(TARGETALL) $(TARGETMODULES)
 TARGETPLUS			:=	$(TARGETMOST) $(TARGETDRIVERS)
+TARGETNOTESTS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETFUNCTIONALS) $(TARGETGENERATED) $(TARGETSCRIPTS)
 
 ########## Main Entry Points
 
-.PHONY:	all most plus dist tidy clean pristine clobber scratch
+.PHONY:	all most plus dist tidy clean pristine clobber scratch notests onlytests
 
 all:	$(TARGETALL)
 
@@ -221,6 +222,10 @@ most:	$(TARGETMOST)
 # On the Raspberry Pi, this is what worked for me:
 # sudo apt-get install raspberrypi-kernel-headers
 plus:	$(TARGETPLUS)
+
+notests:	$(TARGETNOTESTS)
+
+onlytests:	$(TARGETUNITTESTS)
 
 dist:	distribution
 
