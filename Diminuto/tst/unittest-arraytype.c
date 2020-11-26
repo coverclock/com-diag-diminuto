@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the array_t feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -28,6 +28,7 @@
  * test is to experimentally determine exactly what the semantics of that are.
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
@@ -35,16 +36,16 @@
 typedef uint16_t (array_t)[128 / 8 / sizeof(uint16_t)];
 
 static void foo(array_t * pointer) {
-    fprintf(stderr, "foo(pointer)\n");
-    fprintf(stderr, "%s@%d: pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
-    assert(sizeof(*pointer) == 16);
-    fprintf(stderr, "%s@%d: zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
-    assert(sizeof((*pointer)[0]) == 2);
-    fprintf(stderr, "%s@%d: countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
-    assert((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
-    fprintf(stderr, "%s@%d: eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
-    assert((*pointer)[7] == 88);
+    CHECKPOINT("foo(pointer)\n");
+    CHECKPOINT("pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
+    ASSERT(sizeof(*pointer) == 16);
+    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
+    ASSERT(sizeof((*pointer)[0]) == 2);
+    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
+    ASSERT((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
+    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
+    ASSERT((*pointer)[7] == 88);
 }
 
 static void bar(array_t variable) {
@@ -52,53 +53,61 @@ static void bar(array_t variable) {
      * N.B. Produces different results on x86_64 versus ARMv7 because of the difference
      * in pointer sizes (8 versus 4).
      */
-    fprintf(stderr, "bar(variable)\n");
-    fprintf(stderr, "%s@%d: variable=%p\n", __FILE__, __LINE__, (void *)variable);
+    CHECKPOINT("bar(variable)\n");
+    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)variable);
 #if defined(PROBLEMATIC)
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
-    assert(sizeof(variable) == sizeof(void *));
-    fprintf(stderr, "%s@%d: zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
-    assert(sizeof(variable[0]) == 2);
-    fprintf(stderr, "%s@%d: countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
+    ASSERT(sizeof(variable) == sizeof(void *));
+    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
+    ASSERT(sizeof(variable[0]) == 2);
+    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
 #endif
-    fprintf(stderr, "%s@%d: variable=%p\n", __FILE__, __LINE__, (void *)&variable);
-    fprintf(stderr, "%s@%d: eighth=%u\n", __FILE__, __LINE__, variable[7]);
-    assert(variable[7] == 88);
+    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)&variable);
+    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, variable[7]);
+    ASSERT(variable[7] == 88);
 }
 
 int main() {
     array_t variable = { 11, 22, 33, 44, 55, 66, 77, 88, };
     array_t * pointer = &variable;
-    fprintf(stderr, "array_t\n");
-    fprintf(stderr, "%s@%d: widthof=%zu\n", __FILE__, __LINE__, sizeof(array_t) * 8);
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(array_t));
-    assert(sizeof(array_t) == 16);
-    fprintf(stderr, "variable\n");
-    fprintf(stderr, "%s@%d: variable=%p\n", __FILE__, __LINE__, (void *)variable);
-    fprintf(stderr, "%s@%d: widthof=%zu\n", __FILE__, __LINE__, sizeof(variable) * 8);
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
-    assert(sizeof(variable) == 16);
-    fprintf(stderr, "%s@%d: zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
-    assert(sizeof(variable[0]) == 2);
-    fprintf(stderr, "%s@%d: countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
-    assert((sizeof(variable) / sizeof(variable[0])) == 8);
-    fprintf(stderr, "%s@%d: eighth=%u\n", __FILE__, __LINE__, variable[7]);
-    assert(variable[7] == 88);
-    fprintf(stderr, "%s@%d: &variable=%p\n", __FILE__, __LINE__, (void *)&variable);
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(&variable));
-    fprintf(stderr, "%s@%d: widthof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) * 8);
-    fprintf(stderr, "pointer\n");
-    fprintf(stderr, "%s@%d: pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(pointer));
-    fprintf(stderr, "%s@%d: sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
-    assert(sizeof(*pointer) == 16);
-    fprintf(stderr, "%s@%d: zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
-    assert(sizeof((*pointer)[0]) == 2);
-    fprintf(stderr, "%s@%d: countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
-    assert((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
-    fprintf(stderr, "%s@%d: eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
-    assert((*pointer)[7] == 88);
+
+    SETLOGMASK();
+
+    TEST();
+
+    CHECKPOINT("array_t\n");
+    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(array_t) * 8);
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(array_t));
+    ASSERT(sizeof(array_t) == 16);
+    CHECKPOINT("variable\n");
+    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)variable);
+    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(variable) * 8);
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
+    ASSERT(sizeof(variable) == 16);
+    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
+    ASSERT(sizeof(variable[0]) == 2);
+    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
+    ASSERT((sizeof(variable) / sizeof(variable[0])) == 8);
+    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, variable[7]);
+    ASSERT(variable[7] == 88);
+    CHECKPOINT("&variable=%p\n", __FILE__, __LINE__, (void *)&variable);
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(&variable));
+    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) * 8);
+    CHECKPOINT("pointer\n");
+    CHECKPOINT("pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(pointer));
+    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
+    ASSERT(sizeof(*pointer) == 16);
+    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
+    ASSERT(sizeof((*pointer)[0]) == 2);
+    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
+    ASSERT((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
+    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
+    ASSERT((*pointer)[7] == 88);
     foo(&variable);
     bar(variable);
-    return 0;
+
+    STATUS();
+
+    EXIT();
 }

@@ -10,6 +10,7 @@
  * This is a unit test of the Controller feature.
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_controller.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -45,13 +46,13 @@ static diminuto_controller_output_t fcontrol(const diminuto_controller_parameter
     diminuto_controller_output_t prime;
     float error;
 
-    printf("%4s %6s %6s %6s %6s %6s %6s %12s %12s %12s %12s %12s %6s\n", "STEP", "OUTPUT", "TARGET", "INPUT", "ERROR", "RATIO", "PRIME", "AVERAGE", "PROPORTIONAL", "INTEGRAL", "DIFFERENTIAL", "TOTAL", "DELTA");
+    CHECKPOINT("%4s %6s %6s %6s %6s %6s %6s %12s %12s %12s %12s %12s %6s\n", "STEP", "OUTPUT", "TARGET", "INPUT", "ERROR", "RATIO", "PRIME", "AVERAGE", "PROPORTIONAL", "INTEGRAL", "DIFFERENTIAL", "TOTAL", "DELTA");
 
     do {
 
         before = felapsed();
         slack = fdelay(output);
-        assert(slack == 0);
+        ASSERT(slack == 0);
         after = felapsed();
 
         input = after - before;
@@ -61,8 +62,8 @@ static diminuto_controller_output_t fcontrol(const diminuto_controller_parameter
 
         prime = diminuto_controller(sp, dp, target, input, output);
 
-        printf("%4d %6d %6d %6d %6d %6.3f %6d %12d %12d %12d %12d %12d %6d\n", step++, output, target, input, offset, error, prime, dp->sample, dp->proportional, dp->integral, dp->differential, dp->total, dp->delta);
-        assert(step < limit);
+        CHECKPOINT("%4d %6d %6d %6d %6d %6.3f %6d %12d %12d %12d %12d %12d %6d\n", step++, output, target, input, offset, error, prime, dp->sample, dp->proportional, dp->integral, dp->differential, dp->total, dp->delta);
+        ASSERT(step < limit);
 
         output = prime;
 
@@ -81,47 +82,56 @@ static diminuto_controller_output_t fcontrol(const diminuto_controller_parameter
 
 int main(int argc, char ** argv)
 {
+
+    SETLOGMASK();
+
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
+        TEST();
+
         memset(&parameters, 0xAA, sizeof(parameters));
         memset(&state, 0x55, sizeof(state));
 
-        assert(diminuto_controller_init(&parameters, &state) == &state);
+        ASSERT(diminuto_controller_init(&parameters, &state) == &state);
 
         diminuto_controller_parameters_print(stdout, &parameters);
         diminuto_controller_state_print(stdout, &state);
 
-        assert(parameters.windup == DIMINUTO_CONTROLLER_MAXIMUM_VALUE);
-        assert(parameters.minimum == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
-        assert(parameters.maximum == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
-        assert(parameters.lower == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
-        assert(parameters.upper == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
-        assert(parameters.kp.numerator == 1);
-        assert(parameters.kp.denominator == 1);
-        assert(parameters.ki.numerator == 1);
-        assert(parameters.ki.denominator == 1);
-        assert(parameters.kd.numerator == 1);
-        assert(parameters.kd.denominator == 1);
-        assert(parameters.kc.numerator == 1);
-        assert(parameters.kc.denominator == 1);
-        assert(parameters.filter == !0);
+        ASSERT(parameters.windup == DIMINUTO_CONTROLLER_MAXIMUM_VALUE);
+        ASSERT(parameters.minimum == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
+        ASSERT(parameters.maximum == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
+        ASSERT(parameters.lower == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
+        ASSERT(parameters.upper == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
+        ASSERT(parameters.kp.numerator == 1);
+        ASSERT(parameters.kp.denominator == 1);
+        ASSERT(parameters.ki.numerator == 1);
+        ASSERT(parameters.ki.denominator == 1);
+        ASSERT(parameters.kd.numerator == 1);
+        ASSERT(parameters.kd.denominator == 1);
+        ASSERT(parameters.kc.numerator == 1);
+        ASSERT(parameters.kc.denominator == 1);
+        ASSERT(parameters.filter == !0);
 
-        assert(state.sample == 0);
-        assert(state.proportional == 0);
-        assert(state.integral == 0);
-        assert(state.differential == 0);
-        assert(state.total == 0);
-        assert(state.delta == 0);
-        assert(state.previous == 0);
-        assert(state.initialized == 0);
+        ASSERT(state.sample == 0);
+        ASSERT(state.proportional == 0);
+        ASSERT(state.integral == 0);
+        ASSERT(state.differential == 0);
+        ASSERT(state.total == 0);
+        ASSERT(state.delta == 0);
+        ASSERT(state.previous == 0);
+        ASSERT(state.initialized == 0);
 
-        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_controller_state_t state;
+
+        TEST();
 
         memset(&state, 0x55, sizeof(state));
 
@@ -130,24 +140,28 @@ int main(int argc, char ** argv)
          * parameters.
          */
 
-        assert(diminuto_controller_init((diminuto_controller_parameters_t *)0, &state) == &state);
+        ASSERT(diminuto_controller_init((diminuto_controller_parameters_t *)0, &state) == &state);
 
         diminuto_controller_state_print(stdout, &state);
 
-        assert(state.sample == 0);
-        assert(state.proportional == 0);
-        assert(state.integral == 0);
-        assert(state.differential == 0);
-        assert(state.total == 0);
-        assert(state.delta == 0);
-        assert(state.previous == 0);
-        assert(state.initialized == 0);
+        ASSERT(state.sample == 0);
+        ASSERT(state.proportional == 0);
+        ASSERT(state.integral == 0);
+        ASSERT(state.differential == 0);
+        ASSERT(state.total == 0);
+        ASSERT(state.delta == 0);
+        ASSERT(state.previous == 0);
+        ASSERT(state.initialized == 0);
 
-        assert(diminuto_controller_fini((diminuto_controller_parameters_t *)0, &state) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini((diminuto_controller_parameters_t *)0, &state) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_controller_parameters_t parameters;
+
+        TEST();
 
         memset(&parameters, 0xAA, sizeof(parameters));
 
@@ -156,38 +170,46 @@ int main(int argc, char ** argv)
          * affecting the state of the controller.
          */
 
-        assert(diminuto_controller_init(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_init(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
 
         diminuto_controller_parameters_print(stdout, &parameters);
 
-        assert(parameters.windup == DIMINUTO_CONTROLLER_MAXIMUM_VALUE);
-        assert(parameters.minimum == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
-        assert(parameters.maximum == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
-        assert(parameters.lower == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
-        assert(parameters.upper == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
-        assert(parameters.kp.numerator == 1);
-        assert(parameters.kp.denominator == 1);
-        assert(parameters.ki.numerator == 1);
-        assert(parameters.ki.denominator == 1);
-        assert(parameters.kd.numerator == 1);
-        assert(parameters.kd.denominator == 1);
-        assert(parameters.kc.numerator == 1);
-        assert(parameters.kc.denominator == 1);
-        assert(parameters.filter == !0);
+        ASSERT(parameters.windup == DIMINUTO_CONTROLLER_MAXIMUM_VALUE);
+        ASSERT(parameters.minimum == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
+        ASSERT(parameters.maximum == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
+        ASSERT(parameters.lower == DIMINUTO_CONTROLLER_MINIMUM_OUTPUT);
+        ASSERT(parameters.upper == DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT);
+        ASSERT(parameters.kp.numerator == 1);
+        ASSERT(parameters.kp.denominator == 1);
+        ASSERT(parameters.ki.numerator == 1);
+        ASSERT(parameters.ki.denominator == 1);
+        ASSERT(parameters.kd.numerator == 1);
+        ASSERT(parameters.kd.denominator == 1);
+        ASSERT(parameters.kc.numerator == 1);
+        ASSERT(parameters.kc.denominator == 1);
+        ASSERT(parameters.filter == !0);
 
-        assert(diminuto_controller_fini(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini(&parameters, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
-        assert(diminuto_controller_init((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
-        assert(diminuto_controller_fini((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+        TEST();
+
+        ASSERT(diminuto_controller_init((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini((diminuto_controller_parameters_t *)0, (diminuto_controller_state_t *)0) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        assert(diminuto_controller_init(&parameters, &state) == &state);
+        TEST();
+
+        ASSERT(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
 
@@ -196,14 +218,18 @@ int main(int argc, char ** argv)
 
         fcontrol(&parameters, &state, 1000, 500, 1, 60);
 
-        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        assert(diminuto_controller_init(&parameters, &state) == &state);
+        TEST();
+
+        ASSERT(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
 
@@ -212,14 +238,18 @@ int main(int argc, char ** argv)
 
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
 
-        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_controller_parameters_t parameters;
         diminuto_controller_state_t state;
 
-        assert(diminuto_controller_init(&parameters, &state) == &state);
+        TEST();
+
+        ASSERT(diminuto_controller_init(&parameters, &state) == &state);
         parameters.minimum = 0;
         parameters.lower = 0;
         parameters.kp.numerator = 1;
@@ -234,8 +264,10 @@ int main(int argc, char ** argv)
 
         fcontrol(&parameters, &state, 1000, 2000, 1, 60);
 
-        assert(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+        ASSERT(diminuto_controller_fini(&parameters, &state) == (diminuto_controller_state_t *)0);
+
+        STATUS();
     }
 
-    return 0;
+    EXIT();
 }

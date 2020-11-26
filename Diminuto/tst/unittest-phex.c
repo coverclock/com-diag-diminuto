@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Print Hex (PHex) feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>

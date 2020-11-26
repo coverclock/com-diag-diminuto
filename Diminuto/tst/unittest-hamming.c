@@ -10,12 +10,12 @@
  * This is a unit test of the Hamming feature.
  */
 
+#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_hamming.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "com/diag/diminuto/diminuto_hamming.h"
 #include "../src/diminuto_hamming.h"
-#include "com/diag/diminuto/diminuto_unittest.h"
 
 static const uint8_t SYM[] = {
     0x00, 0xd2, 0x55, 0x87,
@@ -193,7 +193,7 @@ static void hamming(void) {
     cnt[0] = 0;
     cnt[1] = 0;
     cnt[2] = 0;
-    printf("%4s %4s %4s %4s\n", "SYM", "DAT", "BAD", "FIX");
+    CHECKPOINT("%4s %4s %4s %4s\n", "SYM", "DAT", "BAD", "FIX");
     for (byt = 0x00; byt <= 0xff; ++byt) {
         out = diminuto_hamming84_sym2nib(byt, &err);
         ASSERT((err == 0) || (err == 1) || ((err == 2) && (out == 0x00)));
@@ -201,19 +201,19 @@ static void hamming(void) {
         inp = diminuto_hamming84_nib2sym(out);
         switch (err) {
         case 0:
-            printf("0x%2.2x 0x%2.2x\n", byt, out);
+            CHECKPOINT("0x%2.2x 0x%2.2x\n", byt, out);
             break;
         case 1:
-            printf("0x%2.2x 0x%2.2x %4d 0x%2.2x\n", byt, out, err, inp);
+            CHECKPOINT("0x%2.2x 0x%2.2x %4d 0x%2.2x\n", byt, out, err, inp);
             break;
         case 2:
-            printf("0x%2.2x 0x%2.2x %4d\n", byt, out, err);
+            CHECKPOINT("0x%2.2x 0x%2.2x %4d\n", byt, out, err);
             break;
         }
     }
     putchar('\n');
     for (err = 0; err <= 2; ++err) {
-        printf("F(%u)=%d=%.0f%%\n", err, cnt[err], (100.0 * cnt[err]) / 256.0);
+        CHECKPOINT("F(%u)=%d=%.0f%%\n", err, cnt[err], (100.0 * cnt[err]) / 256.0);
     }
     putchar('\n');
 
@@ -287,17 +287,17 @@ static void hamming(void) {
     putchar('\n');
 
     for (err = 0; err <= 2; ++err) {
-        printf("F(%u)=%d=%.0f%%\n", err, cnt[err], (100.0 * cnt[err]) / sizeof(buf));
+        CHECKPOINT("F(%u)=%d=%.0f%%\n", err, cnt[err], (100.0 * cnt[err]) / sizeof(buf));
     }
 
     STATUS();
-
-    EXIT();
 }
 
 int main(void) {
 
+    SETLOGMASK();
+
     hamming();
 
-    return 1;
+    EXIT();
 }

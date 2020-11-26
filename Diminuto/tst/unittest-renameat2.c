@@ -14,7 +14,7 @@
  * and unittest-hangup-*.c unit tests.
  */
 
-#include "../src/diminuto_renameat2.h"
+#include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <stdlib.h>
-#include "com/diag/diminuto/diminuto_unittest.h"
+#include "../src/diminuto_renameat2.h"
 
 static int my_lock(const char * file) {
     static const char SUFFIX[] = "-lock-XXXXXX";
@@ -146,7 +146,7 @@ static void test_prepostlock() {
 }
 
 int main(void) {
-    diminuto_log_setmask();
+    SETLOGMASK();
     { TEST(); test_lock(); STATUS(); }
     { TEST(); test_prepostlock(); STATUS(); }
 }

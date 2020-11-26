@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Buffer feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -10,14 +10,14 @@
  * This is a unit test of the Buffer feature.
  */
 
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_heap.h"
+#include <string.h>
+#include <errno.h>
+#include <stdlib.h>
 #include "../src/diminuto_buffer.h"
 
 static int memverify(void * s, int c, size_t n)

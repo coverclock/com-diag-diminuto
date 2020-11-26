@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Buffer performance feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -10,14 +10,14 @@
  * This is a unit test of the Buffer performance feature.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_heap.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #define COUNT 1000
 
@@ -56,7 +56,7 @@ static void report(diminuto_ticks_t ticks)
     diminuto_ticks_t fraction;
 
     diminuto_time_duration(ticks, &day, &hour, &minute, &second, &fraction);
-    printf("elapsed %lluticks %d/%2.2d:%2.2d:%2.2d.%9.9llu\n", (long long unsigned int)ticks, day, hour, minute, second, (long long unsigned int)fraction);
+    CHECKPOINT("elapsed %lluticks %d/%2.2d:%2.2d:%2.2d.%9.9llu\n", (long long unsigned int)ticks, day, hour, minute, second, (long long unsigned int)fraction);
 }
 
 int main(int argc, char * argv[])
@@ -70,6 +70,8 @@ int main(int argc, char * argv[])
         limit = strtol(argv[1], (char **)0, 0);
     }
 
+    TEST();
+
     ASSERT(diminuto_buffer_prealloc(COUNT, 1 << 3) > 0);
     ASSERT(diminuto_buffer_prealloc(COUNT, 1 << 4) > 0);
     ASSERT(diminuto_buffer_prealloc(COUNT, 1 << 5) > 0);
@@ -82,14 +84,14 @@ int main(int argc, char * argv[])
     ASSERT(diminuto_buffer_prealloc(COUNT, 1 << 12) > 0);
     ASSERT(!diminuto_buffer_nomalloc(!0));
 
-    printf("malloc %d %d\n", COUNT, limit);
+    CHECKPOINT("malloc %d %d\n", COUNT, limit);
     ticks = run(limit);
     report(ticks);
 
     ASSERT(diminuto_heap_malloc_set(diminuto_buffer_malloc) == malloc);
     ASSERT(diminuto_heap_free_set(diminuto_buffer_free) == free);
 
-    printf("diminuto_buffer_malloc %d %d\n", COUNT, limit);
+    CHECKPOINT("diminuto_buffer_malloc %d %d\n", COUNT, limit);
     ticks = run(limit);
     report(ticks);
 
@@ -98,6 +100,8 @@ int main(int argc, char * argv[])
 
     diminuto_buffer_fini();
     ASSERT(diminuto_buffer_nomalloc(0));
+
+    STATUS();
 
     EXIT();
 }

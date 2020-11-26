@@ -35,9 +35,9 @@ static int compare_strings(diminuto_store_t * thisp, diminuto_store_t * thatp)
 static void list(diminuto_store_t ** rootp)
 {
     diminuto_store_t * nodep;
-    printf("list: root=%p\n", (void *)rootp);
+    CHECKPOINT("list: root=%p\n", (void *)rootp);
     for (nodep = diminuto_store_first(rootp); !diminuto_store_ismissing(nodep); nodep = diminuto_store_next(nodep)) {
-        printf("list: %s=\"%s\"\n", (const char *)(nodep->key), (const char *)(nodep->value));
+        CHECKPOINT("list: %s=\"%s\"\n", (const char *)(nodep->key), (const char *)(nodep->value));
     }
 }
 
@@ -104,14 +104,21 @@ int main(void)
     SETLOGMASK();
 
     {
+        TEST();
+
         ASSERT(DIMINUTO_STORE_NULL == (diminuto_store_t *)0);
         ASSERT(DIMINUTO_STORE_EMPTY == (diminuto_store_t *)0);
+
+        STATUS();
     }
 
     {
         diminuto_store_t first = DIMINUTO_STORE_NULLINIT;
         char KEY[] = "key";
         char VALUE[] = "value";
+
+        TEST();
+
         ASSERT(diminuto_store_keyget(&first) == (void *)0);
         ASSERT(diminuto_store_valueget(&first) == (void *)0);
         diminuto_store_keyvalueinit(&first, KEY, VALUE);
@@ -136,6 +143,8 @@ int main(void)
         ASSERT(diminuto_store_keyget(&first) == KEY);
         ASSERT(diminuto_store_valueget(&first) == VALUE);
         ASSERT(diminuto_store_fini(&first) == (diminuto_store_t *)0);
+
+        STATUS();
     }
 
     {
@@ -145,6 +154,9 @@ int main(void)
         diminuto_store_t able = DIMINUTO_STORE_KEYVALUEINIT("Aa", 4);
         diminuto_store_t baker = DIMINUTO_STORE_KEYVALUEINIT("Bbb", 5);
         diminuto_store_t charlie = DIMINUTO_STORE_KEYVALUEINIT("Cccc", 6);
+
+        TEST();
+
         ASSERT(compare_strings(&alpha, &beta) < 0);
         ASSERT(compare_strings(&beta, &gamma) < 0);
         ASSERT(compare_strings(&alpha, &gamma) < 0);
@@ -157,19 +169,31 @@ int main(void)
         ASSERT(compare_strings(&alpha, &able) == 0);
         ASSERT(compare_strings(&beta, &baker) == 0);
         ASSERT(compare_strings(&gamma, &charlie) == 0);
+
+        STATUS();
     }
 
     {
         diminuto_store_t node;
+
+        TEST();
+
         ASSERT(diminuto_containerof(diminuto_store_t, tree, &node.tree) == &node);
+
+        STATUS();
    }
 
     {
         size_t ii;
+
+        TEST();
+
         ASSERT(countof(ALPHABET) == countof(ALFABIT));
         for (ii = 0; ii < countof(ALPHABET); ++ii) {
             ASSERT(strcmp((const char *)ALPHABET[ii].key, (const char *)ALFABIT[ii].key) == 0);
         }
+
+        STATUS();
     }
 
     {
@@ -177,6 +201,9 @@ int main(void)
         diminuto_store_t foo = DIMINUTO_STORE_KEYVALUEINIT("FOO", "0");
         diminuto_store_t bar = DIMINUTO_STORE_KEYVALUEINIT("BAR", "0");
         diminuto_store_t * nodep;
+
+        TEST();
+
         ASSERT(diminuto_store_remove(DIMINUTO_STORE_NULL) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, DIMINUTO_STORE_NULL, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
@@ -189,6 +216,8 @@ int main(void)
         ASSERT(diminuto_tree_isorphan(diminuto_store_upcast(nodep)));
         ASSERT(diminuto_store_find(&root, &foo, diminuto_store_compare_strings) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_remove(diminuto_store_find(&root, &foo, diminuto_store_compare_strings)) == DIMINUTO_STORE_NULL);
+
+        STATUS();
     }
 
     {
@@ -198,6 +227,9 @@ int main(void)
         diminuto_store_t * otherp;
         diminuto_store_t target;
         ssize_t ii;
+
+        TEST();
+
         list(&root);
         ASSERT(diminuto_store_audit(&root) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_isempty(&root));
@@ -271,6 +303,8 @@ int main(void)
         ASSERT(diminuto_store_isempty(&root));
         ASSERT(diminuto_store_first(&root) == DIMINUTO_STORE_NULL);
         ASSERT(diminuto_store_last(&root) == DIMINUTO_STORE_NULL);
+
+        STATUS();
     }
 
     EXIT();

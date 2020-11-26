@@ -10,14 +10,17 @@
  * This is a unit test of the Testify feature.
  */
 
-#include <stdio.h>
 #include "com/diag/diminuto/diminuto_testify.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 
-#define PRINTF(_VALUE_, _OTHERWISE_) printf("%d %d %s\n", (_VALUE_), (_OTHERWISE_), DIMINUTO_TESTIFY(_VALUE_, _OTHERWISE_))
+#define PRINTF(_VALUE_, _OTHERWISE_) CHECKPOINT("%d %d %s\n", (_VALUE_), (_OTHERWISE_), DIMINUTO_TESTIFY(_VALUE_, _OTHERWISE_))
 
 int main(int argc, char ** argv)
 {
+    SETLOGMASK();
+
+    TEST();
+
     PRINTF(0, 0);
     PRINTF(0, !0);
     PRINTF(!0, 0);
@@ -166,6 +169,8 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_testify("0X1?", -8) == -8);
     ASSERT(diminuto_testify("0x?", -9) == -9);
     ASSERT(diminuto_testify("0X?", -8) == -8);
+
+    STATUS();
 
     EXIT();
 }
