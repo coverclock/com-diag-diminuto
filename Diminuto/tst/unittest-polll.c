@@ -114,12 +114,12 @@ int main(int argc, char ** argv)
                 if ((ready = diminuto_poll_wait(&poll, diminuto_frequency())) > 0) {
                     break;
                 } else if (ready == 0) {
-                    DIMINUTO_LOG_INFORMATION("listener timed out\n");
+                    CHECKPOINT("listener timed out\n");
                     ++timeouts;
                 } else if (errno != EINTR) {
                     FATAL("diminuto_poll_wait: error");
                 } else if (diminuto_alarm_check()) {
-                    DIMINUTO_LOG_INFORMATION("listener alarmed\n");
+                    CHECKPOINT("listener alarmed\n");
                     ++alarms;
                 } else {
                     FATAL("diminuto_poll_wait: interrupted");
@@ -168,12 +168,12 @@ int main(int argc, char ** argv)
                     if ((ready = diminuto_poll_wait(&poll, diminuto_frequency() / 10)) > 0) {
                         break;
                     } else if (ready == 0) {
-                        DIMINUTO_LOG_INFORMATION("producer timed out\n");
+                        CHECKPOINT("producer timed out\n");
                         ++timeouts;
                     } else if (errno != EINTR) {
                         FATAL("diminuto_poll_wait: error");
                     } else if (diminuto_alarm_check()) {
-                        DIMINUTO_LOG_INFORMATION("producer alarmed\n");
+                        CHECKPOINT("producer alarmed\n");
                         ++alarms;
                     } else {
                         FATAL("diminuto_poll_wait: interrupted");
@@ -198,7 +198,7 @@ int main(int argc, char ** argv)
                         percentage = totalsent;
                         percentage *= 100;
                         percentage /= TOTAL;
-                        DIMINUTO_LOG_INFORMATION("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
+                        CHECKPOINT("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
 
                         here += sent;
                         used -= sent;
@@ -228,7 +228,7 @@ int main(int argc, char ** argv)
                     input_16 = diminuto_fletcher_16(there, received, &input_a, &input_b);
 
                     totalreceived += received;
-                    DIMINUTO_LOG_INFORMATION("producer received %10d %10d %10u\n", readable, received, totalreceived);
+                    CHECKPOINT("producer received %10d %10d %10u\n", readable, received, totalreceived);
 
                     there += received;
                     available -= received;
@@ -303,7 +303,7 @@ int main(int argc, char ** argv)
                     } else if (ready == 0) {
                         diminuto_yield();
                     } else if (errno == EINTR) {
-                        DIMINUTO_LOG_DEBUG("consumer interrupted\n");
+                        CHECKPOINT("consumer interrupted\n");
                     } else {
                         FATAL("diminuto_poll_wait");
                     }
@@ -321,7 +321,7 @@ int main(int argc, char ** argv)
                     percentage = totalreceived;
                     percentage *= 100;
                     percentage /= TOTAL;
-                    DIMINUTO_LOG_INFORMATION("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
+                    COMMENT("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
 
                     if (received == 0) {
                         done = !0;
@@ -334,7 +334,7 @@ int main(int argc, char ** argv)
                         ASSERT(sent <= received);
 
                         totalsent += sent;
-                        DIMINUTO_LOG_INFORMATION("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
+                        COMMENT("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
 
                         received -= sent;
                     }

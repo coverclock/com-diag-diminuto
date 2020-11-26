@@ -195,13 +195,13 @@ static void epoch(diminuto_sticks_t now, int verbose)
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
         if (!notfirst) {
-            DIMINUTO_LOG_DEBUG("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
+            COMMENT("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
                 , "NOW", "ZULU", "JULIET", "OFFSET"
                 , "ZULU", "JULIET", "DURATION"
                 , "TIMEZONE", "DAYLIGHTSAVING");
             notfirst = !0;
         }
-        DIMINUTO_LOG_DEBUG("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
+        COMMENT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
             , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
             , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
             , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
@@ -254,17 +254,21 @@ int main(int argc, char ** argv)
     printf("low            %lld\n", (long long int)low);
     printf("high           %lld\n", (long long int)high);
 
-    TEST();
+    {
+        TEST();
 
-    sanity0();
+        sanity0();
 
-    STATUS();
+        STATUS();
+    }
 
-    TEST();
+    {
+        TEST();
 
-    sanity1();
+        sanity1();
 
-    STATUS();
+        STATUS();
+    }
 
     /*
      * sanity0 and sanity1 are basic sanity tests.
@@ -273,116 +277,130 @@ int main(int argc, char ** argv)
      * edge cases are pretty out there.
      */
 
-    TEST();
+    {
+        TEST();
 
-    notfirst = 0;
-    prior = -1;
+        notfirst = 0;
+        prior = -1;
 
-    /*
-     * See also fun/timestuff.c
-     */
+        /*
+         * See also fun/timestuff.c
+         */
 
-    epoch(0xffffffff80000000LL * hertz, !0);
-    VERIFY(1901, 12, 13, 20, 45, 52, 0);
+        epoch(0xffffffff80000000LL * hertz, !0);
+        VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
-    epoch(-1 * hertz, !0);
-    VERIFY(1969, 12, 31, 23, 59, 59, 0);
+        epoch(-1 * hertz, !0);
+        VERIFY(1969, 12, 31, 23, 59, 59, 0);
 
-    epoch(0, !0);
-    VERIFY(1970, 1, 1, 0, 0, 0, 0);
+        epoch(0, !0);
+        VERIFY(1970, 1, 1, 0, 0, 0, 0);
 
-    epoch(1, !0);
-    VERIFY(1970, 1, 1, 0, 0, 0, 1);
+        epoch(1, !0);
+        VERIFY(1970, 1, 1, 0, 0, 0, 1);
 
-    epoch(hertz - 1, !0);
-    VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
+        epoch(hertz - 1, !0);
+        VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
 
-    epoch(hertz, !0);
-    VERIFY(1970, 1, 1, 0, 0, 1, 0);
+        epoch(hertz, !0);
+        VERIFY(1970, 1, 1, 0, 0, 1, 0);
 
-    epoch(1000000000LL * hertz, !0);
-    VERIFY(2001, 9, 9, 1, 46, 40, 0);
+        epoch(1000000000LL * hertz, !0);
+        VERIFY(2001, 9, 9, 1, 46, 40, 0);
 
-    epoch(1234567890LL * hertz, !0);
-    VERIFY(2009, 2, 13, 23, 31, 30, 0);
+        epoch(1234567890LL * hertz, !0);
+        VERIFY(2009, 2, 13, 23, 31, 30, 0);
 
-    epoch(15000LL * 24LL * 3600LL * hertz, !0);
-    VERIFY(2011, 1, 26, 0, 0, 0, 0);
+        epoch(15000LL * 24LL * 3600LL * hertz, !0);
+        VERIFY(2011, 1, 26, 0, 0, 0, 0);
 
-    epoch(1400000000LL * hertz, !0);
-    VERIFY(2014, 5, 13, 16, 53, 20, 0);
+        epoch(1400000000LL * hertz, !0);
+        VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-    epoch(0x000000007fffffffLL * hertz, !0);
-    VERIFY(2038, 1, 19, 3, 14, 7, 0);
+        epoch(0x000000007fffffffLL * hertz, !0);
+        VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
-    STATUS();
-
-    TEST();
-
-    notfirst = 0;
-    prior = -1;
-
-    epoch(low * hertz, !0);
-    epoch(-hertz, !0);
-    epoch(0, !0);
-    epoch(high * hertz, !0);
-
-    STATUS();
-
-    TEST();
-
-    notfirst = 0;
-    prior = -1;
-
-    for (now = low; now <= high; now += (365 * 24 * 60 * 60)) {
-        epoch(now * hertz, 0);
+        STATUS();
     }
 
-    STATUS();
+    { 
+        TEST();
 
-    TEST();
+        notfirst = 0;
+        prior = -1;
 
-    notfirst = 0;
-    prior = -1;
+        epoch(low * hertz, !0);
+        epoch(-hertz, !0);
+        epoch(0, !0);
+        epoch(high * hertz, !0);
 
-    for (now = low; now <= high; now += (24 * 60 * 60)) {
-        epoch(now * hertz, 0);
+        STATUS();
     }
 
-    STATUS();
+    {
+        TEST();
 
-    TEST();
+        notfirst = 0;
+        prior = -1;
 
-    notfirst = 0;
-    prior = -1;
+        for (now = low; now <= high; now += (365 * 24 * 60 * 60)) {
+            epoch(now * hertz, 0);
+        }
 
-    for (now = low; now <= high; now += (60 * 60)) {
-        epoch(now * hertz, 0);
+        STATUS();
     }
 
-    STATUS();
+    {
+        TEST();
 
-    TEST();
+        notfirst = 0;
+        prior = -1;
 
-    notfirst = 0;
-    prior = -1;
+        for (now = low; now <= high; now += (24 * 60 * 60)) {
+            epoch(now * hertz, 0);
+        }
 
-    for (now = low; now <= high; now += 60) {
-        epoch(now * hertz, 0);
+        STATUS();
     }
 
-    STATUS();
+    {
+        TEST();
 
-    TEST();
+        notfirst = 0;
+        prior = -1;
 
-    notfirst = 0;
-    prior = -1;
+        for (now = low; now <= high; now += (60 * 60)) {
+            epoch(now * hertz, 0);
+        }
 
-    for (now = low; now <= high; now += 1) {
-        epoch(now * hertz, 0);
+        STATUS();
     }
 
-    STATUS();
+    {
+        TEST();
+
+        notfirst = 0;
+        prior = -1;
+
+        for (now = low; now <= high; now += 60) {
+            epoch(now * hertz, 0);
+        }
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        notfirst = 0;
+        prior = -1;
+
+        for (now = low; now <= high; now += 1) {
+            epoch(now * hertz, 0);
+        }
+
+        STATUS();
+    }
 
     EXIT();
 }

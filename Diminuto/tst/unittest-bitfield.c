@@ -11,7 +11,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include <stdint.h>
 
 union Union {
@@ -33,11 +32,11 @@ int main(void)
         integer.bitfield.bit = 1; /* Produces -pedantic warning. Why? */
 
         if (integer.word == 0x80000000) { 
-            DIMINUTO_LOG_INFORMATION("%s\n", DIMINUTO_LOG_HERE "high-to-low");
+            CHECKPOINT("%s\n", "high-to-low");
         } else if (integer.word == 0x00000001) {
-            DIMINUTO_LOG_INFORMATION("%s\n", DIMINUTO_LOG_HERE "low-to-high");
+            CHECKPOINT("%s\n", "low-to-high");
         } else {
-            DIMINUTO_LOG_INFORMATION("%s 0x%8.8x\n", DIMINUTO_LOG_HERE, integer.word);
+            CHECKPOINT("0x%8.8x\n", integer.word);
         }
 
         STATUS();

@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
         strncat(command, argv[ii], sizeof(command) - strlen(command) - 1);
      }
 
-    DIMINUTO_LOG_DEBUG("command: \"%s\"\n", command);
+    CHECKPOINT("command: \"%s\"\n", command);
 
     fp = popen(command, "w");
     ASSERT(fp != (FILE *)0);

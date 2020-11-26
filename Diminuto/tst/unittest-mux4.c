@@ -120,12 +120,12 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
             ASSERT(ii < countof(pipefd));
             rc = read(fd, &buffer, sizeof(buffer));
             if (rc == 0) {
-                DIMINUTO_LOG_DEBUG("cc=%d pp=%d fd=%d ii=%d read(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
+                CHECKPOINT("cc=%d pp=%d fd=%d ii=%d read(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
                 ASSERT(diminuto_mux_close(&mux, fd) == 0);
                 --cc;
                 continue;
             }
-            DIMINUTO_LOG_DEBUG("cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+            CHECKPOINT("cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
             ASSERT(rc == sizeof(buffer));
             ASSERT(buffer == input[ii]);
             ++reads[buffer];
@@ -138,11 +138,11 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
             ASSERT(ii < countof(pipefd));
             buffer = output[ii]++;
             rc = write(fd, &buffer, sizeof(buffer));
-            DIMINUTO_LOG_DEBUG("cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+            CHECKPOINT("cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
             ASSERT(rc == sizeof(buffer));
             ++writes[buffer];
             if (buffer == (((ii + 1) * countof(output)) - 1)) {
-                DIMINUTO_LOG_DEBUG("cc=%d pp=%d fd=%d ii=%d write(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
+                CHECKPOINT("cc=%d pp=%d fd=%d ii=%d write(%d)=%d close\n", cc, pp, fd, ii, fd, rc);
                 ASSERT(diminuto_mux_close(&mux, fd) == 0);
                 --pp;
                 continue;
@@ -734,15 +734,15 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_register_accept(&mux, socket) >= 0);
 
         rc = diminuto_mux_wait(&mux, -1);
-        COMMENT("rc=%d\n", rc);
+        CHECKPOINT("rc=%d\n", rc);
         ASSERT((rc == 2) || (rc == 3));
 
         fd = diminuto_mux_ready_read(&mux);
-        COMMENT("fd=%d\n", fd);
+        CHECKPOINT("fd=%d\n", fd);
         ASSERT((fd < 0) || (fd == STDIN_FILENO));
 
         fd = diminuto_mux_ready_read(&mux);
-        COMMENT("fd=%d\n", fd);
+        CHECKPOINT("fd=%d\n", fd);
         ASSERT(fd < 0);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
@@ -750,13 +750,13 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_ready_write(&mux) < 0);
 
         rc = diminuto_mux_wait(&mux, -1);
-        COMMENT("rc=%d\n", rc);
+        CHECKPOINT("rc=%d\n", rc);
         ASSERT((rc == 2) || (rc == 3));
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
 
         rc = diminuto_mux_wait(&mux, -1);
-        COMMENT("rc=%d\n", rc);
+        CHECKPOINT("rc=%d\n", rc);
         ADVISE((rc == 2) || (rc == 3));
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDERR_FILENO);
@@ -767,7 +767,7 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_unregister_write(&mux, STDERR_FILENO) >= 0);
 
         rc = diminuto_mux_wait(&mux, -1);
-        COMMENT("rc=%d\n", rc);
+        CHECKPOINT("rc=%d\n", rc);
         ASSERT(rc == 1);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
@@ -800,15 +800,15 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_mux_register_write(&mux, STDOUT_FILENO) >= 0);
 
         rc = diminuto_mux_wait(&mux, -1);
-        COMMENT("rc=%d\n", rc);
+        CHECKPOINT("rc=%d\n", rc);
         ASSERT((rc == 1) || (rc == 2));
 
         fd = diminuto_mux_ready_read(&mux);
-        COMMENT("fd=%d\n", fd);
+        CHECKPOINT("fd=%d\n", fd);
         ASSERT((fd < 0) || (fd == STDIN_FILENO));
 
         fd = diminuto_mux_ready_read(&mux);
-        COMMENT("fd=%d\n", fd);
+        CHECKPOINT("fd=%d\n", fd);
         ASSERT(fd < 0);
 
         ASSERT(diminuto_mux_ready_write(&mux) == STDOUT_FILENO);
@@ -898,12 +898,12 @@ int main(int argc, char ** argv)
                 if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
                     break;
                 } else if (ready == 0) {
-                    DIMINUTO_LOG_DEBUG("listener timed out\n");
+                    CHECKPOINT("listener timed out\n");
                     ++timeouts;
                 } else if (errno != EINTR) {
                     FATAL("diminuto_mux_wait: error");
                 } else if (diminuto_alarm_check()) {
-                    DIMINUTO_LOG_DEBUG("listener alarmed\n");
+                    CHECKPOINT("listener alarmed\n");
                     ++alarms;
                 } else {
                     FATAL("diminuto_mux_wait: interrupted");
@@ -947,7 +947,7 @@ int main(int argc, char ** argv)
             input_a = input_b = output_a = output_b = 0;
 
             ASSERT((sent = diminuto_ipc4_datagram_send_generic(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
-            DIMINUTO_LOG_DEBUG("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
+            CHECKPOINT("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
 
             do {
 
@@ -955,12 +955,12 @@ int main(int argc, char ** argv)
                     if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() / 10)) > 0) {
                         break;
                     } else if (ready == 0) {
-                        DIMINUTO_LOG_DEBUG("producer timed out\n");
+                        CHECKPOINT("producer timed out\n");
                         ++timeouts;
                     } else if (errno != EINTR) {
                         FATAL("diminuto_mux_wait: error");
                     } else if (diminuto_alarm_check()) {
-                        DIMINUTO_LOG_DEBUG("producer alarmed\n");
+                        CHECKPOINT("producer alarmed\n");
                         ++alarms;
                     } else {
                         FATAL("diminuto_mux_wait: interrupted");
@@ -985,7 +985,7 @@ int main(int argc, char ** argv)
                         percentage = totalsent;
                         percentage *= 100;
                         percentage /= TOTAL;
-                        DIMINUTO_LOG_DEBUG("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
+                        COMMENT("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
 
                         here += sent;
                         used -= sent;
@@ -1015,7 +1015,7 @@ int main(int argc, char ** argv)
                     input_16 = diminuto_fletcher_16(there, received, &input_a, &input_b);
 
                     totalreceived += received;
-                    DIMINUTO_LOG_DEBUG("producer received %10d %10d %10u\n", readable, received, totalreceived);
+                    COMMENT("producer received %10d %10d %10u\n", readable, received, totalreceived);
 
                     there += received;
                     available -= received;
@@ -1039,9 +1039,9 @@ int main(int argc, char ** argv)
 
             ASSERT(input_16 == output_16);
 
-            COMMENT("timeouts=%d\n", timeouts);
+            CHECKPOINT("timeouts=%d\n", timeouts);
             ADVISE(timeouts > 0);
-            COMMENT("alarms=%d\n", alarms);
+            CHECKPOINT("alarms=%d\n", alarms);
             ADVISE(alarms > 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
@@ -1093,7 +1093,7 @@ int main(int argc, char ** argv)
                     } else if (ready == 0) {
                         diminuto_yield();
                     } else if (errno == EINTR) {
-                        DIMINUTO_LOG_DEBUG("consumer interrupted\n");
+                        CHECKPOINT("consumer interrupted\n");
                     } else {
                         FATAL("diminuto_mux_wait");
                     }
@@ -1104,7 +1104,7 @@ int main(int argc, char ** argv)
                         ASSERT(fd == consumer);
                         buffer[0] = '\0';
                         ASSERT((received = diminuto_ipc4_datagram_receive_generic(fd, buffer, 1, (diminuto_ipv4_t *)0, (diminuto_port_t *)0, MSG_OOB | MSG_DONTWAIT)) == 1);
-                        DIMINUTO_LOG_DEBUG("consumer ACKed    %10d %10d %10u %7.3lf%%\n", 0, received, 0, 0.0);
+                        COMMENT("consumer ACKed    %10d %10d %10u %7.3lf%%\n", 0, received, 0, 0.0);
                         ASSERT(buffer[0] == ACK);
                         if (buffer[0] == ACK) {
                             proceed = !0;
@@ -1128,7 +1128,7 @@ int main(int argc, char ** argv)
                     percentage = totalreceived;
                     percentage *= 100;
                     percentage /= TOTAL;
-                    DIMINUTO_LOG_DEBUG("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
+                    COMMENT("consumer received %10d %10d %10u %7.3lf%%\n", readable, received, totalreceived, percentage);
 
                     if (received == 0) {
                         done = !0;
@@ -1141,7 +1141,7 @@ int main(int argc, char ** argv)
                         ASSERT(sent <= received);
 
                         totalsent += sent;
-                        DIMINUTO_LOG_DEBUG("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
+                        COMMENT("consumer sent     %10s %10d %10u\n", "", sent, totalsent);
 
                         received -= sent;
                     }

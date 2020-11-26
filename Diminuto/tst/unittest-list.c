@@ -40,7 +40,7 @@ static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
     diminuto_list_t * actual;
     va_list ap;
 
-    DIMINUTO_LOG_DEBUG("audit:%s@%d\n", file, line);
+    CHECKPOINT("audit:%s@%d\n", file, line);
 
     /* Forward */
 
@@ -151,7 +151,9 @@ int main(void)
 
         char datum[] = "datum";
 
-         ASSERT(DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
+        TEST();
+
+        ASSERT(DIMINUTO_LIST_NULL == (diminuto_list_t *)0);
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
@@ -225,9 +227,13 @@ int main(void)
         ASSERT(diminuto_list_isempty(&head));
         ASSERT((const char *)diminuto_list_data(&head) == datum);
         ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
+
+        STATUS();
     }
     {
         /* Stack Operations */
+
+        TEST();
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
@@ -300,10 +306,14 @@ int main(void)
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        STATUS();
     }
 
     {
         /* Queue Operations */
+
+        TEST();
 
         initialize();
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
@@ -376,10 +386,14 @@ int main(void)
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
         ASSERT(diminuto_list_tail(&head) == DIMINUTO_LIST_NULL);
         audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        STATUS();
     }
 
     {
         /* Data and Functors 1 */
+
+        TEST();
 
         initialize();
 
@@ -407,12 +421,16 @@ int main(void)
         while (!diminuto_list_isempty(&head)) {
             diminuto_list_remove(diminuto_list_next(&head));
         }
+
+        STATUS();
     }
 
     {
         /* Data and Functors 2 */
 
         int total;
+
+        TEST();
 
         initialize();
 
@@ -432,12 +450,15 @@ int main(void)
         ASSERT(diminuto_list_apply(&count, diminuto_list_next(&head), &total) == &head);
         ASSERT(total == 3);
 
+        STATUS();
     }
 
     {
         /* Reroot */
 
         diminuto_list_t temp;
+
+        TEST();
 
         diminuto_list_init(&temp);
 
@@ -465,12 +486,15 @@ int main(void)
 
         audit(__FILE__, __LINE__, &node[1], &node[1], &node[2], &temp, &node[0], &node[1], DIMINUTO_LIST_NULL);
 
+        STATUS();
     }
 
     {
         /* Replace 1 */
 
         diminuto_list_t temp;
+
+        TEST();
 
         diminuto_list_init(&temp);
 
@@ -487,12 +511,16 @@ int main(void)
         diminuto_list_replace(&node[1], &temp);
 
         audit(__FILE__, __LINE__, &head, &head, &node[0], &temp, &node[2], &head, DIMINUTO_LIST_NULL);
+
+        STATUS();
     }
 
     {
         /* Replace 2 */
 
         diminuto_list_t temp;
+
+        TEST();
 
         diminuto_list_init(&temp);
 
@@ -511,6 +539,8 @@ int main(void)
         diminuto_list_replace(&head, &temp);
 
         audit(__FILE__, __LINE__, &temp, &temp, &node[0], &node[1], &node[2], &temp, DIMINUTO_LIST_NULL);
+
+        STATUS();
     }
 
     {
@@ -518,6 +548,8 @@ int main(void)
 
         int ii;
         diminuto_list_t * np;
+
+        TEST();
 
         initialize();
 
@@ -533,6 +565,8 @@ int main(void)
         }
 
         audit(__FILE__, __LINE__, &head, &head, &node[0], &node[1], &node[2], &head, DIMINUTO_LIST_NULL);
+
+        STATUS();
     }
 
     {
@@ -543,6 +577,8 @@ int main(void)
         diminuto_list_t head2;
         diminuto_list_t list2[5];
         diminuto_list_t * np;
+
+        TEST();
 
         diminuto_list_datainit(&head1, (void*)0x10);
         diminuto_list_enqueue(&head1, diminuto_list_datainit(&list1[0], (void *)0x11));
@@ -597,6 +633,8 @@ int main(void)
         np = diminuto_list_splice(&list2[0], &list1[1]);
         ASSERT(np == &list1[1]);
         audit(__FILE__, __LINE__, &head1, &head1, &list1[0], &list1[1], &list2[0], &list2[2], &list2[3], &list2[1], &list1[2], &list1[3], &head1, DIMINUTO_LIST_NULL);
+
+        STATUS();
    }
 
     EXIT();

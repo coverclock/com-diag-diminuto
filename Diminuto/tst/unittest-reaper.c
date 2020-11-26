@@ -42,9 +42,9 @@ int main(int argc, char ** argv)
 
     for (ii = 0; ii < countof(pids); ++ii) {
         if ((pids[ii] = fork()) == 0) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "ii=%d pid=%d\n", ii, getpid());
+            CHECKPOINT("ii=%d pid=%d\n", ii, getpid());
             diminuto_delay((diminuto_frequency() / 10) * ii, 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "ii=%d pid=%d exit=%d\n", ii, getpid(), ii);
+            CHECKPOINT("ii=%d pid=%d exit=%d\n", ii, getpid(), ii);
             exit(ii);
         }
     }
@@ -59,14 +59,14 @@ int main(int argc, char ** argv)
             }
         }
         ASSERT(ii < countof(pids));
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "ii=%d pid=%d exit=%d\n", ii, pid, status);
+        CHECKPOINT("ii=%d pid=%d exit=%d\n", ii, pid, status);
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == ii);
     }
     ASSERT(pid == 0);
 
     if ((pid = fork()) == 0) {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "ii=%d pid=%d\n", ii, getpid());
+        CHECKPOINT("ii=%d pid=%d\n", ii, getpid());
         while (!0) {
             diminuto_yield();
         }
@@ -80,6 +80,8 @@ int main(int argc, char ** argv)
     pid = getpid();
     ASSERT(diminuto_reaper_signal(pid) == 0);
     ASSERT(diminuto_reaper_wait((int *)0) == 0);
+
+    STATUS();
 
     EXIT();
 }

@@ -22,6 +22,8 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    TEST();
+
     errno = 0;
 
     EXPECT((*diminuto_number("00", &n) == '\0') && (n == 0) && (errno == 0));
@@ -99,8 +101,10 @@ int main(int argc, char ** argv)
     ++argv;
     while ((argc--) > 0) {
         p = diminuto_number(*(argv++), &n);
-        DIMINUTO_LOG_NOTICE("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
+        CHECKPOINT("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
     }
+
+    STATUS();
 
     EXIT();
 }

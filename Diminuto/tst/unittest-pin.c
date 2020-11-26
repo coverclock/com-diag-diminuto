@@ -30,13 +30,13 @@ static int systemf(const char * format, ...)
     va_list ap;
     diminuto_path_t buffer;
 
-    DIMINUTO_LOG_DEBUG("%sformat=\"%s\"", DIMINUTO_LOG_HERE, format);
+    COMMENT("format=\"%s\"", format);
 
     va_start(ap, format);
     vsnprintf(buffer, sizeof(buffer), format, ap);
     va_end(ap);
 
-    DIMINUTO_LOG_DEBUG("%scommand=\"%s\"", DIMINUTO_LOG_HERE, buffer);
+    COMMENT("command=\"%s\"", buffer);
 
     ASSERT((rc = system(buffer)) >= 0);
 
@@ -55,24 +55,24 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    DIMINUTO_LOG_DEBUG("%ssizeof=%u", DIMINUTO_LOG_HERE, sizeof(buffer));
+    CHECKPOINT("sizeof=%u", sizeof(buffer));
     ASSERT(argv[0] != (char *)0);
     root = strrchr(argv[0], '/');
     root = (root == (char *)0) ? argv[0] : root + 1;
     ASSERT(root != (const char *)0);
-    DIMINUTO_LOG_DEBUG("%sroot=\"%s\"", DIMINUTO_LOG_HERE, root);
+    CHECKPOINT("root=\"%s\"", root);
     memset(&buffer, 0, sizeof(buffer));
     snprintf(buffer, sizeof(buffer), "%s/%s-XXXXXX", TMP, root);
     ASSERT(buffer[sizeof(buffer) - 1] == '\0');
-    DIMINUTO_LOG_DEBUG("%sbuffer=\"%s\"", DIMINUTO_LOG_HERE, buffer);
+    CHECKPOINT("buffer=\"%s\"", buffer);
     root = mkdtemp(buffer);
     ASSERT(root != (const char *)0);
     ASSERT(*root != '\0');
-    DIMINUTO_LOG_DEBUG("%smkdtemp=\"%s\"", DIMINUTO_LOG_HERE, root);
+    CHECKPOINT("mkdtemp=\"%s\"", root);
     prior = diminuto_pin_debug(root);
     ASSERT(prior != (const char *)0);
     ASSERT(*prior != '\0');
-    DIMINUTO_LOG_DEBUG("%sprior=\"%s\"", DIMINUTO_LOG_HERE, prior);
+    CHECKPOINT("prior=\"%s\"", prior);
 
     EXPECT(systemf("mkdir -p %s/class/gpio/gpio%u", root, 98) == 0);
     EXPECT(systemf("mkdir -p %s/class/gpio/gpio%u", root, 99) == 0);

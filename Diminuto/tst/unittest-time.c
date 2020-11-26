@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 
     first = !0;
 
-    DIMINUTO_LOG_INFORMATION("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
+    CHECKPOINT("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
         , "logical"
         , "difference"
         , "requested"
@@ -160,7 +160,7 @@ int main(int argc, char ** argv)
         result = diminuto_time_thread();
         ASSERT(result != (diminuto_sticks_t)-1);
         thread = result;
-        DIMINUTO_LOG_INFORMATION("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
+        CHECKPOINT("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
             , logical, first ? 0 : logical - logicalprime
             , requested, remaining
             , claimed

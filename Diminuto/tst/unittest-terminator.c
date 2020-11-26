@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "BEGIN parent=%d\n", getpid());
+    CHECKPOINT("BEGIN parent=%d\n", getpid());
 
     diminuto_terminator_debug = !0;
 
@@ -42,11 +42,11 @@ int main(int argc, char ** argv)
 
     pid = fork();
     if (pid == 0) {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "BEGIN child=%d\n", getpid());
+        CHECKPOINT("BEGIN child=%d\n", getpid());
         while (!diminuto_terminator_check()) {
             diminuto_yield();
         }
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "END child=%d\n", getpid());
+        CHECKPOINT("END child=%d\n", getpid());
         exit(0);
     }
 
@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
 
     ASSERT(!diminuto_reaper_check());
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "SIGNAL parent=%d child=%d\n", getpid(), pid);
+    CHECKPOINT("SIGNAL parent=%d child=%d\n", getpid(), pid);
 
     ASSERT(diminuto_terminator_signal(pid) == 0);
 
@@ -64,7 +64,7 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_reaper_check());
     ASSERT(!diminuto_reaper_check());
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "END parent=%d\n", getpid());
+    CHECKPOINT("END parent=%d\n", getpid());
 
     EXIT();
 }

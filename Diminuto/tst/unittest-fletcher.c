@@ -29,7 +29,7 @@ int main(void)
         EXPECT(b == 0x5a);
 
         c = diminuto_fletcher_16((const void *)0, 0, &a, &b);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
+        CHECKPOINT("a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
         EXPECT(c = 0x5aa5);
 
         EXPECT(a == 0xa5);
@@ -50,7 +50,7 @@ int main(void)
         EXPECT(b == 0);
 
         c = diminuto_fletcher_16(&buffer, sizeof(buffer), &a, &b);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
+        CHECKPOINT("a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
         EXPECT(c == 0xa5a5);
  
         EXPECT(a == 0xa5);
@@ -73,7 +73,7 @@ int main(void)
         EXPECT(b == 0);
 
         c = diminuto_fletcher_16(&buffer, sizeof(buffer), &a, &b);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
+        CHECKPOINT("a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
         EXPECT(c == 0xa500);
  
         EXPECT(a == 0x00);
@@ -96,7 +96,7 @@ int main(void)
         EXPECT(b == 0);
 
         c = diminuto_fletcher_16(&buffer, sizeof(buffer), &a, &b);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
+        CHECKPOINT("a=0x%2.2x b=0x%2.2x c=0x%4.4x\n", a, b, c);
         EXPECT(c == 0x4dae);
  
         EXPECT(a == 0xae);

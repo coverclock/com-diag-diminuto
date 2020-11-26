@@ -16,87 +16,87 @@
 
 int f9(void) {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 9);
+    CHECKPOINT("f%d\n", 9);
     rc = diminuto_stacktrace();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 9, rc);
+    CHECKPOINT("f%d %d\n", 9, rc);
     return rc;
 }
 
 int f8(void) {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 8);
+    CHECKPOINT("f%d\n", 8);
     rc = f9();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 8, rc);
+    CHECKPOINT("f%d %d\n", 8, rc);
     return rc;
 }
 
 int f7(void) {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 7);
+    CHECKPOINT("f%d\n", 7);
     rc = f8();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 7, rc);
+    CHECKPOINT("f%d %d\n", 7, rc);
     return rc;
 }
 
 int f6(void) {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 6);
+    CHECKPOINT("f%d\n", 6);
     rc = f7();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 6, rc);
+    CHECKPOINT("f%d %d\n", 6, rc);
     return rc;
 }
 
 int f5(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 5);
+    CHECKPOINT("f%d\n", 5);
     rc = f6();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 5, rc);
+    CHECKPOINT("f%d %d\n", 5, rc);
     return rc;
 }
 
 int f4(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 4);
+    CHECKPOINT("f%d\n", 4);
     rc = f5();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 4, rc);
+    CHECKPOINT("f%d %d\n", 4, rc);
     return rc;
 }
 
 int f3(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 3);
+    CHECKPOINT("f%d\n", 3);
     rc = f4();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 3, rc);
+    CHECKPOINT("f%d %d\n", 3, rc);
     return rc;
 }
 
 int f2(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 2);
+    CHECKPOINT("f%d\n", 2);
     rc = f3();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 2, rc);
+    CHECKPOINT("f%d %d\n", 2, rc);
     return rc;
 }
 
 int f1(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 1);
+    CHECKPOINT("f%d\n", 1);
     rc = f2();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 1, rc);
+    CHECKPOINT("f%d %d\n", 1, rc);
     return rc;
 }
 
 int f0(void)
 {
     int rc;
-    DIMINUTO_LOG_DEBUG("%s f%d\n", DIMINUTO_LOG_HERE, 0);
+    CHECKPOINT("f%d\n", 0);
     rc = f1();
-    DIMINUTO_LOG_DEBUG("%s f%d %d\n", DIMINUTO_LOG_HERE, 0, rc);
+    CHECKPOINT("f%d %d\n", 0, rc);
     return rc;
 }
 
@@ -106,11 +106,11 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
-    DIMINUTO_LOG_DEBUG("%s main\n", DIMINUTO_LOG_HERE);
+    CHECKPOINT("main\n");
 
     count = f0();
 
-    DIMINUTO_LOG_DEBUG("%s main %d\n", DIMINUTO_LOG_HERE, count);
+    CHECKPOINT("main %d\n", count);
 
     ASSERT(count >= 0);
 

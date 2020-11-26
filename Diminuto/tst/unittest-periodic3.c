@@ -65,11 +65,11 @@ int main(int argc, char ** argv)
     hertz = diminuto_frequency();
 
     frequency = diminuto_timer_frequency();
-    DIMINUTO_LOG_INFORMATION("timer frequency %llu Hz\n", frequency);
+    CHECKPOINT("timer frequency %llu Hz\n", frequency);
 
     diminuto_alarm_install(0);
 
-    DIMINUTO_LOG_INFORMATION("%21s %21s %21s %11s\n",
+    CHECKPOINT("%21s %21s %21s %11s\n",
         "requested", "claimed", "measured", "error");
 
     ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
             rs = (diminuto_time_duration(requested, &rday, &rhour, &rminute, &rsecond, &rtick) < 0) ? '-' : '+';
             cs = (diminuto_time_duration(claimed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
-            DIMINUTO_LOG_INFORMATION("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
+            CHECKPOINT("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
                 , rs, rday, rhour, rminute, rsecond, rtick
                 , cs, cday, chour, cminute, csecond, ctick
                 , ms, mday, mhour, mminute, msecond, mtick

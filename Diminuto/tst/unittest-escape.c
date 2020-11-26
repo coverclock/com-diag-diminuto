@@ -31,6 +31,8 @@ int main(void)
         char data[sizeof(DATA)] = { '\0', };
         size_t size = 0;
 
+        TEST();
+
         length = strlen(DATA) + 1;
         size = diminuto_escape_collapse(data, DATA, length);
         diminuto_dump(stdout, data, size);
@@ -38,6 +40,8 @@ int main(void)
         ASSERT(data[0] == '\xb5');
         ASSERT(data[1] == 'b');
         ASSERT(data[2] == '\0');
+
+        STATUS();
     }
 
     {
@@ -46,6 +50,8 @@ int main(void)
         char data[sizeof(DATA)] = { '\0', };
         size_t size = 0;
 
+        TEST();
+
         length = strlen(DATA) + 1;
         size = diminuto_escape_collapse(data, DATA, length);
         diminuto_dump(stdout, data, size);
@@ -53,6 +59,8 @@ int main(void)
         ASSERT(data[0] == '\x0b');
         ASSERT(data[1] == '\x5b');
         ASSERT(data[2] == '\0');
+
+        STATUS();
     }
 
     {
@@ -61,6 +69,8 @@ int main(void)
         char data[sizeof(DATA)] = { '\0', };
         size_t size = 0;
 
+        TEST();
+
         length = strlen(DATA) + 1;
         size = diminuto_escape_collapse(data, DATA, length);
         diminuto_dump(stdout, data, size);
@@ -68,6 +78,8 @@ int main(void)
         ASSERT(data[0] == '\x0b');
         ASSERT(data[1] == 'G');
         ASSERT(data[2] == '\0');
+
+        STATUS();
     }
 
     {
@@ -136,53 +148,61 @@ int main(void)
                                    "\\0";
         size_t size;
 
+        TEST();
+
         for (size = 0; size < sizeof(one); ++size) {
             one[size] = size + 1;
         }
-        DIMINUTO_LOG_DEBUG("one [%zu]\n", sizeof(one));
+        CHECKPOINT("one [%zu]\n", sizeof(one));
         diminuto_dump(stdout, one, sizeof(one));
         ASSERT(sizeof(one) == 256);
 
         size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "\" ");
-        DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
+        CHECKPOINT("two [%zu] \"%s\"\n", size, two);
         diminuto_dump(stdout, two, size);
         ASSERT(size == sizeof(FOUR));
         ASSERT(strcmp(two, FOUR) == 0);
 
         size = diminuto_escape_collapse(three, two, sizeof(three));
-        DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
+        CHECKPOINT("three [%zu]\n", size);
         diminuto_dump(stdout, three, size);
         ASSERT(size == (sizeof(one) + 1));
         ASSERT(memcmp(one, three, sizeof(one)) == 0);
 
         size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), "");
-        DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
+        CHECKPOINT("two [%zu] \"%s\"\n", size, two);
         diminuto_dump(stdout, two, size);
         ASSERT(size == sizeof(FIVE));
         ASSERT(strcmp(two, FIVE) == 0);
 
         size = diminuto_escape_collapse(three, two, sizeof(three));
-        DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
+        CHECKPOINT("three [%zu]\n", size);
         diminuto_dump(stdout, three, size);
         ASSERT(size == (sizeof(one) + 1));
         ASSERT(memcmp(one, three, sizeof(one)) == 0);
 
         size = diminuto_escape_expand(two, one, sizeof(two), sizeof(one), (const char *)0);
-        DIMINUTO_LOG_DEBUG("two [%zu] \"%s\"\n", size, two);
+        CHECKPOINT("two [%zu] \"%s\"\n", size, two);
         diminuto_dump(stdout, two, size);
         ASSERT(size == sizeof(FIVE));
         ASSERT(strcmp(two, FIVE) == 0);
 
         size = diminuto_escape_collapse(three, two, sizeof(three));
-        DIMINUTO_LOG_DEBUG("three [%zu]\n", size);
+        CHECKPOINT("three [%zu]\n", size);
         diminuto_dump(stdout, three, size);
         ASSERT(size == (sizeof(one) + 1));
         ASSERT(memcmp(one, three, sizeof(one)) == 0);
+
+        STATUS();
     }
 
     {
+        TEST();
+
         ASSERT(diminuto_escape_expand((char *)0, (const char *)0, 0, 0, (const char *)0) == 0);
         ASSERT(diminuto_escape_collapse((char *)0, (const char *)0, 0) == 0);
+
+        STATUS();
     }
 
     {
@@ -192,6 +212,8 @@ int main(void)
         static const char FOUR[] = "";
         size_t size;
 
+        TEST();
+
         ASSERT(sizeof(one) == 1);
         ASSERT(strlen(one) == 0);
         size = diminuto_escape_expand(two, one, sizeof(two), strlen(one), (const char *)0);
@@ -200,10 +222,15 @@ int main(void)
         size = diminuto_escape_collapse(three, two, sizeof(three));
         ASSERT(size == 1);
         ASSERT(memcmp(one, three, sizeof(one)) == 0);
+
+        STATUS();
     }
 
     {
         char out[64];
+
+        TEST();
+
         ASSERT(diminuto_escape_trim((char *)0, (const char *)0, 0, 0) == 0);
         ASSERT(diminuto_escape_trim(out, (const char *)0, sizeof(out), 0) == 0);
         ASSERT(diminuto_escape_trim(out, "", sizeof(out), 0) == 0);
@@ -236,17 +263,24 @@ int main(void)
         ASSERT(strcmp(out, "123 \\ ") == 0);
         ASSERT(diminuto_escape_trim(out, "123 \\   456 \\   789 \\   ", 7, 24) == 6);
         ASSERT(strcmp(out, "123 \\ ") == 0);
+
+        STATUS();
     }
 
     {
         char string[2] = "";
         int ii;
         int printable;
+
+        TEST();
+
         for (ii = 0; ii < 256; ++ii) {
             string[0] = ii;
             printable = diminuto_escape_printable(string);
             ASSERT((((string[0] == '\0') || ((' ' <= string[0]) && (string[0] <= '~'))) && printable) || ((!((string[0] == '\0') || ((' ' <= string[0]) && (string[0] <= '~')))) && (!printable)));
         }
+
+        STATUS();
     }
 
     {
@@ -282,6 +316,9 @@ int main(void)
         unsigned char * buffer;
         size_t size;
         unsigned int ii;
+
+        TEST();
+
         diminuto_dump(stdout, DATA, sizeof(DATA));
         buffer = (unsigned char *)malloc(sizeof(DATA));
         memcpy(buffer, DATA, sizeof(DATA));
@@ -293,6 +330,8 @@ int main(void)
         }
         ASSERT(buffer[size - 1] == '\0');
         free(buffer);
+
+        STATUS();
     }
 
     EXIT();

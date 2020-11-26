@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
         TEST();
 
         if (Interface != (const char *)0) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", Interface);
+            CHECKPOINT("interface=\"%s\"\n", Interface);
             ASSERT(diminuto_ipc_set_interface(sock, Interface) >= 0);
         }
 
@@ -89,13 +89,13 @@ int main(int argc, char * argv[])
         memset(&from, 0, sizeof(from));
         if (Address != (const char *)0) {
             from = diminuto_ipc6_address(argv[2]);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address=\"%s\"=%x:%x:%x:%x:%x:%x:%x:%x=\"%s\"\n", Address, from.u16[0], from.u16[1], from.u16[2], from.u16[3], from.u16[4], from.u16[5], from.u16[6], from.u16[7], diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
+            CHECKPOINT("address=\"%s\"=%x:%x:%x:%x:%x:%x:%x:%x=\"%s\"\n", Address, from.u16[0], from.u16[1], from.u16[2], from.u16[3], from.u16[4], from.u16[5], from.u16[6], from.u16[7], diminuto_ipc6_address2string(from, buffer, sizeof(buffer)));
         }
 
         port = 0;
         if (Port != (const char *)0) {
             port = strtoul(Port, (char **)0, 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port=\"%s\"=%u\n", Port, port);
+            CHECKPOINT("port=\"%s\"=%u\n", Port, port);
         }
 
         if ((Address != (const char *)0) || (Port != (const char * )0)) {
@@ -115,11 +115,11 @@ int main(int argc, char * argv[])
         delay = diminuto_frequency();
 
         to = diminuto_ipc6_address("google.com");
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
+        CHECKPOINT("to=\"%s\"\n", diminuto_ipc6_address2string(to, buffer, sizeof(buffer)));
         ASSERT(memcmp(&to, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(to)) != 0);
 
         for (ss = 0; ss < 10; ++ss) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "sending 0x%x %u\n", ID, ss);
+            CHECKPOINT("sending 0x%x %u\n", ID, ss);
             ASSERT(diminuto_ping6_datagram_send(sock, to, ID, ss) > 0);
             do {
                 memcpy(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from));
@@ -129,9 +129,9 @@ int main(int argc, char * argv[])
                 seq = ~0;
                 elapsed = 0;
                 ASSERT((size = diminuto_ping6_datagram_receive(sock, &from, &type, &code, &id, &seq, &elapsed)) >= 0);
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "received 0x%x 0x%x\n", type, code);
+                CHECKPOINT("received 0x%x 0x%x\n", type, code);
             } while (size == 0);
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, elapsed);
+            CHECKPOINT("from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, elapsed);
             ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
             EXPECT(memcmp(&from, &to, sizeof(from)) == 0);
             ASSERT(type != ~0);

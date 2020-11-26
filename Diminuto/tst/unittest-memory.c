@@ -31,65 +31,82 @@ int main(void)
 
     SETLOGMASK();
 
-    method = -1;
-    pagesize = diminuto_memory_pagesize(&method);
-    pagesize2 = diminuto_memory_pagesize((int *)0);
-    DIMINUTO_LOG_INFORMATION("pagesize=0x%x=%d method=%d\n", pagesize, pagesize, method);
-    ASSERT(method >= 0);
-    ASSERT(pagesize > 0);
-    ASSERT(pagesize == pagesize2);
-    ASSERT(diminuto_memory_is_power(pagesize));
+    {
+        TEST();
 
-    method = -1;
-    linesize = diminuto_memory_linesize(&method);
-    linesize2 = diminuto_memory_linesize((int *)0);
-    DIMINUTO_LOG_INFORMATION("linesize=0x%x=%d method=%d\n", linesize, linesize, method);
-    ASSERT(method >= 0);
-    ASSERT(linesize > 0);
-    ASSERT(linesize == linesize2);
-    ASSERT(diminuto_memory_is_power(linesize));
+        method = -1;
+        pagesize = diminuto_memory_pagesize(&method);
+        pagesize2 = diminuto_memory_pagesize((int *)0);
+        CHECKPOINT("pagesize=0x%x=%d method=%d\n", pagesize, pagesize, method);
+        ASSERT(method >= 0);
+        ASSERT(pagesize > 0);
+        ASSERT(pagesize == pagesize2);
+        ASSERT(diminuto_memory_is_power(pagesize));
 
-
-    ASSERT(!diminuto_memory_is_power(0));
-    power = diminuto_memory_power(0);
-    ASSERT(power == 1);
-    ASSERT(diminuto_memory_is_power(power));
-
-    for (candidate = 1; candidate > 0; candidate <<= 1) {
-        ASSERT(diminuto_memory_is_power(candidate));
-        power = diminuto_memory_power(candidate);
-        ASSERT(power == candidate);
-        ASSERT(diminuto_memory_is_power(power));
-   }
-
-    for (candidate = 0x3; candidate < 0x80000000; candidate = (candidate << 1) | 1) {
-        ASSERT(!diminuto_memory_is_power(candidate));
-        power = diminuto_memory_power(candidate);
-        ASSERT(power > candidate);
-        ASSERT(diminuto_memory_is_power(power));
+        STATUS();
     }
 
-    for (candidate = 0; candidate <= pagesize; ++candidate) {
-        power = diminuto_memory_power(candidate);
-        ASSERT(power >= candidate);
-        ASSERT(diminuto_memory_is_power(power));
+    {
+        TEST();
+
+        method = -1;
+        linesize = diminuto_memory_linesize(&method);
+        linesize2 = diminuto_memory_linesize((int *)0);
+        CHECKPOINT("linesize=0x%x=%d method=%d\n", linesize, linesize, method);
+        ASSERT(method >= 0);
+        ASSERT(linesize > 0);
+        ASSERT(linesize == linesize2);
+        ASSERT(diminuto_memory_is_power(linesize));
+
+        STATUS();
     }
 
-    pagesize2 = pagesize * 2;
-    linesize2 = linesize * 2;
-    for (size = 1; size <= pagesize2; ++size) {
-        for (alignment = 1; alignment <= linesize2; ++alignment) {
-            power = diminuto_memory_power(alignment);
-            allocated = diminuto_memory_alignment(size, power);
-            ASSERT(allocated >= size);
-            ASSERT(allocated <= pagesize2);
-            ASSERT((allocated % power) == 0);
+    {
+        TEST();
+
+        ASSERT(!diminuto_memory_is_power(0));
+        power = diminuto_memory_power(0);
+        ASSERT(power == 1);
+        ASSERT(diminuto_memory_is_power(power));
+
+        for (candidate = 1; candidate > 0; candidate <<= 1) {
+            ASSERT(diminuto_memory_is_power(candidate));
+            power = diminuto_memory_power(candidate);
+            ASSERT(power == candidate);
+            ASSERT(diminuto_memory_is_power(power));
         }
-    }
 
-    pointer = diminuto_memory_aligned(2, 3);
-    ASSERT(pointer != (void *)0);
-    free(pointer);
+        for (candidate = 0x3; candidate < 0x80000000; candidate = (candidate << 1) | 1) {
+            ASSERT(!diminuto_memory_is_power(candidate));
+            power = diminuto_memory_power(candidate);
+            ASSERT(power > candidate);
+            ASSERT(diminuto_memory_is_power(power));
+        }
+
+        for (candidate = 0; candidate <= pagesize; ++candidate) {
+            power = diminuto_memory_power(candidate);
+            ASSERT(power >= candidate);
+            ASSERT(diminuto_memory_is_power(power));
+        }
+
+        pagesize2 = pagesize * 2;
+        linesize2 = linesize * 2;
+        for (size = 1; size <= pagesize2; ++size) {
+            for (alignment = 1; alignment <= linesize2; ++alignment) {
+                power = diminuto_memory_power(alignment);
+                allocated = diminuto_memory_alignment(size, power);
+                ASSERT(allocated >= size);
+                ASSERT(allocated <= pagesize2);
+                ASSERT((allocated % power) == 0);
+            }
+        }
+
+        pointer = diminuto_memory_aligned(2, 3);
+        ASSERT(pointer != (void *)0);
+        free(pointer);
+
+        STATUS();
+    }
 
     EXIT();
 }

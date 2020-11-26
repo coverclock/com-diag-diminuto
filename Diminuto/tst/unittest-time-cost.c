@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    DIMINUTO_LOG_NOTICE("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
+    CHECKPOINT("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
 
     if (after < 0) {
         diminuto_perror(label);

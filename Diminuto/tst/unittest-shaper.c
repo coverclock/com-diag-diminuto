@@ -63,7 +63,9 @@ int main(int argc, char ** argv)
         diminuto_ticks_t jittertolerance;
         diminuto_ticks_t sustainedincrement;
         diminuto_ticks_t bursttolerance;
-        /**/
+
+        TEST();
+
         frequency = diminuto_frequency();
         /**/
         peakincrement = diminuto_throttle_interarrivaltime(PEAK, 1, frequency);
@@ -119,10 +121,12 @@ int main(int argc, char ** argv)
         sustained = total;
         sustained *= frequency;
         sustained /= duration;
-        DIMINUTO_LOG_DEBUG("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
+        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
         ASSERT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
         ADVISE(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);
+
+        STATUS();
      }
 
     EXIT();
