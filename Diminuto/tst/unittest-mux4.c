@@ -947,7 +947,7 @@ int main(int argc, char ** argv)
             input_a = input_b = output_a = output_b = 0;
 
             ASSERT((sent = diminuto_ipc4_datagram_send_generic(producer, &ACK, sizeof(ACK), address, 0, MSG_OOB)) == sizeof(ACK));
-            CHECKPOINT("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
+            COMMENT("producer ACKing   %10s %10d %10u %7.3lf%%\n", "", sent, 0, 0.0);
 
             do {
 

@@ -27,8 +27,8 @@
  * names are made longer to prevent collisions.
  *
  * I really admire Dr. Heathcoat; not only am I pretty sure I would never
- * have figured this out, I'm pretty certain I would never thought to do
- * it in the first place.
+ * have figured this out, I'm pretty certain I would never have thought
+ * is was possible in the first place.
  *
  * See the unit test for some examples of how to use these macros.
  *

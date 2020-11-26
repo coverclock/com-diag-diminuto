@@ -29,7 +29,12 @@
  * they are trying to test.
  *
  * Judicious choices of using CHECKPOINT versus COMMENT can yield
- * more flexibility in controlling the output from a unit test.
+ * more flexibility in controlling the output from a unit test. It
+ * can also really speed them up: a lot of the slowdown in the
+ * execution of unit tests comes from latency in the display of
+ * messages to the terminal. (Redirecting the output to a file can
+ * make a big difference too, but the speed of, for example, SD
+ * cards on the Raspberry Pi is nothing to write home about.)
  *
  * COMMENT logs at the DEBUG level.
  *
@@ -100,15 +105,16 @@ extern void diminuto_unittest_flush(void);
     diminuto_unittest_setlogmask()
 
 /**
- * @def TEST(...)
+ * @def TEST(_TITLE_)
  * Emit a notice message identifying the the start of a new unit test
- * and an optional manifest string argument.
+ * and an optional @a _TITLE_ manifest constant string argument e.g.
+ * TEST("Thread Safety").
  */
-#define TEST(...) \
+#define TEST(_TITLE_) \
     do { \
         int diminuto_unittest_number = 0; \
         diminuto_unittest_number = diminuto_unittest_test(); \
-        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: tests=%d " __VA_ARGS__ "\n", diminuto_unittest_number); \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: tests=%d " _TITLE_ "\n", diminuto_unittest_number); \
         diminuto_unittest_flush(); \
     } while (0)
 
@@ -225,19 +231,18 @@ extern void diminuto_unittest_flush(void);
         diminuto_unittest_flush(); \
         diminuto_core_enable(); \
         diminuto_core_fatal(); \
-        *((volatile char *)0); \
         exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
     } while (0)
 
 /**
- * @def ADVISE(_COND_)
- * Emit a notice message if the specified condition @a _COND_ is not true.
+ * @def ADVISE(_CONDITION_)
+ * Emit a notice message if the specified condition @a _CONDITION_ is not true.
  * We emit the errno number even thoough it might not be germane.
  */
-#define ADVISE(_COND_) \
+#define ADVISE(_CONDITION_) \
     do { \
         int diminuto_unittest_condition; \
-        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_condition = !!(_CONDITION_); \
         if (!diminuto_unittest_condition) { \
             int diminuto_unittest_errno; \
             int diminuto_unittest_number; \
@@ -245,21 +250,21 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_errno = errno; \
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_errors; \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "ADVISE: tests=%d errors=%d errno=%d !(%s).\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_COND_); \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "ADVISE: tests=%d errors=%d errno=%d !(%s).\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_CONDITION_); \
             diminuto_unittest_flush(); \
         } \
     } while (0)
 
 /**
- * @def EXPECT(_COND_)
- * Emit a warning message if the specified condition @a _COND_ is not true
+ * @def EXPECT(_CONDITION_)
+ * Emit a warning message if the specified condition @a _CONDITION_ is not true
  * and increment the error counter.
  * We emit the errno number even thoough it might not be germane.
  */
-#define EXPECT(_COND_) \
+#define EXPECT(_CONDITION_) \
     do { \
         int diminuto_unittest_condition; \
-        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_condition = !!(_CONDITION_); \
         if (!diminuto_unittest_condition) { \
             int diminuto_unittest_errno; \
             int diminuto_unittest_number; \
@@ -267,21 +272,21 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_errno = errno; \
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_error(); \
-            DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "EXPECT: tests=%d errors=%d errno=%d !(%s)?\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_COND_); \
+            DIMINUTO_LOG_WARNING(DIMINUTO_LOG_HERE "EXPECT: tests=%d errors=%d errno=%d !(%s)?\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, #_CONDITION_); \
             diminuto_unittest_flush(); \
         } \
     } while (0)
 
 /**
- * @def ASSERT(_COND_)
- * Emit a warning message if the specified condition @a _COND_ is not true,
+ * @def ASSERT(_CONDITION_)
+ * Emit a warning message if the specified condition @a _CONDITION_ is not true,
  * increment the error counter, and exit immediately.
  * We emit the errno number even thoough it might not be germane.
  */
-#define ASSERT(_COND_) \
+#define ASSERT(_CONDITION_) \
     do { \
         int diminuto_unittest_condition; \
-        diminuto_unittest_condition = !!(_COND_); \
+        diminuto_unittest_condition = !!(_CONDITION_); \
         if (!diminuto_unittest_condition) { \
             int diminuto_unittest_errno; \
             int diminuto_unittest_number; \
@@ -289,7 +294,7 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_errno = errno; \
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_error(); \
-            DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "ASSERT: tests=%d errors=%d errno=%d !(%s)!\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno,  #_COND_); \
+            DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "ASSERT: tests=%d errors=%d errno=%d !(%s)!\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno,  #_CONDITION_); \
             diminuto_unittest_flush(); \
             exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
         } \

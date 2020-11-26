@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -48,28 +49,38 @@ int diminuto_core_enable(void)
 
 void diminuto_core_fatal(void)
 {
-    int rc = -1;
-    int datum = 0;
 
     abort();
     diminuto_perror("diminuto_core_fatal: abort");
 
-    rc = kill(getpid(), SIGABRT);
+    kill(0, SIGABRT);
     diminuto_perror("diminuto_core_fatal: kill(SIGABRT)");
 
-    rc = kill(getpid(), SIGKILL);
+    kill(0, SIGKILL);
     diminuto_perror("diminuto_core_fatal: kill(SIGKILL)");
 
+    kill(0, SIGSEGV);
+    diminuto_perror("diminuto_core_fatal: kill(SIGSEGV)");
+
     /*
-     * Remarkably, I have worked on hardware where deferencing
-     * a null pointer in C succeeds.
+     * Remarkably, I have worked on embedded systems where
+     * deferencing a null pointer in C succeeds. We put a
+     * special value in that memory location, e.g.
+     * 0xdeadbeef, so that we would recognize it if it
+     * showed up in a log message, a core dump, or a stack
+     * trace.
      */
-    datum = *((volatile int *)0);
+
+    *((volatile int *)0) = 0;
     errno = EINVAL;
     diminuto_perror("diminuto_core_fatal: *NULL");
 
-    rc = kill(getpid(), SIGSEGV);
-    diminuto_perror("diminuto_core_fatal: kill(SIGSEGV)");
+    _exit(255);
+    diminuto_perror("diminuto_core_fatal: _exit(1)");
 
-    _exit(1);
+    /*
+     * THOU SHALT NOT PASS!
+     */
+
+    while (!0) { diminuto_yield(); }
 }

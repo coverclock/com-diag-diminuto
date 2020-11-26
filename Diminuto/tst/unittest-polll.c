@@ -198,7 +198,7 @@ int main(int argc, char ** argv)
                         percentage = totalsent;
                         percentage *= 100;
                         percentage /= TOTAL;
-                        CHECKPOINT("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
+                        COMMENT("producer sent     %10s %10d %10u %7.3lf%%\n", "", sent, totalsent, percentage);
 
                         here += sent;
                         used -= sent;
@@ -228,7 +228,7 @@ int main(int argc, char ** argv)
                     input_16 = diminuto_fletcher_16(there, received, &input_a, &input_b);
 
                     totalreceived += received;
-                    CHECKPOINT("producer received %10d %10d %10u\n", readable, received, totalreceived);
+                    COMMENT("producer received %10d %10d %10u\n", readable, received, totalreceived);
 
                     there += received;
                     available -= received;

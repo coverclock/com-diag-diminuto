@@ -15,10 +15,10 @@
 
 int main(int argc, char ** argv)
 {
-    int *pointer = (int *)0;
+    SETLOGMASK();
     TEST();
-    diminuto_core_enable();
-    *pointer = 0;
+    ASSERT(diminuto_core_enable() >= 0);
+    *((volatile int *)0) = 0;
     FAILURE();
     EXIT();
 }
