@@ -494,6 +494,39 @@ is a good example of a non-trivial application.
 
 # Issues
 
+## Warnings
+
+I try hard to resolve all warnings. However, I may generate one myself.
+On some platforms (e.g. Raspbian), the renameat2(2) system call exists
+in Linux, but there is no glibc support for it in GNU. In this case,
+Diminuto generates its own API to renameat2(2), but warns you that this
+is the case at compile time.
+
+    src/diminuto_renameat2.c:40:5: warning: #warning renameat2(2) not available on this platform so using SYS_renameat2 instead! [-Wcpp]
+
+## Failures
+
+Some of the socket unit tests make use of ephemeral ports that are
+allocated and discarded quickly. Some careful collection and editing
+of the log messages from the tst/unittest-ipc-ancillary.c unit test
+shows that the entire range of ephemeral ports [32768..60999] is
+used, more than once, by the test; this indicates that not only is
+the entire range available, but the ports are being recycled as the
+sockets are closed.
+
+Sometimes (rarely, on my x86_64 development machine) the test fails
+with the error message
+
+    diminuto_ipc4_source: bind: "Address already in use" (98)
+
+which in this case really means that there are no emphemeral ports
+left to assign. My working hypothesis is that the recycling of
+ephemeral ports in the Linux kernel is occuring asynchronously
+after a socket is closed, and sometimes the unit test gets ahead
+of it. (Diminuto does support the REUSE PORT socket option, but
+I haven't tried using it to fix this problem, since that's not
+quite it's intended purpose.)
+
 ## Memory
 
 On a recent Raspberry Pi I have run out of memory compiling the unit

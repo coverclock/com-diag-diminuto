@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -32,8 +33,8 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         COMMENT();
-        EXPECT(!0);
         ASSERT(!0);
+        EXPECT(!0);
         ADVISE(!0);
 
         STATUS();
@@ -70,12 +71,9 @@ int main(int argc, char ** argv)
     }
 
     {
-        TEST("Test");
-
-        CHECKPOINT("%s", argv[0]);
-        COMMENT("%s", argv[0]);
     
         if (fork() == 0) {
+            TEST("Process A");
             COMMENT();
             ADVISE(0);
             EXPECT(0);
@@ -86,34 +84,8 @@ int main(int argc, char ** argv)
         }
 
         if (fork() == 0) {
+            TEST("Process B");
             FATAL("Fatal");
-            FAILURE();
-            EXIT();
-            exit(0);
-        }
-
-        if (fork() == 0) {
-            FATAL();
-            FAILURE();
-            EXIT();
-            exit(0);
-        }
-
-        if (fork() == 0) {
-            PANIC("Panic");
-            FAILURE();
-            EXIT();
-            exit(0);
-        }
-
-        if (fork() == 0) {
-            PANIC();
-            FAILURE();
-            EXIT();
-            exit(0);
-        }
-
-        if (fork() == 0) {
             FAILURE();
             STATUS();
             EXIT();
@@ -121,11 +93,73 @@ int main(int argc, char ** argv)
         }
 
         if (fork() == 0) {
+            TEST("Process C");
+            FATAL();
+            FAILURE();
+            STATUS();
+            EXIT();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process D");
+            PANIC("Panic");
+            FAILURE();
+            STATUS();
+            EXIT();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process E");
+            PANIC();
+            FAILURE();
+            STATUS();
+            EXIT();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process F");
+            FAILURE();
+            STATUS();
+            EXIT();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process G");
             FAILURE("Failure");
             STATUS("Status");
             EXIT("Exit");
             exit(0);
         }
+
+        if (fork() == 0) {
+            TEST("Process H");
+            abort();
+            STATUS();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process I");
+            diminuto_core_fatal();
+            STATUS();
+            exit(0);
+        }
+
+        if (fork() == 0) {
+            TEST("Process J");
+            *((volatile int *)0) = 0;
+            STATUS();
+            exit(0);
+        }
+
+        TEST();
+
+        CHECKPOINT("%s", argv[0]);
+        COMMENT("%s", argv[0]);
 
         while (!0) {
             status = 0;
