@@ -14,6 +14,38 @@
  * scale. It may "simulate" but all of the processes, threads, and
  * sockets are the real thing.
  *
+ * There is one main process, one workload process, and one or more
+ * instance processes. The workload process has a consumer pool of
+ * one or more client threads. Each instance process has a dispatcher
+ * thread. Each dispather thread has a provider pool of one or more
+ * server threads.
+ *
+ * The main process creates an IPv4 listen socket for client requests,
+ * and  UNIX domain (Local) listen socket for instance requests. The
+ * main process forks a single workload process and the first of several
+ * instance processes.
+ *
+ * The instance process requests the IPv4 listen socket from the main
+ * over the Local listen socket. The instance process creates the
+ * dispatcher thread and hands it the IPv4 listen socket. The dispatcher
+ * thread gets a server thread from the provider pool, accepts an IPv4
+ * stream socket from the IPv4 listen socket, and hands it off to the
+ * server thread. The server thread receives a requests from a client,
+ * services each request, and sends a reply to the client, until the
+ * client disconnects, at which point the server thread completes.
+ *
+ * The workload process takes an idle client thread from the consumer
+ * pool and starts it. The client thread requests an IPv4 connection
+ * from the IPv4 listen socket. When it connects, the client thread
+ * makes zero or more requests of the server at the farend and receives
+ * replies, after which the client thread disconnects and completes.
+ *
+ * After a fixed amount of time, the main process signals the instance
+ * process to complete pending work and then exit. If there is another
+ * instance process running, that process is given the same IPv4 listen
+ * socket and the pattern repeats. The workload process keeps running
+ * until all of the instance processes have been used.
+ *
  * I've formatted the log messages and their log levels so that it
  * is straightforward to capture the log in the file and extract
  * useful stuff from it. One of the things this has allowed me to do
@@ -37,6 +69,11 @@
  * with some latency (presumably on the close) and sometimes we can
  * get ahead of it. Note that by default the sockets all have the
  * REUSE ADDRESS option set by the underlying Diminuto library code.
+ *
+ * What did help make this unit test more reliable was putting in 
+ * a slight delay between the time the server thread received a request
+ * and the time it responded to it, simulating some processing on its
+ * part.
  *
  * Set the environmental variable COM_DIAG_DIMINUTO_LOG_MASK to the
  * value "0xfe" to dial down the log output; or set it to the value
@@ -447,6 +484,10 @@ static void * server(void * arg /* streamsocket */)
                 break;
             }
 
+#if !0
+            diminuto_delay(diminuto_frequency() / 4, !0);
+#endif
+
             ASSERT(length == sizeof(datum));
             ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length)) ==  sizeof(datum));
             COMMENT("server: stream %d wrote %zd after %d\n", streamsocket, length, count);
@@ -522,8 +563,6 @@ static void * dispatcher(void * arg /* requestsocket */)
 
         ASSERT(diminuto_mux_ready_accept(&mux) == requestsocket);
         count += 1;
-
-        ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
         /*
          * MUST CLOSE streamsocket (in server).
          */
@@ -536,6 +575,8 @@ static void * dispatcher(void * arg /* requestsocket */)
              * JOINED providers->thread.
              */
         }
+
+        ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
 
         ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)streamsocket) == 0);
         /*
@@ -716,7 +757,7 @@ int main(int argc, char argv[])
     pid_t activepid = 0;
     int status = -1;
     int ii = -1;
-    int completed = 0;
+    int instances = 0;
 
     CHECKPOINT("main: starting\n");
 
@@ -890,7 +931,17 @@ int main(int argc, char argv[])
          */
 
         diminuto_delay(diminuto_frequency() * DURATION, !0);
-        ASSERT(diminuto_reaper_check() == 0);
+        ADVISE(diminuto_reaper_check() == 0);
+
+        /*
+         * If this is the last instance in the test, then tell workload
+         * to exit. (We'll reap its exit status later.)
+         */
+
+        if ((++instances) >= countof(instancepid)) {
+            ASSERT(kill(workloadpid, SIGINT) == 0);
+            ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
+        }
 
         /*
          * Tell instance to exit.
@@ -905,18 +956,12 @@ int main(int argc, char argv[])
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == 0);
 
-        if ((++completed) >= countof(instancepid)) {
+        if (instances >= countof(instancepid)) {
             break;
         }
 
     }
 
-    /*
-     * Tell workload to exit.
-     */
-
-    ASSERT(kill(workloadpid, SIGINT) == 0);
-    ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
     /*
      * REAPED workloadpid.
      */

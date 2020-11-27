@@ -957,7 +957,6 @@ sanity:	unittest
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
-	unittest-ipc-ancillary
 	unittest-ipcl
 	unittest-list
 	unittest-lock
@@ -1009,6 +1008,7 @@ extended:
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
+	unittest-ipc-ancillary
 	unittest-modulator
 	unittest-mux4
 	unittest-mux6
