@@ -82,6 +82,14 @@
 #include <pthread.h>
 
 /*******************************************************************************
+ * SYMBOLS
+ ******************************************************************************/
+
+#define CONSUMERS 64
+
+#define PROVIDERS 8
+
+/*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
@@ -209,7 +217,7 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
  * SIMULATED SERVICE CONSUMERS
  ******************************************************************************/
 
-static thread_node_t consumer[10];
+static thread_node_t consumer[CONSUMERS];
 static thread_pool_t consumers;
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -332,10 +340,10 @@ static void workload(void)
 }
 
 /*******************************************************************************
- * SIMULATED SERVICE PROVIDER
+ * SIMULATED SERVICE PROVIDERS
  ******************************************************************************/
 
-static thread_node_t provider[10];
+static thread_node_t provider[PROVIDERS];
 static thread_pool_t providers;
 
 /*
