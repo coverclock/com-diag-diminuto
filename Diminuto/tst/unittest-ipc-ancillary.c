@@ -350,10 +350,16 @@ static void workload(void)
 
         if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+            /*
+             * JOINED consumers->thread.
+             */
             ASSERT((intptr_t)result == (np - consumer));
         }
 
         ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)(np - consumer)) == 0);
+        /*
+         * MUST JOIN consumers->thread.
+         */
 
         ASSERT(diminuto_thread_yield() == 0);
 
@@ -460,8 +466,9 @@ static void * server(void * arg /* streamsocket */)
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
     /*
-     * CLOSED streamsocket.
+     * CLOSED streamsocket (from dispatcher).
      */
+
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
@@ -518,16 +525,22 @@ static void * dispatcher(void * arg /* requestsocket */)
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
         /*
-         * MUST CLOSE streamsocket.
+         * MUST CLOSE streamsocket (in server).
          */
 
         np = thread_node_get(&providers);
 
         if (diminuto_thread_state(&(np->thread)) != DIMINUTO_THREAD_STATE_INITIALIZED) {
             ASSERT(diminuto_thread_join(&(np->thread), &result) == 0);
+            /*
+             * JOINED providers->thread.
+             */
         }
 
         ASSERT(diminuto_thread_start(&(np->thread), (void *)(intptr_t)streamsocket) == 0);
+        /*
+         * MUST JOIN providers->thread.
+         */
 
     }
 
@@ -650,6 +663,9 @@ static void instance(void)
      */
 
     ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)requestsocket) == 0);
+    /*
+     * MUST JOIN dispatcherthread.
+     */
 
     while (diminuto_interrupter_check() <= 0) {
         diminuto_mux_wait(&mux, -1);
@@ -659,6 +675,9 @@ static void instance(void)
 
     ASSERT(diminuto_thread_notify(&dispatcherthread) == 0);
     ASSERT(diminuto_thread_join(&dispatcherthread, &result) == 0);
+    /*
+     * JOINED dispatherthread.
+     */
     ASSERT(diminuto_thread_fini(&dispatcherthread) == (diminuto_thread_t *)0);
 
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
@@ -886,8 +905,8 @@ int main(int argc, char argv[])
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == 0);
 
-        if ((++completed) < countof(instancepid)) {
-            continue;
+        if ((++completed) >= countof(instancepid)) {
+            break;
         }
 
     }
