@@ -19,17 +19,24 @@
  * useful stuff from it. One of the things this has allowed me to do
  * is to verify that the complete range of ephemeral port numbers,
  * [32768..60999] on my development machine, are being used, and
- * reused. Even though ephemeral ports are being recycled, I have
- * seen this code occasionally fail because of port exaustion with the
- * errno EADDRINUSE from bind(2):
+ * reused.
+ *
+ * Even though ephemeral ports are being recycled, I have seen this
+ * code occasionally fail because of port exaustion with the errno
+ * EADDRINUSE from bind(2):
  *
  * diminuto_ipc4_source: bind: "Address already in use" (98)
  *
- * My only working hypothesis at the moment is the recycling of ephemeral
- * port numbers in the kernel is asynchronous with some latency
- * (presumably on the close) and sometimes we can get ahead of it.
- * Note that by default the sockets all have the REUSE ADDRESS option
- * set by the underlying Diminuto library code.
+ * which in this context actually means there are no available
+ * ephemeral ports.
+ *
+ * My initial assumption (of course) was that this was a bug -
+ * probably a resource leak - on my part. But AFAICT I close all
+ * the open sockets. My other working hypothesis at the moment is
+ * the recycling of ephemeral port numbers in the kernel is asynchronous
+ * with some latency (presumably on the close) and sometimes we can
+ * get ahead of it. Note that by default the sockets all have the
+ * REUSE ADDRESS option set by the underlying Diminuto library code.
  *
  * Set the environmental variable COM_DIAG_DIMINUTO_LOG_MASK to the
  * value "0xfe" to dial down the log output; or set it to the value
@@ -99,6 +106,12 @@
  * services that consumer by replying to its requests.
  */
 #define PROVIDERS 8
+
+/*
+ * This defines the number of instance processes, each of which manages its
+ * own provider thread pool.
+ */
+#define INSTANCES 4
 
 /*******************************************************************************
  * CONSTANTS
@@ -269,6 +282,9 @@ static void * client(void * arg /* limit */)
 
     ASSERT(serverport != 0);
     ASSERT((streamsocket = diminuto_ipc4_stream_consumer(serveraddress, serverport)) >= 0);
+    /*
+     * MUST CLOSE streamsocket.
+     */
     ASSERT(diminuto_ipc4_nearend(streamsocket, &nearendaddress, &nearendport) >= 0);
     ASSERT(diminuto_ipc4_farend(streamsocket, &farendaddress, &farendport) >= 0);
     CHECKPOINT("client: stream %d nearend %s:%d farend %s:%d\n", streamsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(farendaddress, farendbuffer, sizeof(farendbuffer)), farendport);
@@ -298,6 +314,9 @@ static void * client(void * arg /* limit */)
     ASSERT(count == limit);
 
     ASSERT(diminuto_ipc_close(streamsocket) >= 0);
+    /*
+     * CLOSED streamsocket.
+     */
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
         --consuming;
@@ -440,6 +459,9 @@ static void * server(void * arg /* streamsocket */)
     CHECKPOINT("server: stream %d finished %zu after %d\n", streamsocket, total, count);
 
     ASSERT(diminuto_mux_close(&mux, streamsocket) >= 0);
+    /*
+     * CLOSED streamsocket.
+     */
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
@@ -495,6 +517,9 @@ static void * dispatcher(void * arg /* requestsocket */)
         count += 1;
 
         ASSERT((streamsocket = diminuto_ipc4_stream_accept(requestsocket)) >= 0);
+        /*
+         * MUST CLOSE streamsocket.
+         */
 
         np = thread_node_get(&providers);
 
@@ -534,6 +559,7 @@ static void instance(void)
     diminuto_local_t path = { '\0', };
     diminuto_local_t nearendpath = { '\0', };
     diminuto_local_t farendpath = { '\0', };
+    pid_t self = 0;
     char dummy[1] = { '\0' };
     struct iovec vector[1];
     struct msghdr message;
@@ -547,6 +573,8 @@ static void instance(void)
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = (void *)0;
 
+    ASSERT((self = getpid()) > 0);
+
     CHECKPOINT("instance: starting\n");
 
     ASSERT(diminuto_interrupter_install(0) >= 0);
@@ -557,14 +585,41 @@ static void instance(void)
 
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
     ASSERT((activationsocket = diminuto_ipcl_packet_consumer(path)) >= 0);
+    /*
+     * MUST CLOSE activationsocket.
+     */
     ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
     ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
     CHECKPOINT("instance: activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
 
+    /*
+     * Send the main our PID.
+     */
+
+    memset(&message, 0, sizeof(message));
+
+    vector[0].iov_base = &self;
+    vector[0].iov_len = sizeof(self);
+
+    message.msg_iov = vector;
+    message.msg_iovlen = countof(vector);
+
+    message.msg_control = (struct cmsghdr *)0;
+    message.msg_controllen = 0;
+
+    ASSERT((length = diminuto_ipcl_packet_send(activationsocket, &message)) == sizeof(self));
+    
+    /*
+     * Receive from the main the request socket. This will effectively
+     * be a dup(2) of the main's listen socket. Since it will have a
+     * different file descriptor number, we have to close it when we're
+     * done.
+     */
+
     memset(&message, 0, sizeof(message));
     memset(&control, 0, sizeof(control));
 
-    vector[0].iov_base = dummy; /* You have to receive at least one byte of payload. */
+    vector[0].iov_base = dummy; /* You have to receive at least one byte. */
     vector[0].iov_len = sizeof(dummy);
 
     message.msg_iov = vector;
@@ -583,10 +638,16 @@ static void instance(void)
     }
 
     ASSERT(requestsocket >= 0);
+    /*
+     * MUST CLOSE requestsocket.
+     */
     ASSERT(diminuto_ipc4_nearend(requestsocket, &nearendaddress, &nearendport) >= 0);
     CHECKPOINT("instance: request %d nearend %s:%d farend %s:%d\n", requestsocket, diminuto_ipc4_address2string(nearendaddress, nearendbuffer, sizeof(nearendbuffer)), nearendport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
 
     ASSERT(diminuto_ipc_close(activationsocket) >= 0);
+    /*
+     * CLOSED activationsocket.
+     */
 
     ASSERT(diminuto_thread_start(&dispatcherthread, (void *)(intptr_t)requestsocket) == 0);
 
@@ -603,6 +664,11 @@ static void instance(void)
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
 
     CHECKPOINT("instance: request %d exiting\n", requestsocket);
+
+    ASSERT(diminuto_ipc4_close(requestsocket) >= 0);
+    /*
+     * CLOSED request socket.
+     */
 }
 
 /*******************************************************************************
@@ -619,8 +685,8 @@ int main(int argc, char argv[])
     diminuto_local_t farendpath = { '\0', };
     int localsocket = -1;
     int activationsocket = -1;
-    pid_t workloadpid = -1;
-    pid_t instancepid = -1;
+    pid_t workloadpid = 0;
+    pid_t instancepid[INSTANCES] = { 0, };
     diminuto_mux_t mux;
     int ready = -1;
     char dummy[1] = { '\0' };
@@ -628,7 +694,10 @@ int main(int argc, char argv[])
     struct msghdr message;
     union { struct cmsghdr alignment; char data[CMSG_SPACE(sizeof(int))]; } control;
     struct cmsghdr * cp = (struct cmsghdr *)0;
+    pid_t activepid = 0;
     int status = -1;
+    int ii = -1;
+    int completed = 0;
 
     CHECKPOINT("main: starting\n");
 
@@ -648,6 +717,9 @@ int main(int argc, char argv[])
      */
 
     ASSERT((requestsocket = diminuto_ipc4_stream_provider(0)) >= 0);
+    /*
+     * MUST CLOSE requestsocket.
+     */
     ASSERT(diminuto_ipc4_nearend(requestsocket, &serveraddress, &serverport) >= 0);
     CHECKPOINT("main: request %d nearend %s:%d farend %s:%d\n", requestsocket, diminuto_ipc4_address2string(serveraddress, nearendbuffer, sizeof(nearendbuffer)), serverport, diminuto_ipc4_address2string(0xffffffff, farendbuffer, sizeof(farendbuffer)), 0);
 
@@ -657,11 +729,15 @@ int main(int argc, char argv[])
      */
 
     ASSERT((workloadpid = fork()) >= 0);
+    /*
+     * MUST REAP workloadpid.
+     */
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
         workload();
         EXIT();
     }
+    CHECKPOINT("main: started workload - pid %d.\n", workloadpid);
 
     /*
      * When an instance is ready to get a listen socket on which to
@@ -673,20 +749,33 @@ int main(int argc, char argv[])
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
     ADVISE(diminuto_ipcl_remove(path) >= 0);
     ASSERT((localsocket = diminuto_ipcl_packet_provider(path)) >= 0);
+    /*
+     * MUST CLOSE localsocket.
+     */
     ASSERT(diminuto_ipcl_nearend(localsocket, nearendpath, sizeof(nearendpath)) >= 0);
     CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
 
     ASSERT(diminuto_mux_register_accept(&mux, localsocket) >= 0);
 
-    ASSERT((instancepid = fork()) >= 0);
-    if (instancepid == 0) {
-        (void)diminuto_ipc_close(requestsocket);
-        requestsocket = -1;
-        (void)diminuto_ipc_close(localsocket);
-        localsocket = -1;
-        instance();
-        EXIT();
+    for (ii = 0; ii < countof(instancepid); ++ii) {
+        ASSERT((instancepid[ii] = fork()) >= 0);
+        /*
+         * MUST REAP instancepid[ii].
+         */
+        if (instancepid[ii] == 0) {
+            (void)diminuto_ipc_close(requestsocket);
+            requestsocket = -1;
+            (void)diminuto_ipc_close(localsocket);
+            localsocket = -1;
+            instance();
+            EXIT();
+        }
+        CHECKPOINT("main: started instance %d pid %d.\n", ii, instancepid[ii]);
     }
+
+    /*
+     * Work loop.
+     */
 
     while (!0) {
 
@@ -704,9 +793,38 @@ int main(int argc, char argv[])
         ASSERT(diminuto_mux_ready_accept(&mux) == localsocket);
 
         ASSERT((activationsocket = diminuto_ipcl_packet_accept(localsocket)) >= 0);
+        /*
+         * MUST CLOSE activationsocket.
+         */
         ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
         ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
         CHECKPOINT("main: activation %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+
+        /*
+         * Receive the Process Identifier (PID) from the instance we're
+         * going to activate.
+         */
+
+        memset(&message, 0, sizeof(message));
+
+        vector[0].iov_base = &activepid;
+        vector[0].iov_len = sizeof(activepid);
+
+        message.msg_iov = vector;
+        message.msg_iovlen = countof(vector);
+
+        message.msg_control = (struct cmsghdr *)0;;
+        message.msg_controllen = 0;
+
+        ASSERT(diminuto_ipcl_packet_receive(activationsocket, &message) == sizeof(activepid));
+        for (ii = 0; ii < countof(instancepid); ++ii) {
+            if (activepid == instancepid[ii]) {
+                break;
+            }
+        }
+        ASSERT(ii < countof(instancepid));
+
+        CHECKPOINT("main: activating instance %d pid %d.\n", ii, activepid);
 
         /*
          * Yeah, this is crazy: we're going to transfer an open file
@@ -744,23 +862,35 @@ int main(int argc, char argv[])
         ASSERT(diminuto_ipcl_packet_send(activationsocket, &message) == sizeof(dummy));
 
         ASSERT(diminuto_ipc_close(activationsocket) >= 0);
-
         /*
-         * In real life we would do this in a loop, passing the
-         * listen socket to a new instance process every time the
-         * prior one exited. 
+         * CLOSED activationsocket.
          */
 
-        break;
+        /*
+         * It is during this delay in which all the work gets done.
+         */
+
+        diminuto_delay(diminuto_frequency() * DURATION, !0);
+        ASSERT(diminuto_reaper_check() == 0);
+
+        /*
+         * Tell instance to exit.
+         */
+
+        ASSERT(kill(activepid, SIGINT) == 0);
+        ASSERT(diminuto_reaper_reap_generic(activepid, &status, 0) == activepid);
+        /*
+         * REAPED some instancepid[ii] as activepid.
+         */
+        CHECKPOINT("main: reaped instance %d pid %d status %d.\n", ii, activepid, status);
+        ASSERT(WIFEXITED(status));
+        ASSERT(WEXITSTATUS(status) == 0);
+
+        if ((++completed) < countof(instancepid)) {
+            continue;
+        }
 
     }
-
-    /*
-     * It is during this delay in which all the work gets done.
-     */
-
-    diminuto_delay(diminuto_frequency() * DURATION, !0);
-    ASSERT(diminuto_reaper_check() == 0);
 
     /*
      * Tell workload to exit.
@@ -768,17 +898,10 @@ int main(int argc, char argv[])
 
     ASSERT(kill(workloadpid, SIGINT) == 0);
     ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
-    CHECKPOINT("main: request %d workload %d status %d\n", requestsocket, workloadpid, status);
-    ASSERT(WIFEXITED(status));
-    ASSERT(WEXITSTATUS(status) == 0);
-
     /*
-     * Tell instance to exit.
+     * REAPED workloadpid.
      */
-
-    ASSERT(kill(instancepid, SIGINT) == 0);
-    ASSERT(diminuto_reaper_reap_generic(instancepid, &status, 0) == instancepid);
-    CHECKPOINT("main: request %d instance %d status %d\n", requestsocket, instancepid, status);
+    CHECKPOINT("main: reaped workload - pid %d status %d.\n", ii, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
 
@@ -789,9 +912,15 @@ int main(int argc, char argv[])
     CHECKPOINT("main: exiting\n");
 
     ASSERT(diminuto_mux_close(&mux, localsocket) >= 0);
+    /*
+     * CLOSED localsocket.
+     */
     ASSERT(diminuto_mux_fini(&mux) == (diminuto_mux_t *)0);
     ASSERT(diminuto_ipcl_remove(path) >= 0);
     ASSERT(diminuto_ipc_close(requestsocket) >= 0);
+    /*
+     * CLOSED requestsocket.
+     */
 
     EXIT();
 }
