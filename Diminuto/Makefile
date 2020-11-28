@@ -1008,7 +1008,7 @@ extended:
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
-	unittest-ipc-ancillary
+	# unittest-ipc-ancillary
 	unittest-modulator
 	unittest-mux4
 	unittest-mux6
@@ -1133,7 +1133,7 @@ sockets:
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
-	unittest-ipc-ancillary
+	# unittest-ipc-ancillary
 	unittest-ipcl
 	unittest-mux4
 	unittest-mux6
