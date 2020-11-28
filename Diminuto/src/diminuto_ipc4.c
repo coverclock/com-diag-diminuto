@@ -11,9 +11,8 @@
  */
 
 #include "com/diag/diminuto/diminuto_ipc4.h"
-#include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_dump.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include <unistd.h>
 #include <fcntl.h>
@@ -237,10 +236,6 @@ diminuto_ipv4_t * diminuto_ipc4_interface(const char * interface)
 
         *vp = 0;
 
-#if 0
-        diminuto_dump(stderr, rp, vs);
-#endif
-
     } while (0);
 
     if (ifa != (struct ifaddrs *)0) {
@@ -281,14 +276,6 @@ int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t 
     int rc = -1;
     int fd = -1;
 
-    if (backlog > SOMAXCONN) {
-        backlog = SOMAXCONN;
-    } else if (backlog < 0) {
-        backlog = SOMAXCONN;
-    } else {
-        /* Do nothing. */
-    }
-
     if ((rc = fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipc4_stream_provider_base: socket");
     } else if ((functionp != (diminuto_ipc_injector_t *)0) && ((rc = (*functionp)(fd, datap)) < 0)) {
@@ -298,7 +285,7 @@ int diminuto_ipc4_stream_provider_base(diminuto_ipv4_t address, diminuto_port_t 
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
         diminuto_ipc4_close(fd);
-    } else if ((rc = listen(fd, backlog)) < 0) {
+    } else if ((rc = listen(fd, (backlog < 0) ? diminuto_maximumof(int) : backlog)) < 0) { 
         diminuto_perror("diminuto_ipc4_stream_provider_base: listen");
         diminuto_ipc4_close(fd);
     } else {

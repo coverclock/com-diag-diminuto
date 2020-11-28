@@ -60,18 +60,12 @@
  * diminuto_ipc4_source: bind: "Address already in use" (98)
  *
  * which in this context actually means there are no available
- * ephemeral ports.
- *
- * My initial assumption (of course) was that this was a bug -
- * probably a resource leak - on my part. But AFAICT I close all
- * the open sockets. My other working hypothesis at the moment is
- * the recycling of ephemeral port numbers in the kernel is asynchronous
- * with some latency (presumably on the close) and sometimes we can
- * get ahead of it. Note that by default the sockets all have the
- * REUSE ADDRESS option set by the underlying Diminuto library code.
- *
- * What did help make this unit test more reliable was putting in 
- * a slight delay between the time the server thread received a request
+ * ephemeral ports. The speed at which ports can be recycled is
+ * limited in part by the round-trip latency between the two
+ * connected hosts when the socket is closed. It is easy for this
+ * unit test to get ahead of that if it is allowed to run too fast.
+ * What made this unit test more reliable was putting in a slight
+ * delay between the time the server thread received a request
  * and the time it responded to it, simulating some processing on its
  * part.
  *
@@ -116,6 +110,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
@@ -158,13 +153,14 @@ static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
 
 static const unsigned int DURATION = 10;
 
-static const unsigned int FRACTION = 10;
+static const unsigned int FRACTION = 4;
 
 /*******************************************************************************
  * GLOBALS
  ******************************************************************************/
 
 static diminuto_ipv4_t serveraddress = 0;
+
 static diminuto_port_t serverport = 0;
 
 /*******************************************************************************
@@ -197,7 +193,8 @@ typedef struct ThreadPool {
 
 /*
  * Wait until there is a Thread Node on the Thread Pool, remove it from the
- * Pool, and return a pointer to it.
+ * Pool, and return a pointer to it. We can get the pointer to the thread
+ * node directly since it is stored in the data pointer in the list node.
  */
 static thread_node_t * thread_node_get(thread_pool_t * pp)
 {
@@ -210,14 +207,16 @@ static thread_node_t * thread_node_get(thread_pool_t * pp)
         }
         ASSERT((lp = diminuto_list_dequeue(&(pp->head))) != (diminuto_list_t *)0);
     DIMINUTO_CONDITION_END;
-    ASSERT((np = diminuto_containerof(thread_node_t, link, lp)) != (thread_node_t *)0);
+    ASSERT((np = (thread_node_t *)diminuto_list_data(lp)) != (thread_node_t *)0);
 
     return np;
 }
 
 /*
  * Insert a Thread Node on to the end of a Thread Pool and signaling any
- * Pool users waiting for the Pool to be non-empty.
+ * Pool users waiting for the Pool to be non-empty. We can to compute the
+ * pointer to the list node from the pointer to the thread node since the
+ * thread node is the container of the list node.
  */
 static void thread_node_put(thread_pool_t * pp)
 {
@@ -235,16 +234,16 @@ static void thread_node_put(thread_pool_t * pp)
 /*
  * Initialize an array of Thread Nodes and place each one on a Thread Pool.
  */
-static void thread_pool_init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thread_function_t * fp)
+static void thread_pool_init(thread_pool_t * pp, thread_node_t na[], size_t nn, diminuto_thread_function_t * funcp)
 {
     size_t ii = -1;
 
     ASSERT(diminuto_condition_init(&(pp->condition)) == &(pp->condition));
     ASSERT(diminuto_list_nullinit(&(pp->head)) == &(pp->head));
     for (ii = 0; ii < nn; ++ii) {
-        ASSERT(diminuto_list_nullinit(&na[ii].link) == &na[ii].link);
+        ASSERT(diminuto_thread_init(&na[ii].thread, funcp) == &na[ii].thread);
+        ASSERT(diminuto_list_datainit(&na[ii].link, &na[ii]) == &na[ii].link);
         ASSERT(diminuto_list_enqueue(&(pp->head), &na[ii].link) == &na[ii].link);
-        ASSERT(diminuto_thread_init(&na[ii].thread, fp) == &na[ii].thread);
     }
 }
 
@@ -272,6 +271,23 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
         }
         ASSERT(diminuto_thread_fini(&(np->thread)) == (diminuto_thread_t *)0);
     }
+}
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+static void display_open_file_descriptors()
+{
+    pid_t pid = 0;
+    char command[sizeof("ls -l /proc/2147483647/fd")] = { '\0', };
+    int rc = -1;
+
+    ASSERT((pid = getpid()) > 0);
+    snprintf(command, sizeof(command), "ls -l /proc/%d/fd", pid);
+    command[sizeof(command) - 1] = '\0';
+    rc = system(command);
+    ASSERT((-1 < rc) && (rc < 127));
 }
 
 /*******************************************************************************
@@ -307,6 +323,7 @@ static void * client(void * arg /* limit */)
     int ii = 0;
     datum_t request = -1;
     datum_t reply = -1;
+    struct iovec vector[1];
     ssize_t length = 0;
     int count = 0;
     size_t total = 0;
@@ -333,10 +350,22 @@ static void * client(void * arg /* limit */)
         DIMINUTO_CRITICAL_SECTION_END;
         reply = ~request;
 
-        ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &request, sizeof(request), sizeof(request))) == sizeof(request));
+        /*
+         * I'm using scatter/gather reads and writes here just because
+         * I've never tried them before now, which is funny considering
+         * my career.
+         */
+
+        vector[0].iov_base = &request;
+        vector[0].iov_len = sizeof(request);
+
+        ASSERT((length = writev(streamsocket, vector, countof(vector))) == sizeof(request));
         COMMENT("client: stream %d wrote %zd after %d\n", streamsocket, length, ii);
 
-        ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &reply, sizeof(reply), sizeof(reply))) == sizeof(reply));
+        vector[0].iov_base = &reply;
+        vector[0].iov_len = sizeof(reply);
+
+        ASSERT((length = readv(streamsocket, vector, countof(vector))) == sizeof(reply));
         COMMENT("client: stream %d read %zd after %d\n", streamsocket, length, ii);
 
         count += 1;
@@ -437,6 +466,7 @@ static void * server(void * arg /* streamsocket */)
     diminuto_mux_t mux;
     int ready = 0;
     int fd = -1;
+    struct iovec vector[1];
     ssize_t length = -1;
     datum_t datum = 0;
     int count = 0;
@@ -477,19 +507,26 @@ static void * server(void * arg /* streamsocket */)
         while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
 
             ASSERT(fd == streamsocket);
-            ASSERT((length = diminuto_ipc4_stream_read_generic(streamsocket, &datum, sizeof(datum), sizeof(datum))) >= 0);
-            COMMENT("server: stream %d read %zd after %d\n", streamsocket, length, count);
 
+            vector[0].iov_base = &datum;
+            vector[0].iov_len = sizeof(datum);
+
+            ASSERT((length = readv(streamsocket, vector, countof(vector))) >= 0);
+            COMMENT("server: stream %d read %zd after %d\n", streamsocket, length, count);
             if (length == 0) {
                 break;
             }
-
-#if !0
-            diminuto_delay(diminuto_frequency() / 4, !0);
-#endif
-
             ASSERT(length == sizeof(datum));
-            ASSERT((length = diminuto_ipc4_stream_write_generic(streamsocket, &datum, length, length)) ==  sizeof(datum));
+
+            vector[0].iov_base = &datum;
+            vector[0].iov_len = sizeof(datum);
+
+            /*
+             * Pretend we had to do something.
+             */
+            diminuto_delay(diminuto_frequency() / FRACTION, !0);
+
+            ASSERT((length = writev(streamsocket, vector, countof(vector))) ==  sizeof(datum));
             COMMENT("server: stream %d wrote %zd after %d\n", streamsocket, length, count);
 
             count += 1;
@@ -789,14 +826,15 @@ int main(int argc, char argv[])
      */
 
     ASSERT((workloadpid = fork()) >= 0);
-    /*
-     * MUST REAP workloadpid.
-     */
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
         workload();
+        display_open_file_descriptors();
         EXIT();
     }
+    /*
+     * MUST REAP workloadpid.
+     */
     CHECKPOINT("main: started workload - pid %d.\n", workloadpid);
 
     /*
@@ -819,17 +857,18 @@ int main(int argc, char argv[])
 
     for (ii = 0; ii < countof(instancepid); ++ii) {
         ASSERT((instancepid[ii] = fork()) >= 0);
-        /*
-         * MUST REAP instancepid[ii].
-         */
         if (instancepid[ii] == 0) {
             (void)diminuto_ipc_close(requestsocket);
             requestsocket = -1;
             (void)diminuto_ipc_close(localsocket);
             localsocket = -1;
             instance();
+            display_open_file_descriptors();
             EXIT();
         }
+        /*
+         * MUST REAP instancepid[ii].
+         */
         CHECKPOINT("main: started instance %d pid %d.\n", ii, instancepid[ii]);
     }
 
@@ -926,22 +965,23 @@ int main(int argc, char argv[])
          * CLOSED activationsocket.
          */
 
-        /*
-         * It is during this delay in which all the work gets done.
-         */
-
-        diminuto_delay(diminuto_frequency() * DURATION, !0);
-        ADVISE(diminuto_reaper_check() == 0);
+        instances += 1;
 
         /*
          * If this is the last instance in the test, then tell workload
          * to exit. (We'll reap its exit status later.)
          */
 
-        if ((++instances) >= countof(instancepid)) {
+        if (instances >= countof(instancepid)) {
             ASSERT(kill(workloadpid, SIGINT) == 0);
-            ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
         }
+
+        /*
+         * It is during this delay in which all the work gets done.
+         */
+
+        diminuto_delay(diminuto_frequency() * DURATION, !0);
+        ADVISE(diminuto_reaper_check() == 0);
 
         /*
          * Tell instance to exit.
@@ -965,6 +1005,7 @@ int main(int argc, char argv[])
     /*
      * REAPED workloadpid.
      */
+    ASSERT(diminuto_reaper_reap_generic(workloadpid, &status, 0) == workloadpid);
     CHECKPOINT("main: reaped workload - pid %d status %d.\n", ii, workloadpid, status);
     ASSERT(WIFEXITED(status));
     ASSERT(WEXITSTATUS(status) == 0);
@@ -986,5 +1027,6 @@ int main(int argc, char argv[])
      * CLOSED requestsocket.
      */
 
+    display_open_file_descriptors();
     EXIT();
 }

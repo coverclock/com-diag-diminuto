@@ -520,12 +520,13 @@ with the error message
     diminuto_ipc4_source: bind: "Address already in use" (98)
 
 which in this case really means that there are no emphemeral ports
-left to assign. My working hypothesis is that the recycling of
-ephemeral ports in the Linux kernel is occuring asynchronously
-after a socket is closed, and sometimes the unit test gets ahead
-of it. (Diminuto does support the REUSE PORT socket option, but
-I haven't tried using it to fix this problem, since that's not
-quite it's intended purpose.)
+left to assign. The speed of recycling ports is limited by the
+round-trip latency between the connected hosts when the socket is
+closed, and it is easy for the unit test to get ahead of that. I
+address this by putting some delay between the receiving a request
+and sending a response in the server thread, simulating some workload.
+(Diminuto does support the REUSE PORT socket option, but this
+isn't quite it's intended purpose.)
 
 ## Memory
 

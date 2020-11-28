@@ -62,7 +62,6 @@ void diminuto_daemon_prepare(void)
     if (fflush(stderr) == EOF) {
         diminuto_serror("diminuto_daemon: fflush(stderr)");
     }
-
 }
 
 int diminuto_daemon_verify(void)
