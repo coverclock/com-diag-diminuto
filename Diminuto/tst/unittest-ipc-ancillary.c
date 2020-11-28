@@ -112,6 +112,8 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -277,17 +279,44 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
  * HELPERS
  ******************************************************************************/
 
-static void display_open_file_descriptors()
+/*
+ * Check that only the Big Three file descriptors are open.
+ */
+static void check_for_leaks()
 {
-    pid_t pid = 0;
-    char command[sizeof("ls -l /proc/2147483647/fd")] = { '\0', };
-    int rc = -1;
+    struct rlimit limit;
+    int fd = -1;
+    int count = 0;
 
-    ASSERT((pid = getpid()) > 0);
-    snprintf(command, sizeof(command), "ls -l /proc/%d/fd", pid);
-    command[sizeof(command) - 1] = '\0';
-    rc = system(command);
-    ASSERT((-1 < rc) && (rc < 127));
+    ASSERT(getrlimit(RLIMIT_NOFILE, &limit) >= 0);
+    ASSERT(limit.rlim_cur > 0);
+
+    for (fd = 0; fd < limit.rlim_cur; ++fd) {
+        if (fd == STDIN_FILENO) {
+            /* Do nothing. */
+        } else if (fd == STDOUT_FILENO) {
+            /* Do nothing. */
+        } else if (fd == STDERR_FILENO) {
+            /* Do nothing. */
+        } else if (fd == fileno(stdin)) {
+            /* Do nothing. */
+        } else if (fd == fileno(stdout)) {
+            /* Do nothing. */
+        } else if (fd == fileno(stderr)) {
+            /* Do nothing. */
+        } else if (close(fd) < 0) {
+            /* Do nothing. */
+        } else {
+            /*
+             * Sadly, this will have closed the system log file descriptor
+             * although generally we're not using the system log in this
+             * unit test, unless it has been run for some weird reason
+             * as a detached process like a daemon.
+             */
+            CHECKPOINT("check_for_leaks: %d [%d]\n", fd, ++count);
+        }
+    }
+    ASSERT(count == 0);
 }
 
 /*******************************************************************************
@@ -364,6 +393,12 @@ static void * client(void * arg /* limit */)
 
         vector[0].iov_base = &reply;
         vector[0].iov_len = sizeof(reply);
+
+        /*
+         * I'm not sure there's actually any guarantee that readv(2) will not return
+         * the requested number of bytes. If it is like read(2), it will block until
+         * either EOF (farend socket close(2)) or until at least one byte is read.
+         */
 
         ASSERT((length = readv(streamsocket, vector, countof(vector))) == sizeof(reply));
         COMMENT("client: stream %d read %zd after %d\n", streamsocket, length, ii);
@@ -510,6 +545,12 @@ static void * server(void * arg /* streamsocket */)
 
             vector[0].iov_base = &datum;
             vector[0].iov_len = sizeof(datum);
+
+            /*
+             * I'm not sure there's actually any guarantee that readv(2) will not return
+             * the requested number of bytes. If it is like read(2), it will block until
+             * either EOF (farend socket close(2)) or until at least one byte is read.
+             */
 
             ASSERT((length = readv(streamsocket, vector, countof(vector))) >= 0);
             COMMENT("server: stream %d read %zd after %d\n", streamsocket, length, count);
@@ -829,7 +870,7 @@ int main(int argc, char argv[])
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
         workload();
-        display_open_file_descriptors();
+        check_for_leaks();
         EXIT();
     }
     /*
@@ -863,7 +904,7 @@ int main(int argc, char argv[])
             (void)diminuto_ipc_close(localsocket);
             localsocket = -1;
             instance();
-            display_open_file_descriptors();
+            check_for_leaks();
             EXIT();
         }
         /*
@@ -1027,6 +1068,6 @@ int main(int argc, char argv[])
      * CLOSED requestsocket.
      */
 
-    display_open_file_descriptors();
+    check_for_leaks();
     EXIT();
 }
