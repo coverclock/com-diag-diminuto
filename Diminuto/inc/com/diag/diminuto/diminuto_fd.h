@@ -92,9 +92,29 @@ static inline ssize_t diminuto_fd_write(int fd, const void * buffer, size_t size
  * Return the number of bytes buffered for a file descriptor for device drivers
  * which do such buffering. This typically includes serial devices and sockets.
  * @param fd is an open file descriptor.
+ * @param suppress if true suppresses the error message if the fd is invalid.
  * @return the number of bytes buffered or <0 if an error occurred.
  */
-extern ssize_t diminuto_fd_readable(int fd);
+extern ssize_t diminuto_fd_readable_generic(int fd, int suppress);
+
+/**
+ * Return the number of bytes buffered for a file descriptor for device drivers
+ * which do such buffering. This typically includes serial devices and sockets.
+ * @param fd is an open file descriptor.
+ * @return the number of bytes buffered or <0 if an error occurred.
+ */
+static inline ssize_t diminuto_fd_readable(int fd) {
+    return diminuto_fd_readable_generic(fd, 0);
+}
+
+/**
+ *
+ * @param fd is a file descriptor number.
+ * @return true if the descriptor is valid, false otherwise.
+ */
+static inline ssize_t diminuto_fd_valid(int fd) {
+    return (diminuto_fd_readable_generic(fd, !0) >= 0);
+}
 
 /**
  * Return the maximum possible number of unique open file descriptor values. The
@@ -102,7 +122,7 @@ extern ssize_t diminuto_fd_readable(int fd);
  * number. In this implementation, this is the number of file descriptors
  * supported by the select(2) system call; the actual number of open files
  * returned by sysconf(3) for _SC_OPEN_MAX or getrlimit(2) for RLIMIT_NOFILE
- *  may be significantly larger.
+ * may be significantly larger.
  * @return the maximum possible number of open file descriptors or <0 for error.
  */
 extern ssize_t diminuto_fd_count(void);

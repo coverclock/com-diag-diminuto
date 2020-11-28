@@ -32,7 +32,7 @@
         type = diminuto_fd_type(_FD_); \
         name = type2name(type); \
         expected = type2name((diminuto_fs_type_t)_EXPECTED_); \
-        COMMENT("%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
+        CHECKPOINT("%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
 
@@ -64,13 +64,32 @@ int main(void)
     SETLOGMASK();
 
     {
+        ssize_t limit;
+        int fd;
+        int valid;
+        ssize_t readable;
+        CHECKPOINT("STDIN_FILENO=%d fileno(stdin)=%d\n", STDIN_FILENO, fileno(stdin));
+        CHECKPOINT("STDOUT_FILENO=%d fileno(stdout)=%d\n", STDOUT_FILENO, fileno(stdout));
+        CHECKPOINT("STDERR_FILENO=%d fileno(stderr)=%d\n", STDERR_FILENO, fileno(stderr));
+        ASSERT((limit = diminuto_fd_limit()) >= 0);
+        for (fd = 0; fd < limit; ++fd) {
+            ASSERT((valid = diminuto_fd_valid(fd)) >= 0);
+            if (valid) {
+                readable = diminuto_fd_readable(fd);
+                CHECKPOINT("fd %d readable %zd\n", fd, readable);
+                ASSERT(readable >= 0);
+            }
+        }
+    }
+
+    {
         ssize_t count;
         ssize_t limit;
         ssize_t maximum;
         count = diminuto_fd_count();
         limit = diminuto_fd_limit();
         maximum = diminuto_fd_maximum();
-        COMMENT("count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
+        CHECKPOINT("count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
         fflush(stderr);
         ASSERT(count > 0);
         ASSERT(limit > 0);
@@ -83,7 +102,7 @@ int main(void)
         int ii;
         count = diminuto_fd_count();
         ASSERT(count > 0);
-        COMMENT("count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
+        CHECKPOINT("count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
         map = diminuto_fd_map_alloc(count);
         ASSERT(map->count == count);
         for (ii = 0; ii < count; ++ii) {
@@ -121,7 +140,7 @@ int main(void)
             diminuto_fs_type_t type;
             ASSERT(lstat("/dev/fd", &status) == 0);
             type = diminuto_fs_type(status.st_mode);
-            COMMENT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
+            CHECKPOINT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
             EXPECT(type == DIMINUTO_FS_TYPE_SYMLINK);
         }
         {

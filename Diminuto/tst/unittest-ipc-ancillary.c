@@ -108,12 +108,11 @@
 #include "com/diag/diminuto/diminuto_reaper.h"
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -280,43 +279,42 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
  ******************************************************************************/
 
 /*
- * Check that only the Big Three file descriptors are open.
+ * Return the number of file descriptors that are open and are not
+ * one of the Big Three (0, 1, 2) and are not the file descriptors
+ * associated with the standard input, standard output, or standard
+ * error streams (those should be the Big Three, but we're not testing
+ * for that).
  */
-static void check_for_leaks()
+static int audit()
 {
-    struct rlimit limit;
+    ssize_t limit = -1;
     int fd = -1;
     int count = 0;
 
-    ASSERT(getrlimit(RLIMIT_NOFILE, &limit) >= 0);
-    ASSERT(limit.rlim_cur > 0);
+    ASSERT((limit = diminuto_fd_limit()) >= 0);
 
-    for (fd = 0; fd < limit.rlim_cur; ++fd) {
-        if (fd == STDIN_FILENO) {
-            /* Do nothing. */
-        } else if (fd == STDOUT_FILENO) {
-            /* Do nothing. */
-        } else if (fd == STDERR_FILENO) {
-            /* Do nothing. */
-        } else if (fd == fileno(stdin)) {
-            /* Do nothing. */
-        } else if (fd == fileno(stdout)) {
-            /* Do nothing. */
-        } else if (fd == fileno(stderr)) {
-            /* Do nothing. */
-        } else if (close(fd) < 0) {
-            /* Do nothing. */
-        } else {
-            /*
-             * Sadly, this will have closed the system log file descriptor
-             * although generally we're not using the system log in this
-             * unit test, unless it has been run for some weird reason
-             * as a detached process like a daemon.
-             */
-            CHECKPOINT("check_for_leaks: %d [%d]\n", fd, ++count);
+    for (fd = 0; fd < limit; ++fd) {
+        if (diminuto_fd_valid(fd)) {
+            CHECKPOINT("audit: fd %d\n", fd);
+            if (fd == STDIN_FILENO) {
+                /* Do nothing. */
+            } else if (fd == STDOUT_FILENO) {
+                /* Do nothing. */
+            } else if (fd == STDERR_FILENO) {
+                /* Do nothing. */
+            } else if (fd == fileno(stdin)) {
+                /* Do nothing. */
+            } else if (fd == fileno(stdout)) {
+                /* Do nothing. */
+            } else if (fd == fileno(stderr)) {
+                /* Do nothing. */
+            } else {
+                ++count;
+            }
         }
     }
-    ASSERT(count == 0);
+
+    return count;
 }
 
 /*******************************************************************************
@@ -870,7 +868,7 @@ int main(int argc, char argv[])
     if (workloadpid == 0) {
         (void)diminuto_ipc_close(requestsocket);
         workload();
-        check_for_leaks();
+        audit();
         EXIT();
     }
     /*
@@ -904,7 +902,7 @@ int main(int argc, char argv[])
             (void)diminuto_ipc_close(localsocket);
             localsocket = -1;
             instance();
-            check_for_leaks();
+            audit();
             EXIT();
         }
         /*
@@ -1068,6 +1066,6 @@ int main(int argc, char argv[])
      * CLOSED requestsocket.
      */
 
-    check_for_leaks();
+    audit();
     EXIT();
 }

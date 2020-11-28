@@ -74,9 +74,9 @@ int diminuto_fd_relinquish(int fd, const char * device)
 ssize_t diminuto_fd_read_generic(int fd, void * buffer, size_t min, size_t max)
 {
     ssize_t total = 0;
-    char * bp;
-    ssize_t current;
-    size_t slack;
+    char * bp = (char *)0;
+    ssize_t current = -1;
+    size_t slack = 0;
 
     bp = (char *)buffer;
     slack = max;
@@ -108,9 +108,9 @@ ssize_t diminuto_fd_read_generic(int fd, void * buffer, size_t min, size_t max)
 ssize_t diminuto_fd_write_generic(int fd, const void * buffer, size_t min, size_t max)
 {
     ssize_t total = 0;
-    const char * bp;
-    ssize_t current;
-    size_t slack;
+    const char * bp = (const char *)0;
+    ssize_t current = -1;
+    size_t slack = 0;
 
     bp = (char *)buffer;
     slack = max;
@@ -139,24 +139,25 @@ ssize_t diminuto_fd_write_generic(int fd, const void * buffer, size_t min, size_
     return total;
 }
 
-ssize_t diminuto_fd_readable(int fd)
+ssize_t diminuto_fd_readable_generic(int fd, int suppress)
 {
     ssize_t result = -1;
-    int request;
-    int count;
+    int request = -1;
+    int count = -1;
 
     /*
      * On some platforms, TIOCINQ and FIONREAD are the same ioctl.
-     * Others, not.
-     * Some platforms don't define TIOCINQ at all.
+     * Others, not. Some platforms don't define TIOCINQ at all.
      */
 
     request = isatty(fd) ? TIOCINQ : FIONREAD;
 
     if (ioctl(fd, request, &count) >= 0) {
         result = count;
-    } else {
+    } else if (!suppress) {
         diminuto_perror("diminuto_fd_readable: ioctl");
+    } else {
+        /* Do nothing. */
     }
 
     return result;
@@ -183,7 +184,7 @@ ssize_t diminuto_fd_limit(void)
 
 ssize_t diminuto_fd_maximum(void)
 {
-    ssize_t result;
+    ssize_t result = -1;
 
     result = sysconf(_SC_OPEN_MAX);
     if (result < 0) {
@@ -195,8 +196,8 @@ ssize_t diminuto_fd_maximum(void)
 
 diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
 {
-    diminuto_fd_map_t * mapp;
-    size_t size;
+    diminuto_fd_map_t * mapp = (diminuto_fd_map_t *)0;
+    size_t size = 0;
 
     size = count * sizeof(mapp->data[0]);
     mapp = (diminuto_fd_map_t *)malloc(sizeof(*mapp) + size);
@@ -213,8 +214,8 @@ void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd)
 
 void * diminuto_fd_direct_alloc(size_t size)
 {
-    ssize_t alignment;
-    void * pointer;
+    ssize_t alignment = -1;
+    void * pointer = (void *)0;
 
     if ((alignment = getpagesize()) <= 0) {
         errno = EINVAL;
