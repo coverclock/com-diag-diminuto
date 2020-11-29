@@ -301,12 +301,14 @@ int diminuto_ipc4_stream_accept_generic(int fd, diminuto_ipv4_t * addressp, dimi
     struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
-    if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipc4_accept_generic: accept");
-    } else {
+    if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) >= 0) {
         diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else {
+        diminuto_perror("diminuto_ipc4_accept_generic: accept");
     }
-   
+
     return rc;
 }
 
@@ -330,11 +332,13 @@ int diminuto_ipc4_stream_consumer_base(diminuto_ipv4_t address, diminuto_port_t 
         diminuto_ipc4_close(fd);
     } else if ((rc = diminuto_ipc_set_interface(fd, interface)) < 0) {
         diminuto_ipc4_close(fd);
-    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
-        diminuto_perror("diminuto_ipc4_stream_consumer_base: connect");
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) >= 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
         diminuto_ipc4_close(fd);
     } else {
-        /* Do nothing. */
+        diminuto_perror("diminuto_ipc4_stream_consumer_base: connect");
+        diminuto_ipc4_close(fd);
     }
 
     return (rc < 0) ? rc : fd;
@@ -371,14 +375,18 @@ ssize_t diminuto_ipc4_datagram_receive_generic(int fd, void * buffer, size_t siz
     struct sockaddr_in sa = { 0, };
     socklen_t length = sizeof(sa);
 
-    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
-        /* Do nothing: not sure what this means. */
-    } else if (total > 0) {
+    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) > 0) {
         diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
-    } else if ((errno != EINTR) && (errno != EAGAIN)) { 
-        diminuto_perror("diminuto_ipc4_datagram_receive_generic: recvfrom");
+    } else if (total == 0) {
+        /* Do nothing ("orderly shutdown"). */
+    } else if (errno == EINTR) { 
+        /* Do nothing. */
+    } else if (errno == EAGAIN) { 
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: interrupt, timeout, or poll. */
+        diminuto_perror("diminuto_ipc4_datagram_receive_generic: recvfrom");
     }
 
     return total;
@@ -403,14 +411,18 @@ ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t 
         sap = (struct sockaddr *)0;
     }
 
-    if ((total = sendto(fd, buffer, size, flags, sap, length)) == 0) {
-        /* Do nothing: not sure what this means. */
-    } else if (total > 0) {
-        /* Do nothing: nominal case. */
-    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipc4_datagram_send_generic: sendto");
+    if ((total = sendto(fd, buffer, size, flags, sap, length)) > 0) {
+        /* Do nothing. */
+    } else if (total == 0) {
+        /* Do nothing ("orderly shutdown"). */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: interrupt, timeout, or poll. */
+        diminuto_perror("diminuto_ipc4_datagram_send_generic: sendto");
     }
 
     return total;

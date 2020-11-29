@@ -237,10 +237,12 @@ int diminuto_ipcl_stream_accept_generic(int fd, char * pathp, size_t psize)
     struct sockaddr_un sa = { 0 };
     socklen_t length = sizeof(sa);
 
-    if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) < 0) {
-        diminuto_perror("diminuto_ipcl_accept_generic: accept");
-    } else {
+    if ((rc = accept(fd, (struct sockaddr *)&sa, &length)) >= 0) {
         diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else {
+        diminuto_perror("diminuto_ipcl_accept_generic: accept");
     }
 
     return rc;
@@ -263,11 +265,13 @@ int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, di
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
-        diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) >= 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
         diminuto_ipcl_close(fd);
     } else {
-        /* Do nothing. */
+        diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
+        diminuto_ipcl_close(fd);
     }
 
     return (rc < 0) ? rc : fd;
@@ -302,14 +306,18 @@ ssize_t diminuto_ipcl_datagram_receive_generic(int fd, void * buffer, size_t siz
     struct sockaddr_un sa = { 0 };
     socklen_t length = sizeof(sa);
 
-    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) == 0) {
-        /* Do nothing: not sure what this means. */
-    } else if (total > 0) {
+    if ((total = recvfrom(fd, buffer, size, flags, (struct sockaddr *)&sa, &length)) > 0) {
         diminuto_ipcl_identify((struct sockaddr *)&sa, pathp, psize);
-    } else if ((errno != EINTR) && (errno != EAGAIN)) { 
-        diminuto_perror("diminuto_ipcl_datagram_receive_generic: recvfrom");
+    } else if (total == 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: timeout or poll. */
+        diminuto_perror("diminuto_ipcl_datagram_receive_generic: recvfrom");
     }
 
     return total;
@@ -332,14 +340,18 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
         sap = (struct sockaddr *)0;
     }
 
-    if ((total = sendto(fd, buffer, size, flags, sap, length)) == 0) {
-        /* Do nothing: not sure what this means. */
-    } else if (total > 0) {
-        /* Do nothing: nominal case. */
-    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipcl_datagram_send_generic: sendto");
+    if ((total = sendto(fd, buffer, size, flags, sap, length)) > 0) {
+        /* Do nothing. */
+    } else if (total ==  0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: interrupt, timeout, or poll. */
+        diminuto_perror("diminuto_ipcl_datagram_send_generic: sendto");
     }
 
     return total;
@@ -396,11 +408,13 @@ int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, di
         diminuto_ipcl_close(fd);
     } else if ((rc = diminuto_ipcl_source(fd, path0)) < 0) {
         diminuto_ipcl_close(fd);
-    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) < 0) {
-        diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
+    } else if ((rc = connect(fd, (struct sockaddr *)&sa, length)) >= 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
         diminuto_ipcl_close(fd);
     } else {
-        /* Do nothing. */
+        diminuto_perror("diminuto_ipcl_stream_consumer_base: connect");
+        diminuto_ipcl_close(fd);
     }
 
     return (rc < 0) ? rc : fd;
@@ -410,14 +424,18 @@ ssize_t diminuto_ipcl_packet_receive_generic(int fd, struct msghdr * message, in
 {
     ssize_t total = -1;
 
-    if ((total = recvmsg(fd, message, flags)) == 0) {
-        /* Do nothing: far end closed. */
-    } else if (total > 0) {
-        /* Do nothing: nominal case. */
-    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipcl_packet_receive_generic: recvmsg");
+    if ((total = recvmsg(fd, message, flags)) > 0) {
+        /* Do nothing. */
+    } else if (total == 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: interrupt, timeout, or poll. */
+        diminuto_perror("diminuto_ipcl_packet_receive_generic: recvmsg");
     }
 
     return total;
@@ -427,14 +445,18 @@ ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * message,
 {
     ssize_t total = -1;
 
-    if ((total = sendmsg(fd, message, flags)) == 0) {
-        /* Do nothing: far end closed. */
-    } else if (total > 0) {
-        /* Do nothing: nominal case. */
-    } else if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
-        diminuto_perror("diminuto_ipcl_packet_receive_generic: sendmsg");
+    if ((total = sendmsg(fd, message, flags)) > 0) {
+        /* Do nothing. */
+    } else if (total == 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
     } else {
-        /* Do nothing: interrupt, timeout, or poll. */
+        diminuto_perror("diminuto_ipcl_packet_receive_generic: sendmsg");
     }
 
     return total;

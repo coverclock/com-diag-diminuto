@@ -237,10 +237,12 @@ int main(int argc, char ** argv)
     }
 
     {
-        TEST();
         const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
         char buffer[sizeof("ERRNO[XXXXXXXXXX]")];
         int ii;
+
+        TEST();
+
         for (ii = 0; ii < countof(ERRNO); ++ii) {
             snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
             errno = ERRNO[ii];
@@ -251,6 +253,7 @@ int main(int argc, char ** argv)
             errno = ERRNO[ii];
             diminuto_serror(buffer);
         }
+
         STATUS();
     }
 

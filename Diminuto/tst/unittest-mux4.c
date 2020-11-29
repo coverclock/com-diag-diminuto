@@ -125,7 +125,7 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
                 --cc;
                 continue;
             }
-            CHECKPOINT("cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+            COMMENT("cc=%d pp=%d fd=%d ii=%d read(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
             ASSERT(rc == sizeof(buffer));
             ASSERT(buffer == input[ii]);
             ++reads[buffer];
@@ -138,7 +138,7 @@ static void diminuto_mux_test(diminuto_sticks_t timeout)
             ASSERT(ii < countof(pipefd));
             buffer = output[ii]++;
             rc = write(fd, &buffer, sizeof(buffer));
-            CHECKPOINT("cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
+            COMMENT("cc=%d pp=%d fd=%d ii=%d write(%d)=%d %u\n", cc, pp, fd, ii, fd, rc, buffer);
             ASSERT(rc == sizeof(buffer));
             ++writes[buffer];
             if (buffer == (((ii + 1) * countof(output)) - 1)) {

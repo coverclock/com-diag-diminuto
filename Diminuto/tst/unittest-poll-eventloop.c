@@ -334,20 +334,20 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
             output = diminuto_fd_write(connection[ii], &now, sizeof(now));
             if (output != sizeof(now)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                CHECKPOINT("CONSUMER %d write [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, output, sizeof(now));
+                COMMENT("CONSUMER %d write [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, output, sizeof(now));
                 xc = 2;
                 goto exiting;
             }
             input = diminuto_fd_read_generic(connection[ii], &then, sizeof(then), sizeof(then));
             if (input != sizeof(then)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                CHECKPOINT("CONSUMER %d read [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, input, sizeof(then));
+                COMMENT("CONSUMER %d read [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, input, sizeof(then));
                 xc = 3;
                 goto exiting;
             }
             if (now != then) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                CHECKPOINT("CONSUMER %d compare [%zu] %d %s;%u (%lld!=%lld)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, now, then);
+                COMMENT("CONSUMER %d compare [%zu] %d %s;%u (%lld!=%lld)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, now, then);
                 xc = 4;
                 goto exiting;
             }

@@ -40,6 +40,17 @@
  * conflicts with other code unlikely. Feel free to define your own
  * shorter names from these, for example define DBG(...) to
  * be DIMINUTO_LOG_DEBUG(__VA_ARGS__).
+ *
+ * N.B. The Log functions that are used to print error messages
+ * from the value of errno, as well as those macros in the Unit Test
+ * framework that uses the Log functions, display the values of the
+ * pre-defined preprocessor symbols __FILE__ and __LINE__ as part of
+ * the logged message. This is useful - sometimes vital - for debugging
+ * and troubleshooting. But it can represent a major security hole in
+ * that it may reveal internals of the application. The contents of the
+ * system log, and for that matter of standard error output stream on
+ * the user terminal, should be treated with the same level of security
+ * as that of the application itself.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

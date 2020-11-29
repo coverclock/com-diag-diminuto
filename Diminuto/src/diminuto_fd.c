@@ -85,7 +85,13 @@ ssize_t diminuto_fd_read_generic(int fd, void * buffer, size_t min, size_t max)
         if ((current = read(fd, bp, slack)) == 0) {
             break;
         } else if (current < 0) {
-            if ((errno != EINTR) && (errno != EAGAIN)) {
+            if (errno == EINTR) {
+                /* Do nothing. */
+            } else if (errno == EAGAIN) {
+                /* Do nothing. */
+            } else if (errno == EWOULDBLOCK) {
+                /* Do nothing. */
+            } else {
                 diminuto_perror("diminuto_fd_read_generic: read");
             }
             if (total == 0) {
@@ -119,7 +125,13 @@ ssize_t diminuto_fd_write_generic(int fd, const void * buffer, size_t min, size_
         if ((current = write(fd, bp, slack)) == 0) {
             break;
         } else if (current < 0) {
-            if ((errno != EINTR) && (errno != EAGAIN)) {
+            if (errno == EINTR) {
+                /* Do nothing. */
+            } else if (errno == EAGAIN) {
+                /* Do nothing. */
+            } else if (errno == EWOULDBLOCK) {
+                /* Do nothing. */
+            } else {
                 diminuto_perror("diminuto_fd_write: write");
             }
             if (total == 0) {

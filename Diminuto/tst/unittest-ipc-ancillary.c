@@ -152,9 +152,11 @@
 
 static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
 
-static const unsigned int DURATION = 10;
+static const diminuto_ticks_t DURATION = 10;
 
-static const unsigned int FRACTION = 4;
+static const diminuto_ticks_t FRACTION = 4;
+
+static const diminuto_ticks_t TIMEOUT = 5;
 
 /*******************************************************************************
  * GLOBALS
@@ -336,6 +338,9 @@ static int providings = 0;
  * replies with a server over a single IPv4 stream socket. The exact number
  * of exchanges is passed in as an argument. The thread exits when all of
  * the exchanges have been performed.
+ *
+ * EXIT CONDITION: when all specified requests have been made and
+ * replied to.
  */
 static void * client(void * arg /* limit */)
 {
@@ -429,13 +434,17 @@ static void * client(void * arg /* limit */)
 /*
  * This process represents the workload for the system, creating and
  * starting client threads running in parallel to make requests of the
- * of the server. The process exits when it receives a SIGINT signal.
+ * of the server.
+ *
+ * EXIT CONDITION: when a SIGINT signal has been received and all
+ * pending clients have been joined.
  */
 static void workload(void)
 {
     int ii = 0;
     thread_node_t * np = (thread_node_t *)0;
     void * result = (void *)0;
+    int interrupted = 0;
 
     CHECKPOINT("workload: starting\n");
 
@@ -443,7 +452,13 @@ static void workload(void)
 
     thread_pool_init(&consumers, consumer, countof(consumer), client);
 
-    while (diminuto_interrupter_check() <= 0) {
+    while (!0) {
+
+        ASSERT((interrupted = diminuto_interrupter_check()) >= 0);
+        if (interrupted > 0) {
+            CHECKPOINT("workload: SIGINT\n");
+            break;
+        }
 
         np = thread_node_get(&consumers);
 
@@ -484,8 +499,9 @@ static thread_pool_t providers;
 /*
  * This thread represents the server that replies to the requests of a 
  * single client over a IPv4 stream socket that is already connected
- * to the client. The stream socket is passed in as an argument. The
- * thread exits when the far end closes the stream socket.
+ * to the client. The stream socket is passed in as an argument.
+ *
+ * EXIT CONDITION: when the far end client closes the socket.
  */
 static void * server(void * arg /* streamsocket */)
 {
@@ -497,7 +513,7 @@ static void * server(void * arg /* streamsocket */)
     diminuto_port_t farendport = 0;
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     diminuto_mux_t mux;
-    int ready = 0;
+    int ready = -1;
     int fd = -1;
     struct iovec vector[1];
     ssize_t length = -1;
@@ -526,15 +542,15 @@ static void * server(void * arg /* streamsocket */)
 
     while (!0) {
 
-        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() * TIMEOUT)) > 0) {
             /* Do nothing. */
         } else if (ready == 0) {
-            continue;
+            FATAL("server: timeout");
         } else if (errno == EINTR) {
             CHECKPOINT("server: stream %d interrupted\n", streamsocket);
-            break;
+            continue;
         } else {
-            FATAL("server: diminuto_mux_wait: error");
+            FATAL("server: error");
         }
 
         while ((fd = diminuto_mux_ready_read(&mux)) >= 0) {
@@ -602,7 +618,10 @@ static void * server(void * arg /* streamsocket */)
  * in the listen state, creates a new stream socket for every connection
  * request from a client that it accepts, and dispatches a new server
  * thread to handle the request. The request socket is passed in as an
- * argument. The thread exits when it is notified to do so.
+ * argument.
+ *
+ * EXIT CONDITION: when a notification has been received and all
+ * running servers have been joined.
  */
 static void * dispatcher(void * arg /* requestsocket */)
 {
@@ -614,6 +633,8 @@ static void * dispatcher(void * arg /* requestsocket */)
     int count = 0;
     int streamsocket = -1;
     void * result = 0;
+    int notifications = 0;
+    int fd = -1;
 
     ASSERT((requestsocket = (intptr_t)arg) >= 0);
 
@@ -624,17 +645,24 @@ static void * dispatcher(void * arg /* requestsocket */)
 
     thread_pool_init(&providers, provider, countof(provider), server);
 
-    while (diminuto_thread_notifications() == 0) {
+    while (!0) {
 
-        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
+        ASSERT((notifications = diminuto_thread_notifications()) >= 0);
+        if (notifications > 0) {
+            CHECKPOINT("dispatcher: notified");
+            break;
+        }
+
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() * TIMEOUT)) > 0) {
             /* Do nothing. */
         } else if (ready == 0) {
+            CHECKPOINT("dispatcher: timeout");
             continue;
         } else if (errno == EINTR) {
-            CHECKPOINT("dispatcher: request %d interrupted\n", requestsocket);
+            CHECKPOINT("dispatcher: interrupted\n");
             continue;
         } else {
-            FATAL("dispatcher: diminuto_mux_wait: error");
+            FATAL("dispatcher: error");
         }
 
         ASSERT(diminuto_mux_ready_accept(&mux) == requestsocket);
@@ -677,9 +705,10 @@ static void * dispatcher(void * arg /* requestsocket */)
 /*
  * This process represents the web server instance. It creates the
  * dispatcher thread. The listen socket is passed via a UNIX domain
- * (local) socket using a control message. When the instance receives
- * a SIGINT signal, it notifies the dispatcher to terminate, it
- * joins with the dispatcher, and then exits.
+ * (local) socket using a control message.
+ *
+ * EXIT CONDITION: when a SIGINT signal is received and has joined
+ * with its dispatcher.
  */
 static void instance(void) 
 {
@@ -702,6 +731,7 @@ static void instance(void)
     diminuto_ipv4_buffer_t nearendbuffer = { '\0', };
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = (void *)0;
+    int ready = -1;
 
     ASSERT((self = getpid()) > 0);
 
@@ -784,8 +814,20 @@ static void instance(void)
      * MUST JOIN dispatcherthread.
      */
 
-    while (diminuto_interrupter_check() <= 0) {
-        diminuto_mux_wait(&mux, -1);
+    while (!0) {
+        if ((ready = diminuto_mux_wait(&mux, -1)) > 0) {
+            FATAL("instance: unexpected");
+        } else if (ready == 0) {
+            FATAL("instance: timeout");
+        } else if (errno != EINTR) {
+            FATAL("instance: error");
+        } else if (diminuto_interrupter_check() > 0) {
+            CHECKPOINT("instance: SIGINT\n");
+            break;
+        } else {
+            CHECKPOINT("instance: interrupted\n");
+            continue;
+        }
     }
 
     CHECKPOINT("instance: request %d interrupted\n", requestsocket);
@@ -834,12 +876,13 @@ int main(int argc, char argv[])
     int status = -1;
     int ii = -1;
     int instances = 0;
+    int reapable = -1;
 
     CHECKPOINT("main: starting\n");
 
     SETLOGMASK();
 
-    ASSERT(diminuto_reaper_install(0) >= 0);
+    ASSERT(diminuto_reaper_install(!0) >= 0);
 
     ASSERT(diminuto_mux_init(&mux) == &mux);
 
@@ -917,7 +960,7 @@ int main(int argc, char argv[])
 
     while (!0) {
 
-        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency())) > 0) {
+        if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() * TIMEOUT)) > 0) {
             /* Do nothing. */
         } else if (ready == 0) {
             continue;
@@ -1012,6 +1055,7 @@ int main(int argc, char argv[])
          */
 
         if (instances >= countof(instancepid)) {
+            CHECKPOINT("main: stopped workload - pid %d.\n", workloadpid);
             ASSERT(kill(workloadpid, SIGINT) == 0);
         }
 
@@ -1020,12 +1064,16 @@ int main(int argc, char argv[])
          */
 
         diminuto_delay(diminuto_frequency() * DURATION, !0);
-        ADVISE(diminuto_reaper_check() == 0);
+        ASSERT((reapable = diminuto_reaper_check()) >= 0);
+        if (reapable > 0) {
+            CHECKPOINT("main: SIGCHLD\n");
+        }
 
         /*
          * Tell instance to exit.
          */
 
+        CHECKPOINT("main: deactivating instance %d pid %d.\n", ii, activepid);
         ASSERT(kill(activepid, SIGINT) == 0);
         ASSERT(diminuto_reaper_reap_generic(activepid, &status, 0) == activepid);
         /*
