@@ -76,7 +76,7 @@ int main(void)
             ASSERT((valid = diminuto_fd_valid(fd)) >= 0);
             if (valid) {
                 readable = diminuto_fd_readable(fd);
-                CHECKPOINT("fd %d readable %zd\n", fd, readable);
+                CHECKPOINT("fd=%d readable=%zd\n", fd, readable);
                 ASSERT(readable >= 0);
             }
         }
@@ -86,11 +86,15 @@ int main(void)
         ssize_t count;
         ssize_t limit;
         ssize_t maximum;
+        /*
+         * On my Ubunu 9.3.0 Linux 5.4.0 GNU 2.31 x86_64 development
+         * system, count, limit, and maximum are all 1024. This was
+         * not always the case. Long ago, maximum > limit > count.
+         */
         count = diminuto_fd_count();
         limit = diminuto_fd_limit();
         maximum = diminuto_fd_maximum();
         CHECKPOINT("count=%zdfds limit=%zdfds maximum=%zdfds\n", count, limit, maximum);
-        fflush(stderr);
         ASSERT(count > 0);
         ASSERT(limit > 0);
         ASSERT(maximum > 0);

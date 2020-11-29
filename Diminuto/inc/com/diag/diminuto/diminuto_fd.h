@@ -117,21 +117,22 @@ static inline ssize_t diminuto_fd_valid(int fd) {
 }
 
 /**
- * Return the maximum possible number of unique open file descriptor values. The
- * value of any file descriptor will range from zero to one less than this
- * number. In this implementation, this is the number of file descriptors
- * supported by the select(2) system call; the actual number of open files
- * returned by sysconf(3) for _SC_OPEN_MAX or getrlimit(2) for RLIMIT_NOFILE
- * may be significantly larger.
+ * Return the maximum possible number of open file descriptors supported
+ * by the select(2) system call. The value of any file descriptor usable
+ * with select(2)  will range from zero to one less than this value. See
+ * also the functions diminuto_fd_limit and diminuto_fd_maximum, which may
+ * return a significantly larger value. See also poll(2).
  * @return the maximum possible number of open file descriptors or <0 for error.
  */
 extern ssize_t diminuto_fd_count(void);
 
 /**
- * Return the maximum possible number of unique open file descriptor values. The
- * value of any file descriptor will range from zero to one less than this
- * number. In this implementation, this is the number of file descriptors
- * returned by the getrlimit(2) system call for RLIMIT_NOFILE.
+ * Return the maximum possible number of unique open file descriptor values
+ * usable by the calling process. The value of any file descriptor will
+ * range from zero to one less than this number. This is the number returned
+ * by getrlimit(2) for RLIMIT_NOFILE. See also the function diminuto_fd_count,
+ * which may return a significantly smaller value, and the function
+ * diminuto_fd_maximum.
  * @return the maximum possible number of open file descriptors or <0 for error.
  */
 extern ssize_t diminuto_fd_limit(void);
@@ -139,8 +140,10 @@ extern ssize_t diminuto_fd_limit(void);
 /**
  * Return the maximum possible number of unique open file descriptor values. The
  * value of any file descriptor will range from zero to one less than this
- * number. In this implementation, this is the number of file descriptors
- * returned by the sysconf(3) function for _SC_OPEN_MAX.
+ * number. This is the number of file descriptors returned by the sysconf(3)
+ * function for _SC_OPEN_MAX. The calling process may have a lower limit, as
+ * do systems calls like select(2). See also the functions diminuto_fd_count
+ * and diminuto_fd_limit.
  * @return the maximum possible number of open file descriptors or <0 for error.
  */
 extern ssize_t diminuto_fd_maximum(void);
