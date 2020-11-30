@@ -478,19 +478,20 @@ stuff in the future but didn't want to start at the low level to do so.
 If you happen upon this repo and find it useful, that's great. If you
 don't, that's great too.
 
-If you'd like to see a non-trivial application that makes heavy use
+If you'd like to see a non-trivial application that makes use
 of many Diminuto features in exactly the way I envisioned them being
-used, check out the gpstool utility in the Hazer project (repo URL
-below). gpstool is the Swiss Army knife of Hazer, a library that parses
-output from GPS devices.
+used, check out the following:
 
-Another good example is the survey and census functional tests in the
-Placer project (ditto). The file system walker in Diminuto is a good
-example of how a need in another project leads to a kind of organic
-growth in Diminuto.
-
-The IPC Ancillary unit test also uses a lot of Diminuto features and
-is a good example of a non-trivial application.
+* the Diminuto IPC Ancillary unit test uses a lot of Diminuto features
+and is a good example of a non-trivial application that is multi-process
+and multi-threaded;
+* the gpstool application in the Hazer project (repo URL below) is the
+Swiss Army knife of Hazer, a library that parses output from GPS devices,
+and relies on Diminuto for most of its infrastructure;
+* the survey and census functional tests in the Placer project (ditto),
+which uses the SQLite relational database system, use the Diminuto
+FS file system walker and are a good example of how a need in another
+project leads to a virtuous cycle of organic growth in Diminuto.
 
 # Issues
 
