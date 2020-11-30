@@ -13,6 +13,14 @@ This software is an original work of its author.
 
 Licensed under the terms in LICENSE.txt. 
 
+# Trademarks
+
+"Digital Aggregates Corporation" is a registered trademark of the Digital
+Aggregates Corporation, Arvada, Colorado USA.
+
+"Chip Overclock" is a registered trademark of John Sloan, Arvada, Colorado,
+USA.
+
 # Contact
 
 Chip Overclock  
