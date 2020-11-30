@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This describes the Buffer private API.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -30,7 +30,7 @@
  */
 typedef struct DiminutoBuffer {
     union {
-        uint64_t bits; /* Header is at least eight bytes. */
+        uint64_t align; /* Header is at least eight bytes. */
         size_t item;
         struct DiminutoBuffer * next;
     } header;

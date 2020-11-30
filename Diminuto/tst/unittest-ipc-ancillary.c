@@ -76,7 +76,9 @@
  * I confess I used this particular unit test to try out stuff I've
  * never used before in about forty years of developing in C, ranging
  * from using the readv(2) and writev(2) scatter/gather I/O system calls
- * (which harken to my supercomputer days) to using the goto statement.
+ * (which harken to my supercomputer days) to using the C goto statement.
+ * I also tried some ideas out, like Thread Pools, which worked out well.
+ * Thread Pools may eventually be promoted to yet another Diminuto feature.
  *
  * REFERENCES
  *
@@ -137,7 +139,7 @@ enum {
      * Each consumer thread that is activated will wait on the listen socket
      * until a provider thread is available, the incoming connection is
      * accepted by the dispatcher and the resulting stream socket handed off to
-     *  the provider thread.
+     * the provider thread.
      */
     CONSUMERS = 64,
     /*
