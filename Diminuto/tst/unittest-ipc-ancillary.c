@@ -381,6 +381,9 @@ static void * client(void * arg /* limit */)
     } else if (errno == ETIMEDOUT) {
         CHECKPOINT("client: timeout");
         goto done;
+    } else if (errno == ECONNREFUSED) {
+        CHECKPOINT("client: refused");
+        goto done;
     } else if (errno == EINTR) {
         CHECKPOINT("client: interrupted");
         goto done;
