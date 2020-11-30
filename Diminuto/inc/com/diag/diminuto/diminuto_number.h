@@ -51,9 +51,21 @@ extern const char * diminuto_number_unsigned(const char * s, diminuto_unsigned_t
 extern const char * diminuto_number_signed(const char * s, diminuto_signed_t * p);
 
 /**
- * @def diminuto_number
- * Make legacy applications happy by mapping the old name to the new name.
+ * Parses a string in a strtoll-like manner, returning a pointer to the
+ * first non-numeric character. Applications can use this pointer to
+ * advance parsing, or to test for the nul end of string character to see
+ * if the string was all consumed. If the first non-numeric character is
+ * not a nul, errno is set so that the application may choose to print an
+ * error message.
+ * @param s points to a nul-terminated C-style numeric string in base 8, 10,
+ * or 16.
+ * @param p points to an unsigned 64-bit integer variable into which the
+ * binary result is placed.
+ * @return a pointer to the first non-numeric character encountered.
+ * @see strtoll(3)
  */
-#define diminuto_number diminuto_number_unsigned
+static inline const char * diminuto_number(const char * s, diminuto_unsigned_t * p) {
+    return diminuto_number_unsigned(s, p);
+}
 
 #endif
