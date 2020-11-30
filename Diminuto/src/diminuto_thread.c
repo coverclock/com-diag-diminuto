@@ -52,7 +52,7 @@ static void * proxy(void * ap)
     diminuto_thread_t * tp = (diminuto_thread_t *)ap;
     void * value = (void *)0;
     int previous = -1;
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
 
     /*
      * We allow deferred cancellation, but we don't encourage it by
@@ -136,7 +136,7 @@ static void handler(int signo)
 static void setup()
 {
     extern int main(int argc, char * argv[]);
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
     static int setupped = 0;
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((diminuto_thread_function_t *)0);
@@ -185,7 +185,7 @@ diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(vo
         tp->function = fp;
         tp->context = (void *)0;
         tp->value = (void *)~0;
-        tp->notify = COM_DIAG_DIMINUTO_THREAD_NOTIFY;
+        tp->notify = DIMINUTO_THREAD_NOTIFY;
         tp->notifications = 0;
         tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
         result = tp;
@@ -272,7 +272,7 @@ pthread_t diminuto_thread_self()
 
 int diminuto_thread_yield()
 {
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
 
 #if defined(_GNU_SOURCE)
     if ((rc = pthread_yield()) != 0) {
@@ -338,7 +338,7 @@ void diminuto_thread_exit(void * vp)
 
 int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 {
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
     struct sigaction action = { 0 };
 
     setup();
@@ -389,7 +389,7 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 
 int diminuto_thread_notify(diminuto_thread_t * tp)
 {
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
 
     if (diminuto_thread_lock(tp) == 0) {
         pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
@@ -435,7 +435,7 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
 
 int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_ticks_t clocktime)
 {
-    int rc = COM_DIAG_DIMINUTO_THREAD_ERROR;
+    int rc = DIMINUTO_THREAD_ERROR;
     int done = 0;
     void * value = (void *)0;
     struct timespec now = { 0, };

@@ -35,56 +35,35 @@
  **********************************************************************/
 
 /**
- * @def COM_DIAG_DIMINUTO_THREAD_NOTIFY
- * Defines the value used as a kill signal during notification.
- */
-#define COM_DIAG_DIMINUTO_THREAD_NOTIFY SIGUSR1
-
-/**
  * @def COM_DIAG_DIMINUTO_THREAD_INFINITY
  * Defines the value used to indicate an infinite timeout.
  */
 #define COM_DIAG_DIMINUTO_THREAD_INFINITY COM_DIAG_DIMINUTO_CONDITION_INFINITY
-
-/**
- * @def COM_DIAG_DIMINUTO_THREAD_ERROR
- * Defines the error code use for non-specific errors.
- */
-#define COM_DIAG_DIMINUTO_THREAD_ERROR COM_DIAG_DIMINUTO_CONDITION_ERROR
-
-/**
- * @def COM_DIAG_DIMINUTO_THREAD_TIMEDOUT
- * Defines the error code use for when a thread condition times out.
- */
-#define COM_DIAG_DIMINUTO_THREAD_TIMEDOUT COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT
 
 /***********************************************************************
  * CONSTANTS
  **********************************************************************/
 
 /**
- * This is the kill signal used to try to unblock a thread from a
- * system call when it is notified.
+ * Defines signals.
  */
-static const int DIMINUTO_THREAD_NOTIFY = COM_DIAG_DIMINUTO_THREAD_NOTIFY;
+enum DiminutoThreadSignal {
+    DIMINUTO_THREAD_NOTIFY      = SIGUSR1,  /** Sent for notification. */
+};
+
+/**
+ * Defines error codes.
+ */
+enum DiminutoThreadErrno {
+    DIMINUTO_THREAD_ERROR       = DIMINUTO_MUTEX_ERROR, /** Non-specific. */
+    DIMINUTO_THREAD_TIMEDOUT    = ETIMEDOUT,            /** Condition timeed out. */
+};
 
 /**
  * This value when used as a clocktime specifies that the caller blocks
  * indefinitely.
  */
 static const diminuto_ticks_t DIMINUTO_THREAD_INFINITY = COM_DIAG_DIMINUTO_THREAD_INFINITY;
-
-/**
- * This is the error number returned when no other more specific error
- * is available.
- */
-static const int DIMINUTO_THREAD_ERROR = COM_DIAG_DIMINUTO_THREAD_ERROR;
-
-/**
- * This is the error number returned when the caller joins with a
- * thread and the clocktime is reached without being completed.
- */
-static const int DIMINUTO_THREAD_TIMEDOUT = COM_DIAG_DIMINUTO_THREAD_TIMEDOUT;
 
 /***********************************************************************
  * TYPES
@@ -139,7 +118,7 @@ typedef struct DiminutoThread {
         (void *)0, \
         (void *)(~0), \
         DIMINUTO_THREAD_STATE_INITIALIZED, \
-        COM_DIAG_DIMINUTO_THREAD_NOTIFY, \
+        DIMINUTO_THREAD_NOTIFY, \
         0, \
     }
 

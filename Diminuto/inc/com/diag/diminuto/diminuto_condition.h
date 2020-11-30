@@ -37,39 +37,23 @@
  */
 #define COM_DIAG_DIMINUTO_CONDITION_INFINITY (~(diminuto_ticks_t)0)
 
-/**
- * @def COM_DIAG_DIMINUTO_CONDITION_ERROR
- * Defines the error code used for non-specific errors.
- */
-#define COM_DIAG_DIMINUTO_CONDITION_ERROR COM_DIAG_DIMINUTO_MUTEX_ERROR
-
-/**
- * @def COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT
- * Defines the error code used for when a condition times out.
- */
-#define COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT ETIMEDOUT
-
 /***********************************************************************
  * CONSTANTS
  **********************************************************************/
+
+/**
+ * Defines error codes.
+ */
+enum DiminutoConditionErrno {
+    DIMINUTO_CONDITION_ERROR    = DIMINUTO_MUTEX_ERROR, /** Non-specific. */
+    DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT,            /** Condition timeed out. */
+};
 
 /**
  * This value when used as a clocktime specifies that the caller blocks
  * indefinitely.
  */
 static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = COM_DIAG_DIMINUTO_CONDITION_INFINITY;
-
-/**
- * This is the error number returned when no other more specific error
- * is available.
- */
-static const int DIMINUTO_CONDITION_ERROR = COM_DIAG_DIMINUTO_CONDITION_ERROR;
-
-/**
- * This is the error number returned when the caller waits on a
- * condition and the clocktime is reached without being signalled.
- */
-static const int DIMINUTO_CONDITION_TIMEDOUT = COM_DIAG_DIMINUTO_CONDITION_TIMEDOUT;
 
 /***********************************************************************
  * TYPES

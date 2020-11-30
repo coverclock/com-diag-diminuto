@@ -25,36 +25,16 @@
 #include <errno.h>
 
 /***********************************************************************
- * SYMBOLS
- **********************************************************************/
-
-/**
- * @def COM_DIAG_DIMINUTO_MUTEX_ERROR
- * Defines the error code used for non-specific errors.
- */
-#define COM_DIAG_DIMINUTO_MUTEX_ERROR EIO
-
-/**
- * @def COM_DIAG_DIMINUTO_MUTEX_BUSY
- * Defines the error code used for trying to lock a busy mutex.
- */
-#define COM_DIAG_DIMINUTO_MUTEX_BUSY EBUSY
-
-/***********************************************************************
  * CONSTANTS
  **********************************************************************/
 
 /**
- * This is the error number returned when no other more specific error
- * is available.
+ * Defines error codes.
  */
-static const int DIMINUTO_MUTEX_ERROR = COM_DIAG_DIMINUTO_MUTEX_ERROR;
-
-/**
- * This is the error number returned with the caller does a try on a
- * locked mutex.
- */
-static const int DIMINUTO_MUTEX_BUSY = COM_DIAG_DIMINUTO_MUTEX_BUSY;
+enum DiminutoMutexErrno {
+    DIMINUTO_MUTEX_ERROR    = EIO,      /** Non-specific error. */
+    DIMINUTO_MUTEX_BUSY     = EBUSY,    /** Mutex already locked. */
+};
 
 /***********************************************************************
  * TYPES
