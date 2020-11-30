@@ -16,6 +16,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+static void f5(void) { STACKTRACE(); }
+static void f4(void) { f5(); }
+static void f3(void) { f4(); }
+static void f2(void) { f3(); }
+static void f1(void) { f2(); }
+
 static void * function(void * arg)
 {
     EXPECT(arg != (void *)0);
@@ -168,6 +174,14 @@ int main(int argc, char ** argv)
             }
             EXPECT(status != 0);
         }
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        f1();
 
         STATUS();
     }

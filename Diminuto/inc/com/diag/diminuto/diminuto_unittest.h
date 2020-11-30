@@ -54,6 +54,7 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_stacktrace.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -82,7 +83,9 @@ extern int diminuto_unittest_errors;
 /**
  * Maximum possible exit code (for processes).
  */
-static const int DIMINUTO_UNITTEST_MAXIMUM = 255;
+enum DiminutoUnitTestMaximum {
+    DIMINUTO_UNITTEST_MAXIMUM = 255,
+};
 
 /*******************************************************************************
  * Helper functions..
@@ -124,6 +127,13 @@ extern void diminuto_unittest_flush(void);
  */
 #define SETLOGMASK() \
     diminuto_unittest_setlogmask()
+
+/**
+ * @def STACKTRACE
+ * Emit a stack trace on standard error.
+ */
+#define STACKTRACE() \
+    diminuto_stacktrace()
 
 /*******************************************************************************
  * These macros each take a single string constant as an argument.

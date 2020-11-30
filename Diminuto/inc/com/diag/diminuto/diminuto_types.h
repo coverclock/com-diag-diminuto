@@ -65,18 +65,21 @@ typedef uint64_t diminuto_unsigned_t;
 typedef int64_t diminuto_signed_t;
 
 /**
- * @def DIMINUTO_IPV4_SIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv4 address string.
  */
-#define DIMINUTO_IPV4_SIZE sizeof("255.255.255.255")
+enum DiminutoIpv4Size {
+    DIMINUTO_IPV4_SIZE = sizeof("255.255.255.255"),
+};
 
 /**
  * @def DIMINUTO_IPV6_SIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv6 address string.
  */
-#define DIMINUTO_IPV6_SIZE sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+enum DiminutoIpv6Size {
+    DIMINUTO_IPV6_SIZE = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+};
 
 /**
  * @def DIMINUTO_LOCAL_SIZE
@@ -86,15 +89,18 @@ typedef int64_t diminuto_signed_t;
  * blown file system names; a full path may be reduced to a smaller
  * length once soft links etc. are resolved.
  */
-#define DIMINUTO_LOCAL_SIZE UNIX_PATH_MAX
+enum DiminutoLocalSize {
+    DIMINUTO_LOCAL_SIZE = UNIX_PATH_MAX,
+};
 
 /**
- * @def DIMINUTO_PATH_SIZE
  * This defines the buffer size, including the terminating NUL, needed
  * to express a full file system path. This can be quite large,
  * typically 4096 bytes (4KB).
  */
-#define DIMINUTO_PATH_SIZE PATH_MAX
+enum DiminutoPathSize {
+    DIMINUTO_PATH_SIZE = PATH_MAX,
+};
 
 /**
  * This type describes the integer declaration of a variable containing a

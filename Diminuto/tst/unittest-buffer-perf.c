@@ -19,7 +19,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define COUNT 1000
+enum { COUNT = 1000 };
 
 static diminuto_ticks_t run(int limit)
 {

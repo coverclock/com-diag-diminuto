@@ -34,8 +34,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#define TEST_PORT 0xDEAD
-#define TEST_WORD 0xDEADC0DE
+enum {
+    TEST_PORT = 0xDEAD,
+    TEST_WORD = 0xDEADC0DE,
+};
+
 #define TEST_INIT { 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD }
 
 static const diminuto_ipv6_t SERVER64 = { 0, 0, 0, 0, 0, 0xffff, ((192 << 8) + 168), ((1 << 8) + 222) };

@@ -16,37 +16,35 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
-#define H84_D1_OFF	(3)
-#define H84_D2_OFF	(2)
-#define H84_D3_OFF	(1)
-#define H84_D4_OFF	(0)
-
-#define H84_D1_BIT	(1 << H84_D1_OFF)
-#define H84_D2_BIT	(1 << H84_D2_OFF)
-#define H84_D3_BIT	(1 << H84_D3_OFF)
-#define H84_D4_BIT	(1 << H84_D4_OFF)
-
-#define H84_P1_OFF	(7)
-#define H84_P2_OFF	(6)
-#define H84_S1_OFF	(5)
-#define H84_P3_OFF	(4)
-#define H84_S2_OFF	(3)
-#define H84_S3_OFF	(2)
-#define H84_S4_OFF	(1)
-#define H84_P4_OFF	(0)
-
-#define H84_P1_BIT	(1 << H84_P1_OFF)
-#define H84_P2_BIT	(1 << H84_P2_OFF)
-#define H84_S1_BIT	(1 << H84_S1_OFF)
-#define H84_P3_BIT	(1 << H84_P3_OFF)
-#define H84_S2_BIT	(1 << H84_S2_OFF)
-#define H84_S3_BIT	(1 << H84_S3_OFF)
-#define H84_S4_BIT	(1 << H84_S4_OFF)
-#define H84_P4_BIT	(1 << H84_P4_OFF)
-
-#define H84_O1_OFF	(0)
-#define H84_O2_OFF	(1)
-#define H84_O3_OFF	(2)
+enum DiminutoHamming {
+    H84_D1_OFF	= (3),
+    H84_D2_OFF	= (2),
+    H84_D3_OFF	= (1),
+    H84_D4_OFF	= (0),
+    H84_D1_BIT	= (1 << H84_D1_OFF),
+    H84_D2_BIT	= (1 << H84_D2_OFF),
+    H84_D3_BIT	= (1 << H84_D3_OFF),
+    H84_D4_BIT	= (1 << H84_D4_OFF),
+    H84_P1_OFF	= (7),
+    H84_P2_OFF	= (6),
+    H84_S1_OFF	= (5),
+    H84_P3_OFF	= (4),
+    H84_S2_OFF	= (3),
+    H84_S3_OFF	= (2),
+    H84_S4_OFF	= (1),
+    H84_P4_OFF	= (0),
+    H84_P1_BIT	= (1 << H84_P1_OFF),
+    H84_P2_BIT	= (1 << H84_P2_OFF),
+    H84_S1_BIT	= (1 << H84_S1_OFF),
+    H84_P3_BIT	= (1 << H84_P3_OFF),
+    H84_S2_BIT	= (1 << H84_S2_OFF),
+    H84_S3_BIT	= (1 << H84_S3_OFF),
+    H84_S4_BIT	= (1 << H84_S4_OFF),
+    H84_P4_BIT	= (1 << H84_P4_OFF),
+    H84_O1_OFF	= (0),
+    H84_O2_OFF	= (1),
+    H84_O3_OFF	= (2),
+};
 
 /**
  * Encode the four data bits (D1, D2, D3, D4) in a nibble into the four symbol

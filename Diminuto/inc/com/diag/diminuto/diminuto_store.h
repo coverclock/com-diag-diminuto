@@ -53,11 +53,13 @@ typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
  ******************************************************************************/
 
 /**
+ * @def DIMINUTO_STORE_NULL
  * This is the value returned of a node does not exist in the store.
  */
 #define DIMINUTO_STORE_NULL ((diminuto_store_t *)0)
 
 /**
+ * @def DIMINUTO_STORE_EMPTY
  * This is the value in the root pointer if the store is empty.
  */
 #define DIMINUTO_STORE_EMPTY DIMINUTO_STORE_NULL

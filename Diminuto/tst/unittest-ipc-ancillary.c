@@ -131,26 +131,27 @@
  * SYMBOLS
  ******************************************************************************/
 
-/*
- * This defines the number of consumer threads in the consumer thread pool.
- * Each consumer thread that is activated will wait on the listen socket until
- * a provider thread is available, the incoming connection is accepted by the
- * dispatcher and the resulting stream socket handed off to the provider thread.
- */
-#define CONSUMERS 64
-
-/*
- * This defines the number of provider threads in the provider thread pool.
- * Each provider thread is given a stream socket to a consumer thread and then
- * services that consumer by replying to its requests.
- */
-#define PROVIDERS 8
-
-/*
- * This defines the number of instance processes, each of which manages its
- * own provider thread pool.
- */
-#define INSTANCES 4
+enum {
+    /*
+     * This defines the number of consumer threads in the consumer thread pool.
+     * Each consumer thread that is activated will wait on the listen socket
+     * until a provider thread is available, the incoming connection is
+     * accepted by the dispatcher and the resulting stream socket handed off to
+     *  the provider thread.
+     */
+    CONSUMERS = 64,
+    /*
+     * This defines the number of provider threads in the provider thread pool.
+     * Each provider thread is given a stream socket to a consumer thread and
+     * then services that consumer by replying to its requests.
+     */
+    PROVIDERS = 8,
+    /*
+     * This defines the number of instance processes, each of which manages its
+     * own provider thread pool.
+     */
+    INSTANCES = 4,
+};
 
 /*******************************************************************************
  * CONSTANTS
