@@ -401,14 +401,10 @@ ssize_t diminuto_ipc4_datagram_send_generic(int fd, const void * buffer, size_t 
 
     if (port > 0) {
         length = sizeof(sa);
-        memset(&sa, 0, length);
         sa.sin_family = AF_INET;
         sa.sin_addr.s_addr = htonl(address);
         sa.sin_port = htons(port);
         sap = (struct sockaddr *)&sa;
-    } else {
-        length = 0;
-        sap = (struct sockaddr *)0;
     }
 
     if ((total = sendto(fd, buffer, size, flags, sap, length)) > 0) {

@@ -335,9 +335,6 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
         sa.sun_family = AF_UNIX;
         strncpy(sa.sun_path, path, sizeof(sa.sun_path));
         sap = (struct sockaddr *)&sa;
-    } else {
-        length = 0;
-        sap = (struct sockaddr *)0;
     }
 
     if ((total = sendto(fd, buffer, size, flags, sap, length)) > 0) {

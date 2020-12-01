@@ -547,9 +547,6 @@ ssize_t diminuto_ipc6_datagram_send_generic(int fd, const void * buffer, size_t 
         memcpy(sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
         sa.sin6_port = htons(port);
         sap = (struct sockaddr *)&sa;
-    } else {
-        length = 0;
-        sap = (struct sockaddr *)0;
     }
 
     if ((total = sendto(fd, buffer, size, flags, sap, length)) > 0) {
