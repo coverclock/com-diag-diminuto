@@ -25,9 +25,28 @@ COM_DIAG_DIMINUTO_ABSOLUTE(int16_t)
 COM_DIAG_DIMINUTO_ABSOLUTE(int32_t)
 COM_DIAG_DIMINUTO_ABSOLUTE(int64_t)
 
+/**
+ * @def abs8
+ * Return the absolute value of the 8-bit value of  @a _VALUE_.
+ */
 #define abs8(_VALUE_) diminuto_absolute_int8_t_f(_VALUE_)
+
+/**
+ * @def abs16
+ * Return the absolute value of the 16-bit value of  @a _VALUE_.
+ */
 #define abs16(_VALUE_) diminuto_absolute_int16_t_f(_VALUE_)
+
+/**
+ * @def abs32
+ * Return the absolute value of the 32-bit value of  @a _VALUE_.
+ */
 #define abs32(_VALUE_) diminuto_absolute_int32_t_f(_VALUE_)
+
+/**
+ * @def abs64
+ * Return the absolute value of the 64-bit value of  @a _VALUE_.
+ */
 #define abs64(_VALUE_) diminuto_absolute_int64_t_f(_VALUE_)
 
 #endif

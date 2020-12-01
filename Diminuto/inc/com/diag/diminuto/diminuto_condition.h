@@ -28,7 +28,7 @@
 #include "com/diag/diminuto/diminuto_mutex.h"
 
 /***********************************************************************
- * SYMBOLS
+ * GENERATORS
  **********************************************************************/
 
 /**
@@ -38,7 +38,7 @@
 #define COM_DIAG_DIMINUTO_CONDITION_INFINITY (~(diminuto_ticks_t)0)
 
 /***********************************************************************
- * CONSTANTS
+ * SYMBOLS
  **********************************************************************/
 
 /**
@@ -48,6 +48,10 @@ enum DiminutoConditionErrno {
     DIMINUTO_CONDITION_ERROR    = DIMINUTO_MUTEX_ERROR, /**< Non-specific. */
     DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT,            /**< Condition timeed out. */
 };
+
+/***********************************************************************
+ * CONSTANTS
+ **********************************************************************/
 
 /**
  * This value when used as a clocktime specifies that the caller blocks

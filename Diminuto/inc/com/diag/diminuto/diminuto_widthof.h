@@ -21,6 +21,10 @@
 #define diminuto_widthof(_TYPE_) (sizeof(_TYPE_) * 8)
 
 #ifndef widthof
+    /**
+     * @def widthof
+     * Given a variable or type named @a _TYPE_ compute the number of bits in it.
+     */
 #   define widthof(_TYPE_) diminuto_widthof(_TYPE_)
 #endif
 

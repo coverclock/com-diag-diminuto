@@ -115,7 +115,7 @@ typedef struct DiminutoList {
 typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
 
 /*******************************************************************************
- * CONSTANTS
+ * GENERATORS
  ******************************************************************************/
 
 /**
@@ -125,10 +125,6 @@ typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
  * have remarkably inconvenient implications in C regarding const correctness.)
  */
 #define DIMINUTO_LIST_NULL ((diminuto_list_t *)0)
-
-/*******************************************************************************
- * GENERATORS
- ******************************************************************************/
 
 /**
  * @def DIMINUTO_LIST_DATAINIT

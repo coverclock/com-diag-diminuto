@@ -28,6 +28,11 @@
 #define diminuto_offsetof(_STRUCT_, _MEMBER_) ((size_t)(((char *)&diminuto_memberof(_STRUCT_, _MEMBER_)) - ((char *)((_STRUCT_ *)0))))
 
 #ifndef offsetof
+    /**
+     * @def offsetof
+     * Compute the offset in bytes of the member @a _MEMBER_ in the structure
+     * @a _STRUCT_.
+     */
 #   define offsetof(_STRUCT_, _MEMBER_) diminuto_offsetof(_STRUCT_, _MEMBER_)
 #endif
 

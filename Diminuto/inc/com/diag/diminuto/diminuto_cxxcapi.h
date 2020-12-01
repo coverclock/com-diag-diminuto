@@ -131,32 +131,32 @@
 #endif
 
 #if defined(__cplusplus)
-/**
- *  @def CXXCINLINE
- *
- *  This symbol is used in both declarations and definitions of
- *  standalone functions in header files included in both C
- *  and C++ translation units to suggest that the compiler inline
- *  the function. Pronounced "sexy-inline".
- *
- *  Note that the use of an additional static keyword in this context
- *  has been deprecated by the later ANSI C++ standard but not having
- *  it produces warnings currently for compiles of C translation units.
- */
+    /**
+     *  @def CXXCINLINE
+     *
+     *  This symbol is used in both declarations and definitions of
+     *  standalone functions in header files included in both C
+     *  and C++ translation units to suggest that the compiler inline
+     *  the function. Pronounced "sexy-inline".
+     *
+     *  Note that the use of an additional static keyword in this context
+     *  has been deprecated by the later ANSI C++ standard but not having
+     *  it produces warnings currently for compiles of C translation units.
+     */
 #   define CXXCINLINE inline
 #else
-/**
- *  @def CXXCINLINE
- *
- *  This symbol is used in both declarations and definitions of
- *  standalone functions in header files included in both C
- *  and C++ translation units to suggest that the compiler inline
- *  the function. Pronounced "sexy-inline".
- *
- *  Note that the use of an additional static keyword in this context
- *  has been deprecated by the later ANSI C++ standard but not having
- *  it produces warnings currently for compiles of C translation units.
- */
+    /**
+     *  @def CXXCINLINE
+     *
+     *  This symbol is used in both declarations and definitions of
+     *  standalone functions in header files included in both C
+     *  and C++ translation units to suggest that the compiler inline
+     *  the function. Pronounced "sexy-inline".
+     *
+     *  Note that the use of an additional static keyword in this context
+     *  has been deprecated by the later ANSI C++ standard but not having
+     *  it produces warnings currently for compiles of C translation units.
+     */
 #   define CXXCINLINE static inline
 #endif
 
@@ -171,25 +171,25 @@
 #define CXXCTOKEN(_TOKEN_) _TOKEN_
 
 #if defined(__cplusplus)
-/**
- *  @def CXXCTYPE
- *
- *  This symbol is used with type references in header files included in
- *  both C and C++ translation units to define the type as to whether it
- *  has a namespace prefix. C++ symbols will, C symbols will not. Pronounced
- *  "sexy-type".
- */
-# define CXXCTYPE(_NAMESPACE_, _TYPE_) CXXCTOKEN(_NAMESPACE_)CXXCTOKEN(_TYPE_)
+    /**
+     *  @def CXXCTYPE
+     *
+     *  This symbol is used with type references in header files included in
+     *  both C and C++ translation units to define the type as to whether it
+     *  has a namespace prefix. C++ symbols will, C symbols will not. Pronounced
+     *  "sexy-type".
+     */
+#   define CXXCTYPE(_NAMESPACE_, _TYPE_) CXXCTOKEN(_NAMESPACE_)CXXCTOKEN(_TYPE_)
 #else
-/**
- *  @def CXXCTYPE
- *
- *  This symbol is used with type references in header files included in
- *  both C and C++ translation units to define the type as to whether it
- *  has a namespace prefix. C++ symbols will, C symbols will not. Pronounced
- *  "sexy-type".
- */
-# define CXXCTYPE(_NAMESPACE_, _TYPE_) _TYPE_
+    /**
+     *  @def CXXCTYPE
+     *
+     *  This symbol is used with type references in header files included in
+     *  both C and C++ translation units to define the type as to whether it
+     *  has a namespace prefix. C++ symbols will, C symbols will not. Pronounced
+     *  "sexy-type".
+     */
+#   define CXXCTYPE(_NAMESPACE_, _TYPE_) _TYPE_
 #endif
 
 #endif

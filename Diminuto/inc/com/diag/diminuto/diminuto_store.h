@@ -49,7 +49,7 @@ typedef struct DiminutoStore {
 typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
 
 /*******************************************************************************
- * CONSTANTS
+ * GENERATORS
  ******************************************************************************/
 
 /**

@@ -25,6 +25,12 @@
 #define diminuto_memberof(_STRUCT_, _MEMBER_)   (((_STRUCT_ *)0)->_MEMBER_)
 
 #ifndef memberof
+    /**
+     * @def memberof
+     * Create a reference to a member named @a _MEMBER_ of an structure of type @a
+     * _STRUCT_. This can be used to take the sizeof() a member of a structure
+     * without having a pointer to such a structure.
+     */
 #   define memberof(_STRUCT_, _MEMBER_) diminuto_memberof(_STRUCT_, _MEMBER_)
 #endif
 

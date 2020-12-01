@@ -25,6 +25,11 @@
 #define diminuto_countof(_ARRAY_) (sizeof(_ARRAY_) / sizeof(_ARRAY_[0]))
 
 #ifndef countof
+    /**
+     * @def countof
+     * Given an array named @a _ARRAY_ whose dimension is known at compile time,
+     * compute the number of elements in the array.
+     */
 #   define countof(_ARRAY_) diminuto_countof(_ARRAY_)
 #endif
 

@@ -96,7 +96,7 @@ typedef struct DiminutoTree {
 typedef int (diminuto_tree_comparator_t)(diminuto_tree_t *, diminuto_tree_t *);
 
 /*******************************************************************************
- * CONSTANTS
+ * GENERATORS
  ******************************************************************************/
 
 /**
@@ -116,10 +116,6 @@ typedef int (diminuto_tree_comparator_t)(diminuto_tree_t *, diminuto_tree_t *);
  * If a node is not on a tree, this is the value its root pointer will have.
  */
 #define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
-
-/*******************************************************************************
- * GENERATORS
- ******************************************************************************/
 
 /**
  * @def DIMINUTO_TREE_DATAINIT
