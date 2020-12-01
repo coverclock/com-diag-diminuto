@@ -46,7 +46,9 @@ int main(int argc, char ** argv)
     char * path;
     int test;
 
-    diminuto_core_enable();
+    SETLOGMASK();
+
+    TEST();
 
     test = (argc < 2) ? 0 : strtoul(argv[1], (char **)0, 0);
     diminuto_daemon_test((diminuto_daemon_test_t)test);
@@ -122,6 +124,8 @@ int main(int argc, char ** argv)
 
     us = fwrite(&ch, sizeof(ch), 1, stderr);
     ASSERT(us == 1);
+
+    STATUS();
 
     EXIT();
 }

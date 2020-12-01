@@ -48,15 +48,15 @@
  * Defines signals.
  */
 enum DiminutoThreadSignal {
-    DIMINUTO_THREAD_NOTIFY      = SIGUSR1,  /** Sent for notification. */
+    DIMINUTO_THREAD_NOTIFY      = SIGUSR1,  /**< Sent for notification. */
 };
 
 /**
  * Defines error codes.
  */
 enum DiminutoThreadErrno {
-    DIMINUTO_THREAD_ERROR       = DIMINUTO_MUTEX_ERROR, /** Non-specific. */
-    DIMINUTO_THREAD_TIMEDOUT    = ETIMEDOUT,            /** Condition timeed out. */
+    DIMINUTO_THREAD_ERROR       = DIMINUTO_MUTEX_ERROR, /**< Non-specific. */
+    DIMINUTO_THREAD_TIMEDOUT    = ETIMEDOUT,            /**< Condition timeed out. */
 };
 
 /**
@@ -81,15 +81,15 @@ typedef void * (diminuto_thread_function_t)(void *);
  * (for example, at compile time).
  */
 typedef enum DiminutoThreadState {
-    DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',     /* allocated (if zeroed) */
-    DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /* init performed */
-    DIMINUTO_THREAD_STATE_STARTED       = 'S',      /* start performed */
-    DIMINUTO_THREAD_STATE_RUNNING       = 'R',      /* function running */
-    DIMINUTO_THREAD_STATE_COMPLETING    = 'C',      /* function completing */
-    DIMINUTO_THREAD_STATE_JOINED        = 'J',      /* join performed */
-    DIMINUTO_THREAD_STATE_FINALIZED     = 'F',      /* fini performed */
-    DIMINUTO_THREAD_STATE_FAILED        = '!',      /* start failed */
-    DIMINUTO_THREAD_STATE_UNKNOWN       = '?',      /* state undetermined */
+    DIMINUTO_THREAD_STATE_ALLOCATED     = '\0',     /**< Allocated (if zeroed). */
+    DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /**< Init performed. */
+    DIMINUTO_THREAD_STATE_STARTED       = 'S',      /**< Start performed. */
+    DIMINUTO_THREAD_STATE_RUNNING       = 'R',      /**< Function running. */
+    DIMINUTO_THREAD_STATE_COMPLETING    = 'C',      /**< Function completing. */
+    DIMINUTO_THREAD_STATE_JOINED        = 'J',      /**< Join performed. */
+    DIMINUTO_THREAD_STATE_FINALIZED     = 'F',      /**< Fini performed. */
+    DIMINUTO_THREAD_STATE_FAILED        = '!',      /**< Start failed. */
+    DIMINUTO_THREAD_STATE_UNKNOWN       = '?',      /**< State undetermined. */
 } diminuto_thread_state_t;
 
 /**

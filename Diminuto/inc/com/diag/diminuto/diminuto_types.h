@@ -73,7 +73,6 @@ enum DiminutoIpv4Size {
 };
 
 /**
- * @def DIMINUTO_IPV6_SIZE
  * This defines the buffer size, including the terminating NUL, needed to
  * express an IPv6 address string.
  */
@@ -82,7 +81,6 @@ enum DiminutoIpv6Size {
 };
 
 /**
- * @def DIMINUTO_LOCAL_SIZE
  * This defines the buffer size, including the terminating NUL, needed
  * to express a Local (UNIX domain socket path) string.
  * UNIX domain socket names have a smaller size limit than full

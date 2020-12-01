@@ -47,8 +47,11 @@ typedef enum DiminutoDatumWidth {
 } diminuto_datum_width_t;
 
 #define DIMINUTO_DATUM_ALIGNMENT(_WIDTH_) (((_WIDTH_) / 8 ) - 1)
+
 #define DIMINUTO_DATUM_WIDTH(_WIDTH_) DIMINUTO_DATUM_WIDTH ## _WIDTH_
+
 #define DIMINUTO_DATUM_TYPE(_WIDTH_) uint ## _WIDTH_ ## _t
+
 #define DIMINUTO_DATUM_VALUE(_WIDTH_) value ## _WIDTH_
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)

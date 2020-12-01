@@ -16,6 +16,9 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 
+/**
+ * These are constants used by the Hamming(8,4) algorithm.
+ */
 enum DiminutoHamming {
     H84_D1_OFF	= (3),
     H84_D2_OFF	= (2),

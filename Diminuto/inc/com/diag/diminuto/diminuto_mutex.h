@@ -32,8 +32,8 @@
  * Defines error codes.
  */
 enum DiminutoMutexErrno {
-    DIMINUTO_MUTEX_ERROR    = EIO,      /** Non-specific error. */
-    DIMINUTO_MUTEX_BUSY     = EBUSY,    /** Mutex already locked. */
+    DIMINUTO_MUTEX_ERROR    = EIO,      /**< Non-specific error. */
+    DIMINUTO_MUTEX_BUSY     = EBUSY,    /**< Mutex already locked. */
 };
 
 /***********************************************************************

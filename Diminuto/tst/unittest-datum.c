@@ -21,6 +21,8 @@ int main(void)
     diminuto_datum_value_t value;
     diminuto_datum_width_t width;
 
+    TEST();
+
     EXPECT(DIMINUTO_DATUM_WIDTH8  == sizeof(uint8_t));
     EXPECT(DIMINUTO_DATUM_WIDTH16 == sizeof(uint16_t));
     EXPECT(DIMINUTO_DATUM_WIDTH32 == sizeof(uint32_t));
@@ -60,6 +62,8 @@ int main(void)
     value.value16 = 0xa5a5;                EXPECT(value.DIMINUTO_DATUM_VALUE(16) == 0xa5a5U);
     value.value32 = 0xa5a5a5a5UL;          EXPECT(value.DIMINUTO_DATUM_VALUE(32) == 0xa5a5a5a5UL);
     value.value64 = 0xa5a5a5a5a5a5a5a5ULL; EXPECT(value.DIMINUTO_DATUM_VALUE(64) == 0xa5a5a5a5a5a5a5a5ULL);
+
+    STATUS();
 
     EXIT();
 }

@@ -80,10 +80,10 @@
  * This enumeration describes the possible edge detection values.
  */
 typedef enum DiminutoPinEdge {
-    DIMINUTO_PIN_EDGE_NONE = 0,
-    DIMINUTO_PIN_EDGE_RISING = 1,
-    DIMINUTO_PIN_EDGE_FALLING = 2,
-    DIMINUTO_PIN_EDGE_BOTH = 3,
+    DIMINUTO_PIN_EDGE_NONE      = 0,
+    DIMINUTO_PIN_EDGE_RISING    = 1,
+    DIMINUTO_PIN_EDGE_FALLING   = 2,
+    DIMINUTO_PIN_EDGE_BOTH      = 3,
 } diminuto_pin_edge_t;
 
 /*******************************************************************************

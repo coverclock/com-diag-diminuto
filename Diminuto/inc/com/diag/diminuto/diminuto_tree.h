@@ -54,8 +54,8 @@
  * node) is black; and if a node is red, then both its children are black.
  */
 typedef enum DiminutoTreeColor {
-    DIMINUTO_TREE_COLOR_RED = 0,
-    DIMINUTO_TREE_COLOR_BLACK = 1
+    DIMINUTO_TREE_COLOR_RED     = 0,
+    DIMINUTO_TREE_COLOR_BLACK   = 1,
 } diminuto_tree_color_t;
 
 /**

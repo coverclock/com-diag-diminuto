@@ -20,8 +20,12 @@
 #include <signal.h>
 #include <sys/types.h>
 
+/**
+ * This enumeration exists meremly to support unit testing by forcing
+ * the underlying implementation into synthetic states.
+ */
 typedef enum DiminutoDaemonTest {
-    DIMINUTO_DAEMON_TEST_NONE = 0,
+    DIMINUTO_DAEMON_TEST_NONE       = 0,
     DIMINUTO_DAEMON_TEST_GETPPID,
     DIMINUTO_DAEMON_TEST_INIT,
     DIMINUTO_DAEMON_TEST_FORK,
@@ -29,6 +33,9 @@ typedef enum DiminutoDaemonTest {
     DIMINUTO_DAEMON_TEST_REFORK,
 } diminuto_daemon_test_t;
 
+/**
+ * This is the current synthetic state for unit testing.
+ */
 extern diminuto_daemon_test_t diminuto_daemon_testing;
 
 /**

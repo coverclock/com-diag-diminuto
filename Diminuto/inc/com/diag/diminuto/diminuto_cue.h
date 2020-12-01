@@ -101,9 +101,9 @@ static inline int diminuto_cue_state(const diminuto_cue_state_t * statep) {
  * order bits are different.
  */
 typedef enum DiminutoCueMask {
-    DIMINUTO_CUE_MASK_CURRENT   = (1 << 0),
-    DIMINUTO_CUE_MASK_PRIOR     = (1 << 1),
-    DIMINUTO_CUE_MASK_CHANGING  = (1 << 2),
+    DIMINUTO_CUE_MASK_CURRENT   = (1 << 0), /* 001b */
+    DIMINUTO_CUE_MASK_PRIOR     = (1 << 1), /* 010b */
+    DIMINUTO_CUE_MASK_CHANGING  = (1 << 2), /* 100b */
 } diminuto_cue_mask_t;
 
 /**

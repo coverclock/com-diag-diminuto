@@ -45,8 +45,8 @@
  * Defines error codes.
  */
 enum DiminutoConditionErrno {
-    DIMINUTO_CONDITION_ERROR    = DIMINUTO_MUTEX_ERROR, /** Non-specific. */
-    DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT,            /** Condition timeed out. */
+    DIMINUTO_CONDITION_ERROR    = DIMINUTO_MUTEX_ERROR, /**< Non-specific. */
+    DIMINUTO_CONDITION_TIMEDOUT = ETIMEDOUT,            /**< Condition timeed out. */
 };
 
 /**
