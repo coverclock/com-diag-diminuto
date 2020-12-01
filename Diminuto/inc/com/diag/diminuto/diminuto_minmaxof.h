@@ -46,14 +46,14 @@
 #endif
 
 /**
- * @def diminuto_maximum
+ * @def diminuto_maximumof
  * Compute the maximum value of an integer of the type @a _TYPE_.
  */
 #define diminuto_maximumof(_TYPE_) (diminuto_issigned(_TYPE_) ? ((_TYPE_)(~(((_TYPE_)1)<<(diminuto_widthof(_TYPE_)-1)))) : ((_TYPE_)(~((_TYPE_)0))))
 
 #ifndef maximumof
     /**
-     * @def maximum
+     * @def maximumof
      * Cimpute the maximum value of an integer of the type @a _TYPE_.
      */
 #   define maximumof(_TYPE_) diminuto_maximumof(_TYPE_)
