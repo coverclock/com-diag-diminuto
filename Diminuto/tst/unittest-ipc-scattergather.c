@@ -33,6 +33,7 @@
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
+#include "com/diag/diminuto/diminuto_buffer.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -80,6 +81,20 @@ static node_t * node_init(node_t * np)
     return (node_t *)rp;
 }
 
+static size_t node_enumerate(node_t * np)
+{
+    size_t nn = 0;
+    diminuto_list_t * lp = (diminuto_list_t *)0;
+    diminuto_list_t * pp = (diminuto_list_t *)0;
+
+    lp = &(np->list);
+    for (pp = diminuto_list_next(lp); pp != lp; pp = diminuto_list_next(pp)) {
+        nn += 1;
+    }
+
+    return nn;    
+}
+
 /******************************************************************************/
 
 typedef node_t segment_t;
@@ -87,20 +102,6 @@ typedef node_t segment_t;
 static inline segment_t * segment_remove(segment_t * sp)
 {
     return (segment_t *)diminuto_list_remove(&(sp->list));
-}
-
-/******************************************************************************/
-
-typedef node_t pool_t;
-
-static inline node_t * pool_node_get(pool_t * pp)
-{
-    return (node_t *)diminuto_list_dequeue(&(pp->list));
-}
-
-static inline node_t * pool_node_put(pool_t * pp, node_t * np)
-{
-    return (node_t *)diminuto_list_enqueue(&(pp->list), &(np->list));
 }
 
 /******************************************************************************/
@@ -129,19 +130,61 @@ static inline segment_t * record_segment_replace(segment_t * op, segment_t * np)
 
 /******************************************************************************/
 
-static size_t record_enumerate(record_t * rp)
-{
-    size_t nn = 0;
-    diminuto_list_t * lp = (diminuto_list_t *)0;
-    diminuto_list_t * pp = (diminuto_list_t *)0;
+typedef node_t pool_t;
 
-    lp = &(rp->list);
-    for (pp = diminuto_list_next(lp); pp != lp; pp = diminuto_list_next(pp)) {
-        nn += 1;
+static inline node_t * pool_node_get(pool_t * pp)
+{
+    return (node_t *)diminuto_list_dequeue(&(pp->list));
+}
+
+static inline node_t * pool_node_put(pool_t * pp, node_t * np)
+{
+    return (node_t *)diminuto_list_enqueue(&(pp->list), &(np->list));
+}
+
+/******************************************************************************/
+
+static node_t nodes[NODES];
+
+static pool_t pool = { DIMINUTO_LIST_NULLINIT(&pool.list), 0 };
+
+static void pool_init(void)
+{
+    int ii = 0;
+
+    for (ii = 0; ii < countof(nodes); ++ii) {
+        (void)pool_node_put(&pool, node_init(&nodes[ii]));
+    }
+}
+
+static segment_t * pool_allocate(size_t size)
+{
+    void * bp = (void *)0;
+    node_t * np = (segment_t *)0;
+
+    if ((bp = diminuto_buffer_malloc(size)) == (void *)0) {
+        errno = ENOMEM;
+        diminuto_perror("pool_allocate: diminuto_buffer_malloc");
+    } else if ((np = pool_node_get(&pool)) == (node_t *)0) {
+        diminuto_buffer_free(bp);
+        bp = (void *)0;
+    } else {
+        np->list.data = bp;
+        np->size = 0;
     }
 
-    return nn;    
+    return np;
 }
+
+static void pool_free(segment_t * np)
+{
+    diminuto_buffer_free(np->list.data);
+    np->list.data = (void *)0;
+    np->size = 0;
+    pool_node_put(&pool, np);
+}
+
+/******************************************************************************/
 
 static struct iovec * record_gather(record_t * rp, struct iovec va[], size_t nn)
 {
@@ -171,7 +214,7 @@ static ssize_t record_write(int fd, record_t * rp)
     size_t count = 0;
     struct iovec * vector = (struct iovec *)0;
 
-    count = record_enumerate(rp);
+    count = node_enumerate(rp);
 
     if (!((0 < count) && (count <= UIO_MAXIOV))) {
         errno = EINVAL;
@@ -207,7 +250,7 @@ static int record_send(int fd, record_t * rp, diminuto_ipv4_t address, diminuto_
 
     message.msg_name = sap;
     message.msg_namelen = length;
-    message.msg_iovlen = record_enumerate(rp);
+    message.msg_iovlen = node_enumerate(rp);
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= UIO_MAXIOV))) {
         errno = EINVAL;
@@ -224,14 +267,6 @@ static int record_send(int fd, record_t * rp, diminuto_ipv4_t address, diminuto_
 }
 
 /*******************************************************************************
- * GLOBALS
- ******************************************************************************/
-
-static node_t nodes[NODES];
-
-static pool_t pool = { DIMINUTO_LIST_NULLINIT(&pool.list), 0 };
-
-/*******************************************************************************
  * MAIN
  ******************************************************************************/
 
@@ -239,19 +274,46 @@ int main(void)
 {
 
     {
-        int ii = 0;
+        int ii;
 
         TEST();
 
-        for (ii = 0; ii < countof(nodes); ++ii) {
-            ASSERT(node_init(&nodes[ii]) == &nodes[ii]);
-            ASSERT(pool_node_put(&pool, &nodes[ii]) == &nodes[ii]);
-        }
+        pool_init();
+        ASSERT(node_enumerate(&pool) == NODES);
 
         STATUS();
     }
 
     {
+        node_t * np0;
+        node_t * np1;
+        node_t * np2;
+
+        TEST();
+
+        ASSERT(node_enumerate(&pool) == (NODES - 0));
+        ASSERT((np0 = pool_node_get(&pool)) != (node_t *)0);
+        ASSERT(node_enumerate(&pool) == (NODES - 1));
+        ASSERT((np1 = pool_node_get(&pool)) != (node_t *)0);
+        ASSERT(node_enumerate(&pool) == (NODES - 2));
+        ASSERT((np2 = pool_node_get(&pool)) != (node_t *)0);
+        ASSERT(node_enumerate(&pool) == (NODES - 3));
+        ASSERT(pool_node_put(&pool, np0) == np0);
+        ASSERT(node_enumerate(&pool) == (NODES - 2));
+        ASSERT(pool_node_put(&pool, np1) == np1);
+        ASSERT(node_enumerate(&pool) == (NODES - 1));
+        ASSERT(pool_node_put(&pool, np2) == np2);
+        ASSERT(node_enumerate(&pool) == (NODES - 0));
+
+        STATUS();
+    }
+
+    {
+        record_t * rp;
+
+        TEST();
+
+        STATUS();
     }
 
     EXIT();
