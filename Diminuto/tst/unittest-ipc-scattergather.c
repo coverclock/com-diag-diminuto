@@ -531,6 +531,10 @@ int main(void)
     }
 
     {
+        fflush(stderr);
+    }
+
+    {
         TEST();
 
         address = diminuto_ipc4_address("localhost");
@@ -612,12 +616,18 @@ int main(void)
     }
 
     {
+        fflush(stderr);
+    }
+
+    {
         segment_t * sp;
         uint8_t * bp;
         diminuto_ipv4_t address;
         diminuto_port_t port;
+        size_t total;
         int socket;
         ssize_t length;
+        int status;
 
         /* Write Stream */
 
@@ -633,9 +643,15 @@ int main(void)
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&port, bp, sizeof(port));
 
+        ASSERT((total = record_measure(&record)) > 0);
         ASSERT((socket = diminuto_ipc4_stream_consumer(address, port)) >= 0);
-        ASSERT((length = record_write(socket, &record)) > 0);
+        ASSERT((length = record_write(socket, &record)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
+
+        status = 2;
+        ASSERT(diminuto_reaper_reap_generic(streampid, &status, 0) == streampid);
+        ASSERT(WIFEXITED(status));
+        ASSERT(WEXITSTATUS(status) == 0);
 
         STATUS();
     }
@@ -669,12 +685,18 @@ int main(void)
     }
 
     {
+        fflush(stderr);
+    }
+
+    {
         segment_t * sp;
         uint8_t * bp;
         diminuto_ipv4_t address;
         diminuto_port_t port;
+        size_t total;
         int socket;
         ssize_t length;
+        int status;
 
         /* Send Datagram */
 
@@ -690,28 +712,23 @@ int main(void)
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&port, bp, sizeof(port));
 
+        ASSERT((total = record_measure(&record)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT((length = record_send(socket, &record, address, port)) > 0);
+        ASSERT((length = record_send(socket, &record, address, port)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
-
-        STATUS();
-    }
-
-    {
-        int status;
-        segment_t * sp;
-
-        TEST();
-
-        status = 2;
-        ASSERT(diminuto_reaper_reap_generic(streampid, &status, 0) == streampid);
-        ASSERT(WIFEXITED(status));
-        ASSERT(WEXITSTATUS(status) == 0);
 
         status = 3;
         ASSERT(diminuto_reaper_reap_generic(datagrampid, &status, 0) == datagrampid);
         ASSERT(WIFEXITED(status));
         ASSERT(WEXITSTATUS(status) == 0);
+
+        STATUS();
+    }
+
+    {
+        segment_t * sp;
+
+        TEST();
 
         ASSERT(record_free(&record, &pool) == &record);
         ASSERT(record_enumerate(&record) == 0);
