@@ -115,27 +115,30 @@ size_t diminuto_buffer_pool_log(diminuto_buffer_pool_t * poolp)
     size_t subtotal;
     size_t item;
     size_t count;
+    size_t subcount;
     size_t length;
     size_t size;
     diminuto_buffer_t * buffer;
 
     that = (diminuto_buffer_meta_t *)poolp;
     total = 0;
+    count = 0;
     for (item = 0; !buffer_pool_isexternal(that, item); ++item) {
-        count = 0;
+        subcount = 0;
         for (buffer = buffer_pool_first(that, item); buffer != (diminuto_buffer_t *)0; buffer = buffer->header.next) {
-            ++count;
+            ++subcount;
         }
-        if (count > 0) {
+        if (subcount > 0) {
             length = buffer_pool_size(that, item);
             size = length + sizeof(diminuto_buffer_t);
-            subtotal = count * size;
+            subtotal = subcount * size;
+            count += subcount;
             total += subtotal;
-            DIMINUTO_LOG_DEBUG("diminuto_buffer_pool_log: pool=%p, length=%zubytes size=%zubytes count=%u subtotal=%zubytes\n", poolp, length, size, count, subtotal);
+            DIMINUTO_LOG_DEBUG("diminuto_buffer_pool_log: pool=%p, length=%zubytes size=%zubytes subcount=%zu subtotal=%zubytes\n", poolp, length, size, subcount, subtotal);
         }
     }
 
-    DIMINUTO_LOG_DEBUG("diminuto_buffer_pool_log: pool=%p total=%zubytes\n", poolp, total);
+    DIMINUTO_LOG_INFORMATION("diminuto_buffer_pool_log: pool=%p count=%zu total=%zubytes\n", poolp, count, total);
 
     return total;
 }

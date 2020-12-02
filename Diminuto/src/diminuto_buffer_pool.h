@@ -14,6 +14,7 @@
  * This describes the Buffer Pool private API.
  */
 
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdlib.h>
 #include <errno.h>
 #include "../src/diminuto_buffer.h"
@@ -99,6 +100,7 @@ static inline diminuto_buffer_t * buffer_pool_malloc(diminuto_buffer_meta_t * po
         buffer = (diminuto_buffer_t *)malloc(size);
     } else {
         buffer = (diminuto_buffer_t *)0;
+        diminuto_perror("buffer_pool_malloc: malloc");
         errno = ENOMEM;
     }
 
