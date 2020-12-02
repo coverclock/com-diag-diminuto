@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	69# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -953,11 +953,12 @@ sanity:	unittest
 	unittest-hamming
 	unittest-heap
 	unittest-interrupter
-	unittest-ipc-endpoint
 	unittest-ipc
 	unittest-ipc4
 	unittest-ipc6
+	unittest-ipc-endpoint
 	unittest-ipcl
+	unittest-ipc-scattergather
 	unittest-list
 	unittest-lock
 	unittest-log
@@ -1136,6 +1137,7 @@ sockets:
 	unittest-ipc6
 	unittest-ipc-ancillary
 	unittest-ipcl
+	unittest-ipc-scattergather
 	unittest-mux4
 	unittest-mux6
 	unittest-mux-eventloop

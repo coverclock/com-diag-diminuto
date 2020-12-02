@@ -493,6 +493,8 @@ used, check out the following:
 * the Diminuto IPC Ancillary unit test uses a lot of Diminuto features
 and is a good example of a non-trivial application that is multi-process
 and multi-threaded;
+* the Diminuto IPC Scatter/Gather unit test similarly uses a lot of
+Diminuto features and is also multi-process;
 * the gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
 and relies on Diminuto for most of its infrastructure;
