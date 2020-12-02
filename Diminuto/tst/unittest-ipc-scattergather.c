@@ -46,6 +46,7 @@
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
+#include "com/diag/diminuto/diminuto_reaper.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -325,6 +326,57 @@ static size_t enumerate(diminuto_list_t * lp) {
 }
 
 /*******************************************************************************
+ * CATCHERS
+ ******************************************************************************/
+
+int streamserver(int listensocket)
+{
+    int result = 1;
+    int streamsocket;
+    ssize_t length;
+    uint8_t buffer[128];
+
+    if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
+        /* Do nothing. */
+    } else if ((length = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) <= 0) {
+        /* Do nothing. */
+    } else {
+        fprintf(stderr, "READ [%zd]:\n", length);
+        diminuto_dump_general(stderr, buffer, length, 0, '.', 0, 0, 2);
+        if (diminuto_ipc_close(streamsocket) < 0) {
+            /* Do nothing. */
+        } else if (diminuto_ipc_close(listensocket) < 0) {
+            /* Do nothing. */
+        } else {
+            result = 0;
+        }
+    }
+
+    return result; 
+}
+
+int datagrampeer(int datagramsocket)
+{
+    int result = 1;
+    ssize_t length;
+    uint8_t buffer[128];
+
+    if ((length = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < 0) {
+        /* Do nothing. */
+    } else {
+        fprintf(stderr, "RECEIVE [%zd]:\n", length);
+        diminuto_dump_general(stderr, buffer, length, 0, '.', 0, 0, 2);
+        if (diminuto_ipc_close(datagramsocket) < 0) {
+            /* Do nothing. */
+        } else {
+            result = 0;
+        }
+    }
+
+    return result;
+}
+
+/*******************************************************************************
  * MAIN
  ******************************************************************************/
 
@@ -503,9 +555,7 @@ int main(void)
                 }
             }
             diminuto_buffer_fini();
-            /**/
-            /**/
-            exit(0);
+            exit(streamserver(listensocket));
         }
         ASSERT(streampid > 0);
         ASSERT(diminuto_ipc_close(listensocket) >= 0);
@@ -523,9 +573,7 @@ int main(void)
                 }
             }
             diminuto_buffer_fini();
-            /**/
-            /**/
-            exit(0);
+            exit(datagrampeer(datagramsocket));
         }
         ASSERT(datagrampid  > 0);
         ASSERT(diminuto_ipc_close(datagramsocket) >= 0);
@@ -586,7 +634,7 @@ int main(void)
         memcpy(&port, bp, sizeof(port));
 
         ASSERT((socket = diminuto_ipc4_stream_consumer(address, port)) >= 0);
-        if (0) ASSERT((length = record_write(socket, &record)) > 0);
+        ASSERT((length = record_write(socket, &record)) > 0);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         STATUS();
@@ -643,16 +691,27 @@ int main(void)
         memcpy(&port, bp, sizeof(port));
 
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        if (0) ASSERT((length = record_send(socket, &record, address, port)) > 0);
+        ASSERT((length = record_send(socket, &record, address, port)) > 0);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         STATUS();
     }
 
     {
+        int status;
         segment_t * sp;
 
         TEST();
+
+        status = 2;
+        ASSERT(diminuto_reaper_reap_generic(streampid, &status, 0) == streampid);
+        ASSERT(WIFEXITED(status));
+        ASSERT(WEXITSTATUS(status) == 0);
+
+        status = 3;
+        ASSERT(diminuto_reaper_reap_generic(datagrampid, &status, 0) == datagrampid);
+        ASSERT(WIFEXITED(status));
+        ASSERT(WEXITSTATUS(status) == 0);
 
         ASSERT(record_free(&record, &pool) == &record);
         ASSERT(record_enumerate(&record) == 0);
