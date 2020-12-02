@@ -313,6 +313,15 @@ int main(void)
 {
     pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
     segment_t segments[NODES];
+    record_t record = RECORD_INIT(&record);
+    static const char PAYLOAD[] = "Now is the time for all good men to come to the aid of their country.";
+    diminuto_ipv4_t address;
+    diminuto_port_t streamport;
+    diminuto_port_t datagramport;
+    int listensocket;
+    int datagramsocket;
+    pid_t streampid;
+    pid_t datagrampid;
 
     SETLOGMASK();
 
@@ -380,79 +389,152 @@ int main(void)
     }
 
     {
-        record_t record = RECORD_INIT(&record);
-        static const char PAYLOAD[] = "Now is the time for all good men to come to the aid of their country.";
+        TEST();
 
-        {
-            TEST();
+        ASSERT(record_enumerate(&record) == 0);
+        ASSERT(record_measure(&record) == 0);
 
-            ASSERT(record_enumerate(&record) == 0);
-            ASSERT(record_measure(&record) == 0);
+        STATUS();
+    }
 
-            STATUS();
-        }
+    {
+        segment_t * sp;
+        char * bp;
+        size_t ll;
 
         /* Payload */
 
-        {
-            segment_t * sp;
-            segment_t * tp;
-            char * bp;
-            size_t ll;
+        TEST();
 
-            TEST();
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(PAYLOAD) * 2 /* Arbitary. */)) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == (sizeof(PAYLOAD) * 2));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        strncpy(bp, PAYLOAD, sizeof(PAYLOAD));
+        ASSERT((ll = (strlen(bp) + 1 /* Including NUL. */)) > 0);
+        ASSERT(segment_length_set(sp, ll) == ll);
+        ASSERT(segment_length_get(sp) == ll);
+        ASSERT(record_segment_append(&record, sp) == sp);
 
-            ASSERT((sp = pool_segment_allocate(&pool, sizeof(PAYLOAD) * 2 /* Arbitary. */)) != (segment_t *)0);
-            ASSERT(segment_length_get(sp) == (sizeof(PAYLOAD) * 2));
-            ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
-            strncpy(bp, PAYLOAD, sizeof(PAYLOAD));
-            ASSERT((ll = (strlen(bp) + 1 /* Including NUL. */)) > 0);
-            ASSERT(segment_length_set(sp, ll) == ll);
-            ASSERT(segment_length_get(sp) == ll);
-            ASSERT(record_segment_append(&record, sp) == sp);
+        ASSERT(record_enumerate(&record) == 1);
+        ASSERT(record_measure(&record) > 0);
+        ASSERT(record_dump(stderr, &record) == &record);
 
-            ASSERT(record_enumerate(&record) == 1);
-            ASSERT(record_measure(&record) > 0);
-            ASSERT(record_dump(stderr, &record) == &record);
+        STATUS();
+    }
 
-            STATUS();
-        }
+    {
+        segment_t * sp;
+        char * bp;
+        size_t length;
+        uint8_t a;
+        uint8_t b;
+        uint16_t checksum;
 
         /* Length Payload Checksum */
 
-        {
-            char * bp;
-            size_t length;
-            uint8_t a;
-            uint8_t b;
-            uint16_t checksum;
-            segment_t * sp;
+        TEST();
 
-            TEST();
+        ASSERT((sp = record_segment_head(&record)) != (segment_t *)0);
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        ASSERT((length = segment_length_get(sp)) > 0);
+        a = b = 0;
+        checksum = diminuto_fletcher_16(bp, length, &a, &b);
 
-            ASSERT((sp = record_segment_head(&record)) != (segment_t *)0);
-            ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
-            ASSERT((length = segment_length_get(sp)) > 0);
-            a = b = 0;
-            checksum = diminuto_fletcher_16(bp, length, &a, &b);
-
-            ASSERT((sp = pool_segment_allocate(&pool, sizeof(length))) != (segment_t *)0);
-            ASSERT(segment_length_get(sp) == sizeof(length));
-            ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
-            memcpy(bp, &length, sizeof(length));
-            ASSERT(record_segment_prepend(&record, sp) == sp);
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(length))) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == sizeof(length));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        memcpy(bp, &length, sizeof(length));
+        ASSERT(record_segment_prepend(&record, sp) == sp);
  
-            ASSERT((sp = pool_segment_allocate(&pool, sizeof(checksum))) != (segment_t *)0);
-            ASSERT(segment_length_get(sp) == sizeof(checksum));
-            ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
-            memcpy(bp, &checksum, sizeof(checksum));
-            ASSERT(record_segment_append(&record, sp) == sp);
-        
-            ASSERT(record_enumerate(&record) == 3);
-            ASSERT(record_measure(&record) > 0);
-            ASSERT(record_dump(stderr, &record) == &record);
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(checksum))) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == sizeof(checksum));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        memcpy(bp, &checksum, sizeof(checksum));
+        ASSERT(record_segment_append(&record, sp) == sp);
+    
+        ASSERT(record_enumerate(&record) == 3);
+        ASSERT(record_measure(&record) > 0);
+        ASSERT(record_dump(stderr, &record) == &record);
 
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        address = diminuto_ipc4_address("localhost");
+        ASSERT(!diminuto_ipc4_is_unspecified(&address));
+
+        ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
+        ASSERT(diminuto_ipc4_nearend(listensocket, (diminuto_ipv4_t *)0, &streamport) >= 0);
+
+        ASSERT((datagramsocket = diminuto_ipc4_datagram_peer(0)) >= 0);
+        ASSERT(diminuto_ipc4_nearend(datagramsocket, (diminuto_ipv4_t *)0, &datagramport) >= 0);
+
+        if ((streampid = fork()) == 0) {
+            exit(0);
         }
+        ASSERT(streampid > 0);
+        ASSERT(diminuto_ipc_close(listensocket) >= 0);
+
+        if ((datagrampid = fork()) == 0) {
+            exit(0);
+        }
+        ASSERT(datagrampid  > 0);
+        ASSERT(diminuto_ipc_close(datagramsocket) >= 0);
+
+        STATUS();
+    }
+
+    {
+        char * bp;
+        segment_t * sp;
+        segment_t * tp;
+
+        /* Address StreamPort Length Payload Checksum */
+
+        TEST();
+
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(address))) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == sizeof(address));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        memcpy(bp, &address, sizeof(address));
+        ASSERT(record_segment_prepend(&record, sp) == sp);
+        tp = sp;
+ 
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(streamport))) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == sizeof(streamport));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        memcpy(bp, &streamport, sizeof(streamport));
+        ASSERT(record_segment_insert(tp, sp) == sp);
+    
+        ASSERT(record_enumerate(&record) == 5);
+        ASSERT(record_measure(&record) > 0);
+        ASSERT(record_dump(stderr, &record) == &record);
+
+        STATUS();
+    }
+
+    {
+        char * bp;
+        segment_t * sp;
+        segment_t * tp;
+
+        /* Address DatagramPort Length Payload Checksum */
+
+        TEST();
+
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(datagramport))) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == sizeof(datagramport));
+        ASSERT((bp = (char *)segment_payload_get(sp)) != (char *)0);
+        memcpy(bp, &datagramport, sizeof(streamport));
+        ASSERT((tp = record_segment_head(&record)) != (segment_t *)0);
+        ASSERT((tp = record_segment_next(&record, tp)) != (segment_t *)0);
+        ASSERT(record_segment_replace(tp, sp) == tp);
+    
+        ASSERT(record_enumerate(&record) == 5);
+        ASSERT(record_measure(&record) > 0);
+        ASSERT(record_dump(stderr, &record) == &record);
 
         STATUS();
     }
