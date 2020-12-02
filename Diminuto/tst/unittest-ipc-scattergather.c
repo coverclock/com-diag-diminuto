@@ -333,22 +333,38 @@ int streamserver(int listensocket)
 {
     int result = 1;
     int streamsocket;
-    ssize_t length;
+    ssize_t total;
     uint8_t buffer[128];
+    size_t length;
+    uint16_t checksum;
+    uint8_t a;
+    uint8_t b;
+    static const size_t LENGTH = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t); /* ADDRESS[4] PORT[2] */
+    static const size_t PAYLOAD = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t); /* ADDRESS[4] PORT[2] LENGTH[8] */
+    static const size_t MINIMUM = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t) + sizeof(uint16_t); /* ADDRESS[4] PORT[2] LENGTH[8] PAYLOAD[0], CHECKSUM[2] */
 
     if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
         /* Do nothing. */
-    } else if ((length = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) <= 0) {
+    } else if ((total = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) < MINIMUM) {
         /* Do nothing. */
     } else {
-        fprintf(stderr, "READ [%zd]:\n", length);
-        diminuto_dump_general(stderr, buffer, length, 0, '.', 0, 0, 2);
-        if (diminuto_ipc_close(streamsocket) < 0) {
-            /* Do nothing. */
-        } else if (diminuto_ipc_close(listensocket) < 0) {
+        fprintf(stderr, "READ [%zd]:\n", total);
+        diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
+        memcpy(&length, &buffer[LENGTH], sizeof(length));
+        if ((length + MINIMUM) > total) {
             /* Do nothing. */
         } else {
-            result = 0;
+            memcpy(&checksum, &buffer[PAYLOAD + length], sizeof(checksum));
+            a = b = 0;
+            if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+                /* Do nothing. */
+            } else if (diminuto_ipc_close(streamsocket) < 0) {
+                /* Do nothing. */
+            } else if (diminuto_ipc_close(listensocket) < 0) {
+                /* Do nothing. */
+            } else {
+                result = 0;
+            }
         }
     }
 
@@ -358,18 +374,34 @@ int streamserver(int listensocket)
 int datagrampeer(int datagramsocket)
 {
     int result = 1;
-    ssize_t length;
+    ssize_t total;
     uint8_t buffer[128];
+    size_t length;
+    uint16_t checksum;
+    uint8_t a;
+    uint8_t b;
+    static const size_t LENGTH = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t); /* ADDRESS[4] PORT[2] */
+    static const size_t PAYLOAD = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t); /* ADDRESS[4] PORT[2] LENGTH[8] */
+    static const size_t MINIMUM = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t) + sizeof(uint16_t); /* ADDRESS[4] PORT[2] LENGTH[8] PAYLOAD[0] CHECKSUM[2] */
 
-    if ((length = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < 0) {
+    if ((total = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < MINIMUM) {
         /* Do nothing. */
     } else {
-        fprintf(stderr, "RECEIVE [%zd]:\n", length);
-        diminuto_dump_general(stderr, buffer, length, 0, '.', 0, 0, 2);
-        if (diminuto_ipc_close(datagramsocket) < 0) {
+        fprintf(stderr, "RECEIVE [%zd]:\n", total);
+        diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
+        memcpy(&length, &buffer[LENGTH], sizeof(length));
+        if ((length + MINIMUM) > total) {
             /* Do nothing. */
         } else {
-            result = 0;
+            memcpy(&checksum, &buffer[PAYLOAD +  length], sizeof(checksum));
+            a = b = 0;
+            if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+                /* Do nothing. */
+            } else if (diminuto_ipc_close(datagramsocket) < 0) {
+                /* Do nothing. */
+            } else {
+                result = 0;
+            }
         }
     }
 
@@ -385,7 +417,6 @@ int main(void)
     pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
     segment_t segments[NODES];
     record_t record = RECORD_INIT(&record);
-    static const char PAYLOAD[] = "Now is the time for all good men to come to the aid of their country.";
     diminuto_ipv4_t address;
     diminuto_port_t streamport;
     diminuto_port_t datagramport;
@@ -393,6 +424,7 @@ int main(void)
     int datagramsocket;
     pid_t streampid;
     pid_t datagrampid;
+    static const char PAYLOAD[] = "Now is the time for all good men to come to the aid of their country.";
 
     SETLOGMASK();
 
