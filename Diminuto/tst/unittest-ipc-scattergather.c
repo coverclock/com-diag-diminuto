@@ -9,11 +9,16 @@
  * @details
  * This is a unit test to evaluate whether Diminuto Lists and the
  * vector read/write/send/recv system calls can be used to implement
- * a scatter/gather I/O like one might use in a protocol stack.
+ * a scatter/gather I/O like one might use in a protocol stack. I've
+ * been wondering if this could be a useful approach for along time.
  *
  * As with some of the functions in the IPC Ancillary unit test, some
  * of the functions in this unit test may eventually be promoted to
  * full Diminuto features if I find them useful enough.
+ *
+ * For testing, try
+ *
+ *  valgrind --leak-check=full --show-leak-kinds=all unittest-ipc-scattergather
  *
  * REFERENCES
  *
@@ -132,30 +137,6 @@ static inline segment_t * record_segment_next(record_t * rp, segment_t * sp) {
     return (diminuto_list_next(sp) == rp) ? (segment_t *)0 : diminuto_list_next(sp);
 }
 
-static size_t record_enumerate(record_t * rp)
-{
-    size_t nn = 0;
-    segment_t * sp = (segment_t *)0;
-
-    for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-        nn += 1;
-    }
-
-    return nn;    
-}
-
-static size_t record_measure(record_t * rp)
-{
-    size_t ll = 0;
-    segment_t * sp = (segment_t *)0;
-
-    for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-        ll += segment_length_get(sp);
-    }
-
-    return ll;    
-}
-
 /******************************************************************************/
 
 typedef diminuto_list_t pool_t;
@@ -184,13 +165,39 @@ static segment_t * pool_segment_allocate(pool_t * pp, size_t size)
 
 static segment_t * pool_segment_free(pool_t * pp, segment_t * sp)
 {
-    diminuto_buffer_free(diminuto_list_data(sp));
+    void * dp = (void *)0;
+    dp  = diminuto_list_data(sp);
+    diminuto_buffer_free(dp);
     diminuto_list_dataset(sp, (void *)0);
     diminuto_list_enqueue(pp, sp);
     return (segment_t *)0;
 }
 
 /******************************************************************************/
+
+static size_t record_enumerate(record_t * rp)
+{
+    size_t nn = 0;
+    segment_t * sp = (segment_t *)0;
+
+    for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
+        nn += 1;
+    }
+
+    return nn;    
+}
+
+static size_t record_measure(record_t * rp)
+{
+    size_t ll = 0;
+    segment_t * sp = (segment_t *)0;
+
+    for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
+        ll += segment_length_get(sp);
+    }
+
+    return ll;    
+}
 
 static record_t * record_dump(FILE * fp, record_t * rp)
 {
@@ -208,6 +215,18 @@ static record_t * record_dump(FILE * fp, record_t * rp)
         ll = segment_length_get(sp);
         fprintf(fp, "    PAYLOAD %p [%zu]:\n", pp, ll);
         diminuto_dump_general(fp, pp, ll, 0, '.', 0, 0, 6);
+    }
+
+    return rp;    
+}
+
+static record_t * record_free(record_t * rp, pool_t * pp)
+{
+    segment_t * sp = (segment_t *)0;
+
+    while ((sp = record_segment_head(rp)) != (segment_t *)0) {
+        (void)record_segment_remove(sp);
+        (void)pool_segment_free(pp, sp);
     }
 
     return rp;    
@@ -332,7 +351,7 @@ int main(void)
 
         ASSERT(enumerate(&pool) == 0);
         for (ii = 0; ii < countof(segments); ++ii) {
-            ASSERT(diminuto_list_enqueue(&pool, diminuto_list_init(&segments[ii])) == &segments[ii]);
+            ASSERT(diminuto_list_enqueue(&pool, diminuto_list_nullinit(&segments[ii])) == &segments[ii]);
         }
         ASSERT(enumerate(&pool) == NODES);
 
@@ -472,12 +491,40 @@ int main(void)
         ASSERT(diminuto_ipc4_nearend(datagramsocket, (diminuto_ipv4_t *)0, &datagramport) >= 0);
 
         if ((streampid = fork()) == 0) {
+            segment_t * sp;
+            ASSERT(record_free(&record, &pool) == &record);
+            ASSERT(record_enumerate(&record) == 0);
+            ASSERT(record_measure(&record) == 0);
+            while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
+                diminuto_list_remove(sp);
+                if (sp->data != (void *)0) {
+                    diminuto_buffer_free(sp->data);
+                    sp->data = (void *)0;
+                }
+            }
+            diminuto_buffer_fini();
+            /**/
+            /**/
             exit(0);
         }
         ASSERT(streampid > 0);
         ASSERT(diminuto_ipc_close(listensocket) >= 0);
 
         if ((datagrampid = fork()) == 0) {
+            segment_t * sp;
+            ASSERT(record_free(&record, &pool) == &record);
+            ASSERT(record_enumerate(&record) == 0);
+            ASSERT(record_measure(&record) == 0);
+            while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
+                diminuto_list_remove(sp);
+                if (sp->data != (void *)0) {
+                    diminuto_buffer_free(sp->data);
+                    sp->data = (void *)0;
+                }
+            }
+            diminuto_buffer_fini();
+            /**/
+            /**/
             exit(0);
         }
         ASSERT(datagrampid  > 0);
@@ -531,10 +578,32 @@ int main(void)
         ASSERT((tp = record_segment_head(&record)) != (segment_t *)0);
         ASSERT((tp = record_segment_next(&record, tp)) != (segment_t *)0);
         ASSERT(record_segment_replace(tp, sp) == tp);
+        ASSERT(pool_segment_free(&pool, tp) == (segment_t *)0);
     
         ASSERT(record_enumerate(&record) == 5);
         ASSERT(record_measure(&record) > 0);
         ASSERT(record_dump(stderr, &record) == &record);
+
+        STATUS();
+    }
+
+    {
+        segment_t * sp;
+
+        TEST();
+
+        ASSERT(record_free(&record, &pool) == &record);
+        ASSERT(record_enumerate(&record) == 0);
+        ASSERT(record_measure(&record) == 0);
+        while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
+            diminuto_list_remove(sp);
+            if (sp->data != (void *)0) {
+                diminuto_buffer_free(sp->data);
+                sp->data = (void *)0;
+            }
+        }
+        diminuto_buffer_fini();
+        diminuto_buffer_log();
 
         STATUS();
     }
