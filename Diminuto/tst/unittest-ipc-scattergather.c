@@ -520,11 +520,24 @@ int main(void)
     }
 
     {
+        record_t record = RECORD_INIT(&record);
+
+        TEST();
+
+        ASSERT(record_enumerate(&record) == 0);
+        ASSERT(record_measure(&record) == 0);
+        ASSERT(record_dump(stderr, &record) == &record);
+
+        STATUS();
+    }
+
+    {
         TEST();
 
         ASSERT((rp = pool_record_allocate(&pool)) != (record_t *)0);
         ASSERT(record_enumerate(rp) == 0);
         ASSERT(record_measure(rp) == 0);
+        ASSERT(record_dump(stderr, rp) == rp);
 
         STATUS();
     }
