@@ -244,11 +244,11 @@ static record_t * record_dump(FILE * fp, record_t * rp)
 
     fprintf(fp, "RECORD %p:\n", rp);
     for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-        fprintf(fp, "  SEGMENT %p #%zu:\n", sp, ii++);
+        fprintf(fp, "  SEGMENT %p: #%zu\n", sp, ii++);
         pp = segment_payload_get(sp);
         ll = segment_length_get(sp);
         tt += ll;
-        fprintf(fp, "    PAYLOAD %p [%zu]:\n", pp, ll);
+        fprintf(fp, "    PAYLOAD %p: [%zu]\n", pp, ll);
         diminuto_dump_general(fp, pp, ll, 0, '.', 0, 0, 6);
     }
     fprintf(fp, "  TOTAL %p: #%zu [%zu]\n", rp, ii, tt);
