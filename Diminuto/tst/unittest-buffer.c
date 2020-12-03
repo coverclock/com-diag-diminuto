@@ -191,6 +191,11 @@ int main(int argc, char * argv[])
         /**/
         EXPECT(diminuto_buffer_log() > 0);
         /**/
+        EXPECT((((uintptr_t)one) & 0x7) == 0);
+        EXPECT((((uintptr_t)two) & 0x7) == 0);
+        EXPECT((((uintptr_t)three) & 0x7) == 0);
+        EXPECT((((uintptr_t)four) & 0x7) == 0);
+        /**/
         diminuto_buffer_free(four);
         diminuto_buffer_free(three);
         diminuto_buffer_free(two);
@@ -215,9 +220,11 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_buffer_log() == 0);
         for (ii = 0, requested = 1; requested <= (1 << 13); ++ii, requested <<= 1) {
             buffer[ii][0] = diminuto_buffer_malloc(requested);
+            EXPECT((((uintptr_t)buffer[ii][1]) & 0x7) == 0);
             ASSERT(buffer[ii][0] != (void *)0);
             memset(buffer[ii][0], 0xa5, requested); /* For valgrind(1). */
             buffer[ii][1] = diminuto_buffer_malloc(requested);
+            EXPECT((((uintptr_t)buffer[ii][1]) & 0x7) == 0);
             ASSERT(buffer[ii][1] != (void *)0);
             memset(buffer[ii][1], 0x5a, requested); /* For valgrind(1). */
         }

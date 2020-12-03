@@ -26,7 +26,8 @@
  * was allocated (if the buffer was originally allocated from the pool), or the
  * total size of the buffer including the header overhead (if the buffer was
  * malloc'ed from and will be free'ed back into the heap because it was larger
- * than the pool could accomodate).
+ * than the pool could accomodate). (Note that pointers, and size_t, differ
+ * in size between X86_64 processors and some ARM archtitectures.)
  */
 typedef struct DiminutoBuffer {
     union {
@@ -34,7 +35,7 @@ typedef struct DiminutoBuffer {
         size_t item;
         struct DiminutoBuffer * next;
     } header;
-    char payload[0]; /* Will produce -pedantic warnings whereever used. */
+    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
 } diminuto_buffer_t;
 
 /**
