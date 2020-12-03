@@ -7,18 +7,23 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test to evaluate whether Diminuto Lists and the
- * vector read/write/send/recv system calls can be used to implement
- * a scatter/gather I/O like one might use in a protocol stack. I've
- * been wondering if this could be a useful approach for along time.
+ * This is a unit test to evaluate whether Diminuto Lists might be used
+ * to implement the gather portion of the scatter/gather capability of
+ * the vector I/O system calls referenced below and minimize the amount
+ * of data copying necessary to consolidate a bunch of fields in a layered
+ * protocol into a continguous data packet.
  *
- * As with some of the functions in the IPC Ancillary unit test, some
- * of the functions in this unit test may eventually be promoted to
- * full Diminuto features if I find them useful enough.
+ * I'm just using the gather part (writev or sendmsg) since the scatter
+ * part is really only useful for fixed length packets, where the length of
+ * the incoming packet is known ahead of time. For a trivial use of the
+ * scatter side (readv or recvmsg) see the IPC Ancillary unit test.
  *
- * For testing, try
+ * I find the command
  *
- *  valgrind --leak-check=full --show-leak-kinds=all unittest-ipc-scattergather
+ * valgrind --leak-check=full --show-leak-kinds=all unittest-ipc-scattergather
+ *
+ * useful for insuring I've covered all the memory allocation and freeing
+ * correctly.
  *
  * REFERENCES
  *
@@ -35,6 +40,10 @@
  * readv(2) man page
  *
  * writev(2) man page
+ *
+ * <linux/uio.h> 5.4.0: UIO_MAXIOV=1024 UIO_FASTIOV=8
+ *
+ * POSIX 1003.1g 5.4.1.1: "UIO_MAXIOV shall be at least 16"
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -65,13 +74,7 @@
  ******************************************************************************/
 
 enum {
-    NODES = 64,
-    /*
-     * <linux/uio.h> 5.4.0:
-     * UIO_MAXIOV=1024
-     * UIO_FASTIOV=8
-     * POSIX 1003.1g 5.4.1.1 "UIO_MAXIOV shall be at least 16"
-     */
+    NODES = UIO_MAXIOV,
     VECTOR = UIO_MAXIOV,
 };
 
@@ -142,6 +145,25 @@ static inline segment_t * record_segment_next(record_t * rp, segment_t * sp) {
 
 typedef diminuto_list_t pool_t;
 
+static record_t * pool_record_allocate(pool_t * pp)
+{
+    record_t * rp = (record_t *)0;
+
+    if ((rp = diminuto_list_dequeue(pp)) != (record_t *)0) {
+        diminuto_list_dataset(rp, (void *)0);
+    }
+
+    return rp;
+}
+
+static record_t * record_free(record_t * rp, pool_t * pp); /* Forward. */
+
+static record_t * pool_record_free(pool_t * pp, record_t * rp)
+{
+    diminuto_list_enqueue(pp, diminuto_list_dataset(record_free(rp, pp), (void *)0));
+    return (segment_t *)0;
+}
+
 static segment_t * pool_segment_allocate(pool_t * pp, size_t size)
 {
     buffer_t * bp = (buffer_t *)0;
@@ -176,6 +198,18 @@ static segment_t * pool_segment_free(pool_t * pp, segment_t * sp)
 
 /******************************************************************************/
 
+static record_t * record_free(record_t * rp, pool_t * pp)
+{
+    segment_t * sp = (segment_t *)0;
+
+    while ((sp = record_segment_head(rp)) != (segment_t *)0) {
+        (void)record_segment_remove(sp);
+        (void)pool_segment_free(pp, sp);
+    }
+
+    return rp;    
+}
+
 static size_t record_enumerate(record_t * rp)
 {
     size_t nn = 0;
@@ -204,31 +238,20 @@ static record_t * record_dump(FILE * fp, record_t * rp)
 {
     segment_t * sp = (segment_t *)0;
     void * pp = 0;
-    size_t ll = 0;
     size_t ii = 0;
+    size_t ll = 0;
+    size_t tt = 0;
 
     fprintf(fp, "RECORD %p:\n", rp);
     for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-        pp = segment_payload_get(sp);
-        ll = segment_length_get(sp);
         fprintf(fp, "  SEGMENT %p #%zu:\n", sp, ii++);
         pp = segment_payload_get(sp);
         ll = segment_length_get(sp);
+        tt += ll;
         fprintf(fp, "    PAYLOAD %p [%zu]:\n", pp, ll);
         diminuto_dump_general(fp, pp, ll, 0, '.', 0, 0, 6);
     }
-
-    return rp;    
-}
-
-static record_t * record_free(record_t * rp, pool_t * pp)
-{
-    segment_t * sp = (segment_t *)0;
-
-    while ((sp = record_segment_head(rp)) != (segment_t *)0) {
-        (void)record_segment_remove(sp);
-        (void)pool_segment_free(pp, sp);
-    }
+    fprintf(fp, "  TOTAL %p: #%zu [%zu]\n", rp, ii, tt);
 
     return rp;    
 }
@@ -259,9 +282,9 @@ static ssize_t record_write(int fd, record_t * rp)
 
     nn = record_enumerate(rp);
 
-    if (!((0 < nn) && (nn <= UIO_MAXIOV))) {
+    if (!((0 < nn) && (nn <= VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("record_write: UIO_MAXIOV");
+        diminuto_perror("record_write: enumeration");
     } else if ((vp = record_gather(rp, (struct iovec *)alloca(nn * sizeof(*vp)), nn)) == (struct iovec *)0) {
         diminuto_perror("record_write: alloca");
     } else if ((total = writev(fd, record_gather(rp, vp, nn), nn)) < 0) {
@@ -294,9 +317,9 @@ static ssize_t record_send(int fd, record_t * rp, diminuto_ipv4_t address, dimin
     message.msg_namelen = length;
     message.msg_iovlen = record_enumerate(rp);
 
-    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= UIO_MAXIOV))) {
+    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("record_write: UIO_MAXIOV");
+        diminuto_perror("record_write: enumeration");
     } else if ((message.msg_iov = record_gather(rp, (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov)), message.msg_iovlen)) == (struct iovec *)0) {
         diminuto_perror("record_write: alloca");
     } else if ((total = sendmsg(fd, &message, 0)) < 0) {
@@ -329,19 +352,27 @@ static size_t enumerate(diminuto_list_t * lp) {
  * CATCHERS
  ******************************************************************************/
 
+/* PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], PAYLOAD[LENGTH], CHECKSUM[2] */
+
+enum Offsets {
+    ADDRESS = 0,
+    PORT    = ADDRESS   + sizeof(diminuto_ipv4_t),
+    LENGTH  = PORT      + sizeof(diminuto_port_t),
+    PAYLOAD = LENGTH    + sizeof(size_t),
+    MINIMUM = PAYLOAD   + sizeof(uint16_t),
+    MAXIMUM = MINIMUM   + 128, /* Arbitrary. */
+};
+
 int streamserver(int listensocket)
 {
     int result = 1;
     int streamsocket;
     ssize_t total;
-    uint8_t buffer[128];
+    uint8_t buffer[MAXIMUM];
     size_t length;
     uint16_t checksum;
     uint8_t a;
     uint8_t b;
-    static const size_t LENGTH = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t); /* ADDRESS[4] PORT[2] */
-    static const size_t PAYLOAD = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t); /* ADDRESS[4] PORT[2] LENGTH[8] */
-    static const size_t MINIMUM = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t) + sizeof(uint16_t); /* ADDRESS[4] PORT[2] LENGTH[8] PAYLOAD[0], CHECKSUM[2] */
 
     if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
         /* Do nothing. */
@@ -380,9 +411,6 @@ int datagrampeer(int datagramsocket)
     uint16_t checksum;
     uint8_t a;
     uint8_t b;
-    static const size_t LENGTH = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t); /* ADDRESS[4] PORT[2] */
-    static const size_t PAYLOAD = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t); /* ADDRESS[4] PORT[2] LENGTH[8] */
-    static const size_t MINIMUM = sizeof(diminuto_ipv4_t) + sizeof(diminuto_port_t) + sizeof(size_t) + sizeof(uint16_t); /* ADDRESS[4] PORT[2] LENGTH[8] PAYLOAD[0] CHECKSUM[2] */
 
     if ((total = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < MINIMUM) {
         /* Do nothing. */
@@ -416,7 +444,7 @@ int main(void)
 {
     pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
     segment_t segments[NODES];
-    record_t record = RECORD_INIT(&record);
+    record_t * rp;
     diminuto_ipv4_t address;
     diminuto_port_t streamport;
     diminuto_port_t datagramport;
@@ -424,7 +452,7 @@ int main(void)
     int datagramsocket;
     pid_t streampid;
     pid_t datagrampid;
-    static const char PAYLOAD[] = "Now is the time for all good men to come to the aid of their country.";
+    static const char DATA[] = "Now is the time for all good men to come to the aid of their country.";
 
     SETLOGMASK();
 
@@ -494,8 +522,9 @@ int main(void)
     {
         TEST();
 
-        ASSERT(record_enumerate(&record) == 0);
-        ASSERT(record_measure(&record) == 0);
+        ASSERT((rp = pool_record_allocate(&pool)) != (record_t *)0);
+        ASSERT(record_enumerate(rp) == 0);
+        ASSERT(record_measure(rp) == 0);
 
         STATUS();
     }
@@ -509,18 +538,18 @@ int main(void)
 
         TEST();
 
-        ASSERT((sp = pool_segment_allocate(&pool, sizeof(PAYLOAD) * 2 /* Arbitary. */)) != (segment_t *)0);
-        ASSERT(segment_length_get(sp) == (sizeof(PAYLOAD) * 2));
+        ASSERT((sp = pool_segment_allocate(&pool, sizeof(DATA) * 2 /* Arbitary. */)) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == (sizeof(DATA) * 2));
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
-        strncpy(bp, PAYLOAD, sizeof(PAYLOAD));
+        strncpy(bp, DATA, sizeof(DATA));
         ASSERT((ll = (strlen(bp) + 1 /* Including NUL. */)) > 0);
         ASSERT(segment_length_set(sp, ll) == ll);
         ASSERT(segment_length_get(sp) == ll);
-        ASSERT(record_segment_append(&record, sp) == sp);
+        ASSERT(record_segment_append(rp, sp) == sp);
 
-        ASSERT(record_enumerate(&record) == 1);
-        ASSERT(record_measure(&record) > 0);
-        ASSERT(record_dump(stderr, &record) == &record);
+        ASSERT(record_enumerate(rp) == 1);
+        ASSERT(record_measure(rp) > 0);
+        ASSERT(record_dump(stderr, rp) == rp);
 
         STATUS();
     }
@@ -537,7 +566,7 @@ int main(void)
 
         TEST();
 
-        ASSERT((sp = record_segment_head(&record)) != (segment_t *)0);
+        ASSERT((sp = record_segment_head(rp)) != (segment_t *)0);
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
         ASSERT((length = segment_length_get(sp)) > 0);
         a = b = 0;
@@ -547,17 +576,17 @@ int main(void)
         ASSERT(segment_length_get(sp) == sizeof(length));
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(bp, &length, sizeof(length));
-        ASSERT(record_segment_prepend(&record, sp) == sp);
+        ASSERT(record_segment_prepend(rp, sp) == sp);
  
         ASSERT((sp = pool_segment_allocate(&pool, sizeof(checksum))) != (segment_t *)0);
         ASSERT(segment_length_get(sp) == sizeof(checksum));
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(bp, &checksum, sizeof(checksum));
-        ASSERT(record_segment_append(&record, sp) == sp);
+        ASSERT(record_segment_append(rp, sp) == sp);
     
-        ASSERT(record_enumerate(&record) == 3);
-        ASSERT(record_measure(&record) > 0);
-        ASSERT(record_dump(stderr, &record) == &record);
+        ASSERT(record_enumerate(rp) == 3);
+        ASSERT(record_measure(rp) > 0);
+        ASSERT(record_dump(stderr, rp) == rp);
 
         STATUS();
     }
@@ -580,9 +609,9 @@ int main(void)
 
         if ((streampid = fork()) == 0) {
             segment_t * sp;
-            ASSERT(record_free(&record, &pool) == &record);
-            ASSERT(record_enumerate(&record) == 0);
-            ASSERT(record_measure(&record) == 0);
+            ASSERT(record_free(rp, &pool) == rp);
+            ASSERT(record_enumerate(rp) == 0);
+            ASSERT(record_measure(rp) == 0);
             while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
                 diminuto_list_remove(sp);
                 if (sp->data != (void *)0) {
@@ -598,9 +627,9 @@ int main(void)
 
         if ((datagrampid = fork()) == 0) {
             segment_t * sp;
-            ASSERT(record_free(&record, &pool) == &record);
-            ASSERT(record_enumerate(&record) == 0);
-            ASSERT(record_measure(&record) == 0);
+            ASSERT(record_free(rp, &pool) == rp);
+            ASSERT(record_enumerate(rp) == 0);
+            ASSERT(record_measure(rp) == 0);
             while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
                 diminuto_list_remove(sp);
                 if (sp->data != (void *)0) {
@@ -631,7 +660,7 @@ int main(void)
         ASSERT(segment_length_get(sp) == sizeof(address));
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(bp, &address, sizeof(address));
-        ASSERT(record_segment_prepend(&record, sp) == sp);
+        ASSERT(record_segment_prepend(rp, sp) == sp);
         tp = sp;
  
         ASSERT((sp = pool_segment_allocate(&pool, sizeof(streamport))) != (segment_t *)0);
@@ -640,9 +669,9 @@ int main(void)
         memcpy(bp, &streamport, sizeof(streamport));
         ASSERT(record_segment_insert(tp, sp) == sp);
     
-        ASSERT(record_enumerate(&record) == 5);
-        ASSERT(record_measure(&record) > 0);
-        ASSERT(record_dump(stderr, &record) == &record);
+        ASSERT(record_enumerate(rp) == 5);
+        ASSERT(record_measure(rp) > 0);
+        ASSERT(record_dump(stderr, rp) == rp);
 
         STATUS();
     }
@@ -665,19 +694,19 @@ int main(void)
 
         TEST();
 
-        ASSERT((sp = record_segment_head(&record)) != (segment_t *)0);
+        ASSERT((sp = record_segment_head(rp)) != (segment_t *)0);
         ASSERT(segment_length_get(sp) == sizeof(address));
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&address, bp, sizeof(address));
 
-        ASSERT((sp = record_segment_next(&record, sp)) != (segment_t *)0);
+        ASSERT((sp = record_segment_next(rp, sp)) != (segment_t *)0);
         ASSERT(segment_length_get(sp) == sizeof(port));
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&port, bp, sizeof(port));
 
-        ASSERT((total = record_measure(&record)) > 0);
+        ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_stream_consumer(address, port)) >= 0);
-        ASSERT((length = record_write(socket, &record)) == total);
+        ASSERT((length = record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 2;
@@ -704,14 +733,14 @@ int main(void)
         ASSERT(segment_length_get(sp) == sizeof(datagramport));
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(bp, &datagramport, sizeof(streamport));
-        ASSERT((tp = record_segment_head(&record)) != (segment_t *)0);
-        ASSERT((tp = record_segment_next(&record, tp)) != (segment_t *)0);
+        ASSERT((tp = record_segment_head(rp)) != (segment_t *)0);
+        ASSERT((tp = record_segment_next(rp, tp)) != (segment_t *)0);
         ASSERT(record_segment_replace(tp, sp) == tp);
         ASSERT(pool_segment_free(&pool, tp) == (segment_t *)0);
     
-        ASSERT(record_enumerate(&record) == 5);
-        ASSERT(record_measure(&record) > 0);
-        ASSERT(record_dump(stderr, &record) == &record);
+        ASSERT(record_enumerate(rp) == 5);
+        ASSERT(record_measure(rp) > 0);
+        ASSERT(record_dump(stderr, rp) == rp);
 
         STATUS();
     }
@@ -734,19 +763,19 @@ int main(void)
 
         TEST();
 
-        ASSERT((sp = record_segment_head(&record)) != (segment_t *)0);
+        ASSERT((sp = record_segment_head(rp)) != (segment_t *)0);
         ASSERT(segment_length_get(sp) == sizeof(address));
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&address, bp, sizeof(address));
 
-        ASSERT((sp = record_segment_next(&record, sp)) != (segment_t *)0);
+        ASSERT((sp = record_segment_next(rp, sp)) != (segment_t *)0);
         ASSERT(segment_length_get(sp) == sizeof(port));
         ASSERT((bp = segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(&port, bp, sizeof(port));
 
-        ASSERT((total = record_measure(&record)) > 0);
+        ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT((length = record_send(socket, &record, address, port)) == total);
+        ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 3;
@@ -762,15 +791,10 @@ int main(void)
 
         TEST();
 
-        ASSERT(record_free(&record, &pool) == &record);
-        ASSERT(record_enumerate(&record) == 0);
-        ASSERT(record_measure(&record) == 0);
+        ASSERT((rp = pool_record_free(&pool, rp)) == (record_t *)0);
         while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
             diminuto_list_remove(sp);
-            if (sp->data != (void *)0) {
-                diminuto_buffer_free(sp->data);
-                sp->data = (void *)0;
-            }
+            ASSERT(sp->data == (void *)0);
         }
         diminuto_buffer_fini();
         diminuto_buffer_log();
