@@ -84,7 +84,13 @@ enum {
 
 typedef struct Buffer {
     size_t length; /* This is the data length, not the buffer length. */
-    uint8_t payload[0]; /* This will cause -pendantic warnings. */
+    /*
+     * Insure that the payload portion of the buffer is 8-byte
+     * aligned even if it means sacrificing 4 bytes on 32-bit
+     * architectures like some ARMs for which size_t is only
+     * 4 bytes long.
+     */
+    uint64_t payload[0]; /* This will cause -pendantic warnings. */
 } buffer_t;
 
 /******************************************************************************/
@@ -472,6 +478,7 @@ int main(void)
 
     {
         segment_t * sp[3];
+        void * dp;
 
         TEST();
 
@@ -480,7 +487,8 @@ int main(void)
 
         ASSERT((sp[0] = pool_segment_allocate(&pool, sizeof(size_t))) != (segment_t *)0);
         ASSERT(enumerate(&pool) == (NODES - 1));
-        ASSERT(segment_payload_get(sp[0]) != (void *)0);
+        ASSERT((dp = segment_payload_get(sp[0])) != (void *)0);
+        ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(segment_length_get(sp[0]) == sizeof(size_t));
         ASSERT(segment_length_set(sp[0], 0) == 0);
         ASSERT(segment_length_get(sp[0]) == 0);
@@ -488,7 +496,8 @@ int main(void)
 
         ASSERT((sp[1] = pool_segment_allocate(&pool, sizeof(uint64_t))) != (segment_t *)0);
         ASSERT(enumerate(&pool) == (NODES - 2));
-        ASSERT(segment_payload_get(sp[1]) != (void *)0);
+        ASSERT((dp = segment_payload_get(sp[1])) != (void *)0);
+        ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(segment_length_get(sp[1]) == sizeof(uint64_t));
         ASSERT(segment_length_set(sp[1], 0) == 0);
         ASSERT(segment_length_get(sp[1]) == 0);
@@ -496,7 +505,8 @@ int main(void)
 
         ASSERT((sp[2] = pool_segment_allocate(&pool, 64)) != (segment_t *)0);
         ASSERT(enumerate(&pool) == (NODES - 3));
-        ASSERT(segment_payload_get(sp[2]) != (void *)0);
+        ASSERT((dp = segment_payload_get(sp[2])) != (void *)0);
+        ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(segment_length_get(sp[2]) == 64);
         ASSERT(segment_length_set(sp[2], 0) == 0);
         ASSERT(segment_length_get(sp[2]) == 0);
