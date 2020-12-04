@@ -462,6 +462,9 @@ int streamserver(int listensocket)
             break;
         }
 
+        diminuto_buffer_fini();
+        diminuto_buffer_log();
+
         result = 0;
 
     } while (0);
@@ -603,6 +606,9 @@ int datagrampeer(int datagramsocket)
         if (diminuto_ipc_close(datagramsocket) < 0) {
             break;
         }
+
+        diminuto_buffer_fini();
+        diminuto_buffer_log();
 
         result = 0;
 
