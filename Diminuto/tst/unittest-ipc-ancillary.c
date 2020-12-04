@@ -80,6 +80,10 @@
  * I also tried some ideas out, like Thread Pools, which worked out well.
  * Thread Pools may eventually be promoted to yet another Diminuto feature.
  *
+ * SEE ALSO
+ *
+ * tst/unittest-ipc-scattergather.c
+ *
  * REFERENCES
  *
  * C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets",

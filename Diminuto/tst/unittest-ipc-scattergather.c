@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the sendmsg(2) ancillary data capability.
+ * @brief This is a unit test of the scatter/gather socket capability.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -20,6 +20,10 @@
  *
  * useful for insuring I've covered all the memory allocation and freeing
  * correctly.
+ *
+ * SEE ALSO
+ *
+ * tst/unittest-ipc-ancillary.c
  *
  * REFERENCES
  *
