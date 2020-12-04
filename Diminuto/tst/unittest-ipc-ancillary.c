@@ -935,7 +935,9 @@ int main(int argc, char argv[])
      * that was resolved from a Fully Qualified Domain Name
      * (FQDN). But this unit test is running on one computer,
      * and we'll let the IP stack choose an ephemeral port for
-     * us to use.
+     * us to use. That's also why we create the listen socket
+     * first: to extract its ephemeral port number for the
+     * child process to use.
      */
 
     ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);

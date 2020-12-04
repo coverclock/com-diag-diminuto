@@ -1002,7 +1002,7 @@ mostest:
 
 privileged:
 	unittest-ping4
-	unittest-ping6
+	unittest-ping6 # Will only work with IPv6 routing.
 	unittest-map
 
 extended:
