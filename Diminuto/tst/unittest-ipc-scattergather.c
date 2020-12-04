@@ -392,7 +392,7 @@ int streamserver(int listensocket)
     diminuto_ipv4_buffer_t printable;
     uint8_t a;
     uint8_t b;
-    uint16_t actual;
+    uint16_t expected;
 
     do {
 
@@ -425,10 +425,13 @@ int streamserver(int listensocket)
 
         fprintf(stderr, "READ [%zd]:\n", total);
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
+
         memcpy(&address, &bp[ADDRESS], sizeof(address));
         fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+
         memcpy(&port, &bp[PORT], sizeof(port));
         fprintf(stderr, "    PORT: %d\n", port);
+
         memcpy(&length, &bp[LENGTH], sizeof(length));
         fprintf(stderr, "    LENGTH: %zu\n", length);
         if ((MINIMUM + length) != total) {
@@ -439,10 +442,11 @@ int streamserver(int listensocket)
 
         memcpy(&checksum, &bp[PAYLOAD + length], sizeof(checksum));
         fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
+
         a = b = 0;
-        actual = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
-        fprintf(stderr, "    ACTUAL: 0x%x\n", actual);
-        if (checksum != actual) {
+        expected = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        fprintf(stderr, "    EXPECTED: 0x%x\n", expected);
+        if (checksum != expected) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
@@ -477,9 +481,15 @@ int datagrampeer(int datagramsocket)
     diminuto_ipv4_buffer_t printable;
     uint8_t a;
     uint8_t b;
-    uint16_t actual;
+    uint16_t expected;
+    struct msghdr message;
+    struct iovec vector[4];
 
     do {
+
+        /*
+         * We receive the first datagram all in one piece and parse it apart.
+         */
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
         if (bp == (uint8_t *)0) {
@@ -487,29 +497,102 @@ int datagrampeer(int datagramsocket)
         }
 
         if ((total = diminuto_ipc4_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
+            errno = EINVAL;
+            diminuto_perror("small");
             break;
         }
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
+
         memcpy(&address, &bp[ADDRESS], sizeof(address));
         fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+
         memcpy(&port, &bp[PORT], sizeof(port));
         fprintf(stderr, "    PORT: %d\n", port);
+
         memcpy(&length, &bp[LENGTH], sizeof(length));
         fprintf(stderr, "    LENGTH: %zu\n", length);
-        if ((length + MINIMUM) > total) {
+        if ((length + MINIMUM) != total) {
             errno = EINVAL;
-            diminuto_perror("small");
+            diminuto_perror("length");
             break;
         }
     
         memcpy(&checksum, &bp[PAYLOAD +  length], sizeof(checksum));
         fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
+
         a = b = 0;
-        actual = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
-        fprintf(stderr, "    ACTUAL: 0x%x\n", actual);
-        if (actual != checksum) {
+        expected = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        fprintf(stderr, "    EXPECTED: 0x%x\n", expected);
+        if (expected != checksum) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            break;
+        }
+
+        diminuto_buffer_free(bp);
+
+        /*
+         * We receive the second datagram and use recvmsg(2) to scatter
+         * the fields. Because we don't know the length of the variable
+         * length payload, we have to receive the payload and checksum
+         * into a single buffer.
+         */
+
+        message.msg_name = (void *)0;
+        message.msg_namelen = 0;
+        message.msg_iov = vector;
+        message.msg_iovlen = diminuto_countof(vector);
+        message.msg_control = (void *)0;
+        message.msg_controllen = 0;
+        message.msg_flags = 0;
+
+        vector[0].iov_base = &address;
+        vector[0].iov_len = sizeof(address);
+
+        vector[1].iov_base = &port;
+        vector[1].iov_len = sizeof(port);
+
+        vector[2].iov_base = &length;
+        vector[2].iov_len = sizeof(length);
+
+        length = MAXIMUM - MINIMUM + sizeof(uint16_t);
+        bp = (uint8_t *)diminuto_buffer_malloc(length);
+        if (bp == (uint8_t *)0) {
+            break;
+        }
+        vector[3].iov_base = bp;
+        vector[3].iov_len = length;
+
+        if ((total = recvmsg(datagramsocket, &message, 0)) < MINIMUM) {
+            errno = EINVAL;
+            diminuto_perror("small");
+        }
+
+        fprintf(stderr, "RECEIVE [%zd]:\n", total);
+
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+
+        fprintf(stderr, "  PORT: %d\n", port);
+
+        fprintf(stderr, "  LENGTH: %zu\n", length);
+        if ((length + MINIMUM) != total) {
+            errno = EINVAL;
+            diminuto_perror("length");
+            break;
+        }
+
+        fprintf(stderr, "  PAYLOAD:\n");
+        diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
+
+        memcpy(&checksum, &bp[length], sizeof(checksum));
+        fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
+
+        a = b = 0;
+        expected = diminuto_fletcher_16(bp, length, &a, &b);
+        fprintf(stderr, "  EXPECTED: 0x%x\n", expected);
+        if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
@@ -868,7 +951,7 @@ int main(void)
         ssize_t length;
         int status;
 
-        /* Send Datagram */
+        /* Send Datagram (Twice) */
 
         TEST();
 
@@ -884,6 +967,7 @@ int main(void)
 
         ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
+        ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
