@@ -383,14 +383,16 @@ int streamserver(int listensocket)
 {
     int result = 1;
     int streamsocket;
+    uint8_t * bp;
     ssize_t total;
     diminuto_ipv4_t address;
     diminuto_port_t port;
     size_t length;
-    uint8_t * bp;
     uint16_t checksum;
+    diminuto_ipv4_buffer_t printable;
     uint8_t a;
     uint8_t b;
+    uint16_t actual;
 
     do {
 
@@ -405,7 +407,11 @@ int streamserver(int listensocket)
          * would have to effectively parse the input stream since
          * read(2) might return fewer or more bytes than were written
          * in a single write(2) call from the far end. That's why it's
-         * called a stream versus a datagram.
+         * called a stream versus a datagram. Reading the front matter
+         * directly into a structure is not as useful as it sounds since
+         * any holes in the structure caused by different variable alignments
+         * (which can differ between, for example, x86_64 and ARM) can
+         * cause wackiness to ensue.
          */
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
@@ -419,7 +425,12 @@ int streamserver(int listensocket)
 
         fprintf(stderr, "READ [%zd]:\n", total);
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
+        memcpy(&address, &bp[ADDRESS], sizeof(address));
+        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        memcpy(&port, &bp[PORT], sizeof(port));
+        fprintf(stderr, "    PORT: %d\n", port);
         memcpy(&length, &bp[LENGTH], sizeof(length));
+        fprintf(stderr, "    LENGTH: %zu\n", length);
         if ((MINIMUM + length) != total) {
             errno = EINVAL;
             diminuto_perror("length");
@@ -427,19 +438,17 @@ int streamserver(int listensocket)
         }
 
         memcpy(&checksum, &bp[PAYLOAD + length], sizeof(checksum));
+        fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
         a = b = 0;
-        if (diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b) != checksum) {
+        actual = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        fprintf(stderr, "    ACTUAL: 0x%x\n", actual);
+        if (checksum != actual) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
         }
 
         diminuto_buffer_free(bp);
-
-        /*
-         * Another useful approach would have been to read at least
-         * the fixed format front matter into a structure.
-         */
 
         if (diminuto_ipc_close(streamsocket) < 0) {
             break;
@@ -460,34 +469,53 @@ int datagrampeer(int datagramsocket)
 {
     int result = 1;
     ssize_t total;
-    uint8_t buffer[128];
+    diminuto_ipv4_t address;
+    diminuto_port_t port;
     size_t length;
+    uint8_t * bp;
     uint16_t checksum;
+    diminuto_ipv4_buffer_t printable;
     uint8_t a;
     uint8_t b;
+    uint16_t actual;
 
     do {
 
-        if ((total = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < MINIMUM) {
+        bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
+        if (bp == (uint8_t *)0) {
+            break;
+        }
+
+        if ((total = diminuto_ipc4_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
             break;
         }
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
-        diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
-        memcpy(&length, &buffer[LENGTH], sizeof(length));
+        diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
+        memcpy(&address, &bp[ADDRESS], sizeof(address));
+        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        memcpy(&port, &bp[PORT], sizeof(port));
+        fprintf(stderr, "    PORT: %d\n", port);
+        memcpy(&length, &bp[LENGTH], sizeof(length));
+        fprintf(stderr, "    LENGTH: %zu\n", length);
         if ((length + MINIMUM) > total) {
             errno = EINVAL;
             diminuto_perror("small");
             break;
         }
     
-        memcpy(&checksum, &buffer[PAYLOAD +  length], sizeof(checksum));
+        memcpy(&checksum, &bp[PAYLOAD +  length], sizeof(checksum));
+        fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
         a = b = 0;
-        if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+        actual = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        fprintf(stderr, "    ACTUAL: 0x%x\n", actual);
+        if (actual != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
         }
+
+        diminuto_buffer_free(bp);
 
         if (diminuto_ipc_close(datagramsocket) < 0) {
             break;
