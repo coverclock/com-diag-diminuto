@@ -11,12 +11,9 @@
  * to implement the gather portion of the scatter/gather capability of
  * the vector I/O system calls referenced below and minimize the amount
  * of data copying necessary to consolidate a bunch of fields in a layered
- * protocol into a continguous data packet.
- *
- * I'm just using the gather part (writev or sendmsg) since the scatter
- * part is really only useful for fixed length packets, where the length of
- * the incoming packet is known ahead of time. For a trivial use of the
- * scatter side (readv or recvmsg) see the IPC Ancillary unit test.
+ * protocol into a continguous data packet. (I think the gather part using
+ * writev(2) or sendmsg(2) more useful than the scatter part using readv(2)
+ * or recvmsg(2).)
  *
  * I find the command
  *
@@ -365,8 +362,11 @@ enum Offsets {
     PORT    = ADDRESS   + sizeof(diminuto_ipv4_t),
     LENGTH  = PORT      + sizeof(diminuto_port_t),
     PAYLOAD = LENGTH    + sizeof(size_t),
-    MINIMUM = PAYLOAD   + sizeof(uint16_t),
-    MAXIMUM = MINIMUM   + 128, /* Arbitrary. */
+};
+
+enum Lengths {
+    MINIMUM = PAYLOAD   + sizeof(uint16_t), /* Zero length payload. */
+    MAXIMUM = MINIMUM   + 256, /* Arbitrary. */
 };
 
 int streamserver(int listensocket)
@@ -380,30 +380,44 @@ int streamserver(int listensocket)
     uint8_t a;
     uint8_t b;
 
-    if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
-        /* Do nothing. */
-    } else if ((total = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) < MINIMUM) {
-        /* Do nothing. */
-    } else {
+    do {
+
+        if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
+            break;
+        }
+
+        if ((total = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) < MINIMUM) {
+            break;
+        }
+
         fprintf(stderr, "READ [%zd]:\n", total);
         diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
         memcpy(&length, &buffer[LENGTH], sizeof(length));
         if ((length + MINIMUM) > total) {
-            /* Do nothing. */
-        } else {
-            memcpy(&checksum, &buffer[PAYLOAD + length], sizeof(checksum));
-            a = b = 0;
-            if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
-                /* Do nothing. */
-            } else if (diminuto_ipc_close(streamsocket) < 0) {
-                /* Do nothing. */
-            } else if (diminuto_ipc_close(listensocket) < 0) {
-                /* Do nothing. */
-            } else {
-                result = 0;
-            }
+            errno = EINVAL;
+            diminuto_perror("small");
+            break;
         }
-    }
+
+        memcpy(&checksum, &buffer[PAYLOAD + length], sizeof(checksum));
+        a = b = 0;
+        if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            break;
+        }
+
+        if (diminuto_ipc_close(streamsocket) < 0) {
+            break;
+        }
+
+        if (diminuto_ipc_close(listensocket) < 0) {
+            break;
+        }
+
+        result = 0;
+
+    } while (0);
 
     return result; 
 }
@@ -418,26 +432,36 @@ int datagrampeer(int datagramsocket)
     uint8_t a;
     uint8_t b;
 
-    if ((total = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < MINIMUM) {
-        /* Do nothing. */
-    } else {
+    do {
+
+        if ((total = diminuto_ipc4_datagram_receive(datagramsocket, buffer, sizeof(buffer))) < MINIMUM) {
+            break;
+        }
+
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
         diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
         memcpy(&length, &buffer[LENGTH], sizeof(length));
         if ((length + MINIMUM) > total) {
-            /* Do nothing. */
-        } else {
-            memcpy(&checksum, &buffer[PAYLOAD +  length], sizeof(checksum));
-            a = b = 0;
-            if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
-                /* Do nothing. */
-            } else if (diminuto_ipc_close(datagramsocket) < 0) {
-                /* Do nothing. */
-            } else {
-                result = 0;
-            }
+            errno = EINVAL;
+            diminuto_perror("small");
+            break;
         }
-    }
+    
+        memcpy(&checksum, &buffer[PAYLOAD +  length], sizeof(checksum));
+        a = b = 0;
+        if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            break;
+        }
+
+        if (diminuto_ipc_close(datagramsocket) < 0) {
+            break;
+        }
+
+        result = 0;
+
+    } while (0);
 
     return result;
 }
@@ -561,11 +585,11 @@ int main(void)
 
         TEST();
 
-        ASSERT((sp = pool_segment_allocate(&pool, sizeof(DATA) * 2 /* Arbitary. */)) != (segment_t *)0);
-        ASSERT(segment_length_get(sp) == (sizeof(DATA) * 2));
+        ASSERT((sp = pool_segment_allocate(&pool, MAXIMUM)) != (segment_t *)0);
+        ASSERT(segment_length_get(sp) == MAXIMUM);
         ASSERT((bp = (uint8_t *)segment_payload_get(sp)) != (uint8_t *)0);
-        strncpy(bp, DATA, sizeof(DATA));
-        ASSERT((ll = (strlen(bp) + 1 /* Including NUL. */)) > 0);
+        ASSERT((ll = (strlen(DATA) + 1 /* Including NUL. */)) > 0);
+        strncpy(bp, DATA, ll);
         ASSERT(segment_length_set(sp, ll) == ll);
         ASSERT(segment_length_get(sp) == ll);
         ASSERT(record_segment_append(rp, sp) == sp);
