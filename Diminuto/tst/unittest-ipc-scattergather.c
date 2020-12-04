@@ -11,9 +11,8 @@
  * to implement the gather portion of the scatter/gather capability of
  * the vector I/O system calls referenced below and minimize the amount
  * of data copying necessary to consolidate a bunch of fields in a layered
- * protocol into a continguous data packet. (I think the gather part using
- * writev(2) or sendmsg(2) more useful than the scatter part using readv(2)
- * or recvmsg(2).)
+ * protocol into a continguous data packet. This approach is, IMO, mostly
+ * useful on the gather side where writev(2) and sendmsg(2) are used.
  *
  * I find the command
  *
@@ -275,7 +274,7 @@ static ssize_t record_write(int fd, record_t * rp)
 static ssize_t record_send(int fd, record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
-    struct iovec * vector = (struct iovec *)0;
+    struct iovec * vp = (struct iovec *)0;
     struct msghdr message = { 0, };
     struct sockaddr_in sa = { 0, };
     struct sockaddr * sap = (struct sockaddr *)0;
@@ -357,6 +356,15 @@ static size_t enumerate(diminuto_list_t * lp) {
  * CATCHERS
  ******************************************************************************/
 
+/*
+ * In any real application, we would be passing the binary fields in
+ * network byte order, and the field lengths would be consistent. Here,
+ * we pass everything in host byte order, and the length field is eight
+ * bytes on the x86_64 and four bytes on an ARM with a 32-bit kernel. We
+ * would also not assume below that the entire packet had been read or
+ * received in a single system call.
+ */
+
 /* PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], PAYLOAD[LENGTH], CHECKSUM[2] */
 
 enum Offsets {
@@ -376,8 +384,10 @@ int streamserver(int listensocket)
     int result = 1;
     int streamsocket;
     ssize_t total;
-    uint8_t buffer[MAXIMUM];
+    diminuto_ipv4_t address;
+    diminuto_port_t port;
     size_t length;
+    uint8_t * bp;
     uint16_t checksum;
     uint8_t a;
     uint8_t b;
@@ -388,26 +398,48 @@ int streamserver(int listensocket)
             break;
         }
 
-        if ((total = diminuto_ipc4_stream_read(streamsocket, buffer, sizeof(buffer))) < MINIMUM) {
+        /*
+         * This approach just reads the entire packet into a single
+         * contiguous buffer. Since the payload is of variable length,
+         * if we were receiving multiple messages using read(2) we
+         * would have to effectively parse the input stream since
+         * read(2) might return fewer or more bytes than were written
+         * in a single write(2) call from the far end. That's why it's
+         * called a stream versus a datagram.
+         */
+
+        bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
+        if (bp == (uint8_t *)0) {
+            break;
+        }
+
+        if ((total = diminuto_ipc4_stream_read(streamsocket, bp, MAXIMUM)) < MINIMUM) {
             break;
         }
 
         fprintf(stderr, "READ [%zd]:\n", total);
-        diminuto_dump_general(stderr, buffer, total, 0, '.', 0, 0, 2);
-        memcpy(&length, &buffer[LENGTH], sizeof(length));
-        if ((length + MINIMUM) > total) {
+        diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
+        memcpy(&length, &bp[LENGTH], sizeof(length));
+        if ((MINIMUM + length) != total) {
             errno = EINVAL;
-            diminuto_perror("small");
+            diminuto_perror("length");
             break;
         }
 
-        memcpy(&checksum, &buffer[PAYLOAD + length], sizeof(checksum));
+        memcpy(&checksum, &bp[PAYLOAD + length], sizeof(checksum));
         a = b = 0;
-        if (diminuto_fletcher_16(&buffer[PAYLOAD], length, &a, &b) != checksum) {
+        if (diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b) != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
         }
+
+        diminuto_buffer_free(bp);
+
+        /*
+         * Another useful approach would have been to read at least
+         * the fixed format front matter into a structure.
+         */
 
         if (diminuto_ipc_close(streamsocket) < 0) {
             break;
