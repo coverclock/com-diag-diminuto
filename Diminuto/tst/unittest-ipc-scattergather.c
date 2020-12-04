@@ -76,7 +76,7 @@ enum {
 };
 
 /*******************************************************************************
- * CLASSES
+ * Buffer
  ******************************************************************************/
 
 typedef struct Buffer {
@@ -90,7 +90,15 @@ typedef struct Buffer {
     uint64_t payload[0]; /* This will cause -pendantic warnings. */
 } buffer_t;
 
-/******************************************************************************/
+/*******************************************************************************
+ * Pool
+ ******************************************************************************/
+
+typedef diminuto_list_t pool_t;
+
+/*******************************************************************************
+ * Segment
+ ******************************************************************************/
 
 typedef diminuto_list_t segment_t;
 
@@ -106,7 +114,41 @@ static inline size_t segment_length_set(segment_t * sp, size_t ll) {
     return ((buffer_t *)diminuto_list_data(sp))->length = ll;
 }
 
-/******************************************************************************/
+static segment_t * pool_segment_allocate(pool_t * pp, size_t size)
+{
+    buffer_t * bp = (buffer_t *)0;
+    segment_t * sp = (segment_t *)0;
+
+    if ((bp = (buffer_t *)diminuto_buffer_malloc(sizeof(buffer_t) + size)) == (void *)0) {
+        /* Do nothing. */
+    } else if ((sp = diminuto_list_dequeue(pp)) == (segment_t *)0) {
+        diminuto_buffer_free(bp);
+    } else {
+        /*
+         * The caller can always change this length, but most of the time
+         * it is allocating a segment for a fixed length field or header
+         * and this will save a lot of time and code.
+         */
+        bp->length = size;
+        diminuto_list_dataset(sp, bp);
+    }
+
+    return sp;
+}
+
+static segment_t * pool_segment_free(pool_t * pp, segment_t * sp)
+{
+    void * dp = (void *)0;
+    dp  = diminuto_list_data(sp);
+    diminuto_buffer_free(dp);
+    diminuto_list_dataset(sp, (void *)0);
+    diminuto_list_enqueue(pp, sp);
+    return (segment_t *)0;
+}
+
+/*******************************************************************************
+ * Record
+ ******************************************************************************/
 
 typedef diminuto_list_t record_t;
 
@@ -142,75 +184,6 @@ static inline segment_t * record_segment_tail(record_t * rp) {
 
 static inline segment_t * record_segment_next(record_t * rp, segment_t * sp) {
     return (diminuto_list_next(sp) == rp) ? (segment_t *)0 : diminuto_list_next(sp);
-}
-
-/******************************************************************************/
-
-typedef diminuto_list_t pool_t;
-
-static record_t * pool_record_allocate(pool_t * pp)
-{
-    record_t * rp = (record_t *)0;
-
-    if ((rp = diminuto_list_dequeue(pp)) != (record_t *)0) {
-        diminuto_list_dataset(rp, (void *)0);
-    }
-
-    return rp;
-}
-
-static record_t * record_free(record_t * rp, pool_t * pp); /* Forward. */
-
-static record_t * pool_record_free(pool_t * pp, record_t * rp)
-{
-    diminuto_list_enqueue(pp, diminuto_list_dataset(record_free(rp, pp), (void *)0));
-    return (segment_t *)0;
-}
-
-static segment_t * pool_segment_allocate(pool_t * pp, size_t size)
-{
-    buffer_t * bp = (buffer_t *)0;
-    segment_t * sp = (segment_t *)0;
-
-    if ((bp = (buffer_t *)diminuto_buffer_malloc(sizeof(buffer_t) + size)) == (void *)0) {
-        /* Do nothing. */
-    } else if ((sp = diminuto_list_dequeue(pp)) == (segment_t *)0) {
-        diminuto_buffer_free(bp);
-    } else {
-        /*
-         * The caller can always change this length, but most of the time
-         * it is allocating a segment for a fixed length field or header
-         * and this will save a lot of time and code.
-         */
-        bp->length = size;
-        diminuto_list_dataset(sp, bp);
-    }
-
-    return sp;
-}
-
-static segment_t * pool_segment_free(pool_t * pp, segment_t * sp)
-{
-    void * dp = (void *)0;
-    dp  = diminuto_list_data(sp);
-    diminuto_buffer_free(dp);
-    diminuto_list_dataset(sp, (void *)0);
-    diminuto_list_enqueue(pp, sp);
-    return (segment_t *)0;
-}
-
-/******************************************************************************/
-
-static record_t * record_free(record_t * rp, pool_t * pp)
-{
-    segment_t * sp = (segment_t *)0;
-
-    while ((sp = record_segment_head(rp)) != (segment_t *)0) {
-        (void)record_segment_remove(sp);
-        (void)pool_segment_free(pp, sp);
-    }
-
-    return rp;    
 }
 
 static size_t record_enumerate(record_t * rp)
@@ -332,6 +305,35 @@ static ssize_t record_send(int fd, record_t * rp, diminuto_ipv4_t address, dimin
     }
 
     return total;
+}
+
+static record_t * record_free(record_t * rp, pool_t * pp)
+{
+    segment_t * sp = (segment_t *)0;
+
+    while ((sp = record_segment_head(rp)) != (segment_t *)0) {
+        (void)record_segment_remove(sp);
+        (void)pool_segment_free(pp, sp);
+    }
+
+    return rp;    
+}
+
+static record_t * pool_record_allocate(pool_t * pp)
+{
+    record_t * rp = (record_t *)0;
+
+    if ((rp = diminuto_list_dequeue(pp)) != (record_t *)0) {
+        diminuto_list_dataset(rp, (void *)0);
+    }
+
+    return rp;
+}
+
+static record_t * pool_record_free(pool_t * pp, record_t * rp)
+{
+    diminuto_list_enqueue(pp, diminuto_list_dataset(record_free(rp, pp), (void *)0));
+    return (segment_t *)0;
 }
 
 /*******************************************************************************
