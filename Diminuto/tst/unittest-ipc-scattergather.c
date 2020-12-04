@@ -12,7 +12,9 @@
  * the vector I/O system calls referenced below and minimize the amount
  * of data copying necessary to consolidate a bunch of fields in a layered
  * protocol into a continguous data packet. This approach is, IMO, mostly
- * useful on the gather side where writev(2) and sendmsg(2) are used.
+ * useful on the gather side where writev(2) and sendmsg(2) are used. It
+ * was also an excuse to try out the different I/O system calls that
+ * implement scatter/gather.
  *
  * I find the command
  *
@@ -366,10 +368,13 @@ static size_t enumerate(diminuto_list_t * lp) {
  * we pass everything in host byte order, and the length field is eight
  * bytes on the x86_64 and four bytes on an ARM with a 32-bit kernel. We
  * would also not assume below that the entire packet had been read or
- * received in a single system call.
+ * received in a single system call. I try several different methods
+ * to receive and parse data streams that have been sent using writev(2)
+ * or sendmsg(2), the gather system calls. In all cases, the data packet
+ * on the wire has the following format.
+ *
+ * PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], PAYLOAD[LENGTH], CHECKSUM[2]
  */
-
-/* PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], PAYLOAD[LENGTH], CHECKSUM[2] */
 
 enum Offsets {
     ADDRESS = 0,
