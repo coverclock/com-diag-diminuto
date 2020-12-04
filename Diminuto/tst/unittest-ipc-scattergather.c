@@ -405,17 +405,81 @@ int streamserver(int listensocket)
         }
 
         /*
+         * This approach reads the packet a field at a time. Reading multiple
+         * fields at a time, such as the front matter that preceeds the payload,
+         * into a structure isn't as easy as it sounds. Structs can have holes
+         * due to the memory alignment requirements of their individial fields,
+         * while bits on the wire have no such gaps.
+         */
+
+        fprintf(stderr, "READ:\n");
+
+        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &address, sizeof(address), sizeof(address))) != sizeof(address)) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+
+        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &port, sizeof(port), sizeof(port))) != sizeof(port)) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+        fprintf(stderr, "  PORT: %d\n", port);
+
+        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &length, sizeof(length), sizeof(length))) != sizeof(length)) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+        fprintf(stderr, "  LENGTH: %zu\n", length);
+
+        if (length > (MAXIMUM - MINIMUM)) {
+            errno = EINVAL;
+            diminuto_perror("length");
+            break;
+        }
+
+        bp = (uint8_t *)diminuto_buffer_malloc(length);
+        if (bp == (uint8_t *)0) {
+            break;
+        }
+
+        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, bp, length, length)) != length) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+        fprintf(stderr, "  PAYLOAD:\n");
+        diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 4);
+
+        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &checksum, sizeof(checksum), sizeof(checksum))) != sizeof(checksum)) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+        fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
+
+        a = b = 0;
+        expected = diminuto_fletcher_16(bp, length, &a, &b);
+        fprintf(stderr, "  EXPECTED: 0x%x\n", expected);
+        if (checksum != expected) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            break;
+        }
+
+        diminuto_buffer_free(bp);
+
+        /*
          * This approach just reads the entire packet into a single
          * contiguous buffer. Since the payload is of variable length,
          * if we were receiving multiple messages using read(2) we
          * would have to effectively parse the input stream since
          * read(2) might return fewer or more bytes than were written
          * in a single write(2) call from the far end. That's why it's
-         * called a stream versus a datagram. Reading the front matter
-         * directly into a structure is not as useful as it sounds since
-         * any holes in the structure caused by different variable alignments
-         * (which can differ between, for example, x86_64 and ARM) can
-         * cause wackiness to ensue.
+         * called a stream versus a datagram.
          */
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
@@ -505,7 +569,7 @@ int datagrampeer(int datagramsocket)
 
         if ((total = diminuto_ipc4_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
             errno = EINVAL;
-            diminuto_perror("small");
+            diminuto_perror("short");
             break;
         }
 
@@ -574,7 +638,7 @@ int datagrampeer(int datagramsocket)
 
         if ((total = recvmsg(datagramsocket, &message, 0)) < MINIMUM) {
             errno = EINVAL;
-            diminuto_perror("small");
+            diminuto_perror("short");
         }
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
@@ -892,7 +956,7 @@ int main(void)
         ssize_t length;
         int status;
 
-        /* Write Stream */
+        /* Write Stream (Twice) */
 
         TEST();
 
@@ -908,6 +972,7 @@ int main(void)
 
         ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_stream_consumer(address, port)) >= 0);
+        ASSERT((length = record_write(socket, rp)) == total);
         ASSERT((length = record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
