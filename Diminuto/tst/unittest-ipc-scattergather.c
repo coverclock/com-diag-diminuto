@@ -43,6 +43,10 @@
  *
  * writev(2) man page
  *
+ * POSIX 1003.1-2001 (readv, writev)
+ *
+ * Single UNIX Specification version 4 (POSIX:2008), Issue 7 (sendmsg, recvmsg)
+ *
  * <linux/uio.h> 5.4.0: UIO_MAXIOV=1024 UIO_FASTIOV=8
  *
  * POSIX 1003.1g 5.4.1.1: "UIO_MAXIOV shall be at least 16"
