@@ -497,6 +497,8 @@ int streamserver(int listensocket)
         }
 
         if ((total = diminuto_ipc4_stream_read(streamsocket, bp, MAXIMUM)) < MINIMUM) {
+            errno = EINVAL;
+            diminuto_perror("short");
             break;
         }
 
@@ -648,6 +650,7 @@ int datagrampeer(int datagramsocket)
         if ((total = recvmsg(datagramsocket, &message, 0)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
+            break;
         }
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
