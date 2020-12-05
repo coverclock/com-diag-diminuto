@@ -95,7 +95,8 @@ static inline diminuto_buffer_pool_t * diminuto_buffer_pool_init(diminuto_buffer
 }
 
 /**
- * Log information about a pool to the debug log.
+ * Log information about a pool to the log at the DEBUG and INFORMATION
+ * levels.
  * @param poolp points to the pool.
  * @return the total number of bytes currently allocated by buffers in the pool.
  */

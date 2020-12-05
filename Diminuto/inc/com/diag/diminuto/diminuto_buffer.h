@@ -175,7 +175,8 @@ extern int diminuto_buffer_debug(int debug);
 extern int diminuto_buffer_nomalloc(int nomalloc);
 
 /**
- * Write internal state information about this feature to the debug log.
+ * Write internal state information about this feature to the log at the
+ * DEBUG and INFORMATION levels.
  * @return the total number of bytes in the pool of unused buffers.
  */
 extern size_t diminuto_buffer_log(void);

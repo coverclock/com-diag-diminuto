@@ -128,13 +128,15 @@ size_t diminuto_buffer_pool_log(diminuto_buffer_pool_t * poolp)
         for (buffer = buffer_pool_first(that, item); buffer != (diminuto_buffer_t *)0; buffer = buffer->header.next) {
             ++subcount;
         }
+        length = buffer_pool_size(that, item);
+        size = length + sizeof(diminuto_buffer_t);
+        subtotal = subcount * size;
+        count += subcount;
+        total += subtotal;
         if (subcount > 0) {
-            length = buffer_pool_size(that, item);
-            size = length + sizeof(diminuto_buffer_t);
-            subtotal = subcount * size;
-            count += subcount;
-            total += subtotal;
-            DIMINUTO_LOG_INFORMATION("diminuto_buffer_pool_log: pool=%p length=%zubytes size=%zubytes subcount=%zu subtotal=%zubytes\n", poolp, length, size, subcount, subtotal);
+            DIMINUTO_LOG_INFORMATION("diminuto_buffer_pool_log: pool=%p index=%d length=%zubytes size=%zubytes subcount=%zu subtotal=%zubytes\n", poolp, item, length, size, subcount, subtotal);
+        } else {
+            DIMINUTO_LOG_DEBUG("diminuto_buffer_pool_log: pool=%p index=%d length=%zubytes size=%zubytes subcount=%zu subtotal=%zubytes\n", poolp, item, length, size, subcount, subtotal);
         }
     }
 
