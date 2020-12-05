@@ -541,6 +541,7 @@ int streamserver(int listensocket)
             break;
         }
 
+        diminuto_buffer_log();
         diminuto_buffer_fini();
         diminuto_buffer_log();
 
@@ -687,6 +688,7 @@ int datagrampeer(int datagramsocket)
             break;
         }
 
+        diminuto_buffer_log();
         diminuto_buffer_fini();
         diminuto_buffer_log();
 
@@ -1076,6 +1078,7 @@ int main(void)
             diminuto_list_remove(sp);
             ASSERT(sp->data == (void *)0);
         }
+        diminuto_buffer_log();
         diminuto_buffer_fini();
         diminuto_buffer_log();
 
