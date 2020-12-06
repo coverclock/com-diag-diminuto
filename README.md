@@ -172,7 +172,7 @@ Make="GNU Make 4.0"
 * dump - a variety of formatted memory dump functions.
 * emit - example of how to use the log feature to make your own log output.
 * endianess - determine processor endianess.
-* endpoint - parse a string containing host:service into an IP address and port, or path/file into a UNIX domain path.
+* endpoint - parse a string into an IP address and port or a UNIX domain path.
 * escape - collapse and expand escape sequences in strings.
 * fd - general handling of file descriptors (including sockets).
 * frequency - determine common library time frequency.
