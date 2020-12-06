@@ -534,12 +534,13 @@ with the error message
 
 which in this case really means that there are no emphemeral ports
 left to assign. The speed of recycling ports is limited by the
-round-trip latency between the connected hosts when the socket is
-closed, and it is easy for the unit test to get ahead of that. I
-address this by putting some delay between the receiving a request
-and sending a response in the server thread, simulating some workload.
-(Diminuto does support the REUSE PORT socket option, but this
-isn't quite it's intended purpose.)
+round-trip latency between the connected hosts (even when it is the
+same host on both ends) when the socket is closed, and it is easy
+for the unit test to get ahead of that. I address this by putting
+some delay between the receiving a request and sending a response
+in the server thread, simulating some workload. (Diminuto does
+support the REUSE PORT socket option, but this isn't quite it's
+intended purpose.)
 
 ## Memory
 
@@ -556,10 +557,10 @@ cpp (C PreProcessor) stage works just fine, but the C compiler chokes
 on compiling the preprocessed translation unit.
 
 Turning optimizations off with "-O0" didn't help. Nor did increasing
-the swap space. This release is still a 32-bit kernel, which limits a
-process' address space to a maximum of 2GB of virutal memory. (The script
-etc/rpiswap.sh constitutes my notes on how to increase the swap space
-on the RPi.)
+the swap space. Rasbian (at this time) is still a 32-bit kernel, which
+limits a process' address space to a maximum of 2GB of virutal memory.
+(The script etc/rpiswap.sh constitutes my notes on how to increase the
+swap space on the RPi.)
 
 To get around this I refactored the Unit Test framework to move the
 critical sections out of the .h file and into functions in the .c file,
