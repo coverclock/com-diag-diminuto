@@ -363,7 +363,9 @@ need to be installed.
 
 ## Workflow
 
-For my own workflow, I installed the following tools.
+For my own workflow, I installed the following tools. (I found valgrind
+not to work on some ARM Raspbian platforms, so most of my valgrind testing
+has been on x86_64 Ubuntu platforms.)
 
     sudo apt-get install cscope
     sudo apt-get install git
