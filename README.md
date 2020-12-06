@@ -509,7 +509,9 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 ## Warnings
 
-I try hard to resolve all warnings. However, I may generate one myself.
+I try hard to resolve all warnings, even in the Doxygen comments.
+However, Diminuto may intentionally generate some itself.
+
 On some platforms (e.g. Raspbian), the renameat2(2) system call exists
 in Linux, but there is no glibc support for it in GNU. In this case,
 Diminuto generates its own API to renameat2(2), but warns you that this
