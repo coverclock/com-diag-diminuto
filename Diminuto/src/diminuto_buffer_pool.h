@@ -145,7 +145,7 @@ static inline void buffer_pool_put(diminuto_buffer_meta_t * poolp, diminuto_buff
  * @param poolp points to the buffer pool structure.
  * @param buffer points to the buffer.
  * @param item is the pool index.
- * @param actual is the actual buffer size include header overhead in bytes.
+ * @param actual is the actual buffer size including header overhead in bytes.
  * @return a pointer to the payload portion of the buffer.
  */
 static inline void * buffer_pool_init(diminuto_buffer_meta_t * poolp, diminuto_buffer_t * buffer, size_t item, size_t actual)

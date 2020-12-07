@@ -10,7 +10,6 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * This describes the Buffer private API.
  */
 
@@ -26,14 +25,16 @@
  * was allocated (if the buffer was originally allocated from the pool), or the
  * total size of the buffer including the header overhead (if the buffer was
  * malloc'ed from and will be free'ed back into the heap because it was larger
- * than the pool could accomodate). (Note that pointers, and size_t, differ
- * in size between X86_64 processors and some ARM archtitectures.)
+ * than the pool could accomodate). The contents of the header can always be
+ * inferred from context. N.B. pointers, and size_t, differ in size between
+ * X86_64 processors and some ARM processors (including those with 32-bit
+ * kernels even on 64-bit processors).
  */
 typedef struct DiminutoBuffer {
     union {
-        uint64_t align; /* Header is at least eight bytes. */
-        size_t item;
-        struct DiminutoBuffer * next;
+        uint64_t align;                 /* Header is at least eight bytes. */
+        uintptr_t item;                 /* Pool index or allocated size. */
+        struct DiminutoBuffer * next;   /* Pointer to next buffer. */
     } header;
     uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
 } diminuto_buffer_t;
