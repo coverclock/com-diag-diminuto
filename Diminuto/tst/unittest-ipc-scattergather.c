@@ -406,6 +406,8 @@ int streamserver(int listensocket)
     uint8_t a;
     uint8_t b;
     uint16_t expected;
+    struct iovec vector[5];
+    size_t minimum;
 
     do {
 
@@ -474,6 +476,80 @@ int streamserver(int listensocket)
         expected = diminuto_fletcher_16(bp, length, &a, &b);
         fprintf(stderr, "  EXPECTED: 0x%x\n", expected);
         if (checksum != expected) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            break;
+        }
+
+        diminuto_buffer_free(bp);
+
+        /*
+         * This approach uses readv(2) to read the first three fields and
+         * scatter them into their variables. Then it uses readv(2) again to
+         * read the payload (now that we know how long it is) and the
+         * checksum. I don't think this will work with datagrams, which are
+         * treated as one record.
+         */
+
+        minimum = 0;
+
+        vector[0].iov_base = &address;
+        vector[0].iov_len = sizeof(address);
+        minimum += vector[0].iov_len;
+
+        vector[1].iov_base = &port;
+        vector[1].iov_len = sizeof(port);
+        minimum += vector[1].iov_len;
+
+        vector[2].iov_base = &length;
+        vector[2].iov_len = sizeof(length);
+        minimum += vector[2].iov_len;
+
+        if ((total = readv(streamsocket, &vector[0], 3)) < minimum) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+
+        fprintf(stderr, "READ [%zd]:\n", total);
+
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+
+        fprintf(stderr, "  PORT: %d\n", port);
+
+        fprintf(stderr, "  LENGTH: %zu\n", length);
+
+        minimum = 0;
+
+        bp = (uint8_t *)diminuto_buffer_malloc(length);
+        if (bp == (uint8_t *)0) {
+            break;
+        }
+        vector[0].iov_base = bp;
+        vector[0].iov_len = length;
+        minimum += vector[0].iov_len;
+
+        vector[1].iov_base = &checksum;
+        vector[1].iov_len = sizeof(checksum);
+        minimum += vector[1].iov_len;
+
+        if ((total = readv(streamsocket, &vector[0], 2)) < minimum) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            break;
+        }
+
+        fprintf(stderr, "READ [%zd]:\n", total);
+
+        fprintf(stderr, "  PAYLOAD:\n");
+        diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
+
+        fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
+
+        a = b = 0;
+        expected = diminuto_fletcher_16(bp, length, &a, &b);
+        fprintf(stderr, "  EXPECTED: 0x%x\n", expected);
+        if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
             break;
@@ -567,6 +643,7 @@ int datagrampeer(int datagramsocket)
     uint16_t expected;
     struct msghdr message;
     struct iovec vector[4];
+    size_t maximum;
 
     do {
 
@@ -640,13 +717,13 @@ int datagrampeer(int datagramsocket)
         vector[2].iov_base = &length;
         vector[2].iov_len = sizeof(length);
 
-        length = MAXIMUM - MINIMUM + sizeof(uint16_t);
-        bp = (uint8_t *)diminuto_buffer_malloc(length);
+        maximum = MAXIMUM - MINIMUM + sizeof(uint16_t);
+        bp = (uint8_t *)diminuto_buffer_malloc(maximum);
         if (bp == (uint8_t *)0) {
             break;
         }
         vector[3].iov_base = bp;
-        vector[3].iov_len = length;
+        vector[3].iov_len = maximum;
 
         if ((total = recvmsg(datagramsocket, &message, 0)) < MINIMUM) {
             errno = EINVAL;
@@ -970,7 +1047,7 @@ int main(void)
         ssize_t length;
         int status;
 
-        /* Write Stream (Twice) */
+        /* Write Stream (Thrice) */
 
         TEST();
 
@@ -986,6 +1063,7 @@ int main(void)
 
         ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_stream_consumer(address, port)) >= 0);
+        ASSERT((length = record_write(socket, rp)) == total);
         ASSERT((length = record_write(socket, rp)) == total);
         ASSERT((length = record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
