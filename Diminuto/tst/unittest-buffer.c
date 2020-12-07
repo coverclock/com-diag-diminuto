@@ -41,6 +41,15 @@ int main(int argc, char * argv[])
     debug = (argc > 1);
 
     {
+        volatile uint8_t unused;
+        diminuto_buffer_t overhead;
+
+        ASSERT(sizeof(overhead) == 8);
+        ASSERT(sizeof(overhead.header.item) == sizeof(overhead.header.next));
+        ASSERT((((uintptr_t)(&overhead)) & 0x7) == 0);
+    }
+
+    {
         size_t count;
         size_t item;
 
