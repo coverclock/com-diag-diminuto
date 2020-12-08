@@ -392,6 +392,9 @@ enum Lengths {
     MAXIMUM = MINIMUM   + 256, /* Arbitrary. */
 };
 
+static pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
+static segment_t segments[NODES];
+
 int streamserver(int listensocket)
 {
     int result = 1;
@@ -564,7 +567,9 @@ int streamserver(int listensocket)
          * would have to effectively parse the input stream since
          * read(2) might return fewer or more bytes than were written
          * in a single write(2) call from the far end. That's why it's
-         * called a stream versus a datagram.
+         * called a stream versus a datagram. And why this approach has
+         * to be the last one; otherwise we'd would consume part or all
+         * of the following packet.
          */
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
@@ -648,7 +653,8 @@ int datagrampeer(int datagramsocket)
     do {
 
         /*
-         * We receive the first datagram all in one piece and parse it apart.
+         * This approach receives the first datagram all in one piece and
+         * parses it apart.
          */
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
@@ -694,10 +700,10 @@ int datagrampeer(int datagramsocket)
         diminuto_buffer_free(bp);
 
         /*
-         * We receive the second datagram and use recvmsg(2) to scatter
-         * the fields. Because we don't know the length of the variable
+         * This approach receives the second datagram and use recvmsg(2) to
+         * scatter the fields. Because we don't know the length of the variable
          * length payload, we have to receive the payload and checksum
-         * into a single buffer.
+         * into a single buffer and extract the checksum afterwards.
          */
 
         message.msg_name = (void *)0;
@@ -782,8 +788,6 @@ int datagrampeer(int datagramsocket)
 
 int main(void)
 {
-    pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
-    segment_t segments[NODES];
     record_t * rp;
     diminuto_ipv4_t address;
     diminuto_port_t streamport;
