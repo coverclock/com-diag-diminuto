@@ -352,7 +352,7 @@ static ssize_t record_send(int fd, record_t * rp, diminuto_ipv4_t address, dimin
     return total;
 }
 
-static ssize_t record_recv(int fd, record_t * rp)
+static ssize_t record_receive(int fd, record_t * rp)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -364,13 +364,13 @@ static ssize_t record_recv(int fd, record_t * rp)
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("record_recv: enumeration");
+        diminuto_perror("record_receive: enumeration");
     } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
-        diminuto_perror("record_recv: alloca");
+        diminuto_perror("record_receive: alloca");
     } else if ((message.msg_iov = record_vectorize(rp, vp, message.msg_iovlen)) == (struct iovec *)0) {
-        diminuto_perror("record_recv: record_vectorize");
+        diminuto_perror("record_receive: record_vectorize");
     } else if ((total = recvmsg(fd, &message, 0)) < 0) {
-        diminuto_perror("record_recv: sendmsg");
+        diminuto_perror("record_receive: sendmsg");
     } else {
         /* Do nothing. */
     }
@@ -449,23 +449,24 @@ static segment_t segments[NODES];
  * we pass everything in host byte order, and the length field is eight
  * bytes on the x86_64 and four bytes on an ARM with a 32-bit kernel. We
  * would also not assume below that the entire packet had been read or
- * received in a single system call. I try several different methods
- * to receive and parse data streams that have been sent using writev(2)
- * or sendmsg(2), the gather system calls. In all cases, the data packet
- * on the wire has the following format.
+ * received in a single system call. I didn't make any effort to optimize
+ * or minimize the error leg code paths like I would in production code.
+ * I try several different methods to receive and parse data streams that
+ * have been sent using writev(2) or sendmsg(2), the gather system calls.
+ * In all cases, the data packet on the wire has the following format.
  *
- * PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], PAYLOAD[LENGTH], CHECKSUM[2]
+ * PACKET: ADDRESS[4], PORT[2], LENGTH[4 or 8], DATA[LENGTH], CHECKSUM[2]
  */
 
 enum Offsets {
     ADDRESS = 0,
     PORT    = ADDRESS   + sizeof(diminuto_ipv4_t),
     LENGTH  = PORT      + sizeof(diminuto_port_t),
-    PAYLOAD = LENGTH    + sizeof(size_t),
+    DATA    = LENGTH    + sizeof(size_t),
 };
 
 enum Lengths {
-    HEADER  = PAYLOAD,
+    HEADER  = DATA,
     MINIMUM = HEADER   + sizeof(uint16_t), /* Zero length payload. */
     MAXIMUM = MINIMUM   + 256, /* Arbitrary. */
 };
@@ -511,6 +512,7 @@ int streamserver(int listensocket)
         if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &address, sizeof(address), sizeof(address))) != sizeof(address)) {
             errno = EINVAL;
             diminuto_perror("short");
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
@@ -518,6 +520,7 @@ int streamserver(int listensocket)
         if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &port, sizeof(port), sizeof(port))) != sizeof(port)) {
             errno = EINVAL;
             diminuto_perror("short");
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         fprintf(stderr, "  PORT: %d\n", port);
@@ -525,6 +528,7 @@ int streamserver(int listensocket)
         if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &length, sizeof(length), sizeof(length))) != sizeof(length)) {
             errno = EINVAL;
             diminuto_perror("short");
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         fprintf(stderr, "  LENGTH: %zu\n", length);
@@ -532,6 +536,7 @@ int streamserver(int listensocket)
         if (length > (MAXIMUM - MINIMUM)) {
             errno = EINVAL;
             diminuto_perror("length");
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
@@ -539,15 +544,17 @@ int streamserver(int listensocket)
 
             bp = (uint8_t *)diminuto_buffer_malloc(length);
             if (bp == (uint8_t *)0) {
+                (void)diminuto_ipc_close(streamsocket);
                 break;
             }
 
             if ((total = diminuto_ipc4_stream_read_generic(streamsocket, bp, length, length)) != length) {
                 errno = EINVAL;
                 diminuto_perror("short");
+                (void)diminuto_ipc_close(streamsocket);
                 break;
             }
-            fprintf(stderr, "  PAYLOAD:\n");
+            fprintf(stderr, "  DATA:\n");
             diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 4);
 
         }
@@ -555,6 +562,9 @@ int streamserver(int listensocket)
         if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &checksum, sizeof(checksum), sizeof(checksum))) != sizeof(checksum)) {
             errno = EINVAL;
             diminuto_perror("short");
+            if (length > 0) {
+                diminuto_buffer_free(bp);
+            }
             break;
         }
         fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
@@ -565,6 +575,9 @@ int streamserver(int listensocket)
         if (checksum != expected) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            if (length > 0) {
+                diminuto_buffer_free(bp);
+            }
             break;
         }
 
@@ -597,6 +610,7 @@ int streamserver(int listensocket)
         if ((total = readv(streamsocket, &vector[0], 3)) < minimum) {
             errno = EINVAL;
             diminuto_perror("short");
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
@@ -617,6 +631,7 @@ int streamserver(int listensocket)
 
             bp = (uint8_t *)diminuto_buffer_malloc(length);
             if (bp == (uint8_t *)0) {
+                (void)diminuto_ipc_close(streamsocket);
                 break;
             }
             vector[ii].iov_base = bp;
@@ -634,12 +649,15 @@ int streamserver(int listensocket)
         if ((total = readv(streamsocket, &vector[0], ii)) < minimum) {
             errno = EINVAL;
             diminuto_perror("short");
+            if (length > 0) {
+                diminuto_buffer_free(bp);
+            }
             break;
         }
 
         fprintf(stderr, "READ [%zd]:\n", total);
 
-        fprintf(stderr, "  PAYLOAD:\n");
+        fprintf(stderr, "  DATA:\n");
         diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
 
         fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
@@ -650,10 +668,16 @@ int streamserver(int listensocket)
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            if (length > 0) {
+                diminuto_buffer_free(bp);
+            }
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
-        diminuto_buffer_free(bp);
+        if (length > 0) {
+            diminuto_buffer_free(bp);
+        }
 
         /*
          * This approach uses the record and segment facility just like
@@ -666,20 +690,30 @@ int streamserver(int listensocket)
          */
 
         if ((rp = pool_record_allocate(&pool)) == (record_t *)0) {
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
         if ((sp = pool_segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         record_segment_append(rp, sp);
 
         if ((sp = pool_segment_allocate(&pool, sizeof(diminuto_port_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         record_segment_append(rp, sp);
 
         if ((sp = pool_segment_allocate(&pool, sizeof(size_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         record_segment_append(rp, sp);
@@ -687,6 +721,9 @@ int streamserver(int listensocket)
         if ((total = record_read(streamsocket, rp)) != HEADER) {
             errno = EINVAL;
             diminuto_perror("short");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
@@ -707,16 +744,21 @@ int streamserver(int listensocket)
         fprintf(stderr, "  LENGTH: %zu\n", length);
         record_segment_free(rp, sp, &pool);
 
-        if (length > 0) {
-
-            if ((sp = pool_segment_allocate(&pool, length)) == (segment_t *)0) {
-                break;
-            }
+        if (length <= 0) {
+            /* Do nothing. */
+        } else if ((sp = pool_segment_allocate(&pool, length)) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
+            break;
+        } else {
             record_segment_append(rp, sp);
-
         }
 
         if ((sp = pool_segment_allocate(&pool, sizeof(uint16_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
         record_segment_append(rp, sp);
@@ -724,6 +766,9 @@ int streamserver(int listensocket)
         if ((total = record_read(streamsocket, rp)) != (length + sizeof(uint16_t))) {
             errno = EINVAL;
             diminuto_perror("short");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
@@ -731,16 +776,12 @@ int streamserver(int listensocket)
         fprintf(stderr, "READ [%zd]:\n", total);
 
         if (length > 0) {
-
-            fprintf(stderr, "  PAYLOAD:\n");
+            fprintf(stderr, "  DATA:\n");
             bp = (uint8_t *)segment_payload_get(sp = record_segment_head(rp));
             diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
             record_segment_free(rp, sp, &pool);
-
         } else {
-
             bp = (uint8_t *)0;
-
         }
 
         checksum = *(uint16_t *)segment_payload_get(sp = record_segment_head(rp));
@@ -753,8 +794,14 @@ int streamserver(int listensocket)
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
+
+        record_free(rp, &pool);
+        pool_record_free(&pool, rp);
 
         /*
          * This approach just reads the entire packet into a single
@@ -770,12 +817,15 @@ int streamserver(int listensocket)
 
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
         if (bp == (uint8_t *)0) {
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
         if ((total = diminuto_ipc4_stream_read(streamsocket, bp, MAXIMUM)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
+            diminuto_buffer_free(bp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
@@ -795,34 +845,34 @@ int streamserver(int listensocket)
         if ((MINIMUM + length) != total) {
             errno = EINVAL;
             diminuto_perror("length");
+            diminuto_buffer_free(bp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
-        memcpy(&checksum, &bp[PAYLOAD + length], sizeof(checksum));
+        memcpy(&checksum, &bp[DATA + length], sizeof(checksum));
         fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
 
         a = b = 0;
-        expected = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        expected = diminuto_fletcher_16(&bp[DATA], length, &a, &b);
         fprintf(stderr, "    EXPECTED: 0x%x\n", expected);
         if (checksum != expected) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            diminuto_buffer_free(bp);
+            (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
         diminuto_buffer_free(bp);
 
+        /*
+         * Done.
+         */
+
         if (diminuto_ipc_close(streamsocket) < 0) {
             break;
         }
-
-        if (diminuto_ipc_close(listensocket) < 0) {
-            break;
-        }
-
-        diminuto_buffer_log();
-        diminuto_buffer_fini();
-        diminuto_buffer_log();
 
         result = 0;
 
@@ -847,6 +897,9 @@ int datagrampeer(int datagramsocket)
     struct msghdr message;
     struct iovec vector[4];
     size_t maximum;
+    record_t * rp;
+    segment_t * sp;
+    int ii;
 
     do {
 
@@ -863,6 +916,7 @@ int datagrampeer(int datagramsocket)
         if ((total = diminuto_ipc4_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
+            diminuto_buffer_free(bp);
             break;
         }
 
@@ -882,18 +936,20 @@ int datagrampeer(int datagramsocket)
         if ((length + MINIMUM) != total) {
             errno = EINVAL;
             diminuto_perror("length");
+            diminuto_buffer_free(bp);
             break;
         }
     
-        memcpy(&checksum, &bp[PAYLOAD +  length], sizeof(checksum));
+        memcpy(&checksum, &bp[DATA +  length], sizeof(checksum));
         fprintf(stderr, "    CHECKSUM: 0x%x\n", checksum);
 
         a = b = 0;
-        expected = diminuto_fletcher_16(&bp[PAYLOAD], length, &a, &b);
+        expected = diminuto_fletcher_16(&bp[DATA], length, &a, &b);
         fprintf(stderr, "    EXPECTED: 0x%x\n", expected);
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            diminuto_buffer_free(bp);
             break;
         }
 
@@ -934,6 +990,7 @@ int datagrampeer(int datagramsocket)
         if ((total = recvmsg(datagramsocket, &message, 0)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
+            diminuto_buffer_free(bp);
             break;
         }
 
@@ -949,10 +1006,11 @@ int datagrampeer(int datagramsocket)
         if ((length + MINIMUM) != total) {
             errno = EINVAL;
             diminuto_perror("length");
+            diminuto_buffer_free(bp);
             break;
         }
 
-        fprintf(stderr, "  PAYLOAD:\n");
+        fprintf(stderr, "  DATA:\n");
         diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
 
         memcpy(&checksum, &bp[length], sizeof(checksum));
@@ -964,18 +1022,131 @@ int datagrampeer(int datagramsocket)
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
+            diminuto_buffer_free(bp);
             break;
         }
 
         diminuto_buffer_free(bp);
 
-        if (diminuto_ipc_close(datagramsocket) < 0) {
+        /*
+         * This approach is similar to the one above except it uses the
+         * record and segment paradigm which leaves the checksum as the
+         * only field we have to handle as a special case. Because we
+         * receive the entire datagram all at once (that's how datagrams
+         * work) we don't know the length of the last segment that
+         * contains both the payload and the checksum until we interrogate
+         * the length segment.
+         */
+
+        if ((rp = pool_record_allocate(&pool)) == (record_t *)0) {
             break;
         }
 
-        diminuto_buffer_log();
-        diminuto_buffer_fini();
-        diminuto_buffer_log();
+        if ((sp = pool_segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+        record_segment_append(rp, sp);
+
+        if ((sp = pool_segment_allocate(&pool, sizeof(diminuto_port_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+        record_segment_append(rp, sp);
+
+        if ((sp = pool_segment_allocate(&pool, sizeof(size_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+        record_segment_append(rp, sp);
+
+        maximum = MAXIMUM - MINIMUM + sizeof(uint16_t);
+        if ((sp = pool_segment_allocate(&pool, maximum)) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+        record_segment_append(rp, sp);
+
+        if ((total = record_receive(datagramsocket, rp)) < MINIMUM) {
+            errno = EINVAL;
+            diminuto_perror("short");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+
+        fprintf(stderr, "datagrampeer: THREE\n");
+
+        record_dump(stderr, rp);
+        fprintf(stderr, "RECEIVE [%zd]:\n", total);
+
+        address = *(diminuto_ipv4_t *)segment_payload_get(sp = record_segment_head(rp));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        record_segment_free(rp, sp, &pool);
+
+        port = *(diminuto_port_t *)segment_payload_get(sp = record_segment_head(rp));
+        fprintf(stderr, "  PORT: %d\n", port);
+        record_segment_free(rp, sp, &pool);
+
+        length = *(size_t *)segment_payload_get(sp = record_segment_head(rp));
+        fprintf(stderr, "  LENGTH: %zu\n", length);
+        record_segment_free(rp, sp, &pool);
+        if ((HEADER + length + sizeof(uint16_t)) != total) {
+            errno = EINVAL;
+            diminuto_perror("length");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+
+        /* Kinda overkill to use a segment here but stick with the paradigm. */
+
+        segment_length_set(record_segment_head(rp), length);
+
+        if ((sp = pool_segment_allocate(&pool, sizeof(uint16_t))) == (segment_t *)0) {
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+        bp = (uint8_t *)segment_payload_get(record_segment_head(rp));
+        memcpy(segment_payload_get(sp), &bp[length], segment_length_get(sp));
+        record_segment_append(rp, sp);
+
+        /* There's a checksum segment now and the data length is correct. */
+
+        if (length > 0) {
+            fprintf(stderr, "  DATA:\n");
+            bp = (uint8_t *)segment_payload_get(sp = record_segment_head(rp));
+            diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
+            record_segment_free(rp, sp, &pool);
+        } else {
+            bp = (uint8_t *)0;
+        }
+
+        checksum = *(uint16_t *)segment_payload_get(sp = record_segment_head(rp));
+        fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
+
+        a = b = 0;
+        expected = diminuto_fletcher_16(bp, length, &a, &b);
+        fprintf(stderr, "  EXPECTED: 0x%x\n", expected);
+        if (expected != checksum) {
+            errno = EINVAL;
+            diminuto_perror("checksum");
+            record_free(rp, &pool);
+            pool_record_free(&pool, rp);
+            break;
+        }
+
+        record_free(rp, &pool);
+        pool_record_free(&pool, rp);
+
+        /*
+         * Done.
+         */
 
         result = 0;
 
@@ -1178,6 +1349,7 @@ int main(void)
             ASSERT(record_measure(rp) == 0);
             ASSERT((rp = pool_record_free(&pool, rp)) == (record_t *)0);
             xc = streamserver(listensocket);
+            ASSERT(diminuto_ipc_close(listensocket) >= 0);
             /* To make valgrind(1) happy. */
             while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
                 ASSERT(sp->data == (void *)0);
@@ -1185,6 +1357,7 @@ int main(void)
             }
             diminuto_buffer_log();
             diminuto_buffer_fini();
+            diminuto_buffer_log();
             exit(xc);
         }
         ASSERT(streampid > 0);
@@ -1198,6 +1371,7 @@ int main(void)
             ASSERT(record_measure(rp) == 0);
             ASSERT((rp = pool_record_free(&pool, rp)) == (record_t *)0);
             xc = datagrampeer(datagramsocket);
+            ASSERT(diminuto_ipc_close(datagramsocket) >= 0);
             /* TO make valgrind(1) happy. */
             while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
                 ASSERT(sp->data == (void *)0);
@@ -1205,6 +1379,7 @@ int main(void)
             }
             diminuto_buffer_log();
             diminuto_buffer_fini();
+            diminuto_buffer_log();
             exit(xc);
         }
         ASSERT(datagrampid  > 0);
@@ -1345,6 +1520,7 @@ int main(void)
 
         ASSERT((total = record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
+        ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT((length = record_send(socket, rp, address, port)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
