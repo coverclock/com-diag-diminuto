@@ -580,8 +580,6 @@ int streamserver(int listensocket)
          * treated as one record.
          */
 
-        fprintf(stderr, "streamserver: TWO\n");
-
         minimum = 0;
 
         vector[0].iov_base = &address;
@@ -601,6 +599,8 @@ int streamserver(int listensocket)
             diminuto_perror("short");
             break;
         }
+
+        fprintf(stderr, "streamserver: TWO\n");
 
         fprintf(stderr, "READ [%zd]:\n", total);
 
@@ -665,8 +665,6 @@ int streamserver(int listensocket)
          * payload plus checksum.
          */
 
-        fprintf(stderr, "streamserver: THREE\n");
-
         if ((rp = pool_record_allocate(&pool)) == (record_t *)0) {
             break;
         }
@@ -691,6 +689,8 @@ int streamserver(int listensocket)
             diminuto_perror("short");
             break;
         }
+
+        fprintf(stderr, "streamserver: THREE\n");
 
         record_dump(stderr, rp);
         fprintf(stderr, "READ [%zd]:\n", total);
@@ -768,8 +768,6 @@ int streamserver(int listensocket)
          * of the following packet.
          */
 
-        fprintf(stderr, "streamserver: FOUR\n");
-
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
         if (bp == (uint8_t *)0) {
             break;
@@ -780,6 +778,8 @@ int streamserver(int listensocket)
             diminuto_perror("short");
             break;
         }
+
+        fprintf(stderr, "streamserver: FOUR\n");
 
         fprintf(stderr, "READ [%zd]:\n", total);
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
@@ -855,8 +855,6 @@ int datagrampeer(int datagramsocket)
          * parses it apart.
          */
 
-        fprintf(stderr, "datagrampeer: ONE\n");
-
         bp = (uint8_t *)diminuto_buffer_malloc(MAXIMUM);
         if (bp == (uint8_t *)0) {
             break;
@@ -867,6 +865,8 @@ int datagrampeer(int datagramsocket)
             diminuto_perror("short");
             break;
         }
+
+        fprintf(stderr, "datagrampeer: ONE\n");
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
@@ -906,8 +906,6 @@ int datagrampeer(int datagramsocket)
          * into a single buffer and extract the checksum afterwards.
          */
 
-        fprintf(stderr, "datagrampeer: TWO\n");
-
         message.msg_name = (void *)0;
         message.msg_namelen = 0;
         message.msg_iov = vector;
@@ -938,6 +936,8 @@ int datagrampeer(int datagramsocket)
             diminuto_perror("short");
             break;
         }
+
+        fprintf(stderr, "datagrampeer: TWO\n");
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
 
