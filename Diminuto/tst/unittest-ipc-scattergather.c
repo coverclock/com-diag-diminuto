@@ -246,13 +246,11 @@ static struct iovec * record_gather(record_t * rp, struct iovec va[], size_t nn)
     segment_t * sp = (segment_t *)0;
     size_t ii = 0;
 
-    if (va != (struct iovec *)0) {
-        for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-            if (ii < nn) {
-                va[ii].iov_base = segment_payload_get(sp);
-                va[ii].iov_len = segment_length_get(sp);
-                ii += 1;
-            }
+    for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
+        if (ii < nn) {
+            va[ii].iov_base = segment_payload_get(sp);
+            va[ii].iov_len = segment_length_get(sp);
+            ii += 1;
         }
     }
 
@@ -270,9 +268,35 @@ static ssize_t record_write(int fd, record_t * rp)
     if (!((0 < nn) && (nn <= VECTOR))) {
         errno = EINVAL;
         diminuto_perror("record_write: enumeration");
-    } else if ((vp = record_gather(rp, (struct iovec *)alloca(nn * sizeof(*vp)), nn)) == (struct iovec *)0) {
+    } else if ((vp = (struct iovec *)alloca(nn * sizeof(*vp))) == (struct iovec *)0) {
         diminuto_perror("record_write: alloca");
-    } else if ((total = writev(fd, record_gather(rp, vp, nn), nn)) < 0) {
+    } else if (record_gather(rp, vp, nn) == (struct iovec *)0) {
+        /* Do nothing. */
+    } else if ((total = writev(fd, vp, nn)) < 0) {
+        diminuto_perror("record_write: writev");
+    } else {
+        /* Do nothing. */
+    }
+
+    return total;
+}
+
+static ssize_t record_read(int fd, record_t * rp)
+{
+    ssize_t total = -1;
+    size_t nn = 0;
+    struct iovec * vp = (struct iovec *)0;
+
+    nn = record_enumerate(rp);
+
+    if (!((0 < nn) && (nn <= VECTOR))) {
+        errno = EINVAL;
+        diminuto_perror("record_read: enumeration");
+    } else if ((vp = (struct iovec *)alloca(nn * sizeof(*vp))) == (struct iovec *)0) {
+        diminuto_perror("record_write: alloca");
+    } else if (record_gather(rp, vp, nn) == (struct iovec *)0) {
+        /* Do nothing. */
+    } else if ((total = readv(fd, vp, nn)) < 0) {
         diminuto_perror("record_write: writev");
     } else {
         /* Do nothing. */
@@ -304,11 +328,39 @@ static ssize_t record_send(int fd, record_t * rp, diminuto_ipv4_t address, dimin
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("record_write: enumeration");
-    } else if ((message.msg_iov = record_gather(rp, (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov)), message.msg_iovlen)) == (struct iovec *)0) {
-        diminuto_perror("record_write: alloca");
+        diminuto_perror("record_send: enumeration");
+    } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
+        diminuto_perror("record_send: alloca");
+    } else if ((message.msg_iov = record_gather(rp, vp, message.msg_iovlen)) == (struct iovec *)0) {
+        /* Do nothing. */
     } else if ((total = sendmsg(fd, &message, 0)) < 0) {
         diminuto_perror("record_send: sendmsg");
+    } else {
+        /* Do nothing. */
+    }
+
+    return total;
+}
+
+static ssize_t record_recv(int fd, record_t * rp)
+{
+    ssize_t total = 0;
+    struct iovec * vp = (struct iovec *)0;
+    struct msghdr message = { 0, };
+
+    message.msg_name = (struct sockaddr *)0;
+    message.msg_namelen = 0;
+    message.msg_iovlen = record_enumerate(rp);
+
+    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= VECTOR))) {
+        errno = EINVAL;
+        diminuto_perror("record_recv: enumeration");
+    } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
+        diminuto_perror("record_recv: alloca");
+    } else if ((message.msg_iov = record_gather(rp, vp, message.msg_iovlen)) == (struct iovec *)0) {
+        /* Do nothing. */
+    } else if ((total = recvmsg(fd, &message, 0)) < 0) {
+        diminuto_perror("record_recv: sendmsg");
     } else {
         /* Do nothing. */
     }
@@ -363,6 +415,13 @@ static size_t enumerate(diminuto_list_t * lp) {
 }
 
 /*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
+static pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
+static segment_t segments[NODES];
+
+/*******************************************************************************
  * CATCHERS
  ******************************************************************************/
 
@@ -391,9 +450,6 @@ enum Lengths {
     MINIMUM = PAYLOAD   + sizeof(uint16_t), /* Zero length payload. */
     MAXIMUM = MINIMUM   + 256, /* Arbitrary. */
 };
-
-static pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
-static segment_t segments[NODES];
 
 int streamserver(int listensocket)
 {
