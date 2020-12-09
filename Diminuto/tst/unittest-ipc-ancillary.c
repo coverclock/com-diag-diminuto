@@ -942,10 +942,10 @@ int main(int argc, char argv[])
      * When an instance is ready to get a listen socket on which to
      * service clients, it will contact us via this UNIX domain (local)
      * socket. Just like clients will queue up on the listen socket,
-     * instances will queue up on the instance socket. Note that the
+     * instances will queue up on the local socket. Note that the
      * listen socket doesn't exist at the time we fork the instance
      * processes. So the only possible way an instance process could
-     * learn of the listen socket is via the instance socket.
+     * learn of the listen socket is via the local socket.
      */
 
     ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
