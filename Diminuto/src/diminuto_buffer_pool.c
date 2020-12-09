@@ -17,16 +17,15 @@
 
 void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int nomalloc)
 {
-    void * ptr;
+    void * ptr = (void *)0;
 
     if (size == 0) {
         errno = 0;
-        ptr = (void *)0;
     } else {
-        diminuto_buffer_meta_t * that;
-        size_t item;
-        size_t actual;
-        diminuto_buffer_t * buffer;
+        diminuto_buffer_meta_t * that = (diminuto_buffer_meta_t *)0;
+        size_t item = 0;
+        size_t actual = 0;
+        diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
         that = (diminuto_buffer_meta_t *)poolp;
         item = buffer_pool_hash(that, size, &actual);
@@ -50,9 +49,9 @@ void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int
 void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr)
 {
     if (ptr != (void *)0) {
-        diminuto_buffer_meta_t * that;
-        size_t item;
-        diminuto_buffer_t * buffer;
+        diminuto_buffer_meta_t * that = (diminuto_buffer_meta_t *)0;
+        size_t item = 0;
+        diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
         that = (diminuto_buffer_meta_t *)poolp;
         buffer = containerof(diminuto_buffer_t, payload, ptr);
@@ -67,9 +66,9 @@ void diminuto_buffer_pool_put(diminuto_buffer_pool_t * poolp, void * ptr)
 
 void diminuto_buffer_pool_free(diminuto_buffer_pool_t * poolp)
 {
-    diminuto_buffer_meta_t * that;
-    int item;
-    diminuto_buffer_t * buffer;
+    diminuto_buffer_meta_t * that = (diminuto_buffer_meta_t *)0;
+    size_t item = 0;
+    diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
     that = (diminuto_buffer_meta_t *)poolp;
     for (item = 0; !buffer_pool_isexternal(that, item); ++item) {
@@ -82,10 +81,10 @@ void diminuto_buffer_pool_free(diminuto_buffer_pool_t * poolp)
 size_t diminuto_buffer_pool_prealloc(diminuto_buffer_pool_t * poolp, size_t nmemb, size_t size)
 {
     size_t total = 0;
-    diminuto_buffer_meta_t * that;
-    size_t item;
-    size_t actual;
-    diminuto_buffer_t * buffer;
+    diminuto_buffer_meta_t * that = (diminuto_buffer_meta_t *)0;
+    size_t item = 0;
+    size_t actual = 0;
+    diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
     that = (diminuto_buffer_meta_t *)poolp;
     if (size == 0) {
@@ -110,15 +109,15 @@ size_t diminuto_buffer_pool_prealloc(diminuto_buffer_pool_t * poolp, size_t nmem
 
 size_t diminuto_buffer_pool_log(diminuto_buffer_pool_t * poolp)
 {
-    size_t total;
-    diminuto_buffer_meta_t * that;
-    size_t subtotal;
-    size_t item;
-    size_t count;
-    size_t subcount;
-    size_t length;
-    size_t size;
-    diminuto_buffer_t * buffer;
+    size_t total = 0;
+    diminuto_buffer_meta_t * that = (diminuto_buffer_meta_t *)0;
+    size_t subtotal = 0;
+    size_t item = 0;
+    size_t count = 0;
+    size_t subcount = 0;
+    size_t length = 0;
+    size_t size = 0;
+    diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
     that = (diminuto_buffer_meta_t *)poolp;
     total = 0;

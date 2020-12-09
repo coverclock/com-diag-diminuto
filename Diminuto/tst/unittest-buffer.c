@@ -50,6 +50,12 @@ int main(int argc, char * argv[])
     }
 
     {
+        errno = EINVAL;
+        ASSERT((diminuto_buffer_malloc(0) == (void *)0) && (errno == 0));
+        diminuto_buffer_free((void *)0);
+    }
+
+    {
         size_t count;
         size_t item;
 

@@ -65,15 +65,16 @@
  ******************************************************************************/
 
 /**
- * Allocate a buffer of at least the specified size.
+ * Allocate a buffer of at least the specified size. If size is zero,
+ * NULL is returned with errno set to 0.
  * @param size is the required minimum size in bytes.
- * @return a pointer to the buffer or null with errno if error.
+ * @return a pointer to the buffer or NULL with errno if error.
  */
 extern void * diminuto_buffer_malloc(size_t size);
 
 /**
- * Free a buffer.
- * @param ptr points to the buffer or may be null.
+ * Free a buffer. If ptr is NULL, nothing is done.
+ * @param ptr points to the buffer or may be NULL.
  */
 extern void diminuto_buffer_free(void * ptr);
 
@@ -81,11 +82,11 @@ extern void diminuto_buffer_free(void * ptr);
  * Allocate a buffer of at least the specified size and copy as much of the old
  * buffer to the new buffer as can fit. The new size can be larger, smaller, or
  * even the same size as the old buffer. If the pointer to the old buffer is
- * null, this is equivalent to calling diminuto_buffer_malloc(). If the new size
+ * NULL, this is equivalent to calling diminuto_buffer_malloc(). If the new size
  * is zero, this is equivalent to calling diminuto_buffer_free().
  * @param ptr points to the old buffer.
  * @param size is the required minimum size in bytes.
- * @return a pointer to the new buffer or null if freeing or with errno if error.
+ * @return a pointer to the new buffer or NULL if freeing or with errno if error.
  */
 extern void * diminuto_buffer_realloc(void * ptr, size_t size);
 
@@ -94,7 +95,7 @@ extern void * diminuto_buffer_realloc(void * ptr, size_t size);
  * members each of the specified size. The buffer returned is zeroed out.
  * @param nmemb is the number of members.
  * @param size is the size of each member in bytes.
- * @return a pointer to the zeroed buffer or null with errno if error.
+ * @return a pointer to the zeroed buffer or NULL with errno if error.
  */
 extern void * diminuto_buffer_calloc(size_t nmemb, size_t size);
 
@@ -167,7 +168,7 @@ extern int diminuto_buffer_debug(int debug);
  * Enable or disable the forced failure of allocation of new buffers from the
  * heap using malloc(3). Once this is enabled, no new buffers can be created.
  * Allocations for which no buffers of the suitable size are available will
- * return null. This is used for unit testing, but can also be used to block the
+ * return NULL. This is used for unit testing, but can also be used to block the
  * dynamic allocation of additional memory after buffers have been preallocated.
  * @param nomalloc is true causes subsequent use of malloc(3) to instead fail.
  * @return the prior fail state.
@@ -186,16 +187,16 @@ extern size_t diminuto_buffer_log(void);
  ******************************************************************************/
 
 /**
- * Establish an external custom buffer pool (if the parameter is non-null),
+ * Establish an external custom buffer pool (if the parameter is non-NULL),
  * or return the feature to using its own internal buffer pool (if the parameter
- * is null), for all subsequent requests. To avoid exposing the internal buffer
+ * is NULL), for all subsequent requests. To avoid exposing the internal buffer
  * header format, the array of linked list heads is an array of void pointers
- * (void *) which the caller must have initialized (typically to null). A
+ * (void *) which the caller must have initialized (typically to NULL). A
  * shallow copy is made of the contents of the structure. When freed, buffers
  * are always returned to the currently active pool, which is not necessarily
  * the one from which they were allocated; hence wackiness may ensue if the two
  * pools are not the same.
- * @param poolp points to the new pool structure, or null.
+ * @param poolp points to the new pool structure, or NULL.
  * @return !0 if a custom buffer pool was established, 0 if the internal pool.
  */
 extern int diminuto_buffer_set(diminuto_buffer_pool_t * poolp);

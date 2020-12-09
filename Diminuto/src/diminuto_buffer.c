@@ -65,13 +65,21 @@ static diminuto_buffer_meta_t meta = { countof(POOL), POOL, pool };
 
 void * diminuto_buffer_malloc(size_t size)
 {
-    void * ptr;
+    void * ptr = (void *)0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    if (size > 0) {
 
-        ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    DIMINUTO_CRITICAL_SECTION_END;
+            ptr = diminuto_buffer_pool_get((diminuto_buffer_pool_t *)&meta, size, fail);
+
+        DIMINUTO_CRITICAL_SECTION_END;
+
+    } else {
+
+        errno = 0;
+
+    }
 
     if (debug) {
         DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
@@ -86,16 +94,20 @@ void diminuto_buffer_free(void * ptr)
         DIMINUTO_LOG_DEBUG("diminuto_buffer_free: ptr=%p\n", ptr);
     }
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    if (ptr != (void *)0) {
 
-        diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    DIMINUTO_CRITICAL_SECTION_END;
+            diminuto_buffer_pool_put((diminuto_buffer_pool_t *)&meta, ptr);
+
+        DIMINUTO_CRITICAL_SECTION_END;
+
+    }
 }
 
 void * diminuto_buffer_realloc(void * ptr, size_t size)
 {
-    void * ptrprime;
+    void * ptrprime = (void *)0;
 
     if (ptr == (void *)0) {
         ptrprime = diminuto_buffer_malloc(size);
@@ -104,9 +116,9 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
         errno = 0;
         ptrprime = (void *)0;
     } else {
-        diminuto_buffer_t * buffer;
-        size_t actual;
-        size_t requested;
+        diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
+        size_t actual = 0;
+        size_t requested = 0;
 
         buffer = containerof(diminuto_buffer_t, payload, ptr);
 
@@ -139,8 +151,8 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
 
 void * diminuto_buffer_calloc(size_t nmemb, size_t size)
 {
-    void * ptr;
-    size_t length;
+    void * ptr = (void *)0;
+    size_t length = 0;
 
     length = nmemb * size;
     ptr = diminuto_buffer_malloc(length);
@@ -161,8 +173,8 @@ void * diminuto_buffer_calloc(size_t nmemb, size_t size)
 
 char * diminuto_buffer_strdup(const char * s)
 {
-    char * ptr;
-    size_t length;
+    char * ptr = (char *)0;
+    size_t length = 0;
 
     length = strlen(s);
     ptr = (char *)diminuto_buffer_malloc(length + 1);
@@ -175,8 +187,8 @@ char * diminuto_buffer_strdup(const char * s)
 
 char * diminuto_buffer_strndup(const char * s, size_t n)
 {
-    char * ptr;
-    size_t length;
+    char * ptr = (char *)0;
+    size_t length = 0;
 
     length = strnlen(s, n);
     ptr = (char *)diminuto_buffer_malloc(length + 1);
@@ -203,7 +215,7 @@ void diminuto_buffer_fini(void)
 
 size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 {
-    size_t result;
+    size_t result = 0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
@@ -216,7 +228,7 @@ size_t diminuto_buffer_prealloc(size_t nmemb, size_t size)
 
 size_t diminuto_buffer_log(void)
 {
-    size_t result;
+    size_t result = 0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
@@ -229,7 +241,7 @@ size_t diminuto_buffer_log(void)
 
 int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 {
-    int result;
+    int result = 0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
@@ -251,7 +263,7 @@ int diminuto_buffer_set(diminuto_buffer_pool_t * poolp)
 
 int diminuto_buffer_debug(int after)
 {
-    int before;
+    int before = 0;
 
     before = debug;
     debug = after;
@@ -261,7 +273,7 @@ int diminuto_buffer_debug(int after)
 
 int diminuto_buffer_nomalloc(int after)
 {
-    int before;
+    int before = 0;
 
     before = fail;
     fail = after;
