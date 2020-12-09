@@ -934,14 +934,50 @@ int main(int argc, char argv[])
     ASSERT(diminuto_mux_init(&mux) == &mux);
 
     /*
+     * When an instance is ready to get a listen socket on which to
+     * service clients, it will contact us via this UNIX domain (local)
+     * socket. Just like clients will queue up on the listen socket,
+     * instances will queue up on the instance socket. Note that the
+     * listen socket doesn't exist at the time we fork the instance
+     * processes. So the only possible way an instance process could
+     * learn of the listen socket is via the instance socket.
+     */
+
+    ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
+    ADVISE(diminuto_ipcl_remove(path) >= 0);
+    ASSERT((localsocket = diminuto_ipcl_packet_provider(path)) >= 0);
+    /*
+     * MUST CLOSE localsocket.
+     */
+    ASSERT(diminuto_ipcl_nearend(localsocket, nearendpath, sizeof(nearendpath)) >= 0);
+    CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+
+    ASSERT(diminuto_mux_register_accept(&mux, localsocket) >= 0);
+
+    for (ii = 0; ii < countof(instancepid); ++ii) {
+        ASSERT((instancepid[ii] = fork()) >= 0);
+        if (instancepid[ii] == 0) {
+            (void)diminuto_ipc_close(localsocket);
+            localsocket = -1;
+            instance();
+            audit();
+            EXIT();
+        }
+        /*
+         * MUST REAP instancepid[ii].
+         */
+        CHECKPOINT("main: started instance %d pid %d.\n", ii, instancepid[ii]);
+    }
+
+    /*
      * In any real application we would have a fixed port number,
      * probably defined as a service, and would have an address
      * that was resolved from a Fully Qualified Domain Name
      * (FQDN). But this unit test is running on one computer,
      * and we'll let the IP stack choose an ephemeral port for
      * us to use. That's also why we create the listen socket
-     * first: to extract its ephemeral port number for the
-     * child process to use.
+     * before the workload: to extract its ephemeral port number
+     * for the child process to use.
      */
 
     ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
@@ -968,41 +1004,6 @@ int main(int argc, char argv[])
      * MUST REAP workloadpid.
      */
     CHECKPOINT("main: started workload - pid %d.\n", workloadpid);
-
-    /*
-     * When an instance is ready to get a listen socket on which to
-     * service clients, it will contact us via this UNIX domain (local)
-     * socket. Just like clients will queue up on the listen socket,
-     * instances will queue up on the instance socket.
-     */
-
-    ASSERT(diminuto_ipcl_path(INSTANCEPATH, path, sizeof(path)) == (char *)&path);
-    ADVISE(diminuto_ipcl_remove(path) >= 0);
-    ASSERT((localsocket = diminuto_ipcl_packet_provider(path)) >= 0);
-    /*
-     * MUST CLOSE localsocket.
-     */
-    ASSERT(diminuto_ipcl_nearend(localsocket, nearendpath, sizeof(nearendpath)) >= 0);
-    CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
-
-    ASSERT(diminuto_mux_register_accept(&mux, localsocket) >= 0);
-
-    for (ii = 0; ii < countof(instancepid); ++ii) {
-        ASSERT((instancepid[ii] = fork()) >= 0);
-        if (instancepid[ii] == 0) {
-            (void)diminuto_ipc_close(listensocket);
-            listensocket = -1;
-            (void)diminuto_ipc_close(localsocket);
-            localsocket = -1;
-            instance();
-            audit();
-            EXIT();
-        }
-        /*
-         * MUST REAP instancepid[ii].
-         */
-        CHECKPOINT("main: started instance %d pid %d.\n", ii, instancepid[ii]);
-    }
 
     /*
      * Work loop.
