@@ -495,15 +495,20 @@ used, check out the following:
 * the Diminuto IPC Ancillary unit test uses a lot of Diminuto features
 and is a good example of a non-trivial application that is multi-process
 and multi-threaded;
+<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-ancillary.c>
 * the Diminuto IPC Scatter/Gather unit test similarly uses a lot of
 Diminuto features and is also multi-process;
+<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-scattergather.c>
 * the gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
 and relies on Diminuto for most of its infrastructure;
+<https://github.com/coverclock/com-diag-hazer/tree/master/Hazer/app/gpstool>
 * the survey and census functional tests in the Placer project (ditto),
 which uses the SQLite relational database system, use the Diminuto
 FS file system walker and are a good example of how a need in another
 project leads to a virtuous cycle of organic growth in Diminuto.
+<https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/survey.c>
+<https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/census.c>
 
 # Issues
 
