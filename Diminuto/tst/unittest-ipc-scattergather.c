@@ -111,6 +111,12 @@ typedef diminuto_list_t pool_t;
 
 typedef diminuto_list_t segment_t;
 
+#define SEGMENT_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
+
+static inline segment_t * segment_init(segment_t * sp) {
+    return diminuto_list_nullinit(sp);
+}
+
 static inline void * segment_payload_get(segment_t * sp) {
     return (void *)(&(((buffer_t *)diminuto_list_data(sp))->payload[0]));
 }
@@ -164,6 +170,10 @@ typedef diminuto_list_t record_t;
 
 #define RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
+static inline record_t * record_init(segment_t * sp) {
+    return diminuto_list_nullinit(sp);
+}
+
 static inline segment_t * record_segment_remove(record_t * rp /* Unused. */, segment_t * sp) {
     return diminuto_list_remove(sp);
 }
@@ -214,7 +224,9 @@ static size_t record_measure(record_t * rp)
     segment_t * sp = (segment_t *)0;
 
     for (sp = record_segment_head(rp); sp != (segment_t *)0; sp = record_segment_next(rp, sp)) {
-        ll += segment_length_get(sp);
+        if (diminuto_list_data(sp) != (void *)0) {
+            ll += segment_length_get(sp);
+        }
     }
 
     return ll;    
@@ -1174,15 +1186,43 @@ int main(void)
     SETLOGMASK();
 
     {
+        segment_t segment = SEGMENT_INIT(&segment);
+
+        TEST();
+
+        /* Everything is a List node. */
+        ASSERT(record_enumerate(&segment) == 0);
+        ASSERT(record_measure(&segment) == 0);
+
+        STATUS();
+    }
+
+    {
+        segment_t segment;
+
+        TEST();
+
+        ASSERT(segment_init(&segment) == &segment);
+        /* Everything is a List node. */
+        ASSERT(record_enumerate(&segment) == 0);
+        ASSERT(record_measure(&segment) == 0);
+
+        STATUS();
+    }
+
+    {
         int ii = 0;
 
         TEST();
 
         ASSERT(enumerate(&pool) == 0);
         for (ii = 0; ii < countof(segments); ++ii) {
-            ASSERT(diminuto_list_enqueue(&pool, diminuto_list_nullinit(&segments[ii])) == &segments[ii]);
+            ASSERT(diminuto_list_enqueue(&pool, segment_init(&segments[ii])) == &segments[ii]);
         }
         ASSERT(enumerate(&pool) == NODES);
+        /* Everything is a List node. */
+        ASSERT(record_enumerate(&pool) == NODES);
+        ASSERT(record_measure(&pool) == 0);
 
         STATUS();
     }
@@ -1245,6 +1285,19 @@ int main(void)
 
         TEST();
 
+        ASSERT(record_enumerate(&record) == 0);
+        ASSERT(record_measure(&record) == 0);
+        ASSERT(record_dump(stderr, &record) == &record);
+
+        STATUS();
+    }
+
+    {
+        record_t record;
+
+        TEST();
+
+        ASSERT(record_init(&record) == &record);
         ASSERT(record_enumerate(&record) == 0);
         ASSERT(record_measure(&record) == 0);
         ASSERT(record_dump(stderr, &record) == &record);
