@@ -80,6 +80,11 @@
  * I also tried some ideas out, like Thread Pools, which worked out well.
  * Thread Pools may eventually be promoted to yet another Diminuto feature.
  *
+ * N.B. This can take a while to run and may appear to be stuck. Be
+ * patient. One of the mechanisms the client processes use to tell
+ * when to bail out is a timeout on the connect(2) system call. This
+ * can take a minute or two.
+ *
  * SEE ALSO
  *
  * tst/unittest-ipc-scattergather.c
