@@ -43,16 +43,16 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  * about the default pool implementation to test it.)
  */
 static const size_t POOL[] = {
-    1 << 3,  /* [0]: 2^3  =    8 + 8 =   16 */
-    1 << 4,  /* [1]: 2^4  =   16 + 8 =   24 */
-    1 << 5,  /* [2]: 2^5  =   32 + 8 =   40 */
-    1 << 6,  /* [3]: 2^6  =   64 + 8 =   72 */
-    1 << 7,  /* [4]: 2^7  =  128 + 8 =  136 */
-    1 << 8,  /* [5]: 2^8  =  256 + 8 =  264 */
-    1 << 9,  /* [6]: 2^9  =  512 + 8 =  520 */
-    1 << 10, /* [7]: 2^10 = 1024 + 8 = 1032 */
-    1 << 11, /* [8]: 2^11 = 2048 + 8 = 2056 */
-    1 << 12, /* [9]: 2^12 = 4096 + 8 = 4104 */
+    1 << 3,  /* [0]: (2^3  =    8) + sizeof(diminuto_buffer_t) =   16 */
+    1 << 4,  /* [1]: (2^4  =   16) + sizeof(diminuto_buffer_t) =   24 */
+    1 << 5,  /* [2]: (2^5  =   32) + sizeof(diminuto_buffer_t) =   40 */
+    1 << 6,  /* [3]: (2^6  =   64) + sizeof(diminuto_buffer_t) =   72 */
+    1 << 7,  /* [4]: (2^7  =  128) + sizeof(diminuto_buffer_t) =  136 */
+    1 << 8,  /* [5]: (2^8  =  256) + sizeof(diminuto_buffer_t) =  264 */
+    1 << 9,  /* [6]: (2^9  =  512) + sizeof(diminuto_buffer_t) =  520 */
+    1 << 10, /* [7]: (2^10 = 1024) + sizeof(diminuto_buffer_t) = 1032 */
+    1 << 11, /* [8]: (2^11 = 2048) + sizeof(diminuto_buffer_t) = 2056 */
+    1 << 12, /* [9]: (2^12 = 4096) + sizeof(diminuto_buffer_t) = 4104 */
 };
 
 static diminuto_buffer_t * pool[countof(POOL)] = { (diminuto_buffer_t *)0 };
