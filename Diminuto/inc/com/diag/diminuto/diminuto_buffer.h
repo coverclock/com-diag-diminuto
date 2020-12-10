@@ -47,6 +47,12 @@
  *
  * Your mileage may vary.
  *
+ * The design of Buffer and Buffer Pool goes to extraordinary lengths
+ * (meaning: I really don't much like it) to hide the underlying
+ * implementation in the public API. That's to keep the application from
+ * depending on it in any way. This is an example in which I miss C++ classes
+ * with private class members.
+ *
  * REFERENCES
  *
  * J. L. Sloan, "Parcels with TAGS", NCAR TECHNICAL NOTE, NCAR/TN-377+IA,
