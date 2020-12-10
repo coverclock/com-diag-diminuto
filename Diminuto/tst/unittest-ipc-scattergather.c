@@ -123,6 +123,10 @@ static inline segment_t * segment_init(segment_t * sp) {
     return diminuto_list_nullinit(sp);
 }
 
+/*
+ * The address returned by this function will be aligned on at least
+ * an eight-byte boundary.
+ */
 static inline void * segment_payload_get(segment_t * sp) {
     return (void *)(&(((buffer_t *)diminuto_list_data(sp))->payload[0]));
 }
@@ -140,6 +144,11 @@ static segment_t * pool_segment_allocate(pool_t * pp, size_t size)
     buffer_t * bp = (buffer_t *)0;
     segment_t * sp = (segment_t *)0;
 
+    /*
+     * This function returns a buffer whose beginning address is
+     * aligned on at least an eight-byte boundary. The header we
+     * put before the payload portion is eight bytes long.
+     */
     if ((bp = (buffer_t *)diminuto_buffer_malloc(sizeof(buffer_t) + size)) == (void *)0) {
         /* Do nothing. */
     } else if ((sp = diminuto_list_dequeue(pp)) == (segment_t *)0) {

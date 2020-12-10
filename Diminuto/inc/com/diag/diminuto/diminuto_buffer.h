@@ -72,7 +72,8 @@
 
 /**
  * Allocate a buffer of at least the specified size. If size is zero,
- * NULL is returned with errno set to 0.
+ * NULL is returned with errno set to 0. The address of the buffer will
+ * be aligned on at least an eight-byte boundary.
  * @param size is the required minimum size in bytes.
  * @return a pointer to the buffer or NULL with errno if error.
  */
