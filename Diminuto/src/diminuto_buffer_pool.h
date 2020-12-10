@@ -45,8 +45,8 @@ static inline size_t buffer_pool_count(diminuto_buffer_meta_t * poolp)
  */
 static inline unsigned int buffer_pool_hash(diminuto_buffer_meta_t * poolp, size_t requested, size_t * actualp)
 {
-    size_t item;
-    size_t actual;
+    size_t item = 0;
+    size_t actual = 0;
 
     for (item = 0; (item < poolp->count) && (poolp->sizes[item] < requested); ++item) {
         continue;
@@ -94,7 +94,7 @@ static inline size_t buffer_pool_size(diminuto_buffer_meta_t * poolp, size_t ite
  */
 static inline diminuto_buffer_t * buffer_pool_malloc(diminuto_buffer_meta_t * poolp, size_t size, int nomalloc)
 {
-    diminuto_buffer_t * buffer;
+    diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
     if (!nomalloc) {
         buffer = (diminuto_buffer_t *)malloc(size);
@@ -116,7 +116,7 @@ static inline diminuto_buffer_t * buffer_pool_malloc(diminuto_buffer_meta_t * po
  */
 static inline diminuto_buffer_t * buffer_pool_get(diminuto_buffer_meta_t * poolp, size_t item)
 {
-    diminuto_buffer_t * buffer;
+    diminuto_buffer_t * buffer = (diminuto_buffer_t *)0;
 
     if ((buffer = poolp->pool[item]) != (diminuto_buffer_t *)0) {
         poolp->pool[item] = buffer->header.next;

@@ -87,7 +87,7 @@ extern size_t diminuto_buffer_count(void);
 /**
  * Given an index from the header in an allocated buffer (the value of which
  * may be larger than the largest legitimate index into the pool), return the
- * buffer payload size (not including header overhead).
+ * buffer size (not including header overhead).
  * @param item is the pool index.
  * @return the buffer payload size in bytes.
  */

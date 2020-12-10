@@ -36,9 +36,7 @@ void * diminuto_buffer_pool_get(diminuto_buffer_pool_t * poolp, size_t size, int
         }  else {
             buffer = buffer_pool_get(that, item);
         }
-        if (buffer == (diminuto_buffer_t *)0) {
-            ptr = (void *)0;
-        } else {
+        if (buffer != (diminuto_buffer_t *)0) {
             ptr = buffer_pool_init(that, buffer, item, actual);
         }
     }
