@@ -140,6 +140,10 @@ static inline segment_t * segment_init(segment_t * sp) {
     return diminuto_list_nullinit(sp);
 }
 
+static inline segment_t * segment_fini(segment_t * sp) {
+    return sp;
+}
+
 /*
  * The address returned by this function will be aligned on at least
  * an eight-byte boundary.
@@ -201,8 +205,12 @@ typedef diminuto_list_t record_t;
 
 #define RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
-static inline record_t * record_init(segment_t * sp) {
-    return diminuto_list_nullinit(sp);
+static inline record_t * record_init(record_t * rp) {
+    return diminuto_list_nullinit(rp);
+}
+
+static inline record_t * record_fini(record_t * rp) {
+    return rp;
 }
 
 static inline segment_t * record_segment_remove(record_t * rp /* Unused. */, segment_t * sp) {
@@ -1206,6 +1214,7 @@ int main(void)
         /* Everything is a List node. */
         ASSERT(record_enumerate(&segment) == 0);
         ASSERT(record_measure(&segment) == 0);
+        segment_fini(&segment);
 
         STATUS();
     }
@@ -1231,6 +1240,7 @@ int main(void)
         ASSERT(record_enumerate(&record) == 0);
         ASSERT(record_measure(&record) == 0);
         ASSERT(record_dump(stderr, &record) == &record);
+        record_fini(&record);
 
         STATUS();
     }
@@ -1252,10 +1262,11 @@ int main(void)
 
         TEST();
 
-        /* Everything is a List node. */
         ASSERT(pool_init(&pool) == &pool);
+        /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == 0);
         ASSERT(record_measure(&pool) == 0);
+        pool_fini(&pool);
 
         STATUS();
     }
@@ -1265,6 +1276,7 @@ int main(void)
 
         TEST();
 
+        ASSERT(pool_init(&pool) == &pool);
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == 0);
         for (ii = 0; ii < countof(segments); ++ii) {
