@@ -708,7 +708,6 @@ int streamserver(int listensocket)
         }
 
         if ((sp = segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -716,7 +715,6 @@ int streamserver(int listensocket)
         record_segment_append(rp, sp);
 
         if ((sp = segment_allocate(&pool, sizeof(diminuto_port_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -724,7 +722,6 @@ int streamserver(int listensocket)
         record_segment_append(rp, sp);
 
         if ((sp = segment_allocate(&pool, sizeof(size_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -734,7 +731,6 @@ int streamserver(int listensocket)
         if ((total = record_read(streamsocket, rp)) != HEADER) {
             errno = EINVAL;
             diminuto_perror("short");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -760,7 +756,6 @@ int streamserver(int listensocket)
         if (length <= 0) {
             /* Do nothing. */
         } else if ((sp = segment_allocate(&pool, length)) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -769,7 +764,6 @@ int streamserver(int listensocket)
         }
 
         if ((sp = segment_allocate(&pool, sizeof(uint16_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -779,7 +773,6 @@ int streamserver(int listensocket)
         if ((total = record_read(streamsocket, rp)) != (length + sizeof(uint16_t))) {
             errno = EINVAL;
             diminuto_perror("short");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -807,13 +800,11 @@ int streamserver(int listensocket)
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
         }
 
-        record_segments_free(&pool, rp);
         record_free(&pool, rp);
 
         /*
@@ -1059,21 +1050,18 @@ int datagrampeer(int datagramsocket)
         }
 
         if ((sp = segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
         record_segment_append(rp, sp);
 
         if ((sp = segment_allocate(&pool, sizeof(diminuto_port_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
         record_segment_append(rp, sp);
 
         if ((sp = segment_allocate(&pool, sizeof(size_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
@@ -1081,7 +1069,6 @@ int datagrampeer(int datagramsocket)
 
         maximum = MAXIMUM - MINIMUM + sizeof(uint16_t);
         if ((sp = segment_allocate(&pool, maximum)) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
@@ -1090,7 +1077,6 @@ int datagrampeer(int datagramsocket)
         if ((total = record_receive(datagramsocket, rp)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
@@ -1114,7 +1100,6 @@ int datagrampeer(int datagramsocket)
         if ((HEADER + length + sizeof(uint16_t)) != total) {
             errno = EINVAL;
             diminuto_perror("length");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
@@ -1124,7 +1109,6 @@ int datagrampeer(int datagramsocket)
         segment_length_set(record_segment_head(rp), length);
 
         if ((sp = segment_allocate(&pool, sizeof(uint16_t))) == (segment_t *)0) {
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
@@ -1152,12 +1136,10 @@ int datagrampeer(int datagramsocket)
         if (expected != checksum) {
             errno = EINVAL;
             diminuto_perror("checksum");
-            record_segments_free(&pool, rp);
             record_free(&pool, rp);
             break;
         }
 
-        record_segments_free(&pool, rp);
         record_free(&pool, rp);
 
         /*
