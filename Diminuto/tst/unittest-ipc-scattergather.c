@@ -54,6 +54,7 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_list.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -103,6 +104,13 @@ typedef struct Buffer {
  * Pool
  ******************************************************************************/
 
+/*
+ * This test program isn't multi-threaded, but I wanted to make the
+ * pool thread safe for when/if I promote this to a mainstream feature
+ * in Diminuto.
+ */
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 typedef diminuto_list_t pool_t;
 
 #define POOL_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
@@ -120,12 +128,22 @@ static void pool_fini(pool_t * pp)
     }
 }
 
-static inline diminuto_list_t * pool_get(pool_t * pp) {
-    return diminuto_list_dataset(diminuto_list_dequeue(pp), (void *)0);
+static diminuto_list_t * pool_get(pool_t * pp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        np = diminuto_list_dataset(diminuto_list_dequeue(pp), (void *)0);
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return np;
 }
 
-static inline void pool_put(pool_t * pp, diminuto_list_t * np) {
-    diminuto_list_enqueue(pp, diminuto_list_dataset(np, (void *)0));
+static void pool_put(pool_t * pp, diminuto_list_t * np)
+{
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        diminuto_list_enqueue(pp, diminuto_list_dataset(np, (void *)0));
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 /*******************************************************************************
