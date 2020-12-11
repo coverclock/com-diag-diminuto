@@ -1268,7 +1268,7 @@ int main(void)
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == 0);
         for (ii = 0; ii < countof(segments); ++ii) {
-            ASSERT(diminuto_list_enqueue(&pool, segment_init(&segments[ii])) == &segments[ii]);
+            pool_put(&pool, segment_init(&segments[ii]));
         }
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == NODES);
