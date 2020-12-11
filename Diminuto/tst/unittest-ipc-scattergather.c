@@ -120,6 +120,14 @@ static void pool_fini(pool_t * pp)
     }
 }
 
+static inline diminuto_list_t * pool_get(pool_t * pp) {
+    return diminuto_list_dataset(diminuto_list_dequeue(pp), (void *)0);
+}
+
+static inline void pool_put(pool_t * pp, diminuto_list_t * np) {
+    diminuto_list_enqueue(pp, diminuto_list_dataset(np, (void *)0));
+}
+
 /*******************************************************************************
  * Segment
  ******************************************************************************/
@@ -160,7 +168,7 @@ static segment_t * segment_allocate(pool_t * pp, size_t size)
      */
     if ((bp = (buffer_t *)diminuto_buffer_malloc(sizeof(buffer_t) + size)) == (void *)0) {
         /* Do nothing. */
-    } else if ((sp = diminuto_list_dequeue(pp)) == (segment_t *)0) {
+    } else if ((sp = pool_get(pp)) == (segment_t *)0) {
         diminuto_buffer_free(bp);
         errno = ENOMEM;
         diminuto_perror("segment_allocate");
@@ -180,8 +188,7 @@ static segment_t * segment_allocate(pool_t * pp, size_t size)
 static segment_t * segment_free(pool_t * pp, segment_t * sp)
 {
     diminuto_buffer_free(diminuto_list_data(sp));
-    diminuto_list_dataset(sp, (void *)0);
-    diminuto_list_enqueue(pp, sp);
+    pool_put(pp, sp);
 
     return (segment_t *)0;
 }
@@ -435,11 +442,9 @@ static record_t * record_allocate(pool_t * pp)
 {
     record_t * rp = (record_t *)0;
 
-    if ((rp = diminuto_list_dequeue(pp)) == (record_t *)0) {
+    if ((rp = pool_get(pp)) == (record_t *)0) {
         errno = ENOMEM;
         diminuto_perror("record_allocate");
-    } else {
-        diminuto_list_dataset(rp, (void *)0);
     }
 
     return rp;
@@ -447,7 +452,7 @@ static record_t * record_allocate(pool_t * pp)
 
 static record_t * record_free(pool_t * pp, record_t * rp)
 {
-    diminuto_list_enqueue(pp, diminuto_list_dataset(record_segments_free(pp, rp), (void *)0));
+    pool_put(pp, record_segments_free(pp, rp));
     return (segment_t *)0;
 }
 
