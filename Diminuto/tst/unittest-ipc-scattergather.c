@@ -111,6 +111,15 @@ static inline pool_t * pool_init(pool_t * pp) {
     return diminuto_list_nullinit(pp);
 }
 
+static void pool_fini(pool_t * pp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    while ((np = diminuto_list_head(pp)) != (diminuto_list_t *)0) {
+        diminuto_list_remove(np);
+    }
+}
+
 /*******************************************************************************
  * Segment
  ******************************************************************************/
@@ -1604,10 +1613,7 @@ int main(void)
         TEST();
 
         ASSERT((rp = record_free(&pool, rp)) == (record_t *)0);
-        while ((sp = diminuto_list_head(&pool)) != (segment_t *)0) {
-            diminuto_list_remove(sp);
-            ASSERT(sp->data == (void *)0);
-        }
+        pool_fini(&pool);
         diminuto_buffer_log();
         diminuto_buffer_fini();
         diminuto_buffer_log();
