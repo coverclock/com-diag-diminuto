@@ -86,7 +86,7 @@ enum {
 };
 
 /*******************************************************************************
- * Buffer
+ * TYPES
  ******************************************************************************/
 
 typedef struct Buffer {
@@ -100,6 +100,29 @@ typedef struct Buffer {
     uint64_t payload[0]; /* This will cause -pendantic warnings. */
 } buffer_t;
 
+/*
+ * Everything other than a Buffer is a List node. But the different
+ * type names help me keep straight the role that the List node is
+ * serving in the API. Don't mix them up, otherwise wackiness will
+ * ensue.
+ */
+
+typedef diminuto_list_t pool_t;
+
+typedef diminuto_list_t segment_t;
+
+typedef diminuto_list_t record_t;
+
+/*******************************************************************************
+ * GENERATORS
+ ******************************************************************************/
+
+#define POOL_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
+
+#define SEGMENT_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
+
+#define RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
+
 /*******************************************************************************
  * Pool
  ******************************************************************************/
@@ -110,10 +133,6 @@ typedef struct Buffer {
  * in Diminuto.
  */
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-typedef diminuto_list_t pool_t;
-
-#define POOL_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
 static inline pool_t * pool_init(pool_t * pp) {
     return diminuto_list_nullinit(pp);
@@ -146,13 +165,22 @@ static void pool_put(pool_t * pp, diminuto_list_t * np)
     DIMINUTO_CRITICAL_SECTION_END;
 }
 
+static pool_t * pool_populate(pool_t * pp, segment_t sa[], size_t sn)
+{
+    int ii = 0;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+        for (ii = 0; ii < sn; ++ii) {
+            diminuto_list_enqueue(pp, diminuto_list_nullinit(&sa[ii]));
+        }
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return pp;
+}
+
 /*******************************************************************************
  * Segment
  ******************************************************************************/
-
-typedef diminuto_list_t segment_t;
-
-#define SEGMENT_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
 static inline segment_t * segment_init(segment_t * sp) {
     return diminuto_list_nullinit(sp);
@@ -218,10 +246,6 @@ static segment_t * segment_free(pool_t * pp, segment_t * sp)
 /*******************************************************************************
  * Record
  ******************************************************************************/
-
-typedef diminuto_list_t record_t;
-
-#define RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
 static inline record_t * record_init(record_t * rp) {
     return diminuto_list_nullinit(rp);
@@ -1264,44 +1288,55 @@ int main(void)
     }
 
     {
-        pool_t pool = POOL_INIT(&pool);
+        pool_t pool = POOL_INIT(&pool); /* Private. */
+        segment_t segments[7]; /* Private. */
 
         TEST();
 
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == 0);
         ASSERT(record_measure(&pool) == 0);
-
-        STATUS();
-    }
-
-    {
-        pool_t pool;
-
-        TEST();
-
-        ASSERT(pool_init(&pool) == &pool);
+        ASSERT(pool_populate(&pool, segments, countof(segments)) == &pool);
         /* Everything is a List node. */
-        ASSERT(record_enumerate(&pool) == 0);
+        ASSERT(record_enumerate(&pool) == countof(segments));
         ASSERT(record_measure(&pool) == 0);
         pool_fini(&pool);
+        ASSERT(record_enumerate(&pool) == 0);
+        ASSERT(record_measure(&pool) == 0);
 
         STATUS();
     }
 
     {
-        int ii = 0;
+        pool_t pool; /* Private. */
+        segment_t segments[11]; /* Private. */
 
         TEST();
 
         ASSERT(pool_init(&pool) == &pool);
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == 0);
-        for (ii = 0; ii < countof(segments); ++ii) {
-            pool_put(&pool, segment_init(&segments[ii]));
-        }
+        ASSERT(record_measure(&pool) == 0);
+        ASSERT(pool_populate(&pool, segments, countof(segments)) == &pool);
         /* Everything is a List node. */
-        ASSERT(record_enumerate(&pool) == NODES);
+        ASSERT(record_enumerate(&pool) == countof(segments));
+        ASSERT(record_measure(&pool) == 0);
+        pool_fini(&pool);
+        ASSERT(record_enumerate(&pool) == 0);
+        ASSERT(record_measure(&pool) == 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(pool_init(&pool) == &pool);
+        /* Everything is a List node. */
+        ASSERT(record_enumerate(&pool) == 0);
+        ASSERT(pool_populate(&pool, segments, countof(segments)) == &pool);
+        /* Everything is a List node. */
+        ASSERT(record_enumerate(&pool) == countof(segments));
         ASSERT(record_measure(&pool) == 0);
 
         STATUS();
@@ -1648,10 +1683,14 @@ int main(void)
         TEST();
 
         ASSERT((rp = record_free(&pool, rp)) == (record_t *)0);
+        ASSERT(record_enumerate(&pool) > 0);
+        ASSERT(record_measure(&pool) == 0);
         pool_fini(&pool);
-        diminuto_buffer_log();
+        ASSERT(record_enumerate(&pool) == 0);
+        ASSERT(record_measure(&pool) == 0);
+        ASSERT(diminuto_buffer_log() > 0);
         diminuto_buffer_fini();
-        diminuto_buffer_log();
+        ASSERT(diminuto_buffer_log() == 0);
 
         STATUS();
     }
