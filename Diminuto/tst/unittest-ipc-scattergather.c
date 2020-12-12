@@ -241,12 +241,10 @@ static segment_t * segment_allocate(pool_t * pp, size_t size)
     return sp;
 }
 
-static segment_t * segment_free(pool_t * pp, segment_t * sp)
+static void segment_free(pool_t * pp, segment_t * sp)
 {
     diminuto_buffer_free(diminuto_list_data(sp));
     pool_put(pp, sp);
-
-    return (segment_t *)0;
 }
 
 /*******************************************************************************
@@ -506,10 +504,9 @@ static record_t * record_allocate(pool_t * pp)
     return rp;
 }
 
-static record_t * record_free(pool_t * pp, record_t * rp)
+static void record_free(pool_t * pp, record_t * rp)
 {
     pool_put(pp, record_segments_free(pp, rp));
-    return (segment_t *)0;
 }
 
 /*******************************************************************************
@@ -1391,17 +1388,17 @@ int main(void)
 
         /* Order is deliberate. */
 
-        ASSERT(segment_free(&pool, sp[0]) == (segment_t *)0);
+        segment_free(&pool, sp[0]);
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == (NODES - 2));
         ASSERT(diminuto_buffer_log() >= 0);
 
-        ASSERT(segment_free(&pool, sp[2]) == (segment_t *)0);
+        segment_free(&pool, sp[2]);
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == (NODES - 1));
         ASSERT(diminuto_buffer_log() >= 0);
 
-        ASSERT(segment_free(&pool, sp[1]) == (segment_t *)0);
+        segment_free(&pool, sp[1]);
         /* Everything is a List node. */
         ASSERT(record_enumerate(&pool) == (NODES - 0));
         ASSERT(diminuto_buffer_log() >= 0);
@@ -1504,7 +1501,7 @@ int main(void)
             ASSERT(record_segments_free(&pool, rp) == rp);
             ASSERT(record_enumerate(rp) == 0);
             ASSERT(record_measure(rp) == 0);
-            ASSERT((rp = record_free(&pool, rp)) == (record_t *)0);
+            record_free(&pool, rp);
             xc = streamserver(listensocket);
             ASSERT(diminuto_ipc_close(listensocket) >= 0);
             /* To make valgrind(1) happy. */
@@ -1526,7 +1523,7 @@ int main(void)
             ASSERT(record_segments_free(&pool, rp) == rp);
             ASSERT(record_enumerate(rp) == 0);
             ASSERT(record_measure(rp) == 0);
-            ASSERT((rp = record_free(&pool, rp)) == (record_t *)0);
+            record_free(&pool, rp);
             xc = datagrampeer(datagramsocket);
             ASSERT(diminuto_ipc_close(datagramsocket) >= 0);
             /* TO make valgrind(1) happy. */
@@ -1635,7 +1632,7 @@ int main(void)
         ASSERT((tp = record_segment_head(rp)) != (segment_t *)0);
         ASSERT((tp = record_segment_next(rp, tp)) != (segment_t *)0);
         ASSERT(record_segment_replace(tp, sp) == tp);
-        ASSERT(segment_free(&pool, tp) == (segment_t *)0);
+        segment_free(&pool, tp);
     
         ASSERT(record_enumerate(rp) == 5);
         ASSERT(record_measure(rp) > 0);
@@ -1689,7 +1686,7 @@ int main(void)
 
         TEST();
 
-        ASSERT((rp = record_free(&pool, rp)) == (record_t *)0);
+        record_free(&pool, rp);
         ASSERT(record_enumerate(&pool) > 0);
         ASSERT(record_measure(&pool) == 0);
         pool_fini(&pool);
