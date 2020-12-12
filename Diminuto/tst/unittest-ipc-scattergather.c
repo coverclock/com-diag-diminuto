@@ -516,7 +516,8 @@ static record_t * record_free(pool_t * pp, record_t * rp)
  * GLOBALS
  ******************************************************************************/
 
-static pool_t pool = DIMINUTO_LIST_NULLINIT(&pool);
+static pool_t pool;
+
 static segment_t segments[NODES];
 
 /*******************************************************************************
