@@ -90,12 +90,18 @@ enum {
  ******************************************************************************/
 
 typedef struct Buffer {
-    size_t length; /* This is the data length, not the buffer length. */
     /*
-     * Insure that the payload portion of the buffer is 8-byte
-     * aligned even if it means sacrificing 4 bytes on 32-bit
-     * architectures like some ARMs for which size_t is only
-     * 4 bytes long.
+     * The type of the length field is way overkill as is uint32_t
+     * (although uint16_t is too small). But it insures the caller
+     * of the alignment. uint64_t will be double the size of size_t
+     * on some ARM platforms (especially those with 32-bit kernels)
+     * but the same as size_t on 64-bit ARMs and all x86_64s.
+     */
+    uint64_t length; /* This is the data length, not the buffer length. */
+    /*
+     * Insure that the payload portion of the buffer is 8-byte aligned.
+     * This guarantees that the caller can use the payload field to
+     * store anything requiring 8-byte alignment or less.
      */
     uint64_t payload[0]; /* This will cause -pendantic warnings. */
 } buffer_t;
