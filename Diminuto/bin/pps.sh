@@ -17,8 +17,6 @@
 # pps [ GPIOPIN ]
 #
 
-. $(readlink -e $(dirname ${0})/../bin)/setup
-
 PIN=${1:-"18"}
 
 pintool -p ${PIN} -e

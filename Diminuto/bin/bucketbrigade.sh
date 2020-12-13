@@ -24,8 +24,6 @@ SOURCING=${2:-115200}
 SINK=${3:-"/dev/ttyUSB1"}
 SINKING=${4:-115200}
 
-. $(readlink -e $(dirname ${0})/../bin)/setup
-
 serialtool -D ${SOURCE} -b ${SOURCING} -8 -n -1 -l | serialtool -D ${SINK} -b ${SINKING} -8 -n -1 -m
 
 exit 0
