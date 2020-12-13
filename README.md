@@ -490,20 +490,23 @@ don't, that's great too.
 
 If you'd like to see a non-trivial application that makes use
 of many Diminuto features in exactly the way I envisioned them being
-used, check out the following:
+used, check out the following.
 
-* the Diminuto IPC Ancillary unit test uses a lot of Diminuto features
+* The Diminuto IPC Ancillary unit test uses a lot of Diminuto features
 and is a good example of a non-trivial application that is multi-process
-and multi-threaded;
+and multi-threaded. The source code also has a useful implementation of Thread
+Pools.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-ancillary.c>
-* the Diminuto IPC Scatter/Gather unit test similarly uses a lot of
-Diminuto features and is also multi-process;
+* The Diminuto IPC Scatter/Gather unit test similarly uses a lot of
+Diminuto features and is also multi-process. The source code also has a useful
+implementation of Diminuto List pools, and support for Records, Segments, and
+I/O vectors that can be used to implement scatter/gather I/O.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-scattergather.c>
-* the gpstool application in the Hazer project (repo URL below) is the
+* The gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
-and relies on Diminuto for most of its infrastructure;
+and relies on Diminuto for most of its infrastructure.
 <https://github.com/coverclock/com-diag-hazer/tree/master/Hazer/app/gpstool>
-* the survey and census functional tests in the Placer project (ditto),
+* The survey and census functional tests in the Placer project (ditto),
 which uses the SQLite relational database system, use the Diminuto
 FS file system walker and are a good example of how a need in another
 project leads to a virtuous cycle of organic growth in Diminuto.
