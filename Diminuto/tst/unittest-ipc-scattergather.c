@@ -151,7 +151,7 @@ static void pool_fini(pool_t * pp)
     diminuto_list_t * np = (diminuto_list_t *)0;
 
     while ((np = diminuto_list_head(pp)) != (diminuto_list_t *)0) {
-        diminuto_list_remove(np);
+        (void)diminuto_list_remove(np);
     }
 }
 
@@ -160,7 +160,7 @@ static diminuto_list_t * pool_get(pool_t * pp)
     diminuto_list_t * np = (diminuto_list_t *)0;
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        np = diminuto_list_dataset(diminuto_list_dequeue(pp), (void *)0);
+        np = diminuto_list_dequeue(pp);
     DIMINUTO_CRITICAL_SECTION_END;
 
     return np;
@@ -169,7 +169,7 @@ static diminuto_list_t * pool_get(pool_t * pp)
 static void pool_put(pool_t * pp, diminuto_list_t * np)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        diminuto_list_enqueue(pp, diminuto_list_dataset(np, (void *)0));
+        (void)diminuto_list_enqueue(pp, np);
     DIMINUTO_CRITICAL_SECTION_END;
 }
 
@@ -179,7 +179,7 @@ static pool_t * pool_populate(pool_t * pp, segment_t sa[], size_t sn)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
         for (ii = 0; ii < sn; ++ii) {
-            diminuto_list_enqueue(pp, diminuto_list_nullinit(&sa[ii]));
+            (void)diminuto_list_enqueue(pp, diminuto_list_nullinit(&sa[ii]));
         }
     DIMINUTO_CRITICAL_SECTION_END;
 
@@ -195,7 +195,7 @@ static inline segment_t * segment_init(segment_t * sp) {
 }
 
 static inline segment_t * segment_fini(segment_t * sp) {
-    return sp;
+    return diminuto_list_dataset(diminuto_list_remove(sp), (void *)0);
 }
 
 /*
@@ -246,7 +246,7 @@ static segment_t * segment_allocate(pool_t * pp, size_t size)
 static void segment_free(pool_t * pp, segment_t * sp)
 {
     diminuto_buffer_free(diminuto_list_data(sp));
-    pool_put(pp, sp);
+    (void)pool_put(pp, segment_fini(sp));
 }
 
 /*******************************************************************************
@@ -258,7 +258,7 @@ static inline record_t * record_init(record_t * rp) {
 }
 
 static inline record_t * record_fini(record_t * rp) {
-    return rp;
+    return diminuto_list_dataset(diminuto_list_remove(rp), (void *)0);
 }
 
 static inline segment_t * record_segment_remove(record_t * rp /* Unused. */, segment_t * sp) {
@@ -508,7 +508,7 @@ static record_t * record_allocate(pool_t * pp)
 
 static void record_free(pool_t * pp, record_t * rp)
 {
-    pool_put(pp, record_segments_free(pp, rp));
+    pool_put(pp, record_fini(record_segments_free(pp, rp)));
 }
 
 /*******************************************************************************
