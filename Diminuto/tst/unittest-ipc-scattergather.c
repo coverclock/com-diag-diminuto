@@ -129,6 +129,8 @@ typedef diminuto_list_t record_t;
 
 #define RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
+#define bufferof(_PAYLOAD_) diminuto_containerof(buffer_t, payload, (_PAYLOAD_))
+
 /*******************************************************************************
  * Pool
  ******************************************************************************/
@@ -1328,6 +1330,37 @@ int main(void)
         pool_fini(&pool);
         ASSERT(record_enumerate(&pool) == 0);
         ASSERT(record_measure(&pool) == 0);
+
+        STATUS();
+    }
+
+    {
+        void * dp;
+        buffer_t buffer;
+        buffer_t * bp;
+        pool_t pool; /* Private. */
+        segment_t segments[1]; /* Private. */
+        segment_t * sp;
+
+        TEST();
+
+        dp = (void *)&(buffer.payload[0]);
+        ASSERT(bufferof(dp) == &buffer);
+        bp = malloc(sizeof(buffer));
+        dp = (void *)&(bp->payload[0]);
+        ASSERT(bufferof(dp) == bp);
+        free(bp);
+        ASSERT(pool_init(&pool) == &pool);
+        ASSERT(pool_populate(&pool, segments, countof(segments)) == &pool);
+        ASSERT((sp = segment_allocate(&pool, 13)) != (segment_t *)0);
+        ASSERT(sp->data != (void *)0);
+        ASSERT(segment_length_get(sp) == 13);
+        ASSERT(segment_length_set(sp, 17) == 17);
+        ASSERT(segment_length_get(sp) == 17);
+        ASSERT((dp = segment_payload_get(sp)) != (void *)0);
+        ASSERT(bufferof(dp) == (buffer_t *)(sp->data));
+        segment_free(&pool, sp);
+        pool_fini(&pool);
 
         STATUS();
     }
