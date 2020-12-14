@@ -660,6 +660,15 @@ Chip Overclock, "Timer Threads", 2020-10,
 Chip Overclock, "Layers", 2020-10,
 <https://coverclock.blogspot.com/2020/10/layers.html>
 
+Chip Overclock, "Is the Virtuous Cycle really that virtuous?", 2020-11,
+<https://coverclock.blogspot.com/2020/11/is-virtuous-cycle-really-that-virtuous.html>
+
+Chip Overclock, "Scatter/Gather", 2020-12,
+<https://coverclock.blogspot.com/2020/12/scattergather.html>
+
+Chip Overclock, "Old Dog, New Tricks", 2020-12,
+<https://coverclock.blogspot.com/2020/12/old-dog-new-tricks.html>
+
 # Acknowledgements
 
 I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
