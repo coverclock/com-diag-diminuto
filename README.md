@@ -363,9 +363,7 @@ need to be installed.
 
 ## Workflow
 
-For my own workflow, I installed the following tools. (I found valgrind
-not to work on some ARM Raspbian platforms, so most of my valgrind testing
-has been on x86_64 Ubuntu platforms.)
+For my own workflow, I installed the following tools.
 
     sudo apt-get install cscope
     sudo apt-get install git
@@ -374,6 +372,12 @@ has been on x86_64 Ubuntu platforms.)
     sudo apt-get install screen
     sudo apt-get install valgrind
     sudo apt-get install vim
+
+I found valgrind not to work on my ARM Raspbian platforms, so my valgrind
+testing has been on x86_64 Ubuntu platforms. On those platforms on which
+valgrind works, I found the following command especially useful.
+
+    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
 
 ## inotifywait
 

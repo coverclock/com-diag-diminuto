@@ -849,6 +849,7 @@ static void instance(void)
         if (cp->cmsg_type != SCM_RIGHTS) { continue; }
         if (cp->cmsg_len != CMSG_LEN(sizeof(listensocket))) { continue; }
         memcpy(&listensocket, CMSG_DATA(cp), sizeof(listensocket));
+        break;
     }
 
     ASSERT(listensocket >= 0);
