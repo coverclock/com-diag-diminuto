@@ -69,6 +69,8 @@ Diminuto provides:
 * Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
 * Pulse Width Modulation (PWM) (```diminuto_modulator```);
 * programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
+* macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
+* macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
 * an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```).
 
@@ -189,6 +191,7 @@ Make="GNU Make 4.0"
 * macros - insane macros to implement conditional and recursive code generation.
 * map - memory mapping in user or kernel state.
 * memory - query system for memory architecture.
+* minmaxof - macros to compute minimum and maximum of integral types.
 * mmdriver - kernel module implementing memory mapped I/O.
 * modulator - software pulse width modulator (PWM) generator.
 * module - support for dynamically linked user space modules.
