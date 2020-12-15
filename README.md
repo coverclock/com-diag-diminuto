@@ -156,12 +156,12 @@ Make="GNU Make 4.0"
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
 * comparator - prototype of comparator function for search feartures.
-* containerof - macro just like in the Linux kernel.
+* containerof - macro to compute address of structure from address of a field.
 * controller - proportional/integral/derivative (PID) controller.
 * core - enable core dumps.
 * coherentsection - macros to implement scoped acquire/release memory barriers.
 * condition - error checking wrapper around pthread condition.
-* countof - macro to compute array positions using sizeof operator.
+* countof - macro to compute number array positions.
 * criticalsection - macros to implement scoped pthread mutex serialization.
 * cue - logic level debouncer and edge detector.
 * cxxcapi - helpers to allow C code to call C++ functions with type safety.
