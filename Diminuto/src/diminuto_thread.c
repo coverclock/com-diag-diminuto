@@ -37,6 +37,32 @@
 static pthread_key_t key;
 
 /***********************************************************************
+ * CALLBACKS
+ **********************************************************************/
+
+void thread_cleanup(void * vp)
+{
+    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
+
+    diminuto_thread_unlock(tp);
+}
+
+void proxy_cleanup(void * vp)
+{
+    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
+
+    if (diminuto_thread_lock(tp) != 0) {
+        tp->state = DIMINUTO_THREAD_STATE_FAILED;
+    } else {
+        pthread_cleanup_push(thread_cleanup, (void *)tp);
+            tp->state = DIMINUTO_THREAD_STATE_EXITING;
+            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: EXITING %p", tp);
+            (void)diminuto_thread_signal(tp);
+        pthread_cleanup_pop(!0);
+    }
+}
+
+/***********************************************************************
  * WRAPPERS
  **********************************************************************/
 
@@ -44,12 +70,12 @@ static pthread_key_t key;
  * This is the actual thread function called by POSIX threads. It calls
  * the user function, and handles some bookkeeping beforehand and
  * afterwards.
- * @param ap points to the thread object.
+ * @param vp points to the thread object.
  * @return the final value returned by the user function.
  */
-static void * proxy(void * ap)
+static void * proxy(void * vp)
 {
-    diminuto_thread_t * tp = (diminuto_thread_t *)ap;
+    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
     void * value = (void *)0;
     int previous = -1;
     int rc = DIMINUTO_THREAD_ERROR;
@@ -68,44 +94,21 @@ static void * proxy(void * ap)
     } else if ((rc = pthread_setspecific(key, tp)) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread:proxy: pthread_setspecific");
+    } else if (diminuto_thread_lock(tp) != 0) {
+        tp->state = DIMINUTO_THREAD_STATE_FAILED;
     } else {
-
-        if (diminuto_thread_lock(tp) != 0) {
-
-            tp->state = DIMINUTO_THREAD_STATE_FAILED;
-
-        } else {
-
-            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-                tp->state = DIMINUTO_THREAD_STATE_RUNNING;
-                DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
-                (void)diminuto_thread_signal(tp);
-            pthread_cleanup_pop(!0);
-
-            /*
-             * This is where we call the actual user function and later
-             * capture its return value.
-             */
-
-            value = (*(tp->function))(tp->context);
-
-            if (diminuto_thread_lock(tp) != 0) {
-
-                tp->state = DIMINUTO_THREAD_STATE_FAILED;
-
-            } else {
-
-                pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-                    tp->value = value;
-                    tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: COMPLETING %p", tp);
-                    (void)diminuto_thread_signal(tp);
-                pthread_cleanup_pop(!0);
-
-            }
-
-        }
-
+        pthread_cleanup_push(thread_cleanup, (void *)tp);
+            tp->state = DIMINUTO_THREAD_STATE_RUNNING;
+            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
+            (void)diminuto_thread_signal(tp);
+        pthread_cleanup_pop(!0);
+        /*
+         * This is where we call the actual user function and later
+         * capture its return value.
+         */
+        pthread_cleanup_push(proxy_cleanup, tp);
+            tp->value = (*(tp->function))(tp->context);
+        pthread_cleanup_pop(!0);
     }
 
     return tp->value;
@@ -300,7 +303,7 @@ unsigned int diminuto_thread_notifications()
 
     if ((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0) {
         if (diminuto_thread_lock(tp) == 0) {
-            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+            pthread_cleanup_push(thread_cleanup, (void *)tp);
                 notifications = tp->notifications;
                 tp->notifications = 0;
                 if (notifications > 0) {
@@ -314,22 +317,16 @@ unsigned int diminuto_thread_notifications()
     return notifications;
 }
 
-void diminuto_thread_exit(void * vp)
+void diminuto_thread_exit(void * xp)
 {
     diminuto_thread_t * tp = (diminuto_thread_t *)0;
 
     if ((tp = diminuto_thread_instance()) != (diminuto_thread_t *)0) {
-        if (diminuto_thread_lock(tp) == 0) {
-            pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
-                tp->value = vp;
-                tp->state = DIMINUTO_THREAD_STATE_COMPLETING;
-                DIMINUTO_LOG_DEBUG("diminuto_thread_exit: COMPLETING %p", tp);
-                (void)diminuto_thread_signal(tp);
-            pthread_cleanup_pop(!0);
-        }
+        tp->value = xp;
+        proxy_cleanup(tp);
     }
 
-    pthread_exit(vp);
+    pthread_exit(xp);
 }
 
 /***********************************************************************
@@ -339,12 +336,12 @@ void diminuto_thread_exit(void * vp)
 int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
 {
     int rc = DIMINUTO_THREAD_ERROR;
-    struct sigaction action = { 0 };
+    struct sigaction action = { 0, };
 
     setup();
 
     if (diminuto_thread_lock(tp) == 0) {
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+        pthread_cleanup_push(thread_cleanup, (void *)tp);
             switch (tp->state) {
             case DIMINUTO_THREAD_STATE_INITIALIZED:
             case DIMINUTO_THREAD_STATE_JOINED:
@@ -392,7 +389,7 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
     int rc = DIMINUTO_THREAD_ERROR;
 
     if (diminuto_thread_lock(tp) == 0) {
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+        pthread_cleanup_push(thread_cleanup, (void *)tp);
             switch (tp->state) {
             case DIMINUTO_THREAD_STATE_STARTED:
             case DIMINUTO_THREAD_STATE_RUNNING:
@@ -447,7 +444,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
      */
 
     if (diminuto_thread_lock(tp) == 0) {
-        pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+        pthread_cleanup_push(thread_cleanup, (void *)tp);
         
             switch (tp->state) {
     
@@ -462,7 +459,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                     do {
                         if ((rc = diminuto_thread_wait(tp)) != 0) {
                             done = !0;
-                        } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
+                        } else if (tp->state == DIMINUTO_THREAD_STATE_EXITING) {
                             done = !0;
                         } else {
                             /* Do nothing. */
@@ -482,7 +479,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                         }
                         if (done) {
                             /* Do nothing. */
-                        } else if (tp->state == DIMINUTO_THREAD_STATE_COMPLETING) {
+                        } else if (tp->state == DIMINUTO_THREAD_STATE_EXITING) {
                             done = !0;
                         } else {
                             /* Do nothing. */
@@ -505,14 +502,14 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     
     switch (tp->state) {
     
-    case DIMINUTO_THREAD_STATE_COMPLETING:
+    case DIMINUTO_THREAD_STATE_EXITING:
         if (pthread_equal(pthread_self(), tp->thread)) {
             rc = DIMINUTO_THREAD_ERROR;
         } else if ((rc = pthread_join(tp->thread, &value)) != 0) {
             diminuto_perror("diminuto_thread_join_until: pthread_join");
         } else {
             if (diminuto_thread_lock(tp) == 0) {
-                pthread_cleanup_push(diminuto_thread_cleanup, (void *)tp);
+                pthread_cleanup_push(thread_cleanup, (void *)tp);
                     tp->value = value;
                     tp->state = DIMINUTO_THREAD_STATE_JOINED;
                     DIMINUTO_LOG_DEBUG("diminuto_thread_join_until: JOINED %p", tp);
@@ -550,15 +547,4 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     }
 
     return rc;
-}
-
-/***********************************************************************
- * CALLBACKS
- **********************************************************************/
-
-void diminuto_thread_cleanup(void * vp)
-{
-    diminuto_thread_t * tp = (diminuto_thread_t *)vp;
-
-    diminuto_thread_unlock(tp);
 }

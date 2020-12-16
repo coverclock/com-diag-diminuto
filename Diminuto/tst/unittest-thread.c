@@ -55,7 +55,7 @@ static void * body1(void * arg)
 
     ASSERT(diminuto_thread_state(diminuto_thread_instance()) == DIMINUTO_THREAD_STATE_RUNNING);
 
-    return (void *)arg;
+    return arg;
 }
 
 static void * body2(void * arg)
@@ -99,7 +99,7 @@ static void * body2(void * arg)
 
     ASSERT(diminuto_thread_state(diminuto_thread_instance()) == DIMINUTO_THREAD_STATE_RUNNING);
 
-    return (void *)arg;
+    return arg;
 }
 
 static void * body3(void * arg)
@@ -133,7 +133,7 @@ static void * body3(void * arg)
 
     ASSERT(diminuto_thread_state(diminuto_thread_instance()) == DIMINUTO_THREAD_STATE_RUNNING);
 
-    return (void *)arg;
+    return arg;
 }
 
 static void * body4(void * arg)
@@ -255,7 +255,8 @@ static void * body7(void * arg)
         }
     DIMINUTO_THREAD_END;
     ASSERT(diminuto_thread_state(tp) == DIMINUTO_THREAD_STATE_RUNNING);
-    return (void *)7;
+    pthread_exit((void *)7);
+    return (void *)0;
 }
 
 static void * body8(void * arg)
@@ -288,7 +289,7 @@ static void * body8(void * arg)
 
     ASSERT(diminuto_thread_state(diminuto_thread_instance()) == DIMINUTO_THREAD_STATE_RUNNING);
 
-    return (void *)arg;
+    return arg;
 }
 
 int main(void)

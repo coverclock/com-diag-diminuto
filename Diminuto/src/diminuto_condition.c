@@ -113,14 +113,3 @@ int diminuto_condition_signal(diminuto_condition_t * cp)
 
     return rc;
 }
-
-/***********************************************************************
- * CALLBACKS
- **********************************************************************/
-
-void diminuto_condition_cleanup(void * vp)
-{
-    diminuto_condition_t * cp = (diminuto_condition_t *)vp;
-
-    diminuto_condition_unlock(cp);
-}

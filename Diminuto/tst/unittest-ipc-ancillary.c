@@ -283,7 +283,7 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
         switch (diminuto_thread_state(&(np->thread))) {
         case DIMINUTO_THREAD_STATE_STARTED:
         case DIMINUTO_THREAD_STATE_RUNNING:
-        case DIMINUTO_THREAD_STATE_COMPLETING:
+        case DIMINUTO_THREAD_STATE_EXITING:
             ASSERT(diminuto_thread_join(&(np->thread), (void **)0) == 0);
             break;
         default:

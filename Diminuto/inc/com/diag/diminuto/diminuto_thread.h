@@ -85,7 +85,7 @@ typedef enum DiminutoThreadState {
     DIMINUTO_THREAD_STATE_INITIALIZED   = 'I',      /**< Init performed. */
     DIMINUTO_THREAD_STATE_STARTED       = 'S',      /**< Start performed. */
     DIMINUTO_THREAD_STATE_RUNNING       = 'R',      /**< Function running. */
-    DIMINUTO_THREAD_STATE_COMPLETING    = 'C',      /**< Function completing. */
+    DIMINUTO_THREAD_STATE_EXITING       = 'X',      /**< Function exiting. */
     DIMINUTO_THREAD_STATE_JOINED        = 'J',      /**< Join performed. */
     DIMINUTO_THREAD_STATE_FINALIZED     = 'F',      /**< Fini performed. */
     DIMINUTO_THREAD_STATE_FAILED        = '!',      /**< Start failed. */
@@ -331,18 +331,6 @@ static inline int diminuto_thread_join(diminuto_thread_t * tp, void ** vpp)
 {
     return diminuto_thread_join_until(tp, vpp, DIMINUTO_THREAD_INFINITY);
 }
-
-/***********************************************************************
- * CALLBACKS
- **********************************************************************/
-
-/**
- * This is a callback used to unlock the Diminuto mutex associated with
- * the Diminuto condition associated with a Diminuto thread object in the
- * event of a cancellation.
- * @param vp points to the object.
- */
-extern void diminuto_thread_cleanup(void * vp);
 
 /***********************************************************************
  * GENERATORS

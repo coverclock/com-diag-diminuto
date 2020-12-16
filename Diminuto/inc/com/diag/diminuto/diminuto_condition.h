@@ -187,17 +187,6 @@ static inline int diminuto_condition_wait(diminuto_condition_t * cp)
 extern int diminuto_condition_signal(diminuto_condition_t * cp);
 
 /***********************************************************************
- * CALLBACKS
- **********************************************************************/
-
-/**
- * This is a callback used to unlock the Diminuto mutex associated with
- * a Diminuto condition object in the event of a cancellation.
- * @param vp points to the object.
- */
-extern void diminuto_condition_cleanup(void * vp);
-
-/***********************************************************************
  * GENERATORS
  **********************************************************************/
 
