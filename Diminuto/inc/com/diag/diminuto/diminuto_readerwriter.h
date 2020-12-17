@@ -11,6 +11,13 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * Work In Progress!
+ *
+ * REFERENCES
+ *
+ * Wikipedia, "Readers-writers problem", 2020-11-23
+ *
+ * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
+ * 2013
  */
 
 /*******************************************************************************
@@ -18,7 +25,9 @@
  ******************************************************************************/
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_widthof.h"
 #include <errno.h>
+#include <stdint.h>
 #include <pthread.h>
 
 /*******************************************************************************
@@ -29,6 +38,11 @@ enum DiminutoReaderWriterErrno {
     DIMINUTO_READERWRITER_ERROR     = EIO,
     DIMINUTO_READERWRITER_INVALID   = EINVAL,
     DIMINUTO_READERWRITER_TIMEDOUT  = ETIMEDOUT,
+};
+
+enum DiminutoReaderWriterType {
+    DIMINUTO_READERWRITER_READER    = 0,
+    DIMINUTO_READERWRITER_WRITER    = 1,
 };
 
 /*******************************************************************************
@@ -43,27 +57,30 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
 
 typedef struct DiminutoReaderWriter {
     pthread_mutex_t mutex;      /**< Mutual exclusion semaphore. */
-    pthread_cond_t reader;      /**< Queue of pending readers. */
-    pthread_cond_t writer;      /**< Queue of pending writers. */
-    int reading;                /**< Number currently reading. */
-    int writing;                /**< Number currently writing (0 or 1). */
-    int readers;                /**< Number of pending readers. */
-    int writers;                /**< Number of pending writers. */
+    pthread_cond_t readers;     /**< Queue of pending readers. */
+    pthread_cond_t writers;     /**< Queue of pending writers. */
+    uint32_t count;             /**< Number of slots in ring. */
+    uint32_t producer;          /**< Index of unused slot in ring. */
+    uint32_t consumer;          /**< Index of used slot in ring. */
+    uint32_t * ring;            /**< Ring buffer of bits. */
 } diminuto_readerwriter_t;
 
-#define DIMINUTO_READERWRITER_INITIALIZER \
+#define DIMINUTO_READERWRITER_COUNT(_LENGTH_) \
+    (((_LENGTH_) + diminuto_widthof(*diminuto_memberof(diminuto_readerwriter_t)) - 1)
+
+#define DIMINUTO_READERWRITER_INITIALIZER(_RING_, _LENGTH_) \
     { \
         PTHREAD_MUTEX_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
-        PTHREAD_COND_INITIALIZER, \
-        0, \
-        0, \
+        (_LENGTH_), \
         0, \
         0, \
     }
 
+#define DIMINUTO_READERWRITER_GENERATOR(
+
 /*******************************************************************************
- * CTORS/DTORS
+ * STRUCTORS
  ******************************************************************************/
 
 extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp);

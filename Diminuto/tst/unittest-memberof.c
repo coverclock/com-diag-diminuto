@@ -19,6 +19,10 @@ struct Alpha {
     int32_t four;
     int16_t two;
     int8_t one;
+    int64_t * eightp;
+    int32_t * fourp;
+    int16_t * twop;
+    int8_t * onep;
     int8_t eightyone[81];
     int8_t final[0]; /* Will produce -pedantic warnings. */
 };
@@ -32,6 +36,10 @@ int main(void)
         ASSERT(sizeof(memberof(struct Alpha, four)) == 4);
         ASSERT(sizeof(memberof(struct Alpha, two)) == 2);
         ASSERT(sizeof(memberof(struct Alpha, one)) == 1);
+        ASSERT(sizeof(*memberof(struct Alpha, eightp)) == 8);
+        ASSERT(sizeof(*memberof(struct Alpha, fourp)) == 4);
+        ASSERT(sizeof(*memberof(struct Alpha, twop)) == 2);
+        ASSERT(sizeof(*memberof(struct Alpha, onep)) == 1);
         ASSERT(sizeof(memberof(struct Alpha, eightyone)) == 81);
         ASSERT(sizeof(memberof(struct Alpha, final)) == 0);
         STATUS();

@@ -98,6 +98,10 @@
  * Balancing of a Multi-Billion User Website", ACM SIGCOMM '20,
  * August 2020
  *
+ * W. R. Stevens, S. A. Rago, ADVANCED PROGRAMMING IN THE UNIX ENVIRONMENT, 2nd ed.,
+ * Addison-Wesley, 2005: 17.4.2, "Passing File Descriptors over UNIX Domain Sockets",
+ * pp. 606-614
+ *
  * unix(7) man page
  *
  * socket(7) man page
