@@ -26,9 +26,9 @@
  ******************************************************************************/
 
 enum DiminutoReaderWriterErrno {
-    DIMINUTO_READERWRITER_ERROR = EIO,
-    DIMINUTO_READERWRITER_INVALID = EINVAL,
-    DIMINUTO_READERWRITER_TIMEDOUT = ETIMEDOUT,
+    DIMINUTO_READERWRITER_ERROR     = EIO,
+    DIMINUTO_READERWRITER_INVALID   = EINVAL,
+    DIMINUTO_READERWRITER_TIMEDOUT  = ETIMEDOUT,
 };
 
 /*******************************************************************************
@@ -42,13 +42,13 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
  ******************************************************************************/
 
 typedef struct DiminutoReaderWriter {
-    pthread_mutex_t mutex;
-    pthread_cond_t reader;
-    pthread_cond_t writer;
-    int reading;
-    int writing;
-    int readers;
-    int writers;
+    pthread_mutex_t mutex;      /**< Mutual exclusion semaphore. */
+    pthread_cond_t reader;      /**< Queue of pending readers. */
+    pthread_cond_t writer;      /**< Queue of pending writers. */
+    int reading;                /**< Number currently reading. */
+    int writing;                /**< Number currently writing (0 or 1). */
+    int readers;                /**< Number of pending readers. */
+    int writers;                /**< Number of pending writers. */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER \
