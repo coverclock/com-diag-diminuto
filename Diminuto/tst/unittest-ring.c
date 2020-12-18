@@ -27,8 +27,8 @@ int main(void)
         ASSERT(ring.producer == 0);
         ASSERT(ring.consumer == 0);
 
-        ASSERT(diminuto_ring_used(&ring) == 0);
-        ASSERT(diminuto_ring_available(&ring) == 7);
+        ASSERT(diminuto_ring_consumable(&ring) == 0);
+        ASSERT(diminuto_ring_producable(&ring) == 7);
 
         STATUS();
     }
@@ -45,8 +45,8 @@ int main(void)
         ASSERT(ring.producer == 0);
         ASSERT(ring.consumer == 0);
 
-        ASSERT(diminuto_ring_used(&ring) == 0);
-        ASSERT(diminuto_ring_available(&ring) == 11);
+        ASSERT(diminuto_ring_consumable(&ring) == 0);
+        ASSERT(diminuto_ring_producable(&ring) == 11);
 
         ASSERT(diminuto_ring_fini(&ring) == (diminuto_ring_t *)0);
 
@@ -63,44 +63,48 @@ int main(void)
 
         for (ii = 0; ii < 13; ++ii) {
 
-            ASSERT(diminuto_ring_used(&ring) == 0);
-            ASSERT(diminuto_ring_available(&ring) == 3);
+            ASSERT(diminuto_ring_consumable(&ring) == 0);
+            ASSERT(diminuto_ring_producable(&ring) == 3);
 
+            ASSERT(diminuto_ring_preview(&ring) < 0);
             ASSERT(diminuto_ring_consume(&ring) < 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 0);
-            ASSERT(diminuto_ring_available(&ring) == 3);
+            ASSERT(diminuto_ring_consumable(&ring) == 0);
+            ASSERT(diminuto_ring_producable(&ring) == 3);
 
             ASSERT(diminuto_ring_produce(&ring) == 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 1);
-            ASSERT(diminuto_ring_available(&ring) == 2);
+            ASSERT(diminuto_ring_consumable(&ring) == 1);
+            ASSERT(diminuto_ring_producable(&ring) == 2);
 
             ASSERT(diminuto_ring_produce(&ring) == 1);
 
-            ASSERT(diminuto_ring_used(&ring) == 2);
-            ASSERT(diminuto_ring_available(&ring) == 1);
+            ASSERT(diminuto_ring_consumable(&ring) == 2);
+            ASSERT(diminuto_ring_producable(&ring) == 1);
 
             ASSERT(diminuto_ring_produce(&ring) == 2);
 
-            ASSERT(diminuto_ring_used(&ring) == 3);
-            ASSERT(diminuto_ring_available(&ring) == 0);
+            ASSERT(diminuto_ring_consumable(&ring) == 3);
+            ASSERT(diminuto_ring_producable(&ring) == 0);
 
             ASSERT(diminuto_ring_produce(&ring) < 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 3);
-            ASSERT(diminuto_ring_available(&ring) == 0);
+            ASSERT(diminuto_ring_consumable(&ring) == 3);
+            ASSERT(diminuto_ring_producable(&ring) == 0);
 
+            ASSERT(diminuto_ring_preview(&ring) == 0);
             ASSERT(diminuto_ring_consume(&ring) == 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 2);
-            ASSERT(diminuto_ring_available(&ring) == 1);
+            ASSERT(diminuto_ring_consumable(&ring) == 2);
+            ASSERT(diminuto_ring_producable(&ring) == 1);
 
+            ASSERT(diminuto_ring_preview(&ring) == 1);
             ASSERT(diminuto_ring_consume(&ring) == 1);
 
-            ASSERT(diminuto_ring_used(&ring) == 1);
-            ASSERT(diminuto_ring_available(&ring) == 2);
+            ASSERT(diminuto_ring_consumable(&ring) == 1);
+            ASSERT(diminuto_ring_producable(&ring) == 2);
 
+            ASSERT(diminuto_ring_preview(&ring) == 2);
             ASSERT(diminuto_ring_consume(&ring) == 2);
         }
 
@@ -119,34 +123,38 @@ int main(void)
 
         for (ii = 0; ii < 17; ++ii) {
 
-            ASSERT(diminuto_ring_used(&ring) == 0);
-            ASSERT(diminuto_ring_available(&ring) == 6);
+            ASSERT(diminuto_ring_consumable(&ring) == 0);
+            ASSERT(diminuto_ring_producable(&ring) == 6);
 
+            ASSERT(diminuto_ring_preview(&ring) < 0);
             ASSERT(diminuto_ring_consumes(&ring, 2) < 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 0);
-            ASSERT(diminuto_ring_available(&ring) == 6);
+            ASSERT(diminuto_ring_consumable(&ring) == 0);
+            ASSERT(diminuto_ring_producable(&ring) == 6);
 
             ASSERT(diminuto_ring_produces(&ring, 3) == 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 3);
-            ASSERT(diminuto_ring_available(&ring) == 3);
+            ASSERT(diminuto_ring_consumable(&ring) == 3);
+            ASSERT(diminuto_ring_producable(&ring) == 3);
 
+            ASSERT(diminuto_ring_preview(&ring) == 0);
             ASSERT(diminuto_ring_consumes(&ring, 2) == 0);
 
-            ASSERT(diminuto_ring_used(&ring) == 1);
-            ASSERT(diminuto_ring_available(&ring) == 5);
+            ASSERT(diminuto_ring_consumable(&ring) == 1);
+            ASSERT(diminuto_ring_producable(&ring) == 5);
 
             ASSERT(diminuto_ring_produces(&ring, 3) == 3);
 
-            ASSERT(diminuto_ring_used(&ring) == 4);
-            ASSERT(diminuto_ring_available(&ring) == 2);
+            ASSERT(diminuto_ring_consumable(&ring) == 4);
+            ASSERT(diminuto_ring_producable(&ring) == 2);
 
+            ASSERT(diminuto_ring_preview(&ring) == 2);
             ASSERT(diminuto_ring_consumes(&ring, 2) == 2);
 
-            ASSERT(diminuto_ring_used(&ring) == 2);
-            ASSERT(diminuto_ring_available(&ring) == 4);
+            ASSERT(diminuto_ring_consumable(&ring) == 2);
+            ASSERT(diminuto_ring_producable(&ring) == 4);
 
+            ASSERT(diminuto_ring_preview(&ring) == 4);
             ASSERT(diminuto_ring_consumes(&ring, 2) == 4);
 
         }

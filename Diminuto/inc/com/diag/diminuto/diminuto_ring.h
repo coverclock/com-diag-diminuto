@@ -84,61 +84,72 @@ static inline diminuto_ring_t * diminuto_ring_fini(diminuto_ring_t * rp) {
  ******************************************************************************/
 
 /**
- * Return the number of resource units utilized in the ring.
+ * Return the number of used slots in the ring.
  * @param rp points to the ring object.
- * @return the number of resource units utilized in the ring.
+ * @return the number of used slots in the ring.
  */
-static inline size_t diminuto_ring_used(const diminuto_ring_t * rp) {
+static inline size_t diminuto_ring_consumable(const diminuto_ring_t * rp) {
     return rp->measure;
 }
 
 /**
- * Return the number of unused resource slots available in the ring.
+ * Return the number of unused slots in the ring.
  * @param rp points to the ring object.
- * @return the number of unused resource slots available in the ring.
+ * @return the number of unused slots in the ring.
  */
-static inline size_t diminuto_ring_available(const diminuto_ring_t * rp) {
+static inline size_t diminuto_ring_producable(const diminuto_ring_t * rp) {
     return (rp->capacity - rp->measure);
 }
 
 /**
- * Request the index of the first of one or more available resource slots
- * in the ring. The requested number of available slots will be allocated.
+ * Request the index of the first of one or more unused slots
+ * in the ring. If successful, the requested number of unused slots are
+ * allocated.
  * @param rp points to the ring object.
- * @param request is the number of requested available resource slots.
- * @return the index to the first available slot or <0 if cannot be met.
+ * @param request is the number of requested unused slots.
+ * @return the index to the first unused slot or <0 if it cannot be met.
  */
 extern ssize_t diminuto_ring_produces(diminuto_ring_t * rp, size_t request);
 
 
 /**
- * Request the index of the first more available resource slots in the ring.
- * One slot will be allocated.
+ * Request the index of the first more unused slots in the ring.
+ * If successful, one unused slot is allocated.
  * @param rp points to the ring object.
- * @return the index to the first available slot or <0 if cannot be met.
+ * @return the index to the first unused slot or <0 if it cannot be met.
  */
 static inline ssize_t diminuto_ring_produce(diminuto_ring_t * rp) {
     return diminuto_ring_produces(rp, 1);
 }
 
 /**
- * Request the index of the first of one or more used resource slots
- * in the ring. If successful, requested number of used slots can be
- * consumed.
+ * Request the index of the first of one or more used slots in the ring.
+ * If successful, the requested number of used slots are freed.
  * @param rp points to the ring object.
- * @param request is the number of requested used resource slots.
- * @return the index to the first used slot or <0 if cannot be met.
+ * @param request is the number of requested used slots.
+ * @return the index to the first used slot or <0 if it cannot be met.
  */
 extern ssize_t diminuto_ring_consumes(diminuto_ring_t * rp, size_t request);
 
 /**
- * Request the index of the first of one or more used resources
- * in the ring. If successful, one used slot can be consumed.
+ * Request the index of the first of one or more used slots
+ * in the ring. If successful, one used slot is freed.
  * @param rp points to the ring object.
  * @return the index to the first used slot or <0 if cannot be met.
  */
 static inline ssize_t diminuto_ring_consume(diminuto_ring_t * rp) {
     return diminuto_ring_consumes(rp, 1);
+}
+
+/**
+ * Request the index of the first of one or more used slots
+ * in the ring. If successful, one used slot is returned for preview
+ * but not consumed.
+ * @param rp points to the ring object.
+ * @return the index to the first used slot or <0 if it cannot be met.
+ */
+static inline ssize_t diminuto_ring_preview(diminuto_ring_t * rp) {
+    return (rp->measure >= 1) ? rp->consumer : -1;
 }
 
 #endif
