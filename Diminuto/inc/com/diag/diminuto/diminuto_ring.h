@@ -51,8 +51,16 @@ static inline size_t diminuto_ring_available(const diminuto_ring_t * rp) {
     return (rp->capacity - rp->measure);
 }
 
-extern ssize_t diminuto_ring_produce(diminuto_ring_t * rp);
+extern ssize_t diminuto_ring_produces(diminuto_ring_t * rp, size_t request);
 
-extern ssize_t diminuto_ring_consume(diminuto_ring_t * rp);
+static inline ssize_t diminuto_ring_produce(diminuto_ring_t * rp) {
+    return diminuto_ring_produces(rp, 1);
+}
+
+extern ssize_t diminuto_ring_consumes(diminuto_ring_t * rp, size_t request);
+
+static inline ssize_t diminuto_ring_consume(diminuto_ring_t * rp) {
+    return diminuto_ring_consumes(rp, 1);
+}
 
 #endif

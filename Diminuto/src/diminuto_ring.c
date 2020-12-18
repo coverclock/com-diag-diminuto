@@ -11,28 +11,28 @@
 
 #include "com/diag/diminuto/diminuto_ring.h"
 
-ssize_t diminuto_ring_produce(diminuto_ring_t * rp)
+ssize_t diminuto_ring_produces(diminuto_ring_t * rp, size_t request)
 {
-    ssize_t index = -1;
+    ssize_t result = -1;
 
-    if (rp->measure < rp->capacity) {
-        rp->measure += 1;
-        index = rp->producer;
-        rp->producer = (rp->producer + 1) % rp->capacity;
+    if ((rp->measure + request) <= rp->capacity) {
+        rp->measure += request;
+        result = rp->producer;
+        rp->producer = (rp->producer + request) % rp->capacity;
     }
 
-    return index;
+    return result;
 }
 
-ssize_t diminuto_ring_consume(diminuto_ring_t * rp)
+ssize_t diminuto_ring_consumes(diminuto_ring_t * rp, size_t request)
 {
-    ssize_t index = -1;
+    ssize_t result = -1;
 
-    if (rp->measure > 0) {
-        rp->measure -= 1;
-        index = rp->consumer;
-        rp->consumer = (rp->consumer + 1) % rp->capacity;
+    if (rp->measure >= request) {
+        rp->measure -= request;
+        result = rp->consumer;
+        rp->consumer = (rp->consumer + request) % rp->capacity;
     }
 
-    return index;
+    return result;
 }

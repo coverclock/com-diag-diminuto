@@ -979,6 +979,7 @@ sanity:	unittest
 	unittest-proxy
 	unittest-reaper
 	unittest-renameat2
+	unittest-ring
 	unittest-serializedsection
 	unittest-service
 	unittest-shaper
