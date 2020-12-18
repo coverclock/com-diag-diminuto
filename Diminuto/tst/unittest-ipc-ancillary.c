@@ -309,7 +309,7 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
  * error streams (those should be the Big Three, but we're not testing
  * for that).
  */
-static int audit()
+static int audit(void)
 {
     ssize_t limit = -1;
     int fd = -1;

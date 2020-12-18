@@ -17,6 +17,11 @@
  *
  * Inspired by FD_CLR. FD_SET, and FD_ISSET from select(2) and
  * defined in <sys/select.h>.
+ *
+ * C99 (6.3.1.1): "If an int can represent all values of the original
+ * type, the value is converted to an int; otherwise, it is converted
+ * to an unsigned int. These are called the integer promotions. All
+ * other types are unchanged by the integer promotions."
  */
 
 #include "com/diag/diminuto/diminuto_widthof.h"
