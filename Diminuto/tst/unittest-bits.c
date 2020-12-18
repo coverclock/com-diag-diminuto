@@ -25,6 +25,7 @@
 #include "com/diag/diminuto/diminuto_dump.h"
 #include <stdint.h>
 #include <endian.h>
+#include <stdio.h>
 
 static inline uint8_t htobe8(uint8_t host_8bits) { return host_8bits; }
 
