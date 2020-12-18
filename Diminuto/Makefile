@@ -930,6 +930,7 @@ sanity:	unittest
 	unittest-assert && false || true
 	unittest-barrier
 	unittest-bitfield
+	unittest-bits
 	unittest-buffer
 	unittest-bufferpool
 	unittest-coherentsection
