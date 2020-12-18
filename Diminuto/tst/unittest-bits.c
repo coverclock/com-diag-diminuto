@@ -35,17 +35,19 @@ static inline uint8_t htobe8(uint8_t host_8bits) { return host_8bits; }
                 _TYPE_ oh = diminuto_bits_or(_TYPE_, diminuto_widthof(_TYPE_) - 1); \
                 _TYPE_ al = diminuto_bits_and(_TYPE_, 0); \
                 _TYPE_ ah = diminuto_bits_and(_TYPE_, diminuto_widthof(_TYPE_) - 1); \
-                fprintf(stderr, "%sint%zu_t: offset=(%zu..%zu)\n", \
-                    diminuto_issigned(_TYPE_) ? "" : "u", diminuto_widthof(_TYPE_), \
+                fprintf(stderr, "%sint%zu_t: offset=(%zu..%zu)\n", diminuto_issigned(_TYPE_) ? "" : "u", diminuto_widthof(_TYPE_), \
                     diminuto_bits_offset(_TYPE_, 0), diminuto_bits_offset(_TYPE_, diminuto_widthof(_TYPE_) - 1)); \
                 mm = _HTOBEF_(mm); \
                 ol = _HTOBEF_(ol); \
                 oh = _HTOBEF_(oh); \
                 al = _HTOBEF_(al); \
                 ah = _HTOBEF_(ah); \
+                fprintf(stderr, "%sint%zu_t: mask:\n", diminuto_issigned(_TYPE_) ? "" : "u", diminuto_widthof(_TYPE_)); \
                 diminuto_dump(stderr, &mm, sizeof(_TYPE_)); \
+                fprintf(stderr, "%sint%zu_t: or:\n", diminuto_issigned(_TYPE_) ? "" : "u", diminuto_widthof(_TYPE_)); \
                 diminuto_dump(stderr, &ol, sizeof(_TYPE_)); \
                 diminuto_dump(stderr, &oh, sizeof(_TYPE_)); \
+                fprintf(stderr, "%sint%zu_t: and:\n", diminuto_issigned(_TYPE_) ? "" : "u", diminuto_widthof(_TYPE_)); \
                 diminuto_dump(stderr, &al, sizeof(_TYPE_)); \
                 diminuto_dump(stderr, &ah, sizeof(_TYPE_)); \
         }
@@ -222,26 +224,26 @@ int main(void)
         }
 
         for (ii = 0; ii < diminuto_widthof(int8_t); ++ii) {
-            int8_t mm = ((int8_t)(int8_t)1 << ii);
-            ASSERT(diminuto_bits_or(int8_t, ii) == (mm & 0xff));
+            int8_t mm = ((int8_t)1) << ii;
+            ASSERT(diminuto_bits_or(int8_t, ii) == mm);
             ASSERT(diminuto_bits_or(int8_t, ii * diminuto_widthof(int8_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int16_t); ++ii) {
             int16_t mm = (int16_t)1 << ii;
-            ASSERT(diminuto_bits_or(int16_t, ii) == (mm & 0xffff));
+            ASSERT(diminuto_bits_or(int16_t, ii) == mm);
             ASSERT(diminuto_bits_or(int16_t, ii * diminuto_widthof(int16_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int32_t); ++ii) {
             int32_t mm = (int32_t)1 << ii;
-            ASSERT(diminuto_bits_or(int32_t, ii) == (mm & 0xffffffff));
+            ASSERT(diminuto_bits_or(int32_t, ii) == mm);
             ASSERT(diminuto_bits_or(int32_t, ii * diminuto_widthof(int32_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int64_t); ++ii) {
             int64_t mm = (int64_t)1 << ii;
-            ASSERT(diminuto_bits_or(int64_t, ii) == (mm & 0xffffffffffffffffLL));
+            ASSERT(diminuto_bits_or(int64_t, ii) == mm);
             ASSERT(diminuto_bits_or(int64_t, ii * diminuto_widthof(int64_t)) == 1);
         }
 
@@ -279,49 +281,99 @@ int main(void)
 
         for (ii = 0; ii < diminuto_widthof(int8_t); ++ii) {
             int8_t mm = ~((int8_t)1 << ii);
-            ASSERT(diminuto_bits_and(int8_t, ii) == (mm & 0xff));
-            ASSERT(diminuto_bits_and(int8_t, ii * diminuto_widthof(int8_t)) == 0xfe);
+            ASSERT(diminuto_bits_and(int8_t, ii) == mm);
+            ASSERT(~diminuto_bits_and(int8_t, ii * diminuto_widthof(int8_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int16_t); ++ii) {
             int16_t mm = ~((int16_t)1 << ii);
-            ASSERT(diminuto_bits_and(int16_t, ii) == (mm & 0xffff));
-            ASSERT(diminuto_bits_and(int16_t, ii * diminuto_widthof(int16_t)) == 0xfffe);
+            ASSERT(diminuto_bits_and(int16_t, ii) == mm);
+            ASSERT(~diminuto_bits_and(int16_t, ii * diminuto_widthof(int16_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int32_t); ++ii) {
             int32_t mm = ~((int32_t)1 << ii);
-            ASSERT(diminuto_bits_and(int32_t, ii) == (mm & 0xffffffff));
-            ASSERT(diminuto_bits_and(int32_t, ii * diminuto_widthof(int32_t)) == 0xfffffffe);
+            ASSERT(diminuto_bits_and(int32_t, ii) == mm);
+            ASSERT(~diminuto_bits_and(int32_t, ii * diminuto_widthof(int32_t)) == 1);
         }
 
         for (ii = 0; ii < diminuto_widthof(int64_t); ++ii) {
             int64_t mm = ~((int64_t)1 << ii);
-            ASSERT(diminuto_bits_and(int64_t, ii) == (mm & 0xffffffffffffffffLL));
-            ASSERT(diminuto_bits_and(int64_t, ii * diminuto_widthof(int64_t)) == 0xfffffffffffffffeLL);
+            ASSERT(diminuto_bits_and(int64_t, ii) == mm);
+            ASSERT(~diminuto_bits_and(int64_t, ii * diminuto_widthof(int64_t)) == 1);
         }
 
         STATUS();
     }
 
-#if 0
     {
         uint32_t array[3] = { 0, };
         int ii;
 
         TEST();
 
+        ASSERT(array[0] == 0x00000000);
+        ASSERT(array[1] == 0x00000000);
+        ASSERT(array[2] == 0x00000000);
+
         for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
             ASSERT(diminuto_bits_get(uint32_t, ii, array) == 0);
         }
 
-        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 2) {
-            ASSERT(diminuto_bits_Set(uint32_t, ii, array) == 0);
+        ASSERT(array[0] == 0x00000000);
+        ASSERT(array[1] == 0x00000000);
+        ASSERT(array[2] == 0x00000000);
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            diminuto_bits_set(uint32_t, ii, array);
+        }
+
+        ASSERT(array[0] == 0xffffffff);
+        ASSERT(array[1] == 0xffffffff);
+        ASSERT(array[2] == 0xffffffff);
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            ASSERT(diminuto_bits_get(uint32_t, ii, array) == 1);
+        }
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            diminuto_bits_clear(uint32_t, ii, array);
+        }
+
+        ASSERT(array[0] == 0x00000000);
+        ASSERT(array[1] == 0x00000000);
+        ASSERT(array[2] == 0x00000000);
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            ASSERT(diminuto_bits_get(uint32_t, ii, array) == 0);
+        }
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 3) {
+            diminuto_bits_set(uint32_t, ii, array);
+        }
+
+        ASSERT(array[0] == 0x49249249);
+        ASSERT(array[1] == 0x92492492);
+        ASSERT(array[2] == 0x24924924);
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            ASSERT(diminuto_bits_get(uint32_t, ii, array) == (((ii % 3) == 0) ? 1 : 0 ));
+        }
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 4) {
+            diminuto_bits_clear(uint32_t, ii, array);
+        }
+
+        ASSERT(array[0] == 0x48248248);
+        ASSERT(array[1] == 0x82482482);
+        ASSERT(array[2] == 0x24824824);
+
+        for (ii = 0; ii < (diminuto_widthof(array[0]) * diminuto_countof(array)); ii += 1) {
+            ASSERT(diminuto_bits_get(uint32_t, ii, array) == (((ii % 3) != 0) ? 0 : ((ii % 4) == 0) ? 0 : 1 ));
         }
 
         STATUS();
     }
-#endif
 
     EXIT();
 }
