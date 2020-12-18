@@ -109,5 +109,52 @@ int main(void)
         STATUS();
     }
 
+    {
+        diminuto_ring_t ring;
+        int ii;
+
+        TEST();
+
+        ASSERT(diminuto_ring_init(&ring, 6) == &ring);
+
+        for (ii = 0; ii < 17; ++ii) {
+
+            ASSERT(diminuto_ring_used(&ring) == 0);
+            ASSERT(diminuto_ring_available(&ring) == 6);
+
+            ASSERT(diminuto_ring_consumes(&ring, 2) < 0);
+
+            ASSERT(diminuto_ring_used(&ring) == 0);
+            ASSERT(diminuto_ring_available(&ring) == 6);
+
+            ASSERT(diminuto_ring_produces(&ring, 3) == 0);
+
+            ASSERT(diminuto_ring_used(&ring) == 3);
+            ASSERT(diminuto_ring_available(&ring) == 3);
+
+            ASSERT(diminuto_ring_consumes(&ring, 2) == 0);
+
+            ASSERT(diminuto_ring_used(&ring) == 1);
+            ASSERT(diminuto_ring_available(&ring) == 5);
+
+            ASSERT(diminuto_ring_produces(&ring, 3) == 3);
+
+            ASSERT(diminuto_ring_used(&ring) == 4);
+            ASSERT(diminuto_ring_available(&ring) == 2);
+
+            ASSERT(diminuto_ring_consumes(&ring, 2) == 2);
+
+            ASSERT(diminuto_ring_used(&ring) == 2);
+            ASSERT(diminuto_ring_available(&ring) == 4);
+
+            ASSERT(diminuto_ring_consumes(&ring, 2) == 4);
+
+        }
+
+        ASSERT(diminuto_ring_fini(&ring) == (diminuto_ring_t *)0);
+
+        STATUS();
+    }
+
     EXIT();
 }
