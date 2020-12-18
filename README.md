@@ -155,6 +155,7 @@ Make="GNU Make 4.0"
 * alarm - receive and check for a SIGALRM signal.
 * assert - similar to assert(3) but with more output.
 * barrier - acquire and release memory barriers.
+* bits - get, set, and clear bits in a bit field array.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
 * comparator - prototype of comparator function for search feartures.

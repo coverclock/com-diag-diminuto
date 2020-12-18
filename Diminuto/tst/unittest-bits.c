@@ -73,6 +73,17 @@ int main(void)
     }
 
     {
+        TEST();
+
+        ASSERT(diminuto_bits_count(uint8_t,  131) == 17);
+        ASSERT(diminuto_bits_count(uint16_t, 137) == 9);
+        ASSERT(diminuto_bits_count(uint32_t, 139) == 5);
+        ASSERT(diminuto_bits_count(uint64_t, 149) == 3);
+
+        STATUS();
+    }
+
+    {
         int ii;
 
         TEST();

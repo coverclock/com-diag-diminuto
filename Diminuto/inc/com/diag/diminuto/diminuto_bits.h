@@ -23,6 +23,15 @@
 #include <sys/types.h>
 
 /**
+ * @def diminuto_bits_count
+ * Given a bit field array of type @a _TYPE_ and a desired minimum
+ * number of bits @a _BITS_, compute the necessaary dimension of the
+ * array.
+ */
+#define diminuto_bits_count(_TYPE_, _BITS_) \
+    ((size_t)(((_BITS_) + diminuto_widthof(_TYPE_) - 1) / diminuto_widthof(_TYPE_)))
+
+/**
  * @def diminuto_bits_index
  * Given a bit field array of type @a _TYPE_, compute the array index
  * for bit @a _BIT_.
