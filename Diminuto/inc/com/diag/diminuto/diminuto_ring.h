@@ -10,8 +10,10 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Ring provides a generic infrastructure to manage ring or circular
- * buffers.
+ * Ring provides a generic infrastructure to manage ring buffers (a.k.a.
+ * circular buffers). The buffer itself is not implemented, merely the
+ * mechanism to manage it for producers (who put data into the buffer) and
+ * consumers (who remove data from the buffer).
  */
 
 /*******************************************************************************
