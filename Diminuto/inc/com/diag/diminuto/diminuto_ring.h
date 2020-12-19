@@ -14,6 +14,17 @@
  * circular buffers). The buffer itself is not implemented, merely the
  * mechanism to manage it for producers (who put data into the buffer) and
  * consumers (who remove data from the buffer).
+ *
+ * The function names are a little cumbersome, but I confess some of that
+ * is deliberate on my part. I started off with the usual "get", "put",
+ * and "peek". But I was afraid that that would be confusing to the code
+ * reader who might be misled into thinking these functions were actually
+ * storing and retrieving date from the ring buffer. These functions merely
+ * manage the metadata, leaving the application to actually implement the
+ * ring buffer in whatever way makes sense (a linked list, an array, a
+ * bit map, etc.). For example, the ReaderWriter feature uses the Ring
+ * producer and consumer indices to address bits in a Bits array to set
+ * and clear.
  */
 
 /*******************************************************************************
