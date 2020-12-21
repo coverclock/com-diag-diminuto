@@ -151,7 +151,7 @@ int main(void)
             ASSERT(diminuto_ring_produce_request(&ring, 3) == 3);
             ASSERT(diminuto_ring_next(&ring, 3) == 4);
             ASSERT(diminuto_ring_next(&ring, 4) == 5);
-            ASSERT(diminuto_ring_next(&ring, 5) == 6);
+            ASSERT(diminuto_ring_next(&ring, 5) == 0);
 
             ASSERT(diminuto_ring_used(&ring) == 4);
             ASSERT(diminuto_ring_free(&ring) == 2);
