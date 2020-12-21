@@ -11,9 +11,9 @@
 
 #include "com/diag/diminuto/diminuto_ring.h"
 
-ssize_t diminuto_ring_produces(diminuto_ring_t * rp, size_t request)
+int diminuto_ring_produce_request(diminuto_ring_t * rp, unsigned int request)
 {
-    ssize_t result = -1;
+    int result = -1;
 
     if ((rp->measure + request) <= rp->capacity) {
         rp->measure += request;
@@ -24,9 +24,9 @@ ssize_t diminuto_ring_produces(diminuto_ring_t * rp, size_t request)
     return result;
 }
 
-ssize_t diminuto_ring_consumes(diminuto_ring_t * rp, size_t request)
+int diminuto_ring_consume_request(diminuto_ring_t * rp, unsigned int request)
 {
-    ssize_t result = -1;
+    int result = -1;
 
     if (rp->measure >= request) {
         rp->measure -= request;

@@ -58,26 +58,32 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
  * TYPES
  ******************************************************************************/
 
-#define DIMINUTO_READERWRITER_COUNT(_BITS_) \
-    diminuto_bits_count(_BITS_)
+typedef uint64_t diminuto_readerwriter_data_t;
 
-typedef uint32_t diminuto_readerwriter_data_t;
+#define DIMINUTO_READERWRITER_COUNT(_CAPACITY_) \
+    diminuto_bits_count(diminuto_readerwriter_data_t, _CAPACITY_)
 
 typedef struct DiminutoReaderWriter {
-    pthread_mutex_t mutex;                  /**< Mutual exclusion semaphore. */
-    pthread_cond_t readers;                 /**< Queue of pending readers. */
-    pthread_cond_t writers;                 /**< Queue of pending writers. */
-    diminuto_ring_t ring;                   /**< Ring buffer metadata. */
     diminuto_readerwriter_data_t * buffer;  /**< Pointer to ring buffer data. */
+    pthread_mutex_t mutex;                  /**< Mutual exclusion semaphore. */
+    pthread_cond_t reader;                  /**< Queue of pending readers. */
+    pthread_cond_t writer;                  /**< Queue of pending writers. */
+    diminuto_ring_t ring;                   /**< Ring buffer metadata. */
+    unsigned int readers;                   /**< Number of waiting readers. */
+    unsigned int writers;                   /**< Number of waiting writers. */
+    int active;                             /**< Number of active threads. */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \
     { \
+        (_BUFFER_), \
         PTHREAD_MUTEX_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
-        (_BUFFER_) \
+        0, \
+        0, \
+        0, \
     }
 
 /*******************************************************************************
@@ -93,7 +99,7 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  ******************************************************************************/
 
 static inline size_t diminuto_readerwriter_total(diminuto_readerwriter_t * rwp) {
-    return diminuto_ring_consumable(&(rwp->ring));
+    return diminuto_ring_used(&(rwp->ring));
 }
 
 /*******************************************************************************
