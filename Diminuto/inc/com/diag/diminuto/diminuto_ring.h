@@ -14,6 +14,10 @@
  * circular buffers). The buffer itself is not implemented, merely the
  * mechanism to manage it for producers (who put data into the buffer) and
  * consumers (who remove data from the buffer).
+ *
+ * REFERENCES
+ *
+ * Wikipedia, "Circular buffer", 2020-12-10
  */
 
 /*******************************************************************************

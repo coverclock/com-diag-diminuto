@@ -18,6 +18,8 @@
  *
  * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
  * 2013
+ *
+ * S, Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
  */
 
 /*******************************************************************************
@@ -40,6 +42,7 @@ enum DiminutoReaderWriterErrno {
     DIMINUTO_READERWRITER_ERROR     = EIO,
     DIMINUTO_READERWRITER_INVALID   = EINVAL,
     DIMINUTO_READERWRITER_FULL      = EXFULL,
+    DIMINUTO_READERWRITER_EMPTY     = ENOMEM,
 };
 
 enum DiminutoReaderWriterType {
@@ -63,8 +66,6 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t reader;                  /**< Queue of pending readers. */
     pthread_cond_t writer;                  /**< Queue of pending writers. */
     diminuto_ring_t ring;                   /**< Ring buffer metadata. */
-    unsigned int readers;                   /**< Number of waiting readers. */
-    unsigned int writers;                   /**< Number of waiting writers. */
     /*
      * If (active > 0) it is the number of active readers.
      * If (active == -1) it indicates a single active writer.
