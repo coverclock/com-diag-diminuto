@@ -66,46 +66,46 @@ int main(void)
             ASSERT(diminuto_ring_used(&ring) == 0);
             ASSERT(diminuto_ring_free(&ring) == 3);
 
-            ASSERT(diminuto_ring_peek(&ring) < 0);
-            ASSERT(diminuto_ring_consume(&ring) < 0);
+            ASSERT(diminuto_ring_consumer_peek(&ring) < 0);
+            ASSERT(diminuto_ring_consumer_request(&ring, 1) < 0);
 
             ASSERT(diminuto_ring_used(&ring) == 0);
             ASSERT(diminuto_ring_free(&ring) == 3);
 
-            ASSERT(diminuto_ring_produce(&ring) == 0);
+            ASSERT(diminuto_ring_producer_request(&ring, 1) == 0);
 
             ASSERT(diminuto_ring_used(&ring) == 1);
             ASSERT(diminuto_ring_free(&ring) == 2);
 
-            ASSERT(diminuto_ring_produce(&ring) == 1);
+            ASSERT(diminuto_ring_producer_request(&ring, 1) == 1);
 
             ASSERT(diminuto_ring_used(&ring) == 2);
             ASSERT(diminuto_ring_free(&ring) == 1);
 
-            ASSERT(diminuto_ring_produce(&ring) == 2);
+            ASSERT(diminuto_ring_producer_request(&ring, 1) == 2);
 
             ASSERT(diminuto_ring_used(&ring) == 3);
             ASSERT(diminuto_ring_free(&ring) == 0);
 
-            ASSERT(diminuto_ring_produce(&ring) < 0);
+            ASSERT(diminuto_ring_producer_request(&ring, 1) < 0);
 
             ASSERT(diminuto_ring_used(&ring) == 3);
             ASSERT(diminuto_ring_free(&ring) == 0);
 
-            ASSERT(diminuto_ring_peek(&ring) == 0);
-            ASSERT(diminuto_ring_consume(&ring) == 0);
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 0);
+            ASSERT(diminuto_ring_consumer_request(&ring, 1) == 0);
 
             ASSERT(diminuto_ring_used(&ring) == 2);
             ASSERT(diminuto_ring_free(&ring) == 1);
 
-            ASSERT(diminuto_ring_peek(&ring) == 1);
-            ASSERT(diminuto_ring_consume(&ring) == 1);
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 1);
+            ASSERT(diminuto_ring_consumer_request(&ring, 1) == 1);
 
             ASSERT(diminuto_ring_used(&ring) == 1);
             ASSERT(diminuto_ring_free(&ring) == 2);
 
-            ASSERT(diminuto_ring_peek(&ring) == 2);
-            ASSERT(diminuto_ring_consume(&ring) == 2);
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 2);
+            ASSERT(diminuto_ring_consumer_request(&ring, 1) == 2);
         }
 
         ASSERT(diminuto_ring_fini(&ring) == (diminuto_ring_t *)0);
@@ -126,13 +126,13 @@ int main(void)
             ASSERT(diminuto_ring_used(&ring) == 0);
             ASSERT(diminuto_ring_free(&ring) == 6);
 
-            ASSERT(diminuto_ring_peek(&ring) < 0);
-            ASSERT(diminuto_ring_consume_request(&ring, 2) < 0);
+            ASSERT(diminuto_ring_consumer_peek(&ring) < 0);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) < 0);
 
             ASSERT(diminuto_ring_used(&ring) == 0);
             ASSERT(diminuto_ring_free(&ring) == 6);
 
-            ASSERT(diminuto_ring_produce_request(&ring, 3) == 0);
+            ASSERT(diminuto_ring_producer_request(&ring, 3) == 0);
             ASSERT(diminuto_ring_next(&ring, 0) == 1);
             ASSERT(diminuto_ring_next(&ring, 1) == 2);
             ASSERT(diminuto_ring_next(&ring, 2) == 3);
@@ -140,15 +140,41 @@ int main(void)
             ASSERT(diminuto_ring_used(&ring) == 3);
             ASSERT(diminuto_ring_free(&ring) == 3);
 
-            ASSERT(diminuto_ring_peek(&ring) == 0);
-            ASSERT(diminuto_ring_consume_request(&ring, 2) == 0);
+            ASSERT(diminuto_ring_producer_revoke(&ring, 3) == 3);
+
+            ASSERT(diminuto_ring_used(&ring) == 0);
+            ASSERT(diminuto_ring_free(&ring) == 6);
+
+            ASSERT(diminuto_ring_producer_request(&ring, 3) == 0);
+            ASSERT(diminuto_ring_next(&ring, 0) == 1);
+            ASSERT(diminuto_ring_next(&ring, 1) == 2);
+            ASSERT(diminuto_ring_next(&ring, 2) == 3);
+
+            ASSERT(diminuto_ring_used(&ring) == 3);
+            ASSERT(diminuto_ring_free(&ring) == 3);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 0);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 0);
             ASSERT(diminuto_ring_next(&ring, 0) == 1);
             ASSERT(diminuto_ring_next(&ring, 1) == 2);
 
             ASSERT(diminuto_ring_used(&ring) == 1);
             ASSERT(diminuto_ring_free(&ring) == 5);
 
-            ASSERT(diminuto_ring_produce_request(&ring, 3) == 3);
+            ASSERT(diminuto_ring_consumer_revoke(&ring, 2) == 2);
+
+            ASSERT(diminuto_ring_used(&ring) == 3);
+            ASSERT(diminuto_ring_free(&ring) == 3);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 0);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 0);
+            ASSERT(diminuto_ring_next(&ring, 0) == 1);
+            ASSERT(diminuto_ring_next(&ring, 1) == 2);
+
+            ASSERT(diminuto_ring_used(&ring) == 1);
+            ASSERT(diminuto_ring_free(&ring) == 5);
+
+            ASSERT(diminuto_ring_producer_request(&ring, 3) == 3);
             ASSERT(diminuto_ring_next(&ring, 3) == 4);
             ASSERT(diminuto_ring_next(&ring, 4) == 5);
             ASSERT(diminuto_ring_next(&ring, 5) == 0);
@@ -156,16 +182,52 @@ int main(void)
             ASSERT(diminuto_ring_used(&ring) == 4);
             ASSERT(diminuto_ring_free(&ring) == 2);
 
-            ASSERT(diminuto_ring_peek(&ring) == 2);
-            ASSERT(diminuto_ring_consume_request(&ring, 2) == 2);
+            ASSERT(diminuto_ring_producer_revoke(&ring, 3) == 3);
+
+            ASSERT(diminuto_ring_used(&ring) == 1);
+            ASSERT(diminuto_ring_free(&ring) == 5);
+
+            ASSERT(diminuto_ring_producer_request(&ring, 3) == 3);
+            ASSERT(diminuto_ring_next(&ring, 3) == 4);
+            ASSERT(diminuto_ring_next(&ring, 4) == 5);
+            ASSERT(diminuto_ring_next(&ring, 5) == 0);
+
+            ASSERT(diminuto_ring_used(&ring) == 4);
+            ASSERT(diminuto_ring_free(&ring) == 2);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 2);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 2);
             ASSERT(diminuto_ring_next(&ring, 2) == 3);
             ASSERT(diminuto_ring_next(&ring, 3) == 4);
 
             ASSERT(diminuto_ring_used(&ring) == 2);
             ASSERT(diminuto_ring_free(&ring) == 4);
 
-            ASSERT(diminuto_ring_peek(&ring) == 4);
-            ASSERT(diminuto_ring_consume_request(&ring, 2) == 4);
+            ASSERT(diminuto_ring_consumer_revoke(&ring, 2) == 2);
+
+            ASSERT(diminuto_ring_used(&ring) == 4);
+            ASSERT(diminuto_ring_free(&ring) == 2);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 2);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 2);
+            ASSERT(diminuto_ring_next(&ring, 2) == 3);
+            ASSERT(diminuto_ring_next(&ring, 3) == 4);
+
+            ASSERT(diminuto_ring_used(&ring) == 2);
+            ASSERT(diminuto_ring_free(&ring) == 4);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 4);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 4);
+            ASSERT(diminuto_ring_next(&ring, 4) == 5);
+            ASSERT(diminuto_ring_next(&ring, 5) == 0);
+
+            ASSERT(diminuto_ring_consumer_revoke(&ring, 2) == 2);
+
+            ASSERT(diminuto_ring_used(&ring) == 2);
+            ASSERT(diminuto_ring_free(&ring) == 4);
+
+            ASSERT(diminuto_ring_consumer_peek(&ring) == 4);
+            ASSERT(diminuto_ring_consumer_request(&ring, 2) == 4);
             ASSERT(diminuto_ring_next(&ring, 4) == 5);
             ASSERT(diminuto_ring_next(&ring, 5) == 0);
 

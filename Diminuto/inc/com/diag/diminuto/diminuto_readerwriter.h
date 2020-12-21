@@ -33,13 +33,13 @@
 #include <pthread.h>
 
 /*******************************************************************************
- * ENUMERATIONS
+ * CONSTANTS
  ******************************************************************************/
 
 enum DiminutoReaderWriterErrno {
     DIMINUTO_READERWRITER_ERROR     = EIO,
     DIMINUTO_READERWRITER_INVALID   = EINVAL,
-    DIMINUTO_READERWRITER_TIMEDOUT  = ETIMEDOUT,
+    DIMINUTO_READERWRITER_FULL      = EXFULL,
 };
 
 enum DiminutoReaderWriterType {
@@ -49,28 +49,26 @@ enum DiminutoReaderWriterType {
 };
 
 /*******************************************************************************
- * CONSTANTS
- ******************************************************************************/
-
-static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks_t)0);
-
-/*******************************************************************************
  * TYPES
  ******************************************************************************/
 
-typedef uint64_t diminuto_readerwriter_data_t;
+typedef uint64_t diminuto_readerwriter_bits_t;
 
 #define DIMINUTO_READERWRITER_COUNT(_CAPACITY_) \
-    diminuto_bits_count(diminuto_readerwriter_data_t, _CAPACITY_)
+    diminuto_bits_count(diminuto_readerwriter_bits_t, _CAPACITY_)
 
 typedef struct DiminutoReaderWriter {
-    diminuto_readerwriter_data_t * buffer;  /**< Pointer to ring buffer data. */
+    diminuto_readerwriter_bits_t * buffer;  /**< Pointer to ring buffer data. */
     pthread_mutex_t mutex;                  /**< Mutual exclusion semaphore. */
     pthread_cond_t reader;                  /**< Queue of pending readers. */
     pthread_cond_t writer;                  /**< Queue of pending writers. */
     diminuto_ring_t ring;                   /**< Ring buffer metadata. */
     unsigned int readers;                   /**< Number of waiting readers. */
     unsigned int writers;                   /**< Number of waiting writers. */
+    /*
+     * If (active > 0) it is the number of active readers.
+     * If (active == -1) it indicates a single active writer.
+     */
     int active;                             /**< Number of active threads. */
 } diminuto_readerwriter_t;
 
@@ -90,7 +88,7 @@ typedef struct DiminutoReaderWriter {
  * STRUCTORS
  ******************************************************************************/
 
-extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_data_t * buffer, size_t capacity);
+extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_bits_t * buffer, size_t capacity);
 
 extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * rwp);
 

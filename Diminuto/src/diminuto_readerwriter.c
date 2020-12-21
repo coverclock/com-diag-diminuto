@@ -14,11 +14,13 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
+#if 0
+
 /*******************************************************************************
  * STRUCTORS
  ******************************************************************************/
 
-diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_data_t * buffer, size_t capacity)
+diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_bits_t * buffer, size_t capacity)
 {
     diminuto_readerwriter_t * result = (diminuto_readerwriter_t *)0;
     int rc = DIMINUTO_READERWRITER_ERROR;
@@ -70,51 +72,6 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 }
 
 /*******************************************************************************
- * HELPERS
- ******************************************************************************/
-
-static int readerwriter_wait(pthread_cond_t * cp, pthread_mutex_t * mp, diminuto_ticks_t clocktime)
-{
-    int rc = DIMINUTO_READERWRITER_ERROR;
-    struct timespec later = { 0, };
-    static const diminuto_ticks_t NANOSECONDS = 1000000000;
-
-    if (clocktime == DIMINUTO_READERWRITER_INFINITY) {
-        if ((rc = pthread_cond_wait(cp, mp)) == 0) {
-            /* Do nothing. */
-        } else {
-            errno = rc;
-            diminuto_perror("readerwriter_wait: pthread_cond_wait");
-        }
-    } else {
-        later.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
-        later.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
-        if ((rc = pthread_cond_timedwait(cp, mp, &later)) == 0) {
-            /* Do nothing. */
-        } else if (rc == DIMINUTO_READERWRITER_TIMEDOUT) {
-            /* Do nothing. */
-        } else {
-            errno = rc;
-            diminuto_perror("readerwriter_wait: pthread_cond_timedwait");
-        }
-    }
-
-    return rc;
-}
-
-static int readerwriter_signal(pthread_cond_t * cp)
-{
-    int rc = DIMINUTO_READERWRITER_ERROR;
-
-    if ((rc = pthread_cond_signal(cp)) != 0) {
-        errno = rc;
-        diminuto_perror("readerwriter_signal: pthread_cond_broadcast");
-    }
-
-    return rc;
-}
-
-/*******************************************************************************
  * CALLBACKS
  ******************************************************************************/
 
@@ -162,7 +119,7 @@ static void writer_end_cleanup(void * vp)
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
     int rc = DIMINUTO_READERWRITER_ERROR;
 
-    rwp->active -= 1;
+    rwp->active += 1;
 
     if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
         errno = rc;
@@ -176,25 +133,35 @@ static void writer_end_cleanup(void * vp)
 
 int diminuto_reader_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clocktime)
 {
-    int result = DIMINUTO_READERWRITER_ERROR;
-    struct timespec later = { 0, };
+    int result = -1;
+    int rc = DIMINUTO_READERWRITER_ERROR;
+    int index = -1;
 
-    if ((result = pthread_mutex_lock(&(rwp->mutex))) != 0) {
-        errno = result;
+    if ((rc = pthread_mutex_lock(&(rwp->mutex))) != 0) {
+        errno = rc;
         diminuto_perror("diminuto_reader_begin: pthread_mutex_lock");
     } else {
         pthread_cleanup_push(reader_begin_cleanup, rwp);
 
             rwp->readers += 1;
- 
-            while ((rwp->active > 0) || (rwp->writers > 0)) {
-                if ((result = readerwriter_wait(&(rwp->reader), &(rwp->mutex), clocktime)) != 0) {
-                    break;
+
+            if (rwp->active >= 0) {
+                rc = 0;
+            } else if ((index = diminuto_ring_produce(&(rwp->ring))) < 0) {
+                rc = DIMINUTO_READERWRITER_FULL;
+                errno = rc;
+                diminuto_perror("diminuto_reader_begin: diminuto_ring_produce");
+            } else {
+                diminuto_bits_clear(diminuto_ring_bits_t, index, rwp->buffer);
+                if ((rc = pthread_cond_wait(&(rwp->reader), &(rwp->mutex))) != 0) {
+                    errno = rc;
+                    diminuto_perror("diminuto_reader_begin: pthread_cond_wait");
                 }
             }
 
-            if (result == 0) {
+            if (rc == 0) {
                 rwp->active += 1;
+                result = 0;
             }
 
         pthread_cleanup_pop(!0);
@@ -219,6 +186,10 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
             if ((rwp->active <= 1) && (rwp->writers > 0)) {
                 result = readerwriter_signal(&(rwp->writer));
+    if ((rc = pthread_cond_signal(cp)) != 0) {
+        errno = rc;
+        diminuto_perror("readerwriter_signal: pthread_cond_broadcast");
+    }
             }
 
         pthread_cleanup_pop(!0);
@@ -229,8 +200,8 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
 int diminuto_writer_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clocktime)
 {
-    int result = DIMINUTO_READERWRITER_ERROR;
-    struct timespec later = { 0, };
+    int result = -1;
+    int rc = DIMINUTO_READERWRITER_ERROR;
 
     if ((result = pthread_mutex_lock(&(rwp->mutex))) != 0) {
         errno = result;
@@ -242,6 +213,7 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clockt
  
             while ((rwp->active > 0) || (rwp->active > 0)) {
                 if ((result = readerwriter_wait(&(rwp->writer), &(rwp->mutex), clocktime)) != 0) {
+
                     break;
                 }
             }
@@ -260,7 +232,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 {
     int result = DIMINUTO_READERWRITER_ERROR;
 
-    if (rwp->active != 1) {
+    if (rwp->active != -1) {
         result = DIMINUTO_READERWRITER_INVALID;
         errno = result;
         diminuto_perror("diminuto_writer_end: active");
@@ -272,8 +244,16 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
             if (rwp->writers > 0) {
                 result = readerwriter_signal(&(rwp->writer));
+    if ((rc = pthread_cond_signal(cp)) != 0) {
+        errno = rc;
+        diminuto_perror("readerwriter_signal: pthread_cond_broadcast");
+    }
             } else if (rwp->readers > 0) {
                 result = readerwriter_signal(&(rwp->reader));
+    if ((rc = pthread_cond_signal(cp)) != 0) {
+        errno = rc;
+        diminuto_perror("readerwriter_signal: pthread_cond_broadcast");
+    }
             } else {
                 /* Do nothing. */
             }
@@ -285,7 +265,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 }
 
 #if 0
-    diminuto_readerwriter_data_t * buffer;  /**< Pointer to ring buffer data. */
+    diminuto_readerwriter_bits_t * buffer;  /**< Pointer to ring buffer data. */
     pthread_mutex_t mutex;                  /**< Mutual exclusion semaphore. */
     pthread_cond_t reader;                  /**< Queue of pending readers. */
     pthread_cond_t writer;                  /**< Queue of pending writers. */
@@ -293,4 +273,6 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
     unsigned int readers;                   /**< Number of waiting readers. */
     unsigned int writers;                   /**< Number of waiting writers. */
     int active;                             /**< Number of active threads. */
+#endif
+
 #endif

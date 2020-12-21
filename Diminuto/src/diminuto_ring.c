@@ -11,7 +11,7 @@
 
 #include "com/diag/diminuto/diminuto_ring.h"
 
-int diminuto_ring_produce_request(diminuto_ring_t * rp, unsigned int request)
+int diminuto_ring_producer_request(diminuto_ring_t * rp, unsigned int request)
 {
     int result = -1;
 
@@ -24,7 +24,20 @@ int diminuto_ring_produce_request(diminuto_ring_t * rp, unsigned int request)
     return result;
 }
 
-int diminuto_ring_consume_request(diminuto_ring_t * rp, unsigned int request)
+int diminuto_ring_producer_revoke(diminuto_ring_t * rp, unsigned int request)
+{
+    int result = -1;
+
+    if (rp->measure >= request) {
+        rp->measure -= request;
+        rp->producer = (rp->producer + rp->capacity - request) % rp->capacity;
+        result = request;
+    }
+
+    return result;
+}
+
+int diminuto_ring_consumer_request(diminuto_ring_t * rp, unsigned int request)
 {
     int result = -1;
 
@@ -32,6 +45,19 @@ int diminuto_ring_consume_request(diminuto_ring_t * rp, unsigned int request)
         rp->measure -= request;
         result = rp->consumer;
         rp->consumer = (rp->consumer + request) % rp->capacity;
+    }
+
+    return result;
+}
+
+int diminuto_ring_consumer_revoke(diminuto_ring_t * rp, unsigned int request)
+{
+    int result = -1;
+
+    if ((rp->measure + request) <= rp->capacity) {
+        rp->measure += request;
+        rp->consumer = (rp->consumer + rp->capacity - request) % rp->capacity;
+        result = request;
     }
 
     return result;
