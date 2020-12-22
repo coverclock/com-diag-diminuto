@@ -94,8 +94,12 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  * HELPERS
  ******************************************************************************/
 
-static inline size_t diminuto_readerwriter_total(diminuto_readerwriter_t * rwp) {
+static inline unsigned int diminuto_readerwriter_waiting(diminuto_readerwriter_t * rwp) {
     return diminuto_ring_used(&(rwp->ring));
+}
+
+static inline int diminuto_readerwriter_active(diminuto_readerwriter_t * rwp) {
+    return rwp->active;
 }
 
 /*******************************************************************************

@@ -252,7 +252,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
     } else {
         pthread_cleanup_push(reader_begin_cleanup, rwp);
 
-            if ((rwp->active >= 0) && (diminuto_readerwriter_total(rwp) == 0)) {
+            if ((rwp->active >= 0) && (diminuto_readerwriter_waiting(rwp) <= 0)) {
                 /*
                  * There are zero or more active readers and no one is waiting.
                  * Reader can proceeed.
