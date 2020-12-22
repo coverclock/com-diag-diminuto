@@ -81,12 +81,12 @@ static int queue_reader(diminuto_readerwriter_t * rwp)
         errno = rc;
         diminuto_perror("queue_reader");
     } else {
-        diminuto_bits_clear(diminuto_readerwriter_bits_t, index, rwp->buffer);
+        DIMINUTO_BITS_CLEAR(diminuto_readerwriter_bits_t, index, rwp->buffer);
         if ((rc = pthread_cond_wait(&(rwp->reader), &(rwp->mutex))) != 0) {
             errno = rc;
             diminuto_perror("queue_reader: pthread_cond_wait");
             if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
-                rc = DIMINUTO_READERWRITER_ERROR;
+                rc = DIMINUTO_READERWRITER_STATE;
                 errno = rc;
                 diminuto_perror("queue_reader");
             }
@@ -106,12 +106,12 @@ static int queue_writer(diminuto_readerwriter_t * rwp)
         errno = rc;
         diminuto_perror("queue_writer");
     } else {
-        diminuto_bits_set(diminuto_readerwriter_bits_t, index, rwp->buffer);
+        DIMINUTO_BITS_SET(diminuto_readerwriter_bits_t, index, rwp->buffer);
         if ((rc = pthread_cond_wait(&(rwp->writer), &(rwp->mutex))) != 0) {
             errno = rc;
             diminuto_perror("queue_writer: pthread_cond_wait");
             if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
-                rc  = DIMINUTO_READERWRITER_ERROR;
+                rc  = DIMINUTO_READERWRITER_STATE;
                 errno = rc;
                 diminuto_perror("queue_writer");
             }
@@ -135,7 +135,7 @@ static int dequeue(diminuto_readerwriter_t * rwp)
              */
             rc = 0;
             break;
-        } else if ((bit = diminuto_bits_get(diminuto_readerwriter_bits_t, index, rwp->buffer)) && reading) {
+        } else if ((bit = DIMINUTO_BITS_GET(diminuto_readerwriter_bits_t, index, rwp->buffer)) && reading) {
             /*
              * The next waiter is a writer but we are only doing readers.
              * We're done.
@@ -244,7 +244,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clockt
     } else {
         pthread_cleanup_push(reader_begin_cleanup, rwp);
 
-            if ((rwp->active >= 0) && (diminuto_ring_used(&(rwp->ring)) == 0)) {
+            if ((rwp->active >= 0) && (diminuto_readerwriter_total(rwp) == 0)) {
                 /*
                  * There are zero or more active readers and no one is waiting.
                  * Reader can proceeed.
@@ -275,7 +275,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     if (rwp->active <= 0) {
-        errno = DIMINUTO_READERWRITER_INVALID;
+        errno = DIMINUTO_READERWRITER_ORDER;
         diminuto_perror("diminuto_reader_end: active");
     } else if ((rc = pthread_mutex_lock(&(rwp->mutex))) != 0) {
         errno = rc;
@@ -343,7 +343,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     if (rwp->active != -1) {
-        errno = DIMINUTO_READERWRITER_INVALID;
+        errno = DIMINUTO_READERWRITER_ORDER;
         diminuto_perror("diminuto_writer_end: active");
     } else if ((rc = pthread_mutex_lock(&(rwp->mutex))) != 0) {
         errno = rc;

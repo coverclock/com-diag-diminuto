@@ -38,11 +38,11 @@
  * CONSTANTS
  ******************************************************************************/
 
-enum DiminutoReaderWriterErrno {
-    DIMINUTO_READERWRITER_ERROR     = EIO,
-    DIMINUTO_READERWRITER_INVALID   = EINVAL,
-    DIMINUTO_READERWRITER_FULL      = EXFULL,
-    DIMINUTO_READERWRITER_EMPTY     = ENOMEM,
+enum DiminutoReaderWriterError {
+    DIMINUTO_READERWRITER_ERROR     = EIO,      /**< ReaderWriter bug. */
+    DIMINUTO_READERWRITER_ORDER     = EINVAL,   /**< Calling order wrong. */
+    DIMINUTO_READERWRITER_FULL      = ENOSPC,   /**< Ring too small. */
+    DIMINUTO_READERWRITER_STATE     = ENOENT,   /**< Unexpected state. */
 };
 
 enum DiminutoReaderWriterType {
@@ -58,7 +58,7 @@ enum DiminutoReaderWriterType {
 typedef uint64_t diminuto_readerwriter_bits_t;
 
 #define DIMINUTO_READERWRITER_COUNT(_CAPACITY_) \
-    diminuto_bits_count(diminuto_readerwriter_bits_t, _CAPACITY_)
+    DIMINUTO_BITS_COUNT(diminuto_readerwriter_bits_t, _CAPACITY_)
 
 typedef struct DiminutoReaderWriter {
     diminuto_readerwriter_bits_t * buffer;  /**< Pointer to ring buffer data. */
