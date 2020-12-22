@@ -27,7 +27,6 @@
  ******************************************************************************/
 
 #include "com/diag/diminuto/diminuto_widthof.h"
-#include "com/diag/diminuto/diminuto_bits.h"
 #include "com/diag/diminuto/diminuto_ring.h"
 #include <errno.h>
 #include <stdint.h>
@@ -43,27 +42,24 @@ enum DiminutoReaderWriterError {
     DIMINUTO_READERWRITER_STATE     = ENOENT,   /**< Unexpected state. */
 };
 
-enum DiminutoReaderWriterType {
-    DIMINUTO_READERWRITER_NONE      = -1,
-    DIMINUTO_READERWRITER_READER    =  0,
-    DIMINUTO_READERWRITER_WRITER    =  1,
+enum DiminutoReaderWriterWaiter {
+    DIMINUTO_READERWRITER_WRITER    = -1,
+    DIMINUTO_READERWRITER_READY     =  0,
+    DIMINUTO_READERWRITER_READER    =  1,
 };
 
 /*******************************************************************************
  * TYPES
  ******************************************************************************/
 
-typedef uint64_t diminuto_readerwriter_buffer_t;
-
-#define DIMINUTO_READERWRITER_COUNT(_CAPACITY_) \
-    DIMINUTO_BITS_COUNT(diminuto_readerwriter_buffer_t, _CAPACITY_)
+typedef int8_t diminuto_readerwriter_state_t;
 
 typedef struct DiminutoReaderWriter {
-    diminuto_readerwriter_buffer_t * buffer;    /**< Ring buffer. */
     pthread_mutex_t mutex;                      /**< Mutex semaphore. */
     pthread_cond_t reader;                      /**< Waiting readers. */
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_ring_t ring;                       /**< Ring metadata. */
+    diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
     /*
      * If (active > 0) it is the number of active readers.
      * If (active == -1) it indicates a single active writer.
@@ -73,11 +69,11 @@ typedef struct DiminutoReaderWriter {
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \
     { \
-        (_BUFFER_), \
         PTHREAD_MUTEX_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
+        &((_BUFFER_)[0]), \
         0, \
     }
 
@@ -85,7 +81,7 @@ typedef struct DiminutoReaderWriter {
  * STRUCTORS
  ******************************************************************************/
 
-extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_buffer_t * buffer, size_t capacity);
+extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_state_t * state, size_t capacity);
 
 extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * rwp);
 
