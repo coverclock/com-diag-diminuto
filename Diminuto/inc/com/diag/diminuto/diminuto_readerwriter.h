@@ -39,7 +39,6 @@
 
 enum DiminutoReaderWriterError {
     DIMINUTO_READERWRITER_ERROR     = EIO,      /**< ReaderWriter bug. */
-    DIMINUTO_READERWRITER_ORDER     = EINVAL,   /**< Calling order wrong. */
     DIMINUTO_READERWRITER_FULL      = ENOSPC,   /**< Ring too small. */
     DIMINUTO_READERWRITER_STATE     = ENOENT,   /**< Unexpected state. */
 };
