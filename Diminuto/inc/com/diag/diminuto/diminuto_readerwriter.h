@@ -19,14 +19,13 @@
  * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
  * 2013
  *
- * S, Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
+ * S. Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
  */
 
 /*******************************************************************************
  * PREREQUISITES
  ******************************************************************************/
 
-#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
 #include "com/diag/diminuto/diminuto_bits.h"
 #include "com/diag/diminuto/diminuto_ring.h"
@@ -55,22 +54,22 @@ enum DiminutoReaderWriterType {
  * TYPES
  ******************************************************************************/
 
-typedef uint64_t diminuto_readerwriter_bits_t;
+typedef uint64_t diminuto_readerwriter_buffer_t;
 
 #define DIMINUTO_READERWRITER_COUNT(_CAPACITY_) \
-    DIMINUTO_BITS_COUNT(diminuto_readerwriter_bits_t, _CAPACITY_)
+    DIMINUTO_BITS_COUNT(diminuto_readerwriter_buffer_t, _CAPACITY_)
 
 typedef struct DiminutoReaderWriter {
-    diminuto_readerwriter_bits_t * buffer;  /**< Pointer to ring buffer data. */
-    pthread_mutex_t mutex;                  /**< Mutual exclusion semaphore. */
-    pthread_cond_t reader;                  /**< Queue of pending readers. */
-    pthread_cond_t writer;                  /**< Queue of pending writers. */
-    diminuto_ring_t ring;                   /**< Ring buffer metadata. */
+    diminuto_readerwriter_buffer_t * buffer;    /**< Ring buffer. */
+    pthread_mutex_t mutex;                      /**< Mutex semaphore. */
+    pthread_cond_t reader;                      /**< Waiting readers. */
+    pthread_cond_t writer;                      /**< Waiting writers. */
+    diminuto_ring_t ring;                       /**< Ring metadata. */
     /*
      * If (active > 0) it is the number of active readers.
      * If (active == -1) it indicates a single active writer.
      */
-    int active;                             /**< Number of active threads. */
+    int active;                                 /**< Number active. */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \
@@ -81,15 +80,13 @@ typedef struct DiminutoReaderWriter {
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
         0, \
-        0, \
-        0, \
     }
 
 /*******************************************************************************
  * STRUCTORS
  ******************************************************************************/
 
-extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_bits_t * buffer, size_t capacity);
+extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_buffer_t * buffer, size_t capacity);
 
 extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * rwp);
 
@@ -105,11 +102,11 @@ static inline size_t diminuto_readerwriter_total(diminuto_readerwriter_t * rwp) 
  * ACTIONS
  ******************************************************************************/
 
-extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clocktime);
+extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp);
 
 extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
 
-extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp, diminuto_ticks_t clocktime);
+extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp);
 
 extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
 
@@ -120,8 +117,9 @@ extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
         diminuto_readerwriter_t * diminuto_readerwriter_rwp = (diminuto_readerwriter_t *)0; \
+        int diminuto_readerwriter_reader = !0; \
         diminuto_readerwriter_rwp = (_RWP_); \
-        if (diminuto_reader_begin(diminuto_readerwriter_rwp, DIMINUTO_READERWRITER_INFINITY) == 0) { \
+        if (diminuto_reader_begin(diminuto_readerwriter_rwp) == 0) { \
             do { \
                 (void)0
 
@@ -129,13 +127,15 @@ extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
             } while (0); \
             diminuto_reader_end(diminuto_readerwriter_rwp); \
         } \
+        diminuto_readerwriter_reader = 0; \
     } while (0)
 
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
         diminuto_readerwriter_t * diminuto_readerwriter_rwp = (diminuto_readerwriter_t *)0; \
+        int diminuto_readerwriter_writer = !0; \
         diminuto_readerwriter_rwp = (_RWP_); \
-        if (diminuto_writer_begin(diminuto_readerwriter_rwp, DIMINUTO_READERWRITER_INFINITY) == 0) { \
+        if (diminuto_writer_begin(diminuto_readerwriter_rwp) == 0) { \
             do { \
                 (void)0
 
@@ -143,6 +143,7 @@ extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
             } while (0); \
             diminuto_writer_end(diminuto_readerwriter_rwp); \
         } \
+        diminuto_readerwriter_writer = 0; \
     } while (0)
 
 #endif
