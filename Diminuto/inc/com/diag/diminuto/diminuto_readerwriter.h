@@ -59,8 +59,8 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_ring_t ring;                       /**< Ring metadata. */
     diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
-    unsigned int readers;                       /**< Active readers. (>=0) */
-    unsigned int writers;                       /**< Active writers. {0,1} */
+    int readers;                                /**< (>=0) active readers. */
+    int writers;                                /**< {0,1} active writers. */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \

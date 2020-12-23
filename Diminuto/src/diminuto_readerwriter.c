@@ -95,6 +95,13 @@ static int resume_either(diminuto_readerwriter_t * rwp)
             errno = rc;
             diminuto_perror("resume_either: pthread_cond_broadcast: reader");
         } else {
+            /*
+             * It is important (and subtle) for fairness that we increment
+             * the reader count on behalf of the reader we just signalled.
+             * Otherwise we may exit the critical section and reenter it
+             * before the signalled reader has a chance to enter it.
+             */
+            rwp->readers += 1;
             DIMINUTO_LOG_DEBUG("Reader %d SIGNALED", index);
         }
     } else if (ss == DIMINUTO_READERWRITER_WRITER) {
@@ -110,6 +117,13 @@ static int resume_either(diminuto_readerwriter_t * rwp)
             errno = rc;
             diminuto_perror("resume_either: pthread_cond_broadcast: writer");
         } else {
+            /*
+             * It is important (and subtle) for fairness that we increment
+             * the writer count on behalf of the writer we just signalled.
+             * Otherwise we may exit the critical section and reenter it
+             * before the signalled writer has a chance to enter it.
+             */
+            rwp->writers += 1;
             DIMINUTO_LOG_DEBUG("Writer %d SIGNALED", index);
         }
     } else {
@@ -142,6 +156,13 @@ static int resume_reader(diminuto_readerwriter_t * rwp)
             errno = rc;
             diminuto_perror("resume_reader: pthread_cond_broadcast: reader");
         } else {
+            /*
+             * It is important (and subtle) for fairness that we increment
+             * the reader count on behalf of the reader we just signalled.
+             * Otherwise we may exit the critical section and reenter it
+             * before the signalled reader has a chance to enter it.
+             */
+            rwp->readers += 1;
             DIMINUTO_LOG_DEBUG("Reader %d SIGNALED", index);
         }
     } else if (ss == DIMINUTO_READERWRITER_WRITER) {
@@ -325,9 +346,10 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
             /*
              * Either there was an active writer or someone is waiting.
              * If someone is waiting, it is presumably a writer, since
-             * a reader would not have waited.
+             * a reader would not have waited. The reader count has
+             * already been incremented by the thread that signalled
+             * us.
              */
-            rwp->readers += 1;
             DIMINUTO_LOG_DEBUG("Reader %d ACTIVE %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
@@ -384,10 +406,10 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
         } else if (suspend_writer(rwp, &index) == 0) {
             /*
              * Either there was one or more active readers or an
-             * active writer.
+             * active writer. The writer count has already been
+             * incremented by the thread that signaled us.
              */
-            rwp->writers += 1;
-            DIMINUTO_LOG_DEBUG("Writer %d ACTIVE %dreaders %dwriters", index, rwp->writers, rwp->writers);
+            DIMINUTO_LOG_DEBUG("Writer %d ACTIVE %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
             /* Failed! */
