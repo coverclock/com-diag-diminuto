@@ -37,14 +37,13 @@
  ******************************************************************************/
 
 enum DiminutoReaderWriterError {
-    DIMINUTO_READERWRITER_ERROR     = EIO,      /**< ReaderWriter bug. */
-    DIMINUTO_READERWRITER_FULL      = ENOSPC,   /**< Ring too small. */
-    DIMINUTO_READERWRITER_STATE     = ENOENT,   /**< Unexpected state. */
+    DIMINUTO_READERWRITER_ERROR         = EIO,      /**< Unspecified error. */
+    DIMINUTO_READERWRITER_FULL          = ENOSPC,   /**< Ring too small. */
+    DIMINUTO_READERWRITER_UNEXPECTED    = ENOENT,   /**< Unexpected state. */
 };
 
-enum DiminutoReaderWriterWaiter {
+enum DiminutoReaderWriterState {
     DIMINUTO_READERWRITER_WRITER    = -1,
-    DIMINUTO_READERWRITER_READY     =  0,
     DIMINUTO_READERWRITER_READER    =  1,
 };
 

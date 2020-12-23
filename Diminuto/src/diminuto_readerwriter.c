@@ -87,9 +87,9 @@ static int resume_either(diminuto_readerwriter_t * rwp)
          * The next waiter is a reader. Activate it. It will resume
          * the next waiter if it is also a reader. We do a broadcast
          * because POSIX doesn't guarantee FIFO behavior on the part
-         * of waiting threads.
+         * of condition variables. The siganled reader only activates
+         * if it is at the head of the ring.
          */
-        rwp->state[index] = DIMINUTO_READERWRITER_READY;
         if ((rc = pthread_cond_broadcast(&(rwp->reader))) != 0) {
             errno = rc;
             diminuto_perror("resume_either: pthread_cond_broadcast: reader");
@@ -99,9 +99,12 @@ static int resume_either(diminuto_readerwriter_t * rwp)
     } else if (ss == DIMINUTO_READERWRITER_WRITER) {
         /*
          * The next waiter is a writer. Activate it. When it is done
-         * writing it will resume the next waiter.
+         * writing it will resume the next head of the queue,
+         * whatever it is. We do a broadcast because POSIX doesn't
+         * guarantee FIFO behavior on the part of condition variables.
+         * The signaled writer only activates if it is at the head
+         * of the ring.
          */
-        rwp->state[index] = DIMINUTO_READERWRITER_READY;
         if ((rc = pthread_cond_broadcast(&(rwp->writer))) != 0) {
             errno = rc;
             diminuto_perror("resume_either: pthread_cond_broadcast: writer");
@@ -128,12 +131,12 @@ static int resume_reader(diminuto_readerwriter_t * rwp)
         rc = 0;
     } else if ((ss = rwp->state[index]) == DIMINUTO_READERWRITER_READER) {
         /*
-         * The next waiter was a reader. It will become active and
-         * continue to resume successive readers. We do a broadcast
-         * because POSIX doesn't guarantee FIFO behavior on the part
-         * of waiting threads.
+         * The next waiter is a reader. Activate it. It will continue
+         * continue to resume successive readers iff they are at the head
+         * of the queue. We do a broadcast because POSIX doesn't guarantee
+         * FIFO behavior on the part of conditionl variables. The signaled
+         * reader only activates if it is at the head of the ring.
          */
-        rwp->state[index] = DIMINUTO_READERWRITER_READY;
         if ((rc = pthread_cond_broadcast(&(rwp->reader))) != 0) {
             errno = rc;
             diminuto_perror("resume_reader: pthread_cond_broadcast: reader");
@@ -170,6 +173,8 @@ static int suspend_reader(diminuto_readerwriter_t * rwp, int * indexp)
 
         /*
          * Wait until this reader is signaled and explicitly resumed.
+         * We have to check the state because POSIX doesn't guarantee
+         * FIFO behavior on the part of condition variables.
          */
 
         do {
@@ -177,13 +182,13 @@ static int suspend_reader(diminuto_readerwriter_t * rwp, int * indexp)
                 errno = rc;
                 diminuto_perror("suspend_reader: pthread_cond_wait");
                 if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
-                    rc = DIMINUTO_READERWRITER_STATE;
+                    rc = DIMINUTO_READERWRITER_UNEXPECTED;
                     errno = rc;
                     diminuto_perror("suspend_reader: revoke");
                 }
                 break;
             }
-        } while (rwp->state[index] != DIMINUTO_READERWRITER_READY);
+        } while (diminuto_ring_consumer_peek(&(rwp->ring)) == index);
 
         /*
          * Reader resumed. The only way this could have occurred
@@ -194,7 +199,7 @@ static int suspend_reader(diminuto_readerwriter_t * rwp, int * indexp)
         if (rc != 0) {
             /* Failed! */
         } else if ((diminuto_ring_consumer_request(&(rwp->ring), 1)) != index) {
-            rc = DIMINUTO_READERWRITER_STATE;
+            rc = DIMINUTO_READERWRITER_UNEXPECTED;
             errno = rc;
             diminuto_perror("suspend_reader: consumer");
         } else if ((rc = resume_reader(rwp)) != 0) {
@@ -225,6 +230,8 @@ static int suspend_writer(diminuto_readerwriter_t * rwp, int * indexp)
 
         /*
          * Wait until this writer is signaled and explicitly resumed.
+         * We have to check the state because POSIX doesn't guarantee
+         * FIFO behavior on the part of condition variables.
          */
 
         do {
@@ -232,13 +239,13 @@ static int suspend_writer(diminuto_readerwriter_t * rwp, int * indexp)
                 errno = rc;
                 diminuto_perror("suspend_writer: pthread_cond_wait");
                 if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
-                    rc  = DIMINUTO_READERWRITER_STATE;
+                    rc = DIMINUTO_READERWRITER_UNEXPECTED;
                     errno = rc;
                     diminuto_perror("suspend_writer: revoke");
                 }
                 break;
             }
-        } while (rwp->state[index] != DIMINUTO_READERWRITER_READY);
+        } while (diminuto_ring_consumer_peek(&(rwp->ring)) == index);
 
         /*
          * Writer resumed. The only way this could have occurred
@@ -248,7 +255,7 @@ static int suspend_writer(diminuto_readerwriter_t * rwp, int * indexp)
         if (rc != 0) {
             /* Failed! */
         } else if ((diminuto_ring_consumer_request(&(rwp->ring), 1)) != index) {
-            rc = DIMINUTO_READERWRITER_STATE;
+            rc = DIMINUTO_READERWRITER_UNEXPECTED;
             errno = rc;
             diminuto_perror("suspend_reader: consumer");
         } else {
