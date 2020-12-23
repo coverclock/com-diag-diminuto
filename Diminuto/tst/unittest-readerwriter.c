@@ -356,9 +356,9 @@ int main(void)
         CHECKPOINT("result[1]=%d\n", (int)(intptr_t)result[1]);
         CHECKPOINT("result[2]=%d\n", (int)(intptr_t)result[2]);
 
-        ASSERT(((intptr_t)result[0]) == !0);
-        ASSERT(((intptr_t)result[1]) == !0);
-        ASSERT(((intptr_t)result[2]) == !0);
+        ASSERT(((intptr_t)result[0]) != 0);
+        ASSERT(((intptr_t)result[1]) != 0);
+        ASSERT(((intptr_t)result[2]) != 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -413,9 +413,9 @@ int main(void)
         CHECKPOINT("result[1]=%d\n", (int)(intptr_t)result[1]);
         CHECKPOINT("result[2]=%d\n", (int)(intptr_t)result[2]);
 
-        ASSERT(((intptr_t)result[0]) == !0);
-        ASSERT(((intptr_t)result[1]) == !0);
-        ASSERT(((intptr_t)result[2]) == !0);
+        ASSERT(((intptr_t)result[0]) != 0);
+        ASSERT(((intptr_t)result[1]) != 0);
+        ASSERT(((intptr_t)result[2]) != 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 

@@ -42,9 +42,10 @@ enum DiminutoReaderWriterError {
     DIMINUTO_READERWRITER_UNEXPECTED    = EFAULT,   /**< Unexpected state. */
 };
 
-enum DiminutoReaderWriterState {
-    DIMINUTO_READERWRITER_WRITER    = -1,           /**< Thread is a writer. */
-    DIMINUTO_READERWRITER_READER    =  1,           /**< Thread is a reader. */
+enum DiminutoReaderWriterType {
+    DIMINUTO_READERWRITER_WRITER    = -1,   /**< Thread is a writer. */
+    DIMINUTO_READERWRITER_NONE      =  0,   /**< No thread. */
+    DIMINUTO_READERWRITER_READER    =  1,   /**< Thread is a reader. */
 };
 
 /*******************************************************************************
