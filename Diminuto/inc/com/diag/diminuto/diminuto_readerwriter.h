@@ -59,11 +59,8 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_ring_t ring;                       /**< Ring metadata. */
     diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
-    /*
-     * If (active > 0) it is the number of active readers.
-     * If (active == -1) it indicates a single active writer.
-     */
-    int active;                                 /**< Number active. */
+    unsigned int readers;                       /**< Active readers. (>=0) */
+    unsigned int writers;                       /**< Active writers. {0,1} */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \
@@ -74,6 +71,7 @@ typedef struct DiminutoReaderWriter {
         DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
         &((_BUFFER_)[0]), \
         0, \
+        0, \
     }
 
 /*******************************************************************************
@@ -83,18 +81,6 @@ typedef struct DiminutoReaderWriter {
 extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_state_t * state, size_t capacity);
 
 extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * rwp);
-
-/*******************************************************************************
- * HELPERS
- ******************************************************************************/
-
-static inline unsigned int diminuto_readerwriter_waiting(diminuto_readerwriter_t * rwp) {
-    return diminuto_ring_used(&(rwp->ring));
-}
-
-static inline int diminuto_readerwriter_active(diminuto_readerwriter_t * rwp) {
-    return rwp->active;
-}
 
 /*******************************************************************************
  * ACTIONS
