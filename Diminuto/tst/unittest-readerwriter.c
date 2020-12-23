@@ -280,8 +280,8 @@ int main(void)
 
         reading[0].rwp = &rw;
         reading[0].latency = frequency * 0;
-        reading[0].workload = frequency * 13;
-        reading[0].iterations = 17;
+        reading[0].workload = frequency * 3;
+        reading[0].iterations = 11;
 
         reading[1].rwp = &rw;
         reading[1].latency = frequency * 5;
@@ -291,7 +291,7 @@ int main(void)
         reading[2].rwp = &rw;
         reading[2].latency = frequency * 1;
         reading[2].workload = frequency * 2;
-        reading[2].iterations = 3;
+        reading[2].iterations = 11;
 
         result[0] = (void *)0;
         result[1] = (void *)0;
@@ -337,8 +337,8 @@ int main(void)
 
         writing[0].rwp = &rw;
         writing[0].latency = frequency * 0;
-        writing[0].workload = frequency * 13;
-        writing[0].iterations = 17;
+        writing[0].workload = frequency * 3;
+        writing[0].iterations = 11;
 
         writing[1].rwp = &rw;
         writing[1].latency = frequency * 5;
@@ -348,7 +348,7 @@ int main(void)
         writing[2].rwp = &rw;
         writing[2].latency = frequency * 1;
         writing[2].workload = frequency * 2;
-        writing[2].iterations = 3;
+        writing[2].iterations = 11;
 
         result[0] = (void *)0;
         result[1] = (void *)0;
