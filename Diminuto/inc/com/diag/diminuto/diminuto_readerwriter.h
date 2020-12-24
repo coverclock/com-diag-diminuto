@@ -10,7 +10,7 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Work In Progress!
+ * Work In Progress! (This work has been moved to the develop branch.)
  */
 
 /*******************************************************************************
