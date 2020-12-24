@@ -54,8 +54,8 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_ring_t ring;                       /**< Ring metadata. */
     diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
-    int readers;                                /**< (>=0) active readers. */
-    int writers;                                /**< {0,1} active writers. */
+    int reading;                                /**< Active (>=0) readers. */
+    int writing;                                /**< Active {0,1} writers. */
 } diminuto_readerwriter_t;
 
 #define DIMINUTO_READERWRITER_INITIALIZER(_BUFFER_, _CAPACITY_) \
@@ -90,6 +90,14 @@ extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp);
 extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
 
 /*******************************************************************************
+ * CALLBACKS
+ ******************************************************************************/
+
+extern void diminuto_reader_cleanup(void * vp);
+
+extern void diminuto_writer_cleanup(void * vp);
+
+/*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
@@ -100,9 +108,10 @@ extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
         diminuto_readerwriter_rwp = (_RWP_); \
         if (diminuto_reader_begin(diminuto_readerwriter_rwp) == 0) { \
             do { \
-                (void)0
+                pthread_cleanup_push(diminuto_reader_cleanup, diminuto_readerwriter_rwp)
 
 #define DIMINUTO_READER_END \
+                pthread_cleanup_pop(0); \
             } while (0); \
             diminuto_reader_end(diminuto_readerwriter_rwp); \
         } \
@@ -116,9 +125,10 @@ extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
         diminuto_readerwriter_rwp = (_RWP_); \
         if (diminuto_writer_begin(diminuto_readerwriter_rwp) == 0) { \
             do { \
-                (void)0
+                pthread_cleanup_push(diminuto_writer_cleanup, diminuto_readerwriter_rwp)
 
 #define DIMINUTO_WRITER_END \
+                pthread_cleanup_pop(0); \
             } while (0); \
             diminuto_writer_end(diminuto_readerwriter_rwp); \
         } \

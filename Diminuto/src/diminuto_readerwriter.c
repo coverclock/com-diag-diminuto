@@ -1,4 +1,4 @@
-/* vi: set ts=4 expandtab shiftwidth=4: */
+    /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
@@ -46,8 +46,8 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
         /* Failed! */
     } else {
         rwp->state = state;
-        rwp->readers = 0;
-        rwp->writers = 0;
+        rwp->reading = 0;
+        rwp->writing = 0;
         result = rwp;
     }
 
@@ -105,9 +105,9 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
          */
         if ((rc = pthread_cond_broadcast(&(rwp->reader))) != 0) {
             errno = rc;
-            diminuto_perror("resume_either: pthread_cond_broadcast: reader");
+            diminuto_perror("resume: pthread_cond_broadcast: reader");
         } else {
-            DIMINUTO_LOG_DEBUG("Reader %d SIGNALED %dreaders %dwriters", index, rwp->readers, rwp->writers);
+            DIMINUTO_LOG_DEBUG("Reader %d SIGNALED %dreading %dwriting", index, rwp->reading, rwp->writing);
             result = READER;
         }
 
@@ -123,16 +123,16 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
          */
         if ((rc = pthread_cond_broadcast(&(rwp->writer))) != 0) {
             errno = rc;
-            diminuto_perror("resume_either: pthread_cond_broadcast: writer");
+            diminuto_perror("resume: pthread_cond_broadcast: writer");
         } else {
-            DIMINUTO_LOG_DEBUG("Writer %d SIGNALED %dreaders %dwriters", index, rwp->readers, rwp->writers);
+            DIMINUTO_LOG_DEBUG("Writer %d SIGNALED %dreading %dwriting", index, rwp->reading, rwp->writing);
             result = WRITER;
         }
 
     } else {
 
         errno = DIMINUTO_READERWRITER_ERROR;
-        diminuto_perror("resume_either: role");
+        diminuto_perror("resume: role");
 
     }
 
@@ -153,7 +153,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
     } else if (role == READER) {
 
         rwp->state[index] = READER;
-        DIMINUTO_LOG_DEBUG("Reader %d WAITING %dreaders %dwriters", index, rwp->readers, rwp->writers);
+        DIMINUTO_LOG_DEBUG("Reader %d WAITING %dreading %dwriting", index, rwp->reading, rwp->writing);
         *indexp = index; /* Just for logging. */
 
         /*
@@ -181,13 +181,13 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
             errno = rc;
             diminuto_perror("suspend: consumer");
         } else {
-            DIMINUTO_LOG_DEBUG("Reader %d RUNNING %dreaders %dwriters", index, rwp->readers, rwp->writers);
+            DIMINUTO_LOG_DEBUG("Reader %d RUNNING %dreading %dwriting", index, rwp->reading, rwp->writing);
         }
 
     } else if (role == WRITER) {
 
         rwp->state[index] = WRITER;
-        DIMINUTO_LOG_DEBUG("Writer %d WAITING %dreaders %dwriters", index, rwp->readers, rwp->writers);
+        DIMINUTO_LOG_DEBUG("Writer %d WAITING %dreading %dwriting", index, rwp->reading, rwp->writing);
         *indexp = index; /* Just for logging. */
 
         /*
@@ -215,7 +215,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
             errno = rc;
             diminuto_perror("suspend: consumer");
         } else {
-            DIMINUTO_LOG_DEBUG("Writer %d RUNNING %dreaders %dwriters", index, rwp->readers, rwp->writers);
+            DIMINUTO_LOG_DEBUG("Writer %d RUNNING %dreading %dwriting", index, rwp->reading, rwp->writing);
         }
 
     } else {
@@ -230,38 +230,56 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 }
 
 /*******************************************************************************
- * CALLBACKS
+ * GENERATORS
  ******************************************************************************/
 
-static void critical_section_cleanup(void * vp)
+static void mutex_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("reader_begin_cleanup: pthread_mutex_unlock");
+        diminuto_perror("mutex_cleanup: pthread_mutex_unlock");
     }
 }
-
-/*******************************************************************************
- * GENERATORS
- ******************************************************************************/
 
 #define BEGIN_CRITICAL_SECTION(_RWP_) \
     do { \
         int critical_section_rc = DIMINUTO_READERWRITER_ERROR; \
         if ((critical_section_rc = pthread_mutex_lock(&((_RWP_)->mutex))) != 0) { \
             errno = critical_section_rc; \
-            diminuto_perror("pthread_mutex_lock"); \
+            diminuto_perror("BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
         } else { \
-            pthread_cleanup_push(critical_section_cleanup, _RWP_)
+            pthread_cleanup_push(mutex_cleanup, _RWP_)
 
 #define END_CRITICAL_SECTION \
             pthread_cleanup_pop(!0); \
             critical_section_rc = 0; \
         } \
     } while (0)
+
+void diminuto_reader_cleanup(void * vp)
+{
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
+
+    BEGIN_CRITICAL_SECTION(rwp);
+
+        rwp->reading -= 1;
+
+    END_CRITICAL_SECTION;
+}
+
+void diminuto_writer_cleanup(void * vp)
+{
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
+
+    BEGIN_CRITICAL_SECTION(rwp);
+
+        rwp->writing -= 1;
+
+    END_CRITICAL_SECTION;
+}
 
 /*******************************************************************************
  * POLICY
@@ -275,13 +293,14 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        if ((rwp->writers <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
+        DIMINUTO_LOG_DEBUG("Reader - BEGIN enter %dreading %dwriting", rwp->reading, rwp->writing);
+
+        if ((rwp->writing <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
             /*
              * There are zero or more active writers and no one is waiting.
              * Reader can proceeed.
              */
-            rwp->readers += 1;
-            DIMINUTO_LOG_DEBUG("Reader - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
+            rwp->reading += 1;
             result = 0;
         } else if (suspend(rwp, READER, &index) == 0) {
             /*
@@ -291,7 +310,6 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              * already been incremented by the thread that signalled
              * us.
              */
-            DIMINUTO_LOG_DEBUG("Reader %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
             /* Failed! */
@@ -313,8 +331,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              * There's another reader. It will in turn resume the following
              * reader if there is one.
              */
-            rwp->readers += 1;
-            result = 0;
+            rwp->reading += 1;
         } else {
             /*
              * This should be impossible: either the function returned a
@@ -322,6 +339,12 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              */
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_reader_end: role");
+        }
+
+        if (index < 0) {
+            DIMINUTO_LOG_DEBUG("Reader - BEGIN exit %dreading %dwriting", rwp->reading, rwp->writing);
+        } else {
+            DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting", index, rwp->reading, rwp->writing);
         }
 
     END_CRITICAL_SECTION;
@@ -336,8 +359,11 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        rwp->readers -= 1;
-        if (rwp->readers > 0) {
+        DIMINUTO_LOG_DEBUG("Reader - END enter %dreading %dwriting", rwp->reading, rwp->writing);
+
+        rwp->reading -= 1;
+
+        if (rwp->reading > 0) {
             /*
              * There are still readers running.
              */
@@ -350,27 +376,25 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
             result = 0;
         } else if (role == READER) {
             /*
-             * This should be impossible: a reader should never have waited.
-             * We'll handle it anyway.
+             * This shouldn't happen: a reader should never have waited.
+             * We'll handle it anyway, but whine about it.
              */
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_reader_end: reader");
-            rwp->readers += 1;
+            rwp->reading += 1;
             result = 0;
         } else if (role == WRITER) {
             /*
              * We're resuming a writer who has been waiting.
              */
-            rwp->writers += 1;
+            rwp->writing += 1;
             result = 0;
         } else {
             errno = DIMINUTO_READERWRITER_ERROR;
             diminuto_perror("diminuto_reader_end: role");
         }
 
-        if (result == 0) {
-            DIMINUTO_LOG_DEBUG("Reader - END %dreaders %dwriters", rwp->readers, rwp->writers);
-        }
+        DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting", rwp->reading, rwp->writing);
 
     END_CRITICAL_SECTION;
 
@@ -384,13 +408,15 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        if ((rwp->readers <= 0) && (rwp->writers <= 0)) {
+        DIMINUTO_LOG_DEBUG("Writer - BEGIN enter %dreading %dwriting", rwp->reading, rwp->writing);
+
+        if ((rwp->reading <= 0) && (rwp->writing <= 0)) {
             /*
-             * There are no active readers or writers.
-             * Writer can proceeed.
+             * There are no active readers or writers. (We don't check
+             * for anyone waiting... and that would be an error, as the
+             * prior ending reader or writer whould have started them.)
              */
-            rwp->writers += 1;
-            DIMINUTO_LOG_DEBUG("Writer - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
+            rwp->writing += 1;
             result = 0;
         } else if (suspend(rwp, WRITER, &index) == 0) {
             /*
@@ -398,10 +424,15 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
              * active writer. The writer count has already been
              * incremented by the thread that signaled us.
              */
-            DIMINUTO_LOG_DEBUG("Writer %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
             /* Failed! */
+        }
+
+        if (index < 0) {
+            DIMINUTO_LOG_DEBUG("Writer - BEGIN exit %dreading %dwriting", rwp->reading, rwp->writing);
+        } else {
+            DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting", index, rwp->reading, rwp->writing);
         }
 
     END_CRITICAL_SECTION;
@@ -416,7 +447,9 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        rwp->writers -= 1;
+        DIMINUTO_LOG_DEBUG("Writer - END enter %dreading %dwriting", rwp->reading, rwp->writing);
+
+        rwp->writing -= 1;
         if ((role = resume(rwp, ANY)) == NONE) {
             /*
              * There are no other readers or writers waiting.
@@ -426,22 +459,20 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
             /*
              * We're activating a reader who has been waiting.
              */
-            rwp->readers += 1;
+            rwp->reading += 1;
             result = 0;
         } else if (role == WRITER) {
             /*
              * We're activating a writer who has been waiting.
              */
-            rwp->writers += 1;
+            rwp->writing += 1;
             result = 0;
         } else {
             errno = DIMINUTO_READERWRITER_ERROR;
             diminuto_perror("diminuto_reader_end: role");
         }
 
-        if (result == 0) {
-            DIMINUTO_LOG_DEBUG("Writer - END %dreaders %dwriters", rwp->readers, rwp->writers);
-        }
+        DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting", rwp->reading, rwp->writing);
 
     END_CRITICAL_SECTION;
 
