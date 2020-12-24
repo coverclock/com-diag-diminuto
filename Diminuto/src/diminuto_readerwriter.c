@@ -11,14 +11,18 @@
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 
 /*******************************************************************************
- * STATES
+ * CONSTANTS
  ******************************************************************************/
 
-typedef enum DiminutoReaderWriterType thread_type_t;
+typedef enum Role {
+    NONE    = '-',   /**< No role. */
+    READER  = 'R',   /**< Reader role. */
+    WRITER  = 'W',   /**< Writer role. */
+    ANY     = '*',   /**< Any role. */
+} role_t;
 
 /*******************************************************************************
  * STRUCTORS
@@ -75,20 +79,23 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 }
 
 /*******************************************************************************
- * HELPERS
+ * SCHEDULING
  ******************************************************************************/
 
-static thread_type_t resume_either(diminuto_readerwriter_t * rwp)
+static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
 {
-    thread_type_t result = DIMINUTO_READERWRITER_NONE;
+    role_t result = NONE;
     int rc = DIMINUTO_READERWRITER_ERROR;
     int index = -1;
 
     if ((index = diminuto_ring_consumer_peek(&(rwp->ring))) < 0) {
+
         /*
          * There are no readers or writers waiting. We're done.
          */
-    } else if (rwp->state[index] == DIMINUTO_READERWRITER_READER) {
+
+    } else if ((rwp->state[index] == READER) && ((role == READER) || (role == ANY))) {
+
         /*
          * The next waiter is a reader. Signal it. It will resume
          * the next waiter if it is also a reader. We do a broadcast
@@ -101,9 +108,11 @@ static thread_type_t resume_either(diminuto_readerwriter_t * rwp)
             diminuto_perror("resume_either: pthread_cond_broadcast: reader");
         } else {
             DIMINUTO_LOG_DEBUG("Reader %d SIGNALED %dreaders %dwriters", index, rwp->readers, rwp->writers);
-            result = DIMINUTO_READERWRITER_READER;
+            result = READER;
         }
-    } else if (rwp->state[index] == DIMINUTO_READERWRITER_WRITER) {
+
+    } else if ((rwp->state[index] == WRITER) && ((role == WRITER) || (role == ANY))) {
+
         /*
          * The next waiter is a writer. Signal it. When it is done
          * writing it will resume the next head of the ring,
@@ -117,66 +126,33 @@ static thread_type_t resume_either(diminuto_readerwriter_t * rwp)
             diminuto_perror("resume_either: pthread_cond_broadcast: writer");
         } else {
             DIMINUTO_LOG_DEBUG("Writer %d SIGNALED %dreaders %dwriters", index, rwp->readers, rwp->writers);
-            result = DIMINUTO_READERWRITER_WRITER;
+            result = WRITER;
         }
+
     } else {
+
         errno = DIMINUTO_READERWRITER_ERROR;
-        diminuto_perror("resume_either: state");
+        diminuto_perror("resume_either: role");
+
     }
 
     return result;
 }
 
-static thread_type_t resume_reader(diminuto_readerwriter_t * rwp)
-{
-    thread_type_t result = DIMINUTO_READERWRITER_NONE;
-    int rc = DIMINUTO_READERWRITER_ERROR;
-    int index = -1;
-
-    if ((index = diminuto_ring_consumer_peek(&(rwp->ring))) < 0) {
-        /*
-         * There are no readers or writers waiting. We're done.
-         */
-    } else if (rwp->state[index] == DIMINUTO_READERWRITER_READER) {
-        /*
-         * The next waiter is a reader. Signal it. It will continue
-         * continue to resume successive readers iff they are at the head
-         * of the ring. We do a broadcast because POSIX doesn't guarantee
-         * FIFO behavior on the part of conditionl variables. The signaled
-         * reader only resumes if it is at the head of the ring.
-         */
-        if ((rc = pthread_cond_broadcast(&(rwp->reader))) != 0) {
-            errno = rc;
-            diminuto_perror("resume_reader: pthread_cond_broadcast: reader");
-        } else {
-            DIMINUTO_LOG_DEBUG("Reader %d SIGNALED %dreaders %dwriters", index, rwp->readers, rwp->writers);
-            result = DIMINUTO_READERWRITER_READER;
-        }
-    } else if (rwp->state[index] == DIMINUTO_READERWRITER_WRITER) {
-        /*
-         * The next waiter was a writer. We're only resuming readers.
-         * We're done.
-         */
-    } else {
-        errno = DIMINUTO_READERWRITER_ERROR;
-        diminuto_perror("resume_reader: state");
-    }
-
-    return result;
-}
-
-static int suspend_reader(diminuto_readerwriter_t * rwp, int * indexp)
+static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
     int index = -1;
 
     if ((index = diminuto_ring_producer_request(&(rwp->ring), 1)) < 0) {
+
         rc = DIMINUTO_READERWRITER_FULL;
         errno = rc;
-        diminuto_perror("suspend_reader: producer");
-    } else {
+        diminuto_perror("suspend: producer");
 
-        rwp->state[index] = DIMINUTO_READERWRITER_READER;
+    } else if (role == READER) {
+
+        rwp->state[index] = READER;
         DIMINUTO_LOG_DEBUG("Reader %d WAITING %dreaders %dwriters", index, rwp->readers, rwp->writers);
         *indexp = index; /* Just for logging. */
 
@@ -185,89 +161,68 @@ static int suspend_reader(diminuto_readerwriter_t * rwp, int * indexp)
          * We have to do this because POSIX doesn't guarantee FIFO behavior
          * on the part of condition variables.
          */
-
         do {
             if ((rc = pthread_cond_wait(&(rwp->reader), &(rwp->mutex))) != 0) {
                 errno = rc;
-                diminuto_perror("suspend_reader: pthread_cond_wait");
+                diminuto_perror("suspend: pthread_cond_wait");
                 if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
                     rc = DIMINUTO_READERWRITER_UNEXPECTED;
                     errno = rc;
-                    diminuto_perror("suspend_reader: revoke");
+                    diminuto_perror("suspend: revoke");
                 }
                 break;
             }
         } while (diminuto_ring_consumer_peek(&(rwp->ring)) != index);
-
-        /*
-         * Reader resumed. The only way this could have occurred
-         * is if the reader is at the head of the ring. We will resume
-         * the next head of the ring if it is also a reader.
-         */
 
         if (rc != 0) {
             /* Failed! */
         } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
             rc = DIMINUTO_READERWRITER_UNEXPECTED;
             errno = rc;
-            diminuto_perror("suspend_reader: consumer");
+            diminuto_perror("suspend: consumer");
         } else {
             DIMINUTO_LOG_DEBUG("Reader %d RUNNING %dreaders %dwriters", index, rwp->readers, rwp->writers);
         }
 
-    }
+    } else if (role == WRITER) {
 
-    return rc;
-}
-
-static int suspend_writer(diminuto_readerwriter_t * rwp, int * indexp)
-{
-    int rc = DIMINUTO_READERWRITER_ERROR;
-    int index = -1;
-
-    if ((index = diminuto_ring_producer_request(&(rwp->ring), 1)) < 0) {
-        rc = DIMINUTO_READERWRITER_FULL;
-        errno = rc;
-        diminuto_perror("suspend_writer: producer");
-    } else {
-
-        rwp->state[index] = DIMINUTO_READERWRITER_WRITER;
+        rwp->state[index] = WRITER;
         DIMINUTO_LOG_DEBUG("Writer %d WAITING %dreaders %dwriters", index, rwp->readers, rwp->writers);
         *indexp = index; /* Just for logging. */
 
         /*
          * Wait until this writer is signaled and at the head of the ring.
-         * We have to do this because POSIX doesn't guarantee FIFIO behavior
+         * We have to do this because POSIX doesn't guarantee FIFO behavior
          * on the part of condition variables.
          */
-
         do {
             if ((rc = pthread_cond_wait(&(rwp->writer), &(rwp->mutex))) != 0) {
                 errno = rc;
-                diminuto_perror("suspend_writer: pthread_cond_wait");
+                diminuto_perror("suspend: pthread_cond_wait");
                 if (diminuto_ring_producer_revoke(&(rwp->ring), 1) < 0) {
                     rc = DIMINUTO_READERWRITER_UNEXPECTED;
                     errno = rc;
-                    diminuto_perror("suspend_writer: revoke");
+                    diminuto_perror("suspend: revoke");
                 }
                 break;
             }
         } while (diminuto_ring_consumer_peek(&(rwp->ring)) != index);
-
-        /*
-         * Writer resumed. The only way this could have occurred
-         * is if the writer is at the head of the ring.
-         */
 
         if (rc != 0) {
             /* Failed! */
         } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
             rc = DIMINUTO_READERWRITER_UNEXPECTED;
             errno = rc;
-            diminuto_perror("suspend_reader: consumer");
+            diminuto_perror("suspend: consumer");
         } else {
             DIMINUTO_LOG_DEBUG("Writer %d RUNNING %dreaders %dwriters", index, rwp->readers, rwp->writers);
         }
+
+    } else {
+
+        rc = DIMINUTO_READERWRITER_ERROR;
+        errno = rc;
+        diminuto_perror("suspend: role");
 
     }
 
@@ -309,14 +264,14 @@ static void critical_section_cleanup(void * vp)
     } while (0)
 
 /*******************************************************************************
- * ACTIONS
+ * POLICY
  ******************************************************************************/
 
 int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
     int index = -1;
-    thread_type_t type = DIMINUTO_READERWRITER_NONE;
+    role_t role = NONE;
 
     BEGIN_CRITICAL_SECTION(rwp);
 
@@ -326,8 +281,9 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              * Reader can proceeed.
              */
             rwp->readers += 1;
+            DIMINUTO_LOG_DEBUG("Reader - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
             result = 0;
-        } else if (suspend_reader(rwp, &index) == 0) {
+        } else if (suspend(rwp, READER, &index) == 0) {
             /*
              * Either there was an active writer or someone is waiting.
              * If someone is waiting, it is presumably a writer, since
@@ -335,31 +291,24 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              * already been incremented by the thread that signalled
              * us.
              */
+            DIMINUTO_LOG_DEBUG("Reader %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
             /* Failed! */
         }
 
-        if (result < 0) {
-            /* Do nothing. */
-        } else if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Reader - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
-        } else {
-            DIMINUTO_LOG_DEBUG("Reader %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
-        }
-
         /*
-         * If we running, all of the readers waiting immediately
-         * behind us can run as well. Resume it.
+         * If we are running, a reader waiting immediately behind us in
+         * the ring can run as well.
          */
 
         if (result < 0) {
             /* Do nothing */
-        } else if ((type = resume_reader(rwp)) == DIMINUTO_READERWRITER_NONE) {
+        } else if ((role = resume(rwp, READER)) == NONE) {
             /*
              * There isn't a reader at the head of the ring to resume.
              */
-        } else if (type == DIMINUTO_READERWRITER_READER) {
+        } else if (role == READER) {
             /*
              * There's another reader. It will in turn resume the following
              * reader if there is one.
@@ -372,7 +321,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              * writer, or something we don't recognize.
              */
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("diminuto_reader_end: reader");
+            diminuto_perror("diminuto_reader_end: role");
         }
 
     END_CRITICAL_SECTION;
@@ -383,7 +332,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
-    thread_type_t type = DIMINUTO_READERWRITER_NONE;
+    role_t role = NONE;
 
     BEGIN_CRITICAL_SECTION(rwp);
 
@@ -393,13 +342,13 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
              * There are still readers running.
              */
             result = 0;
-        } else if ((type = resume_either(rwp)) == DIMINUTO_READERWRITER_NONE) {
+        } else if ((role = resume(rwp, ANY)) == NONE) {
             /*
              * This was the last reader, and there are no other readers
              * or writers waiting.
              */
             result = 0;
-        } else if (type == DIMINUTO_READERWRITER_READER) {
+        } else if (role == READER) {
             /*
              * This should be impossible: a reader should never have waited.
              * We'll handle it anyway.
@@ -408,15 +357,15 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
             diminuto_perror("diminuto_reader_end: reader");
             rwp->readers += 1;
             result = 0;
-        } else if (type == DIMINUTO_READERWRITER_WRITER) {
+        } else if (role == WRITER) {
             /*
-             * We're activating a writer who has been waiting.
+             * We're resuming a writer who has been waiting.
              */
             rwp->writers += 1;
             result = 0;
         } else {
             errno = DIMINUTO_READERWRITER_ERROR;
-            diminuto_perror("diminuto_reader_end: other");
+            diminuto_perror("diminuto_reader_end: role");
         }
 
         if (result == 0) {
@@ -437,28 +386,22 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 
         if ((rwp->readers <= 0) && (rwp->writers <= 0)) {
             /*
-             * There are zero active readers or writers.
+             * There are no active readers or writers.
              * Writer can proceeed.
              */
             rwp->writers += 1;
+            DIMINUTO_LOG_DEBUG("Writer - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
             result = 0;
-        } else if (suspend_writer(rwp, &index) == 0) {
+        } else if (suspend(rwp, WRITER, &index) == 0) {
             /*
              * Either there was one or more active readers or an
              * active writer. The writer count has already been
              * incremented by the thread that signaled us.
              */
+            DIMINUTO_LOG_DEBUG("Writer %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
             result = 0;
         } else {
             /* Failed! */
-        }
-
-        if (result < 0) {
-            /* Do nothing. */
-        } else if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Writer - BEGIN %dreaders %dwriters", rwp->readers, rwp->writers);
-        } else {
-            DIMINUTO_LOG_DEBUG("Writer %d BEGIN %dreaders %dwriters", index, rwp->readers, rwp->writers);
         }
 
     END_CRITICAL_SECTION;
@@ -469,23 +412,23 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
-    thread_type_t type = DIMINUTO_READERWRITER_NONE;
+    role_t role = NONE;
 
     BEGIN_CRITICAL_SECTION(rwp);
 
         rwp->writers -= 1;
-        if ((type = resume_either(rwp)) == DIMINUTO_READERWRITER_NONE) {
+        if ((role = resume(rwp, ANY)) == NONE) {
             /*
              * There are no other readers or writers waiting.
              */
             result = 0;
-        } else if (type == DIMINUTO_READERWRITER_READER) {
+        } else if (role == READER) {
             /*
              * We're activating a reader who has been waiting.
              */
             rwp->readers += 1;
             result = 0;
-        } else if (type == DIMINUTO_READERWRITER_WRITER) {
+        } else if (role == WRITER) {
             /*
              * We're activating a writer who has been waiting.
              */
@@ -493,7 +436,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
             result = 0;
         } else {
             errno = DIMINUTO_READERWRITER_ERROR;
-            diminuto_perror("diminuto_reader_end: other");
+            diminuto_perror("diminuto_reader_end: role");
         }
 
         if (result == 0) {
