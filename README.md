@@ -438,7 +438,7 @@ use myself for development) is to enable all log levels other than DEBUG.
 
     export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
 
-To see more detail, also enable DBEUG.
+To see more detail, also enable DEBUG.
 
     export COM_DIAG_DIMINUTO_LOG_MASK=0xff
 
