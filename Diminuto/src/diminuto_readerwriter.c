@@ -336,7 +336,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Reader - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
-        if ((rwp->writing <= 0) || (diminuto_ring_used(&(rwp->ring)) <= 0)) {
+        if ((rwp->writing <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
             /*
              * There are zero or more active writers and no one is waiting.
              * Reader can proceeed. INCREMENT!
@@ -459,7 +459,7 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Writer - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
-        if ((rwp->reading <= 0) || (rwp->writing <= 0) || (diminuto_ring_used(&(rwp->ring)) <= 0)) {
+        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
             /*
              * There are no active readers or writers and no one waiting.
              * Writer can proceed. INCREMENT!
