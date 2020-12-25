@@ -191,9 +191,14 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
         hostname[sizeof(hostname) - 1] = '\0';
     }
 
-    /* Prepending an ISO8601 timestamp allows us to sort-merge logs. */
-    /* Bracketing special fields allows us to more easily filter logs. */
-    /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
+    /*
+     * Prepending an ISO8601 timestamp allows us to sort-merge logs from
+     * different computers. However, strict ordering of events is not
+     * guaranteed, even on the same computer, especially with multiprocessor
+     * targets. Bracketing special fields allows us to more easily filter logs.
+     *
+     * yyyy-mm-ddThh:mm:ss.uuuuuuZ <pri> [pid] {tid} ...
+     */
 
     rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
     if (rc < 0) {
@@ -227,6 +232,11 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     } else {
         /* Do nothing. */
     }
+
+    /*
+     * Serialize the emission of the log message so that processes and
+     * threads can't intermingle the texts of messages.
+     */
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 

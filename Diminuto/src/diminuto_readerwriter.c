@@ -1,4 +1,4 @@
-    /* vi: set ts=4 expandtab shiftwidth=4: */
+/* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_assert.h"
 
 /*******************************************************************************
  * CONSTANTS
@@ -190,13 +191,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 
     } else {
 
-        /*
-         * Botch! The caller specified something other than READER or WRITER.
-         */
-
-        rc = DIMINUTO_READERWRITER_ERROR;
-        errno = rc;
-        diminuto_perror("suspend: role");
+        diminuto_assert((role == READER) || (role == WRITER));
 
     }
 
@@ -259,11 +254,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
 
     } else {
 
-        /*
-         * The waiter at the head of the ring is likely already in
-         * a pending state but hasn't run yet to remove itself from
-         * the ring.
-         */
+        diminuto_assert((role == READER) || (role == WRITER) || (role == ANY));
 
     }
 
@@ -385,6 +376,8 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
             DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         }
 
+        diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
+
     END_CRITICAL_SECTION;
 
     return result;
@@ -398,6 +391,8 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     BEGIN_CRITICAL_SECTION(rwp);
 
         DIMINUTO_LOG_DEBUG("Reader - END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+
+        diminuto_assert(rwp->reading > 0);
 
         /*
          * DECREMENT!
@@ -445,6 +440,8 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
+        diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));
+
     END_CRITICAL_SECTION;
 
     return result;
@@ -485,6 +482,8 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
             DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         }
 
+        diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
+
     END_CRITICAL_SECTION;
 
     return result;
@@ -499,6 +498,8 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Writer - END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
+        diminuto_assert(rwp->writing == 1);
+
         /*
          * DECREMENT!
          */
@@ -506,6 +507,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         rwp->writing -= 1;
 
         /*
+         * There should be no readers or writers running.
          * Try to schedule the head of the ring to run.
          */
 
@@ -536,7 +538,35 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
+        diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));
+
     END_CRITICAL_SECTION;
 
     return result;
+}
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+void diminuto_readerwriter_dump(FILE * fp, diminuto_readerwriter_t * rwp)
+{
+    unsigned int used = 0;
+    unsigned int count = 0;
+    int index = -1;
+
+    BEGIN_CRITICAL_SECTION(rwp);
+
+        fprintf(fp, "ReaderWriter@%p: reading=%d\n", rwp, rwp->reading);
+        fprintf(fp, "ReaderWriter@%p: writing=%d\n", rwp, rwp->writing);
+        fprintf(fp, "ReaderWriter@%p: waiting=%d\n", rwp, used = diminuto_ring_used(&(rwp->ring)));
+        if (used > 0) {
+            index = diminuto_ring_consumer_peek(&(rwp->ring));
+            for (count = 1; count <= used; ++count) {
+                fprintf("ReaderWriter@%p: #%d [%d] {%c}\n", count, index, rwp->state[index]);
+                index = diminuto_ring_next(&(rwp->ring), index);
+            }
+        }
+
+    END_CRITICAL_SECTION;
 }

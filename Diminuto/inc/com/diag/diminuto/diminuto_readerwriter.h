@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <stdio.h>
 
 /*******************************************************************************
  * CONSTANTS
@@ -132,3 +133,9 @@ extern void diminuto_writer_cleanup(void * vp);
     } while (0)
 
 #endif
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+extern void diminuto_readerwriter_dump(FILE * fp, diminuto_readerwriter_t * rwp);

@@ -30,8 +30,8 @@ int diminuto_ring_producer_revoke(diminuto_ring_t * rp, unsigned int request)
 
     if (rp->measure >= request) {
         rp->measure -= request;
-        rp->producer = (rp->producer + rp->capacity - request) % rp->capacity;
         result = request;
+        rp->producer = (rp->producer + rp->capacity - request) % rp->capacity;
     }
 
     return result;

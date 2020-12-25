@@ -21,20 +21,7 @@
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_ring.h"
-
-static void ringing(diminuto_readerwriter_t * rwp)
-{
-    unsigned int used = 0;
-    unsigned int count = 0;
-    int index = -1;
-
-    if ((used = diminuto_ring_used(&(rwp->ring))) > 0) {
-        CHECKPOINT("ReaderWriter@%p: ring\n", rwp);
-        for (count = 0, index = diminuto_ring_consumer_peek(&(rwp->ring)); count < used; count += 1, index = diminuto_ring_next(&(rwp->ring), index)) {
-            CHECKPOINT("    <%d> [%d] {%c}\n", count, index, rwp->state[index]);
-        }
-    }
-}
+#include <stdio.h>
 
 struct Context {
     int identifier;
@@ -43,6 +30,11 @@ struct Context {
     diminuto_ticks_t workload;
     int iterations;
 };
+
+static void ringing(diminuto_readerwriter_t * rwp) 
+{
+    diminuto_readerwriter_dump(stderr, rwp);
+}
 
 static void * reader(void * vp)
 {
