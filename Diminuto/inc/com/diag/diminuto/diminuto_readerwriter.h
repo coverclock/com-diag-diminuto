@@ -103,36 +103,32 @@ extern void diminuto_writer_cleanup(void * vp);
 
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
-        diminuto_readerwriter_t * diminuto_readerwriter_rwp = (diminuto_readerwriter_t *)0; \
-        int diminuto_readerwriter_reader = !0; \
-        diminuto_readerwriter_rwp = (_RWP_); \
-        if (diminuto_reader_begin(diminuto_readerwriter_rwp) == 0) { \
+        diminuto_readerwriter_t * diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
+        diminuto_reader_rwp = (_RWP_); \
+        if (diminuto_reader_begin(diminuto_reader_rwp) == 0) { \
             do { \
-                pthread_cleanup_push(diminuto_reader_cleanup, diminuto_readerwriter_rwp)
+                pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp)
 
 #define DIMINUTO_READER_END \
                 pthread_cleanup_pop(0); \
             } while (0); \
-            diminuto_reader_end(diminuto_readerwriter_rwp); \
+            diminuto_reader_end(diminuto_reader_rwp); \
         } \
-        diminuto_readerwriter_reader = 0; \
     } while (0)
 
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
-        diminuto_readerwriter_t * diminuto_readerwriter_rwp = (diminuto_readerwriter_t *)0; \
-        int diminuto_readerwriter_writer = !0; \
-        diminuto_readerwriter_rwp = (_RWP_); \
-        if (diminuto_writer_begin(diminuto_readerwriter_rwp) == 0) { \
+        diminuto_readerwriter_t * diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
+        diminuto_writer_rwp = (_RWP_); \
+        if (diminuto_writer_begin(diminuto_writer_rwp) == 0) { \
             do { \
-                pthread_cleanup_push(diminuto_writer_cleanup, diminuto_readerwriter_rwp)
+                pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp)
 
 #define DIMINUTO_WRITER_END \
                 pthread_cleanup_pop(0); \
             } while (0); \
-            diminuto_writer_end(diminuto_readerwriter_rwp); \
+            diminuto_writer_end(diminuto_writer_rwp); \
         } \
-        diminuto_readerwriter_writer = 0; \
     } while (0)
 
 #endif

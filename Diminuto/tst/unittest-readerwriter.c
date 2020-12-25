@@ -50,16 +50,18 @@ static void * reader(void * vp)
     int ii;
     int success;
 
-    CHECKPOINT("Reader: %d rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
-
-    diminuto_delay(cp->latency, 0);
+    CHECKPOINT("reader[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
         success = 0;
+        diminuto_delay(cp->latency, 0);
         DIMINUTO_READER_BEGIN(cp->rwp);
-            ringing(cp->rwp);
             success = ((cp->rwp->reading > 0) && (cp->rwp->writing == 0));
-            diminuto_delay(cp->workload, 0);
+            CHECKPOINT("reader[%d] reading=%d writing=%d waiting=%d success=%d\n", cp->identifier, cp->rwp->reading, cp->rwp->writing, diminuto_ring_used(&(cp->rwp->ring)), success);
+            ringing(cp->rwp);
+            if (success) {
+                diminuto_delay(cp->workload, 0);
+            }
         DIMINUTO_READER_END;
         if (!success) { break; }
     }
@@ -73,16 +75,18 @@ static void * writer(void * vp)
     int ii;
     int success;
 
-    CHECKPOINT("Writer: %d rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
-
-    diminuto_delay(cp->latency, 0);
+    CHECKPOINT("writer[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
         success = 0;
+        diminuto_delay(cp->latency, 0);
         DIMINUTO_WRITER_BEGIN(cp->rwp);
-            ringing(cp->rwp);
             success = ((cp->rwp->reading == 0) && (cp->rwp->writing == 1));
-            diminuto_delay(cp->workload, 0);
+            CHECKPOINT("writer[%d] reading=%d writing=%d waiting=%d success=%d\n", cp->identifier, cp->rwp->reading, cp->rwp->writing, diminuto_ring_used(&(cp->rwp->ring)), success);
+            ringing(cp->rwp);
+            if (success) {
+                diminuto_delay(cp->workload, 0);
+            }
         DIMINUTO_WRITER_END;
         if (!success) { break; }
     }
