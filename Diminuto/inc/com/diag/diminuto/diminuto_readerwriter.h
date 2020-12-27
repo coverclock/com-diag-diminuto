@@ -61,6 +61,7 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_ring_t ring;                       /**< Ring metadata. */
     diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
+    FILE * fp;                                  /**< Debug file pointer. */
     int reading;                                /**< Active (>=0) readers. */
     int writing;                                /**< Active {0,1} writers. */
 } diminuto_readerwriter_t;
@@ -72,6 +73,7 @@ typedef struct DiminutoReaderWriter {
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
         &((_BUFFER_)[0]), \
+        (FILE *)0,  \
         0, \
         0, \
     }
@@ -141,7 +143,7 @@ extern void diminuto_writer_cleanup(void * vp);
 #endif
 
 /*******************************************************************************
- * HELPERS
+ * DEBUGGING
  ******************************************************************************/
 
-extern void diminuto_readerwriter_dump(FILE * fp, diminuto_readerwriter_t * rwp);
+extern void diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp);

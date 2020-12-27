@@ -22,6 +22,7 @@
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_ring.h"
 #include <stdio.h>
+#include <string.h>
 
 struct Context {
     int identifier;
@@ -33,12 +34,6 @@ struct Context {
 
 static int readers = 0;
 static int writers = 0;
-
-static void report(struct Context * cp) 
-{
-    fprintf(stderr, "thread[%d]:\n", cp->identifier);
-    diminuto_readerwriter_dump(stderr, cp->rwp);
-}
 
 static void * reader(void * vp)
 {
@@ -57,8 +52,6 @@ static void * reader(void * vp)
             CHECKPOINT("reader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
-            } else {
-                report(cp);
             }
             readers--;
         DIMINUTO_READER_END;
@@ -85,8 +78,6 @@ static void * writer(void * vp)
             CHECKPOINT("writer[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
-            } else {
-                report(cp);
             }
             writers--;
         DIMINUTO_WRITER_END;
@@ -96,9 +87,12 @@ static void * writer(void * vp)
     return (void *)(intptr_t)success;
 }
 
-int main(void)
+int main(int argc, char * argv[])
 {
+    int debug;
     diminuto_ticks_t frequency;
+
+    debug = (argc > 1) && (strcmp(argv[1], "-d") == 0);
 
     frequency = diminuto_frequency();
 
@@ -151,6 +145,8 @@ int main(void)
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
 
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+
         ASSERT(rw.state == state);
         ASSERT(rw.ring.capacity == diminuto_countof(state));
         ASSERT(rw.ring.measure == 0);
@@ -184,6 +180,8 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
         ASSERT(rw.state == state);
         ASSERT(rw.ring.capacity == diminuto_countof(state));
@@ -219,6 +217,8 @@ int main(void)
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
 
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+
         ASSERT(rw.state == state);
         ASSERT(rw.ring.capacity == diminuto_countof(state));
         ASSERT(rw.ring.measure == 0);
@@ -279,6 +279,8 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
         ASSERT(rw.state == state);
         ASSERT(rw.ring.capacity == diminuto_countof(state));
@@ -344,6 +346,8 @@ int main(void)
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
 
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+
         reading[0].identifier = 0;
         reading[0].rwp = &rw;
         reading[0].latency = frequency * 0;
@@ -403,6 +407,8 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
         writing[0].identifier = 0;
         writing[0].rwp = &rw;
@@ -466,6 +472,8 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
         reading[0].identifier = 0;
         reading[0].rwp = &rw;

@@ -49,6 +49,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
         /* Failed! */
     } else {
         rwp->state = state;
+        rwp->fp = (FILE *)0;
         rwp->reading = 0;
         rwp->writing = 0;
         result = rwp;
@@ -79,6 +80,31 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
     }
 
     return result;
+}
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+static void dump(FILE * fp, diminuto_readerwriter_t * rwp)
+{
+    unsigned int used = 0;
+    unsigned int count = 0;
+    int index = -1;
+
+    fprintf(fp, "ReaderWriter@%p:", rwp);
+    fprintf(fp, " %dreading", rwp->reading);
+    fprintf(fp, " %dwriting", rwp->writing);
+    fprintf(fp, " %dwaiting", used = diminuto_ring_used(&(rwp->ring)));
+    if (used > 0) {
+        index = diminuto_ring_consumer_peek(&(rwp->ring));
+        for (count = 0; count < used; ++count) {
+            fprintf(fp, " [%d]{%c}", index, rwp->state[index]);
+            index = diminuto_ring_next(&(rwp->ring), index);
+        }
+    }
+    fputc('\n', fp);
+    fflush(fp);
 }
 
 /*******************************************************************************
@@ -376,6 +402,10 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
             DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         }
 
+        if (rwp->fp != (FILE *)0) {
+            dump(rwp->fp, rwp);
+        }
+
         diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
 
     END_CRITICAL_SECTION;
@@ -440,6 +470,10 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
+        if (rwp->fp != (FILE *)0) {
+            dump(rwp->fp, rwp);
+        }
+
         diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));
 
     END_CRITICAL_SECTION;
@@ -480,6 +514,10 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
             DIMINUTO_LOG_DEBUG("Writer - BEGIN exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         } else {
             DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        }
+
+        if (rwp->fp != (FILE *)0) {
+            dump(rwp->fp, rwp);
         }
 
         diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
@@ -538,6 +576,10 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
+        if (rwp->fp != (FILE *)0) {
+            dump(rwp->fp, rwp);
+        }
+
         diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));
 
     END_CRITICAL_SECTION;
@@ -546,27 +588,14 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 }
 
 /*******************************************************************************
- * HELPERS
+ * DEBUGGING
  ******************************************************************************/
 
-void diminuto_readerwriter_dump(FILE * fp, diminuto_readerwriter_t * rwp)
+void diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp)
 {
-    unsigned int used = 0;
-    unsigned int count = 0;
-    int index = -1;
-
     BEGIN_CRITICAL_SECTION(rwp);
 
-        fprintf(fp, "ReaderWriter@%p: reading=%d\n", rwp, rwp->reading);
-        fprintf(fp, "ReaderWriter@%p: writing=%d\n", rwp, rwp->writing);
-        fprintf(fp, "ReaderWriter@%p: waiting=%d\n", rwp, used = diminuto_ring_used(&(rwp->ring)));
-        if (used > 0) {
-            index = diminuto_ring_consumer_peek(&(rwp->ring));
-            for (count = 1; count <= used; ++count) {
-                fprintf("ReaderWriter@%p: #%d [%d] {%c}\n", count, index, rwp->state[index]);
-                index = diminuto_ring_next(&(rwp->ring), index);
-            }
-        }
+        rwp->fp = fp;
 
     END_CRITICAL_SECTION;
 }
