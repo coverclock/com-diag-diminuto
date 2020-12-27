@@ -31,9 +31,13 @@ struct Context {
     int iterations;
 };
 
-static void ringing(diminuto_readerwriter_t * rwp) 
+static int readers = 0;
+static int writers = 0;
+
+static void report(struct Context * cp) 
 {
-    diminuto_readerwriter_dump(stderr, rwp);
+    fprintf(stderr, "thread[%d]:\n", cp->identifier);
+    diminuto_readerwriter_dump(stderr, cp->rwp);
 }
 
 static void * reader(void * vp)
@@ -48,12 +52,15 @@ static void * reader(void * vp)
         success = 0;
         diminuto_delay(cp->latency, 0);
         DIMINUTO_READER_BEGIN(cp->rwp);
-            success = ((cp->rwp->reading > 0) && (cp->rwp->writing == 0));
-            CHECKPOINT("reader[%d] reading=%d writing=%d waiting=%d success=%d\n", cp->identifier, cp->rwp->reading, cp->rwp->writing, diminuto_ring_used(&(cp->rwp->ring)), success);
-            ringing(cp->rwp);
+            ++readers;
+            success = ((readers > 0) && (writers == 0));
+            CHECKPOINT("reader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
+            } else {
+                report(cp);
             }
+            readers--;
         DIMINUTO_READER_END;
         if (!success) { break; }
     }
@@ -73,12 +80,15 @@ static void * writer(void * vp)
         success = 0;
         diminuto_delay(cp->latency, 0);
         DIMINUTO_WRITER_BEGIN(cp->rwp);
-            success = ((cp->rwp->reading == 0) && (cp->rwp->writing == 1));
-            CHECKPOINT("writer[%d] reading=%d writing=%d waiting=%d success=%d\n", cp->identifier, cp->rwp->reading, cp->rwp->writing, diminuto_ring_used(&(cp->rwp->ring)), success);
-            ringing(cp->rwp);
+            ++writers;
+            success = ((readers == 0) && (writers == 1));
+            CHECKPOINT("writer[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
+            } else {
+                report(cp);
             }
+            writers--;
         DIMINUTO_WRITER_END;
         if (!success) { break; }
     }
@@ -108,8 +118,6 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
 
-        ringing(&rw);
-            
         STATUS();
     }
 
@@ -129,8 +137,6 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
 
-        ringing(&rw);
-
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
         STATUS();
@@ -152,8 +158,6 @@ int main(void)
         ASSERT(rw.ring.consumer == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
-
-        ringing(&rw);
 
         DIMINUTO_READER_BEGIN(&rw);
             ASSERT(rw.ring.measure == 0);
@@ -167,8 +171,6 @@ int main(void)
         ASSERT(rw.writing == 0);
         ASSERT(success == !0);
 
-        ringing(&rw);
-
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
         STATUS();
@@ -191,16 +193,12 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
 
-        ringing(&rw);
-
         DIMINUTO_WRITER_BEGIN(&rw);
             ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             success = !0;
         DIMINUTO_WRITER_END;
-
-        ringing(&rw);
 
         ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
@@ -229,7 +227,18 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
 
-        ringing(&rw);
+        success = 0;
+        DIMINUTO_READER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            success = !0;
+        DIMINUTO_READER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
@@ -244,8 +253,6 @@ int main(void)
         ASSERT(rw.writing == 0);
         ASSERT(success == !0);
 
-        ringing(&rw);
-
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
             ASSERT(rw.ring.measure == 0);
@@ -258,23 +265,6 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(success == !0);
-
-        ringing(&rw);
-
-        success = 0;
-        DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
-            ASSERT(rw.reading == 1);
-            ASSERT(rw.writing == 0);
-            success = !0;
-        DIMINUTO_READER_END;
-
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.reading == 0);
-        ASSERT(rw.writing == 0);
-        ASSERT(success == !0);
-
-        ringing(&rw);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -298,7 +288,18 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
 
-        ringing(&rw);
+        success = 0;
+        DIMINUTO_WRITER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            success = !0;
+        DIMINUTO_WRITER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
@@ -313,25 +314,6 @@ int main(void)
         ASSERT(rw.writing == 0);
         ASSERT(success == !0);
 
-        ringing(&rw);
-
-        success = 0;
-        DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
-            ASSERT(rw.reading == 0);
-            ASSERT(rw.writing == 1);
-            success = !0;
-        DIMINUTO_WRITER_END;
-
-        ringing(&rw);
-
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.reading == 0);
-        ASSERT(rw.writing == 0);
-        ASSERT(success == !0);
-
-        ringing(&rw);
-
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
             ASSERT(rw.ring.measure == 0);
@@ -344,8 +326,6 @@ int main(void)
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(success == !0);
-
-        ringing(&rw);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -363,8 +343,6 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(readers)) == &rw);
-
-        ringing(&rw);
 
         reading[0].identifier = 0;
         reading[0].rwp = &rw;
@@ -408,8 +386,6 @@ int main(void)
         ASSERT(((intptr_t)result[1]) != 0);
         ASSERT(((intptr_t)result[2]) != 0);
 
-        ringing(&rw);
-
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
         STATUS();
@@ -427,8 +403,6 @@ int main(void)
         TEST();
 
         ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(writers)) == &rw);
-
-        ringing(&rw);
 
         writing[0].identifier = 0;
         writing[0].rwp = &rw;
@@ -471,8 +445,6 @@ int main(void)
         ASSERT(((intptr_t)result[0]) != 0);
         ASSERT(((intptr_t)result[1]) != 0);
         ASSERT(((intptr_t)result[2]) != 0);
-
-        ringing(&rw);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 

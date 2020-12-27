@@ -44,7 +44,17 @@ static const char ALL[] = DIMINUTO_LOG_MASK_VALUE_ALL;
 
 static uint8_t initialized = 0;
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Separate mutexen to keep from introducing incidential
+ * serialization between unrelated operations.
+ */
+
+static pthread_mutex_t mutexinit = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexstream = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexwrite = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexroute = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
  * GLOBALS
@@ -76,7 +86,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 {
     const char * mask = (const char *)0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexinit);
 
         if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
             /* Do nothing. */
@@ -93,7 +103,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexopen);
 
         if (name != (const char *)0) {
             diminuto_log_ident = name;
@@ -126,7 +136,7 @@ void diminuto_log_open(const char * name)
 
 void diminuto_log_close(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexclose);
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
         if (initialized) {
@@ -140,7 +150,7 @@ void diminuto_log_close(void)
 
 FILE * diminuto_log_stream(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexstream);
 
         if (diminuto_log_file != (FILE *)0) {
             /* Do nothing. */
@@ -238,7 +248,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * threads can't intermingle the texts of messages.
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexwrite);
 
         for (pointer = buffer; total > 0; total -= rc) {
             rc = write(fd, pointer, total);
@@ -275,7 +285,7 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = !0;
         }  else {
 
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexroute);
 
                 if ((diminuto_log_cached = (getpid() == getsid(0)))) {
                     tolog = !0;

@@ -128,7 +128,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
                 }
                 break;
             }
-        } while ((diminuto_ring_consumer_peek(&(rwp->ring)) != index) && (rwp->state[index] != READING));
+        } while ((diminuto_ring_consumer_peek(&(rwp->ring)) != index) || (rwp->state[index] != READING));
 
         /*
          * Consume this position and let the next waiter become the head
@@ -172,7 +172,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
                 }
                 break;
             }
-        } while ((diminuto_ring_consumer_peek(&(rwp->ring)) != index) && (rwp->state[index] != WRITING));
+        } while ((diminuto_ring_consumer_peek(&(rwp->ring)) != index) || (rwp->state[index] != WRITING));
 
         /*
          * Consume this position and let the next waiter become the head
