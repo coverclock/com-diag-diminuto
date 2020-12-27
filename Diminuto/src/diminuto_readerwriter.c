@@ -591,11 +591,16 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
  * DEBUGGING
  ******************************************************************************/
 
-void diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp)
+FILE * diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp)
 {
+    FILE * oldfp = (FILE *)0;
+
     BEGIN_CRITICAL_SECTION(rwp);
 
+        oldfp = rwp->fp;
         rwp->fp = fp;
 
     END_CRITICAL_SECTION;
+
+    return oldfp;
 }

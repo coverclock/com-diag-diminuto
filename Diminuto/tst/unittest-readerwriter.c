@@ -99,6 +99,20 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     {
+        diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER((diminuto_readerwriter_state_t *)0, 0);
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == (FILE *)0);
+        ASSERT(diminuto_readerwriter_debug(&rw, stderr) == (FILE *)0);
+        ASSERT(diminuto_readerwriter_debug(&rw, stdout) == stderr);
+        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == stdout);
+        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == (FILE *)0);
+
+        STATUS();
+    }
+
+    {
         diminuto_readerwriter_state_t state[100];
         diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER(state, diminuto_countof(state));
 

@@ -14,8 +14,11 @@
  *
  * REFERENCES
  *
- * C. Hoare, "Monitors: An Operating Syetem Structuring Concept", CACM,
+ * C. Hoare, "Monitors: An Operating System Structuring Concept", CACM,
  * 17.10, 1974-10
+ *
+ * L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed
+ * System", CACM, 21.7, 1978-07
  *
  * B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa",
  * CACM, 23.2, 1980-02
@@ -146,4 +149,4 @@ extern void diminuto_writer_cleanup(void * vp);
  * DEBUGGING
  ******************************************************************************/
 
-extern void diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp);
+extern FILE * diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp);
