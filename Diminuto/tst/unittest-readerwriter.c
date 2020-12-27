@@ -336,13 +336,13 @@ int main(void)
     {
         diminuto_thread_t readers[3];
         struct Context reading[diminuto_countof(readers)];
-        void * result[countof(readers)];
+        void * result[diminuto_countof(readers)];
         diminuto_readerwriter_state_t state[diminuto_countof(readers)];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(readers)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
 
         reading[0].identifier = 0;
         reading[0].rwp = &rw;
@@ -350,13 +350,13 @@ int main(void)
         reading[0].workload = frequency * 3;
         reading[0].iterations = 11;
 
-        reading[1].identifier = 0;
+        reading[1].identifier = 1;
         reading[1].rwp = &rw;
         reading[1].latency = frequency * 5;
         reading[1].workload = frequency * 7;
         reading[1].iterations = 11;
 
-        reading[2].identifier = 0;
+        reading[2].identifier = 2;
         reading[2].rwp = &rw;
         reading[2].latency = frequency * 1;
         reading[2].workload = frequency * 2;
@@ -396,13 +396,13 @@ int main(void)
     {
         diminuto_thread_t writers[3];
         struct Context writing[diminuto_countof(writers)];
-        void * result[countof(writers)];
+        void * result[diminuto_countof(writers)];
         diminuto_readerwriter_state_t state[diminuto_countof(writers)];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(writers)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
 
         writing[0].identifier = 0;
         writing[0].rwp = &rw;
@@ -445,6 +445,111 @@ int main(void)
         ASSERT(((intptr_t)result[0]) != 0);
         ASSERT(((intptr_t)result[1]) != 0);
         ASSERT(((intptr_t)result[2]) != 0);
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+#endif
+
+#if !0
+    {
+        diminuto_thread_t readers[3];
+        diminuto_thread_t writers[3];
+        struct Context reading[diminuto_countof(readers)];
+        struct Context writing[diminuto_countof(writers)];
+        void * reads[countof(readers)];
+        void * writes[countof(writers)];
+        diminuto_readerwriter_state_t state[diminuto_countof(readers) + diminuto_countof(writers)];
+        diminuto_readerwriter_t rw;
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        reading[0].identifier = 0;
+        reading[0].rwp = &rw;
+        reading[0].latency = frequency * 0;
+        reading[0].workload = frequency * 3;
+        reading[0].iterations = 11;
+
+        reading[1].identifier = 1;
+        reading[1].rwp = &rw;
+        reading[1].latency = frequency * 5;
+        reading[1].workload = frequency * 7;
+        reading[1].iterations = 11;
+
+        reading[2].identifier = 2;
+        reading[2].rwp = &rw;
+        reading[2].latency = frequency * 1;
+        reading[2].workload = frequency * 2;
+        reading[2].iterations = 11;
+
+        reads[0] = (void *)0;
+        reads[1] = (void *)0;
+        reads[2] = (void *)0;
+
+        writing[0].identifier = 3;
+        writing[0].rwp = &rw;
+        writing[0].latency = frequency * 0;
+        writing[0].workload = frequency * 3;
+        writing[0].iterations = 11;
+
+        writing[1].identifier = 4;
+        writing[1].rwp = &rw;
+        writing[1].latency = frequency * 5;
+        writing[1].workload = frequency * 7;
+        writing[1].iterations = 11;
+
+        writing[2].identifier = 5;
+        writing[2].rwp = &rw;
+        writing[2].latency = frequency * 1;
+        writing[2].workload = frequency * 2;
+        writing[2].iterations = 11;
+
+        writes[0] = (void *)0;
+        writes[1] = (void *)0;
+        writes[2] = (void *)0;
+
+        ASSERT(diminuto_thread_init(&readers[0], reader) == &readers[0]);
+        ASSERT(diminuto_thread_init(&readers[1], reader) == &readers[1]);
+        ASSERT(diminuto_thread_init(&readers[2], reader) == &readers[2]);
+
+        ASSERT(diminuto_thread_init(&writers[0], writer) == &writers[0]);
+        ASSERT(diminuto_thread_init(&writers[1], writer) == &writers[1]);
+        ASSERT(diminuto_thread_init(&writers[2], writer) == &writers[2]);
+
+        ASSERT(diminuto_thread_start(&readers[0], &reading[0]) == 0);
+        ASSERT(diminuto_thread_start(&readers[1], &reading[1]) == 0);
+        ASSERT(diminuto_thread_start(&readers[2], &reading[2]) == 0);
+
+        ASSERT(diminuto_thread_start(&writers[0], &writing[0]) == 0);
+        ASSERT(diminuto_thread_start(&writers[1], &writing[1]) == 0);
+        ASSERT(diminuto_thread_start(&writers[2], &writing[2]) == 0);
+
+        ASSERT(diminuto_thread_join(&readers[0], &reads[0]) == 0);
+        ASSERT(diminuto_thread_join(&readers[1], &reads[1]) == 0);
+        ASSERT(diminuto_thread_join(&readers[2], &reads[2]) == 0);
+
+        ASSERT(diminuto_thread_join(&writers[0], &writes[0]) == 0);
+        ASSERT(diminuto_thread_join(&writers[1], &writes[1]) == 0);
+        ASSERT(diminuto_thread_join(&writers[2], &writes[2]) == 0);
+
+        CHECKPOINT("reads[0]=%d\n", (int)(intptr_t)reads[0]);
+        CHECKPOINT("reads[1]=%d\n", (int)(intptr_t)reads[1]);
+        CHECKPOINT("reads[2]=%d\n", (int)(intptr_t)reads[2]);
+
+        CHECKPOINT("writes[0]=%d\n", (int)(intptr_t)writes[0]);
+        CHECKPOINT("writes[1]=%d\n", (int)(intptr_t)writes[1]);
+        CHECKPOINT("writes[2]=%d\n", (int)(intptr_t)writes[2]);
+
+        ASSERT(((intptr_t)reads[0]) != 0);
+        ASSERT(((intptr_t)reads[1]) != 0);
+        ASSERT(((intptr_t)reads[2]) != 0);
+
+        ASSERT(((intptr_t)writes[0]) != 0);
+        ASSERT(((intptr_t)writes[1]) != 0);
+        ASSERT(((intptr_t)writes[2]) != 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
