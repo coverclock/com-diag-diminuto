@@ -14,18 +14,18 @@
  *
  * REFERENCES
  *
- * Wikipedia, "Readers-writers problem", 2020-11-23
- *
- * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
- * 2013
- *
- * S. Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
- *
  * C. Hoare, "Monitors: An Operating Syetem Structuring Concept", CACM,
  * 17.10, 1974-10
  *
  * B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa",
  * CACM, 23.2, 1980-02
+ *
+ * S. Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
+ *
+ * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
+ * 2013
+ *
+ * Wikipedia, "Readers-writers problem", 2020-11-23
  */
 
 /*******************************************************************************
