@@ -288,7 +288,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
 }
 
 /*******************************************************************************
- * CALLBACKS AND GENERATORS
+ * GENERATORS
  ******************************************************************************/
 
 static void mutex_cleanup(void * vp)
@@ -316,28 +316,6 @@ static void mutex_cleanup(void * vp)
             critical_section_rwp = (diminuto_readerwriter_t *)0; \
         } \
     } while (0)
-
-void diminuto_reader_cleanup(void * vp)
-{
-    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
-
-    BEGIN_CRITICAL_SECTION(rwp);
-
-        rwp->reading -= 1;
-
-    END_CRITICAL_SECTION;
-}
-
-void diminuto_writer_cleanup(void * vp)
-{
-    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
-
-    BEGIN_CRITICAL_SECTION(rwp);
-
-        rwp->writing -= 1;
-
-    END_CRITICAL_SECTION;
-}
 
 /*******************************************************************************
  * POLICY
@@ -585,6 +563,24 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
     END_CRITICAL_SECTION;
 
     return result;
+}
+
+/*******************************************************************************
+ * CALLBACKS
+ ******************************************************************************/
+
+void diminuto_reader_cleanup(void * vp)
+{
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
+
+    (void)diminuto_reader_end(rwp);
+}
+
+void diminuto_writer_cleanup(void * vp)
+{
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
+
+    (void)diminuto_writer_end(rwp);
 }
 
 /*******************************************************************************

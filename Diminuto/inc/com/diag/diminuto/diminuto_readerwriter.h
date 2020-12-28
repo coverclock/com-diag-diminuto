@@ -10,7 +10,6 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Work In Progress!
  *
  * REFERENCES
  *
@@ -27,6 +26,12 @@
  *
  * V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem",
  * 2013
+ *
+ * pthread_cond_broadcast, pthead_cond_signal, Open Group Base Specification
+ * Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
+ *
+ * pthread_cond_timedwait, pthead_cond_wait, Open Group Base Specification
+ * Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
  *
  * Wikipedia, "Readers-writers problem", 2020-11-23
  */
@@ -96,36 +101,28 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
         extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp); \
-        extern int diminuto_reader_end(diminuto_readerwriter_t * rwp); \
         extern void diminuto_reader_cleanup(void * vp); \
         diminuto_readerwriter_t * diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_reader_rwp = (_RWP_); \
         if (diminuto_reader_begin(diminuto_reader_rwp) == 0) { \
-            do { \
-                pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp)
+            pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp)
 
 #define DIMINUTO_READER_END \
-                pthread_cleanup_pop(0); \
-            } while (0); \
-            diminuto_reader_end(diminuto_reader_rwp); \
+            pthread_cleanup_pop(!0); \
         } \
     } while (0)
 
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
         extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp); \
-        extern int diminuto_writer_end(diminuto_readerwriter_t * rwp); \
         extern void diminuto_writer_cleanup(void * vp); \
         diminuto_readerwriter_t * diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_writer_rwp = (_RWP_); \
         if (diminuto_writer_begin(diminuto_writer_rwp) == 0) { \
-            do { \
-                pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp)
+            pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp)
 
 #define DIMINUTO_WRITER_END \
-                pthread_cleanup_pop(0); \
-            } while (0); \
-            diminuto_writer_end(diminuto_writer_rwp); \
+            pthread_cleanup_pop(!0); \
         } \
     } while (0)
 
