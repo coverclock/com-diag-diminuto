@@ -568,8 +568,9 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
         /*
          * Is is important for fairness and correctness (and fairly subtle IMO)
-         * that the reader or writer count already be incremented for any waiting
-         * Reader or Writer that we resumed before we exit the critical section.
+         * that the reader or writer count already be incremented for any
+         * waiting Reader or Writer that we resumed before we exit the critical
+         * section.
          */
 
         DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
@@ -690,8 +691,9 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         /*
          * Is is important for fairness and correctness (and fairly subtle IMO)
-         * that the reader or writer count already be incremented for any waiting
-         * Reader or Writer that we resumed before we exit the critical section.
+         * that the reader or writer count already be incremented for any
+         * waiting Reader or Writer that we resumed before we exit the critical
+         * section.
          */
 
         DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));

@@ -84,10 +84,10 @@ enum DiminutoReaderWriterError {
 
 /**
  * The application is responsible for allocating an array of this type for use
- * by Reader Writer. No initilization of the array is necesary. The dimension of
- * the array should be as large as the maximum number of threads using the Reader
- * Writer object. This array is used to implement a ring (circular) buffer used
- * to managing waiting threads.
+ * by Reader Writer. No initilization of the array is necesary. The dimension
+ * of the array should be as large as the maximum number of threads using the
+ * Reader Writer object. This array is used to implement a ring (circular)
+ * buffer used to managing waiting threads.
  */
 typedef int8_t diminuto_readerwriter_state_t;
 
