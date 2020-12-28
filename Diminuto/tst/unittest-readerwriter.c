@@ -9,9 +9,15 @@
  * @details
  * This is the unit test for the Reader Writer feature.
  *
- * Enabling DEBUG logging before running is enlightening:
+ * Enabling DEBUG logging before running is enlightening.
  *
  * > export COM_DIAG_DIMINUTO_LOG_MASK=0xff
+ *
+ * Even more diagnostic output can be emitted to standard
+ * error by using the "-d" flag on the command line for this
+ * unit test, which enables more debugging in the feature.
+ *
+ * > unittest-readerwriter -d
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
