@@ -66,6 +66,7 @@ Diminuto provides:
 * helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
 * using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
 * consistent implementation of time keeping (```diminuto_time```) and delays (```diminuto_delay```);
+* A fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```).
 * Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
 * Pulse Width Modulation (PWM) (```diminuto_modulator```);
 * programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
@@ -155,6 +156,7 @@ Make="GNU Make 4.0"
 * alarm - receive and check for a SIGALRM signal.
 * assert - similar to assert(3) but with more output.
 * barrier - acquire and release memory barriers.
+* bits - get, set, and clear bits in a bit field array.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
 * comparator - prototype of comparator function for search feartures.
@@ -209,6 +211,7 @@ Make="GNU Make 4.0"
 * poll - file descriptor multiplexer using poll(2).
 * pool - manage a pool of objects from which they can be allocated and freed.
 * proxy - macros to implement a proxy feature like heap.
+* ring - generic support for ring (circular) buffers.
 * serial - get and set parameters for a serial port.
 * serializedsection - macros to implement scoped spinlocked code blocks.
 * shaper - use the throttle feature to implement a bursty traffic shaper.

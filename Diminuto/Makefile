@@ -29,7 +29,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	70# API changes that may require that applications be modified.
+MAJOR				:=	71# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
@@ -930,6 +930,7 @@ sanity:	unittest
 	unittest-assert && false || true
 	unittest-barrier
 	unittest-bitfield
+	unittest-bits
 	unittest-buffer
 	unittest-bufferpool
 	unittest-coherentsection
@@ -978,6 +979,7 @@ sanity:	unittest
 	unittest-proxy
 	unittest-reaper
 	unittest-renameat2
+	unittest-ring
 	unittest-serializedsection
 	unittest-service
 	unittest-shaper
@@ -1025,6 +1027,7 @@ extended:
 	unittest-poll6
 	unittest-polll
 	unittest-poll-eventloop
+	unittest-readerwriter
 	unittest-time
 	unittest-time-cost
 
@@ -1050,8 +1053,10 @@ threads:
 	unittest-condition
 	unittest-thread
 	unittest-coherentsection
-	unittest-serializedsection
 	unittest-criticalsection
+	unittest-ipc-ancillary
+	unittest-readerwriter
+	unittest-serializedsection
 
 gnuish:
 	echo "nohup make hangup" 1>&2

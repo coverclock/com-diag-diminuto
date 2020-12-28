@@ -15,13 +15,12 @@ bootstrap:
 
 release:	all
 
-.PHONY:	scope
+.PHONY:	scope descope rescope
 
 scope:
-	cscope.sh
+	mycscope
 
-.PHONY:	rescope
-
-rescope:
+descope:
 	rm -f .cscope*
-	cscope.sh
+
+rescope:	descope scope

@@ -27,15 +27,15 @@
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(...) \
     do { \
-        sigset_t _diminuto_uninterruptible_section_now_; \
-        sigset_t _diminuto_uninterruptible_section_was_; \
-        sigemptyset(&_diminuto_uninterruptible_section_now_); \
-        int _diminuto_uninterruptible_section_signals_[] = { __VA_ARGS__ }; \
-        int _diminuto_uninterruptible_section_ndx_; \
-        for (_diminuto_uninterruptible_section_ndx_ = 0; _diminuto_uninterruptible_section_ndx_ < diminuto_countof(_diminuto_uninterruptible_section_signals_); ++_diminuto_uninterruptible_section_ndx_) { \
-            sigaddset(&_diminuto_uninterruptible_section_now_, _diminuto_uninterruptible_section_signals_[_diminuto_uninterruptible_section_ndx_]); \
+        sigset_t diminuto_uninterruptible_section_now; \
+        sigset_t diminuto_uninterruptible_section_was; \
+        sigemptyset(&diminuto_uninterruptible_section_now); \
+        int diminuto_uninterruptible_section_signals[] = { __VA_ARGS__ }; \
+        int diminuto_uninterruptible_section_ndx = 0; \
+        for (diminuto_uninterruptible_section_ndx = 0; diminuto_uninterruptible_section_ndx < diminuto_countof(diminuto_uninterruptible_section_signals); ++diminuto_uninterruptible_section_ndx) { \
+            sigaddset(&diminuto_uninterruptible_section_now, diminuto_uninterruptible_section_signals[diminuto_uninterruptible_section_ndx]); \
         } \
-        pthread_sigmask(SIG_BLOCK, &_diminuto_uninterruptible_section_now_, &_diminuto_uninterruptible_section_was_); \
+        pthread_sigmask(SIG_BLOCK, &diminuto_uninterruptible_section_now, &diminuto_uninterruptible_section_was); \
         do { \
             (void)0
 
@@ -47,7 +47,7 @@
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
         } while (0); \
-        pthread_sigmask(SIG_SETMASK, &_diminuto_uninterruptible_section_was_, (sigset_t *)0); \
+        pthread_sigmask(SIG_SETMASK, &diminuto_uninterruptible_section_was, (sigset_t *)0); \
     } while (0)
 
 #endif

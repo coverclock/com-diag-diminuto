@@ -6,13 +6,12 @@
  * @file
  * @copyright Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements macros to to begin and end sections serialized with spin locks.
+ * @brief Implements macros to to bracket sections serialized with spin locks.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * The Serialized Section feature uses the Barrier feature to implement
- * a code section serialized between multiple processors. This is experimental.
+ * a code section serialized between multiple processors. EXPERIMENTAL.
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"
@@ -29,8 +28,9 @@
  */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                    volatile diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p_ = (_INTP_); \
-                    while (__sync_lock_test_and_set(_diminuto_serialized_section_spinlock_p_, 1)); \
+                    volatile diminuto_spinlock_t * diminuto_serialized_section_spinlock_p = (volatile diminuto_spinlock_t *)0; \
+                    diminuto_serialized_section_spinlock_p = (_INTP_); \
+                    while (__sync_lock_test_and_set(diminuto_serialized_section_spinlock_p, 1)); \
                     do { \
                         (void)0
 
@@ -41,7 +41,7 @@
  */
 #           define DIMINUTO_SERIALIZED_SECTION_END \
                 } while (0); \
-                __sync_lock_release(_diminuto_serialized_section_spinlock_p_); \
+                __sync_lock_release(diminuto_serialized_section_spinlock_p); \
             } while (0)
 
 #       endif

@@ -98,6 +98,10 @@
  * Balancing of a Multi-Billion User Website", ACM SIGCOMM '20,
  * August 2020
  *
+ * W. R. Stevens, S. A. Rago, ADVANCED PROGRAMMING IN THE UNIX ENVIRONMENT, 2nd ed.,
+ * Addison-Wesley, 2005: 17.4.2, "Passing File Descriptors over UNIX Domain Sockets",
+ * pp. 606-614
+ *
  * unix(7) man page
  *
  * socket(7) man page
@@ -305,7 +309,7 @@ static void thread_pool_fini(thread_pool_t * pp, size_t nn)
  * error streams (those should be the Big Three, but we're not testing
  * for that).
  */
-static int audit()
+static int audit(void)
 {
     ssize_t limit = -1;
     int fd = -1;

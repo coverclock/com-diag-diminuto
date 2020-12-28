@@ -44,11 +44,22 @@ static const char ALL[] = DIMINUTO_LOG_MASK_VALUE_ALL;
 
 static uint8_t initialized = 0;
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+/*
+ * Separate mutexen to keep from introducing incidential
+ * serialization between unrelated operations in the application.
+ * SEE ALSO diminuto_log_mutex in the GLOBALS section.
+ */
+static pthread_mutex_t mutexinit = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexstream = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexroute = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
  * GLOBALS
  *****************************************************************************/
+
+pthread_mutex_t diminuto_log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
@@ -76,7 +87,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 {
     const char * mask = (const char *)0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexinit);
 
         if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
             /* Do nothing. */
@@ -93,7 +104,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexopen);
 
         if (name != (const char *)0) {
             diminuto_log_ident = name;
@@ -126,7 +137,7 @@ void diminuto_log_open(const char * name)
 
 void diminuto_log_close(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexclose);
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
         if (initialized) {
@@ -140,7 +151,7 @@ void diminuto_log_close(void)
 
 FILE * diminuto_log_stream(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexstream);
 
         if (diminuto_log_file != (FILE *)0) {
             /* Do nothing. */
@@ -191,9 +202,14 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
         hostname[sizeof(hostname) - 1] = '\0';
     }
 
-    /* Prepending an ISO8601 timestamp allows us to sort-merge logs. */
-    /* Bracketing special fields allows us to more easily filter logs. */
-    /* yyyy-mm-ddThh:mm:ss.ffffffZ <pri> [pid] {tid} ... */
+    /*
+     * Prepending an ISO8601 timestamp allows us to sort-merge logs from
+     * different computers. However, strict ordering of events is not
+     * guaranteed, even on the same computer, especially with multiprocessor
+     * targets. Bracketing special fields allows us to more easily filter logs.
+     *
+     * yyyy-mm-ddThh:mm:ss.uuuuuuZ <pri> [pid] {tid} ...
+     */
 
     rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
     if (rc < 0) {
@@ -228,7 +244,12 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
         /* Do nothing. */
     }
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+    /*
+     * Serialize the emission of the log message so that processes and
+     * threads can't intermingle the texts of messages.
+     */
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
 
         for (pointer = buffer; total > 0; total -= rc) {
             rc = write(fd, pointer, total);
@@ -265,7 +286,7 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = !0;
         }  else {
 
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexroute);
 
                 if ((diminuto_log_cached = (getpid() == getsid(0)))) {
                     tolog = !0;
