@@ -21,6 +21,7 @@
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_ring.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -34,6 +35,22 @@ struct Context {
 
 static int readers = 0;
 static int writers = 0;
+
+static unsigned int randy(unsigned int low, unsigned int high)
+{
+    unsigned long long result;
+    static unsigned int seed;
+    static int initialized = 0;
+
+    if (!initialized) {
+        seed = (unsigned int)diminuto_time_clock();
+        initialized = !0;
+    }
+
+    /* rand_r: [0..RAND_MAX=2147483647] */
+
+    return low + (rand_r(&seed) % (high - low + 1));
+}
 
 static void * reader(void * vp)
 {
@@ -348,7 +365,7 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-#if !0
+#if 0
     {
         diminuto_thread_t readers[3];
         struct Context reading[diminuto_countof(readers)];
@@ -410,7 +427,7 @@ int main(int argc, char * argv[])
     }
 #endif
 
-#if !0
+#if 0
     {
         diminuto_thread_t writers[3];
         struct Context writing[diminuto_countof(writers)];
@@ -472,7 +489,7 @@ int main(int argc, char * argv[])
     }
 #endif
 
-#if !0
+#if 0
     {
         diminuto_thread_t readers[3];
         diminuto_thread_t writers[3];
@@ -572,6 +589,80 @@ int main(int argc, char * argv[])
         ASSERT(((intptr_t)writes[0]) != 0);
         ASSERT(((intptr_t)writes[1]) != 0);
         ASSERT(((intptr_t)writes[2]) != 0);
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+#endif
+
+#if !0
+    {
+        diminuto_thread_t readers[64];
+        diminuto_thread_t writers[8];
+        struct Context reading[diminuto_countof(readers)];
+        struct Context writing[diminuto_countof(writers)];
+        void * reads[countof(readers)];
+        void * writes[countof(writers)];
+        diminuto_readerwriter_state_t state[diminuto_countof(readers) + diminuto_countof(writers)];
+        diminuto_readerwriter_t rw;
+        int maximum = (diminuto_countof(readers) > diminuto_countof(writers) ? diminuto_countof(readers) : diminuto_countof(writers));
+        int ii;
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+
+        for (ii = 0; ii < diminuto_countof(readers); ++ii) {
+            reading[ii].identifier = ii;
+            reading[ii].rwp = &rw;
+            reading[ii].latency = frequency * randy(0, 3);
+            reading[ii].workload = frequency * randy(1, 5);
+            reading[ii].iterations = randy(2, 13);
+            reads[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&readers[ii], reader) == &readers[ii]);
+        }
+
+        for (ii = 0; ii < diminuto_countof(writers); ++ii) {
+            writing[ii].identifier = ii;
+            writing[ii].rwp = &rw;
+            writing[ii].latency = frequency * randy(0, 3);
+            writing[ii].workload = frequency * randy(1, 5);
+            writing[ii].iterations = randy(2, 13);
+            writes[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&writers[ii], writer) == &writers[ii]);
+        }
+
+        for (ii = 0; ii < maximum; ++ii) {
+            if (ii < diminuto_countof(readers)) {
+                ASSERT(diminuto_thread_start(&readers[ii], &reading[ii]) == 0);
+            }
+            if (ii < diminuto_countof(writers)) {
+                ASSERT(diminuto_thread_start(&writers[ii], &writing[ii]) == 0);
+            }
+        }
+
+        for (ii = 0; ii < maximum; ++ii) {
+            if (ii < diminuto_countof(readers)) {
+                ASSERT(diminuto_thread_join(&readers[ii], &reads[ii]) == 0);
+                CHECKPOINT("reads[%d]=%d\n", ii, (int)(intptr_t)reads[ii]);
+            }
+            if (ii < diminuto_countof(writers)) {
+                ASSERT(diminuto_thread_join(&writers[ii], &writes[ii]) == 0);
+                CHECKPOINT("writes[%d]=%d\n", ii, (int)(intptr_t)writes[ii]);
+            }
+        }
+
+        for (ii = 0; ii < maximum; ++ii) {
+            if (ii < diminuto_countof(readers)) {
+                ASSERT(((intptr_t)reads[ii]) != 0);
+            }
+            if (ii < diminuto_countof(writers)) {
+                ASSERT(((intptr_t)writes[ii]) != 0);
+            }
+        }
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 

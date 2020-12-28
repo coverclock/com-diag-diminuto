@@ -1027,6 +1027,7 @@ extended:
 	unittest-poll6
 	unittest-polll
 	unittest-poll-eventloop
+	unittest-readerwriter
 	unittest-time
 	unittest-time-cost
 
@@ -1052,8 +1053,10 @@ threads:
 	unittest-condition
 	unittest-thread
 	unittest-coherentsection
-	unittest-serializedsection
 	unittest-criticalsection
+	unittest-ipc-ancillary
+	unittest-readerwriter
+	unittest-serializedsection
 
 gnuish:
 	echo "nohup make hangup" 1>&2

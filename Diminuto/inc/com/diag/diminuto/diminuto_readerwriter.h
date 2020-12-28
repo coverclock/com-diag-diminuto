@@ -174,6 +174,7 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 #define DIMINUTO_READER_END \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 /**
@@ -199,6 +200,7 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 #define DIMINUTO_WRITER_END \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 #endif

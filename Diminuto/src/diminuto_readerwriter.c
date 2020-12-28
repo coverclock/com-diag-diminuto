@@ -104,12 +104,31 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
     unsigned int used = 0;
     unsigned int count = 0;
+    unsigned int pending = 0;
+    unsigned int readers = 0;
+    unsigned int writers = 0;
     int index = -1;
 
     fprintf(fp, "%s(%p):", label, rwp);
     fprintf(fp, " %dreading", rwp->reading);
     fprintf(fp, " %dwriting", rwp->writing);
     fprintf(fp, " %dwaiting", used = diminuto_ring_used(&(rwp->ring)));
+    if (used > 0) {
+        index = diminuto_ring_consumer_peek(&(rwp->ring));
+        for (count = 0; count < used; ++count) {
+            switch (rwp->state[index]) {
+            case READING: ++pending; break;
+            case WRITING: ++pending; break;
+            case READER:  ++readers; break;
+            case WRITER:  ++writers; break;
+            default:                 break;
+            }
+            index = diminuto_ring_next(&(rwp->ring), index);
+        }
+    }
+    fprintf(fp, " %dpending", pending);
+    fprintf(fp, " %dreaders", readers);
+    fprintf(fp, " %dwriters", writers);
     if (used > 0) {
         index = diminuto_ring_consumer_peek(&(rwp->ring));
         for (count = 0; count < used; ++count) {
