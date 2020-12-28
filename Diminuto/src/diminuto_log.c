@@ -46,18 +46,20 @@ static uint8_t initialized = 0;
 
 /*
  * Separate mutexen to keep from introducing incidential
- * serialization between unrelated operations.
+ * serialization between unrelated operations in the application.
+ * SEE ALSO diminuto_log_mutex in the GLOBALS section.
  */
 static pthread_mutex_t mutexinit = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexstream = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t mutexwrite = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexroute = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
  * GLOBALS
  *****************************************************************************/
+
+pthread_mutex_t diminuto_log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
@@ -247,7 +249,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * threads can't intermingle the texts of messages.
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexwrite);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
 
         for (pointer = buffer; total > 0; total -= rc) {
             rc = write(fd, pointer, total);

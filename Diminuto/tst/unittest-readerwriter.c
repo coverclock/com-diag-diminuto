@@ -383,7 +383,7 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-#if 0
+#if !0
     {
         diminuto_thread_t readers[3];
         struct Context reading[diminuto_countof(readers)];
@@ -445,7 +445,7 @@ int main(int argc, char * argv[])
     }
 #endif
 
-#if 0
+#if !0
     {
         diminuto_thread_t writers[3];
         struct Context writing[diminuto_countof(writers)];
@@ -507,7 +507,7 @@ int main(int argc, char * argv[])
     }
 #endif
 
-#if 0
+#if !0
     {
         diminuto_thread_t readers[3];
         diminuto_thread_t writers[3];

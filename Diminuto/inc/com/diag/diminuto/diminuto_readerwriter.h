@@ -23,6 +23,9 @@
  * won't). Diminuto Threads specifically disable cancellation, although
  * Reader Writer doesn't depend upon Diminuto Threads.
  *
+ * Still considered somewhat experimental since I don't believe I have
+ * tested it completely adequately.
+ *
  * REFERENCES
  *
  * C. Hoare, "Monitors: An Operating System Structuring Concept", CACM,
@@ -212,7 +215,9 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 /**
  * This function enables (or disables) additional debugging information to be
  * emitted to the specified file stream. This is specific to the Reader Writer
- * object passed as an argument.
+ * object passed as an argument. (The generation and emission of the debug
+ * data is done within the Reader Writer object's critical section, so may
+ * impact the performance of the application.)
  * @param rwp points to the Reader Writer object.
  * @param fp is the file stream, or NULL to disable the debugging output.
  * @return the prior value of the file stream used for debugging.

@@ -11,8 +11,9 @@
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_assert.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_log.h"
 
 /*******************************************************************************
  * CONSTANTS
@@ -102,6 +103,11 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
  */
 static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
+    extern pthread_mutex_t diminuto_log_mutex;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    char * bp = (char *)0;
+    size_t size = 0;
+    int length = 0;
     unsigned int used = 0;
     unsigned int count = 0;
     unsigned int pending = 0;
@@ -109,10 +115,21 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     unsigned int writers = 0;
     int index = -1;
 
-    fprintf(fp, "%s(%p):", label, rwp);
-    fprintf(fp, " %dreading", rwp->reading);
-    fprintf(fp, " %dwriting", rwp->writing);
-    fprintf(fp, " %dwaiting", used = diminuto_ring_used(&(rwp->ring)));
+    bp = &(buffer[0]);
+    size = sizeof(buffer) - 1;
+
+    length = snprintf(bp, size, "%s(%p):", label, rwp);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dreading", rwp->reading);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dwriting", rwp->writing);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dwaiting", used = diminuto_ring_used(&(rwp->ring)));
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
     if (used > 0) {
         index = diminuto_ring_consumer_peek(&(rwp->ring));
         for (count = 0; count < used; ++count) {
@@ -126,18 +143,32 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
             index = diminuto_ring_next(&(rwp->ring), index);
         }
     }
-    fprintf(fp, " %dpending", pending);
-    fprintf(fp, " %dreaders", readers);
-    fprintf(fp, " %dwriters", writers);
+
+    length = snprintf(bp, size, " %dpending", pending);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dreaders", readers);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dwriters", writers);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
     if (used > 0) {
         index = diminuto_ring_consumer_peek(&(rwp->ring));
         for (count = 0; count < used; ++count) {
-            fprintf(fp, " [%d]{%c}", index, rwp->state[index]);
+            length = snprintf(bp, size, " [%d]{%c}", index, rwp->state[index]);
+            if ((0 < length) && (length < size)) { bp += length; size -= length; }
             index = diminuto_ring_next(&(rwp->ring), index);
         }
     }
-    fputc('\n', fp);
-    fflush(fp);
+
+    *(bp++) = '\n';
+    *(bp) = '\0';
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        fputs(buffer, fp);
+        fflush(fp);
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 /*******************************************************************************
