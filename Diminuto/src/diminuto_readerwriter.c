@@ -7,7 +7,7 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Work In Progress!
+ * This is the implementation of the Reader Writer feature.
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
@@ -18,6 +18,13 @@
  * CONSTANTS
  ******************************************************************************/
 
+/**
+ * Reader Writer calling threads may assume the following "roles". These role
+ * values are used as parameter to the Reader Writer scheduling functions
+ * (below), or as tokens inserted and removed from the state ring buffer.
+ * "Pending" means the thread has been awakened from the condition variable but
+ * has not yet removed its token from the ring buffer.
+ */
 typedef enum Role {
     NONE    = '-',  /**< No role. */
     READER  = 'R',  /**< Waiting reader role. */
@@ -86,6 +93,13 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
  * HELPERS
  ******************************************************************************/
 
+/**
+ * Display information about the internal state of the Reader Writer object
+ * to a file stream (like stderr).
+ * @param fp points to the file stream.
+ * @param rwp points to the Reader Writer object.
+ * @param label is a string displayed to identify who is calling the function.
+ */
 static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
     unsigned int used = 0;
@@ -111,6 +125,20 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
  * SCHEDULING
  ******************************************************************************/
 
+/**
+ * Place the calling thread in a wait on the condition variable in the
+ * Reader Writer object identified by the specified role. The role token
+ * is inserted into the tail of the state ring buffer before the thread
+ * waits. When the thread awakens, it will remove its token (which will have
+ * been changed from a "waiting" token to a "pending" token) from the head
+ * of the state ring buffer. The index of the token of the thread in the state
+ * ring buffer is passed back when the thread awakens purely for purposes of
+ * debugging.
+ * @param rwp points to the Reader Writer object.
+ * @param role is the role of the calling thread: READER or WRITER.
+ * @param indexp is a value-result parameter into which the index is placed.
+ * @return 0 for success, or an errno number otherwise.
+ */
 static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
@@ -224,6 +252,16 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
     return rc;
 }
 
+/**
+ * Signal a waiting thread whose state token at the head of the state
+ * ring buffer (if anyway)  matches that of the specified role, or any
+ * waiting thread if the role is ANY. Prior to signaling the waiting
+ * thread, the state token is changed from a waiting token to a pending
+ * token.
+ * @param rwp points to the Reader Writer object.
+ * @param role is the required role: READER, WRITER, or ANY.
+ * @return the role of the thread signaled: READER or WRITER.
+ */
 static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
 {
     role_t result = NONE;
@@ -291,6 +329,10 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
  * GENERATORS
  ******************************************************************************/
 
+/**
+ * Clean up the mutex if an abnormal termination occurrs.
+ * @param vp points to the Reader Writer object.
+ */
 static void mutex_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
@@ -302,6 +344,11 @@ static void mutex_cleanup(void * vp)
     }
 }
 
+/**
+ * @def BEGIN_CRITICAL_SECTION
+ * This is the opening bracket of a critical section using the mutex
+ * in the Reader Writer object pointed to by @a _RWP_.
+ */
 #define BEGIN_CRITICAL_SECTION(_RWP_) \
     do { \
         diminuto_readerwriter_t * critical_section_rwp = (diminuto_readerwriter_t *)0; \
@@ -311,6 +358,11 @@ static void mutex_cleanup(void * vp)
         } else { \
             pthread_cleanup_push(mutex_cleanup, critical_section_rwp)
 
+/**
+ * @def END_CRITICAL_SECTION
+ * This is the closing bracket of a critical section using the mutex
+ * in the Reader Writer object pointed to by @a _RWP_.
+ */
 #define END_CRITICAL_SECTION \
             pthread_cleanup_pop(!0); \
             critical_section_rwp = (diminuto_readerwriter_t *)0; \
@@ -321,6 +373,11 @@ static void mutex_cleanup(void * vp)
  * POLICY
  ******************************************************************************/
 
+/**
+ * This function is called to begin a Reader segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
 int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -374,6 +431,14 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
             /* Do nothing. */
         }
 
+        /*
+         * Is is important for fairness and correctness (and fairly subtle
+         * IMO) that the reader count already be incremented for any waiting
+         * Reader that we resumed before we exit the critical section. Any
+         * Reader that we resume will itself resume a Reader if it follows
+         * that Reader in the state ring buffer.
+         */
+
         if (index < 0) {
             DIMINUTO_LOG_DEBUG("Reader - BEGIN exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         } else {
@@ -391,6 +456,11 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
     return result;
 }
 
+/**
+ * This function is called to end a Reader segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
 int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -446,6 +516,12 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
             /* Do nothing. */
         }
 
+        /*
+         * Is is important for fairness and correctness (and fairly subtle IMO)
+         * that the reader or writer count already be incremented for any waiting
+         * Reader or Writer that we resumed before we exit the critical section.
+         */
+
         DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if (rwp->fp != (FILE *)0) {
@@ -459,6 +535,11 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     return result;
 }
 
+/**
+ * This function is called to begin a Writer segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
 int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -505,6 +586,11 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
     return result;
 }
 
+/**
+ * This function is called to end a Writer segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
 int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -552,6 +638,12 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
             /* Do nothing. */
         }
 
+        /*
+         * Is is important for fairness and correctness (and fairly subtle IMO)
+         * that the reader or writer count already be incremented for any waiting
+         * Reader or Writer that we resumed before we exit the critical section.
+         */
+
         DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if (rwp->fp != (FILE *)0) {
@@ -569,6 +661,10 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
  * CALLBACKS
  ******************************************************************************/
 
+/**
+ * Cleanup a Reader segment of code by calling the end reader function.
+ * @param vp points to the Reader Writer object.
+ */
 void diminuto_reader_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
@@ -576,6 +672,10 @@ void diminuto_reader_cleanup(void * vp)
     (void)diminuto_reader_end(rwp);
 }
 
+/**
+ * Cleanup a Writer segment of code by calling the end writer function.
+ * @param vp points to the Reader Writer object.
+ */
 void diminuto_writer_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
