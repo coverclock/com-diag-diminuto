@@ -90,31 +90,14 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwrite
 extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * rwp);
 
 /*******************************************************************************
- * ACTIONS
- ******************************************************************************/
-
-extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp);
-
-extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
-
-extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp);
-
-extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
-
-/*******************************************************************************
- * CALLBACKS
- ******************************************************************************/
-
-extern void diminuto_reader_cleanup(void * vp);
-
-extern void diminuto_writer_cleanup(void * vp);
-
-/*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
+        extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp); \
+        extern int diminuto_reader_end(diminuto_readerwriter_t * rwp); \
+        extern void diminuto_reader_cleanup(void * vp); \
         diminuto_readerwriter_t * diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_reader_rwp = (_RWP_); \
         if (diminuto_reader_begin(diminuto_reader_rwp) == 0) { \
@@ -130,6 +113,9 @@ extern void diminuto_writer_cleanup(void * vp);
 
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
+        extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp); \
+        extern int diminuto_writer_end(diminuto_readerwriter_t * rwp); \
+        extern void diminuto_writer_cleanup(void * vp); \
         diminuto_readerwriter_t * diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_writer_rwp = (_RWP_); \
         if (diminuto_writer_begin(diminuto_writer_rwp) == 0) { \

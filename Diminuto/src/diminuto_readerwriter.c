@@ -86,13 +86,13 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
  * HELPERS
  ******************************************************************************/
 
-static void dump(FILE * fp, diminuto_readerwriter_t * rwp)
+static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
     unsigned int used = 0;
     unsigned int count = 0;
     int index = -1;
 
-    fprintf(fp, "ReaderWriter@%p:", rwp);
+    fprintf(fp, "%s(%p):", label, rwp);
     fprintf(fp, " %dreading", rwp->reading);
     fprintf(fp, " %dwriting", rwp->writing);
     fprintf(fp, " %dwaiting", used = diminuto_ring_used(&(rwp->ring)));
@@ -403,7 +403,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
         }
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp);
+            dump(rwp->fp, rwp, "diminuto_reader_begin");
         }
 
         diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
@@ -471,7 +471,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp);
+            dump(rwp->fp, rwp, "diminuto_reader_end");
         }
 
         diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));
@@ -517,7 +517,7 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
         }
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp);
+            dump(rwp->fp, rwp, "diminuto_writer_begin");
         }
 
         diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
@@ -577,7 +577,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp);
+            dump(rwp->fp, rwp, "diminuto_writer_end");
         }
 
         diminuto_assert(((rwp->reading >= 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)));

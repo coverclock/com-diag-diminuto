@@ -48,7 +48,6 @@ static uint8_t initialized = 0;
  * Separate mutexen to keep from introducing incidential
  * serialization between unrelated operations.
  */
-
 static pthread_mutex_t mutexinit = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;

@@ -134,8 +134,10 @@ extern void diminuto_mutex_cleanup(void * vp);
  */
 #define DIMINUTO_MUTEX_BEGIN(_MP_) \
     do { \
-        if (diminuto_mutex_lock(_MP_) == 0) { \
-            pthread_cleanup_push(diminuto_mutex_cleanup, _MP_); \
+        diminuto_mutex_t * diminuto_mutex_p = (diminuto_mutex_t *)0; \
+        diminuto_mutex_p = (_MP_); \
+        if (diminuto_mutex_lock(diminuto_mutex_p) == 0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, diminuto_mutex_p); \
             do { \
                 (void)0
 
@@ -147,8 +149,10 @@ extern void diminuto_mutex_cleanup(void * vp);
  */
 #define DIMINUTO_MUTEX_TRY(_MP_) \
     do { \
-        if (diminuto_mutex_lock_try(_MP_) == 0) { \
-            pthread_cleanup_push(diminuto_mutex_cleanup, _MP_); \
+        diminuto_mutex_t * diminuto_mutex_p = (diminuto_mutex_t *)0; \
+        diminuto_mutex_p = (_MP_); \
+        if (diminuto_mutex_lock_try(diminuto_mutex_p) == 0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, diminuto_mutex_p); \
             do { \
                 (void)0
 
@@ -161,6 +165,7 @@ extern void diminuto_mutex_cleanup(void * vp);
             } while (0); \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_mutex_p = (diminuto_mutex_t *)0; \
     } while (0)
 
 #endif

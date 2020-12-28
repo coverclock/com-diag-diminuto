@@ -27,35 +27,31 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 /**
  * @def DIMINUTO_CRITICAL_SECTION_BEGIN
  * Begin a code section that is serialized using a pthread mutex specified by
- * the caller as a pointer in the argument @a _MUTEXP_ by locking the mutex.
+ * the caller as a pointer in the argument @a _MP_ by locking the mutex.
  */
-#define DIMINUTO_CRITICAL_SECTION_BEGIN(_MUTEXP_) \
+#define DIMINUTO_CRITICAL_SECTION_BEGIN(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mutexp = (pthread_mutex_t *)0; \
-        int diminuto_criticalsection_rc = -1; \
-        diminuto_criticalsection_mutexp = (_MUTEXP_); \
-        diminuto_criticalsection_rc = pthread_mutex_lock(diminuto_criticalsection_mutexp); \
-        if (diminuto_criticalsection_rc == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
+        pthread_mutex_t * diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
+        diminuto_criticalsection_mp = (_MP_); \
+        if (pthread_mutex_lock(diminuto_criticalsection_mp) == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
-                do { } while (0)
+                (void)0
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_TRY
  * Conditionally begin a code section that is serialized using a pthread
- * mutex specified by the caller as a pointer in the argument @a _MUTEXP_
+ * mutex specified by the caller as a pointer in the argument @a _MP_
  * by locking the mutex.
  */
-#define DIMINUTO_CRITICAL_SECTION_TRY(_MUTEXP_) \
+#define DIMINUTO_CRITICAL_SECTION_TRY(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mutexp = (pthread_mutex_t *)0; \
-        int diminuto_criticalsection_rc = -1; \
-        diminuto_criticalsection_mutexp = (_MUTEXP_); \
-        diminuto_criticalsection_rc = pthread_mutex_trylock(diminuto_criticalsection_mutexp); \
-        if (diminuto_criticalsection_rc == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mutexp); \
+        pthread_mutex_t * diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
+        diminuto_criticalsection_mp = (_MP_); \
+        if (pthread_mutex_trylock(diminuto_criticalsection_mp) == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
-                do { } while (0)
+                (void)0
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_END
@@ -66,6 +62,7 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
             } while (0); \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
     } while (0)
 
 #endif
