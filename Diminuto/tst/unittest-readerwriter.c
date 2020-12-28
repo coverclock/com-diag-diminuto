@@ -22,19 +22,12 @@
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_ring.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
-struct Context {
-    int identifier;
-    diminuto_readerwriter_t * rwp;
-    diminuto_ticks_t latency;
-    diminuto_ticks_t workload;
-    int iterations;
-};
-
-static int readers = 0;
-static int writers = 0;
+/******************************************************************************/
 
 static unsigned int randy(unsigned int low, unsigned int high)
 {
@@ -52,8 +45,22 @@ static unsigned int randy(unsigned int low, unsigned int high)
     return low + (rand_r(&seed) % (high - low + 1));
 }
 
+/******************************************************************************/
+
+struct Context {
+    int identifier;
+    diminuto_readerwriter_t * rwp;
+    diminuto_ticks_t latency;
+    diminuto_ticks_t workload;
+    int iterations;
+};
+
+static int readers = 0;
+static int writers = 0;
+
 static void * reader(void * vp)
 {
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
     int success;
@@ -64,13 +71,17 @@ static void * reader(void * vp)
         success = 0;
         diminuto_delay(cp->latency, 0);
         DIMINUTO_READER_BEGIN(cp->rwp);
-            ++readers;
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                ++readers;
+            DIMINUTO_CRITICAL_SECTION_END;
             success = ((readers > 0) && (writers == 0));
             CHECKPOINT("reader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
             }
-            readers--;
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                readers--;
+            DIMINUTO_CRITICAL_SECTION_END;
         DIMINUTO_READER_END;
         if (!success) { break; }
     }
@@ -80,6 +91,7 @@ static void * reader(void * vp)
 
 static void * writer(void * vp)
 {
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
     int success;
@@ -90,19 +102,25 @@ static void * writer(void * vp)
         success = 0;
         diminuto_delay(cp->latency, 0);
         DIMINUTO_WRITER_BEGIN(cp->rwp);
-            ++writers;
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                ++writers;
+            DIMINUTO_CRITICAL_SECTION_END;
             success = ((readers == 0) && (writers == 1));
             CHECKPOINT("writer[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
             if (success) {
                 diminuto_delay(cp->workload, 0);
             }
-            writers--;
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                writers--;
+            DIMINUTO_CRITICAL_SECTION_END;
         DIMINUTO_WRITER_END;
         if (!success) { break; }
     }
 
     return (void *)(intptr_t)success;
 }
+
+/******************************************************************************/
 
 int main(int argc, char * argv[])
 {
