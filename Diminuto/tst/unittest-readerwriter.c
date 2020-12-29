@@ -389,6 +389,111 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        diminuto_readerwriter_state_t state[64];
+        diminuto_readerwriter_t rw;
+        int success;
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+
+        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+
+        ASSERT(rw.state == state);
+        ASSERT(rw.ring.capacity == diminuto_countof(state));
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.ring.producer == 0);
+        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+
+        success = 0;
+        DIMINUTO_READER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            success = !0;
+        DIMINUTO_READER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
+
+        success = 0;
+        DIMINUTO_WRITER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            success = !0;
+        DIMINUTO_WRITER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
+
+        success = 0;
+        DIMINUTO_READER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            success = !0;
+            DIMINUTO_READER_BEGIN(&rw);
+                ASSERT(rw.ring.measure == 0);
+                ASSERT(rw.reading == 2);
+                ASSERT(rw.writing == 0);
+                success = success && !0;
+                DIMINUTO_READER_BEGIN(&rw);
+                    ASSERT(rw.ring.measure == 0);
+                    ASSERT(rw.reading == 3);
+                    ASSERT(rw.writing == 0);
+                    success = success && !0;
+            DIMINUTO_READER_END;
+            DIMINUTO_READER_END;
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            success = success && !0;
+        DIMINUTO_READER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
+
+        success = 0;
+        DIMINUTO_WRITER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            success = !0;
+        DIMINUTO_WRITER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
+
+        success = 0;
+        DIMINUTO_READER_BEGIN(&rw);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            success = !0;
+        DIMINUTO_READER_END;
+
+        ASSERT(rw.ring.measure == 0);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(success == !0);
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+
 #if !0
     {
         diminuto_thread_t readers[3];
