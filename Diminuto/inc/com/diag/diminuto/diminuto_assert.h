@@ -13,7 +13,7 @@
  *
  * If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined (which should happen only
  * under the most exceptional of circumstances and perhaps only for debugging),
- *  these functions evaluate the condition but do nothing else.
+ * these functions evaluate the condition but do nothing else.
  *
  * If COM_DIAG_DIMINUTO_ASSERT_DEBUG is defined, the asserts are turned into
  * expects (which do everything assert does except the abort).

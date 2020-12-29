@@ -8,6 +8,15 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is the implementation of the Reader Writer feature.
+ *
+ * This translation unit contains Diminuto assert statements that check
+ * invariants upon exit from the Reader and Writer Begin and End functions.
+ * As long as the implementation does the right thing, these are benign.
+ * Should the invariants be violated, the default behavior is for the
+ * asserts to abort the application and produce a core dump. This behavior
+ * can be overridden by compile time options - see the diminuto_assert.h
+ * header file for more details. But the asserts failing indicates a very
+ * serious bug in my code, and the reader-writer synchronization is unreliable.
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
