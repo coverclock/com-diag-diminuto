@@ -15,7 +15,8 @@
  *
  * Even more diagnostic output can be emitted to standard
  * error by using the "-d" flag on the command line for this
- * unit test, which enables more debugging in the feature.
+ * unit test, which causes the unit test to enable more
+ * debugging in the feature.
  *
  * > unittest-readerwriter -d
  *
