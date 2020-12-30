@@ -18,6 +18,11 @@
  * unit test, which enables more debugging in the feature.
  *
  * > unittest-readerwriter -d
+ *
+ * Turning off DEBUG and INFO logging but using the "-d" flag
+ * also puts on an interesting show.
+ *
+ * > export COM_DIAG_DIMINUTO_LOG_MASK=0xfc
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
