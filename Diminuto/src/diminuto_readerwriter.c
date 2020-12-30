@@ -304,13 +304,15 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 
     } else if (role == READER) {
 
-        *indexp = index; /* Just for logging. */
-        rc = condition(rwp, "Reader", index, READER, READING, &(rwp->reader));
+        if ((rc = condition(rwp, "Reader", index, READER, READING, &(rwp->reader))) == 0) {
+            *indexp = index; /* Just for logging. */
+        }
 
     } else if (role == WRITER) {
 
-        *indexp = index; /* Just for logging. */
-        rc = condition(rwp, "Writer", index, WRITER, WRITING, &(rwp->writer));
+        if ((rc = condition(rwp, "Writer", index, WRITER, WRITING, &(rwp->writer))) == 0) {
+            *indexp = index; /* Just for logging. */
+        }
 
     } else {
 
