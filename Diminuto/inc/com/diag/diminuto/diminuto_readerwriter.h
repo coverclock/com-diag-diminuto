@@ -28,6 +28,9 @@
  *
  * REFERENCES
  *
+ * P. Courtois, F. Heymans, D. Parnas, "Concurrent Control with ''Readers''
+ * and ''Writers''", CACM, 14.10, 1971-10
+ *
  * C. Hoare, "Monitors: An Operating System Structuring Concept", CACM,
  * 17.10, 1974-10
  *
@@ -49,6 +52,9 @@
  * Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
  *
  * Wikipedia, "Readers-writers problem", 2020-11-23
+ *
+ * C. Overclock, "First-Come First-Served Readers and Writers in C using
+ * Condition Variables", 2020-12
  */
 
 /*******************************************************************************
@@ -89,7 +95,7 @@ enum DiminutoReaderWriterError {
  * Reader Writer object. This array is used to implement a ring (circular)
  * buffer used to managing waiting threads.
  */
-typedef int8_t diminuto_readerwriter_state_t;
+typedef uint8_t diminuto_readerwriter_state_t;
 
 /**
  * This is the Reader Writer object, which maintains the state of the Reader

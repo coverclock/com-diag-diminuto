@@ -698,6 +698,10 @@ Chip Overclock, "Scatter/Gather", 2020-12,
 Chip Overclock, "Old Dog, New Tricks", 2020-12,
 <https://coverclock.blogspot.com/2020/12/old-dog-new-tricks.html>
 
+Chip Overclock, "First-Come First-Served Readers and Writers in C using
+Condition Variables", 2020-12,
+<https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
+
 # Acknowledgements
 
 I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
