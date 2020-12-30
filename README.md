@@ -211,6 +211,7 @@ Make="GNU Make 4.0"
 * poll - file descriptor multiplexer using poll(2).
 * pool - manage a pool of objects from which they can be allocated and freed.
 * proxy - macros to implement a proxy feature like heap.
+* readerwriter - a first-come, first-served Reader-Writer lock;
 * ring - generic support for ring (circular) buffers.
 * serial - get and set parameters for a serial port.
 * serializedsection - macros to implement scoped spinlocked code blocks.
