@@ -437,11 +437,6 @@ static void mutex_cleanup(void * vp)
  * POLICY
  ******************************************************************************/
 
-/**
- * This function is called to begin a Reader segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
 int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -520,11 +515,6 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-/**
- * This function is called to end a Reader segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
 int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -600,11 +590,6 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-/**
- * This function is called to begin a Writer segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
 int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -651,11 +636,6 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-/**
- * This function is called to end a Writer segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
 int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 {
     int result = -1;
@@ -727,10 +707,6 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
  * CALLBACKS
  ******************************************************************************/
 
-/**
- * Cleanup a Reader segment of code by calling the end reader function.
- * @param vp points to the Reader Writer object.
- */
 void diminuto_reader_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
@@ -738,10 +714,6 @@ void diminuto_reader_cleanup(void * vp)
     (void)diminuto_reader_end(rwp);
 }
 
-/**
- * Cleanup a Writer segment of code by calling the end writer function.
- * @param vp points to the Reader Writer object.
- */
 void diminuto_writer_cleanup(void * vp)
 {
     diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
