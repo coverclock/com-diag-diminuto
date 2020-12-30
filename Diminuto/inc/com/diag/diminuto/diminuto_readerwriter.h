@@ -54,7 +54,7 @@
  * Wikipedia, "Readers-writers problem", 2020-11-23
  *
  * C. Overclock, "First-Come First-Served Readers and Writers in C using
- * Condition Variables", 2020-12
+ * Monitors", 2020-12
  */
 
 /*******************************************************************************
