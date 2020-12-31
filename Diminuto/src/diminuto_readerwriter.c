@@ -16,7 +16,8 @@
  * asserts to abort the application and produce a core dump. This behavior
  * can be overridden by compile time options - see the diminuto_assert.h
  * header file for more details. But the asserts failing indicates a very
- * serious bug in my code, and the reader-writer synchronization is unreliable.
+ * serious bug in my code, implying the reader-writer synchronization is
+ * unreliable.
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"

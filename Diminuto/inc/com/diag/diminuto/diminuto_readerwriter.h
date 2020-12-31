@@ -53,6 +53,8 @@
  *
  * Wikipedia, "Readers-writers problem", 2020-11-23
  *
+ * Wikipedia, "Readers-writer lock", 2020-11-16
+ *
  * C. Overclock, "First-Come First-Served Readers and Writers in C using
  * Monitors", 2020-12
  */
