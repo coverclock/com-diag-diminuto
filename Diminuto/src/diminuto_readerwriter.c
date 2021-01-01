@@ -278,7 +278,7 @@ static int broadcast(diminuto_readerwriter_t * rwp, const char * label, int inde
 }
 
 /*******************************************************************************
- * PLUMBING
+ * ROLES
  ******************************************************************************/
 
 /**
@@ -318,10 +318,11 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
     } else {
 
         /*
-         * Botch! The caller passed a role that was neither READER nor WRITER.
+         * The caller passed a role that was neither READER nor WRITER.
          */
 
-        diminuto_assert((role == READER) || (role == WRITER));
+        errno = rc;
+        diminuto_perror("suspend: role");
 
     }
 
@@ -338,7 +339,6 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
 {
     role_t result = NONE;
-    int rc = DIMINUTO_READERWRITER_ERROR;
     int index = -1;
 
     if ((index = diminuto_ring_consumer_peek(&(rwp->ring))) < 0) {
@@ -358,7 +358,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
          * pending state.
          */
 
-        if ((rc = broadcast(rwp, "Reader", index, READING, &(rwp->reader))) == 0) {
+        if (broadcast(rwp, "Reader", index, READING, &(rwp->reader)) == 0) {
             result = READER;
         }
 
@@ -373,18 +373,56 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
          * of the ring and it was placed into the pending state.
          */
 
-        if ((rc = broadcast(rwp, "Writer", index, WRITING, &(rwp->writer))) == 0) {
+        if (broadcast(rwp, "Writer", index, WRITING, &(rwp->writer)) == 0) {
             result = WRITER;
         }
 
     } else {
 
         /*
-         * Botch! The caller passed a role that wasn't READER, WRITER, or ANY.
+         * The rest of this is just error checking because I'm paranoid.
          */
 
-        diminuto_assert((role == READER) || (role == WRITER) || (role == ANY));
+        switch (role) {
+        case READER:
+        case WRITER:
+        case ANY:
+            break;
+        default:
+            /*
+             * The caller passed a role that wasn't READER, WRITER, or ANY,
+             * We emit an error message, but still pass back NONE.
+             */
+            errno = DIMINUTO_READERWRITER_ERROR;
+            diminuto_perror("resume: role");
+            break;
+        }
 
+        switch (rwp->state[index]) {
+        case READER:
+        case WRITER:
+        case READING:
+        case WRITING:
+            break;
+        default:
+            /*
+             * The state is invalid. This should be impossible.
+             * We emit an error message, but still pass back NONE.
+             */
+            errno = DIMINUTO_READERWRITER_UNEXPECTED;
+            diminuto_perror("resume: state");
+            break;
+        }
+
+        /*
+         * If no error detected: either the token at the head of the ring was
+         * not the role the caller wanted, or it represents a thread that is
+         * pending and has not yet been scheduled to run. This is a normal
+         * state, and is especially likely for the multiple concurrent readers
+         * scenario in which a subsequent reader has ended after a prior
+         * reader has resumed the reader at the head of the ring but that
+         * reader has not yet run.
+         */
     }
 
     return result;
