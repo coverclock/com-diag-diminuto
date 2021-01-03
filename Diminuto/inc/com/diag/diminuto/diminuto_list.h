@@ -246,7 +246,7 @@ extern void diminuto_list_log(diminuto_list_t * nodep);
 extern diminuto_list_t * diminuto_list_audit(diminuto_list_t * nodep);
 
 /*******************************************************************************
- * SETTORS
+ * STRUCTORS
  ******************************************************************************/
 
 /**
@@ -270,6 +270,10 @@ static inline diminuto_list_t * diminuto_list_init(diminuto_list_t * nodep) {
 static inline diminuto_list_t * diminuto_list_fini(diminuto_list_t * nodep) {
     return (diminuto_list_t *)0;
 }
+
+/*******************************************************************************
+ * SETTORS
+ ******************************************************************************/
 
 /**
  * Set the data pointer to the data and return a pointer to the data.
