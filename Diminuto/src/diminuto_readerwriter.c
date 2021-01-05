@@ -219,6 +219,17 @@ static int head(diminuto_readerwriter_t * rwp)
 }
 
 /**
+ * Clean up the ring if an abnormal termination occurs.
+ * @param vp points to the slot representing the caller in the ring.
+ */
+static void wait_cleanup(void * vp)
+{
+    diminuto_readerwriter_state_t * sp = (diminuto_readerwriter_state_t *)vp;
+
+    *sp = IGNORE;
+}
+
+/**
  * Place the calling thread in a wait on the condition variable in the
  * Reader Writer object identified by the specified role. The role token
  * is inserted into the tail of the state ring buffer before the thread
@@ -249,15 +260,19 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
     /*
      * Wait until this thread is signaled, while at the head of the ring, and
      * specifically selected. Note that POSIX doesn't guarantee FIFO
-     * behavior on the part of condition variables.
+     * behavior on the part of condition variables. Use a cleanup handler to
+     * reconcile the slot in the ring if the caller is cancelled.
      */
 
-    do {
-        if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
-            rwp->state[index] = IGNORE;
-            break;
-        }
-    } while ((head(rwp) != index) || (rwp->state[index] != pending));
+    pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
+
+        do {
+            if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
+                break;
+            }
+        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+
+    pthread_cleanup_pop(rc != 0);
 
     /*
      * Consume this token and let the next waiter become the head

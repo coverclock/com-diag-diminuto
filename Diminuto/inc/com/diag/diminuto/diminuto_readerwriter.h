@@ -63,6 +63,7 @@
  * PREREQUISITES
  ******************************************************************************/
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
 #include "com/diag/diminuto/diminuto_ring.h"
 #include <errno.h>
@@ -71,7 +72,7 @@
 #include <stdio.h>
 
 /*******************************************************************************
- * CONSTANTS
+ * SYMBOLS
  ******************************************************************************/
 
 /**
@@ -132,6 +133,16 @@ typedef struct DiminutoReaderWriter {
         0, \
         0, \
     }
+
+/***********************************************************************
+ * CONSTANTS
+ **********************************************************************/
+
+/**
+ * This value when used as a timeout specifies that the caller blocks
+ * indefinitely.
+ */
+static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks_t)0);
 
 /*******************************************************************************
  * STRUCTORS
