@@ -41,7 +41,7 @@ typedef enum Role {
     NONE    = '-',  /**< No role. */
     READER  = 'R',  /**< Waiting reader role. */
     WRITER  = 'W',  /**< Waiting writer role. */
-    IGNORE  = 'X',  /**< Cancelled, timed out, or failed. */
+    IGNORE  = 'X',  /**< Cancelled, timed out, failed, etc. */
     READING = 'r',  /**< Pending reader role. */
     WRITING = 'w',  /**< Pending writer role. */
 } role_t;
@@ -208,6 +208,7 @@ static int head(diminuto_readerwriter_t * rwp)
         } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("head: consumer");
+            index = -1;
             break;
         } else {
             /* Try again. */
@@ -652,7 +653,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
             dump(rwp->fp, rwp, "diminuto_reader_end");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || (diminuto_ring_used(&(rwp->ring)) == 0));
+        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || ((rwp->reading == 0) && (rwp->writing == 0) && (diminuto_ring_used(&(rwp->ring)) == 0)));
 
     END_CRITICAL_SECTION;
 
@@ -766,7 +767,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
             dump(rwp->fp, rwp, "diminuto_writer_end");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || (diminuto_ring_used(&(rwp->ring)) == 0));
+        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || ((rwp->reading == 0) && (rwp->writing == 0) && (diminuto_ring_used(&(rwp->ring)) == 0)));
 
     END_CRITICAL_SECTION;
 
