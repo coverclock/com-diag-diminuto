@@ -24,6 +24,8 @@
 #include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 
 /*******************************************************************************
  * CONSTANTS
@@ -219,7 +221,56 @@ static int head(diminuto_readerwriter_t * rwp)
 }
 
 /**
- * Clean up the ring if an abnormal termination occurs.
+ * Perform either an infinite wait or a timed wait as specified. If a timed
+ * wait, compute the absolute clocktime for the timed wait based on the
+ * relative timeout duration. This allows the caller to specify a relative
+ * timeout duration that applies no matter how many times the timed wait
+ * has to be repeated after receiving a broadcast.
+ * @param rwp points to the Reader Writer object.
+ * @param index is the index at the tail of the ring.
+ * @param pending is the pending role to be used: READING or WRITING.
+ * @param conditionp points to the condition variable in the object to use.
+ * @param timeout is a timeout duration in ticks.
+ * @return 0 for success, or an error number otherwise.
+ */
+static int wait_until(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+{
+    int rc = DIMINUTO_READERWRITER_ERROR;
+    diminuto_sticks_t clocktime = 0;
+
+    if (timeout == DIMINUTO_READERWRITER_INFINITY) {
+
+        do {
+            if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
+                break;
+            }
+        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+
+    } else if ((clocktime = diminuto_time_clock()) < 0) {
+
+        rc = errno;
+
+    } else {
+        static const diminuto_ticks_t NANOSECONDS = 1000000000;
+        struct timespec absolutetime = { 0, };
+
+        clocktime += timeout;
+        absolutetime.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
+        absolutetime.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
+
+        do {
+            if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) != 0) {
+                break;
+            }
+        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+
+    }
+
+    return rc;
+}
+
+/**
+ * Clean up the ring if an abnormal wait occurs.
  * @param vp points to the slot representing the caller in the ring.
  */
 static void wait_cleanup(void * vp)
@@ -262,16 +313,13 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
      * Wait until this thread is signaled, while at the head of the ring, and
      * specifically selected. Note that POSIX doesn't guarantee FIFO
      * behavior on the part of condition variables. Use a cleanup handler to
-     * reconcile the slot in the ring if the caller is cancelled.
+     * reconcile the slot in the ring if the caller is cancelled, interrupted,
+     * timedout, etc.
      */
 
     pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
 
-        do {
-            if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
-                break;
-            }
-        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+        rc = wait_until(rwp, index, pending, conditionp, timeout);
 
     pthread_cleanup_pop(rc != 0);
 
