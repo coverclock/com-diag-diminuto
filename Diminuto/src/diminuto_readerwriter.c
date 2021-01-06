@@ -67,7 +67,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
         errno = rc;
         diminuto_perror("diminution_readerwriter_init: pthread_cond_init: writer");
     } else if (diminuto_ring_init(&(rwp->ring), capacity) != &(rwp->ring)) {
-        /* Failed! */
+        /* Error message already emitted. */
     } else {
         rwp->state = state;
         rwp->fp = (FILE *)0;
@@ -86,7 +86,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     if (diminuto_ring_fini(&(rwp->ring)) != (diminuto_ring_t *)0) {
-        /* Failed! */
+        /* Error message already emitted. */
     } else if ((rc = pthread_cond_destroy(&(rwp->writer))) != 0) {
         errno = rc;
         diminuto_perror("diminuto_readerwriter_fini: pthread_cond_destroy: writer");
@@ -213,7 +213,7 @@ static int head(diminuto_readerwriter_t * rwp)
             index = -1;
             break;
         } else {
-            /* Try again. */
+            DIMINUTO_LOG_DEBUG("Failed %d IGNORED %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
         }
     }
 
@@ -233,7 +233,7 @@ static int head(diminuto_readerwriter_t * rwp)
  * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an error number otherwise.
  */
-static int wait_until(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+static int wait_timed(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
     diminuto_sticks_t clocktime = 0;
@@ -319,7 +319,7 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
 
     pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
 
-        rc = wait_until(rwp, index, pending, conditionp, timeout);
+        rc = wait_timed(rwp, index, pending, conditionp, timeout);
 
     pthread_cleanup_pop(rc != 0);
 
@@ -571,7 +571,7 @@ static void mutex_cleanup(void * vp)
  * POLICY
  ******************************************************************************/
 
-int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
+int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
     int index = -1;
@@ -598,7 +598,7 @@ int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
              */
             result = 0;
         } else {
-            /* Failed! */
+            /* An error message has already been emitted. */
         }
 
         /*
@@ -727,7 +727,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-int diminuto_writer_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
+int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
     int index = -1;

@@ -153,7 +153,10 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
 /**
  * This performs a run-time initialization of a Reader Writer object. The
  * state array must be at least as large as the maximum number of threads
- * that will use the Reader Writer object.
+ * that will use the Reader Writer object. If the application uses timeouts,
+ * it is possible that the state array will need to be substantially larger,
+ * depending on how many timeouts occur and how soon after a timeout a
+ * thread retries the operation.
  * @param rwp points to the Reader Writer object.
  * @param state points to the state array.
  * @param capacity is the dimension of the state array.
@@ -174,12 +177,13 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  ******************************************************************************/
 
 /**
- * This function is called to begin a Reader segment of code.
+ * This function is called to begin a Reader segment of code with a relative
+ * duration timeout (NOT an absolute clocktime).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks;
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
+extern int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
 
 /**
  * This function is called to begin a Reader segment of code.
@@ -187,7 +191,7 @@ extern int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_t
  * @return 0 for success, <0 otherwise.
  */
 static inline int diminuto_reader_begin(diminuto_readerwriter_t * rwp) {
-    return diminuto_reader_begin_until(rwp, DIMINUTO_READERWRITER_INFINITY);
+    return diminuto_reader_begin_timed(rwp, DIMINUTO_READERWRITER_INFINITY);
 }
 
 /**
@@ -198,12 +202,13 @@ static inline int diminuto_reader_begin(diminuto_readerwriter_t * rwp) {
 extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
 
 /**
- * This function is called to begin a Writer segment of code.
+ * This function is called to begin a Writer segment of code with a relative
+ * duration timeout (NOT an absolute clocktime).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks;
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_writer_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
+extern int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
 
 /**
  * This function is called to begin a Writer segment of code.
@@ -211,7 +216,7 @@ extern int diminuto_writer_begin_until(diminuto_readerwriter_t * rwp, diminuto_t
  * @return 0 for success, <0 otherwise.
  */
 static inline int diminuto_writer_begin(diminuto_readerwriter_t * rwp) {
-    return diminuto_writer_begin_until(rwp, DIMINUTO_READERWRITER_INFINITY);
+    return diminuto_writer_begin_timed(rwp, DIMINUTO_READERWRITER_INFINITY);
 }
 
 /**
