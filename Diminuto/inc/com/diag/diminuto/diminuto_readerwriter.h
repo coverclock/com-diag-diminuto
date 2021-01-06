@@ -18,13 +18,17 @@
  * implementation of condition variables implements a FIFO queue, or what the
  * priorities of the calling threads may be.
  *
- * Although I've made some effort to make this work correctly in the face
- * of thread cancellation, I haven't tested that scenario (and probably
- * won't). Diminuto Threads specifically disable cancellation, although
- * Reader Writer doesn't depend upon Diminuto Threads.
+ * The underlying public API supports timeouts (using a relative duration,
+ * NOT an absolute clocktime). Timeouts are not supported when using the
+ * macros instead of the functions. This is in part because supporting
+ * timeouts in the functions allowed me to test certain failure scenarios,
+ * but I can't really come up with a compelling use case for their more
+ * general use.
  *
- * Still considered somewhat experimental since I don't believe I have
- * tested it completely adequately.
+ * Although I've made some effort to make this work correctly in the face
+ * of thread cancellation, I haven't tested that specific scenario - and I
+ * probably won't. I'm not really a believer in cancellation in general, and
+ * asynchronous cancellation terrifies me.
  *
  * REFERENCES
  *
