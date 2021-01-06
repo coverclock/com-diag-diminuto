@@ -145,6 +145,12 @@ typedef struct DiminutoReaderWriter {
  **********************************************************************/
 
 /**
+ * This value when used as a timeout specifies that the caller polls and
+ * does not block.
+ */
+static const diminuto_ticks_t DIMINUTO_READERWRITER_POLL = 0;
+
+/**
  * This value when used as a timeout specifies that the caller blocks
  * indefinitely.
  */
@@ -184,7 +190,7 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  * This function is called to begin a Reader segment of code with a relative
  * duration timeout (NOT an absolute clocktime).
  * @param rwp points to the Reader Writer object.
- * @param timeout is the timeout duration in ticks;
+ * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @return 0 for success, <0 otherwise.
  */
 extern int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
@@ -209,7 +215,7 @@ extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
  * This function is called to begin a Writer segment of code with a relative
  * duration timeout (NOT an absolute clocktime).
  * @param rwp points to the Reader Writer object.
- * @param timeout is the timeout duration in ticks;
+ * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @return 0 for success, <0 otherwise.
  */
 extern int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);

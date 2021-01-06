@@ -233,12 +233,26 @@ static int head(diminuto_readerwriter_t * rwp)
  * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an error number otherwise.
  */
-static int wait_timed(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
     diminuto_sticks_t clocktime = 0;
 
-    if (timeout == DIMINUTO_READERWRITER_INFINITY) {
+    if (timeout == DIMINUTO_READERWRITER_POLL) {
+
+        /*
+         * Caller specified a zero timeout. We wouldn't be doing a wait
+         * if the caller had gotten immediate access to the lock. So we
+         * return failure right away.
+         */
+
+        rc = DIMINUTO_READERWRITER_TIMEDOUT;
+
+    } else if (timeout == DIMINUTO_READERWRITER_INFINITY) {
+
+        /*
+         * Caller specified an infinite timeout, so we do an untimed wait.
+         */
 
         do {
             if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
@@ -253,6 +267,15 @@ static int wait_timed(diminuto_readerwriter_t * rwp, int index, role_t pending, 
     } else {
         static const diminuto_ticks_t NANOSECONDS = 1000000000;
         struct timespec absolutetime = { 0, };
+
+        /*
+         * Caller specified a timeout, so we do a timed wait. The
+         * timed wait requires an absolute clocktime because it
+         * needs to be a fixed point in time every time we iterate
+         * through the loop waiting for the condition to be met. So
+         * we convert our relative duration into an absolute clocktime
+         * (providing our reading of the system clock succeeded).
+         */
 
         clocktime += timeout;
         absolutetime.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
@@ -319,7 +342,7 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
 
     pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
 
-        rc = wait_timed(rwp, index, pending, conditionp, timeout);
+        rc = wait_conditional(rwp, index, pending, conditionp, timeout);
 
     pthread_cleanup_pop(rc != 0);
 

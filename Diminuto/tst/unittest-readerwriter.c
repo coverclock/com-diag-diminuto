@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 
 /******************************************************************************/
 
@@ -147,14 +148,27 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     {
+        TEST();
+
+        ASSERT(DIMINUTO_READERWRITER_ERROR == EIO);
+        ASSERT(DIMINUTO_READERWRITER_FULL == ENOSPC);
+        ASSERT(DIMINUTO_READERWRITER_UNEXPECTED == EFAULT);
+        ASSERT(DIMINUTO_READERWRITER_TIMEDOUT == ETIMEDOUT);
+        ASSERT(DIMINUTO_READERWRITER_INTERRUPTED == EINTR);
+
+        STATUS();
+    }
+
+    {
         diminuto_ticks_t ticks;
         diminuto_sticks_t sticks;
 
         TEST();
 
+        ASSERT(DIMINUTO_READERWRITER_POLL == 0);
         memset(&ticks, 0xff, sizeof(ticks));
-        ASSERT(DIMINUTO_READERWRITER_INFINITY == ticks);
         ASSERT(DIMINUTO_READERWRITER_INFINITY > 0);
+        ASSERT(DIMINUTO_READERWRITER_INFINITY == ticks);
         sticks = DIMINUTO_READERWRITER_INFINITY;
         ASSERT(sticks == -1);
 
@@ -284,7 +298,9 @@ int main(int argc, char * argv[])
             ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
@@ -357,12 +373,28 @@ int main(int argc, char * argv[])
             ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
-            { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
+            errno = 0;
+            { ASSERT(diminuto_reader_begin_timed(&rw, 0) < 0); }
+            ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
-            { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            errno = 0;
+            { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
+            ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 2);
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            errno = 0;
+            { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 3);
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            errno = 0;
+            { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 4);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
         { ASSERT(diminuto_writer_end(&rw) == 0); }
