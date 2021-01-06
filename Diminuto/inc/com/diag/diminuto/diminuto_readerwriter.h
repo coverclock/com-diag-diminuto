@@ -85,6 +85,8 @@ enum DiminutoReaderWriterError {
     DIMINUTO_READERWRITER_ERROR         = EIO,      /**< Unspecified error. */
     DIMINUTO_READERWRITER_FULL          = ENOSPC,   /**< Ring too small. */
     DIMINUTO_READERWRITER_UNEXPECTED    = EFAULT,   /**< Unexpected state. */
+    DIMINUTO_READERWRITER_TIMEDOUT      = ETIMEDOUT,/**< Timed out. */
+    DIMINUTO_READERWRITER_INTERRUPTED   = EINTR,    /**< Interrupted. */
 };
 
 /*******************************************************************************
@@ -174,9 +176,19 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 /**
  * This function is called to begin a Reader segment of code.
  * @param rwp points to the Reader Writer object.
+ * @param timeout is the timeout duration in ticks;
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_reader_begin(diminuto_readerwriter_t * rwp);
+extern int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
+
+/**
+ * This function is called to begin a Reader segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_reader_begin(diminuto_readerwriter_t * rwp) {
+    return diminuto_reader_begin_until(rwp, DIMINUTO_READERWRITER_INFINITY);
+}
 
 /**
  * This function is called to end a Reader segment of code.
@@ -188,9 +200,19 @@ extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
 /**
  * This function is called to begin a Writer segment of code.
  * @param rwp points to the Reader Writer object.
+ * @param timeout is the timeout duration in ticks;
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_writer_begin(diminuto_readerwriter_t * rwp);
+extern int diminuto_writer_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
+
+/**
+ * This function is called to begin a Writer segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_writer_begin(diminuto_readerwriter_t * rwp) {
+    return diminuto_writer_begin_until(rwp, DIMINUTO_READERWRITER_INFINITY);
+}
 
 /**
  * This function is called to end a Writer segment of code.

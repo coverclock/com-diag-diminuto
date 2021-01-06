@@ -244,9 +244,10 @@ static void wait_cleanup(void * vp)
  * @param waiting is the waiting role to be used: READER or WRITER.
  * @param pending is the pending role to be used: READING or WRITING.
  * @param conditionp points to the condition variable in the object to use.
+ * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an error number otherwise.
  */
-static int condition(diminuto_readerwriter_t * rwp, const char * label, int index, role_t waiting, role_t pending, pthread_cond_t * conditionp)
+static int condition(diminuto_readerwriter_t * rwp, const char * label, int index, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
 
@@ -276,7 +277,9 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
 
     /*
      * Consume this token and let the next waiter become the head
-     * of the ring.
+     * of the ring. Normally I would suppress error messages for
+     * ETIMEDOUT and EINTR because those can be normal occurrences
+     * in many circumstances; but not this one.
      */
 
     if (rc != 0) {
@@ -329,9 +332,10 @@ static int broadcast(diminuto_readerwriter_t * rwp, const char * label, int inde
  * @param rwp points to the Reader Writer object.
  * @param role is the role of the calling thread: READER or WRITER.
  * @param indexp is a value-result parameter into which the index is placed.
+ * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an errno number otherwise.
  */
-static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
+static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
     int index = -1;
@@ -348,13 +352,13 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp)
 
     } else if (role == READER) {
 
-        if ((rc = condition(rwp, "Reader", index, READER, READING, &(rwp->reader))) == 0) {
+        if ((rc = condition(rwp, "Reader", index, READER, READING, &(rwp->reader), timeout)) == 0) {
             *indexp = index; /* Just for logging. */
         }
 
     } else if (role == WRITER) {
 
-        if ((rc = condition(rwp, "Writer", index, WRITER, WRITING, &(rwp->writer))) == 0) {
+        if ((rc = condition(rwp, "Writer", index, WRITER, WRITING, &(rwp->writer), timeout)) == 0) {
             *indexp = index; /* Just for logging. */
         }
 
@@ -519,7 +523,7 @@ static void mutex_cleanup(void * vp)
  * POLICY
  ******************************************************************************/
 
-int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
+int diminuto_reader_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
     int index = -1;
@@ -536,7 +540,7 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
              */
             rwp->reading += 1;
             result = 0;
-        } else if (suspend(rwp, READER, &index) == 0) {
+        } else if (suspend(rwp, READER, &index, timeout) == 0) {
             /*
              * Either there was an active writer or someone is waiting.
              * If someone is waiting, it is presumably a writer, since
@@ -583,16 +587,16 @@ int diminuto_reader_begin(diminuto_readerwriter_t * rwp)
          */
 
         if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Reader - BEGIN exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+            DIMINUTO_LOG_DEBUG("Reader - BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
         } else {
-            DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+            DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting %dwaiting %d", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
         }
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_reader_begin");
         }
 
-        diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
+        diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0)) || (result < 0));
 
     END_CRITICAL_SECTION;
 
@@ -675,7 +679,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
+int diminuto_writer_begin_until(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
     int index = -1;
@@ -691,7 +695,7 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
              */
             rwp->writing += 1;
             result = 0;
-        } else if (suspend(rwp, WRITER, &index) == 0) {
+        } else if (suspend(rwp, WRITER, &index, timeout) == 0) {
             /*
              * Either there was at least active readers, an active
              * writer, or someone is waiting. (A waiter could be a thread
@@ -705,16 +709,16 @@ int diminuto_writer_begin(diminuto_readerwriter_t * rwp)
         }
 
         if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Writer - BEGIN exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+            DIMINUTO_LOG_DEBUG("Writer - BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
         } else {
-            DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+            DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting %dwaiting %d", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
         }
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_writer_begin");
         }
 
-        diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
+        diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1)) || (result < 0));
 
     END_CRITICAL_SECTION;
 

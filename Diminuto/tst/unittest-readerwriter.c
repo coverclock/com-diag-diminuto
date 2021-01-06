@@ -27,6 +27,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_readerwriter.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -144,6 +145,21 @@ int main(int argc, char * argv[])
     frequency = diminuto_frequency();
 
     SETLOGMASK();
+
+    {
+        diminuto_ticks_t ticks;
+        diminuto_sticks_t sticks;
+
+        TEST();
+
+        memset(&ticks, 0xff, sizeof(ticks));
+        ASSERT(DIMINUTO_READERWRITER_INFINITY == ticks);
+        ASSERT(DIMINUTO_READERWRITER_INFINITY > 0);
+        sticks = DIMINUTO_READERWRITER_INFINITY;
+        ASSERT(sticks == -1);
+
+        STATUS();
+    }
 
     {
         diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER((diminuto_readerwriter_state_t *)0, 0);
