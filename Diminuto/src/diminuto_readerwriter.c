@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -10,9 +10,9 @@
  * This is the implementation of the Reader Writer feature.
  *
  * This translation unit contains Diminuto assert statements that check
- * invariants upon exit from the Reader and Writer Begin and End functions.
- * As long as the implementation does the right thing, these are benign.
- * Should the invariants be violated, the default behavior is for the
+ * invariants upon entry and exit from the Reader and Writer Begin and End
+ * functions. As long as the implementation does the right thing, these are
+ * benign. Should the invariants be violated, the default behavior is for the
  * asserts to abort the application and produce a core dump. This behavior
  * can be overridden by compile time options - see the diminuto_assert.h
  * header file for more details. But the asserts failing indicates a very
@@ -221,6 +221,22 @@ static int head(diminuto_readerwriter_t * rwp)
 }
 
 /**
+ * Return true if the indicated slot in the ring is now at the head, and the
+ * token in that slot is now pending, indicating that the waiting reader or
+ * writer has been activated, false otherwise. Calling head has the side effect
+ * of removing any ignored tokens, indicating wait failures, off the head of
+ * the ring.
+ * @param rwp points to the Reader Writer object.
+ * @param index is the index at the tail of the ring.
+ * @param pending is the pending role to be used: READING or WRITING.
+ * @return true if the token is both head and pending, false otherwise.
+ */
+static inline int ready(diminuto_readerwriter_t * rwp, int index, role_t pending)
+{
+    return (head(rwp) == index) && (rwp->state[index] == pending);
+}
+
+/**
  * Perform either an infinite wait or a timed wait as specified. If a timed
  * wait, compute the absolute clocktime for the timed wait based on the
  * relative timeout duration. This allows the caller to specify a relative
@@ -258,7 +274,7 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
             if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
                 break;
             }
-        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+        } while (!ready(rwp, index, pending));
 
     } else if ((clocktime = diminuto_time_clock()) < 0) {
 
@@ -285,7 +301,7 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
             if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) != 0) {
                 break;
             }
-        } while ((head(rwp) != index) || (rwp->state[index] != pending));
+        } while (!ready(rwp, index, pending));
 
     }
 
@@ -336,26 +352,43 @@ static int condition(diminuto_readerwriter_t * rwp, const char * label, int inde
      * Wait until this thread is signaled, while at the head of the ring, and
      * specifically selected. Note that POSIX doesn't guarantee FIFO
      * behavior on the part of condition variables. Use a cleanup handler to
-     * reconcile the slot in the ring if the caller is cancelled, interrupted,
-     * timedout, etc.
+     * reconcile the slot in the ring if the caller is cancelled. We only
+     * return from the wait for two reasons: the wait failed or the waiter
+     * is ready (activated). It is possible (I think) that both can be true!
      */
 
     pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
 
         rc = wait_conditional(rwp, index, pending, conditionp, timeout);
 
-    pthread_cleanup_pop(rc != 0);
+    pthread_cleanup_pop(0);
 
     /*
-     * Consume this token and let the next waiter become the head
-     * of the ring. Normally I would suppress error messages for
-     * ETIMEDOUT and EINTR because those can be normal occurrences
-     * in many circumstances; but not this one.
+     * Normally I would suppress error messages for ETIMEDOUT and EINTR because
+     * those can be normal occurrences in many circumstances; but not this one:
+     * no silent failures. We emit an error message even if (below) the caller
+     * is in fact activated.
      */
 
     if (rc != 0) {
         errno = rc;
-        diminuto_perror("condition: pthread_cond_wait");
+        diminuto_perror("condition: wait");
+    }
+
+    /*
+     * Consume this token and let the next waiter become the head
+     * of the ring. The initial check for an error return from above
+     * is made more complicated by the fact that I suspect there is a
+     * race condition that can stall the lock: the timed wait expired
+     * after another thread activated the waiting reader or writer but
+     * before the waiter reacquired the mutex and checked the wait exit
+     * condition. If the waiter has been activated, we don't really care
+     * that the wait failed. To ignore it would be to stall the progress
+     * of the waiters.
+     */
+
+    if (!ready(rwp, index, pending)) {
+        rwp->state[index] = IGNORE;
     } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
         rc = DIMINUTO_READERWRITER_UNEXPECTED;
         errno = rc;
@@ -604,7 +637,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         DIMINUTO_LOG_DEBUG("Reader - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
-        if ((rwp->writing <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
+        if ((rwp->writing <= 0) && (head(rwp) < 0)) {
             /*
              * There are zero or more active writers and no one is waiting.
              * Reader can proceeed. Increment.
@@ -759,7 +792,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         DIMINUTO_LOG_DEBUG("Writer - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
-        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (diminuto_ring_used(&(rwp->ring)) <= 0)) {
+        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) < 0)) {
             /*
              * There are no active readers or writers and no one waiting.
              * Writer can proceed. Increment.

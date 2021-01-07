@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -23,12 +23,14 @@
  * macros instead of the functions. This is in part because supporting
  * timeouts in the functions allowed me to test certain failure scenarios,
  * but I can't really come up with a compelling use case for their more
- * general use.
+ * general application.
  *
  * Although I've made some effort to make this work correctly in the face
  * of thread cancellation, I haven't tested that specific scenario - and I
  * probably won't. I'm not really a believer in cancellation in general, and
- * asynchronous cancellation terrifies me.
+ * asynchronous cancellation terrifies me. This is why Diminuto threads -
+ * on which Reader Writer does NOT depend - provides a its own notification
+ * mechanism.
  *
  * REFERENCES
  *

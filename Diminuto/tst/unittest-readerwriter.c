@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -9,21 +9,20 @@
  * @details
  * This is the unit test for the Reader Writer feature.
  *
- * Enabling DEBUG logging before running is enlightening.
+ * Enabling DEBUG logging is enlightening.
  *
- * > export COM_DIAG_DIMINUTO_LOG_MASK=0xff
+ * > COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter
  *
- * Even more diagnostic output can be emitted to standard
- * error by using the "-d" flag on the command line for this
- * unit test, which causes the unit test to enable more
- * debugging in the feature.
+ * Even more diagnostic output can be emitted to standard error by using
+ * the "-d" flag on the command line for this unit test, which causes the
+ * unit test to enable more debugging in the feature.
  *
- * > unittest-readerwriter -d
+ * > COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter -d
  *
  * Turning off DEBUG and INFO logging but using the "-d" flag
  * also puts on an interesting show.
  *
- * > export COM_DIAG_DIMINUTO_LOG_MASK=0xfc
+ * > COM_DIAG_DIMINUTO_LOG_MASK=0xfc unittest-readerwriter -d
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -304,6 +303,32 @@ int main(int argc, char * argv[])
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 1);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
+                ASSERT(rw.ring.measure == 0);
+                ASSERT(rw.reading == 2);
+                ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_reader_end(&rw) == 0); }
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 1);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
+                ASSERT(rw.ring.measure == 0);
+                ASSERT(rw.reading == 2);
+                ASSERT(rw.writing == 0);
+            { ASSERT(diminuto_reader_end(&rw) == 0); }
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
         ASSERT(rw.ring.measure == 0);
@@ -382,19 +407,19 @@ int main(int argc, char * argv[])
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 2);
+            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 3);
+            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 4);
+            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
         { ASSERT(diminuto_writer_end(&rw) == 0); }
