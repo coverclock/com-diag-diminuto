@@ -164,13 +164,15 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
 
 /**
  * This performs a run-time initialization of a Reader Writer object. The
- * state array must be at least as large as the maximum number of threads
- * that will use the Reader Writer object. If the application uses timeouts,
- * it is possible that the state array will need to be substantially larger,
- * depending on how many timeouts occur and how soon after a timeout a
- * thread retries the operation.
+ * state array used for the ring buffer must be at least as large as the
+ * maximum number of threads that will use the Reader Writer object. If
+ * the application uses timeouts, the state array will need to be larger,
+ * perhaps much larger, depending on how many timeouts occur and how soon
+ * after a timeout a thread retries the operation. A timeout of zero (a.k.a.
+ * POLL) is a special case and does not consume any additional space in the
+ * state array.
  * @param rwp points to the Reader Writer object.
- * @param state points to the state array.
+ * @param state points to the state array that will be used for the ring.
  * @param capacity is the dimension of the state array.
  * @return a pointer to the object if successful, NULL if an error occurred.
  */
@@ -190,7 +192,9 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
 
 /**
  * This function is called to begin a Reader segment of code with a relative
- * duration timeout (NOT an absolute clocktime).
+ * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
+ * returns immediately, with failure if the lock was not available. A timeout
+ * of the maximum value (INFINITY) causes the caller to block indefinitely.
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @return 0 for success, <0 otherwise.
@@ -215,7 +219,9 @@ extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
 
 /**
  * This function is called to begin a Writer segment of code with a relative
- * duration timeout (NOT an absolute clocktime).
+ * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
+ * returns immediately, with failure if the lock was not available. A timeout
+ * of the maximum value (INFINITY) causes the caller to block indefinitely.
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @return 0 for success, <0 otherwise.
