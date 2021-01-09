@@ -254,17 +254,7 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
     int rc = DIMINUTO_READERWRITER_ERROR;
     diminuto_sticks_t clocktime = 0;
 
-    if (timeout == DIMINUTO_READERWRITER_POLL) {
-
-        /*
-         * Caller specified a zero timeout. We wouldn't be doing a wait
-         * if the caller had gotten immediate access to the lock. So we
-         * return failure right away.
-         */
-
-        rc = DIMINUTO_READERWRITER_TIMEDOUT;
-
-    } else if (timeout == DIMINUTO_READERWRITER_INFINITY) {
+    if (timeout == DIMINUTO_READERWRITER_INFINITY) {
 
         /*
          * Caller specified an infinite timeout, so we do an untimed wait.
@@ -638,13 +628,30 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("Reader - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if ((rwp->writing <= 0) && (head(rwp) < 0)) {
+
             /*
              * There are zero or more active writers and no one is waiting.
              * Reader can proceeed. Increment.
              */
+
             rwp->reading += 1;
             result = 0;
+
+        } else if (timeout == DIMINUTO_READERWRITER_POLL) {
+
+            /*
+             * Reader specified zero timeout a.k.a. POLL.
+             * We didn't pass the first test, so we're done.
+             * Note that we do not emit an error message
+             * (because this was deliberate on the part of
+             * the caller) but we do set errno (so the reader
+             * knows the nature of the failure).
+             */
+
+            errno = DIMINUTO_READERWRITER_TIMEDOUT;
+
         } else if (suspend(rwp, READER, &index, timeout) == 0) {
+
             /*
              * Either there was an active writer or someone is waiting.
              * If someone is waiting, it is presumably a writer, since
@@ -652,9 +659,13 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
              * already been incremented by the thread that resumed
              * us.
              */
+
             result = 0;
+
         } else {
+
             /* An error message has already been emitted. */
+
         }
 
         /*
@@ -664,22 +675,31 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
          */
 
         if (result < 0) {
+
             /* Do nothing */
+
         } else if ((role = resume(rwp, READER)) == NONE) {
+
             /*
              * There isn't a reader at the head of the ring to resume.
              */
+
         } else if (role == READER) {
+
             /*
              * There's another reader. It will in turn resume the following
              * reader if there is one. This is where a formerly suspended
              * and now resumed reader may get its increment.
              */
+
             rwp->reading += 1;
+
         } else {
+
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_reader_begin: role");
             result = -1;
+
         }
 
         /*
@@ -729,38 +749,52 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
          */
 
         if (rwp->reading > 0) {
+
             /*
              * There are still readers running.
              */
+
             result = 0;
+
         } else if ((role = resume(rwp, ANY)) == NONE) {
+
             /*
              * This was the last reader, and there are no other readers
              * or writers waiting.
              */
+
             result = 0;
+
         } else if (role == READER) {
+
             /*
              * This shouldn't happen: a reader should never have waited.
              * We'll handle it anyway, but whine about it. This is where
              * a formerly suspended and now resumed reader may get its
              * increment.
              */
+
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_reader_end: reader");
             rwp->reading += 1;
             result = 0;
+
         } else if (role == WRITER) {
+
             /*
              * We're resuming a writer who has been waiting. This is
              * where a formerly suspended and now resumed writer may get
              * its increment.
              */
+
             rwp->writing += 1;
             result = 0;
+
         } else {
+
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_reader_end: role");
+
         }
 
         /*
@@ -793,13 +827,29 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("Writer - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
 
         if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) < 0)) {
+
             /*
              * There are no active readers or writers and no one waiting.
              * Writer can proceed. Increment.
              */
             rwp->writing += 1;
             result = 0;
+
+        } else if (timeout == DIMINUTO_READERWRITER_POLL) {
+
+            /*
+             * Writer specified zero timeout a.k.a. POLL.
+             * We didn't pass the first test, so we're done.
+             * Note that we do not emit an error message
+             * (because this was deliberate on the part of
+             * the caller) but we do set errno (so the writer
+             * knows the nature of the failure).
+             */
+
+            errno = DIMINUTO_READERWRITER_TIMEDOUT;
+
         } else if (suspend(rwp, WRITER, &index, timeout) == 0) {
+
             /*
              * Either there was at least active readers, an active
              * writer, or someone is waiting. (A waiter could be a thread
@@ -807,9 +857,13 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
              * from the ring.) The writer count has already been incremented
              * by the thread that resumed us.
              */
+
             result = 0;
+
         } else {
+
             /* An error message has already been emitted. */
+
         }
 
         if (index < 0) {
@@ -852,29 +906,40 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
          */
 
         if ((role = resume(rwp, ANY)) == NONE) {
+
             /*
              * There are no other readers or writers waiting.
              */
+
             result = 0;
+
         } else if (role == READER) {
+
             /*
              * We're activating a reader who has been waiting. This is
              * where a formerly suspended and now resumed reader may
              * gets its increment.
              */
+
             rwp->reading += 1;
             result = 0;
+
         } else if (role == WRITER) {
+
             /*
              * We're activating a writer who has been waiting. This is
              * where a formerly suspended and now resumed writer may
              * get its increment.
              */
+
             rwp->writing += 1;
             result = 0;
+
         } else {
+
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
             diminuto_perror("diminuto_writer_end: role");
+
         }
 
         /*

@@ -367,12 +367,19 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             errno = 0;
+            { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 0);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
-            { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            errno = 0;
+            { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
@@ -385,7 +392,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            ASSERT(errno == ETIMEDOUT);
+            ASSERT(rw.ring.measure == 1);
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            errno = 0;
+            { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
@@ -470,13 +484,13 @@ int main(int argc, char * argv[])
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
+            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
+            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             errno = 0;
