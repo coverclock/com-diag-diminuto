@@ -11,18 +11,25 @@
  *
  * Enabling DEBUG logging is enlightening.
  *
- * > COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter
+ * COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter
  *
  * Even more diagnostic output can be emitted to standard error by using
  * the "-d" flag on the command line for this unit test, which causes the
  * unit test to enable more debugging in the feature.
  *
- * > COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter -d
+ * COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-readerwriter -d
  *
  * Turning off DEBUG and INFO logging but using the "-d" flag
  * also puts on an interesting show.
  *
- * > COM_DIAG_DIMINUTO_LOG_MASK=0xfc unittest-readerwriter -d
+ * COM_DIAG_DIMINUTO_LOG_MASK=0xfc unittest-readerwriter -d
+ *
+ * If you are using time outs other than 0 a.k.a. POLL (which I support,
+ * and test, but find problematic), the following sequence is useful to
+ * figure out how much of the ring, beyond the maximum number of threads,
+ * you are using.
+ *
+ * unittest-readerwriter -d 2>&1 | grep ignored | awk '{print $7;}' | sort -n | uniq
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
