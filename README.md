@@ -377,6 +377,7 @@ For my own workflow, I installed the following tools.
     sudo apt-get install net-tools
     sudo apt-get install openssh-server
     sudo apt-get install screen
+    sudo apt-get install socat
     sudo apt-get install valgrind
     sudo apt-get install vim
 
