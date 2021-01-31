@@ -47,7 +47,6 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
 
         temp = (char *)malloc(length + sizeof(SUFFIX));
         if (temp == (char *)0) {
-            errno = EFAULT;
             diminuto_perror("diminuto_observation_create: malloc");
             break;
         }
