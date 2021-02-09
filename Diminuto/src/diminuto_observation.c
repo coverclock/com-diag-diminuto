@@ -18,6 +18,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <stdio.h>
 
 static const char SUFFIX[] = "-" "XXXXXX";
 
@@ -111,15 +113,15 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
         }
 
         /*
-         * If fclose(3) succeeds but rename(2) does not, we still return the
+         * If fclose(3) succeeds but renameat(2) does not, we still return the
          * original FILE pointer to indicate failure, even though it is no
-         * longer useful. We must do the fclose(3) prior to the rename(2) to
+         * longer useful. We must do the fclose(3) prior to the renameat(2) to
          * insure the renamed file is immediately accessible.
          */
 
-        rc = rename(*tempp, path);
+        rc = renameat(AT_FDCWD, *tempp, AT_FDCWD, path);
         if (rc < 0) {
-            diminuto_perror("diminuto_observation_commit: rename");
+            diminuto_perror("diminuto_observation_commit: renameat");
             break;
         }
 

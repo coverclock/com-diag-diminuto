@@ -66,20 +66,22 @@ extern int renameat2(int olddirfd, const char * oldpath, int newdirfd, const cha
 extern int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags);
 
 #   if !defined(RENAME_NOREPLACE)
-#       define RENAME_NOREPLACE 0
+#       define RENAME_NOREPLACE (1<<0)
 #   endif
 
 #   if !defined(RENAME_EXCHANGE)
-#       define RENAME_EXCHANGE 0
+#       define RENAME_EXCHANGE (1<<1)
 #   endif
 
 #   if !defined(RENAME_WHITEOUT)
-#       define RENAME_WHITEOUT 0
+#       define RENAME_WHITEOUT (1<<2)
 #   endif
 
 #   if !defined(AT_FDCWD)
-#       define AT_FDCWD 0
+#       define AT_FDCWD (-100)
 #   endif
+
+#   warning renameat2(2) availability is unknown on this platform!
 
 #endif
 
