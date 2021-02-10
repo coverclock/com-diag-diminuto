@@ -20,36 +20,39 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static const char SUFFIX[] = "-" "XXXXXX";
 
 static const char TIMESTAMP[] = "-" "YYYYMMDD" "T" "HHMMSS" "Z" "UUUUUU";
 
-FILE * diminuto_observation_create(const char * path, char ** tempp)
+FILE * diminuto_observation_create_generic(const char * path, char ** tempp, mode_t mode)
 {
     FILE * fp = (FILE *)0;
     size_t length = 0;
     char * temp = (char *)0;
     int fd = -1;
+    int rc = -1;
 
     do {
 
         if (sizeof(SUFFIX) > sizeof(diminuto_path_t)) {
             errno = E2BIG;
-            diminuto_perror("diminuto_observation_create: sizeof");
+            diminuto_perror("diminuto_observation_create_generic: sizeof");
             break;
         }
 
         length = strlen(path);
         if (length > (sizeof(diminuto_path_t) - sizeof(SUFFIX) - 1)) {
             errno = ENAMETOOLONG;
-            diminuto_perror("diminuto_observation_create: strlen");
+            diminuto_perror("diminuto_observation_create_generic: strlen");
             break;
         }
 
         temp = (char *)malloc(length + sizeof(SUFFIX));
         if (temp == (char *)0) {
-            diminuto_perror("diminuto_observation_create: malloc");
+            diminuto_perror("diminuto_observation_create_generic: malloc");
             break;
         }
 
@@ -58,13 +61,24 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
 
         fd = mkstemp(temp);
         if (fd < 0) {
-            diminuto_perror("diminuto_observation_create: mkstemp");
+            diminuto_perror("diminuto_observation_create_generic: mkstemp");
+            break;
+        }
+
+        /*
+         * According to POSIX, the default file creation mask used
+         * by mkstemp(3) is 0600.
+         */
+
+        rc = fchmod(fd, mode);
+        if (rc < 0) {
+            diminuto_perror("diminuto_observation_create_generic: fchmod");
             break;
         }
 
         fp = fdopen(fd, "r+");
         if (fp == (FILE *)0) {
-            diminuto_perror("diminuto_observation_create: fdopen");
+            diminuto_perror("diminuto_observation_create_generic: fdopen");
             break;
         }
 
@@ -78,6 +92,16 @@ FILE * diminuto_observation_create(const char * path, char ** tempp)
         /* Do nothing. */
     } else {
         free(temp);
+    }
+
+    if (fp != (FILE *)0) {
+        /* Do nothing. */
+    } else if (fd < 0) {
+        /* Do nothing. */
+    } else if (close(fd) >= 0) {
+        /* Do nothing. */
+    } else {
+        diminuto_perror("diminuto_observation_create_generic: close");
     }
 
     return fp;
