@@ -15,6 +15,11 @@
  * create and use an output file, but not have that output file be
  * visible to other processes or threads until it is completely
  * written out and closed.
+ *
+ * Unlike most Diminuto features, Observations uses dynamically
+ * allocated memory in which to format and store the temporary
+ * and checkpoint file names. The feature takes care of automatically
+ * freeing the memory when it is no longer needed.
  */
 
 #include <stdio.h>
@@ -57,8 +62,8 @@ static inline FILE * diminuto_observation_create(const char * path, char ** temp
 
 /**
  * Commit the data in the temporary file by closing the open FILE pointer,
- * renaming the temporary file to the original path name, and deallocating the
- * temporary file name.
+ * renaming the temporary file to the original path name, and freeing the
+ * memory dynamically allocated for the temporary file name.
  * @param fp is the open FILE pointer.
  * @param tempp points to where a pointer to the temporary file name is stored.
  * @return NULL if successful, the original FILE pointer if an error occurred.
@@ -68,7 +73,9 @@ extern FILE * diminuto_observation_commit(FILE * fp, char ** tempp);
 /**
  * Checkpoint the data in the temporary file by linking the file to a
  * permanent file in the same directory whose name is a date and time
- * stamp with microsecond resolution.
+ * stamp with microsecond resolution. This function uses memory
+ * dynamically allocated and freed in which to create the permanent
+ * file name.
  * @param fp is the open FILE pointer.
  * @param tempp points to where a pointer to the temporary file name is stored.
  * @return the open FILE pointer or NULL if an error occurred.
