@@ -1,12 +1,17 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the scatter/gather socket capability.
+ * @brief DEPRECATED
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ *
+ * THIS FILE IS KEPT FOR HISTORICAL PURPOSES. The scatter/gather
+ * feature as been mainlined into Diminuto and has its own unit
+ * test based on this code.
+ *
  * This is a unit test to evaluate whether Diminuto Lists might be used
  * to implement the gather portion of the scatter/gather capability of
  * the vector I/O system calls referenced below and minimize the amount
