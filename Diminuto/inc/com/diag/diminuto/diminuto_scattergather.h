@@ -9,8 +9,8 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * The Scatter/Gather makes use of Diminuto Lists with the vector I/O
- * system calls to decrease the amount of data copying necessary when
+ * The Scatter/Gather feature makes use of Diminuto Lists with the vector
+ * I/O system calls to decrease the amount of data copying necessary when
  * consolidating a bunch of fields into a single contiguous data packet
  * for sending/writing, or distributing a single contiguous data packet
  * that is received/read into multiple fields. Scatter/Gather can be
@@ -46,9 +46,12 @@
  * POSIX 1003.1g 5.4.1.1: "UIO_MAXIOV shall be at least 16"
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_list.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_containerof.h"
+#include "com/diag/diminuto/diminuto_ipc4.h"
+#include "com/diag/diminuto/diminuto_ipc6.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
@@ -232,12 +235,44 @@ static inline void diminuto_scattergather_record_free(diminuto_scattergather_poo
  * INPUT/OUTPUT
  ******************************************************************************/
 
+/*
+ * File-ish 
+ */
+
 extern ssize_t diminuto_scattergather_record_write(int fd, diminuto_scattergather_record_t * rp);
 
 extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record_t * rp);
 
-extern ssize_t diminuto_scattergather_record_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
+/*
+ * IPv4
+ */
 
-extern ssize_t diminuto_scattergather_record_receive(int fd, diminuto_scattergather_record_t * rp);
+extern ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
+
+static inline ssize_t diminuto_scattergather_record_send(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_send_generic(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
+}
+
+extern ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+
+static inline ssize_t diminuto_scattergather_record_receive(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_receive_generic(fd, rp, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
+}
+
+/*
+ * IPv6
+ */
+
+extern ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
+
+static inline ssize_t diminuto_scattergather_record_send6(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_send6_generic(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
+}
+
+extern ssize_t diminuto_scattergather_record_receive6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+
+static inline ssize_t diminuto_scattergather_record_receive6(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_receive6_generic(fd, rp, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
+}
 
 #endif

@@ -1227,9 +1227,9 @@ int main(void)
 
         ASSERT((total = diminuto_scattergather_record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT((length = diminuto_scattergather_record_send(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 3;

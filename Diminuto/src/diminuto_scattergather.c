@@ -20,6 +20,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
+#include "../src/diminuto_ipc6.h"
 
 /*******************************************************************************
  * GLOBALS
@@ -256,22 +258,11 @@ ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record
     return total;
 }
 
-ssize_t diminuto_scattergather_record_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_send_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
     struct msghdr message = { 0, };
-    struct sockaddr_in sa = { 0, };
-    struct sockaddr * sap = (struct sockaddr *)0;
-    socklen_t length = 0;
-
-    if (port > 0) {
-        length = sizeof(sa);
-        sa.sin_family = AF_INET;
-        sa.sin_addr.s_addr = htonl(address);
-        sa.sin_port = htons(port);
-        sap = (struct sockaddr *)&sa;
-    }
 
     message.msg_name = sap;
     message.msg_namelen = length;
@@ -293,14 +284,55 @@ ssize_t diminuto_scattergather_record_send(int fd, diminuto_scattergather_record
     return total;
 }
 
-ssize_t diminuto_scattergather_record_receive(int fd, diminuto_scattergather_record_t * rp)
+ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
+{
+    ssize_t total = 0;
+    struct iovec * vp = (struct iovec *)0;
+    struct msghdr message = { 0, };
+    struct sockaddr_in sa = { 0, };
+    struct sockaddr * sap = (struct sockaddr *)0;
+    socklen_t length = 0;
+
+    if (port > 0) {
+        length = sizeof(sa);
+        sa.sin_family = AF_INET;
+        sa.sin_addr.s_addr = htonl(address);
+        sa.sin_port = htons(port);
+        sap = (struct sockaddr *)&sa;
+    }
+
+    return diminuto_scattergather_record_send_base(fd, rp, sap, length);
+}
+
+ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
+{
+    ssize_t total = 0;
+    struct iovec * vp = (struct iovec *)0;
+    struct msghdr message = { 0, };
+    struct sockaddr_in6 sa = { 0, };
+    struct sockaddr * sap = (struct sockaddr *)0;
+    socklen_t length = 0;
+
+    if (port > 0) {
+        length = sizeof(sa);
+        sa.sin6_family = AF_INET6;
+        diminuto_ipc6_hton6(&address);
+        memcpy(&sa.sin6_addr.s6_addr, address.u16, sizeof(sa.sin6_addr.s6_addr));
+        sa.sin6_port = htons(port);
+        sap = (struct sockaddr *)&sa;
+    }
+
+    return diminuto_scattergather_record_send_base(fd, rp, sap, length);
+}
+
+ssize_t diminuto_scattergather_record_receive_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
     struct msghdr message = { 0, };
 
-    message.msg_name = (struct sockaddr *)0;
-    message.msg_namelen = 0;
+    message.msg_name = sap;
+    message.msg_namelen = length;
     message.msg_iovlen = diminuto_scattergather_record_enumerate(rp);
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_VECTOR))) {
@@ -315,6 +347,30 @@ ssize_t diminuto_scattergather_record_receive(int fd, diminuto_scattergather_rec
     } else {
         /* Do nothing. */
     }
+
+    return total;
+}
+
+ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+{
+    ssize_t total = 0;
+    struct sockaddr_in sa = { 0, };
+
+    total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
+
+    diminuto_ipc4_identify(&sa, addressp, portp);
+
+    return total;
+}
+
+ssize_t diminuto_scattergather_record_receive6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+{
+    ssize_t total = 0;
+    struct sockaddr_in6 sa = { 0, };
+
+    total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
+
+    diminuto_ipc6_identify(&sa, addressp, portp);
 
     return total;
 }
