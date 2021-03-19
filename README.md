@@ -70,6 +70,7 @@ Diminuto provides:
 * Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
 * Pulse Width Modulation (PWM) (```diminuto_modulator```);
 * programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
+* vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
 * macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
@@ -213,6 +214,7 @@ Make="GNU Make 4.0"
 * proxy - macros to implement a proxy feature like heap.
 * readerwriter - a first-come, first-served Reader-Writer lock;
 * ring - generic support for ring (circular) buffers.
+* scattergather - support for vector I/O and IPC.
 * serial - get and set parameters for a serial port.
 * serializedsection - macros to implement scoped spinlocked code blocks.
 * shaper - use the throttle feature to implement a bursty traffic shaper.
