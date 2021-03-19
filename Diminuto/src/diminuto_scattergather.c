@@ -11,13 +11,8 @@
 
 #include "com/diag/diminuto/diminuto_scattergather.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "com/diag/diminuto/diminuto_countof.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
-#include "com/diag/diminuto/diminuto_ipc4.h"
-#include "com/diag/diminuto/diminuto_fletcher.h"
-#include "com/diag/diminuto/diminuto_reaper.h"
-#include <sys/wait.h>
+#include "com/diag/diminuto/diminuto_log.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <signal.h>
