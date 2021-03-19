@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include "../src/diminuto_ipc4.h"
 #include "../src/diminuto_ipc6.h"
 
 /*******************************************************************************
@@ -258,7 +259,7 @@ ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record
     return total;
 }
 
-ssize_t diminuto_scattergather_record_send_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
+static ssize_t diminuto_scattergather_record_send_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -325,7 +326,7 @@ ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergath
     return diminuto_scattergather_record_send_base(fd, rp, sap, length);
 }
 
-ssize_t diminuto_scattergather_record_receive_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
+static ssize_t diminuto_scattergather_record_receive_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -358,7 +359,7 @@ ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scatterga
 
     total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
 
-    diminuto_ipc4_identify(&sa, addressp, portp);
+    diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
 
     return total;
 }
@@ -370,7 +371,7 @@ ssize_t diminuto_scattergather_record_receive6_generic(int fd, diminuto_scatterg
 
     total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
 
-    diminuto_ipc6_identify(&sa, addressp, portp);
+    diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
 
     return total;
 }
