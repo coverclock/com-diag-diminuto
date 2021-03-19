@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the scatter/gather feature using IPv4.
+ * @brief This is a unit test of the scatter/gather feature using IPv6.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -19,7 +19,7 @@
 #include "com/diag/diminuto/diminuto_scattergather.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
-#include "com/diag/diminuto/diminuto_ipc4.h"
+#include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_buffer.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
 #include "com/diag/diminuto/diminuto_reaper.h"
@@ -66,7 +66,7 @@ static diminuto_scattergather_segment_t segments[DIMINUTO_SCATTERGATHER_NODES];
 
 enum Offsets {
     ADDRESS = 0,
-    PORT    = ADDRESS   + sizeof(diminuto_ipv4_t),
+    PORT    = ADDRESS   + sizeof(diminuto_ipv6_t),
     LENGTH  = PORT      + sizeof(diminuto_port_t),
     DATA    = LENGTH    + sizeof(size_t),
 };
@@ -86,11 +86,11 @@ int streamserver(int listensocket)
     int streamsocket;
     uint8_t * bp;
     ssize_t total;
-    diminuto_ipv4_t address;
+    diminuto_ipv6_t address;
     diminuto_port_t port;
     size_t length;
     uint16_t checksum;
-    diminuto_ipv4_buffer_t printable;
+    diminuto_ipv6_buffer_t printable;
     uint8_t a;
     uint8_t b;
     uint16_t expected;
@@ -102,7 +102,7 @@ int streamserver(int listensocket)
 
     do {
 
-        if ((streamsocket = diminuto_ipc4_stream_accept(listensocket)) < 0) {
+        if ((streamsocket = diminuto_ipc6_stream_accept(listensocket)) < 0) {
             break;
         }
 
@@ -118,15 +118,15 @@ int streamserver(int listensocket)
 
         fprintf(stderr, "READ:\n");
 
-        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &address, sizeof(address), sizeof(address))) != sizeof(address)) {
+        if ((total = diminuto_ipc6_stream_read_generic(streamsocket, &address, sizeof(address), sizeof(address))) != sizeof(address)) {
             errno = EINVAL;
             diminuto_perror("short");
             (void)diminuto_ipc_close(streamsocket);
             break;
         }
-        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
 
-        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &port, sizeof(port), sizeof(port))) != sizeof(port)) {
+        if ((total = diminuto_ipc6_stream_read_generic(streamsocket, &port, sizeof(port), sizeof(port))) != sizeof(port)) {
             errno = EINVAL;
             diminuto_perror("short");
             (void)diminuto_ipc_close(streamsocket);
@@ -134,7 +134,7 @@ int streamserver(int listensocket)
         }
         fprintf(stderr, "  PORT: %d\n", port);
 
-        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &length, sizeof(length), sizeof(length))) != sizeof(length)) {
+        if ((total = diminuto_ipc6_stream_read_generic(streamsocket, &length, sizeof(length), sizeof(length))) != sizeof(length)) {
             errno = EINVAL;
             diminuto_perror("short");
             (void)diminuto_ipc_close(streamsocket);
@@ -157,7 +157,7 @@ int streamserver(int listensocket)
                 break;
             }
 
-            if ((total = diminuto_ipc4_stream_read_generic(streamsocket, bp, length, length)) != length) {
+            if ((total = diminuto_ipc6_stream_read_generic(streamsocket, bp, length, length)) != length) {
                 errno = EINVAL;
                 diminuto_perror("short");
                 (void)diminuto_ipc_close(streamsocket);
@@ -168,7 +168,7 @@ int streamserver(int listensocket)
 
         }
 
-        if ((total = diminuto_ipc4_stream_read_generic(streamsocket, &checksum, sizeof(checksum), sizeof(checksum))) != sizeof(checksum)) {
+        if ((total = diminuto_ipc6_stream_read_generic(streamsocket, &checksum, sizeof(checksum), sizeof(checksum))) != sizeof(checksum)) {
             errno = EINVAL;
             diminuto_perror("short");
             if (length > 0) {
@@ -227,7 +227,7 @@ int streamserver(int listensocket)
 
         fprintf(stderr, "READ [%zd]:\n", total);
 
-        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
 
         fprintf(stderr, "  PORT: %d\n", port);
 
@@ -303,7 +303,7 @@ int streamserver(int listensocket)
             break;
         }
 
-        if ((sp = diminuto_scattergather_segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (diminuto_scattergather_segment_t *)0) {
+        if ((sp = diminuto_scattergather_segment_allocate(&pool, sizeof(diminuto_ipv6_t))) == (diminuto_scattergather_segment_t *)0) {
             diminuto_scattergather_record_free(&pool, rp);
             (void)diminuto_ipc_close(streamsocket);
             break;
@@ -337,8 +337,8 @@ int streamserver(int listensocket)
         diminuto_scattergather_record_dump(stderr, rp);
         fprintf(stderr, "READ [%zd]:\n", total);
 
-        address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
-        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        address = *(diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
         diminuto_scattergather_record_segment_free(&pool, rp, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
@@ -421,7 +421,7 @@ int streamserver(int listensocket)
             break;
         }
 
-        if ((total = diminuto_ipc4_stream_read(streamsocket, bp, MAXIMUM)) < MINIMUM) {
+        if ((total = diminuto_ipc6_stream_read(streamsocket, bp, MAXIMUM)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_buffer_free(bp);
@@ -435,7 +435,7 @@ int streamserver(int listensocket)
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
 
         memcpy(&address, &bp[ADDRESS], sizeof(address));
-        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
 
         memcpy(&port, &bp[PORT], sizeof(port));
         fprintf(stderr, "    PORT: %d\n", port);
@@ -488,12 +488,12 @@ int datagrampeer(int datagramsocket)
 {
     int result = 1;
     ssize_t total;
-    diminuto_ipv4_t address;
+    diminuto_ipv6_t address;
     diminuto_port_t port;
     size_t length;
     uint8_t * bp;
     uint16_t checksum;
-    diminuto_ipv4_buffer_t printable;
+    diminuto_ipv6_buffer_t printable;
     uint8_t a;
     uint8_t b;
     uint16_t expected;
@@ -516,7 +516,7 @@ int datagrampeer(int datagramsocket)
             break;
         }
 
-        if ((total = diminuto_ipc4_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
+        if ((total = diminuto_ipc6_datagram_receive(datagramsocket, bp, MAXIMUM)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_buffer_free(bp);
@@ -529,7 +529,7 @@ int datagrampeer(int datagramsocket)
         diminuto_dump_general(stderr, bp, total, 0, '.', 0, 0, 2);
 
         memcpy(&address, &bp[ADDRESS], sizeof(address));
-        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "    ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
 
         memcpy(&port, &bp[PORT], sizeof(port));
         fprintf(stderr, "    PORT: %d\n", port);
@@ -601,7 +601,7 @@ int datagrampeer(int datagramsocket)
 
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
 
-        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
 
         fprintf(stderr, "  PORT: %d\n", port);
 
@@ -645,7 +645,7 @@ int datagrampeer(int datagramsocket)
             break;
         }
 
-        if ((sp = diminuto_scattergather_segment_allocate(&pool, sizeof(diminuto_ipv4_t))) == (diminuto_scattergather_segment_t *)0) {
+        if ((sp = diminuto_scattergather_segment_allocate(&pool, sizeof(diminuto_ipv6_t))) == (diminuto_scattergather_segment_t *)0) {
             diminuto_scattergather_record_free(&pool, rp);
             break;
         }
@@ -670,7 +670,7 @@ int datagrampeer(int datagramsocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive(datagramsocket, rp)) < MINIMUM) {
+        if ((total = diminuto_scattergather_record_receive6(datagramsocket, rp)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -682,8 +682,8 @@ int datagrampeer(int datagramsocket)
         diminuto_scattergather_record_dump(stderr, rp);
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
 
-        address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
-        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        address = *(diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
+        fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc6_address2string(address, printable, sizeof(printable)));
         diminuto_scattergather_record_segment_free(&pool, rp, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
@@ -756,7 +756,7 @@ int datagrampeer(int datagramsocket)
 int main(void)
 {
     diminuto_scattergather_record_t * rp;
-    diminuto_ipv4_t address;
+    diminuto_ipv6_t address;
     diminuto_port_t streamport;
     diminuto_port_t datagramport;
     int listensocket;
@@ -1045,14 +1045,14 @@ int main(void)
     {
         TEST();
 
-        address = diminuto_ipc4_address("localhost");
-        ASSERT(!diminuto_ipc4_is_unspecified(&address));
+        address = diminuto_ipc6_address("localhost");
+        ASSERT(!diminuto_ipc6_is_unspecified(&address));
 
-        ASSERT((listensocket = diminuto_ipc4_stream_provider(0)) >= 0);
-        ASSERT(diminuto_ipc4_nearend(listensocket, (diminuto_ipv4_t *)0, &streamport) >= 0);
+        ASSERT((listensocket = diminuto_ipc6_stream_provider(0)) >= 0);
+        ASSERT(diminuto_ipc6_nearend(listensocket, (diminuto_ipv6_t *)0, &streamport) >= 0);
 
-        ASSERT((datagramsocket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT(diminuto_ipc4_nearend(datagramsocket, (diminuto_ipv4_t *)0, &datagramport) >= 0);
+        ASSERT((datagramsocket = diminuto_ipc6_datagram_peer(0)) >= 0);
+        ASSERT(diminuto_ipc6_nearend(datagramsocket, (diminuto_ipv6_t *)0, &datagramport) >= 0);
 
         if ((streampid = fork()) == 0) {
             diminuto_scattergather_segment_t * sp;
@@ -1137,7 +1137,7 @@ int main(void)
 
     {
         diminuto_scattergather_segment_t * sp;
-        diminuto_ipv4_t * addressp;
+        diminuto_ipv6_t * addressp;
         diminuto_port_t * portp;
         size_t total;
         int socket;
@@ -1150,14 +1150,14 @@ int main(void)
 
         ASSERT((sp = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*addressp));
-        ASSERT((addressp = (diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv4_t *)0);
+        ASSERT((addressp = (diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv6_t *)0);
 
         ASSERT((sp = diminuto_scattergather_record_segment_next(rp, sp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*portp));
         ASSERT((portp = (diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_port_t *)0);
 
         ASSERT((total = diminuto_scattergather_record_measure(rp)) > 0);
-        ASSERT((socket = diminuto_ipc4_stream_consumer(*addressp, *portp)) >= 0);
+        ASSERT((socket = diminuto_ipc6_stream_consumer(*addressp, *portp)) >= 0);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
@@ -1176,7 +1176,7 @@ int main(void)
         uint8_t * bp;
         diminuto_scattergather_segment_t * sp;
         diminuto_scattergather_segment_t * tp;
-        diminuto_ipv4_t address;
+        diminuto_ipv6_t address;
         diminuto_port_t port;
         ssize_t length;
 
@@ -1206,7 +1206,7 @@ int main(void)
 
     {
         diminuto_scattergather_segment_t * sp;
-        diminuto_ipv4_t * addressp;
+        diminuto_ipv6_t * addressp;
         diminuto_port_t * portp;
         size_t total;
         int socket;
@@ -1219,17 +1219,17 @@ int main(void)
 
         ASSERT((sp = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*addressp));
-        ASSERT((addressp = (diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv4_t *)0);
+        ASSERT((addressp = (diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv6_t *)0);
 
         ASSERT((sp = diminuto_scattergather_record_segment_next(rp, sp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*portp));
         ASSERT((portp = (diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_port_t *)0);
 
         ASSERT((total = diminuto_scattergather_record_measure(rp)) > 0);
-        ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((socket = diminuto_ipc6_datagram_peer(0)) >= 0);
+        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 3;

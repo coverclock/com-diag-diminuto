@@ -980,6 +980,7 @@ sanity:	unittest
 	unittest-renameat2
 	unittest-ring
 	unittest-scattergather
+	unittest-scattergather6
 	unittest-serializedsection
 	unittest-service
 	unittest-shaper
@@ -1152,6 +1153,7 @@ sockets:
 	unittest-poll-eventloop
 	unittest-polll
 	unittest-scattergather
+	unittest-scattergather6
 
 renameat2:
 	unittest-renameat2
