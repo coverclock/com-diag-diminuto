@@ -19,8 +19,8 @@
  *
  * Four data structures are defined: Buffer, Segment, Record, and Pool.
  *
- * A Buffer is a Diminuto Buffer object that is a length field in bytes
- * followed by a continuous section of memory containing the payload.
+ * A Buffer is a Diminuto Buffer object that contains  a length field in
+ * bytes followed by a contiguous section of memory containing the payload.
  * The length field indicates the number of bytes in the payload, not
  * the total size of the Buffer object. (Dimunuto Buffers have their
  * own length field indicating the total length of the Buffer Object.)
@@ -39,7 +39,18 @@
  * unused Segments. (Diminuto Buffers have their own pool of unused
  * Buffer objects of varying lengths.)
  *
+ * The API has two further sections: Record Segments (functions that
+ * deal with Segments in relation to a Record), and Input/Output
+ * (functions that use the underlying vector send/receive and read/write
+ * system calls).
+ *
+ * This feature was derived from the original Diminuto IPC Scatter/Gather
+ * unit test, which still exists but is independent of this feature.
+ *
  * SEE ALSO
+ *
+ * Chip Overclock, "Scatter/Gather", 2020-12-08,
+ * <https://coverclock.blogspot.com/2020/12/scattergather.html>
  *
  * tst/unittest-ipc-ancillary.c
  *
@@ -199,6 +210,18 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_fi
     return diminuto_list_dataset(diminuto_list_remove(rp), (void *)0);
 }
 
+extern diminuto_scattergather_record_t * diminuto_scattergather_record_allocate(diminuto_scattergather_pool_t * pp);
+
+extern diminuto_scattergather_record_t * diminuto_scattergather_record_segments_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp);
+
+static inline void diminuto_scattergather_record_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp) {
+    diminuto_scattergather_pool_put(pp, diminuto_scattergather_record_fini(diminuto_scattergather_record_segments_free(pp, rp)));
+}
+
+/*******************************************************************************
+ * RECORD SEGMENTS
+ ******************************************************************************/
+
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_remove(diminuto_scattergather_record_t * rp /* Unused. */, diminuto_scattergather_segment_t * sp) {
     return diminuto_list_remove(sp);
 }
@@ -243,14 +266,6 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_se
 {
     (void)diminuto_scattergather_segment_free(pp, diminuto_scattergather_record_segment_remove(rp, sp));
     return rp;
-}
-
-extern diminuto_scattergather_record_t * diminuto_scattergather_record_segments_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp);
-
-extern diminuto_scattergather_record_t * diminuto_scattergather_record_allocate(diminuto_scattergather_pool_t * pp);
-
-static inline void diminuto_scattergather_record_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp) {
-    diminuto_scattergather_pool_put(pp, diminuto_scattergather_record_fini(diminuto_scattergather_record_segments_free(pp, rp)));
 }
 
 /*******************************************************************************
