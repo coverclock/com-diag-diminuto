@@ -22,7 +22,8 @@
  * A Buffer is a Diminuto Buffer object that is a length field in bytes
  * followed by a continuous section of memory containing the payload.
  * The length field indicates the number of bytes in the payload, not
- * the total size of the Buffer object.
+ * the total size of the Buffer object. (Dimunuto Buffers have their
+ * own length field indicating the total length of the Buffer Object.)
  *
  * A Segment is a Diminuto List node containing a pointer to a Buffer
  * in its payload pointer field.
@@ -35,7 +36,8 @@
  * received.
  *
  * A Pool is a Diminuto list node containing a circular linked list of
- * unused Segments.
+ * unused Segments. (Diminuto Buffers have their own pool of unused
+ * Buffer objects of varying lengths.)
  *
  * SEE ALSO
  *
