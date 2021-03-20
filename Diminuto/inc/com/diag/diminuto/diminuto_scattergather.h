@@ -114,7 +114,7 @@ typedef diminuto_list_t diminuto_scattergather_record_t;
 #define diminuto_scattergather_bufferof(_PAYLOAD_) diminuto_containerof(diminuto_scattergather_buffer_t, payload, (_PAYLOAD_))
 
 /*******************************************************************************
- * Pool
+ * POOL
  ******************************************************************************/
 
 static inline diminuto_scattergather_pool_t * diminuto_scattergather_pool_init(diminuto_scattergather_pool_t * pp) {
@@ -130,7 +130,7 @@ extern void diminuto_scattergather_pool_put(diminuto_scattergather_pool_t * pp, 
 extern diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_scattergather_pool_t * pp, diminuto_scattergather_segment_t sa[], size_t sn);
 
 /*******************************************************************************
- * Segment
+ * SEGMENT
  ******************************************************************************/
 
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_segment_init(diminuto_scattergather_segment_t * sp) {
@@ -166,7 +166,7 @@ static inline void diminuto_scattergather_segment_free(diminuto_scattergather_po
 }
 
 /*******************************************************************************
- * Record
+ * RECORD
  ******************************************************************************/
 
 static inline diminuto_scattergather_record_t * diminuto_scattergather_record_init(diminuto_scattergather_record_t * rp) {
