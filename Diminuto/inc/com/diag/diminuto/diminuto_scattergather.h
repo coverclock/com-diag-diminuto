@@ -17,6 +17,26 @@
  * used for interprocess communication (IPC) or for file-ish reading
  * and writing.
  *
+ * Four data structures are defined: Buffer, Segment, Record, and Pool.
+ *
+ * A Buffer is a Diminuto Buffer object that is a length field in bytes
+ * followed by a continuous section of memory containing the payload.
+ * The length field indicates the number of bytes in the payload, not
+ * the total size of the Buffer object.
+ *
+ * A Segment is a Diminuto List node containing a pointer to a Buffer
+ * in its payload pointer field.
+ *
+ * A Record is a Diminuto List node containing a circular linked list
+ * of used Segments. (All Diminuto Lists are circular.) Each Segment
+ * points to a Buffer. When all of the Segments in the Record are
+ * concatenated in the order of the List as traversed from first to
+ * last, they form the total buffer that will be transmitted or
+ * received.
+ *
+ * A Pool is a Diminuto list node containing a circular linked list of
+ * unused Segments.
+ *
  * SEE ALSO
  *
  * tst/unittest-ipc-ancillary.c
