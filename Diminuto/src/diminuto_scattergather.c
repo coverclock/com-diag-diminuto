@@ -31,7 +31,7 @@
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
- * Pool
+ * POOL
  ******************************************************************************/
 
 void diminuto_scattergather_pool_fini(diminuto_scattergather_pool_t * pp)
@@ -75,7 +75,7 @@ diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_sc
 }
 
 /*******************************************************************************
- * Segment
+ * SEGMENT
  ******************************************************************************/
 
 diminuto_scattergather_segment_t * diminuto_scattergather_segment_allocate(diminuto_scattergather_pool_t * pp, size_t size)
@@ -108,7 +108,7 @@ diminuto_scattergather_segment_t * diminuto_scattergather_segment_allocate(dimin
 }
 
 /*******************************************************************************
- * Record
+ * RECORD
  ******************************************************************************/
 
 size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t * rp)
