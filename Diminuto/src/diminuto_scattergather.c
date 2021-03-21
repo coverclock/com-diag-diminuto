@@ -57,11 +57,11 @@ diminuto_list_t * diminuto_scattergather_pool_get(diminuto_scattergather_pool_t 
 void diminuto_scattergather_pool_put(diminuto_scattergather_pool_t * pp, diminuto_list_t * np)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        (void)diminuto_list_enqueue(pp, np);
+        (void)diminuto_list_enqueue(pp, diminuto_list_nullinit(np));
     DIMINUTO_CRITICAL_SECTION_END;
 }
 
-diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_scattergather_pool_t * pp, diminuto_scattergather_segment_t sa[], size_t sn)
+diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_scattergather_pool_t * pp, diminuto_list_t sa[], size_t sn)
 {
     int ii = 0;
 

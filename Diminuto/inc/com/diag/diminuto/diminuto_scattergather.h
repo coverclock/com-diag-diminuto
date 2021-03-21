@@ -46,7 +46,8 @@
  * and IPv6 stream and datagram connections.
  *
  * This feature was derived from the original Diminuto IPC Scatter/Gather
- * unit test, which still exists but is independent of this feature.
+ * unit test, which still exists but is independent of this feature which
+ * it predates.
  *
  * SEE ALSO
  *
@@ -111,8 +112,13 @@ enum {
  * TYPES
  ******************************************************************************/
 
+/**
+ * This type is a header for a scatter/gather Buffer. The Buffer has a length
+ * field followed by a contiguous payload field. The length field is the number
+ * of bytes of data payload, not the entire length of the payload field.
+ */
 typedef struct DiminutoScatterGatherBuffer {
-    /*
+    /**
      * The type of the length field is way overkill as is uint32_t
      * (although uint16_t is too small). But it insures the caller
      * of the alignment. uint64_t will be double the size of size_t
@@ -120,7 +126,7 @@ typedef struct DiminutoScatterGatherBuffer {
      * but the same as size_t on 64-bit ARMs and all x86_64s.
      */
     uint64_t length; /* This is the data length, not the buffer length. */
-    /*
+    /**
      * Insure that the payload portion of the buffer is 8-byte aligned.
      * This guarantees that the caller can use the payload field to
      * store anything requiring 8-byte alignment or less.
@@ -135,70 +141,175 @@ typedef struct DiminutoScatterGatherBuffer {
  * ensue.
  */
 
+/**
+ * This is the head of a List of Pool of unused List nodes. List nodes
+ * may be used as Segments, or as Records.
+ */
 typedef diminuto_list_t diminuto_scattergather_pool_t;
 
+/**
+ * This is a List node used as a Segment. A Segment has a pointer
+ * to a Buffer in its data field.
+ */
 typedef diminuto_list_t diminuto_scattergather_segment_t;
 
+/**
+ * This is a List used node as a Record. A Record is the head of
+ * a List of Segments. The data read (received) or written (send)
+ * is the concatenation of the payload of the Buffer in each Segment
+ * in the Record, traversed from head to tail.
+ */
 typedef diminuto_list_t diminuto_scattergather_record_t;
 
 /*******************************************************************************
  * GENERATORS
  ******************************************************************************/
 
+/**
+ * @def DIMINUTO_SCATTERGATHER_POOL_INIT
+ * This is a static initializer for a Pool.
+ */
 #define DIMINUTO_SCATTERGATHER_POOL_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
+/**
+ * @def DIMINUTO_SCATTERGATHER_SEGMENT_INIT
+ * This is a static initializer for a Segment.
+ */
 #define DIMINUTO_SCATTERGATHER_SEGMENT_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
+/**
+ * @def DIMINUTO_SCATTERGATHER_RECORD_INIT
+ * This is a static initializer for a Record.
+ */
 #define DIMINUTO_SCATTERGATHER_RECORD_INIT(_POINTER_) DIMINUTO_LIST_NULLINIT(_POINTER_)
 
+/**
+ * @def diminuto_scattergather_bufferof
+ * This operator returns the address of the Buffer when given the address
+ * of the Buffer's payload as an argument.
+ */
 #define diminuto_scattergather_bufferof(_PAYLOAD_) diminuto_containerof(diminuto_scattergather_buffer_t, payload, (_PAYLOAD_))
 
 /*******************************************************************************
  * POOL
  ******************************************************************************/
 
+/**
+ * Initialize a Pool to the empty state.
+ * @param pp points to the Pool.
+ * @return a pointer to the Pool.
+ */
 static inline diminuto_scattergather_pool_t * diminuto_scattergather_pool_init(diminuto_scattergather_pool_t * pp) {
     return diminuto_list_nullinit(pp);
 }
 
+/**
+ * Deinitialize a Pool to the empty state. Any List nodes on the Pool are
+ * removed.
+ * @param pp points to the Pool.
+ */
 extern void diminuto_scattergather_pool_fini(diminuto_scattergather_pool_t * pp);
 
+/**
+ * Get a List node from the Pool. If the Pool is empty, NULL is returned.
+ * Otherwise a pointer to the initialized List node is returned. The List
+ * node may be used as a Segment or as a Record.
+ * @param pp points to the Pool.
+ * @return a pointer to the List node or NULL.
+ */
 extern diminuto_list_t * diminuto_scattergather_pool_get(diminuto_scattergather_pool_t * pp);
 
+/**
+ * Put a List node in the Pool. The List node may be placed anywhere in the
+ * Pool. The data field of the List node is zeroed out. The List node may
+ * be a Segment or a Record (or, indeed, any other kind of List node).
+ * @param pp points to the Pool.
+ * @param np points to the List node.
+ */
 extern void diminuto_scattergather_pool_put(diminuto_scattergather_pool_t * pp, diminuto_list_t * np);
 
-extern diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_scattergather_pool_t * pp, diminuto_scattergather_segment_t sa[], size_t sn);
+/**
+ * Populate a Pool with an array of List nodes. The data field of each List
+ * node is zeroed out. Ths List nodes may be used as a Segment or as a Record.
+ * @param pp points to the Pool.
+ * @param sa is an array of List nodes.
+ * @param sn is the number of List ndoes in the array.
+ */
+extern diminuto_scattergather_pool_t * diminuto_scattergather_pool_populate(diminuto_scattergather_pool_t * pp, diminuto_list_t sa[], size_t sn);
 
 /*******************************************************************************
  * SEGMENT
  ******************************************************************************/
 
+/**
+ * Initialize a Segment. The data field of the Segment is zeroed out.
+ * @param sp points to the Segment.
+ * @return a pointer to the Segment.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_segment_init(diminuto_scattergather_segment_t * sp) {
     return diminuto_list_nullinit(sp);
 }
 
+/**
+ * Deinitialize a Segment. The Segment is removed from any Record it may be
+ * on. The data field of the Segment is zeroed out.
+ * @param sp points to the Segment.
+ * @return a pointer to the Segment.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_segment_fini(diminuto_scattergather_segment_t * sp) {
     return diminuto_list_dataset(diminuto_list_remove(sp), (void *)0);
 }
 
-/*
+/**
+ * Get the pointer to the payload field in the Buffer pointed to by a Segment.
  * The address returned by this function will be aligned on at least
  * an eight-byte boundary.
+ * @param sp points to the Segment.
+ * @return a pointer to the payload field.
  */
 static inline void * diminuto_scattergather_segment_payload_get(const diminuto_scattergather_segment_t * sp) {
     return (void *)(&(((diminuto_scattergather_buffer_t *)diminuto_list_data(sp))->payload[0]));
 }
 
+/**
+ * Get the length field in the Buffer pointed to by a Segment. This is the
+ * length in bytes of the data in the payload field, not the total length
+ * of the Buffer (some or all of which may be unused).
+ * @param sp points to the Segment.
+ * @return the length field.
+ */
 static inline size_t diminuto_scattergather_segment_length_get(const diminuto_scattergather_segment_t * sp) {
     return ((diminuto_scattergather_buffer_t *)diminuto_list_data(sp))->length;
 }
 
+/**
+ * Set the length field in the Buffer pointed to by a Segment. This is the
+ * length in bytes of the data in the payload field, not the total length
+ * of the Buffer (some or all of which may be unused).
+ * @param sp points to the Segment.
+ * @return the length field.
+ */
 static inline size_t diminuto_scattergather_segment_length_set(diminuto_scattergather_segment_t * sp, size_t ll) {
     return ((diminuto_scattergather_buffer_t *)diminuto_list_data(sp))->length = ll;
 }
 
+/**
+ * Get a Segment from a Pool. Allocate a Buffer of the specifiied size.
+ * Set the data field of the Segment to the Buffer. For convenience, set
+ * the length field of the Buffer to the specified size (which the caller
+ * can change).
+ * @param pp points to the Pool.
+ * @param size is the requested size in bytes.
+ * @return a pointer to the Segment.
+ */
 extern diminuto_scattergather_segment_t * diminuto_scattergather_segment_allocate(diminuto_scattergather_pool_t * pp, size_t size);
 
+/**
+ * Free the Buffer associated with a Segment. Deinitialize the Segment. Return
+ * the Segment to a Pool.
+ * @param pp points to the Pool.
+ * @param sp points to the Segment.
+ */
 static inline void diminuto_scattergather_segment_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_segment_t * sp)
 {
     diminuto_buffer_free(diminuto_list_data(sp));
