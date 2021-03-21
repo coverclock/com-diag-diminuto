@@ -53,6 +53,12 @@
  * Chip Overclock, "Scatter/Gather", 2020-12-08,
  * <https://coverclock.blogspot.com/2020/12/scattergather.html>
  *
+ * tst/unittest-scattergather4.c
+ *
+ * tst/unittest-scattergather6.c
+ *
+ * tst/unittest-ipc-scattergather.c
+ *
  * tst/unittest-ipc-ancillary.c
  *
  * REFERENCES
@@ -274,8 +280,8 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_se
  ******************************************************************************/
 
 /*
- * On a stream socket, You can send/send6 to a read, and write to a
- * receive/receive6, although the current unit test doesn't exercise this.
+ * On a stream socket, you can send/send6 to a read, and write to a
+ * receive/receive6, although the current unit tests don't exercise this.
  */
 
 /*
@@ -290,32 +296,32 @@ extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather
  * IPv4
  */
 
-extern ssize_t diminuto_scattergather_record_send_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_send_stream(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_send_datagram(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
+static inline ssize_t diminuto_scattergather_record_ipc4_stream_send(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_ipc4_datagram_send(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
 }
 
-extern ssize_t diminuto_scattergather_record_receive_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+extern ssize_t diminuto_scattergather_record_ipc4_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
-static inline ssize_t diminuto_scattergather_record_receive_stream(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_receive_datagram(fd, rp, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
+static inline ssize_t diminuto_scattergather_record_ipc4_stream_receive(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_ipc4_datagram_receive(fd, rp, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
 }
 
 /*
  * IPv6
  */
 
-extern ssize_t diminuto_scattergather_record_send6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_send6_stream(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_send6_datagram(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
+static inline ssize_t diminuto_scattergather_record_ipc6_stream_send(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_ipc6_datagram_send(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
 }
 
-extern ssize_t diminuto_scattergather_record_receive6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+extern ssize_t diminuto_scattergather_record_ipc6_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
-static inline ssize_t diminuto_scattergather_record_receive6_stream(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_receive6_datagram(fd, rp, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
+static inline ssize_t diminuto_scattergather_record_ipc6_stream_receive(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_ipc6_datagram_receive(fd, rp, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
 }
 
 #endif

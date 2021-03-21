@@ -435,7 +435,7 @@ int streamserver4(int listensocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive_stream(streamsocket, rp)) != HEADER) {
+        if ((total = diminuto_scattergather_record_ipc4_stream_receive(streamsocket, rp)) != HEADER) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -783,7 +783,7 @@ int datagrampeer4(int datagramsocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive_datagram(datagramsocket, rp, &raddress, &rport)) < MINIMUM) {
+        if ((total = diminuto_scattergather_record_ipc4_datagram_receive(datagramsocket, rp, &raddress, &rport)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -1277,7 +1277,7 @@ int main(void)
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         /* Testing send with streams. */
-        ASSERT((length = diminuto_scattergather_record_send_stream(socket, rp)) == total);
+        ASSERT((length = diminuto_scattergather_record_ipc4_stream_send(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
@@ -1344,9 +1344,9 @@ int main(void)
 
         ASSERT((total = diminuto_scattergather_record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc4_datagram_peer(0)) >= 0);
-        ASSERT((length = diminuto_scattergather_record_send_datagram(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send_datagram(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send_datagram(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_ipc4_datagram_send(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_ipc4_datagram_send(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_ipc4_datagram_send(socket, rp, *addressp, *portp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 3;

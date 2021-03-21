@@ -271,13 +271,13 @@ static ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scatt
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("diminuto_scattergather_record_send: enumeration");
+        diminuto_perror("diminuto_scattergather_record_send_generic: enumeration");
     } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
-        diminuto_perror("diminuto_scattergather_record_send: alloca");
+        diminuto_perror("diminuto_scattergather_record_send_generic: alloca");
     } else if ((message.msg_iov = diminuto_scattergather_record_vectorize(rp, vp, message.msg_iovlen)) == (struct iovec *)0) {
-        diminuto_perror("diminuto_scattergather_record_send: diminuto_scattergather_record_vectorize");
+        diminuto_perror("diminuto_scattergather_record_send_generic: diminuto_scattergather_record_vectorize");
     } else if ((total = sendmsg(fd, &message, 0)) < 0) {
-        diminuto_perror("diminuto_scattergather_record_send: sendmsg");
+        diminuto_perror("diminuto_scattergather_record_send_generic: sendmsg");
     } else {
         /* Do nothing. */
     }
@@ -285,7 +285,7 @@ static ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scatt
     return total;
 }
 
-ssize_t diminuto_scattergather_record_send_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -305,7 +305,7 @@ ssize_t diminuto_scattergather_record_send_datagram(int fd, diminuto_scattergath
     return diminuto_scattergather_record_send_generic(fd, rp, sap, length);
 }
 
-ssize_t diminuto_scattergather_record_send6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -338,13 +338,13 @@ static ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_sc
 
     if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_VECTOR))) {
         errno = EINVAL;
-        diminuto_perror("diminuto_scattergather_record_receive: enumeration");
+        diminuto_perror("diminuto_scattergather_record_receive_generic: enumeration");
     } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
-        diminuto_perror("diminuto_scattergather_record_receive: alloca");
+        diminuto_perror("diminuto_scattergather_record_receive_generic: alloca");
     } else if ((message.msg_iov = diminuto_scattergather_record_vectorize(rp, vp, message.msg_iovlen)) == (struct iovec *)0) {
-        diminuto_perror("diminuto_scattergather_record_receive: diminuto_scattergather_record_vectorize");
+        diminuto_perror("diminuto_scattergather_record_receive_generic: diminuto_scattergather_record_vectorize");
     } else if ((total = recvmsg(fd, &message, 0)) < 0) {
-        diminuto_perror("diminuto_scattergather_record_receive: sendmsg");
+        diminuto_perror("diminuto_scattergather_record_receive_generic: sendmsg");
     } else {
         /* Do nothing. */
     }
@@ -352,7 +352,7 @@ static ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_sc
     return total;
 }
 
-ssize_t diminuto_scattergather_record_receive_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+ssize_t diminuto_scattergather_record_ipc4_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     ssize_t total = 0;
     struct sockaddr_in sa = { 0, };
@@ -364,7 +364,7 @@ ssize_t diminuto_scattergather_record_receive_datagram(int fd, diminuto_scatterg
     return total;
 }
 
-ssize_t diminuto_scattergather_record_receive6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+ssize_t diminuto_scattergather_record_ipc6_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     ssize_t total = 0;
     struct sockaddr_in6 sa = { 0, };
