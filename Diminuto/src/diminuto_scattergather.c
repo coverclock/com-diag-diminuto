@@ -259,7 +259,7 @@ ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record
     return total;
 }
 
-static ssize_t diminuto_scattergather_record_send_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
+static ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -285,7 +285,7 @@ static ssize_t diminuto_scattergather_record_send_base(int fd, diminuto_scatterg
     return total;
 }
 
-ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_send_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -302,10 +302,10 @@ ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergathe
         sap = (struct sockaddr *)&sa;
     }
 
-    return diminuto_scattergather_record_send_base(fd, rp, sap, length);
+    return diminuto_scattergather_record_send_generic(fd, rp, sap, length);
 }
 
-ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_send6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -323,10 +323,10 @@ ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergath
         sap = (struct sockaddr *)&sa;
     }
 
-    return diminuto_scattergather_record_send_base(fd, rp, sap, length);
+    return diminuto_scattergather_record_send_generic(fd, rp, sap, length);
 }
 
-static ssize_t diminuto_scattergather_record_receive_base(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
+static ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -352,24 +352,24 @@ static ssize_t diminuto_scattergather_record_receive_base(int fd, diminuto_scatt
     return total;
 }
 
-ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
+ssize_t diminuto_scattergather_record_receive_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
 {
     ssize_t total = 0;
     struct sockaddr_in sa = { 0, };
 
-    total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
+    total = diminuto_scattergather_record_receive_generic(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
 
     diminuto_ipc4_identify((struct sockaddr *)&sa, addressp, portp);
 
     return total;
 }
 
-ssize_t diminuto_scattergather_record_receive6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
+ssize_t diminuto_scattergather_record_receive6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp)
 {
     ssize_t total = 0;
     struct sockaddr_in6 sa = { 0, };
 
-    total = diminuto_scattergather_record_receive_base(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
+    total = diminuto_scattergather_record_receive_generic(fd, rp, (struct sockaddr *)&sa, sizeof(sa));
 
     diminuto_ipc6_identify((struct sockaddr *)&sa, addressp, portp);
 

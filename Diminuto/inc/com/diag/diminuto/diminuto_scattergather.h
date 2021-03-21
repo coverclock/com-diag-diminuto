@@ -19,7 +19,7 @@
  *
  * Four data structures are defined: Buffer, Segment, Record, and Pool.
  *
- * A Buffer is a Diminuto Buffer object that contains  a length field in
+ * A Buffer is a Diminuto Buffer object that contains a length field in
  * bytes followed by a contiguous section of memory containing the payload.
  * The length field indicates the number of bytes in the payload, not
  * the total size of the Buffer object. (Dimunuto Buffers have their
@@ -42,7 +42,8 @@
  * The API has two further sections: Record Segments (functions that
  * deal with Segments in relation to a Record), and Input/Output
  * (functions that use the underlying vector send/receive and read/write
- * system calls).
+ * system calls). The IPC section of the Input/Output API supports IPv4
+ * and IPv6 stream and datagram connections.
  *
  * This feature was derived from the original Diminuto IPC Scatter/Gather
  * unit test, which still exists but is independent of this feature.
@@ -273,6 +274,11 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_se
  ******************************************************************************/
 
 /*
+ * On a stream socket, You can send/send6 to a read, and write to a
+ * receive/receive6, although the current unit test doesn't exercise this.
+ */
+
+/*
  * File-ish 
  */
 
@@ -284,32 +290,32 @@ extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather
  * IPv4
  */
 
-extern ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_send_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_send(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_send_generic(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
+static inline ssize_t diminuto_scattergather_record_send_stream(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_send_datagram(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
 }
 
-extern ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
+extern ssize_t diminuto_scattergather_record_receive_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
-static inline ssize_t diminuto_scattergather_record_receive(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_receive_generic(fd, rp, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
+static inline ssize_t diminuto_scattergather_record_receive_stream(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_receive_datagram(fd, rp, (diminuto_ipv4_t *)0, (diminuto_port_t *)0);
 }
 
 /*
  * IPv6
  */
 
-extern ssize_t diminuto_scattergather_record_send6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_send6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_send6(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_send6_generic(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
+static inline ssize_t diminuto_scattergather_record_send6_stream(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_send6_datagram(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
 }
 
-extern ssize_t diminuto_scattergather_record_receive6_generic(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
+extern ssize_t diminuto_scattergather_record_receive6_datagram(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
-static inline ssize_t diminuto_scattergather_record_receive6(int fd, diminuto_scattergather_record_t * rp) {
-    return diminuto_scattergather_record_receive6_generic(fd, rp, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
+static inline ssize_t diminuto_scattergather_record_receive6_stream(int fd, diminuto_scattergather_record_t * rp) {
+    return diminuto_scattergather_record_receive6_datagram(fd, rp, (diminuto_ipv6_t *)0, (diminuto_port_t *)0);
 }
 
 #endif

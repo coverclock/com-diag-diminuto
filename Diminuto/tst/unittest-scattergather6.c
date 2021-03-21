@@ -435,7 +435,7 @@ int streamserver6(int listensocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive6(streamsocket, rp)) != HEADER) {
+        if ((total = diminuto_scattergather_record_receive6_stream(streamsocket, rp)) != HEADER) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -783,7 +783,7 @@ int datagrampeer6(int datagramsocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive6_generic(datagramsocket, rp, &raddress, &rport)) < MINIMUM) {
+        if ((total = diminuto_scattergather_record_receive6_datagram(datagramsocket, rp, &raddress, &rport)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -1277,7 +1277,7 @@ int main(void)
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         /* Testing send6 with streams. */
-        ASSERT((length = diminuto_scattergather_record_send6(socket, rp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_stream(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
@@ -1344,9 +1344,9 @@ int main(void)
 
         ASSERT((total = diminuto_scattergather_record_measure(rp)) > 0);
         ASSERT((socket = diminuto_ipc6_datagram_peer(0)) >= 0);
-        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
-        ASSERT((length = diminuto_scattergather_record_send6_generic(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_datagram(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_datagram(socket, rp, *addressp, *portp)) == total);
+        ASSERT((length = diminuto_scattergather_record_send6_datagram(socket, rp, *addressp, *portp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
         status = 3;
