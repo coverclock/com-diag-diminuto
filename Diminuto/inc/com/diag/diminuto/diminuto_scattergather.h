@@ -218,6 +218,14 @@ static inline void diminuto_scattergather_record_free(diminuto_scattergather_poo
     diminuto_scattergather_pool_put(pp, diminuto_scattergather_record_fini(diminuto_scattergather_record_segments_free(pp, rp)));
 }
 
+extern size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t * rp);
+
+extern size_t diminuto_scattergather_record_measure(diminuto_scattergather_record_t * rp);
+
+extern diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, diminuto_scattergather_record_t * rp);
+
+extern struct iovec * diminuto_scattergather_record_vectorize(diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn);
+
 /*******************************************************************************
  * RECORD SEGMENTS
  ******************************************************************************/
@@ -253,14 +261,6 @@ static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_s
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp) {
     return (diminuto_list_next(sp) == rp) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_next(sp);
 }
-
-extern size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t * rp);
-
-extern size_t diminuto_scattergather_record_measure(diminuto_scattergather_record_t * rp);
-
-extern diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, diminuto_scattergather_record_t * rp);
-
-extern struct iovec * diminuto_scattergather_record_vectorize(diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn);
 
 static inline diminuto_scattergather_record_t * diminuto_scattergather_record_segment_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp)
 {

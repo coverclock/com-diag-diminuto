@@ -1160,7 +1160,8 @@ int main(void)
         ASSERT((socket = diminuto_ipc4_stream_consumer(*addressp, *portp)) >= 0);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
-        ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
+        /* Testing send with streams. */
+        ASSERT((length = diminuto_scattergather_record_send(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 
