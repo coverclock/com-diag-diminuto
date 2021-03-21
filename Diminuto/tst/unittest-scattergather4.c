@@ -601,6 +601,8 @@ int datagrampeer4(int datagramsocket)
     ssize_t total;
     diminuto_ipv4_t address;
     diminuto_port_t port;
+    diminuto_ipv4_t raddress;
+    diminuto_port_t rport;
     size_t length;
     uint8_t * bp;
     uint16_t checksum;
@@ -781,7 +783,7 @@ int datagrampeer4(int datagramsocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_receive(datagramsocket, rp)) < MINIMUM) {
+        if ((total = diminuto_scattergather_record_receive_generic(datagramsocket, rp, &raddress, &rport)) < MINIMUM) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -795,10 +797,12 @@ int datagrampeer4(int datagramsocket)
 
         address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
+        fprintf(stderr, "  RADDRESS: %s\n", diminuto_ipc4_address2string(raddress, printable, sizeof(printable)));
         diminuto_scattergather_record_segment_free(&pool, rp, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  PORT: %d\n", port);
+        fprintf(stderr, "  RPORT: %d\n", rport);
         diminuto_scattergather_record_segment_free(&pool, rp, sp);
 
         length = *(size_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
