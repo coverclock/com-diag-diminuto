@@ -185,11 +185,11 @@ static inline diminuto_scattergather_segment_t * diminuto_scattergather_segment_
  * The address returned by this function will be aligned on at least
  * an eight-byte boundary.
  */
-static inline void * diminuto_scattergather_segment_payload_get(diminuto_scattergather_segment_t * sp) {
+static inline void * diminuto_scattergather_segment_payload_get(const diminuto_scattergather_segment_t * sp) {
     return (void *)(&(((diminuto_scattergather_buffer_t *)diminuto_list_data(sp))->payload[0]));
 }
 
-static inline size_t diminuto_scattergather_segment_length_get(diminuto_scattergather_segment_t * sp) {
+static inline size_t diminuto_scattergather_segment_length_get(const diminuto_scattergather_segment_t * sp) {
     return ((diminuto_scattergather_buffer_t *)diminuto_list_data(sp))->length;
 }
 
@@ -225,13 +225,13 @@ static inline void diminuto_scattergather_record_free(diminuto_scattergather_poo
     diminuto_scattergather_pool_put(pp, diminuto_scattergather_record_fini(diminuto_scattergather_record_segments_free(pp, rp)));
 }
 
-extern size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t * rp);
+extern size_t diminuto_scattergather_record_enumerate(const diminuto_scattergather_record_t * rp);
 
-extern size_t diminuto_scattergather_record_measure(diminuto_scattergather_record_t * rp);
+extern size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record_t * rp);
 
-extern diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, diminuto_scattergather_record_t * rp);
+extern const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, const diminuto_scattergather_record_t * rp);
 
-extern struct iovec * diminuto_scattergather_record_vectorize(diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn);
+extern struct iovec * diminuto_scattergather_record_vectorize(const diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn);
 
 /*******************************************************************************
  * RECORD SEGMENTS
@@ -257,15 +257,15 @@ static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_s
     return diminuto_list_replace(op, sp);
 }
 
-static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_head(diminuto_scattergather_record_t * rp) {
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_head(const diminuto_scattergather_record_t * rp) {
     return diminuto_list_head(rp);
 }
 
-static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_tail(diminuto_scattergather_record_t * rp) {
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_tail(const diminuto_scattergather_record_t * rp) {
     return diminuto_list_tail(rp);
 }
 
-static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp) {
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(const diminuto_scattergather_record_t * rp, const diminuto_scattergather_segment_t * sp) {
     return (diminuto_list_next(sp) == rp) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_next(sp);
 }
 
@@ -288,7 +288,13 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_se
  * File-ish 
  */
 
-extern ssize_t diminuto_scattergather_record_write(int fd, diminuto_scattergather_record_t * rp);
+/**
+ * Write a Record to a file descriptor. May be a stream socket, a file, or
+ * any file-ish sink.
+ * @param fd is the open file descriptor.
+ * @param rp points to the record.
+ */
+extern ssize_t diminuto_scattergather_record_write(int fd, const diminuto_scattergather_record_t * rp);
 
 extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record_t * rp);
 
@@ -296,9 +302,9 @@ extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather
  * IPv4
  */
 
-extern ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_ipc4_stream_send(int fd, diminuto_scattergather_record_t * rp) {
+static inline ssize_t diminuto_scattergather_record_ipc4_stream_send(int fd, const diminuto_scattergather_record_t * rp) {
     return diminuto_scattergather_record_ipc4_datagram_send(fd, rp, DIMINUTO_IPC4_UNSPECIFIED, 0);
 }
 
@@ -312,9 +318,9 @@ static inline ssize_t diminuto_scattergather_record_ipc4_stream_receive(int fd, 
  * IPv6
  */
 
-extern ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
+extern ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
 
-static inline ssize_t diminuto_scattergather_record_ipc6_stream_send(int fd, diminuto_scattergather_record_t * rp) {
+static inline ssize_t diminuto_scattergather_record_ipc6_stream_send(int fd, const diminuto_scattergather_record_t * rp) {
     return diminuto_scattergather_record_ipc6_datagram_send(fd, rp, DIMINUTO_IPC6_UNSPECIFIED, 0);
 }
 

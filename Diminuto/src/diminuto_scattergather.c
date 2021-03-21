@@ -111,10 +111,10 @@ diminuto_scattergather_segment_t * diminuto_scattergather_segment_allocate(dimin
  * RECORD
  ******************************************************************************/
 
-size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t * rp)
+size_t diminuto_scattergather_record_enumerate(const diminuto_scattergather_record_t * rp)
 {
     size_t nn = 0;
-    diminuto_scattergather_segment_t * sp = (diminuto_scattergather_segment_t *)0;
+    const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
 
     for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
         nn += 1;
@@ -123,10 +123,10 @@ size_t diminuto_scattergather_record_enumerate(diminuto_scattergather_record_t *
     return nn;    
 }
 
-size_t diminuto_scattergather_record_measure(diminuto_scattergather_record_t * rp)
+size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record_t * rp)
 {
     size_t ll = 0;
-    diminuto_scattergather_segment_t * sp = (diminuto_scattergather_segment_t *)0;
+    const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
 
     for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
         if (diminuto_list_data(sp) != (void *)0) {
@@ -137,9 +137,9 @@ size_t diminuto_scattergather_record_measure(diminuto_scattergather_record_t * r
     return ll;    
 }
 
-diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, diminuto_scattergather_record_t * rp)
+const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, const diminuto_scattergather_record_t * rp)
 {
-    diminuto_scattergather_segment_t * sp = (diminuto_scattergather_segment_t *)0;
+    const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
     void * pp = 0;
     size_t ii = 0;
     size_t ll = 0;
@@ -159,9 +159,9 @@ diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, 
     return rp;    
 }
 
-struct iovec * diminuto_scattergather_record_vectorize(diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn)
+struct iovec * diminuto_scattergather_record_vectorize(const diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn)
 {
-    diminuto_scattergather_segment_t * sp = (diminuto_scattergather_segment_t *)0;
+    const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
     size_t ii = 0;
 
     for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
@@ -211,7 +211,7 @@ diminuto_scattergather_record_t * diminuto_scattergather_record_allocate(diminut
  * INPUT/OUTPUT
  ******************************************************************************/
 
-ssize_t diminuto_scattergather_record_write(int fd, diminuto_scattergather_record_t * rp)
+ssize_t diminuto_scattergather_record_write(int fd, const diminuto_scattergather_record_t * rp)
 {
     ssize_t total = -1;
     size_t nn = 0;
@@ -259,7 +259,7 @@ ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record
     return total;
 }
 
-static ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
+static ssize_t diminuto_scattergather_record_send_generic(int fd, const diminuto_scattergather_record_t * rp, struct sockaddr * sap, socklen_t length)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -285,7 +285,7 @@ static ssize_t diminuto_scattergather_record_send_generic(int fd, diminuto_scatt
     return total;
 }
 
-ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
@@ -305,7 +305,7 @@ ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, diminuto_scatte
     return diminuto_scattergather_record_send_generic(fd, rp, sap, length);
 }
 
-ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
+ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
     struct iovec * vp = (struct iovec *)0;
