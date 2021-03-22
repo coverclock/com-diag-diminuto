@@ -435,7 +435,7 @@ int streamserver6(int listensocket)
         }
         diminuto_scattergather_record_segment_append(rp, sp);
 
-        if ((total = diminuto_scattergather_record_ipc6_stream_receive(streamsocket, rp)) != HEADER) {
+        if ((total = diminuto_scattergather_record_ipc_stream_receive(streamsocket, rp)) != HEADER) {
             errno = EINVAL;
             diminuto_perror("short");
             diminuto_scattergather_record_free(&pool, rp);
@@ -1276,8 +1276,8 @@ int main(void)
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
-        /* Testing send6 with streams. */
-        ASSERT((length = diminuto_scattergather_record_ipc6_stream_send(socket, rp)) == total);
+        /* Testing send with streams. */
+        ASSERT((length = diminuto_scattergather_record_ipc_stream_send(socket, rp)) == total);
         ASSERT((length = diminuto_scattergather_record_write(socket, rp)) == total);
         ASSERT(diminuto_ipc_close(socket) >= 0);
 

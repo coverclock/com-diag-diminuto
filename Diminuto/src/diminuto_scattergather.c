@@ -285,6 +285,11 @@ static ssize_t diminuto_scattergather_record_send_generic(int fd, const diminuto
     return total;
 }
 
+ssize_t diminuto_scattergather_record_ipc_stream_send(int fd, const diminuto_scattergather_record_t * rp)
+{
+    return diminuto_scattergather_record_send_generic(fd, rp, (struct sockaddr *)0, 0);
+}
+
 ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
     ssize_t total = 0;
@@ -350,6 +355,11 @@ static ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_sc
     }
 
     return total;
+}
+
+ssize_t diminuto_scattergather_record_ipc_stream_receive(int fd, diminuto_scattergather_record_t * rp)
+{
+    return diminuto_scattergather_record_receive_generic(fd, rp, (struct sockaddr *)0, 0);
 }
 
 ssize_t diminuto_scattergather_record_ipc4_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp)
