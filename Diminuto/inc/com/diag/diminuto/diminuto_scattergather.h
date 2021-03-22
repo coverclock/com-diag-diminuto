@@ -299,6 +299,7 @@ static inline size_t diminuto_scattergather_segment_length_get(const diminuto_sc
  * length in bytes of the data in the payload field, not the total length
  * of the Buffer (some or all of which may be unused).
  * @param sp points to the Segment.
+ * @param ll is the payload length in bytes.
  * @return the length field.
  */
 static inline size_t diminuto_scattergather_segment_length_set(diminuto_scattergather_segment_t * sp, size_t ll) {
