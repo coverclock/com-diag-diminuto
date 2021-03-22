@@ -219,7 +219,7 @@ ssize_t diminuto_scattergather_record_write(int fd, const diminuto_scattergather
 
     nn = diminuto_scattergather_record_enumerate(rp);
 
-    if (!((0 < nn) && (nn <= DIMINUTO_SCATTERGATHER_VECTOR))) {
+    if (!((0 < nn) && (nn <= DIMINUTO_SCATTERGATHER_MAXIMUM))) {
         errno = EINVAL;
         diminuto_perror("diminuto_scattergather_record_write: enumeration");
     } else if ((vp = (struct iovec *)alloca(nn * sizeof(*vp))) == (struct iovec *)0) {
@@ -243,7 +243,7 @@ ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record
 
     nn = diminuto_scattergather_record_enumerate(rp);
 
-    if (!((0 < nn) && (nn <= DIMINUTO_SCATTERGATHER_VECTOR))) {
+    if (!((0 < nn) && (nn <= DIMINUTO_SCATTERGATHER_MAXIMUM))) {
         errno = EINVAL;
         diminuto_perror("diminuto_scattergather_record_read: enumeration");
     } else if ((vp = (struct iovec *)alloca(nn * sizeof(*vp))) == (struct iovec *)0) {
@@ -269,7 +269,7 @@ static ssize_t diminuto_scattergather_record_send_generic(int fd, const diminuto
     message.msg_namelen = length;
     message.msg_iovlen = diminuto_scattergather_record_enumerate(rp);
 
-    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_VECTOR))) {
+    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_MAXIMUM))) {
         errno = EINVAL;
         diminuto_perror("diminuto_scattergather_record_send_generic: enumeration");
     } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {
@@ -341,7 +341,7 @@ static ssize_t diminuto_scattergather_record_receive_generic(int fd, diminuto_sc
     message.msg_namelen = length;
     message.msg_iovlen = diminuto_scattergather_record_enumerate(rp);
 
-    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_VECTOR))) {
+    if (!((0 < message.msg_iovlen) && (message.msg_iovlen <= DIMINUTO_SCATTERGATHER_MAXIMUM))) {
         errno = EINVAL;
         diminuto_perror("diminuto_scattergather_record_receive_generic: enumeration");
     } else if ((vp = (struct iovec *)alloca(message.msg_iovlen * sizeof(*message.msg_iov))) == (struct iovec *)0) {

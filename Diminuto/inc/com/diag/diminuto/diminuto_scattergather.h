@@ -49,6 +49,11 @@
  * unit test, which still exists but is independent of this feature which
  * it predates.
  *
+ * The function names are crazy long. But I'm using the same data type
+ * (List) for three different objects, and it's important not to get
+ * them confused. I'm hoping the function names will make it more obvious
+ * if the developer has botched something up.
+ *
  * SEE ALSO
  *
  * Chip Overclock, "Scatter/Gather", 2020-12-08,
@@ -103,9 +108,13 @@
  * CONSTANTS
  ******************************************************************************/
 
-enum {
-    DIMINUTO_SCATTERGATHER_NODES = UIO_MAXIOV,     /* Overkill. */
-    DIMINUTO_SCATTERGATHER_VECTOR = UIO_MAXIOV,    /* Maximum. */
+/**
+ * This enumeration defines some useful constants about underlying
+ * platform limitations like the maximum number of fields you can
+ * have in a single I/O vector.
+ */
+enum DiminutoScatterGatherConstants {
+    DIMINUTO_SCATTERGATHER_MAXIMUM = UIO_MAXIOV,    /* Nominally 1024. */
 };
 
 /*******************************************************************************
@@ -118,14 +127,14 @@ enum {
  * of bytes of data payload, not the entire length of the payload field.
  */
 typedef struct DiminutoScatterGatherBuffer {
+    uint64_t alignment[0]; /* This will cause -pedantic warnings. */
     /**
-     * The type of the length field is way overkill as is uint32_t
-     * (although uint16_t is too small). But it insures the caller
-     * of the alignment. uint64_t will be double the size of size_t
-     * on some ARM platforms (especially those with 32-bit kernels)
-     * but the same as size_t on 64-bit ARMs and all x86_64s.
+     * On some platforms (particularly those with 32-bit kernels),
+     * size_t is 32 bits, and on others (64-bit kernels) it is 64
+     * bits. So there may or may not be some slack in this structure.
+     * But as Bob Dobbs reminds us, we all need slack.
      */
-    uint64_t length; /* This is the data length, not the buffer length. */
+    size_t length; /* This is the data length, not the buffer length. */
     /**
      * Insure that the payload portion of the buffer is 8-byte aligned.
      * This guarantees that the caller can use the payload field to

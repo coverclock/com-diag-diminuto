@@ -43,7 +43,7 @@
 
 static diminuto_scattergather_pool_t pool;
 
-static diminuto_scattergather_segment_t segments[DIMINUTO_SCATTERGATHER_NODES];
+static diminuto_scattergather_segment_t segments[DIMINUTO_SCATTERGATHER_MAXIMUM];
 
 /*******************************************************************************
  * FARENDS
@@ -1027,12 +1027,12 @@ int main(void)
         TEST();
 
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 0));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 0));
         ASSERT(diminuto_buffer_log() >= 0);
 
         ASSERT((sp[0] = diminuto_scattergather_segment_allocate(&pool, sizeof(size_t))) != (diminuto_scattergather_segment_t *)0);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 1));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 1));
         ASSERT((dp = diminuto_scattergather_segment_payload_get(sp[0])) != (void *)0);
         ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(diminuto_scattergather_segment_length_get(sp[0]) == sizeof(size_t));
@@ -1042,7 +1042,7 @@ int main(void)
 
         ASSERT((sp[1] = diminuto_scattergather_segment_allocate(&pool, sizeof(uint64_t))) != (diminuto_scattergather_segment_t *)0);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 2));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 2));
         ASSERT((dp = diminuto_scattergather_segment_payload_get(sp[1])) != (void *)0);
         ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(diminuto_scattergather_segment_length_get(sp[1]) == sizeof(uint64_t));
@@ -1052,7 +1052,7 @@ int main(void)
 
         ASSERT((sp[2] = diminuto_scattergather_segment_allocate(&pool, 64)) != (diminuto_scattergather_segment_t *)0);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 3));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 3));
         ASSERT((dp = diminuto_scattergather_segment_payload_get(sp[2])) != (void *)0);
         ASSERT((((uintptr_t)dp) & 0x7) == 0);
         ASSERT(diminuto_scattergather_segment_length_get(sp[2]) == 64);
@@ -1064,17 +1064,17 @@ int main(void)
 
         diminuto_scattergather_segment_free(&pool, sp[0]);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 2));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 2));
         ASSERT(diminuto_buffer_log() >= 0);
 
         diminuto_scattergather_segment_free(&pool, sp[2]);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 1));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 1));
         ASSERT(diminuto_buffer_log() >= 0);
 
         diminuto_scattergather_segment_free(&pool, sp[1]);
         /* Everything is a List node. */
-        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_NODES - 0));
+        ASSERT(diminuto_scattergather_record_enumerate(&pool) == (DIMINUTO_SCATTERGATHER_MAXIMUM - 0));
         ASSERT(diminuto_buffer_log() >= 0);
 
         STATUS();
