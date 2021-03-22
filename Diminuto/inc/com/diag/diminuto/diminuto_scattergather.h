@@ -129,6 +129,8 @@ enum DiminutoScatterGatherConstants {
 typedef struct DiminutoScatterGatherBuffer {
     uint64_t alignment[0]; /* This will cause -pedantic warnings. */
     /**
+     * This is the length of the data in the payload field, not the
+     * length of the payload field.
      * On some platforms (particularly those with 32-bit kernels),
      * size_t is 32 bits, and on others (64-bit kernels) it is 64
      * bits. So there may or may not be some slack in this structure.
@@ -136,6 +138,7 @@ typedef struct DiminutoScatterGatherBuffer {
      */
     size_t length; /* This is the data length, not the buffer length. */
     /**
+     * This is the beginning of the payload field.
      * Insure that the payload portion of the buffer is 8-byte aligned.
      * This guarantees that the caller can use the payload field to
      * store anything requiring 8-byte alignment or less.
@@ -303,10 +306,10 @@ static inline size_t diminuto_scattergather_segment_length_set(diminuto_scatterg
 }
 
 /**
- * Get a Segment from a Pool. Allocate a Buffer of the specifiied size.
- * Set the data field of the Segment to the Buffer. For convenience, set
- * the length field of the Buffer to the specified size (which the caller
- * can change).
+ * Get a Segment from a Pool. A Buffer of the specified size is allocated.
+ * The data field of the Segment is set to the Buffer. For convenience,
+ * the length field of the Buffer is set to the specified size (which the
+ * caller may change).
  * @param pp points to the Pool.
  * @param size is the requested size in bytes.
  * @return a pointer to the Segment.
@@ -314,8 +317,9 @@ static inline size_t diminuto_scattergather_segment_length_set(diminuto_scatterg
 extern diminuto_scattergather_segment_t * diminuto_scattergather_segment_allocate(diminuto_scattergather_pool_t * pp, size_t size);
 
 /**
- * Free the Buffer associated with a Segment. Deinitialize the Segment. Return
- * the Segment to a Pool.
+ * Free a Segment. The Buffer associated with the Segment is freed. The
+ * Segment is deinitialized (which removes it from any Record it was on).
+ * The Segment is returned to the Pool.
  * @param pp points to the Pool.
  * @param sp points to the Segment.
  */
@@ -329,70 +333,181 @@ static inline void diminuto_scattergather_segment_free(diminuto_scattergather_po
  * RECORD
  ******************************************************************************/
 
+/**
+ * Initialize a Record to the empty state. The data field is zeroed out.
+ * @param rp points to the Record.
+ * @return a pointer to the Record.
+ */
 static inline diminuto_scattergather_record_t * diminuto_scattergather_record_init(diminuto_scattergather_record_t * rp) {
     return diminuto_list_nullinit(rp);
 }
 
+/**
+ * Deinitialize a Record. The Record is removed from any List it is on. The
+ * data field is zeroed out.
+ * @param rp points to the Record.
+ * @return a pointer to the Record.
+ */
 static inline diminuto_scattergather_record_t * diminuto_scattergather_record_fini(diminuto_scattergather_record_t * rp) {
     return diminuto_list_dataset(diminuto_list_remove(rp), (void *)0);
 }
 
+/**
+ * Allocate a Record from a Pool. The Record is initially empty.
+ * @param pp points to the Pool.
+ * @return a pointer to the Record or NULL if the Pool is empty.
+ */
 extern diminuto_scattergather_record_t * diminuto_scattergather_record_allocate(diminuto_scattergather_pool_t * pp);
 
+/**
+ * Free all Segments contained in a Record. Each Segment is removed from
+ * the Record. The Buffer associated with each Record is freed. The data
+ * field if each segment is zeroed out. Each Segment is returned to the
+ * Pool. The Record itself is NOT returned to the Pool.
+ * @param pp points to the Pool.
+ * @param rp points to the Record.
+ * @return a pointer to the Record.
+ */
 extern diminuto_scattergather_record_t * diminuto_scattergather_record_segments_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp);
 
+/**
+ * Free a Record. All of the Segments associated with the Record are freed.
+ * The Record is deinitialized and put in the Pool.
+ * @param pp points to the Pool.
+ * @param rp points to the Record.
+ */
 static inline void diminuto_scattergather_record_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp) {
     diminuto_scattergather_pool_put(pp, diminuto_scattergather_record_fini(diminuto_scattergather_record_segments_free(pp, rp)));
 }
 
+/**
+ * Return the number of Segments associated with a Record.
+ * @param rp points to the Record.
+ * @return the number of Segments.
+ */
 extern size_t diminuto_scattergather_record_enumerate(const diminuto_scattergather_record_t * rp);
 
+/**
+ * Return the total number of bytes of payload in all Buffers of all Segments
+ * associated with a Record.
+ * @param rp points to the Record.
+ * @return the total number of bytes of payload.
+ */
 extern size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record_t * rp);
 
+/**
+ * Dump a report of useful information about a Record to the specified FILE
+ * (e.g. stderr).
+ * @param fp points to the FILE.
+ * @param rp points to the Record.
+ * @return a pointer to the Record.
+ */
 extern const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, const diminuto_scattergather_record_t * rp);
 
+/**
+ * Vectorize a Record by populating an I/O vector of a specified size with
+ * a pointer to, and the size of, the payload of each Buffer in each Segment
+ * of the Record. Note that having a vector that is too small is not an error
+ * (so no error message is emitted), but NULL is returned in such cases.
+ * @param rp points to the Record.
+ * @param va points to the I/O vector (an array).
+ * @param nn is the number of slots in the I/O vector.
+ * @return a pointer to the I/O vector or NULL if it is too small.
+ */
 extern struct iovec * diminuto_scattergather_record_vectorize(const diminuto_scattergather_record_t * rp, struct iovec va[], size_t nn);
 
 /*******************************************************************************
  * RECORD SEGMENTS
  ******************************************************************************/
 
-static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_remove(diminuto_scattergather_record_t * rp /* Unused. */, diminuto_scattergather_segment_t * sp) {
+/**
+ * Remove a Segment from a Record. The Segment is removed from the Record it is
+ * on (if any).
+ * @param sp points to the Segment.
+ * @return a pointer to the Segment.
+ */
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_remove(diminuto_scattergather_segment_t * sp) {
     return diminuto_list_remove(sp);
 }
 
+/**
+ * Prepend a Segment onto a Record, which places it at the head of the Record.
+ * @param rp points to the Record.
+ * @param sp points to the Segment.
+ * @return a pointer to the Segment.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_prepend(diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp) {
     return diminuto_list_push(rp, sp);
 }
 
+/**
+ * Append a Segment onto a Record, which places it at the tail of the Record.
+ * @param rp points to the Record.
+ * @param sp points to the Segment.
+ * @return a pointer to the Segment.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_append(diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp) {
     return diminuto_list_enqueue(rp, sp);
 }
 
+/**
+ * Insert a Segment onto a Record after an existing Segment. The inserted
+ * Segment becomes associated with whatever Record the existing Segment is
+ * associated with.
+ * @param op points to the existing Segment on a Record.
+ * @param sp points to the Segment to be inserted.
+ * @return a pointer to the inserted Segment.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_insert(diminuto_scattergather_segment_t * op, diminuto_scattergather_segment_t * sp) {
     return diminuto_list_splice(op, sp);
 }
 
+/**
+ * Replace a Segment on a Record with another Segment.
+ * @param op points to the existing Segment to be replaced on a Record.
+ * @param sp points to the new Segment.
+ * @return a pointer to the Segment that was replaced.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_replace(diminuto_scattergather_segment_t * op, diminuto_scattergather_segment_t * sp) {
     return diminuto_list_replace(op, sp);
 }
 
+/**
+ * Return a pointer to the first Segment on a Record.
+ * @param rp points to the Record.
+ * @return a pointer to the head Segment or NULL if the Record is empty.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_head(const diminuto_scattergather_record_t * rp) {
     return diminuto_list_head(rp);
 }
 
+/**
+ * Return a pointer to the last Segment on a Record.
+ * @param rp points to the Record.
+ * @return a pointer to the tail Segment or NULL if the Record is empty.
+ */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_tail(const diminuto_scattergather_record_t * rp) {
     return diminuto_list_tail(rp);
 }
 
-static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(const diminuto_scattergather_record_t * rp, const diminuto_scattergather_segment_t * sp) {
-    return (diminuto_list_next(sp) == rp) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_next(sp);
+/**
+ * Return a pointer to the next Segment after a specified Segment on a Record.
+ * @param sp points to a Segment on a Record.
+ * @return a pointer to the following Segment or NULL is none.
+ */
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(const diminuto_scattergather_segment_t * sp) {
+    return (diminuto_list_next(sp) == diminuto_list_root(sp)) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_next(sp);
 }
 
-static inline diminuto_scattergather_record_t * diminuto_scattergather_record_segment_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_record_t * rp, diminuto_scattergather_segment_t * sp)
+/**
+ * Free a Segment that is on a Record. The Segment is removed from the Record.
+ * The Segment is deinitialized and returned to the Pool.
+ * @param pp points to the Pool.
+ * @param sp points to the Segment.
+ */
+static inline void diminuto_scattergather_record_segment_free(diminuto_scattergather_pool_t * pp, diminuto_scattergather_segment_t * sp)
 {
-    (void)diminuto_scattergather_segment_free(pp, diminuto_scattergather_record_segment_remove(rp, sp));
-    return rp;
+    (void)diminuto_scattergather_segment_free(pp, diminuto_scattergather_record_segment_remove(sp));
 }
 
 /*******************************************************************************
@@ -410,37 +525,92 @@ static inline diminuto_scattergather_record_t * diminuto_scattergather_record_se
 
 /**
  * Write a Record to a file descriptor. The descriptor may be a stream socket,
- * a file, or some other file-like sink.
- * @param fd is the open file descriptor.
+ * a file, or some other file-like data sink.
+ * @param fd is open file descriptor.
  * @param rp points to the record.
- * @return the total number of bytes written, or <0 if an error occured.
+ * @return the total number of bytes written, or <0 for an error.
  */
 extern ssize_t diminuto_scattergather_record_write(int fd, const diminuto_scattergather_record_t * rp);
 
+/**
+ * Read a Record from a file descriptor. The descriptor may be a stream socket,
+ * a file, or some other file-like data source.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @return the total number of bytes read, 0 for EOF, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_read(int fd, diminuto_scattergather_record_t * rp);
 
 /*
  * IPC
  */
 
+/**
+ * Send a Record to a file descriptor. If the file descriptor is a socket,
+ * it must be a stream socket.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @return the total number of bytes sent, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc_stream_send(int fd, const diminuto_scattergather_record_t * rp);
 
+/**
+ * Receive a Record from a file descriptor. If the file descriptor is a socket,
+ * it must be a stream socket.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @return the total number of bytes sent, 0 for EOF, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc_stream_receive(int fd, diminuto_scattergather_record_t * rp);
 
 /*
  * IPC4
  */
 
+/**
+ * Send a Record to a datagram socket using a IPv4 address and a port number.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @param address is an IPv4 address.
+ * @param port is a port number.
+ * @return the total number of bytes sent, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port);
 
+/**
+ * Receive a Record from a datagram socket. Optionally return the IPv4 address
+ * and port number of the sender.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @param addressp points to an IPv4 address variable, or NULL.
+ * @param portp points to a port number variable, or NULL.
+ * @return the total number of bytes sent, 0 for EOF, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc4_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv4_t * addressp, diminuto_port_t * portp);
 
 /*
  * IPC6
  */
 
+/**
+ * Send a Record to a datagram socket using a IPv6 address and a port number.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @param address is an IPv6 address.
+ * @param port is a port number.
+ * @return the total number of bytes sent, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port);
 
+/**
+ * Receive a Record from a datagram socket. Optionally return the IPv6 address
+ * and port number of the sender.
+ * @param fd is an open file descriptor.
+ * @param rp points to the Record.
+ * @param addressp points to an IPv6 address variable, or NULL.
+ * @param portp points to a port number variable, or NULL.
+ * @return the total number of bytes sent, 0 for EOF, or <0 for an error.
+ */
 extern ssize_t diminuto_scattergather_record_ipc6_datagram_receive(int fd, diminuto_scattergather_record_t * rp, diminuto_ipv6_t * addressp, diminuto_port_t * portp);
 
 #endif

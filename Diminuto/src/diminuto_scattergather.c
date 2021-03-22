@@ -116,7 +116,7 @@ size_t diminuto_scattergather_record_enumerate(const diminuto_scattergather_reco
     size_t nn = 0;
     const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
 
-    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
+    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(sp)) {
         nn += 1;
     }
 
@@ -128,7 +128,7 @@ size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record
     size_t ll = 0;
     const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
 
-    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
+    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(sp)) {
         if (diminuto_list_data(sp) != (void *)0) {
             ll += diminuto_scattergather_segment_length_get(sp);
         }
@@ -146,7 +146,7 @@ const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE 
     size_t tt = 0;
 
     fprintf(fp, "RECORD %p:\n", rp);
-    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
+    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(sp)) {
         fprintf(fp, "  SEGMENT %p: #%zu\n", sp, ii++);
         pp = diminuto_scattergather_segment_payload_get(sp);
         ll = diminuto_scattergather_segment_length_get(sp);
@@ -164,7 +164,7 @@ struct iovec * diminuto_scattergather_record_vectorize(const diminuto_scattergat
     const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
     size_t ii = 0;
 
-    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(rp, sp)) {
+    for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(sp)) {
         if (ii < nn) {
             va[ii].iov_base = diminuto_scattergather_segment_payload_get(sp);
             va[ii].iov_len = diminuto_scattergather_segment_length_get(sp);
@@ -189,7 +189,7 @@ diminuto_scattergather_record_t * diminuto_scattergather_record_segments_free(di
     diminuto_scattergather_segment_t * sp = (diminuto_scattergather_segment_t *)0;
 
     while ((sp = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0) {
-        (void)diminuto_scattergather_record_segment_free(pp, rp, sp);
+        diminuto_scattergather_record_segment_free(pp, sp);
     }
 
     return rp;    

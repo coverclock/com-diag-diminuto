@@ -339,15 +339,15 @@ int streamserver4(int listensocket)
 
         address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  PORT: %d\n", port);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         length = *(size_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  LENGTH: %zu\n", length);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         if (length <= 0) {
             /* Do nothing. */
@@ -381,14 +381,14 @@ int streamserver4(int listensocket)
             fprintf(stderr, "  DATA:\n");
             bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
             diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
-            diminuto_scattergather_record_segment_free(&pool, rp, sp);
+            diminuto_scattergather_record_segment_free(&pool, sp);
         } else {
             bp = (uint8_t *)0;
         }
 
         checksum = *(uint16_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         a = b = 0;
         expected = diminuto_fletcher_16(bp, length, &a, &b);
@@ -450,15 +450,15 @@ int streamserver4(int listensocket)
 
         address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  PORT: %d\n", port);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         length = *(size_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  LENGTH: %zu\n", length);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         if (length <= 0) {
             /* Do nothing. */
@@ -492,14 +492,14 @@ int streamserver4(int listensocket)
             fprintf(stderr, "  DATA:\n");
             bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
             diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
-            diminuto_scattergather_record_segment_free(&pool, rp, sp);
+            diminuto_scattergather_record_segment_free(&pool, sp);
         } else {
             bp = (uint8_t *)0;
         }
 
         checksum = *(uint16_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  CHECKSUM: 0x%x\n", checksum);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         a = b = 0;
         expected = diminuto_fletcher_16(bp, length, &a, &b);
@@ -798,16 +798,16 @@ int datagrampeer4(int datagramsocket)
         address = *(diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  ADDRESS: %s\n", diminuto_ipc4_address2string(address, printable, sizeof(printable)));
         fprintf(stderr, "  RADDRESS: %s\n", diminuto_ipc4_address2string(raddress, printable, sizeof(printable)));
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         port = *(diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  PORT: %d\n", port);
         fprintf(stderr, "  RPORT: %d\n", rport);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
 
         length = *(size_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
         fprintf(stderr, "  LENGTH: %zu\n", length);
-        diminuto_scattergather_record_segment_free(&pool, rp, sp);
+        diminuto_scattergather_record_segment_free(&pool, sp);
         if ((HEADER + length + sizeof(uint16_t)) != total) {
             errno = EINVAL;
             diminuto_perror("length");
@@ -833,7 +833,7 @@ int datagrampeer4(int datagramsocket)
             fprintf(stderr, "  DATA:\n");
             bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
             diminuto_dump_general(stderr, bp, length, 0, '.', 0, 0, 4);
-            diminuto_scattergather_record_segment_free(&pool, rp, sp);
+            diminuto_scattergather_record_segment_free(&pool, sp);
         } else {
             bp = (uint8_t *)0;
         }
@@ -1267,7 +1267,7 @@ int main(void)
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*addressp));
         ASSERT((addressp = (diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv4_t *)0);
 
-        ASSERT((sp = diminuto_scattergather_record_segment_next(rp, sp)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT((sp = diminuto_scattergather_record_segment_next(sp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*portp));
         ASSERT((portp = (diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_port_t *)0);
 
@@ -1306,7 +1306,7 @@ int main(void)
         ASSERT((bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp)) != (uint8_t *)0);
         memcpy(bp, &datagramport, sizeof(streamport));
         ASSERT((tp = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0);
-        ASSERT((tp = diminuto_scattergather_record_segment_next(rp, tp)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT((tp = diminuto_scattergather_record_segment_next(tp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_record_segment_replace(tp, sp) == tp);
         diminuto_scattergather_segment_free(&pool, tp);
     
@@ -1338,7 +1338,7 @@ int main(void)
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*addressp));
         ASSERT((addressp = (diminuto_ipv4_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_ipv4_t *)0);
 
-        ASSERT((sp = diminuto_scattergather_record_segment_next(rp, sp)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT((sp = diminuto_scattergather_record_segment_next(sp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(*portp));
         ASSERT((portp = (diminuto_port_t *)diminuto_scattergather_segment_payload_get(sp)) != (diminuto_port_t *)0);
 
