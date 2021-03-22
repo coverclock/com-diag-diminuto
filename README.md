@@ -546,7 +546,7 @@ FS file system walker and are a good example of how a need in another
 project leads to a virtuous cycle of organic growth in Diminuto.
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/survey.c>
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/census.c>
-* The Diminuto Scatter/Gather feature is probably the best exmaple of
+* The Diminuto Scatter/Gather feature is probably the best example of
 leveraging the functional programming paradigm in the library. This is best
 illustrated in its header file that defines the API.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/inc/com/diag/diminuto/diminuto_scattergather.h>
