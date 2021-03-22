@@ -530,13 +530,11 @@ and is a good example of a non-trivial application that is multi-process
 and multi-threaded. The source code also has a useful implementation of Thread
 Pools.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-ancillary.c>
-* The Diminuto Scatter/Gather unit tests similarly uses a lot of
-Diminuto features and are also multi-process. The feature has a useful
+* The Diminuto IPC Scatter/Gather unit test similarly uses a lot of
+Diminuto features and are also multi-process. It has a useful
 implementation of Diminuto List pools, and support for Records, Segments, and
-I/O vectors, used to implement scatter/gather I/O. It is also the feature
-that leverages a functional programming paradigm the most.
-<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-scattergather4.c>
-<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-scattergather6.c>
+I/O vectors, used to implement scatter/gather I/O. (It was eventually
+mainstreamed into the Diminuto library as the Scatter/Gather feature.)
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-scattergather.c>
 * The gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
