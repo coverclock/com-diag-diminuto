@@ -1154,6 +1154,26 @@ int main(void)
     }
 
     {
+        diminuto_scattergather_segment_t * sp0;
+        diminuto_scattergather_segment_t * sp1;
+        diminuto_scattergather_segment_t * sp2;
+
+        /* Length Payload Checksum */
+
+        ASSERT((sp0 = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT((sp1 = diminuto_scattergather_record_segment_next(sp0)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT(sp0 != sp1);
+        ASSERT((sp2 = diminuto_scattergather_record_segment_next(sp1)) != (diminuto_scattergather_segment_t *)0);
+        ASSERT(sp0 != sp2);
+        ASSERT(sp1 != sp2);
+        ASSERT(diminuto_scattergather_record_segment_next(sp2) == (diminuto_scattergather_segment_t *)0);
+        ASSERT(diminuto_scattergather_record_segment_tail(rp) == sp2);
+        ASSERT(diminuto_scattergather_record_segment_previous(sp2) == sp1);
+        ASSERT(diminuto_scattergather_record_segment_previous(sp1) == sp0);
+        ASSERT(diminuto_scattergather_record_segment_previous(sp0) == (diminuto_scattergather_segment_t *)0);
+    }
+
+    {
         fflush(stderr);
     }
 

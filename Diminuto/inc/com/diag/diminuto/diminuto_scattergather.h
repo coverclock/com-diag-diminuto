@@ -13,9 +13,13 @@
  * I/O system calls to decrease the amount of data copying necessary when
  * consolidating a bunch of fields into a single contiguous data packet
  * for sending/writing, or distributing a single contiguous data packet
- * that is received/read into multiple fields. Scatter/Gather can be
- * used for interprocess communication (IPC) or for file-ish reading
- * and writing.
+ * that is received/read into multiple fields. This reduces the amount of
+ * buffer-to-buffer copying necessary when consolidating many fields (as in
+ * a packet used by a protocol stack) to be transmitted atomically by a
+ * single system call, or by distributing many fields (ditto) received
+ * atomically into separate fields. Scatter/Gather can be used for
+ * interprocess communication (IPC) or for reading and writing with
+ * file and file-like interfaces.
  *
  * Four data structures are defined: Buffer, Segment, Record, and Pool.
  *
@@ -498,6 +502,16 @@ static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_s
  */
 static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_next(const diminuto_scattergather_segment_t * sp) {
     return (diminuto_list_next(sp) == diminuto_list_root(sp)) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_next(sp);
+}
+
+/**
+ * Return a pointer to the previous Segment before a specified Segment on
+ * a Record.
+ * @param sp points to a Segment on a Record.
+ * @return a pointer to the preceeding Segment or NULL is none.
+ */
+static inline diminuto_scattergather_segment_t * diminuto_scattergather_record_segment_previous(const diminuto_scattergather_segment_t * sp) {
+    return (diminuto_list_prev(sp) == diminuto_list_root(sp)) ? (diminuto_scattergather_segment_t *)0 : diminuto_list_prev(sp);
 }
 
 /**
