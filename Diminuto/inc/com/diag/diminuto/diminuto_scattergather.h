@@ -18,8 +18,9 @@
  * a packet used by a protocol stack) to be transmitted atomically by a
  * single system call, or by distributing many fields (ditto) received
  * atomically into separate fields. Scatter/Gather can be used for
- * interprocess communication (IPC) or for reading and writing with
- * file and file-like interfaces.
+ * sending and receiving messages using stream or datagram sockets,
+ * via IPv4 or IPv6, or for reading and writing with file and file-like
+ * interfaces.
  *
  * Four data structures are defined: Buffer, Segment, Record, and Pool.
  *
