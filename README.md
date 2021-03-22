@@ -547,7 +547,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/survey.c>
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/census.c>
 * The Diminuto Scatter/Gather feature is probably the best exmaple of
-leverage the functional programming paradigm in the library. This is best
+leveraging the functional programming paradigm in the library. This is best
 illustrated in its header file that defines the API.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/inc/com/diag/diminuto/diminuto_scattergather.h>
 
