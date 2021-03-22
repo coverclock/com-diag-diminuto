@@ -531,7 +531,7 @@ and multi-threaded. The source code also has a useful implementation of Thread
 Pools.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-ancillary.c>
 * The Diminuto IPC Scatter/Gather unit test similarly uses a lot of
-Diminuto features and are also multi-process. It has a useful
+Diminuto features and is also multi-process. It has a useful
 implementation of Diminuto List pools, and support for Records, Segments, and
 I/O vectors, used to implement scatter/gather I/O. (It was eventually
 mainstreamed into the Diminuto library as the Scatter/Gather feature.)
