@@ -711,6 +711,9 @@ Chip Overclock, "First-Come First-Served Readers and Writers in C using
 Condition Variables", 2020-12,
 <https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
 
+Chip Overclock, "Where the RF Meets the Road", 2021-03,
+<https://coverclock.blogspot.com/2021/03/where-rf-meets-road.html>
+
 # Acknowledgements
 
 I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
