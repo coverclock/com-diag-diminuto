@@ -652,6 +652,12 @@ to make this easier to troubleshoot.
 
 # References
 
+ISO, "Data elements and interchange formats - Information interchange
+- Representation of dates and times", First edition, ISO8601:1988(E),
+1988-06-15
+
+# Resources
+
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
 
 <https://www.raspberrypi.org/forums/viewtopic.php?t=46472>
