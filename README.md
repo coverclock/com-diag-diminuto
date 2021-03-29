@@ -656,6 +656,9 @@ ISO, "Data elements and interchange formats - Information interchange
 - Representation of dates and times", First edition, ISO8601:1988(E),
 1988-06-15
 
+G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339,
+IETF, July 2002
+
 # Resources
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
