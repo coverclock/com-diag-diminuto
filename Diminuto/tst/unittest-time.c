@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 
     first = !0;
 
-    CHECKPOINT("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
+    CHECKPOINT(" %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
         , "logical"
         , "difference"
         , "requested"
@@ -133,6 +133,7 @@ int main(int argc, char ** argv)
         rc = diminuto_time_zulu(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &ztick);
         ASSERT(rc >= 0);
         zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
+        ASSERT((zulu >= 0) || (errno == 0));
         jyear = -1; jmonth = -1; jday = -1; jhour = -1; jminute = -1; jsecond = -1; jtick = -1;
         rc = diminuto_time_juliet(after, &jyear,   (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (diminuto_ticks_t *)0);
         ASSERT(rc >= 0);
@@ -154,6 +155,7 @@ int main(int argc, char ** argv)
         zh = ((((offset < 0) ? -offset : offset)) / hertz) / 3600;
         zm = ((((offset < 0) ? -offset : offset)) / hertz) % 3600;
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
+        ASSERT((juliet >= 0) || (errno == 0));
         result = diminuto_time_process();
         ASSERT(result != (diminuto_sticks_t)-1);
         process = result;

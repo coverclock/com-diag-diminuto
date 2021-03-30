@@ -116,7 +116,7 @@ extern uint64_t diminuto_time_logical(void);
  * either side of the IDL in that time zone read the same clock time, but are
  * twenty-four hours apart. (Since the offset of the time zone doesn't shift
  * over the span of a year like Daylight Saving Time does, the argument to this
- * function can probably always be zero.) Note that this is an ISO-8601 sense
+ * function can probably always be zero.) Note that this is an ISO8601 sense
  * of time zone offset AHEAD (>0) or BEHIND (<0) of UTC, NOT the offset WEST
  * that is used by POSIX (it will be the negative of the POSIX value).
  * @param ticks is the number of ticks since the Epoch.
@@ -131,17 +131,17 @@ extern diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks);
  * otherwise it will be a positive number since when DST is in effect the local
  * clock time moves forward. Note that DST is an abomination.
  * @param ticks is the number of ticks since the Epoch.
- * @return the number of ticks added to this time zone.
+ * @return ticks added to this time zone, or -1 with (errno>0) for error.
  */
 extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
 
 /**
  * Return the number of ticks after the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 for the specified date and time. If the
- * specified date or time is invalid or causes an overflow during the conversion
- *,the results are unspecified. (This function uses timegm(3). If timegm(3)
- * fails, it returns a -1. But -1 is a valid time offset prior to the Epoch.
- * On some systems, timegm(3) also does not set errno when it returns -1.)
+ * specified date or time is invalid or causes an overflow during the
+ * conversion, the results are unspecified. Note that negative numbers
+ * (including -1) is a valid return value. In the event of an error, -1
+ * is return AND (errno>0) MUST be checked as well.
  * @param year is the year including the century in the range [1970..].
  * @param month is the month of the year in the range [1..12].
  * @param day is the day of the month in the range [1..31].
@@ -151,7 +151,7 @@ extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
  * @param tick is the fraction of a second in the range [0..(resolution-1)].
  * @param offset is the number of ticks AHEAD (>0) or BEHIND (<0) of UTC.
  * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
- * @return the number of ticks since the Epoch.
+ * @return the number of ticks since the Epoch, or -1 with (errno!=0) for error.
  */
 extern diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t offset, diminuto_sticks_t daylightsaving);
 

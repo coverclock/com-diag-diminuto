@@ -117,13 +117,13 @@ diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks)
     /*
      * tzset(3) is an expensive operation, but at least in glibc it looks like
      * it's protected with a lock and only does the expensive part once. So
-     * we'll call it every time.
+     * we'll call it every time. Note that tzset() has no error return.
      */
     tzset();
 
     /*
      * POSIX specifies the number of seconds WEST of UTC, while this function
-     * returns the ISO-8601 sense of seconds in ticks AHEAD (>0) or BEHIND
+     * returns the ISO8601 sense of seconds in ticks AHEAD (>0) or BEHIND
      * (<0) UTC. West will be behind UTC, East ahead of UTC.
      */
 
@@ -146,7 +146,7 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
     /*
      * tzset(3) is an expensive operation, but at least in glibc it looks like
      * it's protected with a lock and only does the expensive part once. So
-     * we'll call it every time.
+     * we'll call it every time. Note that tzset() has no error return.
      */
     tzset();
 
@@ -154,25 +154,23 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
         juliet = diminuto_frequency_ticks2wholeseconds(ticks);
         if (localtime_r(&juliet, &datetime) == (struct tm *)0) {
             diminuto_perror("diminuto_time_daylightsaving: localtime_r");
-        } else if (datetime.tm_isdst) {
-            dst = 3600;
+            result = -1;
         } else {
-            /* Do nothing. */
+            if (datetime.tm_isdst) {
+                dst = 3600;
+            }
+            result = diminuto_frequency_seconds2ticks(dst, 0, 1);
         }
     }
-
-    result = diminuto_frequency_seconds2ticks(dst, 0, 1);
 
     return result;
 }
 
 diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t timezone, diminuto_sticks_t daylightsaving)
 {
-    diminuto_sticks_t ticks = 0;
+    diminuto_sticks_t ticks = -1;
     struct tm datetime = { 0, };
     time_t seconds = 0;
-
-    // DIMINUTO_LOG_NOTICE("%s[%d]: %d %d %d %d %d %d %d %lld %lld\n", __FILE__, __LINE__, year, month, day, hour, minute, seconds, tick, timezone, daylightsaving);
 
     datetime.tm_year = year - 1900;
     datetime.tm_mon = month - 1;
@@ -182,70 +180,79 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
     datetime.tm_sec = second;
     datetime.tm_isdst = 0;
 
-#if 0
+    do {
 
-    /**
-     * mktime(3) indicates that a return of -1 indicates an error. But this
-     * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
-     * indicates a date and time one second earlier than the Epoch.
-     */
+#if !defined(__USE_GNU)
 
-    seconds = mktime(&datetime);
-    ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
+#       warning timegm(3) not available on this platform so using mktime(2) instead!
 
-    /*
-     * mktime(3) assumes the time in the tm structure is local time and
-     * adjusts the number of seconds it returns accordingly. There doesn't
-     * seem to be an API call to generate epoch seconds in terms of UTC or
-     * some other time zone. And mktime(3) doesn't respect the time zone
-     * that can optionally be part of the tm structure. So we have to make
-     * our own adjustments to eliminate the effects of the local time zone
-     * and of DST. This is really stupid.
-     */
+        /*
+         * mktime(3) indicates that a return of -1 indicates an error. But this
+         * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
+         * indicates a date and time one second earlier than the Epoch.
+         */
 
-    ticks += diminuto_time_timezone(seconds);
-    ticks += diminuto_time_daylightsaving(seconds);
+        errno = 0;
+        seconds = mktime(&datetime);
+        if ((seconds < 0) && (errno != 0)) {
+            diminuto_perror("diminuto_time_epoch: mktime");
+            break;
+        }
+
+        ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
+
+        /*
+         * mktime(3) assumes the time in the tm structure is local time and
+         * adjusts the number of seconds it returns accordingly. There doesn't
+         * seem to be an API call to generate epoch seconds in terms of UTC or
+         * some other time zone. And mktime(3) doesn't respect the time zone
+         * that can optionally be part of the tm structure. So we have to make
+         * our own adjustments to eliminate the effects of the local time zone
+         * and of DST. This is really stupid.
+         */
+
+        ticks += diminuto_time_timezone(seconds);
+        ticks += diminuto_time_daylightsaving(seconds);
 
 #else
 
-    /*
-     * timegm(3) is a GNU extension since 2.19. It might be non-standard
-     * but it sure solves a thorny problem.
-     */
+        /*
+         * timegm(3) is a GNU extension since 2.19. It might be non-standard
+         * but it sure solves a thorny problem. Note that -1 is an error
+         * return, but it is also a legitimate return value indicating one
+         * second prior to the Epoch. So we check the errno value as well
+         * and hope the function sets it.
+         */
 
-    seconds = timegm(&datetime);
+        errno = 0;
+        seconds = timegm(&datetime);
+        if ((seconds < 0) && (errno != 0)) {
+            diminuto_perror("diminuto_time_epoch: timegm");
+            break;
+        }
 
-    //  DIMINUTO_LOG_NOTICE("%s[%d]: %d\n", __FILE__, __LINE__, seconds);
-
-    ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
-
-    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
+        ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
 
 #endif
 
-    /*
-     * The caller provides a date and time for some time zone. It might
-     * not have been UTC. So we ask that the caller provides the time
-     * zone and DST offset so we can back them out, since the Epoch is
-     * always in UTC. If the date and time were in local time (juliet),
-     * then we are just undoing what we just did above.
-     */
+        /*
+         * The caller provides a date and time for some time zone. It might
+         * not have been UTC. So we ask that the caller provides the time
+         * zone and DST offset so we can back them out, since the Epoch is
+         * always in UTC. If the date and time were in local time (juliet),
+         * then we are just undoing what we just did above.
+         */
 
-    ticks -= timezone;
+        ticks -= timezone;
+        ticks -= daylightsaving;
 
-    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
+        /*
+         * Finally, we add in the fractional second provided by the caller.
+         */
 
-    ticks -= daylightsaving;
+        ticks += tick;
 
-    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
-
-    /*
-     * Finally, we add in the fractional second provided by the caller.
-     */
-
-    ticks += tick;
-
-    // DIMINUTO_LOG_NOTICE("%s[%d]: %lld\n", __FILE__, __LINE__, ticks);
+    } while (0);
 
     return ticks;
 }

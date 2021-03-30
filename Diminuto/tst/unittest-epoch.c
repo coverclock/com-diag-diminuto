@@ -90,7 +90,7 @@ static void sanity0(void)
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
-    ASSERT(then >= 0);
+    ASSERT((then >= 0) || (errno == 0));
     CHECKPOINT("epoch          %lld\n", (long long int)then);
 
     delta = then - now;
@@ -133,7 +133,7 @@ static void sanity1(void)
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, zone, dst);
-    ASSERT(then >= 0);
+    ASSERT((then >= 0) || (errno == 0));
     CHECKPOINT("epoch          %lld\n", (long long int)then);
 
     delta = then - now;
@@ -187,10 +187,12 @@ static void epoch(diminuto_sticks_t now, int verbose)
     offset = diminuto_frequency_ticks2wholeseconds(now);
     diminuto_time_zulu(now, &zyear, &zmonth, &zday, &zhour, &zminute, &zsecond, &ztick);
     zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
+    ASSERT((zulu >= 0) || (errno == 0));
     timezone = diminuto_time_timezone(now);
     daylightsaving = diminuto_time_daylightsaving(now);
     diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
+    ASSERT((juliet >= 0) || (errno == 0));
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     if (rc < 0) { dday = -dday; }
     if ((now != zulu) || (now != juliet) || verbose || (zyear != prior)) {
@@ -210,20 +212,32 @@ static void epoch(diminuto_sticks_t now, int verbose)
         );
     }
     /*
-     * The conversion between ticks, time_t, and dddd/mm/yyThh:mm:ss should always
-     * work for UTC (zulu) time. But at the boundaries of the maximum and minimum
-     * the local (juliet) time may not work because the timezone and daylightsaving
-     * offsets will place the values outside of the maximum or minimum. Detecting
-     * this is made more difficult by the fact that the documented error return
-     * for timegm(3) and timelocal(3) is (time_t)-1, but -1 is a valid epoch time
-     * value. It's made even more difficult by the fact that at least for some
-     * glibc versions errno is not set and returns as zero (the man pages suggest
-     * EOVERFLOW), making any distinction impossible.
+     * The conversion between ticks, time_t, and dddd/mm/yyThh:mm:ss should
+     * always work for UTC (zulu) time. But at the boundaries of the maximum
+     * and minimum the local (juliet) time may not work because the timezone
+     * and daylightsaving offsets may place the values outside of the maximum
+     * or minimum. Detecting this is made more difficult by the fact that the
+     * documented error return for timegm(3) and timelocal(3) is (time_t)-1,
+     * but -1 is a valid epoch time value. It's made even more difficult by
+     * the fact that at least for some glibc versions errno is not set and
+     * returns as zero (the man pages suggest EOVERFLOW), making any
+     * distinction impossible. This appears typically on older GNU/Linux
+     * versions, and on those with 32-bit kernels (probably not a coincidence).
      */
     EXPECT(now == zulu);
-    ADVISE(now == juliet);
     SANITY(zyear, zmonth, zday, zhour, zminute, zsecond, ztick);
-    if (now == juliet) { SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick); }
+    ADVISE(now == juliet);
+    if (now == juliet) {
+        SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
+    } else {
+        CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
+            , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
+            , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
+            , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
+            , dday, dhour, dminute, dsecond, (long long unsigned int)dtick
+            , timezone, daylightsaving
+        );
+    }
     SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
     EXPECT((rc < 0) || (rc > 0));
 
