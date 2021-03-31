@@ -358,71 +358,48 @@ int main(int argc, char ** argv)
     {
         TEST();
 
+        notfirst = 0;
+
         /*
          * See also fun/timestuff.c
          */
 
-        CHECKPOINT();
         test3((ticks = low) * hertz, !0);
         VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3((ticks = minimum), !0);
         VERIFY(1901, 12, 14, 20, 45, 52, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = epoch, !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = 1, !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 1);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = hertz - 1, !0);
         VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = hertz, !0);
         VERIFY(1970, 1, 1, 0, 0, 1, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = -hertz, !0);
         VERIFY(1969, 12, 31, 23, 59, 59, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = 1000000000LL * hertz, !0);
         VERIFY(2001, 9, 9, 1, 46, 40, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = 1234567890LL * hertz, !0);
         VERIFY(2009, 2, 13, 23, 31, 30, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = 15000LL * 24LL * 3600LL * hertz, !0);
         VERIFY(2011, 1, 26, 0, 0, 0, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3(ticks = 1400000000LL * hertz, !0);
         VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3((ticks = maximum), !0);
         VERIFY(2038, 1, 18, 3, 14, 7, 0);
 
-        CHECKPOINT();
-        notfirst = 0;
         test3((ticks = high) * hertz, !0);
         VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
