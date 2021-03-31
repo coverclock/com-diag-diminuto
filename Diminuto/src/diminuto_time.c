@@ -267,7 +267,7 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
         } else if ((year == 1969) && (month == 12) && (day == 31) && (hour == 23) && (minute == 59) && (second == 59)) {
             /* Do nothing. */
         } else {
-            DIMINUTO_LOG_ERROR("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, timezone, daylightsaving);
+            DIMINUTO_LOG_DEBUG("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, timezone, daylightsaving);
             errno = EOVERFLOW;
             diminuto_perror("diminuto_time_epoch: overflow");
             ticks = -1;
@@ -310,8 +310,7 @@ static void diminuto_time_stamp(const struct tm *datetimep, diminuto_sticks_t ti
     if (hourp != (int *)0) { *hourp = datetimep->tm_hour; }
     if (minutep != (int *)0) { *minutep = datetimep->tm_min; }
     if (secondp != (int *)0) { *secondp = datetimep->tm_sec; }
-    if (tickp != (diminuto_ticks_t *)0) { *tickp = abs64(ticks) % diminuto_frequency();
-    }
+    if (tickp != (diminuto_ticks_t *)0) { *tickp = abs64(ticks) % diminuto_frequency(); }
 }
 
 /*
