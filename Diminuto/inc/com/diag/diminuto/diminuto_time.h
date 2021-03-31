@@ -12,15 +12,17 @@
  * @details
  *
  * The Time feature provides an API for dealing with durations, Time Of Day
- * (TOD), and time and date stamps. Important safety tip: although UNIX (and POSIX)
- * professes to keep the time in Coordinated Universal Time (UTC), it doesn't
- * account for the occasional leap second. This means it isn't strictly UTC. Worse,
- * the time may appear discontinuous if and when the system clock is manually adjusted.
- * This has no effect on the monotonically increasing clock, which is why that's the
- * clock you should use to measure the passage of time. So UNIX doesn't quite
- * do UTC, but it also doesn't quite do International Atomic Time (IAT) either,
- * which also doesn't do leap seconds. (I think GPS time falls into this
- * category as well.) Also: daylight saving time is just an abomination.
+ * (TOD), and time and date stamps. Important safety tip: although UNIX (and
+ * POSIX) professes to keep the time in Coordinated Universal Time (UTC), it
+ * doesn't account for the occasional leap second. This means it isn't strictly
+ * UTC. Worse, the time may appear discontinuous if and when the system clock
+ * is manually adjusted. This has no effect on the monotonically increasing
+ * clock, which is why that's the clock you should use to measure the passage
+ * of time. So UNIX doesn't quite do UTC, but it also doesn't quite do
+ * International Atomic Time (TAI) either, which also doesn't do leap seconds.
+ * Nor does it do GPS time, which accounts for the leap seconds that were
+ * present with GPS was inaugurated, but not for those that happened
+ * subsequently. Also: daylight saving time is just an abomination.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -31,10 +33,12 @@
     /**
      * @def COM_DIAG_DIMINUTO_TIME_FREQUENCY
      * This manifest constant is the frequency in Hertz at which this feature
-     * operates. The inverse of this value is the smallest unit of time in fractions
-     * of a second that this feature can express or use. This constant is provided
-     * for use in those cases where it is useful to have the value at compile time.
-     * However, you chould always prefer to use the inline function when possible.
+     * operates. The inverse of this value is the smallest unit of time in
+     * fractions of a second that this feature can express or use. This
+     * constant is provided for use in those cases where it is useful to have
+     * the value at compile time. However, you should always prefer to use the
+     * inline function when possible. NOTE that this is NOT the frequency of
+     * the units of ticks.
      */
 #   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000000LL)
 
@@ -43,10 +47,12 @@
     /**
      * @def COM_DIAG_DIMINUTO_TIME_FREQUENCY
      * This manifest constant is the frequency in Hertz at which this feature
-     * operates. The inverse of this value is the smallest unit of time in fractions
-     * of a second that this feature can express or use. This constant is provided
-     * for use in those cases where it is useful to have the value at compile time.
-     * However, you chould always prefer to use the inline function when possible.
+     * operates. The inverse of this value is the smallest unit of time in
+     * fractions of a second that this feature can express or use. This
+     * constant is provided for use in those cases where it is useful to have
+     * the value at compile time. However, you should always prefer to use the
+     * inline function when possible. NOTE that this is NOT the frequency of
+     * the units of ticks.
      */
 #   define COM_DIAG_DIMINUTO_TIME_FREQUENCY (1000000LL)
 
@@ -114,15 +120,12 @@ extern uint64_t diminuto_time_logical(void);
  * effect. Note that one hundred and eighty degrees away from UTC is the
  * International Date Line (IDL), which splits its time zone in half. Clocks on
  * either side of the IDL in that time zone read the same clock time, but are
- * twenty-four hours apart. (Since the offset of the time zone doesn't shift
- * over the span of a year like Daylight Saving Time does, the argument to this
- * function can probably always be zero.) Note that this is an ISO8601 sense
- * of time zone offset AHEAD (>0) or BEHIND (<0) of UTC, NOT the offset WEST
- * that is used by POSIX (it will be the negative of the POSIX value).
- * @param ticks is the number of ticks since the Epoch.
+ * twenty-four hours apart. Note that this is an ISO8601 sense of time zone
+ * zone offset AHEAD (>0) or BEHIND (<0) of UTC, NOT the offset WEST that is
+ * used by POSIX (it will be the negative of the POSIX value).
  * @return the number of ticks west of UTC.
  */
-extern diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks);
+extern diminuto_sticks_t diminuto_time_timezone(void);
 
 /**
  * Return the number of ticks the local time zone is offset _west_

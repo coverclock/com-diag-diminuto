@@ -107,7 +107,7 @@ diminuto_sticks_t diminuto_time_thread()
 #endif
 }
 
-diminuto_sticks_t diminuto_time_timezone(diminuto_sticks_t ticks)
+diminuto_sticks_t diminuto_time_timezone()
 {
     diminuto_sticks_t result = 0;
     diminuto_sticks_t west = 0;
@@ -184,17 +184,22 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
 #if !defined(__USE_GNU)
 
-#       warning timegm(3) not available on this platform so using mktime(2) instead!
+#       warning timegm(3) not available on this platform so using mktime(3) instead!
 
         /*
-         * mktime(3) indicates that a return of -1 indicates an error. But this
-         * isn't the case for Ubuntu 4.6.3: -1 is a valid return value that
-         * indicates a date and time one second earlier than the Epoch.
+         * mktime(3) indicates that a return of -1 indicates an error. But
+         * -1 is a valid return value that indicates a date and time one
+         * second earlier than the Epoch. So we have to check errno as well
+         * and hope the function sets it.
          */
 
         errno = 0;
         seconds = mktime(&datetime);
-        if ((seconds < 0) && (errno != 0)) {
+        if (seconds != (time_t)-1) {
+            /* Do nothing. */
+        } else if (errno == 0) {
+            /* Do nothing. */
+        } else {
             diminuto_perror("diminuto_time_epoch: mktime");
             break;
         }
@@ -203,15 +208,12 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
         /*
          * mktime(3) assumes the time in the tm structure is local time and
-         * adjusts the number of seconds it returns accordingly. There doesn't
-         * seem to be an API call to generate epoch seconds in terms of UTC or
-         * some other time zone. And mktime(3) doesn't respect the time zone
-         * that can optionally be part of the tm structure. So we have to make
-         * our own adjustments to eliminate the effects of the local time zone
-         * and of DST. This is really stupid.
+         * adjusts the number of seconds it returns accordingly. So we have to
+         * make our own adjustments to eliminate the effects of the local time
+         * zone and of DST. This is really stupid.
          */
 
-        ticks += diminuto_time_timezone(seconds);
+        ticks += diminuto_time_timezone();
         ticks += diminuto_time_daylightsaving(seconds);
 
 #else
@@ -226,12 +228,55 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
         errno = 0;
         seconds = timegm(&datetime);
-        if ((seconds < 0) && (errno != 0)) {
+        if (seconds != (time_t)-1) {
+            /* Do nothing. */
+        } else if (errno == 0) {
+            /* Do nothing. */
+        } else {
             diminuto_perror("diminuto_time_epoch: timegm");
             break;
         }
 
         ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
+
+#endif
+
+#if !0
+
+        /*
+         * The manual pages for both mktime(3) and timegm(3) specify that
+         * these functions may return -1 (which in other circumstances is a
+         * completely legitimate return value and not an error) with errno
+         * set to EOVERFLOW. However, on some targets (e.g. ARMv7), in some
+         * versions of glibc (8.3), in which time_t is 32-bits, -1 apparently
+         * can be returned as an error without errno being set. Both functions
+         * work correctly on other targets (e.g. x86_64), in other versions
+         * (9.3), in which time_t is 64-bits. We try to detect this here, by
+         * relying on the fact that is either function returns -1, then the
+         * year must have been 1969 in the second right before the POSIX Epoch
+         * (1970-01-01 00:00:00). The first leap second was added in 1972, so
+         * we shouldn't have to worry about that here. With a 32-bit signed
+         * time_t, dates from 1901/12/13 20:45:52 UTC to 2038/01/19 03:14:07
+         * (or about 68 years on either side of 1970/01/01) should be
+         * encodeable. See (and run) the functional test fun/timestuff.c for
+         * more information.
+         */
+
+        if (seconds != (time_t)-1) {
+            /* Do nothing. */
+        } else if ((year == 1969) && (month == 12) && (day == 31) && (hour == 23) && (minute == 59) && (second == 59)) {
+            /* Do nothing. */
+        } else {
+            DIMINUTO_LOG_ERROR("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, timezone, daylightsaving);
+            errno = EOVERFLOW;
+            diminuto_perror("diminuto_time_epoch: overflow");
+            ticks = -1;
+            break;
+        }
+
+#else
+
+#   warning time_t overflow check disabled!
 
 #endif
 

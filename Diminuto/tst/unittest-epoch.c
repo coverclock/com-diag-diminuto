@@ -75,7 +75,7 @@ static void sanity0(void)
     CHECKPOINT("clock          %lld\n", (long long int)now);
     ASSERT(now >= 0);
 
-    zone = diminuto_time_timezone(now);
+    zone = diminuto_time_timezone();
     CHECKPOINT("timezone       %lld\n", (long long int)zone);
     /* zone can be positive or negatuve. */
 
@@ -118,7 +118,7 @@ static void sanity1(void)
     CHECKPOINT("clock          %lld\n", (long long int)now);
     ASSERT(now >= 0);
 
-    zone = diminuto_time_timezone(now);
+    zone = diminuto_time_timezone();
     CHECKPOINT("timezone       %lld\n", (long long int)zone);
     /* zone can be positive or negatuve. */
 
@@ -188,7 +188,7 @@ static void epoch(diminuto_sticks_t now, int verbose)
     diminuto_time_zulu(now, &zyear, &zmonth, &zday, &zhour, &zminute, &zsecond, &ztick);
     zulu = diminuto_time_epoch(zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0);
     ASSERT((zulu >= 0) || (errno == 0));
-    timezone = diminuto_time_timezone(now);
+    timezone = diminuto_time_timezone();
     daylightsaving = diminuto_time_daylightsaving(now);
     diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
@@ -211,19 +211,6 @@ static void epoch(diminuto_sticks_t now, int verbose)
             , timezone, daylightsaving
         );
     }
-    /*
-     * The conversion between ticks, time_t, and dddd/mm/yyThh:mm:ss should
-     * always work for UTC (zulu) time. But at the boundaries of the maximum
-     * and minimum the local (juliet) time may not work because the timezone
-     * and daylightsaving offsets may place the values outside of the maximum
-     * or minimum. Detecting this is made more difficult by the fact that the
-     * documented error return for timegm(3) and timelocal(3) is (time_t)-1,
-     * but -1 is a valid epoch time value. It's made even more difficult by
-     * the fact that at least for some glibc versions errno is not set and
-     * returns as zero (the man pages suggest EOVERFLOW), making any
-     * distinction impossible. This appears typically on older GNU/Linux
-     * versions, and on those with 32-bit kernels (probably not a coincidence).
-     */
     EXPECT(now == zulu);
     SANITY(zyear, zmonth, zday, zhour, zminute, zsecond, ztick);
     ADVISE(now == juliet);
@@ -256,17 +243,55 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
-    hertz = diminuto_frequency();
-    tzset();
+    {
+        int year, month, day, hour, minute, second;
+        diminuto_ticks_t tick;
+        int rc;
 
-    low = 0xffffffff80000000LL;
-    high = 0x000000007fffffffLL - (7 * 3600) - 3600;
+        TEST();
 
-    CHECKPOINT("hertz          %lld\n", (long long int)hertz);
-    CHECKPOINT("timezone       %lld\n", (long long int)timezone);
-    CHECKPOINT("daylight       %lld\n", (long long int)daylight);
-    CHECKPOINT("low            %lld\n", (long long int)low);
-    CHECKPOINT("high           %lld\n", (long long int)high);
+        hertz = diminuto_frequency();
+        tzset();
+
+        low  = 0xffffffff80000000LL;
+        high = 0x000000007fffffffLL;
+
+        CHECKPOINT("hertz          %lld\n", (long long int)hertz);
+        CHECKPOINT("timezone       %lld\n", (long long int)timezone);
+        CHECKPOINT("daylight       %lld\n", (long long int)daylight);
+
+        CHECKPOINT("low            %lld 0x%016llx\n", (long long int)low, (long long int)low);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_zulu(low, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("low            %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_juliet(low, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("low            %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        CHECKPOINT("epoch          %lld 0x%016llx\n", (long long int)0, (long long int)0);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_zulu(0, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("epoch          %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_juliet(0, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("epoch          %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        CHECKPOINT("high           %lld 0x%016llx\n", (long long int)high, (long long int)high);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_zulu(high, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("high           %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        year = month = day = hour = minute = second = tick = 0;
+        rc = diminuto_time_juliet(high, &year, &month, &day, &hour, &minute, &second, &tick);
+        CHECKPOINT("high           %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+
+        STATUS();
+    }
 
     {
         TEST();

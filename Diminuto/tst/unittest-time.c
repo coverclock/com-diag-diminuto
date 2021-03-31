@@ -149,7 +149,7 @@ int main(int argc, char ** argv)
         ASSERT(rc >= 0);
         rc = diminuto_time_juliet(after, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, (int *)0, &jtick);
         ASSERT(rc >= 0);
-        timezone = diminuto_time_timezone(after);
+        timezone = diminuto_time_timezone();
         daylightsaving = diminuto_time_daylightsaving(after);
         offset = timezone + daylightsaving;
         zh = ((((offset < 0) ? -offset : offset)) / hertz) / 3600;

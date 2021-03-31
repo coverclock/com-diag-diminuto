@@ -45,7 +45,7 @@ int main(int argc, char ** argv)
         return 2;
     }
 
-    offset = diminuto_time_timezone(ticks) + diminuto_time_daylightsaving(ticks);
+    offset = diminuto_time_timezone() + diminuto_time_daylightsaving(ticks);
     second = diminuto_frequency_ticks2wholeseconds(offset);
     if (second < 0) { second = -second; }
     offsethours = second / 3600;
