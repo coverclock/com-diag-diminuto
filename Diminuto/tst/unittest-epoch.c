@@ -218,14 +218,16 @@ static void test3(diminuto_sticks_t now, int verbose)
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         ASSERT((juliet >= 0) || (errno == 0));
         EXPECT(now == juliet);
-    } 
+    } else {
+        juliet = zulu;
+    }
 
     rc = diminuto_time_duration(now, &dday, &dhour, &dminute, &dsecond, &dtick);
     EXPECT((rc < 0) || (rc > 0));
     if (rc < 0) { dday = -dday; }
     SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
 
-    if ((now != zulu) || verbose) {
+    if ((now != zulu) || (now != juliet) || verbose) {
         if (!notfirst) {
             CHECKPOINT("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
                 , "NOW", "ZULU", "JULIET", "OFFSET"
