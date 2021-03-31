@@ -23,11 +23,12 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_core.h"
-#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -55,9 +56,9 @@
         EXPECT(ztick == (_TICK_)); \
     } while (0)
 
-static const time_t LOW  = 0x80000000;
+static const time_t LOW  = diminuto_minimumof(time_t);
 static const time_t EPOCH = 0;
-static const time_t HIGH = 0x7fffffff;
+static const time_t HIGH = diminuto_maximumof(time_t);
 
 static diminuto_sticks_t minimum = 0;
 static diminuto_sticks_t maximum = 0;
@@ -213,7 +214,7 @@ static void test3(diminuto_sticks_t now, int verbose)
     rc = diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     ASSERT(rc == 0);
     SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
-    if ((minimum < now) && (now < maximum)) {
+    if ((minimum <= now) && (now <= maximum)) {
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         ASSERT((juliet >= 0) || (errno == 0));
         EXPECT(now == juliet);
