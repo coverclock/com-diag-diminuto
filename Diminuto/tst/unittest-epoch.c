@@ -280,7 +280,7 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
 
-        CHECKPOINT("minimum %lld 0x%llx\n", (long long int)minimum, (long long int) minimum);
+        CHECKPOINT("minimum %lld 0x%llx\n", (long long int)minimum / hertz, (long long int) minimum / hertz);
         ticks = minimum;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -303,7 +303,7 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
 
-        CHECKPOINT("maximum %lld 0x%llx\n", (long long int)maximum, (long long int)maximum);
+        CHECKPOINT("maximum %lld 0x%llx\n", (long long int)maximum / hertz, (long long int)maximum / hertz);
         ticks = maximum;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -358,6 +358,11 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         notfirst = 0;
+        test3((ticks = minimum), !0);
+        VERIFY(1901, 12, 14, 20, 45, 52, 0);
+
+        CHECKPOINT();
+        notfirst = 0;
         test3(ticks = EPOCH, !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 0);
 
@@ -400,6 +405,11 @@ int main(int argc, char ** argv)
         notfirst = 0;
         test3(ticks = 1400000000LL * hertz, !0);
         VERIFY(2014, 5, 13, 16, 53, 20, 0);
+
+        CHECKPOINT();
+        notfirst = 0;
+        test3((ticks = maximum), !0);
+        VERIFY(2038, 1, 18, 3, 14, 7, 0);
 
         CHECKPOINT();
         notfirst = 0;
