@@ -56,9 +56,9 @@
         EXPECT(ztick == (_TICK_)); \
     } while (0)
 
-static const time_t LOW  = diminuto_minimumof(time_t);
-static const time_t EPOCH = 0;
-static const time_t HIGH = diminuto_maximumof(time_t);
+static time_t low  = 0;
+static time_t epoch = 0;
+static time_t high = 0;
 
 static diminuto_sticks_t minimum = 0;
 static diminuto_sticks_t maximum = 0;
@@ -254,23 +254,30 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+        static const int32_t LOWEST = diminuto_minimumof(int32_t);
+        static const int32_t HIGHEST = diminuto_maximumof(int32_t);
         int year, month, day, hour, minute, second;
         diminuto_ticks_t tick;
         int rc;
 
         TEST();
 
+        low = LOWEST;
+        epoch = 0;
+        high = HIGHEST;
+
         hertz = diminuto_frequency();
         tzset();
-        minimum = hertz * (LOW + (60 * 60 * 24));
-        maximum = hertz * (HIGH - (60 * 60 * 24));
+
+        minimum = hertz * (low + (60 * 60 * 24));
+        maximum = hertz * (high - (60 * 60 * 24));
 
         CHECKPOINT("hertz %lld\n", (long long int)hertz);
         CHECKPOINT("timezone %lld\n", (long long int)timezone);
         CHECKPOINT("daylight %lld\n", (long long int)daylight);
 
-        CHECKPOINT("low %lld 0x%llx\n", (long long int)LOW, (long long int)LOW);
-        ticks = LOW;
+        CHECKPOINT("low %lld 0x%llx\n", (long long int)low, (long long int)low);
+        ticks = low;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -292,8 +299,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
 
-        CHECKPOINT("epoch %lld 0x%llx\n", (long long int)EPOCH, (long long int)EPOCH);
-        ticks = EPOCH;
+        CHECKPOINT("epoch %lld 0x%llx\n", (long long int)epoch, (long long int)epoch);
+        ticks = epoch;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -315,8 +322,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
 
-        CHECKPOINT("high %lld 0x%llx\n", (long long int)HIGH, (long long int)HIGH);
-        ticks = HIGH;
+        CHECKPOINT("high %lld 0x%llx\n", (long long int)high, (long long int)high);
+        ticks = high;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -354,7 +361,7 @@ int main(int argc, char ** argv)
          */
 
         CHECKPOINT();
-        test3((ticks = LOW) * hertz, !0);
+        test3((ticks = low) * hertz, !0);
         VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
         CHECKPOINT();
@@ -364,7 +371,7 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         notfirst = 0;
-        test3(ticks = EPOCH, !0);
+        test3(ticks = epoch, !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 0);
 
         CHECKPOINT();
@@ -414,7 +421,7 @@ int main(int argc, char ** argv)
 
         CHECKPOINT();
         notfirst = 0;
-        test3((ticks = HIGH) * hertz, !0);
+        test3((ticks = high) * hertz, !0);
         VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
         STATUS();
@@ -425,7 +432,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = LOW; ticks <= HIGH; ticks += (365 * 24 * 60 * 60)) {
+        for (ticks = low; ticks <= high; ticks += (365 * 24 * 60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -437,7 +444,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = LOW; ticks <= HIGH; ticks += (24 * 60 * 60)) {
+        for (ticks = low; ticks <= high; ticks += (24 * 60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -449,7 +456,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = LOW; ticks <= HIGH; ticks += (60 * 60)) {
+        for (ticks = low; ticks <= high; ticks += (60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -461,7 +468,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = LOW; ticks <= HIGH; ticks += 60) {
+        for (ticks = low; ticks <= high; ticks += 60) {
             test3(ticks * hertz, 0);
         }
 
@@ -473,7 +480,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = LOW; ticks <= HIGH; ticks += 1) {
+        for (ticks = low; ticks <= high; ticks += 1) {
             test3(ticks * hertz, 0);
         }
 
