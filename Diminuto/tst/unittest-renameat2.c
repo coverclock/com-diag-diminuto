@@ -149,4 +149,5 @@ int main(void) {
     SETLOGMASK();
     { TEST(); test_lock(); STATUS(); }
     { TEST(); test_prepostlock(); STATUS(); }
+    EXIT();
 }
