@@ -37,7 +37,7 @@
 
 #elif	defined(COM_DIAG_DIMINUTO_RENAMEAT2_SYSCALL)
 
-#   warning renameat2(2) not available on this platform so using SYS_renameat2 instead!
+#   warning renameat2(2) not available on this platform so using syscall(2) SYS_renameat2 instead!
 
 int renameat2(int olddirfd, const char * oldpath, int newdirfd, const char * newpath, unsigned int flags) {
     return syscall(SYS_renameat2, olddirfd, oldpath, newdirfd, newpath, flags);
