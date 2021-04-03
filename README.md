@@ -652,18 +652,173 @@ to make this easier to troubleshoot.
 
 # References
 
-ISO, "Data elements and interchange formats - Information interchange
-- Representation of dates and times", First edition, ISO8601:1988(E),
-1988-06-15
+A. Arcangeli et al., Linux kernel, include/linux/rbtree.h and lib/rbtree.c
 
-G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339,
-IETF, July 2002
+A. Arcangeli et al., U-Boot, include/linux/rbtree.h and lib/rbtree.c
+
+A. Kalvans, "Using select(2)", 2017-04-06, <http://aivarsk.github.io/2017/04/06/select/>
+
+ATM Forum, Traffic Management Specification Version 4.1, af-tm-0121.000, 1999-03
+
+B. Beauregard, "Improving the Beginner's PID", Project Blog, 2011-04
+
+B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa", CACM, 23.2, 1980-02
+
+C. Hoare, "Monitors: An Operating System Structuring Concept", CACM, 17.10, 1974-10
+
+cmsg(3) man page
+
+C. Overclock, "Fibonacci Scaling", <http://coverclock.blogspot.com/2011/12/fibonacci-scaling_09.html>
+
+C. Overclock, "First-Come First-Served Readers and Writers in C using Monitors", 2020-12
+
+C. Overclock, "Rate Control Using Throttles", January 2007, <http://coverclock.blogspot.com/2007/01/rate-control-and-throttles.html>
+
+C. Overclock, "Traffic Contracts", January 2007, <http://coverclock.blogspot.com/2007/01/traffic-contracts.html>
+
+C. Overclock, "Traffic Management", December 2006, <http://coverclock.blogspot.com/2006/12/traffic-management.html>
+
+C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets", CopyConstruct, 2020-08
+
+D. Kegel, "The C10K Problem", 2014-02-05, <http://www.kegel.com/c10k.html>
+
+Dr. Marty, "The Best Switch Debounce Routine Ever", 2009-05-20, <http://drmarty.blogspot.com/2009/05/best-switch-debounce-routine-ever.html>
+
+E. Davies, S. Krishnan, P. Sovola, "IPv6 Transition/Coexistence Security Considerations", RFC 4942, 2007-09 
+
+"Fletcher's checksum", Wikipedia, 2016-12-21, <https://en.wikipedia.org/wiki/Fletcher's_checksum>
+
+Free Software Foundation et al., Standard Template Library, include/bits/stl_tree.h
+
+G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339, IETF, 2002-07
+
+G. Wright et al., *TCP/IP Illustrated Volume 2: The Implementation*, Addison-Wesley, 1995
+
+ISO, "Data elements and interchange formats - Information interchange - Representation of dates and times", First edition, ISO8601:1988(E), 1988-06-15
+
+J. Ganssle, "A Guide to Debouncing, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing.htm>
+
+J. Ganssle, "A Guide to Debouncing - Part 2, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing-pt2.htm>
+
+J. Ganssle, "My Favorite Software Debouncers", 2004-06-16, <http://www.embedded.com/electronics-blogs/break-points/4024981/My-favorite-software-debouncers>
+
+J. Fletcher, "An Arithmetic Checksum for Serial Transmissions", IEEE Transactions on Communication, COM-30, No. 1, pp. 247-252, January 1982
+
+J. Heathcote, "C Pre-Processor Magic", 2020, <http://jhnet.co.uk/articles/cpp_magic>
+
+J. L. Sloan, "Parcels with TAGS", NCAR TECHNICAL NOTE, NCAR/TN-377+IA, National Center for Atmospheric Research, 1992-10, section 4, "Storage Management", p. 10, <http://www.diag.com/ftp/NCAR_Sloan_Parcels.pdf>
+
+J. Mahdavi, “Enabling High Performance Data Transfers on Hosts”, Pittsburgh Supercomputing Center, 1996
+
+J. Postel, "Internet Control Message Protocol", RFC 792, September 1981
+
+J. Walker, "Red Black Trees", <http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx>
+
+J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1146, IETF, February 1990, <https://tools.ietf.org/html/rfc1146>
+
+K. Astrom, T. Hagglund, "PID Controllers: Theory, Design, and Tuning", 2nd ed., Instrumentation, Systems and Automation Society, 1995-01-01
+
+K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation", 2019-08-19, <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>
+
+Linux 4.4.34, Documentation/i2c/muxes/dev-interface
+
+<linux/uio.h> 5.4.0: UIO_MAXIOV=1024 UIO_FASTIOV=8
+
+L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", CACM, 21.7, 1978-07
+
+M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8
+
+M. Cline et al., <I>C++ FAQs</I>, 2nd edition, Addision-Wessley, 1999, pp. 538, "FAQ 36.05 How can an object of a C++ class be passed to or from a C function?"
+
+M. Vaner, "40 millisecond bug", 2020-11-06, <https://vorner.github.io/2020/11/06/40-ms-bug.html>
+
+NXP, "I2C-bus specification and user manual", UM10204, Rev.6, NXP Semiconductor N.V., 2014-04-04
+
+O.Li, T. Jimmel, K. Shima, IPV6 CORE PROTOCOLS IMPLEMENTATION, Morgan Kaufmann, 2007
+
+P. Albertos, I. Mareels, "Feedback and Control for Everyone", Springer, 2010
+
+P. Bieringer, LINUX IPv6 HOWTO, 2015-10-16
+
+P. Courtois, F. Heymans, D. Parnas, "Concurrent Control with ''Readers'' and ''Writers''", CACM, 14.10, 1971-10
+
+POSIX 1003.1-2001 (readv, writev)
+
+POSIX 1003.1g 5.4.1.1: "UIO_MAXIOV shall be at least 16"
+
+pthread_cond_broadcast, pthead_cond_signal, Open Group Base Specification Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
+
+pthread_cond_timedwait, pthead_cond_wait, Open Group Base Specification Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
+
+R. Braden, D. Borman, C. Partridge, "Computing the Internet Checksum", RFC 1071, 1988-09
+
+readv(2) man page
+
+recvmsg(2) man page
+
+R. Gilligan, S. Thomson, J. Bound, J. McCann, W. Stevens, "Basic Socket Interface Extentions for IPv6", RFC 3493, 2003-02
+
+R. Graziani, IPV6 FUNDAMENTALS, Cisco Press, 2013
+
+R. W. Hamming, "Error Detecting and Error Correcting Codes", BELL SYSTEM TECHNICAL JOURNAL, XXIX.2, 1950-04
+
+sendmsg(2) man page
+
+Single UNIX Specification version 4 (POSIX:2008), Issue 7 (sendmsg, recvmsg)
+
+socket(7) man page
+
+S. Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
+
+T. Berners-Lee, R. Fielding, L. Masinter, "Uniform Resource Identifier (URI) Syntax", RFC 3986, 2005-01
+
+T. H. Cormen et al., Introduction to Algorithms, MIT Press, 1992, pp. 263-280
+
+T. Wescott, "PID without a PhD", Embedded Systems Programming, 2000-10-01
+
+U. Naseer et al., "Zero Downtime Release: Disruption-free Load Balancing of a Multi-Billion User Website", ACM SIGCOMM '20,
+
+unix(7) man page
+
+V. Jacobson et al., “TCP Extensions for High Performance”, RFC1323, 1992
+
+V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem", 2013
+
+V. Welch, “A User’s Guide to TCP Windows”, NCSA, 1996
+
+Wikibooks, "C Programming/Preprocessor directives and macros", <https://en.wikibooks.org/wiki/C_Programming/Preprocessor_directives_and_macros#X-Macros>
+
+Wikipedia, "Circular buffer", 2020-12-10
+
+Wikipedia, "Fibonacci Number", <http://en.wikipedia.org/wiki/Fibonacci_number>
+
+Wikipedia, "PID controller", 2018-06-27
+
+Wikipedia, "Readers-writer lock", 2020-11-16
+
+Wikipedia, "Readers-writers problem", 2020-11-23
+
+Wikipedia, "Red-black tree", <http://en.wikipedia.org/wiki/Red�black_tree>
+
+Wikipedia, "X-Macro", <https://en.wikipedia.org/wiki/X_Macro>
+
+Wind River Systems, *VxWorks Reference Manual*, 5.4
+
+writev(2) man page
+
+W. Sewell, "Ephemeral port exhaustion and how to avoid it", 2018-05-22, <https://making.pusher.com/ephemeral-port-exhaustion-and-how-to-avoid-it/>
+
+W. Stevens, M. Thomas, E. Nordmark, T. Jinmei, "Advanced Sockets Applications Program Interface (API) for IPv6", RFC 3542, 2003-05
+
+W. Stevens, *TCP/IP Illustrated Volume 1: The Protocols*, Addison-Wesley, 1994
 
 # Resources
 
 <https://raspberrypi.stackexchange.com/questions/50240/missing-build-file-when-building-for-rtl8812au-driver>
 
 <https://www.raspberrypi.org/forums/viewtopic.php?t=46472>
+
+<https://xkcd.com/1179/>
 
 # Soundtrack
 
