@@ -98,7 +98,7 @@ ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
 
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
-GENERATED			:=	vintage generate setup
+GENERATED			:=	vintage generate setup $(PROJECT)
 SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h $(PROJECT)_revision.h
 
 ALIASES				:=	hex oct ntohs htons ntohl htonl
@@ -679,6 +679,16 @@ $(OUT)/$(BIN_DIR)/setup:	$(OUT)/$(BIN_DIR)/generate
 
 # For sourcing into a bash shell (for example, ". setup").
 $(OUT)/$(SYM_DIR)/setup:	$(OUT)/$(SYM_DIR)/generate
+	$< > $@
+	chmod 664 $@
+
+# For sourcing into a bash shell (for example, ". diminuto").
+$(OUT)/$(BIN_DIR)/$(PROJECT):	$(OUT)/$(BIN_DIR)/vintage
+	$< > $@
+	chmod 664 $@
+
+# For sourcing into a bash shell (for example, ". diminuto").
+$(OUT)/$(SYM_DIR)/$(PROJECT):	$(OUT)/$(SYM_DIR)/vintage
 	$< > $@
 	chmod 664 $@
 
