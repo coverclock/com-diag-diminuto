@@ -683,13 +683,15 @@ $(OUT)/$(SYM_DIR)/setup:	$(OUT)/$(SYM_DIR)/generate
 	chmod 664 $@
 
 # For sourcing into a bash shell (for example, ". diminuto").
-$(OUT)/$(BIN_DIR)/$(PROJECT):	$(OUT)/$(BIN_DIR)/vintage
-	$< > $@
+$(OUT)/$(BIN_DIR)/$(PROJECT):	$(OUT)/$(BIN_DIR)/vintage $(OUT)/$(BIN_DIR)/setup
+	. $(OUT)/$(BIN_DIR)/setup; \
+	$< > $@; \
 	chmod 664 $@
 
 # For sourcing into a bash shell (for example, ". diminuto").
-$(OUT)/$(SYM_DIR)/$(PROJECT):	$(OUT)/$(SYM_DIR)/vintage
-	$< > $@
+$(OUT)/$(SYM_DIR)/$(PROJECT):	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(SYM_DIR)/setup
+	. $(OUT)/$(SYM_DIR)/setup; \
+	$< > $@; \
 	chmod 664 $@
 
 ########## User-Space Loadable Modules
