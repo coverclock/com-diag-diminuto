@@ -155,6 +155,11 @@ Kernel="4.9.35-v7+"
 Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"    
 Make="GNU Make 4.0"    
 
+# Bash Sourcing Files
+
+* setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
+* diminuto = defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+
 # Features
 
 * alarm - receive and check for a SIGALRM signal.
@@ -328,6 +333,23 @@ or as a user - e.g. pi - that is in the gpio group.)
 * src - feature implementation and private header source files.
 * tst - unit test source files.
 * txt - notes and other useful stuff.
+
+# Artifacts
+
+* out/$(TARGET)/app - application binary executables.
+* out/$(TARGET)/arc - object file archives for static linking.
+* out/$(TARGET)/bin - utility stripped binary executables and scripts.
+* out/$(TARGET)/dep - make dependencies.
+* out/$(TARGET)/ext - executables of extra files if you choose to compile them.
+* out/$(TARGET)/fun - functional test binary executables and scripts.
+* out/$(TARGET)/gen - generated source files.
+* out/$(TARGET)/inc - include (header) files.
+* out/$(TARGET)/lib - shared objects for dynamic linking.
+* out/$(TARGET)/log - log files produced at run-time.
+* out/$(TARGET)/obc - object files.
+* out/$(TARGET)/sym - utility unstripped binary executables.
+* out/$(TARGET)/tmp - temporary files supporting headless operation.
+* out/$(TARGET)/tst - unit test binary executables and scripts.
 
 # Dependencies
 
