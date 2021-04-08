@@ -925,12 +925,15 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets sourcing threads timers unittest vintage
 
 vintage:
 	vintage
 
-criticalsection:	vintage
+sourcing:	vintage
+	unittest-sourcing
+
+criticalsection:	sourcing
 	unittest-criticalsection
 
 unittest:	criticalsection

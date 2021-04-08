@@ -6,7 +6,7 @@
 #
 # ABSTRACT
 #
-# Tests the hearder guards by generating a C file that includes all of them
+# Tests the header guards by generating a C file that includes all of them
 # twice and then compiles it.
 #
 # USAGE
