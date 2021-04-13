@@ -55,7 +55,7 @@ Diminuto provides:
 * POSIX mutual exclusion semaphores (```diminuto_mutex```), condition variables (```diminuto_condition```), and threads (```diminuto_thread```);
 * POSIX timers (```diminuto_timer```);
 * socket interprocess communication (IPC) using IPv4 (```diminuto_ipc4```), IPv6 (```diminuto_ipc6```), or UNIX domain (local) paths (```diminuto_ipcl```), using streams, datagrams, or (for local sockets) packets (messages).
-* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using trees (```diminuto_store```);
+* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using red-black trees (```diminuto_store```);
 * traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
 * monitoring applications that run on a headless host (```diminuto_observation```);
 * programmatic management of lock files (```diminuto_lock```);
