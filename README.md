@@ -158,7 +158,7 @@ Make="GNU Make 4.0"
 # Bash Sourcing Files
 
 * setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
-* diminuto = defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
 
 # Features
 
