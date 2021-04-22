@@ -14,6 +14,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_buffer.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -34,18 +35,12 @@
  */
 typedef struct DiminutoBuffer {
     union {
-        uint64_t align;                 /* Header is at least eight bytes. */
+        diminuto_align8_t align;        /* Header is eight-byte aligned. */
         uintptr_t item;                 /* Pool index or allocated size. */
         struct DiminutoBuffer * next;   /* Pointer to next buffer. */
     } header;
-    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
-} diminuto_buffer_t
-#if defined(__GNUC__)
-    __attribute__ ((aligned(8)))
-#else
-#   warning Required alignment is assumed implicit.
-#endif
-;
+    diminuto_align8_t payload;          /* Payload is eight-byte aligned. */
+} diminuto_buffer_t;
 
 /**
  * This type defines the metadata we need to know about a buffer pool: the

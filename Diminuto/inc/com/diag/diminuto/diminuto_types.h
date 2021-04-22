@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Defines types consistently across all features.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -160,5 +160,41 @@ typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
  * size, and is a lot larger than the POSIX path limit: 256 bytes.
  */
 typedef char (diminuto_path_t)[DIMINUTO_PATH_SIZE];
+
+/**
+ * This defines a type that is of zero length but two-byte aligned.
+ * This is likely to generate pedantic warnings.
+ */
+typedef uint16_t (diminuto_align2_t)[0]
+#if defined(__GNUC__)
+    __attribute__ ((aligned(2)))
+#else
+#   warning Required 2-byte alignment is implicitly assumed.
+#endif
+;
+
+/**
+ * This defines a type that is of zero length but four-byte aligned.
+ * This is likely to generate pedantic warnings.
+ */
+typedef uint32_t (diminuto_align4_t)[0]
+#if defined(__GNUC__)
+    __attribute__ ((aligned(4)))
+#else
+#   warning Required 4-byte alignment is implicitly assumed.
+#endif
+;
+
+/**
+ * This defines a type that is of zero length but eight-byte aligned.
+ * This is likely to generate pedantic warnings.
+ */
+typedef uint64_t (diminuto_align8_t)[0]
+#if defined(__GNUC__)
+    __attribute__ ((aligned(8)))
+#else
+#   warning Required 8-byte alignment is implicitly assumed.
+#endif
+;
 
 #endif
