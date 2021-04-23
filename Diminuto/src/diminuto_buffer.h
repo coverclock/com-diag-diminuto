@@ -34,8 +34,8 @@
  * variables (e.g. uint64_t) are 32-bit aligned.
  */
 typedef struct DiminutoBuffer {
+    diminuto_align8_t align;            /* Header is eight-byte aligned. */
     union {
-        diminuto_align8_t align;        /* Header is eight-byte aligned. */
         uintptr_t item;                 /* Pool index or allocated size. */
         struct DiminutoBuffer * next;   /* Pointer to next buffer. */
     } header;
