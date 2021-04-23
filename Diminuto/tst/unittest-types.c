@@ -21,11 +21,13 @@ int main() {
         diminuto_align2_t align2;
         diminuto_align4_t align4;
         diminuto_align8_t align8;
-    } test
+    };
+    struct Test test
 #if defined(__GNUC__)
         __attribute__ ((aligned(8)))
 #endif
         ;
+    struct Test * tp;
 
     SETLOGMASK();
 
@@ -43,11 +45,11 @@ int main() {
     {
         TEST();
 
+        ASSERT(sizeof(test) == 8);
         ASSERT(sizeof(test.align1) == 1);
         ASSERT(sizeof(test.align2) == 0);
         ASSERT(sizeof(test.align4) == 0);
         ASSERT(sizeof(test.align8) == 0);
-        ASSERT(sizeof(test) == 8);
 
         STATUS();
     }
@@ -55,11 +57,51 @@ int main() {
     {
         TEST();
 
+        ASSERT((((uintptr_t)(&test)) & 0x7) == 0);
         ASSERT((((uintptr_t)(&test.align1)) & 0x7) == 0);
         ASSERT((((uintptr_t)(&test.align2)) & 0x1) == 0);
         ASSERT((((uintptr_t)(&test.align4)) & 0x3) == 0);
         ASSERT((((uintptr_t)(&test.align8)) & 0x7) == 0);
-        ASSERT((((uintptr_t)(&test)) & 0x7) == 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT((tp = malloc(sizeof(struct Test))) != (struct Test *)0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(sizeof(tp->align1) == 1);
+        ASSERT(sizeof(tp->align2) == 0);
+        ASSERT(sizeof(tp->align4) == 0);
+        ASSERT(sizeof(tp->align8) == 0);
+        ASSERT(sizeof(*tp) == 8);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT((((uintptr_t)(tp)) & 0x7) == 0);
+        ASSERT((((uintptr_t)(&(tp->align1))) & 0x7) == 0);
+        ASSERT((((uintptr_t)(&(tp->align2))) & 0x1) == 0);
+        ASSERT((((uintptr_t)(&(tp->align4))) & 0x3) == 0);
+        ASSERT((((uintptr_t)(&(tp->align8))) & 0x7) == 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        free(tp);
 
         STATUS();
     }

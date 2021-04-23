@@ -161,40 +161,37 @@ typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
  */
 typedef char (diminuto_path_t)[DIMINUTO_PATH_SIZE];
 
+#if !defined(__GNUC__)
+#   warning Required byte alignment is implicitly assumed.
+#endif
+
 /**
  * This defines a type that is of zero length but two-byte aligned.
- * This is likely to generate pedantic warnings.
  */
-typedef uint16_t (diminuto_align2_t)[0]
+typedef uint16_t (diminuto_align2_t)[0] /* Likely pedantic warnings. */
 #if defined(__GNUC__)
     __attribute__ ((aligned(2)))
-#else
-#   warning Required 2-byte alignment is implicitly assumed.
 #endif
-;
+    ;
 
 /**
  * This defines a type that is of zero length but four-byte aligned.
- * This is likely to generate pedantic warnings.
  */
-typedef uint32_t (diminuto_align4_t)[0]
+typedef uint32_t (diminuto_align4_t)[0] /* Likely pedantic warnings. */
 #if defined(__GNUC__)
     __attribute__ ((aligned(4)))
-#else
-#   warning Required 4-byte alignment is implicitly assumed.
 #endif
-;
+    ;
 
 /**
  * This defines a type that is of zero length but eight-byte aligned.
- * This is likely to generate pedantic warnings.
+ * Note that GCC on some 32-bit processors (e.g. i686) align uint64_t
+ * variables to four-bytes; this overcomes that.
  */
-typedef uint64_t (diminuto_align8_t)[0]
+typedef uint64_t (diminuto_align8_t)[0] /* Likely pedantic warnings. */
 #if defined(__GNUC__)
     __attribute__ ((aligned(8)))
-#else
-#   warning Required 8-byte alignment is implicitly assumed.
 #endif
-;
+    ;
 
 #endif
