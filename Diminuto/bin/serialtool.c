@@ -124,13 +124,14 @@ int main(int argc, char * argv[])
     int fds = 0;
     int ready = -1;
     int noinput = 0;
+    int rawterminal = 0;
     size_t modulo = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:M:b:cdehilmnopst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:M:b:cdehilmnoprst:v")) >= 0) {
 
         switch (opt) {
 
@@ -223,6 +224,10 @@ int main(int argc, char * argv[])
             printable = !0;
             break;
 
+        case 'r':
+            rawterminal = !0;
+            break;
+
         case 's':
             xonxoff = !0;
             break;
@@ -236,7 +241,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i ] [ -v ] [ -M MODULO ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -255,10 +260,11 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -o          Odd parity.\n");
             fprintf(stderr, "       -n          No parity.\n");
             fprintf(stderr, "       -h          Hardware flow control (RTS/CTS).\n");
-            fprintf(stderr, "       -s          Software flow control (XON/XOFF).\n");
             fprintf(stderr, "       -l          Local (no modem control).\n");
             fprintf(stderr, "       -m          Modem control.\n");
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
+            fprintf(stderr, "       -r          Place stdin and stdout in raw mode.\n");
+            fprintf(stderr, "       -s          Software flow control (XON/XOFF).\n");
             fprintf(stderr, "       -t SECONDS  Timeout in SECONDS.\n");
             fprintf(stderr, "       -v          Print characters on standard error.\n");
             fprintf(stderr, "       -i          In interactive mode don't use stdin.\n");
@@ -289,6 +295,13 @@ int main(int argc, char * argv[])
 
     rc = diminuto_serial_raw(fd);
     assert(rc == 0);
+
+    if (rawterminal) {
+        rc = diminuto_serial_raw(STDIN_FILENO);
+        assert(rc == 0);
+        rc = diminuto_serial_raw(STDOUT_FILENO);
+        assert(rc == 0);
+    }
 
     bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
