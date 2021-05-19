@@ -168,6 +168,7 @@ Make="GNU Make 4.0"
 * bits - get, set, and clear bits in a bit field array.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
+* command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
 * containerof - macro to compute address of structure from address of a field.
 * controller - proportional/integral/derivative (PID) controller.
