@@ -82,6 +82,18 @@ int main(int argc, char ** argv)
     }
 
     {
+        total = diminuto_command_line(countof(ARGV), ARGV, buffer, sizeof("/usr/local/bin/gpstool"));
+        ASSERT(total == sizeof("/usr/local/bin/gpstool"));
+        ASSERT(strncmp(buffer, "/usr/local/bin/gpstool", sizeof(buffer)) == 0);
+    }
+
+    {
+        total = diminuto_command_line(countof(ARGV), ARGV, buffer, sizeof("/usr/local/bin/gpstool "));
+        ASSERT(total == sizeof("/usr/local/bin/gpstool "));
+        ASSERT(strncmp(buffer, "/usr/local/bin/gpstool ", sizeof(buffer)) == 0);
+    }
+
+    {
         total = diminuto_command_line(countof(ARGV), ARGV, buffer, sizeof("/usr/local/bin/gpstool -D"));
         ASSERT(total == sizeof("/usr/local/bin/gpstool -D"));
         ASSERT(strncmp(buffer, "/usr/local/bin/gpstool -D", sizeof(buffer)) == 0);
@@ -97,7 +109,9 @@ int main(int argc, char ** argv)
     }
 
     {
+        CHECKPOINT("EXPECT \"%s\"[%zu][%zu]\n", COMMAND, sizeof(COMMAND), strlen(COMMAND));
         total = diminuto_command_line(countof(ARGV) - 1, ARGV, buffer, sizeof(buffer));
+        CHECKPOINT("ACTUAL \"%s\"[%zu][%zu]\n", buffer, total, strlen(buffer));
         ASSERT(total == sizeof(COMMAND));
         ASSERT(strncmp(buffer, COMMAND, sizeof(buffer)) == 0);
     }

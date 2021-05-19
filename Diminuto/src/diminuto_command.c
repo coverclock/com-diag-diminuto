@@ -25,14 +25,23 @@ size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_
 
     if (limit > 0) {
         limit -= 1; /* For the terminating NUL. */
+        ++total;
         for (index = 0; index < argc; ++index) {
-            if (argv[index] == (const char *)0) { break; }
-            length = strlen(argv[index]);
-            if (length >= limit) { break; }
-            if (index > 0) {
+            if (argv[index] == (const char *)0) {
+                break;
+            }
+            if (index <= 0) {
+                /* Do nothing. */
+            } else if (1 > limit) {
+                break;
+            } else {
                 *(here++) = ' ';
-                --limit;
-                ++total;
+                limit -= 1; /* For the separating SPACE. */
+                total += 1;
+            }
+            length = strlen(argv[index]);
+            if (length > limit) {
+                break;
             }
             strncpy(here, argv[index], length);
             here += length;
@@ -40,7 +49,6 @@ size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_
             total += length;
         }
         *here = '\0';
-        ++total;
     }
 
     return total;
