@@ -14,6 +14,8 @@
  * The Command features provides some tools to look at the command line.
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
+
 /**
  * Given an argument count and argument vector, reproduce the command line
  * in the provided buffer of the specified size, NUL terminating the buffer.

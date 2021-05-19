@@ -10,7 +10,6 @@
  * This is the implementation of the Command feature.
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
 #include <string.h>
 
 size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_t size)
