@@ -25,7 +25,6 @@ size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_
 
     if (limit > 0) {
         limit -= 1; /* For the terminating NUL. */
-        ++total;
         for (index = 0; index < argc; ++index) {
             if (argv[index] == (const char *)0) {
                 break;
@@ -49,6 +48,7 @@ size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_
             total += length;
         }
         *here = '\0';
+        total += 1;
     }
 
     return total;

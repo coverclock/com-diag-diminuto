@@ -6,12 +6,13 @@
  * @file
  * @copyright Copyright 2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Provides some tools for walking the file system.
+ * @brief Provides some tools for manipulating argc and argv.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * The Command features provides some tools to look at the command line.
+ * The Command features provides some tools for manipulating the argument
+ * count and the argument vector passed into the main function.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"

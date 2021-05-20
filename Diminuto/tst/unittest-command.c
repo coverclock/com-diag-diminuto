@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
         "out/host/tmp/wheatstone.pid",
         (const char *)0,
     };
-    char buffer[256];
+    unsigned char buffer[256];
     ssize_t total;
 
     diminuto_log_setmask();
