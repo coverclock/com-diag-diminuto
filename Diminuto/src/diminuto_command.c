@@ -12,6 +12,25 @@
 
 #include <string.h>
 
+size_t diminuto_command_length(int argc, const char * argv[])
+{
+    size_t total = 0;
+    int index = 0;
+
+    for (index = 0; index < argc; ++index) {
+        if (argv[index] == (const char *)0) {
+            break;
+        }
+        if (index > 0) {
+            total += 1; /* For the separating SPACE. */
+        }
+        total += strlen(argv[index]); /* For the argv[index]. */
+    }
+    total += 1; /* For the terminating NUL. */
+
+    return total;
+}
+
 size_t diminuto_command_line(int argc, const char * argv[], void * buffer, size_t size)
 {
     size_t total = 0;

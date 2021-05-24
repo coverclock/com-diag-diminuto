@@ -44,6 +44,16 @@ int main(int argc, char ** argv)
     diminuto_log_setmask();
 
     {
+        total = diminuto_command_length(countof(ARGV) - 1, ARGV);
+        ASSERT(total == (strlen(COMMAND) + 1));
+    }
+
+    {
+        total = diminuto_command_length(countof(ARGV), ARGV);
+        ASSERT(total == (strlen(COMMAND) + 1));
+    }
+
+    {
         total = diminuto_command_line(0, (const char **)0, (char *)0, 0);
         ASSERT(total == 0);
     }

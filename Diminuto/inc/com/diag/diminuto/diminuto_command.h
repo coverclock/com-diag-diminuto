@@ -18,6 +18,15 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 /**
+ * Given an argument count and argument vector, compute the length of the
+ * reproduced command line, including the terminating NUL.
+ * @param argc is the argument count.
+ * @param argv is the argument vector.
+ * @return the number of bytes in the command including the terminating NUL.
+ */
+extern size_t diminuto_command_length(int argc, const char * argv[]);
+
+/**
  * Given an argument count and argument vector, reproduce the command line
  * in the provided buffer of the specified size, NUL terminating the buffer.
  * @param argc is the argument count.
