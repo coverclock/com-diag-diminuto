@@ -132,7 +132,7 @@ enum DiminutoScatterGatherConstants {
  * of bytes of data payload, not the entire length of the payload field.
  */
 typedef struct DiminutoScatterGatherBuffer {
-    uint64_t alignment[0]; /* This will cause -pedantic warnings. */
+    diminuto_align8_t align;        /* Header is eight-byte aligned. */
     /**
      * This is the length of the data in the payload field, not the
      * length of the payload field.
@@ -141,14 +141,14 @@ typedef struct DiminutoScatterGatherBuffer {
      * bits. So there may or may not be some slack in this structure.
      * But as Bob Dobbs reminds us, we all need slack.
      */
-    size_t length; /* This is the data length, not the buffer length. */
+    size_t length;                  /* Data length not buffer length. */
     /**
      * This is the beginning of the payload field.
      * Insure that the payload portion of the buffer is 8-byte aligned.
      * This guarantees that the caller can use the payload field to
      * store anything requiring 8-byte alignment or less.
      */
-    uint64_t payload[0]; /* This will cause -pendantic warnings. */
+    diminuto_align8_t payload;      /* Payload is eight-byte aligned. */
 } diminuto_scattergather_buffer_t;
 
 /*

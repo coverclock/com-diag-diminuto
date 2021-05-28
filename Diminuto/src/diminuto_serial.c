@@ -185,8 +185,8 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
 
         tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXOFF);
         tios.c_oflag &= ~(OPOST);
-        tios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
         tios.c_cflag &= ~(CSIZE | PARENB  | PARODD | CSTOPB | CLOCAL | HUPCL | CRTSCTS);
+        tios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
 
         tios.c_iflag |= ixon;
         tios.c_iflag |= ixoff;
@@ -255,6 +255,7 @@ int diminuto_serial_raw(int fd)
         tios.c_oflag &= ~OPOST;
         tios.c_cflag &= ~(CSIZE | PARENB);
         tios.c_cflag |= (CS8 | CREAD | CLOCAL);
+        tios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
         tios.c_cc[VTIME] = 0;
         tios.c_cc[VMIN] = 1;
 

@@ -55,7 +55,7 @@ Diminuto provides:
 * POSIX mutual exclusion semaphores (```diminuto_mutex```), condition variables (```diminuto_condition```), and threads (```diminuto_thread```);
 * POSIX timers (```diminuto_timer```);
 * socket interprocess communication (IPC) using IPv4 (```diminuto_ipc4```), IPv6 (```diminuto_ipc6```), or UNIX domain (local) paths (```diminuto_ipcl```), using streams, datagrams, or (for local sockets) packets (messages).
-* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using trees (```diminuto_store```);
+* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using red-black trees (```diminuto_store```);
 * traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
 * monitoring applications that run on a headless host (```diminuto_observation```);
 * programmatic management of lock files (```diminuto_lock```);
@@ -86,9 +86,10 @@ See the Features section below for a more complete list.
 Diminuto isn't intended to be portable. It is specifically designed to
 support the kind of systems programming efforts in the Linux/GNU environment
 that I am routinely called upon to do. It depends on specific features of
-the Linux kernel, the GNU libraries, and even the GNU compiler. A few features
-also assume two's complement arithmetic, although I'm hard pressed these
-days to find a processor that doesn't comply with that.
+the Linux kernel, the GNU libraries, and even the GNU compiler. In addition,
+it assumes a char is one octet so that sizeof() returns a size_t in octets,
+and that integer operations are performed using two's complement arithmetic;
+neither of these is a given in C.
 
 For some projects over the years, I have ported Diminuto (as it existed
 at that time) to uClibc (a stripped down C library used by Buildroot),
@@ -154,6 +155,11 @@ Kernel="4.9.35-v7+"
 Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"    
 Make="GNU Make 4.0"    
 
+# Bash Sourcing Files
+
+* setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
+* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+
 # Features
 
 * alarm - receive and check for a SIGALRM signal.
@@ -162,6 +168,7 @@ Make="GNU Make 4.0"
 * bits - get, set, and clear bits in a bit field array.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
+* command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
 * containerof - macro to compute address of structure from address of a field.
 * controller - proportional/integral/derivative (PID) controller.
@@ -327,6 +334,23 @@ or as a user - e.g. pi - that is in the gpio group.)
 * src - feature implementation and private header source files.
 * tst - unit test source files.
 * txt - notes and other useful stuff.
+
+# Artifacts
+
+* out/$(TARGET)/app - application binary executables.
+* out/$(TARGET)/arc - object file archives for static linking.
+* out/$(TARGET)/bin - utility stripped binary executables and scripts.
+* out/$(TARGET)/dep - make dependencies.
+* out/$(TARGET)/ext - executables of extra files if you choose to compile them.
+* out/$(TARGET)/fun - functional test binary executables and scripts.
+* out/$(TARGET)/gen - generated source files.
+* out/$(TARGET)/inc - include (header) files.
+* out/$(TARGET)/lib - shared objects for dynamic linking.
+* out/$(TARGET)/log - log files produced at run-time.
+* out/$(TARGET)/obc - object files.
+* out/$(TARGET)/sym - utility unstripped binary executables.
+* out/$(TARGET)/tmp - temporary files supporting headless operation.
+* out/$(TARGET)/tst - unit test binary executables and scripts.
 
 # Dependencies
 

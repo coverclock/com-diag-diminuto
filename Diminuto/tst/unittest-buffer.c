@@ -45,8 +45,13 @@ int main(int argc, char * argv[])
         diminuto_buffer_t overhead;
 
         ASSERT(sizeof(overhead) == 8);
+        ASSERT(sizeof(overhead.align) == 0);
+        ASSERT(sizeof(overhead.payload) == 0);
         ASSERT(sizeof(overhead.header.item) == sizeof(overhead.header.next));
+        CHECKPOINT("alignment: %d", (((uintptr_t)(&overhead)) & 0x7));
         ASSERT((((uintptr_t)(&overhead)) & 0x7) == 0);
+        ASSERT((((uintptr_t)(&(overhead.align))) & 0x7) == 0);
+        ASSERT((((uintptr_t)(&(overhead.payload))) & 0x7) == 0);
     }
 
     {

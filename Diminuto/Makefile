@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	72# API changes that may require that applications be modified.
-MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	3# Only functionality or features added with no legacy API changes.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -98,7 +98,7 @@ ROOT_DIR			:=	$(HOME_DIR)/$(TARGET)
 
 GITURL				:=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
-GENERATED			:=	vintage generate setup
+GENERATED			:=	vintage generate setup $(PROJECT)
 SYNTHESIZED			:=	$(PROJECT)_release.h $(PROJECT)_vintage.h $(PROJECT)_revision.h
 
 ALIASES				:=	hex oct ntohs htons ntohl htonl
@@ -682,6 +682,18 @@ $(OUT)/$(SYM_DIR)/setup:	$(OUT)/$(SYM_DIR)/generate
 	$< > $@
 	chmod 664 $@
 
+# For sourcing into a bash shell (for example, ". diminuto").
+$(OUT)/$(BIN_DIR)/$(PROJECT):	$(OUT)/$(BIN_DIR)/vintage $(OUT)/$(BIN_DIR)/setup
+	. $(OUT)/$(BIN_DIR)/setup; \
+	$< > $@; \
+	chmod 664 $@
+
+# For sourcing into a bash shell (for example, ". diminuto").
+$(OUT)/$(SYM_DIR)/$(PROJECT):	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(SYM_DIR)/setup
+	. $(OUT)/$(SYM_DIR)/setup; \
+	$< > $@; \
+	chmod 664 $@
+
 ########## User-Space Loadable Modules
 
 LDWHOLEARCHIVES := # These archives will be linked into the shared object in their entirety.
@@ -913,12 +925,15 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets sourcing threads timers unittest vintage
 
 vintage:
 	vintage
 
-criticalsection:	vintage
+sourcing:	vintage
+	unittest-sourcing
+
+criticalsection:	sourcing
 	unittest-criticalsection
 
 unittest:	criticalsection
@@ -934,6 +949,7 @@ sanity:	unittest
 	unittest-buffer
 	unittest-bufferpool
 	unittest-coherentsection
+	unittest-command
 	unittest-containerof
 	unittest-coreable && false || true
 	unittest-countof
@@ -996,6 +1012,7 @@ sanity:	unittest
 	unittest-timer
 	unittest-time-zone
 	unittest-tree
+	unittest-types
 	unittest-uninterruptible
 	unittest-well
 	unittest-widthof

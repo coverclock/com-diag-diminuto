@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This describes the Buffer private API.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -14,6 +14,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_buffer.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -28,15 +29,17 @@
  * than the pool could accomodate). The contents of the header can always be
  * inferred from context. N.B. pointers, and size_t, differ in size between
  * X86_64 processors and some ARM processors (including those with 32-bit
- * kernels even on 64-bit processors).
+ * kernels even on 64-bit processors). Also, remarkably, on some 32-bit
+ * platforms (e.g. gcc 7.5.0 on the ancient Intel i686 Atom N270) 64-bit
+ * variables (e.g. uint64_t) are 32-bit aligned.
  */
 typedef struct DiminutoBuffer {
+    diminuto_align8_t align;            /* Header is eight-byte aligned. */
     union {
-        uint64_t align;                 /* Header is at least eight bytes. */
         uintptr_t item;                 /* Pool index or allocated size. */
         struct DiminutoBuffer * next;   /* Pointer to next buffer. */
     } header;
-    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
+    diminuto_align8_t payload;          /* Payload is eight-byte aligned. */
 } diminuto_buffer_t;
 
 /**
