@@ -79,4 +79,6 @@ static bool diminuto_bread_ready(diminuto_bread_t * sp) {
 
 extern ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll);
 
+extern void diminuto_bread_dump(const diminuto_bread_t * sp);
+
 #endif

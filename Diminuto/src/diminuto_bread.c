@@ -28,7 +28,7 @@ ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll)
          */
 
         while (ll > 0) {
-            cc = diminuto_bread_consumer(sp);
+            cc = diminuto_bread_consumeable(sp);
             if (cc == 0) {
                 break;
             }
@@ -57,7 +57,7 @@ ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll)
          * must mean the feature buffer was empty.
          */
 
-        pp = diminuto_bread_producer(sp);
+        pp = diminuto_bread_produceable(sp);
         cc = (*(sp->bread_read))(sp->bread_void, sp->bread_producer, pp);
         if (cc < 0) {
             diminuto_perror("diminuto_bread_read");
@@ -77,4 +77,11 @@ ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll)
     }
 
     return rr;
+}
+
+void diminuto_bread_dump(const diminuto_bread_t * sp)
+{
+    DIMINUTO_LOG_DEBUG("bread@%p: read=%p void=%p begin=%p\n", sp, sp->bread_read, sp->bread_void, sp->bread_begin);
+    DIMINUTO_LOG_DEBUG("bread@%p: end=%zd producer=%zd consumer=%zd used=%zu free=%zu\n", sp, sp->bread_end - sp->bread_begin, sp->bread_producer - sp->bread_begin, sp->bread_consumer - sp->bread_begin, sp->bread_used, sp->bread_free);
+    DIMINUTO_LOG_DEBUG("bread@%p: produceable=%zu consumeable=%zu\n", sp, diminuto_bread_produceable(sp), diminuto_bread_consumeable(sp));
 }

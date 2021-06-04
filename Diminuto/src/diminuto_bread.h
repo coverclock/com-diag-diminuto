@@ -13,6 +13,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_bread.h"
+#include "com/diag/diminuto/diminuto_assert.h"
 
 /*
  *      P
@@ -36,35 +37,36 @@
  *      XXXXXXXXXXXX
  */
 
-static inline size_t diminuto_bread_producer(diminuto_bread_t * sp) {
+static inline size_t diminuto_bread_produceable(const diminuto_bread_t * sp) {
     size_t result = 0;
 
     if (sp->bread_free == 0) {
         /* Do nothing. */
-    } else if (sp->bread_producer > sp->bread_consumer) {
-        result = (sp->bread_producer - sp->bread_end);
+    } else if (sp->bread_producer < sp->bread_consumer) {
+        result = sp->bread_consumer - sp->bread_producer;
     } else {
-        result = (sp->bread_producer - sp->bread_consumer);
+        result = sp->bread_end - sp->bread_producer;
     }
 
     return result;
 }
 
-static inline size_t diminuto_bread_consumer(diminuto_bread_t * sp) {
+static inline size_t diminuto_bread_consumeable(const diminuto_bread_t * sp) {
     size_t result = 0;
 
     if (sp->bread_used == 0) {
         /* Do nothing. */
-    } else if (sp->bread_consumer > sp->bread_producer) {
-        result = (sp->bread_consumer - sp->bread_end);
+    } else if (sp->bread_consumer < sp->bread_producer) {
+        result = sp->bread_producer - sp->bread_consumer;
     } else {
-        result = (sp->bread_consumer - sp->bread_producer);
+        result = sp->bread_end - sp->bread_consumer;
     }
 
     return result;
 }
 
 static inline void diminuto_bread_produced(diminuto_bread_t * sp, size_t ll) {
+    diminuto_assert(ll <= sp->bread_free);
     sp->bread_used += ll;
     sp->bread_free -= ll;
     sp->bread_producer += ll;
@@ -74,6 +76,7 @@ static inline void diminuto_bread_produced(diminuto_bread_t * sp, size_t ll) {
 }
 
 static inline void diminuto_bread_consumed(diminuto_bread_t * sp, size_t ll) {
+    diminuto_assert(ll <= sp->bread_used);
     sp->bread_used -= ll;
     sp->bread_free += ll;
     if (sp->bread_used == 0) {
