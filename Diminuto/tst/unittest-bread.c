@@ -100,8 +100,8 @@ int main(int argc, char * argv[])
         TEST();
 
         datum = 0x01;
-        length = sizeof(buffer) / 2;
         expected = 0x01;
+        length = sizeof(buffer) / 2;
 
         result = reader(&length, buffer, sizeof(buffer));
         diminuto_dump(stderr, buffer, sizeof(buffer));
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
-                for (index = 0; index < size; ++index) {
+                for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
                         diminuto_dump(stderr, caller, sizeof(caller));
@@ -165,7 +165,7 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
-                for (index = 0; index < size; ++index) {
+                for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
                         diminuto_dump(stderr, caller, sizeof(caller));
@@ -183,7 +183,7 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
-                for (index = 0; index < size; ++index) {
+                for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
                         diminuto_dump(stderr, caller, sizeof(caller));
@@ -198,7 +198,7 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
-                for (index = 0; index < size; ++index) {
+                for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
                         diminuto_dump(stderr, caller, sizeof(caller));
