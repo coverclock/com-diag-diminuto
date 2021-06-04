@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_bread.h"
 #include <stdio.h>
 #include <string.h>
@@ -88,7 +89,7 @@ int main(int argc, char * argv[])
 
     {
         /*
-         * This unit test exercises the unit test framework, not the feature.
+         * This unit test exercises this unit test framework, not the feature.
          */
 
         uint8_t buffer[1024] = { 0x00, };
@@ -131,8 +132,8 @@ int main(int argc, char * argv[])
         diminuto_bread_t * sp;
         size_t length;
         size_t size;
-        uint8_t feature[64];
-        uint8_t caller[64];
+        uint8_t feature[8];
+        uint8_t caller[sizeof(feature)];
         int result;
         int index;
         uint8_t expected;
@@ -145,11 +146,76 @@ int main(int argc, char * argv[])
         datum = 0x00;
         expected = 0x00;
 
+        length = sizeof(feature);
+        size = sizeof(caller);
+        result = diminuto_bread_read(&bread, &caller, size);
+        COMMENT("length=%zu size=%zu result=%zu\n", length, size, result);
+        ASSERT(result == sizeof(caller));
+
+        for (index = 0; index < result; ++index) {
+            if (caller[index] != expected) {
+                COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
+                diminuto_dump(stderr, caller, sizeof(caller));
+                diminuto_bread_dump(&bread);
+                diminuto_dump(stderr, feature, sizeof(feature));
+                ASSERT(0);
+            }
+            expected += 1;
+        }
+
+        length = 0;
+        size = sizeof(caller);
+        result = diminuto_bread_read(&bread, &caller, size);
+        COMMENT("length=%zu size=%zu result=%zu\n", length, size, result);
+        ASSERT(result == 0);
+
+        sp = diminuto_bread_fini(&bread);
+        ASSERT(sp == (diminuto_bread_t *)0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_bread_t bread;
+        diminuto_bread_t * sp;
+        size_t length;
+        size_t size;
+        uint8_t feature[8];
+        uint8_t caller[8];
+        int result;
+        int index;
+        int minimum;
+        int maximum;
+        uint8_t expected;
+
+        TEST();
+
+        sp = diminuto_bread_init(&bread, reader, &length, feature, sizeof(feature));
+        ASSERT(sp != (diminuto_bread_t *)0);
+
+        minimum = maximumof(int);
+        maximum = minimumof(int);
+
+        datum = 0x00;
+        expected = 0x00;
+
+        /*
+         * length is the maximum number of octets the abstract read function
+         * in this unit test may return. size of the maximum number of
+         * octets the caller requests. The actual number returned by the
+         * buffered read will be greater than zero but will depend on the
+         * number of contiguous bytes available in the feature buffer, which
+         * may not be either of these values. The only time the buffered read
+         * will block the caller is if there is no data in the feature buffer.
+         */
+
         for (length = 1; length <= sizeof(feature); length += 1) {
             for (size = 1; size <= sizeof(caller); size += 1) {
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
+                if (result < minimum) { minimum = result; }
+                if (result > maximum) { maximum = result; }
                 for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
@@ -165,6 +231,8 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
+                if (result < minimum) { minimum = result; }
+                if (result > maximum) { maximum = result; }
                 for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
@@ -179,10 +247,12 @@ int main(int argc, char * argv[])
         }
 
         for (length = sizeof(feature); length > 0; length -= 1) {
-            for (size = 1; size < sizeof(caller); size += 1) {
+            for (size = 1; size <= sizeof(caller); size += 1) {
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
+                if (result < minimum) { minimum = result; }
+                if (result > maximum) { maximum = result; }
                 for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
@@ -198,6 +268,8 @@ int main(int argc, char * argv[])
                 result = diminuto_bread_read(&bread, &caller, size);
                 ASSERT(result > 0);
                 ASSERT(result <= size);
+                if (result < minimum) { minimum = result; }
+                if (result > maximum) { maximum = result; }
                 for (index = 0; index < result; ++index) {
                     if (caller[index] != expected) {
                         COMMENT("caller[%d]=0x%x expected=0x%x\n", index, caller[index], expected);
@@ -210,6 +282,10 @@ int main(int argc, char * argv[])
                 }
             }
         }
+
+        COMMENT("minimum=%d maximum=%d\n", minimum, maximum);
+        ASSERT(minimum == 1);
+        ASSERT(maximum == sizeof(caller));
 
         sp = diminuto_bread_fini(&bread);
         ASSERT(sp == (diminuto_bread_t *)0);

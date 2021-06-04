@@ -49,6 +49,11 @@ ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll)
          */
 
         if (rr > 0) {
+            /*
+             * As long as we returned a non-zero amount of data,
+             * we choose not to block the caller on a read (assuming
+             * the abstract read functions blocks).
+             */
             break;
         }
 
