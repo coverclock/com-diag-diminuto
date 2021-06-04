@@ -37,6 +37,11 @@
  *      XXXXXXXXXXXX
  */
 
+/**
+ * Conpute the number of contiguous bytes free in the feature buffer.
+ * @param sp points to the Buffered Read object.
+ * @return the number of contiguous bytes free, which may be zero.
+ */
 static inline size_t diminuto_bread_produceable(const diminuto_bread_t * sp) {
     size_t result = 0;
 
@@ -51,6 +56,11 @@ static inline size_t diminuto_bread_produceable(const diminuto_bread_t * sp) {
     return result;
 }
 
+/**
+ * Conpute the number of contiguous bytes available in the feature buffer.
+ * @param sp points to the Buffered Read object.
+ * @return the number of contiguous bytes available, which may be zero.
+ */
 static inline size_t diminuto_bread_consumeable(const diminuto_bread_t * sp) {
     size_t result = 0;
 
@@ -65,6 +75,11 @@ static inline size_t diminuto_bread_consumeable(const diminuto_bread_t * sp) {
     return result;
 }
 
+/**
+ * Update the state with the number of bytes produced (inserted).
+ * @param sp points to the Buffered Read object.
+ * @param ll is the number of bytes produced.
+ */
 static inline void diminuto_bread_produced(diminuto_bread_t * sp, size_t ll) {
     diminuto_assert(ll <= sp->bread_free);
     sp->bread_used += ll;
@@ -75,6 +90,11 @@ static inline void diminuto_bread_produced(diminuto_bread_t * sp, size_t ll) {
     }
 }
 
+/**
+ * Update the state with the number of bytes consumed (removed).
+ * @param sp points to the Buffered Read object.
+ * @param ll is the number of bytes consumed.
+ */
 static inline void diminuto_bread_consumed(diminuto_bread_t * sp, size_t ll) {
     diminuto_assert(ll <= sp->bread_used);
     sp->bread_used -= ll;

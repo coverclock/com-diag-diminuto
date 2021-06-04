@@ -61,26 +61,31 @@ int main(int argc, char * argv[])
         diminuto_bread_dump(sp);
         EXPECT(diminuto_bread_produceable(sp) == SIZE);
         EXPECT(diminuto_bread_consumeable(sp) == 0);
+        EXPECT(!diminuto_bread_ready(sp));
 
         diminuto_bread_produced(sp, LENGTH);
         diminuto_bread_dump(sp);
         EXPECT(diminuto_bread_produceable(sp) == LENGTH);
         EXPECT(diminuto_bread_consumeable(sp) == LENGTH);
+        EXPECT(diminuto_bread_ready(sp));
 
         diminuto_bread_produced(sp, LENGTH);
         diminuto_bread_dump(sp);
         EXPECT(diminuto_bread_produceable(sp) == 0);
         EXPECT(diminuto_bread_consumeable(sp) == SIZE);
+        EXPECT(diminuto_bread_ready(sp));
 
         diminuto_bread_consumed(sp, LENGTH);
         diminuto_bread_dump(sp);
         EXPECT(diminuto_bread_produceable(sp) == LENGTH);
         EXPECT(diminuto_bread_consumeable(sp) == LENGTH);
+        EXPECT(diminuto_bread_ready(sp));
 
         diminuto_bread_consumed(sp, LENGTH);
         diminuto_bread_dump(sp);
         EXPECT(diminuto_bread_produceable(sp) == SIZE);
         EXPECT(diminuto_bread_consumeable(sp) == 0);
+        EXPECT(!diminuto_bread_ready(sp));
 
         diminuto_bread_free(sp);
 
