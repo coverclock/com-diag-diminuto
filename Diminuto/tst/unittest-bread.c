@@ -43,6 +43,40 @@ static int reader(void * state, void * buffer, size_t size)
     return result;
 }
 
+static const char TEXT[] =
+    "SONNET NINETY-NINE\n"
+    "Love is not all: It is not meat nor drink\n"
+    "Nor slumber nor roof against the rain,\n"
+    "Nor yet a floating spar to men that sink\n"
+    "and rise and sink and rise and sink again.\n"
+    "Love cannot fill the thickened lung with breath\n"
+    "Nor cleanse the blood, nor set the fractured bone;\n"
+    "Yet many a man is making friends with death\n"
+    "even as I speak, for lack of love alone.\n"
+    "It may well be that in a difficult hour,\n"
+    "pinned down by pain and moaning for release\n"
+    "or nagged by want past resolutions power,\n"
+    "I might be driven to sell your love for peace,\n"
+    "Or trade the memory of this night for food.\n"
+    "It may well be. I do not think I would.\n"
+    "-- Edna St. Vincent Milay (1892 - 1950)\n";
+
+static int abstraction(void * state, void * buffer, size_t size)
+{
+    const char ** sp;
+    size_t nn;
+
+    sp = (const char **)state;
+    if (*sp == (char *)0) { return 0; }
+    nn = strlen(*sp);
+    if (nn == 0) { *sp = (char *)0; return 0; }
+    if (nn > size) { nn = size; }
+    strncpy(buffer, *sp, nn);
+    *sp += nn;
+
+    return nn;
+}
+
 int main(int argc, char * argv[])
 {
     int debug;
@@ -294,6 +328,36 @@ int main(int argc, char * argv[])
 
         sp = diminuto_bread_fini(&bread);
         ASSERT(sp == (diminuto_bread_t *)0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_bread_t * sp;
+        char buffer[sizeof(TEXT)];
+        const char * source;
+        char * sink;
+        int result;
+
+        TEST();
+
+        source = TEXT;
+        sink = buffer;
+
+        sp = diminuto_bread_alloc(abstraction, &source, 13);
+        ASSERT(sp != (diminuto_bread_t *)0);
+
+        for (;;) {
+            result = diminuto_bread_read(sp, sink, sizeof(buffer) - (sink - buffer));
+            if (result == 0) { break; }
+            sink += result;
+        }
+
+        fputs(buffer, stderr);
+
+        ASSERT(strcmp(TEXT, buffer) == 0);
+
+        diminuto_bread_free(sp);
 
         STATUS();
     }
