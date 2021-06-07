@@ -948,7 +948,6 @@ sanity:	unittest
 	unittest-bits
 	unittest-buffer
 	unittest-bufferpool
-	unittest-bread
 	unittest-coherentsection
 	unittest-command
 	unittest-containerof

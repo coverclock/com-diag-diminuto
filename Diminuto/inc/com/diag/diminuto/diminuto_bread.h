@@ -102,7 +102,7 @@ static inline diminuto_bread_t * diminuto_bread_alloc(diminuto_bread_f * fp, voi
  * buffer.
  * @param sp points to the allocated object.
  */
-static void diminuto_bread_free(diminuto_bread_t * sp) {
+static inline void diminuto_bread_free(diminuto_bread_t * sp) {
     if (sp != (diminuto_bread_t *)0) {
         diminuto_bread_fini(sp);
         free(sp->bread_begin);
@@ -115,7 +115,7 @@ static void diminuto_bread_free(diminuto_bread_t * sp) {
  * @param sp points to the object.
  * @return true if it contains data, false otherwise.
  */
-static bool diminuto_bread_ready(diminuto_bread_t * sp) {
+static inline bool diminuto_bread_ready(diminuto_bread_t * sp) {
     return (sp->bread_used > 0);
 }
 
@@ -125,9 +125,19 @@ static bool diminuto_bread_ready(diminuto_bread_t * sp) {
  * @param sp points to the object.
  * @param bp points to the caller (not the feature) buffer.
  * @param ll is the size of the caller buffer in octets.
- * @return the number of bytes put in the caller buffer, 0 if EOF, <0 for error.
+ * @return the number of bytes put in the caller buffer, 0 if EOF, <0 if error.
  */
 extern ssize_t diminuto_bread_read(diminuto_bread_t * sp, void * bp, size_t ll);
+
+/**
+ * Peek at the next block of contiguous bytes in the Buffered Read Object, if any.
+ * The state of the object is not modified. The caller never blocks.
+ * @param sp points to the object.
+ * @param bp points to the caller (not the feature) buffer.
+ * @param ll is the size of the caller buffer in octets.
+ * @return the number of bytes put in the caller buffer or zero if none.
+ */
+extern size_t diminuto_bread_peek(const diminuto_bread_t * sp, void * bp, size_t ll);
 
 /**
  * Dump the state of a Buffered Read object to standard error or the system log.
