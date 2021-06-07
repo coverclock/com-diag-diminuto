@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
     while (!0) {
         before = diminuto_file_ready(fp);
         if (before > maximumin) { maximumin = before; }
-        ch = fgetc(fp);
+        ch = getc(fp);
         after = diminuto_file_ready(fp);
         if (after > maximumin) { maximumin = after; }
         if (ch == EOF) {
