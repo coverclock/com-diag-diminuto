@@ -57,25 +57,25 @@ int main(int argc, char * argv[])
         if (ch == EOF) {
             break;
         } else if (isprint(ch)) {
-            fprintf(stderr, "%s: input  %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(fp), (unsigned long long)index, (long long)maximumin, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
+            fprintf(stderr, "%s: ready %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(fp), (unsigned long long)index, (long long)maximumin, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
         } else {
-            fprintf(stderr, "%s: input  %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(fp), (unsigned long long)index, (long long)maximumin, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
+            fprintf(stderr, "%s: ready %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(fp), (unsigned long long)index, (long long)maximumin, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
         }
-        before = diminuto_file_available(stdout);
+        before = diminuto_file_empty(stdout);
         if (before > maximumout) { maximumout = before; }
         fputc(ch, stdout);
-        after = diminuto_file_available(stdout);
+        after = diminuto_file_empty(stdout);
         if (after > maximumout) { maximumout = after; }
-        fprintf(stderr, "%s: output %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(stdout), (unsigned long long)index, (long long)maximumout, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
+        fprintf(stderr, "%s: empty %2d %10lld %4lld %4lld %4lld 0x%02x %c\n", name, fileno(stdout), (unsigned long long)index, (long long)maximumout, (long long)before, (long long)after, ch, (after >= before) ? '*' : ' ');
         index += 1;
     }
 
-    before = diminuto_file_available(stdout);
+    before = diminuto_file_empty(stdout);
     if (before > maximumout) { maximumout = before; }
     fflush(stdout);
-    after = diminuto_file_available(stdout);
+    after = diminuto_file_empty(stdout);
     if (after > maximumout) { maximumout = after; }
-    fprintf(stderr, "%s: output %2d %10lld %4lld %4lld %4lld      %c\n", name, fileno(stdout), (unsigned long long)index, (long long)maximumout, (long long)before, (long long)after, (after >= before) ? '*' : ' ');
+    fprintf(stderr, "%s: empty %2d %10lld %4lld %4lld %4lld   -1 %c\n", name, fileno(stdout), (unsigned long long)index, (long long)maximumout, (long long)before, (long long)after, (after >= before) ? '*' : ' ');
 
     fclose(fp);
     fclose(stdout);

@@ -42,11 +42,11 @@ static inline ssize_t diminuto_file_ready(const FILE * fp)
 }
 
 /**
- * Return the number of bytes a FILE object has available to write in its buffer.
+ * Return the number of bytes a FILE object has empty for write in its buffer.
  * @param fp points to the FILE object.
- * @return the number of bytes available or <0 if an error occurred.
+ * @return the number of bytes empty or <0 if an error occurred.
  */
-static inline ssize_t diminuto_file_available(const FILE * fp)
+static inline ssize_t diminuto_file_empty(const FILE * fp)
 {
     return (fp->_IO_write_end - fp->_IO_write_ptr);
 }
