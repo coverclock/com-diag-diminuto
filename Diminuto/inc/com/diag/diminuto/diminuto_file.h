@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2019 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2019-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a horrifyingly brittle mechanism to compute bytes buffered in an input stream.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -29,7 +29,7 @@
  */
 
 #include <stdio.h>
-#include "com/diag/diminuto/diminuto_types.h"
+#include <stddef.h>
 
 /**
  * Return the number of bytes a FILE object has ready to read in its buffer.
