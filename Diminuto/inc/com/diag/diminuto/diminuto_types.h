@@ -24,9 +24,10 @@
        typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */
 #   endif
 #else
-#   include <stddef.h>          /* size_t, ssize_t */
+#   include <stddef.h>          /* size_t, ssize_t, wint_t, etc. */
 #   include <stdint.h>          /* intptr_t, int64_t, etc. */
 #   include <stdbool.h>         /* bool */
+#   include <wchar.h>           /* wchar_t, wint_t */
 #   include <sys/types.h>       /* pid_t */
 #   include <linux/limits.h>    /* PATH_MAX (includes terminating NUL) */
 #   include <linux/un.h>        /* UNIX_PATH_MAX */

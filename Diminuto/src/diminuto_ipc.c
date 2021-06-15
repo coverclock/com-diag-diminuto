@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <unistd.h>
 #include <netdb.h>
 #include <stdlib.h>
@@ -28,6 +29,12 @@
 #include <ifaddrs.h>
 #include <linux/limits.h>
 #include "../src/diminuto_ipc.h"
+
+/*******************************************************************************
+ * DEBUGGING
+ ******************************************************************************/
+
+int diminuto_ipc_debug = 0;
 
 /*******************************************************************************
  * STRING TO PORT AND VICE VERSA
@@ -176,20 +183,16 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
     return fd;
 }
 
-/*
- * https://github.com/coverclock/com-diag-desperadito/blob/master/Desperadito/inc/com/diag/desperado/generics.h
- */
-static const int MAXIMUM_SIGNED_INT = (~((int)1 << ((sizeof(int) * 8) - 1)));
-
 int diminuto_ipc_set_send(int fd, ssize_t size)
 {
-    int value;
+    static const int MAXIMUM = diminuto_maximumof(int);
 
     if (size < 0) {
         /* Do nothing. */
-    } else if (size > MAXIMUM_SIGNED_INT) {
-        fd = -13;
+    } else if (size > MAXIMUM) {
+        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, MAXIMUM);
     } else {
+        int value;
         fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, value = size);
     }
 
@@ -198,13 +201,14 @@ int diminuto_ipc_set_send(int fd, ssize_t size)
 
 int diminuto_ipc_set_receive(int fd, ssize_t size)
 {
-    int value;
+    static const int MAXIMUM = diminuto_maximumof(int);
 
     if (size < 0) {
         /* Do nothing. */
-    } else if (size > MAXIMUM_SIGNED_INT) {
-        fd = -14;
+    } else if (size > MAXIMUM) {
+        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, MAXIMUM);
     } else {
+        int value;
         fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, value = size);
     }
 
@@ -213,12 +217,31 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 {
-    struct linger opt = { 0 };
+    struct linger opt = { 0, };
+    static const int MAXIMUM = diminuto_maximumof(int);
 
-    if (ticks > 0) {
-        opt.l_onoff = !0;
-        opt.l_linger = (ticks + diminuto_frequency() - 1) / diminuto_frequency();
+    if (diminuto_ipc_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_set_linger: fd=%d ticks=0x%llx\n", fd, (unsigned long long)ticks);
     }
+
+    if (ticks == 0) {
+        opt.l_onoff = 0;
+        opt.l_linger = 0;
+    } else if (ticks <= (diminuto_maximumof(diminuto_ticks_t) - diminuto_frequency())) {
+        opt.l_onoff = !0;
+        ticks += diminuto_frequency();
+        ticks -= 1;
+        ticks /= diminuto_frequency();
+        opt.l_linger = (ticks <= MAXIMUM) ? ticks : MAXIMUM;
+    } else {
+        opt.l_onoff = !0;
+        opt.l_linger = MAXIMUM;
+    }
+
+    if (diminuto_ipc_debug) {
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_set_linger: l_onoff=%d l_linger=%d\n", opt.l_onoff, opt.l_linger);
+    }
+
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
         fd = -10;

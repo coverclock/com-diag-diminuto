@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides capabilities common to IPv4, IPv6, and local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -48,6 +48,10 @@
  * K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation",
  * 2019-08-19,
  * <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>
+ *
+ * B. Hubert, "The ultimate SO_LINGER page, or: why is my tcp not
+ * reliable", 2009-01-18,
+ * <https://blog.netherlabs.nl/articles/2009/01/18/the-ultimate-so_linger-page-or-why-is-my-tcp-not-reliable>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -170,7 +174,8 @@ static inline int diminuto_ipc_set_debug(int fd, int enable) {
  * Enable or disable the linger option.
  * @param fd is an open socket of any type.
  * @param ticks is the number of ticks to linger (although
- * lingering has granularity of seconds), or 0 for no lingering.
+ * the underlying socket option has granularity of seconds),
+ * 0 for no lingering, or ~0 for maximum lingering.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
@@ -302,7 +307,9 @@ static inline ssize_t diminuto_ipc_stream_get_available(int fd) {
 
 /**
  * Return the number of bytes pending on the output queue waiting to be
- * transmitted by the kernel.
+ * transmitted by the kernel. (This may include data that has been
+ * sent to the far end but thus far unacknowledged and so cannot be removed
+ * from the output queue.)
  * @param fd is an open stream socket.
  * @return >=0 for success or <0 if an error occurred.
  */

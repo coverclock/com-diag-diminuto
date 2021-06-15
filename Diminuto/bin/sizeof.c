@@ -94,6 +94,7 @@ int main(void)
     printsignof(uint64_t);
     printsignof(intptr_t);
     printsignof(uintptr_t);
+    printsignof(ptrdiff_t);
     printsignof(wchar_t);
     printsignof(wint_t);
     printsignof(size_t);

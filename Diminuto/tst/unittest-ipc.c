@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,11 +65,38 @@ int main(int argc, char * argv[])
             EXPECT(rc >= 0);
         }
 
+        {
+            extern int diminuto_ipc_debug;
+            diminuto_ipc_debug = !0;
+        }
+
+        rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t));
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t) - 1);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t) - diminuto_frequency() + 1);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t) - diminuto_frequency());
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t) - diminuto_frequency() - 1);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, ((diminuto_frequency() * diminuto_maximumof(int)) + 1) - diminuto_frequency());
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, ((diminuto_frequency() * diminuto_maximumof(int)) + 1) - diminuto_frequency() - 1);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, diminuto_frequency() * 10);
+        EXPECT(rc >= 0);
         rc = diminuto_ipc_set_linger(sock, diminuto_frequency());
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_linger(sock, 1);
         EXPECT(rc >= 0);
         rc = diminuto_ipc_set_linger(sock, 0);
         EXPECT(rc >= 0);
 
+        {
+            extern int diminuto_ipc_debug;
+            diminuto_ipc_debug = 0;
+        }
 
         rc = diminuto_ipc_set_debug(sock, 0);
         EXPECT(rc >= 0);

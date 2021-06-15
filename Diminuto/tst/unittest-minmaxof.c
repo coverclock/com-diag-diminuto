@@ -12,8 +12,8 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
-#include <stdint.h>
 
 int main(void)
 {
@@ -74,24 +74,60 @@ int main(void)
     }
 
     {
+        TEST();
+
+        CHARACTERIZE(blkcnt_t);
+        CHARACTERIZE(blksize_t);
+        CHARACTERIZE(bool);
         CHARACTERIZE(char);
-        CHARACTERIZE(signed char);
-        CHARACTERIZE(unsigned char);
-        CHARACTERIZE(short);
-        CHARACTERIZE(signed short);
-        CHARACTERIZE(unsigned short);
+        CHARACTERIZE(dev_t);
+        CHARACTERIZE(diminuto_port_t);
+        CHARACTERIZE(diminuto_signed_t);
+        CHARACTERIZE(diminuto_sticks_t);
+        CHARACTERIZE(diminuto_ticks_t);
+        CHARACTERIZE(diminuto_unsigned_t);
+        CHARACTERIZE(gid_t);
+        CHARACTERIZE(ino_t);
         CHARACTERIZE(int);
-        CHARACTERIZE(signed int);
-        CHARACTERIZE(unsigned int);
-        CHARACTERIZE(long);
-        CHARACTERIZE(signed long);
-        CHARACTERIZE(unsigned long);
-        CHARACTERIZE(long long);
-        CHARACTERIZE(signed long long);
-        CHARACTERIZE(unsigned long long);
+        CHARACTERIZE(int16_t);
+        CHARACTERIZE(int32_t);
+        CHARACTERIZE(int64_t);
+        CHARACTERIZE(int8_t);
         CHARACTERIZE(intptr_t);
+        CHARACTERIZE(long);
+        CHARACTERIZE(long long);
+        CHARACTERIZE(mode_t);
+        CHARACTERIZE(nlink_t);
+        CHARACTERIZE(off_t);
+        CHARACTERIZE(pid_t);
+        CHARACTERIZE(pthread_t);
+        CHARACTERIZE(ptrdiff_t);
+        CHARACTERIZE(short);
+        CHARACTERIZE(signed char);
+        CHARACTERIZE(signed int);
+        CHARACTERIZE(signed long);
+        CHARACTERIZE(signed long long);
+        CHARACTERIZE(signed short);
+        CHARACTERIZE(size_t);
+        CHARACTERIZE(ssize_t);
+        CHARACTERIZE(time_t);
+        CHARACTERIZE(uid_t);
+        CHARACTERIZE(uint16_t);
+        CHARACTERIZE(uint32_t);
+        CHARACTERIZE(uint64_t);
+        CHARACTERIZE(uint8_t);
         CHARACTERIZE(uintptr_t);
+        CHARACTERIZE(unsigned char);
+        CHARACTERIZE(unsigned int);
+        CHARACTERIZE(unsigned long);
+        CHARACTERIZE(unsigned long long);
+        CHARACTERIZE(unsigned short);
+        CHARACTERIZE(wchar_t);
+        CHARACTERIZE(wint_t);
+
+        STATUS();
     }
+
     EXIT();
 }
 
