@@ -735,7 +735,8 @@ int main(int argc, char ** argv)
 
         rc = diminuto_mux_wait(&mux, -1);
         CHECKPOINT("rc=%d\n", rc);
-        ASSERT((rc == 2) || (rc == 3));
+        // ASSERT((rc == 2) || (rc == 3)); // 2021-06-15
+        ASSERT(rc > 0);
 
         fd = diminuto_mux_ready_read(&mux);
         CHECKPOINT("fd=%d\n", fd);
