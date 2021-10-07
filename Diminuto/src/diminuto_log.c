@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Log feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -189,10 +189,16 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     size_t space = sizeof(buffer);
     size_t total = 0;
     char * bufferp = buffer;
-    static char hostname[sizeof("localhost")] = { '\0', };
+    static char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM] = { '\0', };
 
     now = diminuto_time_clock();
     diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
+
+    /*
+     * Note that the hostname is cached; subsequent log emissions
+     * will not reflect any hostname changes (which are unlikely
+     * without the system being rebooted anyway).
+     */
 
     if (hostname[0] != '\0') {
         /* Do nothing. */

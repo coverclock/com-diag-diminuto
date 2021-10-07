@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a common logging API.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -59,6 +59,7 @@
 #   include <unistd.h>
 #endif
 #include <stdbool.h>
+#include <limits.h>
 
 /******************************************************************************/
 
@@ -198,6 +199,19 @@ enum DiminutoLogDescriptor {
 
 enum DiminutoLogBuffer {
     DIMINUTO_LOG_BUFFER_MAXIMUM = 1024,
+};
+
+/*
+ * RFC1035 and RFC2181 restrict a fully qualified domain name
+ * (FQDN) to 253 characters, and each element between the dots
+ * to 63 characters. The actual hostname isn't quite either of
+ * of these things, but this is a reasonable rationale. This
+ * value includes the terminating NUL, and must be at least long
+ * enough to hold the string "localhost", the default value if
+ * no hostname is available.
+ */
+enum DiminutoLogHostname {
+    DIMINUTO_LOG_HOSTNAME_MAXIMUM = HOST_NAME_MAX,
 };
 
 /******************************************************************************/

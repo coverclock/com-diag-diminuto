@@ -51,6 +51,7 @@ int main(void)
     P(DIMINUTO_LOG_MASK_NAME_DEFAULT, "\"%s\"");
     P(DIMINUTO_LOG_MASK_VALUE_ALL, "\"%s\"");
     P(DIMINUTO_LOG_BUFFER_MAXIMUM, "%u");
+    P(DIMINUTO_LOG_HOSTNAME_MAXIMUM, "%u");
 
     P(diminuto_log_ident, "\"%s\"");
     P(diminuto_log_option, "0x%x");

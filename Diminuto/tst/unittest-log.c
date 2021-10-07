@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Log feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -253,6 +253,16 @@ int main(int argc, char ** argv)
             errno = ERRNO[ii];
             diminuto_serror(buffer);
         }
+
+        STATUS();
+    }
+
+    {
+        char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM];
+
+        TEST();
+
+        ASSERT(sizeof(hostname) >= sizeof("localhost"));
 
         STATUS();
     }
