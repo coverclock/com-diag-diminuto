@@ -76,6 +76,12 @@
  */
 typedef int diminuto_log_mask_t;
 
+/**
+ * This enumerates the bit masks in the log mask that can be used to
+ * represent the eight different levels of log output (from highest to
+ * lowest: Emercency, Alert, Critical, Error, Warning, Notice, Information,
+ * Debug) or some combination (All, None, Default).
+ */
 enum DiminutoLogMask {
     DIMINUTO_LOG_MASK_EMERGENCY     = (1 << (7 - 0)),
     DIMINUTO_LOG_MASK_ALERT         = (1 << (7 - 1)),
@@ -103,6 +109,10 @@ enum DiminutoLogMask {
 
 #include <linux/kernel.h>
 
+/**
+ * This enumerates the log priority values that map from the log level
+ * to one of the log priority values used by the Linux kernel.
+ */
 enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = KERN_EMERG,
     DIMINUTO_LOG_PRIORITY_ALERT         = KERN_ALERT,
@@ -115,6 +125,10 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEFAULT       = KERN_NOTICE,
 };
 
+/**
+ * This is the current log mask when combiling for the Linux kernel.
+ * Note that it is a local private variable.
+ */
 static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #else
@@ -131,6 +145,10 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #include <android/log.h>
 
+/**
+ * This enumerates the log priority values that map from the log level
+ * to one of the log priority values used by the Android Bionic library.
+ */
 enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = ANDROID_LOG_FATAL,
     DIMINUTO_LOG_PRIORITY_ALERT         = ANDROID_LOG_FATAL,
@@ -143,8 +161,15 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEFAULT       = ANDROID_LOG_INFO,
 }
 
+/**
+ * This is the default log identifier used by the Android Bionic library.
+ */
 static const char DIMINUTO_LOG_IDENT_DEFAULT[] = "Diminuto";
 
+/**
+ * This enumerates the log priority values that map from the log level
+ * to one of the log priority values used by the Android Bionic Library.
+ */
 enum DiminutoLogDefaults {
     DIMINUTO_LOG_OPTION_DEFAULT         = 0,
     DIMINUTO_LOG_FACILITY_DEFAULT       = 0,
@@ -162,6 +187,10 @@ enum DiminutoLogDefaults {
 
 #include <syslog.h>
 
+/**
+ * This enumerates the log priority values that map from the log level
+ * to one of the log priority values used by the Linux/GNU system logger.
+ */
 enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = LOG_EMERG,
     DIMINUTO_LOG_PRIORITY_ALERT         = LOG_ALERT,
@@ -174,8 +203,17 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEFAULT       = LOG_NOTICE,
 };
 
+/**
+ * @def DIMINUTO_LOG_IDENT_DEFAULT
+ * This is the default log identifier when compiling for the Linux/GNU
+ * system.
+ */
 #define DIMINUTO_LOG_IDENT_DEFAULT "Diminuto"
 
+/**
+ * These are the default log options and facility when using the Linux/GNU
+ * system logger.
+ */
 enum DiminutoLogDefaults {
     DIMINUTO_LOG_OPTION_DEFAULT          = (LOG_CONS | LOG_PID),
     DIMINUTO_LOG_FACILITY_DEFAULT        = LOG_LOCAL7,
@@ -187,21 +225,42 @@ enum DiminutoLogDefaults {
 #include <stdarg.h>
 #include <unistd.h>
 
+/**
+ * The enumerates the default file descriptor used when not using any other
+ * system logging mechanism.
+ */
 enum DiminutoLogDescriptor {
     DIMINUTO_LOG_DESCRIPTOR_DEFAULT = STDERR_FILENO,
 };
 
+/**
+ * @def DIMINUTO_LOG_STREAM_DEFAULT
+ * This is the default value used for an unset log output stream FILE pointer.
+ */
 #define DIMINUTO_LOG_STREAM_DEFAULT ((FILE *)0)
 
+/**
+ * @def DIMINUTO_LOG_MASK_NAME_DEFAULT
+ * This is the default value used for the log mask name in the environment.
+ */
 #define DIMINUTO_LOG_MASK_NAME_DEFAULT "COM_DIAG_DIMINUTO_LOG_MASK"
 
+/**
+ * @def DIMINUTO_LOG_MASK_VALUE_ALL
+ * This is the default value ised for the value of the log mask in the
+ * environment.
+ */
 #define DIMINUTO_LOG_MASK_VALUE_ALL "~0"
 
+/**
+ * This enumerates the maximum size of the log buffer.
+ */
 enum DiminutoLogBuffer {
     DIMINUTO_LOG_BUFFER_MAXIMUM = 1024,
 };
 
-/*
+/**
+ * This enumerates the maximum size of a host name.
  * RFC1035 and RFC2181 restrict a fully qualified domain name
  * (FQDN) to 253 characters, and each element between the dots
  * to 63 characters. The actual hostname isn't quite either of
