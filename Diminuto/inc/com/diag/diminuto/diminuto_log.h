@@ -427,7 +427,7 @@ extern void diminuto_log_vsyslog(int priority, const char * format, va_list ap);
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log_syslog(int priority, const char * format, ...);
+extern void diminuto_log_syslog(int priority, const char * format, ...) __attribute__ ((format (printf, 2, 3)));
 
 /**
  * Format and log the argument list to a file descriptor.
@@ -445,7 +445,7 @@ extern void diminuto_log_vwrite(int fd, int priority, const char * format, va_li
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log_write(int fd, int priority, const char * format, ...);
+extern void diminuto_log_write(int fd, int priority, const char * format, ...) __attribute__ ((format (printf, 3, 4)));
 
 /**
  * If the calling process is interactive, format and print
@@ -464,7 +464,7 @@ extern void diminuto_log_vlog(int priority, const char * format, va_list ap);
  * @param priority is the log priority level.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log_log(int priority, const char * format, ...);
+extern void diminuto_log_log(int priority, const char * format, ...)  __attribute__ ((format (printf, 2, 3)));
 
 /**
  * If the calling process is interactive, format and print
@@ -472,7 +472,7 @@ extern void diminuto_log_log(int priority, const char * format, ...);
  * list to syslog. The message is logged at the default priority.
  * @param format points to a printf-style format string.
  */
-extern void diminuto_log_emit(const char * format, ...);
+extern void diminuto_log_emit(const char * format, ...)  __attribute__ ((format (printf, 1, 2)));
 
 /**
  * Emulate perror() but instead of writing the prefixed error string to
