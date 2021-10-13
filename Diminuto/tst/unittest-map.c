@@ -42,7 +42,7 @@ int main(int argc, char ** argv)
         ASSERT(start != (void *)0);
         ASSERT(length != 0);
 
-        CHECKPOINT("unittest-map: *(void *)0=0x%p start=0x%p length=%zu\n", *(int *)pointer, start, length);
+        CHECKPOINT("unittest-map: *(void *)0=0x%x start=0x%p length=%zu\n", *(int *)pointer, start, length);
 
         rc = diminuto_map_unmap(&start, &length);
         ASSERT(rc == 0);

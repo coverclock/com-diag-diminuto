@@ -229,7 +229,7 @@ static void test3(diminuto_sticks_t now, int verbose)
 
     if ((now != zulu) || (now != juliet) || verbose) {
         if (!notfirst) {
-            CHECKPOINT("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n" , "NOW", "ZULU", "JULIET", "OFFSET" , "ZULU", "JULIET", "DURATION" , "TIMEZONE", "DAYLIGHTSAVING");
+            CHECKPOINT("%20s %20s %20s %18s %30s %30s %25s %15s %15s\n" , "NOW", "ZULU", "JULIET", "OFFSET" , "ZULU", "JULIET", "DURATION" , "TIMEZONE", "DAYLIGHTSAVING");
             notfirst = !0;
         }
         CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
