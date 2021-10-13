@@ -347,7 +347,7 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
             }
             if (now != then) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                COMMENT("CONSUMER %d compare [%zu] %d %s;%u (%lld!=%lld)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, now, then);
+                COMMENT("CONSUMER %d compare [%zu] %d %s;%u (%llu!=%llu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, (long long unsigned int)now, (long long unsigned int)then);
                 xc = 4;
                 goto exiting;
             }

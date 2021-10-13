@@ -121,7 +121,7 @@ int main(int argc, char ** argv)
         sustained = total;
         sustained *= frequency;
         sustained /= duration;
-        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), PEAK, peak, SUSTAINED, sustained);
+        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), PEAK, peak, SUSTAINED, sustained);
         ASSERT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
         ADVISE(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);

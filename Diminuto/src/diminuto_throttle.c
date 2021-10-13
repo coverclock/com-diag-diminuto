@@ -116,7 +116,7 @@ int diminuto_throttle_commitn(diminuto_throttle_t * throttlep, size_t events)
 void diminuto_throttle_log(diminuto_throttle_t * throttlep)
 {
     if (throttlep != (diminuto_throttle_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { iat=%lld i=%lld l=%lld x=%lld x1=%lld f=%d,%d,%d e=%d,%d,%d a=%d,%d }\n", throttlep, sizeof(*throttlep), throttlep->now - throttlep->then, throttlep->increment, throttlep->limit, throttlep->expected, throttlep->actual, throttlep->full0, throttlep->full1, throttlep->full2, throttlep->empty0, throttlep->empty1, throttlep->empty2, throttlep->alarmed1, throttlep->alarmed2);
+        DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]: { iat=%llu i=%llu l=%llu x=%llu x1=%llu f=%d,%d,%d e=%d,%d,%d a=%d,%d }\n", throttlep, sizeof(*throttlep), (long long unsigned int)(throttlep->now - throttlep->then), (long long unsigned int)throttlep->increment, (long long unsigned int)throttlep->limit, (long long unsigned int)throttlep->expected, (long long unsigned int)throttlep->actual, throttlep->full0, throttlep->full1, throttlep->full2, throttlep->empty0, throttlep->empty1, throttlep->empty2, throttlep->alarmed1, throttlep->alarmed2);
     } else {
         DIMINUTO_LOG_DEBUG("diminuto_throttle_t@%p[%zu]\n", throttlep, sizeof(*throttlep));
     }

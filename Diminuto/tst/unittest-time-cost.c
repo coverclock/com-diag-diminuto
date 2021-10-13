@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    CHECKPOINT("%s: %lldns / %llu = %lluns\n", label, total, iterations, (total + (iterations / 2)) / iterations);
+    CHECKPOINT("%s: %lldns / %lld = %lldns\n", label, (long long int)total, (long long int)iterations, (long long int)((total + (iterations / 2)) / iterations));
 
     if (after < 0) {
         diminuto_perror(label);

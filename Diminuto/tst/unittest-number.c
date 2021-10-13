@@ -101,7 +101,7 @@ int main(int argc, char ** argv)
     ++argv;
     while ((argc--) > 0) {
         p = diminuto_number(*(argv++), &n);
-        CHECKPOINT("0%llo 0x%llx %llu %lld 0x%x\n", n, n, n, n, *p);
+        CHECKPOINT("0%llo 0x%llx %llu %lld 0x%x\n", (long long unsigned int)n, (long long unsigned int)n, (long long unsigned int)n, (long long signed int)n, *p);
     }
 
     STATUS();

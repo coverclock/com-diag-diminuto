@@ -229,10 +229,7 @@ static void test3(diminuto_sticks_t now, int verbose)
 
     if ((now != zulu) || (now != juliet) || verbose) {
         if (!notfirst) {
-            CHECKPOINT("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n"
-                , "NOW", "ZULU", "JULIET", "OFFSET"
-                , "ZULU", "JULIET", "DURATION"
-                , "TIMEZONE", "DAYLIGHTSAVING");
+            CHECKPOINT("%20s %20s %20s %018s %30s %30s %25s %15s %15s\n" , "NOW", "ZULU", "JULIET", "OFFSET" , "ZULU", "JULIET", "DURATION" , "TIMEZONE", "DAYLIGHTSAVING");
             notfirst = !0;
         }
         CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
@@ -240,7 +237,7 @@ static void test3(diminuto_sticks_t now, int verbose)
             , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
             , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
             , dday, dhour, dminute, dsecond, (long long unsigned int)dtick
-            , timezone, daylightsaving
+            , (long long int)timezone, (long long int)daylightsaving
         );
     }
 }
@@ -284,22 +281,22 @@ int main(int argc, char ** argv)
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
-        CHECKPOINT("minimum %lld 0x%llx\n", (long long int)minimum / hertz, (long long int) minimum / hertz);
+        CHECKPOINT("minimum %lld 0x%llx\n", (long long int)(minimum / hertz), (long long int)(minimum / hertz));
         ticks = minimum;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         CHECKPOINT("epoch %lld 0x%llx\n", (long long int)epoch, (long long int)epoch);
         ticks = epoch;
@@ -307,22 +304,22 @@ int main(int argc, char ** argv)
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
-        CHECKPOINT("maximum %lld 0x%llx\n", (long long int)maximum / hertz, (long long int)maximum / hertz);
+        CHECKPOINT("maximum %lld 0x%llx\n", (long long int)(maximum / hertz), (long long int)(maximum / hertz));
         ticks = maximum;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         CHECKPOINT("high %lld 0x%llx\n", (long long int)high, (long long int)high);
         ticks = high;
@@ -330,11 +327,11 @@ int main(int argc, char ** argv)
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09dZ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09dJ %d %d\n", year, month, day, hour, minute, second, tick, rc, errno);
+        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
 
         STATUS();
     }

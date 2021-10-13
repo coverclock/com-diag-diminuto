@@ -37,14 +37,14 @@ typedef uint16_t (array_t)[128 / 8 / sizeof(uint16_t)];
 
 static void foo(array_t * pointer) {
     CHECKPOINT("foo(pointer)\n");
-    CHECKPOINT("pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
+    CHECKPOINT("pointer=%p\n", (void *)pointer);
+    CHECKPOINT("sizeof=%zu\n", sizeof(*pointer));
     ASSERT(sizeof(*pointer) == 16);
-    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
+    CHECKPOINT("zeroth=%zu\n", sizeof((*pointer)[0]));
     ASSERT(sizeof((*pointer)[0]) == 2);
-    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
+    CHECKPOINT("countof=%zu\n", sizeof(*pointer) / sizeof((*pointer)[0]));
     ASSERT((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
-    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
+    CHECKPOINT("eighth=%u\n", (*pointer)[7]);
     ASSERT((*pointer)[7] == 88);
 }
 
@@ -54,16 +54,16 @@ static void bar(array_t variable) {
      * in pointer sizes (8 versus 4).
      */
     CHECKPOINT("bar(variable)\n");
-    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)variable);
+    CHECKPOINT("variable=%p\n", (void *)variable);
 #if defined(PROBLEMATIC)
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
+    CHECKPOINT("sizeof=%zu\n", sizeof(variable));
     ASSERT(sizeof(variable) == sizeof(void *));
-    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
+    CHECKPOINT("zeroth=%zu\n", sizeof(variable[0]));
     ASSERT(sizeof(variable[0]) == 2);
-    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
+    CHECKPOINT("countof=%zu\n", sizeof(variable) / sizeof(variable[0]));
 #endif
-    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)&variable);
-    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, variable[7]);
+    CHECKPOINT("variable=%p\n", (void *)&variable);
+    CHECKPOINT("eighth=%u\n", variable[7]);
     ASSERT(variable[7] == 88);
 }
 
@@ -76,33 +76,33 @@ int main() {
     TEST();
 
     CHECKPOINT("array_t\n");
-    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(array_t) * 8);
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(array_t));
+    CHECKPOINT("widthof=%zu\n", sizeof(array_t) * 8);
+    CHECKPOINT("sizeof=%zu\n", sizeof(array_t));
     ASSERT(sizeof(array_t) == 16);
     CHECKPOINT("variable\n");
-    CHECKPOINT("variable=%p\n", __FILE__, __LINE__, (void *)variable);
-    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(variable) * 8);
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(variable));
+    CHECKPOINT("variable=%p\n", (void *)variable);
+    CHECKPOINT("widthof=%zu\n", sizeof(variable) * 8);
+    CHECKPOINT("sizeof=%zu\n", sizeof(variable));
     ASSERT(sizeof(variable) == 16);
-    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof(variable[0]));
+    CHECKPOINT("zeroth=%zu\n", sizeof(variable[0]));
     ASSERT(sizeof(variable[0]) == 2);
-    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(variable) / sizeof(variable[0]));
+    CHECKPOINT("countof=%zu\n", sizeof(variable) / sizeof(variable[0]));
     ASSERT((sizeof(variable) / sizeof(variable[0])) == 8);
-    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, variable[7]);
+    CHECKPOINT("eighth=%u\n", variable[7]);
     ASSERT(variable[7] == 88);
-    CHECKPOINT("&variable=%p\n", __FILE__, __LINE__, (void *)&variable);
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(&variable));
-    CHECKPOINT("widthof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) * 8);
+    CHECKPOINT("&variable=%p\n", (void *)&variable);
+    CHECKPOINT("sizeof=%zu\n", sizeof(&variable));
+    CHECKPOINT("widthof=%zu\n", sizeof(*pointer) * 8);
     CHECKPOINT("pointer\n");
-    CHECKPOINT("pointer=%p\n", __FILE__, __LINE__, (void *)pointer);
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(pointer));
-    CHECKPOINT("sizeof=%zu\n", __FILE__, __LINE__, sizeof(*pointer));
+    CHECKPOINT("pointer=%p\n", (void *)pointer);
+    CHECKPOINT("sizeof=%zu\n", sizeof(pointer));
+    CHECKPOINT("sizeof=%zu\n", sizeof(*pointer));
     ASSERT(sizeof(*pointer) == 16);
-    CHECKPOINT("zeroth=%zu\n", __FILE__, __LINE__, sizeof((*pointer)[0]));
+    CHECKPOINT("zeroth=%zu\n", sizeof((*pointer)[0]));
     ASSERT(sizeof((*pointer)[0]) == 2);
-    CHECKPOINT("countof=%zu\n", __FILE__, __LINE__, sizeof(*pointer) / sizeof((*pointer)[0]));
+    CHECKPOINT("countof=%zu\n", sizeof(*pointer) / sizeof((*pointer)[0]));
     ASSERT((sizeof(*pointer) / sizeof((*pointer)[0])) == 8);
-    CHECKPOINT("eighth=%u\n", __FILE__, __LINE__, (*pointer)[7]);
+    CHECKPOINT("eighth=%u\n", (*pointer)[7]);
     ASSERT((*pointer)[7] == 88);
     foo(&variable);
     bar(variable);

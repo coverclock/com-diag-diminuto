@@ -742,7 +742,7 @@ int main(int argc, char ** argv)
         sustained = total;
         sustained *= frequency;
         sustained /= duration;
-        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lldseconds requested=%zubytes/second sustained=%lfbytes/second peak=%lfbytes/second\n", iops, total, total / iops, duration / diminuto_frequency(), BANDWIDTH, sustained, peak);
+        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds requested=%zubytes/second sustained=%lfbytes/second peak=%lfbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), BANDWIDTH, sustained, peak);
         ASSERT(fabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         ADVISE(fabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         /**/

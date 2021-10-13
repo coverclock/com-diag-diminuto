@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
 
     TEST();
 
-    COMMENT("sizeof=%u", sizeof(buffer));
+    COMMENT("sizeof=%zu", sizeof(buffer));
     ASSERT(argv[0] != (char *)0);
     root = strrchr(argv[0], '/');
     root = (root == (char *)0) ? argv[0] : root + 1;

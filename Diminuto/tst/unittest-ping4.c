@@ -184,7 +184,7 @@ int main(int argc, char * argv[])
                 ASSERT((size = diminuto_ping4_datagram_receive(sock, &from, &type, &code, &id, &seq, &ttl, &elapsed)) >= 0);
                 CHECKPOINT("received 0x%x 0x%x\n", type, code);
             } while (size == 0);
-            CHECKPOINT("from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u ttl=%u elapsed=%lldticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, ttl, elapsed);
+            CHECKPOINT("from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u ttl=%u elapsed=%lluticks\n", diminuto_ipc4_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, ttl, (long long unsigned int)elapsed);
             ASSERT(from != 0);
             EXPECT(from == to);
             ASSERT(type != ~0);

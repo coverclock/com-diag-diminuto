@@ -74,24 +74,7 @@ int main(int argc, char ** argv)
 
     first = !0;
 
-    CHECKPOINT(" %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n"
-        , "logical"
-        , "difference"
-        , "requested"
-        , "remaining"
-        , "claimed"
-        , "measured"
-        , "difference"
-        , "elapsed"
-        , "difference"
-        , "error-z"
-        , "error-j"
-        , "process"
-        , "thread"
-        , "duration"
-        , "zulu"
-        , "juliet"
-    );
+    CHECKPOINT(" %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n" , "logical" , "difference" , "requested" , "remaining" , "claimed" , "measured" , "difference" , "elapsed" , "difference" , "error-z" , "error-j" , "process" , "thread" , "duration" , "zulu" , "juliet");
 
     for (requested = 0; requested <= (hertz * 240); requested = (requested > 0) ? requested * 2 : 1) {
         logical = diminuto_time_logical();
@@ -163,17 +146,17 @@ int main(int argc, char ** argv)
         ASSERT(result != (diminuto_sticks_t)-1);
         thread = result;
         CHECKPOINT("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
-            , logical, first ? 0 : logical - logicalprime
-            , requested, remaining
-            , claimed
-            , measured, measured - requested
-            , elapsed, elapsed - requested
-            , after - zulu
-            , after - juliet
-            , process, thread
-            , ss, dday, dhour, dminute, dsecond, dtick
-            , zyear, zmonth, zday, zhour, zminute, zsecond, ztick, 0, 0
-            , jyear, jmonth, jday, jhour, jminute, jsecond, jtick, (offset < 0) ? '-' : '+', zh, zm
+            , (long long int)logical, (long long int)(first ? 0 : logical - logicalprime)
+            , (long long int)requested, (long long int)remaining
+            , (long long int)claimed
+            , (long long int)measured, (long long int)(measured - requested)
+            , (long long int)elapsed, (long long int)(elapsed - requested)
+            , (long long int)(after - zulu)
+            , (long long int)(after - juliet)
+            , (long long int)process, (long long int)thread
+            , ss, dday, dhour, dminute, dsecond, (long long unsigned int)dtick
+            , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick, 0, 0
+            , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick, (offset < 0) ? '-' : '+', zh, zm
         );
         ASSERT(remaining == 0);
         ASSERT(after == zulu);

@@ -42,7 +42,7 @@ int main(void)
             CHECKPOINT("bytes[%d]=0x%2.2x\n", ii, endianess.bytes[ii]);
         }
 
-        CHECKPOINT("word=0x%*.*x\n", sizeof(endianess.bytes) * 2, sizeof(endianess.bytes) * 2, endianess.word);
+        CHECKPOINT("word=0x%*.*x\n", (int)(sizeof(endianess.bytes) * 2), (int)(sizeof(endianess.bytes) * 2), endianess.word);
 
         STATUS();
     }

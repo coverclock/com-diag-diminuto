@@ -37,7 +37,7 @@ int main(void)
         method = -1;
         pagesize = diminuto_memory_pagesize(&method);
         pagesize2 = diminuto_memory_pagesize((int *)0);
-        CHECKPOINT("pagesize=0x%x=%d method=%d\n", pagesize, pagesize, method);
+        CHECKPOINT("pagesize=0x%zx=%zd method=%d\n", pagesize, pagesize, method);
         ASSERT(method >= 0);
         ASSERT(pagesize > 0);
         ASSERT(pagesize == pagesize2);
@@ -52,7 +52,7 @@ int main(void)
         method = -1;
         linesize = diminuto_memory_linesize(&method);
         linesize2 = diminuto_memory_linesize((int *)0);
-        CHECKPOINT("linesize=0x%x=%d method=%d\n", linesize, linesize, method);
+        CHECKPOINT("linesize=0x%zx=%zd method=%d\n", linesize, linesize, method);
         ASSERT(method >= 0);
         ASSERT(linesize > 0);
         ASSERT(linesize == linesize2);

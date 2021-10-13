@@ -285,7 +285,7 @@ int main(int argc, char * argv[])
     assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %useconds %ubytes %zumodulo\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", carrierdetect ? "dcd" : "nodcd", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum, modulo);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %useconds %zubytes %zumodulo\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", carrierdetect ? "dcd" : "nodcd", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum, modulo);
 
     fd = open(device, O_RDWR);
     assert(fd >= 0);

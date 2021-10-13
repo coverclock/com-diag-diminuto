@@ -131,7 +131,7 @@ int main(int argc, char * argv[])
                 ASSERT((size = diminuto_ping6_datagram_receive(sock, &from, &type, &code, &id, &seq, &elapsed)) >= 0);
                 CHECKPOINT("received 0x%x 0x%x\n", type, code);
             } while (size == 0);
-            CHECKPOINT("from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, elapsed);
+            CHECKPOINT("from=\"%s\" size=%zu type=0x%x code=0x%x id=0x%x seq=%u elapsed=%lluticks\n", diminuto_ipc6_address2string(from, buffer, sizeof(buffer)), size, type, code, id, seq, (long long unsigned int)elapsed);
             ASSERT(memcmp(&from, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(from)) != 0);
             EXPECT(memcmp(&from, &to, sizeof(from)) == 0);
             ASSERT(type != ~0);

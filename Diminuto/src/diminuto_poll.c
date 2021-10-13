@@ -174,7 +174,7 @@ void diminuto_poll_dump(diminuto_poll_t * pollp)
     nfds_t ii;
     struct pollfd * pollfdp;
 
-    DIMINUTO_LOG_DEBUG("poll@%p: nfds=%u\n", pollp, pollp->nfds);
+    DIMINUTO_LOG_DEBUG("poll@%p: nfds=%lu\n", pollp, (long unsigned int)pollp->nfds);
     DIMINUTO_LOG_DEBUG("poll@%p: min=%d\n", pollp, pollp->min);
     DIMINUTO_LOG_DEBUG("poll@%p: max=%d\n", pollp, pollp->max);
     DIMINUTO_LOG_DEBUG("poll@%p: refresh=%d\n", pollp, pollp->refresh);
@@ -182,9 +182,9 @@ void diminuto_poll_dump(diminuto_poll_t * pollp)
     for (ii = 0; ii < pollp->nfds; ++ii) {
         pollfdp = &pollp->pollfd[ii];
         if (pollfdp->fd >= 0) {
-            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%u].fd=%d\n", pollp, ii, pollfdp->fd);
-            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%u].events=0x%x\n", pollp, ii, pollfdp->events);
-            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%u].revents=0x%x\n", pollp, ii, pollfdp->revents);
+            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%lu].fd=%d\n", pollp, (long unsigned int)ii, pollfdp->fd);
+            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%lu].events=0x%x\n", pollp, (long unsigned int)ii, pollfdp->events);
+            DIMINUTO_LOG_DEBUG("poll@%p: pollfd[%lu].revents=0x%x\n", pollp, (long unsigned int)ii, pollfdp->revents);
         }
     }
     diminuto_mux_dump(&pollp->mux);

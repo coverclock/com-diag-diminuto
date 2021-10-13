@@ -67,14 +67,14 @@ int main(int argc, char ** argv)
 
     {
         TEST();
-        CHECKPOINT("f(frequency)=%lldHz p(frequency)=%lldticks\n", diminuto_frequency(), diminuto_frequency() / diminuto_frequency());
-        CHECKPOINT("f(delay)=%lldHz p(delay)=%lldticks\n", diminuto_delay_frequency(), diminuto_frequency() / diminuto_delay_frequency());
-        CHECKPOINT("f(modulator)=%lldHz p(modulator)=%lldticks\n", diminuto_modulator_frequency(), diminuto_frequency() / diminuto_modulator_frequency());
-        CHECKPOINT("f(mux)=%lldHz p(mux)=%lldticks\n", diminuto_mux_frequency(), diminuto_frequency() / diminuto_mux_frequency());
-        CHECKPOINT("f(poll)=%lldHz p(poll)=%lldticks\n", diminuto_poll_frequency(), diminuto_frequency() / diminuto_poll_frequency());
-        CHECKPOINT("f(throttle)=%lldHz p(throttle)=%lldticks\n", diminuto_throttle_frequency(), diminuto_frequency() / diminuto_throttle_frequency());
-        CHECKPOINT("f(time)=%lldHz p(time)=%lldticks\n", diminuto_time_frequency(), diminuto_frequency() / diminuto_time_frequency());
-        CHECKPOINT("f(timer)=%lldHz p(timer)=%lldticks\n", diminuto_timer_frequency(), diminuto_frequency() / diminuto_timer_frequency());
+        CHECKPOINT("f(frequency)=%lldHz p(frequency)=%lldticks\n", (long long int)diminuto_frequency(), (long long int)(diminuto_frequency() / diminuto_frequency()));
+        CHECKPOINT("f(delay)=%lldHz p(delay)=%lldticks\n", (long long int)diminuto_delay_frequency(), (long long int)(diminuto_frequency() / diminuto_delay_frequency()));
+        CHECKPOINT("f(modulator)=%lldHz p(modulator)=%lldticks\n", (long long int)diminuto_modulator_frequency(), (long long int)(diminuto_frequency() / diminuto_modulator_frequency()));
+        CHECKPOINT("f(mux)=%lldHz p(mux)=%lldticks\n", (long long int)diminuto_mux_frequency(), (long long int)(diminuto_frequency() / diminuto_mux_frequency()));
+        CHECKPOINT("f(poll)=%lldHz p(poll)=%lldticks\n", (long long int)diminuto_poll_frequency(), (long long int)(diminuto_frequency() / diminuto_poll_frequency()));
+        CHECKPOINT("f(throttle)=%lldHz p(throttle)=%lldticks\n", (long long int)diminuto_throttle_frequency(), (long long int)(diminuto_frequency() / diminuto_throttle_frequency()));
+        CHECKPOINT("f(time)=%lldHz p(time)=%lldticks\n", (long long int)diminuto_time_frequency(), (long long int)(diminuto_frequency() / diminuto_time_frequency()));
+        CHECKPOINT("f(timer)=%lldHz p(timer)=%lldticks\n", (long long int)diminuto_timer_frequency(), (long long int)(diminuto_frequency() / diminuto_timer_frequency()));
         STATUS();
     }
 

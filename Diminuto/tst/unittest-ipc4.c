@@ -126,15 +126,15 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address("localhost");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", address, DIMINUTO_IPC4_LOOPBACK);
+        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)address, (long unsigned int)DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         address = diminuto_ipc4_address("prairiethorn.org");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", address, 0UL);
+        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "prairiethorn.org", (long unsigned int)address, 0UL);
         EXPECT(address != 0UL);
 
         address = diminuto_ipc4_address("invalid.domain");
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "invalid.domain", address, 0UL);
+        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "invalid.domain", (long unsigned int)address, 0UL);
 
         /*
          * Damned internet service providers map invalid domains to a "help"
@@ -156,7 +156,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "localhost", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -179,7 +179,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "google.com", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "google.com", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -207,7 +207,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "amazon.com", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "amazon.com", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -230,7 +230,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", "prairiethorn.org", addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "prairiethorn.org", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -525,7 +525,7 @@ int main(int argc, char * argv[])
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) < 0);
         EXPECT((after = diminuto_time_elapsed()) >= 0);
         EXPECT(diminuto_timer_oneshot(0ULL) >= 0);
-        CHECKPOINT("elapsed %lld - %lld = %lld\n", after, before, after - before);
+        CHECKPOINT("elapsed %lld - %lld = %lld\n", (long long int)after, (long long int)before, (long long int)(after - before));
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
         EXPECT(errno == EINTR);

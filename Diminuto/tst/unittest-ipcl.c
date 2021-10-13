@@ -541,7 +541,7 @@ int main(int argc, char * argv[])
 
         EXPECT((after = diminuto_time_elapsed()) >= 0);
         EXPECT(diminuto_timer_oneshot(0ULL) >= 0);
-        CHECKPOINT("elapsed %lld - %lld = %lld\n", after, before, after - before);
+        CHECKPOINT("elapsed %lld - %lld = %lld\n", (long long int)after, (long long int)before, (long long int)(after - before));
         EXPECT(diminuto_alarm_check());
         EXPECT((after - before) >= 2000000LL);
 

@@ -80,10 +80,9 @@ int main(int argc, char ** argv)
     hertz = diminuto_frequency();
 
     frequency = diminuto_timer_frequency();
-    CHECKPOINT("timer frequency %llu Hz\n", frequency);
+    CHECKPOINT("timer frequency %llu Hz\n", (long long unsigned int)frequency);
 
-    CHECKPOINT("%21s %21s %21s %11s\n",
-        "requested", "claimed", "measured", "error");
+    CHECKPOINT("%21s %21s %21s %11s\n", "requested", "claimed", "measured", "error");
 
     ASSERT(diminuto_condition_init(&condition) == &condition);
     ASSERT(diminuto_timer_init_periodic(&timer, callback) == &timer);
@@ -116,9 +115,9 @@ int main(int argc, char ** argv)
             cs = (diminuto_time_duration(claimed,  &cday, &chour, &cminute, &csecond, &ctick) < 0) ? '-' : '+';
             ms = (diminuto_time_duration(measured,  &mday, &mhour, &mminute, &msecond, &mtick) < 0) ? '-' : '+';
             CHECKPOINT("%c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %10.3lf%%\n"
-                , rs, rday, rhour, rminute, rsecond, rtick
-                , cs, cday, chour, cminute, csecond, ctick
-                , ms, mday, mhour, mminute, msecond, mtick
+                , rs, rday, rhour, rminute, rsecond, (long long unsigned int)rtick
+                , cs, cday, chour, cminute, csecond, (long long unsigned int)ctick
+                , ms, mday, mhour, mminute, msecond, (long long unsigned int)mtick
                 , delta
             );
             then = now;
@@ -134,5 +133,3 @@ int main(int argc, char ** argv)
 
     EXIT();
 }
-
-

@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%d actual=%d\n", expected, actual);
+        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -103,8 +103,8 @@ int main(int argc, char ** argv)
         const char * PATH = "diminuto-unittest-observation-2";
         char * temp = (char *)0;
         FILE * fp = (FILE *)0;
-        long int expected = 0;
-        long int actual = 0;
+        uint64_t expected = 0;
+        uint64_t actual = 0;
         int rc = -1;
         struct stat status = { 0, };
         size_t count = 0;
@@ -153,8 +153,8 @@ int main(int argc, char ** argv)
         const char * PATH = "/tmp/diminuto-unittest-observation";
         char * temp = (char *)0;
         FILE * fp = (FILE *)0;
-        long int expected = 0;
-        long int actual = 0;
+        uint64_t expected = 0;
+        uint64_t actual = 0;
         int rc = -1;
         struct stat status = { 0, };
         size_t count = 0;
@@ -205,7 +205,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%d actual=%d\n", expected, actual);
+        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -253,7 +253,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%d actual=%d\n", expected, actual);
+        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -274,8 +274,8 @@ int main(int argc, char ** argv)
         const char * PATH = "/tmp/diminuto-unittest-observation-3";
         char * temp = (char *)0;
         FILE * fp = (FILE *)0;
-        long int expected = 0;
-        long int actual = 0;
+        uint64_t expected = 0;
+        uint64_t actual = 0;
         int rc = -1;
         struct stat status = { 0, };
         size_t count = 0;
@@ -330,7 +330,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%d actual=%d\n", expected, actual);
+        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -382,7 +382,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%d actual=%d\n", expected, actual);
+        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);

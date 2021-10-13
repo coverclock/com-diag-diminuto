@@ -267,7 +267,7 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
         } else if ((year == 1969) && (month == 12) && (day == 31) && (hour == 23) && (minute == 59) && (second == 59)) {
             /* Do nothing. */
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, timezone, daylightsaving);
+            DIMINUTO_LOG_DEBUG("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, (long long int)timezone, (long long int)daylightsaving);
             errno = EOVERFLOW;
             diminuto_perror("diminuto_time_epoch: overflow");
             ticks = -1;
