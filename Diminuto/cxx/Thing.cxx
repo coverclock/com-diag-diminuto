@@ -26,7 +26,7 @@ Thing::Thing(int parm) { this->data = parm; }
 
 Thing::~Thing() { }
 
-int Thing::log() { DIMINUTO_LOG_NOTICE("this=%p data=0x%x null=%p\n", this, this->data, NULL); return this->data; }
+int Thing::log() { DIMINUTO_LOG_NOTICE("this=%p data=0x%x null=%p\n", this, this->data, (void *)NULL); return this->data; }
 
 CXXCAPI int thing_log(Thing * that) { return thing_get(that)->log(); }
 

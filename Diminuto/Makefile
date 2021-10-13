@@ -927,7 +927,7 @@ install-include:
 
 .PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets sourcing threads timers unittest vintage
 
-vintage:
+vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
 
 sourcing:	vintage
@@ -1017,13 +1017,15 @@ sanity:	unittest
 	unittest-well
 	unittest-widthof
 
-mostest:
+mostest:	most
 	unittest-module
 
 privileged:
 	unittest-ping4
-	unittest-ping6 # Will only work with IPv6 routing.
 	unittest-map
+
+privileged-ipv6:
+	unittest-ping6 # Will only work with IPv6 routing.
 
 extended:
 	unittest-alarm
@@ -1060,7 +1062,7 @@ nohup:
 
 signals:
 	unittest-alarm
-	echo "nohup make hangup" 1>&2
+	echo "nohup make nohup" 1>&2
 	unittest-interrupter
 	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
 	unittest-reaper
@@ -1077,9 +1079,9 @@ threads:
 	unittest-serializedsection
 
 gnuish:
-	echo "nohup make hangup" 1>&2
+	make nohup
 	unittest-lock
-	echo "make most mostest" 1>&2
+	make most
 	unittest-module
 	unittest-mutex
 	unittest-poll4
