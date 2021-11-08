@@ -740,6 +740,9 @@ L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", 
 
 B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa", CACM, 23.2, 1980-02
 
+D. Lemire, "In C, how do you know if the dynamic allocation succeeded?",
+2021-10-27(?), <https://lemire.me/blog/2021/10/27/in-c-how-do-you-know-if-the-dynamic-allocation-succeeded/>
+
 Linux 4.4.34, Documentation/i2c/muxes/dev-interface
 
 linux/uio.h 5.4.0: UIO_MAXIOV=1024 UIO_FASTIOV=8
