@@ -54,6 +54,7 @@ static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexstream = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexroute = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexhostname = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************************************
  * GLOBALS
@@ -200,13 +201,17 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * without the system being rebooted anyway).
      */
 
-    if (hostname[0] != '\0') {
-        /* Do nothing. */
-    } else if (gethostname(hostname, sizeof(hostname)) < 0) {
-        strncpy(hostname, "localhost", sizeof(hostname));
-    } else {
-        hostname[sizeof(hostname) - 1] = '\0';
-    }
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexhostname);
+
+        if (hostname[0] != '\0') {
+            /* Do nothing. */
+        } else if (gethostname(hostname, sizeof(hostname)) < 0) {
+            strncpy(hostname, "localhost", sizeof(hostname));
+        } else {
+            hostname[sizeof(hostname) - 1] = '\0';
+        }
+
+    DIMINUTO_CRITICAL_SECTION_END;
 
     /*
      * Prepending an ISO8601 timestamp allows us to sort-merge logs from
@@ -214,10 +219,10 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * guaranteed, even on the same computer, especially with multiprocessor
      * targets. Bracketing special fields allows us to more easily filter logs.
      *
-     * yyyy-mm-ddThh:mm:ss.uuuuuuZ <pri> [pid] {tid} ...
+     * yyyy-mm-ddThh:mm:ss.uuuuuuuuuZ "hostname" <priority> [pid] {tid} ...
      */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%6.6lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)(nanosecond / 1000), hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
+    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)nanosecond, hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
