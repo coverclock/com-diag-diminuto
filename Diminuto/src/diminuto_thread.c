@@ -277,20 +277,16 @@ int diminuto_thread_yield()
 {
     int rc = DIMINUTO_THREAD_ERROR;
 
-#if defined(_GNU_SOURCE)
+#if 0
     if ((rc = pthread_yield()) != 0) {
         errno = rc;
         diminuto_perror("diminuto_thread_yield: pthread_yield");
     }
-#elif defined(_POSIX_PRIORITY_SCHEDULING)
-#   warning pthread_yield(3) not available on this platform!
-    if ((rc = sched_yield()) != 0) {
-        errno = rc;
+#else
+    if ((rc = sched_yield()) < 0) {
+        rc = errno;
         diminuto_perror("diminuto_thread_yield: sched_yield");
     }
-#else
-#   warning _POSIX_PRIORITY_SCHEDULING not defined on this platform!
-    rc = ENOSYS;
 #endif
 
     return rc;
