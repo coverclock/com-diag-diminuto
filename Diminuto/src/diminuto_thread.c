@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Thread feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -278,14 +278,19 @@ int diminuto_thread_yield()
     int rc = DIMINUTO_THREAD_ERROR;
 
 #if 0
-    if ((rc = pthread_yield()) != 0) {
-        errno = rc;
-        diminuto_perror("diminuto_thread_yield: pthread_yield");
-    }
-#else
+#   undef _POSIX_PRIORITY_SCHEDULING
+#endif
+
+#if defined(_POSIX_PRIORITY_SCHEDULING)
     if ((rc = sched_yield()) < 0) {
         rc = errno;
         diminuto_perror("diminuto_thread_yield: sched_yield");
+    }
+#else
+#   warning "pthread_yield(3) is deprecated!"
+    if ((rc = pthread_yield()) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_thread_yield: pthread_yield");
     }
 #endif
 
