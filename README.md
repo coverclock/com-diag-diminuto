@@ -409,6 +409,11 @@ For my own workflow, I installed the following tools.
     sudo apt-get install valgrind
     sudo apt-get install vim
 
+If I have to build cscope from source, as sometimes happens, I also need the
+ncurses library.
+
+    sudo apt-get install libncurses5-dev libncursesw5-dev
+
 I found valgrind not to work on my ARM Raspbian platforms, so my valgrind
 testing has been on x86_64 Ubuntu platforms. On those platforms on which
 valgrind works, I found the following command especially useful.

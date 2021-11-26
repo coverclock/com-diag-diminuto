@@ -106,10 +106,10 @@ int main(int argc, char * argv[])
 
         switch (command) {
         case OCT:
-            printf("0%llo\n", (long long unsigned int)value64);
+            printf("0%llo\n", (diminuto_llu_t)value64);
             break;
         case HEX:
-            printf("0x%llx\n", (long long unsigned int)value64);
+            printf("0x%llx\n", (diminuto_llu_t)value64);
             break;
         case NTOHS:
             printf("%u\n", ntohs(value16 = value64));
@@ -125,7 +125,7 @@ int main(int argc, char * argv[])
             break;
         case DEC:
         default:
-            printf("%llu\n", (long long unsigned int)value64);
+            printf("%llu\n", (diminuto_llu_t)value64);
             break;
         }
 

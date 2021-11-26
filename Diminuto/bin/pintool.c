@@ -260,7 +260,7 @@ int main(int argc, char * argv[])
                 error = !0;
                 break;
             }
-            if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (long long unsigned int)uvalue); }
+            if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (diminuto_llu_t)uvalue); }
             ticks = uvalue;
             ticks *= diminuto_frequency();
             ticks /= 1000000;
@@ -626,7 +626,7 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 error = !0;
             } else {
-                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (long long unsigned int)uvalue); }
+                if (debug) { fprintf(stderr, "%s -%c %llu\n", program, opt, (diminuto_llu_t)uvalue); }
                 ticks = uvalue;
                 ticks *= diminuto_frequency();
                 ticks /= 1000000;
