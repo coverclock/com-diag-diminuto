@@ -195,4 +195,14 @@ typedef uint64_t (diminuto_align8_t)[0] /* Likely pedantic warnings. */
 #endif
     ;
 
+/**
+ * This is the type you need when you want to use a "%lld" printf format.
+ */
+typedef long long signed int diminuto_lld_t;
+
+/**
+ * This is the type you need when you want to use a "%llu" printf format.
+ */
+typedef long long unsigned int diminuto_llu_t;
+
 #endif
