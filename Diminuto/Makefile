@@ -971,8 +971,6 @@ sanity:	unittest
 	unittest-heap
 	unittest-interrupter
 	unittest-ipc
-	unittest-ipc4
-	unittest-ipc6
 	unittest-ipc-endpoint
 	unittest-ipcl
 	unittest-list
