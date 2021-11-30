@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a slightly simpler interface to stream and datagram IPv4 sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -117,9 +117,14 @@ static inline int diminuto_ipc4_is_multicast(const diminuto_ipv4_t * addressp) {
  * or more IPv4 addresses in host byte order. Since a single host can map to
  * multiple addresses, this returns a list of addresses in dynamically acquired
  * memory. The last entry will be all zeros. The list must be freed by the
- * application. IMPORTANT SAFETY TIP: the underlying glibc gethostbyname()
- * function ONLY works if the application is dynamically linked; the build will
- * emit a warning to this effect.
+ * application.
+ * IMPORTANT SAFETY TIP: the underlying glibc gethostbyname(3) function ONLY
+ * works if the application is dynamically linked; the build will emit a
+ * warning to this effect if statically linked.
+ * NOTE: I have seen the underlying glibc gethostbyname(3) function fail and
+ * then succeed on subsequent tries with the same argument; it depends on the
+ * relatively vast Domain Name System (DNS) distributed infrastructure, so
+ * there are lots of points of temporary failure.
  * @param hostname points to the hostname or IP address string.
  * @return an array or NULL if no such hostname or the string is invalid.
  */
@@ -128,9 +133,14 @@ extern diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname);
 /**
  * Convert a hostname or an IPv4 address string in dot notation into an IPv4
  * address in host byte order. Since a single host can map to multiple
- * addresses, only the first address is returned. IMPORTANT SAFETY TIP: the
- * underlying glibc gethostbyname() function ONLY works if the application is
- * dynamically linked; the build will emit a warning to this effect.
+ * addresses, only the first address is returned.
+ * IMPORTANT SAFETY TIP: the underlying glibc gethostbyname() function ONLY
+ * works if the application is dynamically linked; the build will emit a
+ * warning to this effect if statically linked.
+ * NOTE: I have seen the underlying glibc gethostbyname(3) function fail and
+ * then succeed on subsequent tries with the same argumnet; it depends on the
+ * relatively vast Domain Name System (DNS) distributed infrastructure, so
+ * there are lots of points of temporary failure.
  * @param hostname points to the hostname or IP address string.
  * @return the IPv4 address or 0 if no such hostname or the string is invalid.
  */

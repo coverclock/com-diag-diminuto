@@ -333,8 +333,15 @@ extern void diminuto_unittest_flush(void);
  ******************************************************************************/
 
 /**
- * @def CHECKPOINT
+ * @def NOTIFY
  * Emit a notice message with the current translation unit file and line nunber.
+ */
+#define NOTIFY(...) \
+    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "NOTIFICATION: " __VA_ARGS__); \
+
+/**
+ * @def CHECKPOINT
+ * Emit an information message with the current translation unit file and line nunber.
  */
 #define CHECKPOINT(...) \
     DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "CHECKPOINT: " __VA_ARGS__); \

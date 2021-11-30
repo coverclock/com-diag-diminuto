@@ -85,6 +85,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+#include "com/diag/diminuto/diminuto_types.h"
 
 #if !defined(O_DIRECT)
 #   warning O_DIRECT not defined on this platform!
@@ -201,7 +202,7 @@ int main(int argc, char ** argv)
         printf("%s: blocksize %zu bytes\n", program, blocksize);
 
         modulo = ((modulo + blocksize - 1) / blocksize) * blocksize;
-        printf("%s: modulo %llu bytes\n", program, (long long unsigned int)modulo);
+        printf("%s: modulo %llu bytes\n", program, (diminuto_llu_t)modulo);
 
         if ((posix_memalign(&buffer, pagesize, blocksize) != 0) || (buffer == 0)) {
             perror("posix_memalign: ERROR");
@@ -242,7 +243,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                        fprintf(stderr, "write: progress %llu bytes\n", (long long unsigned int)total);
+                        fprintf(stderr, "write: progress %llu bytes\n", (diminuto_llu_t)total);
                     }
                     pointer += rc;
                     size -= rc;
@@ -269,7 +270,7 @@ int main(int argc, char ** argv)
             ++errors;
         }
 
-        printf("%s: written %llu bytes\n", program, (long long unsigned int)total);
+        printf("%s: written %llu bytes\n", program, (diminuto_llu_t)total);
         printf("%s: elapsed %lu seconds\n", program, end - start);
 
         fd = close(fd);
@@ -305,7 +306,7 @@ int main(int argc, char ** argv)
                 if (rc > 0) {
                     total += rc;
                     if ((total % modulo) == 0ULL) {
-                        fprintf(stderr, "read: progress %llu bytes\n", (long long unsigned int)total);
+                        fprintf(stderr, "read: progress %llu bytes\n", (diminuto_llu_t)total);
                     }
                     pointer += rc;
                     size -= rc;
@@ -331,7 +332,7 @@ int main(int argc, char ** argv)
             count = (blocksize - size) / sizeof(datum);
             while ((count--) > 0) {
                 if (*(data++) != datum) {
-                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", (long long unsigned int)(total - (blocksize - size) + ((count + 1) * sizeof(datum))));
+                    fprintf(stderr, "read: ERROR: mismatch offset %llu bytes\n", (diminuto_llu_t)(total - (blocksize - size) + ((count + 1) * sizeof(datum))));
                     ++mismatches;
                     ++errors;
                 }
@@ -351,9 +352,9 @@ int main(int argc, char ** argv)
             ++errors;
         }
 
-        printf("%s: read %llu bytes\n", program, (long long unsigned int)total);
+        printf("%s: read %llu bytes\n", program, (diminuto_llu_t)total);
         printf("%s: elapsed %lu seconds\n", program, end - start);
-        printf("%s: mismatches %llu\n", program, (long long unsigned int)mismatches);
+        printf("%s: mismatches %llu\n", program, (diminuto_llu_t)mismatches);
 
         fd = close(fd);
         if (fd < 0) {
@@ -372,7 +373,7 @@ int main(int argc, char ** argv)
         /* Do nothing. */
     }
 
-    printf("%s: errors %llu\n", program, (long long unsigned int)errors);
+    printf("%s: errors %llu\n", program, (diminuto_llu_t)errors);
 
     return (errors > 0) ? 1 : 0;
 }
