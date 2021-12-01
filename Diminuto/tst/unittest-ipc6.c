@@ -255,19 +255,20 @@ int main(int argc, char * argv[])
          * Long pause here, not sure why. strace(1) suggests it's blocked in
          * a poll(2) in the resolver waiting on a socket to "127.0.1.1", which
          * is a variant of the localhost IPv4 loopback address, trying to
-         * resolve "prairiethorn.org", my test domain. I'm seeing some long
+         * resolve "www.diag.com", my test domain. I'm seeing some long
          * delays on "copper", a RaspberryPi 3 too, that seem to be related
          * to DNS6 over the Hurricane Electric tunnel.
          */
 
-        address6 = diminuto_ipc6_address("prairiethorn.org");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "prairiethorn.org", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        address6 = diminuto_ipc6_address("www.diag.com");
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(!diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", "prairiethorn.org", buffer);
+        COMMENT("\"%s\" \"%s\"\n", "www.diag.com", buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
         COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+
         /*
          * Damned internet service providers map invalid domains to a "help"
          * page. "invalid.domain" becomes 0xd0448f32 a.k.a. 208.68.143.50
@@ -422,16 +423,16 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc6_addresses("prairiethorn.org");
+        addresses = diminuto_ipc6_addresses("www.diag.com");
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "prairiethorn.org", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "www.diag.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", "prairiethorn.org", buffer);
+            COMMENT("\"%s\" \"%s\"\n", "www.diag.com", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -649,7 +650,8 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("prairiethorn.org"), diminuto_ipc6_port("http", NULL))) >= 0);
+        NOTIFY("If the connection request times out, try it again.\n");
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 

@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
         return 3;
     }
 
-    printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, (long long unsigned int)fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
+    printf("%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n", year, month, day, hour, minute, second, (diminuto_llu_t)fraction, (offset < 0) ? '-' : '+', offsethours, offsetseconds);
 
     return 0;
 }

@@ -129,8 +129,8 @@ int main(int argc, char * argv[])
         COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)address, (long unsigned int)DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
-        address = diminuto_ipc4_address("prairiethorn.org");
-        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "prairiethorn.org", (long unsigned int)address, 0UL);
+        address = diminuto_ipc4_address("www.diag.com");
+        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)address, 0UL);
         EXPECT(address != 0UL);
 
         address = diminuto_ipc4_address("invalid.domain");
@@ -226,11 +226,11 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc4_addresses("prairiethorn.org");
+        addresses = diminuto_ipc4_addresses("www.diag.com");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "prairiethorn.org", (long unsigned int)addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -327,7 +327,8 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("prairiethorn.org"), diminuto_ipc4_port("http", NULL))) >= 0);
+        NOTIFY("If the connection request times out, try it again.\n");
+        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.diag.com"), diminuto_ipc4_port("http", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
