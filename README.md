@@ -401,13 +401,17 @@ need to be installed.
 For my own workflow, I installed the following tools.
 
     sudo apt-get install cscope
+    sudo apt-get install dnsutils
     sudo apt-get install git
     sudo apt-get install net-tools
     sudo apt-get install openssh-server
     sudo apt-get install screen
     sudo apt-get install socat
-    sudo apt-get install valgrind
     sudo apt-get install vim
+
+## valgrind
+
+    sudo apt-get install valgrind
 
 I found valgrind not to work on my ARM Raspbian platforms, so my valgrind
 testing has been on x86_64 Ubuntu platforms. On those platforms on which
