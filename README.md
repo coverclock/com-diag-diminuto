@@ -74,7 +74,7 @@ Diminuto provides:
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
 * macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
-* an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```).
+* an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```, pronounced "sexy API").
 
 Diminuto also provides many command-line utilities using the features
 of the library that are especially useful in shell scripts.
