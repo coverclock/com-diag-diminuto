@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <unistd.h>
 #include <netdb.h>
@@ -144,7 +145,7 @@ int diminuto_ipc_set_socket(int fd, int level, int option, int value)
 
 int diminuto_ipc_get_control(int fd, int option)
 {
-    int value = -2;
+    int value = 0;
 
     if (ioctl(fd, option, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_control: ioctl");
@@ -152,6 +153,20 @@ int diminuto_ipc_get_control(int fd, int option)
     }
 
     return value;
+}
+
+diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
+{
+    struct timeval value = { 0, };
+    diminuto_sticks_t ticks = -1;
+
+    if (ioctl(fd, SIOCGSTAMP, &value) < 0) {
+        diminuto_perror("diminuto_ipc_get_timestamp: ioctl");
+    } else {
+        ticks = diminuto_frequency_seconds2ticks(value.tv_sec, value.tv_usec, 1000000LL);
+    }
+
+    return ticks;
 }
 
 /*******************************************************************************

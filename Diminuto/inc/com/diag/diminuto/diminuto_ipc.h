@@ -171,6 +171,22 @@ static inline int diminuto_ipc_set_debug(int fd, int enable) {
 }
 
 /**
+ * Enable or disable the receiving of the timestamp control message.
+ * N.B. This option can only be used on sockets which can receive control
+ * messages, done via recvmsg(2).
+ * N.B. Counterintuitively, this option should DISABLED is you are going to
+ * use diminuto_ipc_get_timestamp(), which uses the SIOCGSTAMP ioctl(2) to
+ * access the timestamp of the last received packet. They are mutually
+ * exclusive.
+ * @param fd is an open socket.
+ * @param enable is !0 to enable, 0 to disable.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+static inline int diminuto_ipc_set_timestamp(int fd, int enable) {
+    return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_TIMESTAMP, !!enable);
+}
+
+/**
  * Enable or disable the linger option.
  * @param fd is an open socket of any type.
  * @param ticks is the number of ticks to linger (although
@@ -294,6 +310,17 @@ extern int diminuto_ipc_type(int fd);
  * @return the value of the option, or <0 for error.
  */
 extern int diminuto_ipc_get_control(int fd, int option);
+
+/**
+ * Get a timestamp in ticks indicating when the last packet was received.
+ * This returns failure if data has never been received.
+ * N.B. This mechanism is mutually exclusive with the
+ * diminuto_ipc_set_timestamp() socket option.
+ * N.B. This mechanism only works with datagrams (or raw sockets).
+ * @param fd is an open socket file descriptor.
+ * @return the timestamp in ticks, or <0 for error.
+ */
+extern diminuto_sticks_t diminuto_ipc_get_timestamp(int fd);
 
 /**
  * Return the number of bytes available on the input queue waiting to be

@@ -58,6 +58,11 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_set_keepalive(sock, 0);
         EXPECT(rc >= 0);
 
+        rc = diminuto_ipc_set_timestamp(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_set_timestamp(sock, 0);
+        EXPECT(rc >= 0);
+
         if (geteuid() == 0) {
             rc = diminuto_ipc_set_debug(sock, !0);
             EXPECT(rc >= 0);

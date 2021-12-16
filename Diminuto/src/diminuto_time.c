@@ -33,7 +33,7 @@ static diminuto_sticks_t diminuto_time_generic(clockid_t clock)
     if (clock_gettime(clock, &elapsed) < 0) {
         diminuto_perror("diminuto_time_generic: clock_gettime");
     } else {
-        ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_nsec, diminuto_time_frequency());
+        ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_nsec, 1000000000LL);
     }
 
     return ticks;
@@ -51,7 +51,7 @@ static diminuto_sticks_t diminuto_time_generic(int32_t clock)
     if (gettimeofday(&elapsed, (void *)0) < 0) {
         diminuto_perror("diminuto_time_generic: gettimeofday");
     } else {
-        ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_usec, diminuto_time_frequency());
+        ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_usec, 1000000LL);
     }
 
     return ticks;
