@@ -422,6 +422,56 @@ static inline ssize_t diminuto_ipc_stream_write(int fd, const void * buffer, siz
 }
 
 /*******************************************************************************
+ * MESSAGING
+ ******************************************************************************/
+
+/**
+ * Receive a message. This operation can be performed on a stream, datagram, or
+ * local (path) socket. It can be used for vector (scatter/gather) I/O,
+ * kernel control messaging, and other purposes.
+ * @param fd is an open socket descriptor.
+ * @param message points to a socket message header.
+ * @param flags is a set of bit flags.
+ * @return the number of bytes received or <0 if an error occurred.
+ */
+extern ssize_t diminuto_ipc_message_receive_generic(int fd, struct msghdr * message, int flags);
+
+/**
+ * Send a message. This operation can be performed on a stream, datagram, or
+ * local (path) socket. It can be used for vector (scatter/gather) I/O,
+ * kernel control messaging, and other purposes.
+ * @param fd is an open socket descriptor.
+ * @param message points to a socket message header.
+ * @param flags is a set of bit flags.
+ * @return the number of bytes sent or <0 if an error occurred.
+ */
+extern ssize_t diminuto_ipc_message_send_generic(int fd, const struct msghdr * message, int flags);
+
+/**
+ * Receive a message. This operation can be performed on a stream, datagram, or
+ * local (path) socket. It can be used for vector (scatter/gather) I/O,
+ * kernel control messaging, and other purposes.
+ * @param fd is an open socket descriptor.
+ * @param message points to a socket message header.
+ * @return the number of bytes received or <0 if an error occurred.
+ */
+static inline ssize_t diminuto_ipc_message_receive(int fd, struct msghdr * message) {
+    return diminuto_ipc_message_receive_generic(fd, message, 0);
+}
+
+/**
+ * Send a message. This operation can be performed on a stream, datagram, or
+ * local (path) socket. It can be used for vector (scatter/gather) I/O,
+ * kernel control messaging, and other purposes.
+ * @param fd is an open socket descriptor.
+ * @param message points to a socket message header.
+ * @return the number of bytes sent or <0 if an error occurred.
+ */
+static inline ssize_t diminuto_ipc_message_send(int fd, const struct msghdr * message) {
+    return diminuto_ipc_message_send_generic(fd, message, 0);
+}
+
+/*******************************************************************************
  * INTERFACES
  ******************************************************************************/
 

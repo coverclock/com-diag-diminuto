@@ -340,3 +340,49 @@ char ** diminuto_ipc_interfaces(void)
 
     return rp;
 }
+
+/*******************************************************************************
+ * MESSAGING
+ ******************************************************************************/
+
+ssize_t diminuto_ipc_message_receive_generic(int fd, struct msghdr * message, int flags)
+{
+    ssize_t total = -1;
+
+    if ((total = recvmsg(fd, message, flags)) > 0) {
+        /* Do nothing. */
+    } else if (total == 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
+    } else {
+        diminuto_perror("diminuto_ipc_receive: recvmsg");
+    }
+
+    return total;
+}
+
+ssize_t diminuto_ipc_message_send_generic(int fd, const struct msghdr * message, int flags)
+{
+    ssize_t total = -1;
+
+    if ((total = sendmsg(fd, message, flags)) > 0) {
+        /* Do nothing. */
+    } else if (total == 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Do nothing. */
+    } else if (errno == EAGAIN) {
+        /* Do nothing. */
+    } else if (errno == EWOULDBLOCK) {
+        /* Do nothing. */
+    } else {
+        diminuto_perror("diminuto_ipc_send: sendmsg");
+    }
+
+    return total;
+}

@@ -509,32 +509,14 @@ static inline int diminuto_ipcl_packet_consumer(const char * path) {
 }
 
 /**
- * Receive a message from a packet socket using flags.
- * @param fd is an open packet socket.
- * @param message points to the buffer into which the message is received.
- * @param flags is the sendmsg(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
- */
-extern ssize_t diminuto_ipcl_packet_receive_generic(int fd, struct msghdr * message, int flags);
-
-/**
  * Receive a message from a packet socket with no flags.
  * @param fd is an open packet socket.
  * @param message points to the buffer into which the message is received.
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_packet_receive(int fd, struct msghdr * message) {
-    return diminuto_ipcl_packet_receive_generic(fd, message, 0);
+    return diminuto_ipc_message_receive(fd, message);
 }
-
-/**
- * Send a message to a packet socket using flags.
- * @param fd is an open datagram socket.
- * @param message points to the buffer from which the message is sent.
- * @param flags is the sendmsg(2) flags to be used.
- * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
- */
-extern ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * message, int flags);
 
 /**
  * Send a message to a packet socket with no flags.
@@ -543,7 +525,7 @@ extern ssize_t diminuto_ipcl_packet_send_generic(int fd, const struct msghdr * m
  * @return the number of bytes received, 0 if the far end closed, or <0 if an error occurred (errno will be EAGAIN for non-blocking, EINTR for timer expiry).
  */
 static inline ssize_t diminuto_ipcl_packet_send(int fd, const struct msghdr * message) {
-    return diminuto_ipcl_packet_send_generic(fd, message, 0);
+    return diminuto_ipc_message_send(fd, message);
 }
 
 #endif
