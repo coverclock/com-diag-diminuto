@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_alarm.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -472,10 +473,12 @@ int main(int argc, char * argv[])
         const char MSG1[] = "Chip Overclock";
         const char MSG2[] = "Digital Aggregates Corporation";
         char buffer[64];
+        diminuto_ipv4_t localhost = 0;
         diminuto_ipv4_t address = 0;
         diminuto_port_t port = 0;
         diminuto_port_t port1 = 0;
         diminuto_port_t port2 = 0;
+        diminuto_sticks_t now = 0;
         diminuto_sticks_t timestamp1 = 0;
         diminuto_sticks_t timestamp2 = 0;
         int year = 0;
@@ -487,6 +490,9 @@ int main(int argc, char * argv[])
         diminuto_ticks_t ticks = 0;
 
         TEST();
+
+        EXPECT((localhost = diminuto_ipc4_address("localhost")) != DIMINUTO_IPC4_UNSPECIFIED);
+        EXPECT((now = diminuto_time_clock()) > 0);
 
         EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc_set_timestamp(fd1, 0) == fd1);
@@ -498,9 +504,9 @@ int main(int argc, char * argv[])
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc4_address("localhost"), port2)) == sizeof(MSG1));
+        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), localhost, port2)) == sizeof(MSG1));
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
-        EXPECT(address == diminuto_ipc4_address("localhost"));
+        EXPECT(address == localhost);
         EXPECT(port == port1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
@@ -509,9 +515,9 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_time_zulu(timestamp2, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp2=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
 
-        EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc4_address("localhost"), port1)) == sizeof(MSG2));
+        EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), localhost, port1)) == sizeof(MSG2));
         EXPECT((diminuto_ipc4_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
-        EXPECT(address == diminuto_ipc4_address("localhost"));
+        EXPECT(address == localhost);
         EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
@@ -520,9 +526,9 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_time_zulu(timestamp1, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp1=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
 
-        EXPECT(timestamp1 > 0);
-        EXPECT(timestamp2 > 0);
-        EXPECT(timestamp1 >= timestamp2);
+        EXPECT(timestamp1 > now);
+        EXPECT(timestamp2 > now);
+        EXPECT(timestamp1 > timestamp2);
         EXPECT((timestamp1 - timestamp2) <= diminuto_frequency());
 
         EXPECT(diminuto_ipc4_close(fd1) >= 0);
@@ -531,20 +537,27 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-/*TODO*/
     {
         int fd1;
         int fd2;
         const char MSG1[] = "Chip Overclock";
         const char MSG2[] = "Digital Aggregates Corporation";
         char buffer[64];
+        diminuto_ipv4_t localhost = 0;
         diminuto_ipv4_t address = 0;
+        diminuto_ipv4_t address1 = 0;
+        diminuto_ipv4_t address2 = 0;
         diminuto_port_t port = 0;
         diminuto_port_t port1 = 0;
         diminuto_port_t port2 = 0;
-        union { struct cmsghdr alignment; char data[CMSG_SPACE(sizeof(int))]; } control;
+        struct sockaddr_in socketaddress;
+        struct msghdr message;
+        struct iovec vector;
+        union { struct cmsghdr header; char data[CMSG_SPACE(1024)]; } control;
         struct cmsghdr * cp = (struct cmsghdr *)0;
         ssize_t length = -1;
+        struct timeval timestamp;
+        diminuto_sticks_t now = 0;
         diminuto_sticks_t timestamp1 = 0;
         diminuto_sticks_t timestamp2 = 0;
         int year = 0;
@@ -557,42 +570,150 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        EXPECT((localhost = diminuto_ipc4_address("localhost")) != DIMINUTO_IPC4_UNSPECIFIED);
+        EXPECT((now = diminuto_time_clock()) > 0);
+
         EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc_set_timestamp(fd1, !0) == fd1);
-        EXPECT(diminuto_ipc4_nearend(fd1, (diminuto_ipv4_t *)0, &port1) >= 0);
+        EXPECT(diminuto_ipc4_nearend(fd1, &address1, &port1) >= 0);
 
         EXPECT((fd2 = diminuto_ipc4_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipc_set_timestamp(fd2, 0) == fd2);
-        EXPECT(diminuto_ipc4_nearend(fd2, (diminuto_ipv4_t *)0, &port2) >= 0);
+        EXPECT(diminuto_ipc_set_timestamp(fd2, !0) == fd2);
+        EXPECT(diminuto_ipc4_nearend(fd2, &address2, &port2) >= 0);
 
         /* This only works because the kernel buffers socket data. */
 
-        EXPECT((diminuto_ipc4_datagram_send(fd1, MSG1, sizeof(MSG1), diminuto_ipc4_address("localhost"), port2)) == sizeof(MSG1));
-        EXPECT((diminuto_ipc4_datagram_receive_generic(fd2, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG1));
-        EXPECT(address == diminuto_ipc4_address("localhost"));
+        /* This is either really cool or really crazy, not sure. */
+
+        memset(&message, 0, sizeof(message));
+        memset(&socketaddress, 0, sizeof(socketaddress));
+        memset(&vector, 0, sizeof(vector));
+        memset(&control, 0, sizeof(control));
+
+        socketaddress.sin_family = AF_INET;
+        port = htons(port2);
+        socketaddress.sin_port = port;
+        address = htonl(localhost);
+        memcpy(&socketaddress.sin_addr.s_addr, &address, sizeof(address));
+
+        vector.iov_base = (void *)MSG1;
+        vector.iov_len = sizeof(MSG1);
+
+        message.msg_name = &socketaddress;
+        message.msg_namelen = sizeof(socketaddress);
+        message.msg_iov = &vector;
+        message.msg_iovlen = 1;
+        message.msg_control = (void *)0;
+        message.msg_controllen = 0;
+
+        EXPECT((diminuto_ipc_message_send(fd1, &message)) == sizeof(MSG1));
+
+        memset(&message, 0, sizeof(message));
+        memset(&socketaddress, 0, sizeof(socketaddress));
+        memset(&vector, 0, sizeof(vector));
+        memset(&control, 0, sizeof(control));
+
+        vector.iov_base = buffer;
+        vector.iov_len = sizeof(buffer);
+
+        message.msg_name = &socketaddress;
+        message.msg_namelen = sizeof(socketaddress);
+        message.msg_iov = &vector;
+        message.msg_iovlen = 1;
+        message.msg_control = &control;
+        message.msg_controllen = sizeof(control);
+
+        EXPECT((diminuto_ipc_message_receive(fd2, &message)) == sizeof(MSG1));
+
+        memcpy(&address, &socketaddress.sin_addr.s_addr, sizeof(address));
+        address = ntohl(address);
+        EXPECT(address == localhost);
+        port = socketaddress.sin_port;
+        port = ntohs(port);
         EXPECT(port == port1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
+        for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
+            CHECKPOINT("control2 level=%d type=%d len=%lu\n", cp->cmsg_level, cp->cmsg_type, cp->cmsg_len);
+            if (cp->cmsg_level != SOL_SOCKET) { continue; }
+            if (cp->cmsg_type != SO_TIMESTAMP) { continue; }
+            if (cp->cmsg_len != CMSG_LEN(sizeof(timestamp))) { continue; }
+            memcpy(&timestamp, CMSG_DATA(cp), sizeof(timestamp));
+            timestamp2 = diminuto_frequency_seconds2ticks(timestamp.tv_sec, timestamp.tv_usec, 1000000LL);
+            break;
+        }
+        ASSERT(cp != (struct cmsghdr *)0);
 
-        EXPECT((timestamp2 = diminuto_ipc_get_timestamp(fd2)) >= 0);
         CHECKPOINT("timestamp2=%lld\n", (diminuto_lld_t)timestamp2);
         EXPECT(diminuto_time_zulu(timestamp2, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp2=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
 
-        EXPECT((diminuto_ipc4_datagram_send(fd2, MSG2, sizeof(MSG2), diminuto_ipc4_address("localhost"), port1)) == sizeof(MSG2));
-        EXPECT((diminuto_ipc4_datagram_receive_generic(fd1, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG2));
-        EXPECT(address == diminuto_ipc4_address("localhost"));
+        memset(&message, 0, sizeof(message));
+        memset(&socketaddress, 0, sizeof(socketaddress));
+        memset(&vector, 0, sizeof(vector));
+        memset(&control, 0, sizeof(control));
+
+        socketaddress.sin_family = AF_INET;
+        port = htons(port1);
+        socketaddress.sin_port = port;
+        address = htonl(localhost);
+        memcpy(&socketaddress.sin_addr.s_addr, &address, sizeof(address));
+
+        vector.iov_base = (void *)MSG2;
+        vector.iov_len = sizeof(MSG2);
+
+        message.msg_name = &socketaddress;
+        message.msg_namelen = sizeof(socketaddress);
+        message.msg_iov = &vector;
+        message.msg_iovlen = 1;
+        message.msg_control = (void *)0;
+        message.msg_controllen = 0;
+
+        EXPECT((diminuto_ipc_message_send(fd2, &message)) == sizeof(MSG2));
+
+        memset(&message, 0, sizeof(message));
+        memset(&socketaddress, 0, sizeof(socketaddress));
+        memset(&vector, 0, sizeof(vector));
+        memset(&control, 0, sizeof(control));
+
+        vector.iov_base = buffer;
+        vector.iov_len = sizeof(buffer);
+
+        message.msg_name = &socketaddress;
+        message.msg_namelen = sizeof(socketaddress);
+        message.msg_iov = &vector;
+        message.msg_iovlen = 1;
+        message.msg_control = &control;
+        message.msg_controllen = sizeof(control);
+
+        EXPECT((diminuto_ipc_message_receive(fd1, &message)) == sizeof(MSG2));
+
+        memcpy(&address, &socketaddress.sin_addr.s_addr, sizeof(address));
+        address = ntohl(address);
+        EXPECT(address == localhost);
+        port = socketaddress.sin_port;
+        port = ntohs(port);
         EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
-        EXPECT((timestamp1 = diminuto_ipc_get_timestamp(fd1)) >= 0);
+        for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
+            CHECKPOINT("control1 level=%d type=%d len=%lu\n", cp->cmsg_level, cp->cmsg_type, cp->cmsg_len);
+            if (cp->cmsg_level != SOL_SOCKET) { continue; }
+            if (cp->cmsg_type != SO_TIMESTAMP) { continue; }
+            if (cp->cmsg_len != CMSG_LEN(sizeof(timestamp))) { continue; }
+            memcpy(&timestamp, CMSG_DATA(cp), sizeof(timestamp));
+            timestamp1 = diminuto_frequency_seconds2ticks(timestamp.tv_sec, timestamp.tv_usec, 1000000LL);
+            break;
+        }
+        ASSERT(cp != (struct cmsghdr *)0);
+
         CHECKPOINT("timestamp1=%lld\n", (diminuto_lld_t)timestamp1);
         EXPECT(diminuto_time_zulu(timestamp1, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp1=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
 
-        EXPECT(timestamp1 > 0);
-        EXPECT(timestamp2 > 0);
-        EXPECT(timestamp1 >= timestamp2);
+        EXPECT(timestamp1 > now);
+        EXPECT(timestamp2 > now);
+        EXPECT(timestamp1 > timestamp2);
         EXPECT((timestamp1 - timestamp2) <= diminuto_frequency());
 
         EXPECT(diminuto_ipc4_close(fd1) >= 0);
