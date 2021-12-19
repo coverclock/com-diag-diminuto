@@ -690,52 +690,6 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-/*TODO*/
-    {
-        int fd;
-        const char MSG[] = "Chip Overclock";
-        char buffer[sizeof(MSG) * 2];
-        diminuto_ipv6_t server;
-        diminuto_port_t rendezvous = TEST_PORT;
-        diminuto_ipv6_t address = TEST_INIT;
-        diminuto_port_t port = TEST_PORT;
-        diminuto_sticks_t timestamp = 0;
-        int year = 0;
-        int month = 0;
-        int day = 0;
-        int hour = 0;
-        int minute = 0;
-        int second = 0;
-        diminuto_ticks_t ticks = 0;
-
-        TEST();
-
-        server = diminuto_ipc6_address("::1");
-        EXPECT(!diminuto_ipc6_is_unspecified(&server));
-        EXPECT((fd = diminuto_ipc6_datagram_peer(0)) >= 0);
-        EXPECT(diminuto_ipc_set_timestamp(fd, 0) == fd);
-        EXPECT(diminuto_ipc6_nearend(fd, (diminuto_ipv6_t *)0, &rendezvous) == 0);
-        EXPECT(rendezvous != TEST_PORT);
-        EXPECT(rendezvous != 0);
-
-        /* This only works because the kernel buffers socket data. */
-
-        EXPECT((diminuto_ipc6_datagram_send(fd, MSG, sizeof(MSG), server, rendezvous)) == sizeof(MSG));
-        EXPECT((diminuto_ipc6_datagram_receive_generic(fd, buffer, sizeof(buffer), &address, &port, 0)) == sizeof(MSG));
-        EXPECT(strcmp(buffer, MSG) == 0);
-        ADVISE(diminuto_ipc6_compare(&address, &server) == 0);
-        EXPECT(port == rendezvous);
-
-        EXPECT((timestamp = diminuto_ipc_get_timestamp(fd)) >= 0);
-        CHECKPOINT("timestamp=%lld\n", (diminuto_lld_t)timestamp);
-        EXPECT(diminuto_time_zulu(timestamp, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
-        CHECKPOINT("timestamp=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
-
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
-
-        STATUS();
-    }
-
     {
         int fd;
 
