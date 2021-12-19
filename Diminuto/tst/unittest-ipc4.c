@@ -529,7 +529,7 @@ int main(int argc, char * argv[])
         EXPECT(timestamp1 > now);
         EXPECT(timestamp2 > now);
         EXPECT(timestamp1 > timestamp2);
-        EXPECT((timestamp1 - timestamp2) <= diminuto_frequency());
+        EXPECT((timestamp1 - timestamp2) < diminuto_frequency());
 
         EXPECT(diminuto_ipc4_close(fd1) >= 0);
         EXPECT(diminuto_ipc4_close(fd2) >= 0);
@@ -714,7 +714,7 @@ int main(int argc, char * argv[])
         EXPECT(timestamp1 > now);
         EXPECT(timestamp2 > now);
         EXPECT(timestamp1 > timestamp2);
-        EXPECT((timestamp1 - timestamp2) <= diminuto_frequency());
+        EXPECT((timestamp1 - timestamp2) < diminuto_frequency());
 
         EXPECT(diminuto_ipc4_close(fd1) >= 0);
         EXPECT(diminuto_ipc4_close(fd2) >= 0);
