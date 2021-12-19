@@ -553,7 +553,7 @@ int main(int argc, char * argv[])
         struct sockaddr_in socketaddress;
         struct msghdr message;
         struct iovec vector;
-        union { struct cmsghdr header; char data[CMSG_SPACE(1024)]; } control;
+        union { struct cmsghdr header; char data[CMSG_SPACE(sizeof(struct timeval))]; } control;
         struct cmsghdr * cp = (struct cmsghdr *)0;
         ssize_t length = -1;
         struct timeval timestamp;
