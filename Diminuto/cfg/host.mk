@@ -20,6 +20,9 @@ endif
 ifeq ($(MACHINE),armv7l)
 ARCH				:=	arm
 endif
+ifeq ($(MACHINE),aarch64)
+ARCH				:=	arm
+endif
 OS					:=	linux
 TOOLCHAIN			:=
 KERNELCHAIN			:=
