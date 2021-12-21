@@ -1,4 +1,5 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -8,6 +9,7 @@
 
 # stampede: Nvidia Jetson TK1 running Ubuntu 14.04.
 
+MACHINE				:=	arm
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-gnueabihf-

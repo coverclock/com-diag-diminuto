@@ -1,4 +1,5 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -8,6 +9,7 @@
 
 # dumpling: Raspberry Pi Version B running buildroot with uClibc.
 
+MACHINE				:=	arm
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-buildroot-$(OS)-uclibcgnueabi-

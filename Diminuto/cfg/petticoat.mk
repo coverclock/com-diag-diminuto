@@ -1,4 +1,5 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -20,6 +21,7 @@
 # ChrUbuntu, which runs Ubuntu under a chroot on the Acer. That was sufficient
 # for my needs, but not the more general solution I would have hoped for.
 
+MACHINE				:=	x86_64
 ARCH				:=	x86_64
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-cros-$(OS)-gnu-

@@ -1,4 +1,5 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -8,6 +9,7 @@
 
 # host1204: Dell Inspiron 530 x86 running Ubuntu 12.04 LTS.
 
+MACHINE				:=	x86
 ARCH				:=	x86
 OS					:=	linux
 TOOLCHAIN			:=

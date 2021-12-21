@@ -1,4 +1,5 @@
-# Copyright 2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2014-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -13,6 +14,7 @@
 # trying to figure that one out. LD_LIBRARY_PATH seemed to have no effect
 # despite the Cygwin documentation.
 
+MACHINE				:=	x86_64
 ARCH				:=	x86_64
 OS					:=	cygwin
 TOOLCHAIN			:=

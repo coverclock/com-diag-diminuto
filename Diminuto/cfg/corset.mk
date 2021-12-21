@@ -1,4 +1,5 @@
-# Copyright 2008-2014 Digital Aggregates Corporation
+# vi: set ts=4 shiftwidth=4:
+# Copyright 2008-2021 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -8,6 +9,7 @@
 
 # corset: CyanogenMod 10.2 on a Nexus-7 running Android/bionic.
 
+MACHINE				:=	arm
 ARCH				:=	arm
 OS					:=	linux
 TOOLCHAIN			:=	$(ARCH)-$(OS)-androideabi-
