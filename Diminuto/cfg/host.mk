@@ -6,11 +6,39 @@
 # http://www.diag.com/navigation/downloads/Diminuto.html
 # "Chip Overclock" is a registered trademark.
 # "Digital Aggregates Corporation" is a registered trademark.
-
+#
 # host: most Linux/GNU systems hosting the native toolchain.
+#
+# Adapted from kernel.org:linux-5.15.11/scripts/subarch.include .
+#
+# Below is a list of directories from kernel.org:linux-5.15.11/arch .
+#
+#   alpha
+#   arc
+#   arm
+#   arm64
+#   csky
+#   h8300
+#   hexagon
+#   ia64
+#   m68k
+#   microblaze
+#   mips
+#   nds32
+#   nios2
+#   openrisc
+#   parisc
+#   powerpc
+#   riscv
+#   s390
+#   sh
+#   sparc
+#   um
+#   x86
+#   xtensa
 
 MACHINE				:=	$(shell uname -m)
-include cfg/arch.mk
+ARCH				:=	$(shell uname -m | sed -e 's/i.86/x86/' -e 's/x86_64/x86/' -e 's/sun4u/sparc64/' -e 's/arm.*/arm/' -e 's/sa110/arm/' -e 's/s390x/s390/' -e 's/ppc.*/powerpc/' -e 's/mips.*/mips/' -e 's/sh[234].*/sh/' -e 's/aarch64.*/arm64/' -e 's/riscv.*/riscv/')
 OS					:=	$(shell uname -o)
 TOOLCHAIN			:=
 KERNELCHAIN			:=
