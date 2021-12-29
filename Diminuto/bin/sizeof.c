@@ -113,6 +113,9 @@ int main(void)
     printissigned(ssize_t);
     printsignof(pid_t);
     printsignof(time_t);
+#if defined(_TIME_BITS)
+    printvalueof(_TIME_BITS)
+#endif
     printsignof(dev_t);
     printsignof(ino_t);
     printsignof(mode_t);
