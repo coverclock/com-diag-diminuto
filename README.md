@@ -30,10 +30,6 @@ Wheat Ridge CO 80033 USA
 <http://www.diag.com>    
 <mailto:coverclock@diag.com>    
 
-# Thanks
-
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
-
 # Abstract
 
 Diminuto ("tiny") is an open source library of systems programming
