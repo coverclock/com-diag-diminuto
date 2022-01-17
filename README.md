@@ -5,7 +5,7 @@ A Linux/GNU systems programming library in C.
 
 # Copyright
 
-Copyright 2008-2021 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2022 by the Digital Aggregates Corporation, Colorado, USA.
 
 This software is an original work of its author.
 

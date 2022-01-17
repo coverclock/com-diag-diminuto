@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the File System (FS) feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -24,6 +24,7 @@
 #include <dirent.h>
 #include <limits.h>
 #include <errno.h>
+#include <alloca.h>
 
 static int Debug = 0;
 
@@ -286,11 +287,14 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
             break;
         } else if (length <= 0) {
             break;
+        } else {
+            length += 1; /* Including terminating NUL. */
         }
 
         if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: path=\"%s\"\n", path); }
 
-        source = strdup(path);
+        source = (char *)alloca(length); /* No failure return. */
+        strncpy(source, path, length);
 
         if (all) {
             /* Do nothing. */
@@ -304,7 +308,8 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
 
         if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: source=\"%s\"\n", source); }
 
-        sink = (char *)calloc(length + 1, sizeof(char));
+        sink = (char *)alloca(length);
+        memset(sink, 0, length);
 
         target = source;
 
@@ -327,14 +332,6 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
         }
 
     } while (0);
-
-    if (source != (char *)0) {
-        free(source);
-    }
-
-    if (sink != (char *)0) {
-        free(sink);
-    }
 
     return rc;
 }

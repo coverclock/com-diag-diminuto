@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2019-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2019-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Observation feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <alloca.h>
 
 static const char SUFFIX[] = "-" "XXXXXX";
 
@@ -121,14 +122,11 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
             diminuto_perror("diminuto_observation_commit: strlen");
             break;
         }
+        length += 1; /* Include terminating NUL. */
 
-        path = strdup(*tempp);
-        if (path == (char *)0) {
-            diminuto_perror("diminuto_observation_commit: strdup");
-            break;
-        }
-
-        path[length - sizeof(SUFFIX) + 1] = '\0';
+        path = (char *)alloca(length); /* No error return. */
+        strncpy(path, *tempp, length);
+        path[length - sizeof(SUFFIX)] = '\0'; /* Truncate suffix. */
 
         rc = fclose(fp);
         if (rc != 0) {
@@ -156,10 +154,6 @@ FILE * diminuto_observation_commit(FILE * fp, char ** tempp)
 
     } while (0);
 
-    if (path != (char *)0) {
-        free(path);
-    }
-
     return fp;
 }
 
@@ -186,14 +180,10 @@ FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
             diminuto_perror("diminuto_observation_checkpoint: strlen");
             break;
         }
+        length += 1; /* Include trailing NUL. */
 
-        path = malloc(length - sizeof(SUFFIX) + sizeof(TIMESTAMP) + 1);
-        if (path == (char *)0) {
-            diminuto_perror("diminuto_observation_checkpoint: malloc");
-            break;
-        }
-
-        strncpy(path, *tempp, length - sizeof(SUFFIX) + 1);
+        path = (char *)alloca(length - sizeof(SUFFIX) + sizeof(TIMESTAMP)); /* No error return. */
+        strncpy(path, *tempp, length - sizeof(SUFFIX));
 
         now = diminuto_time_clock();
         if (now < 0) {
@@ -207,7 +197,7 @@ FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
 
         ticks = diminuto_frequency_ticks2units(ticks, 1000000);
 
-        snprintf(&(path[length - sizeof(SUFFIX) + 1]), sizeof(TIMESTAMP), "-%04d%02d%02dT%02d%02d%02dZ%06lld", year, month, day, hour, minute, second, (diminuto_lld_t)ticks);
+        snprintf(&(path[length - sizeof(SUFFIX)]), sizeof(TIMESTAMP), "-%04d%02d%02dT%02d%02d%02dZ%06lld", year, month, day, hour, minute, second, (diminuto_lld_t)ticks);
 
         rc = fflush(fp);
         if (rc != 0) {
@@ -224,10 +214,6 @@ FILE * diminuto_observation_checkpoint(FILE * fp, char ** tempp)
         result = fp;
 
     } while (0);
-
-    if (path != (char *)0) {
-        free(path);
-    }
 
     return result;
 }

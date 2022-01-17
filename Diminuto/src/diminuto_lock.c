@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Lock feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <alloca.h>
 
 int diminuto_lock_f(const char * file, const char * suffix, pid_t pid, unsigned int type)
 {
@@ -36,11 +37,7 @@ int diminuto_lock_f(const char * file, const char * suffix, pid_t pid, unsigned 
 
     do {
 
-        path = (char *)malloc(strlen(file) + strlen(suffix) + 1);
-        if (path == (char *)0) {
-            diminuto_perror("diminuto_lock_f: malloc");
-            break;
-        }
+        path = (char *)alloca(strlen(file) + strlen(suffix) + 1 /* Include terminating NUL. */); /* No failure return. */
 
         strcpy(path, file);
         strcat(path, suffix);
@@ -108,8 +105,6 @@ int diminuto_lock_f(const char * file, const char * suffix, pid_t pid, unsigned 
 
     if (path != (char *)0) {
         (void)unlink(path);
-        free(path);
-        path = (char *)0;
     }
 
     return rc;
