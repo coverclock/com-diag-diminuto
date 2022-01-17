@@ -409,16 +409,19 @@ For my own workflow, I installed the following tools.
 
     sudo apt-get install valgrind
 
+I found valgrind not to work on my ARM Raspbian (a.k.a. Raspberry Pi OS)
+platforms, so my valgrind testing has been on Ubuntu on either x86_64
+platforms or the ARM64 version that runs on the Raspberry Pi. On those
+platforms, I found the following command especially useful.
+
+    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
+
+## cscope
+
 If I have to build cscope from source, as sometimes happens, I also need the
 ncurses library.
 
     sudo apt-get install libncurses5-dev libncursesw5-dev
-
-I found valgrind not to work on my ARM Raspbian platforms, so my valgrind
-testing has been on x86_64 Ubuntu platforms. On those platforms on which
-valgrind works, I found the following command especially useful.
-
-    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
 
 I have found that cscope 15.9 on Ubuntu 21.10 "impish" on the Raspberry Pi 4B
 core dumps with a double free exception under some circumstances. Even so, I
