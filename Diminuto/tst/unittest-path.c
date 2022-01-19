@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
 
     result = diminuto_path_find("PATH", "head");
     ASSERT(result != (char *)0);
-    EXPECT((strcmp(result, "/usr/bin/head") == 0) || (strcmp(result, "/system/xbin/head") == 0));
+    EXPECT((strcmp(result, "/bin/head") == 0) || (strcmp(result, "/usr/bin/head") == 0) || (strcmp(result, "/system/xbin/head") == 0));
     free(result);
 
     /*
