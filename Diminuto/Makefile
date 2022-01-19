@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2021 Digital Aggregates Corporation
+# Copyright 2008-2022 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -20,7 +20,7 @@ default:	all
 
 ########## Metadata
 
-COPYRIGHT			:=	2008-2021 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2022 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	73# API changes that may require that applications be modified.
-MINOR				:=	6# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	7# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.

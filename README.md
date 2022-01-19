@@ -5,7 +5,7 @@ A Linux/GNU systems programming library in C.
 
 # Copyright
 
-Copyright 2008-2021 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2022 by the Digital Aggregates Corporation, Colorado, USA.
 
 This software is an original work of its author.
 
@@ -29,10 +29,6 @@ Digital Aggregates Corporation
 Wheat Ridge CO 80033 USA  
 <http://www.diag.com>    
 <mailto:coverclock@diag.com>    
-
-# Thanks
-
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/coverclock)
 
 # Abstract
 
@@ -106,7 +102,8 @@ than create a dependency for the entire library. Finally, over the years,
 bits and pieces of Diminuto have found themselves incorporated into a
 number of commercial products to which I have contributed, such as:
 satellite communications systems, cellular base station routers,
-in-flight entertainment systems, and special purpose Android platforms.
+in-flight entertainment systems for business aircraft, and special purpose
+Android platforms.
 
 # Platforms
 
@@ -413,16 +410,19 @@ For my own workflow, I installed the following tools.
 
     sudo apt-get install valgrind
 
+I found valgrind not to work on my ARM Raspbian (a.k.a. Raspberry Pi OS)
+platforms, so my valgrind testing has been on Ubuntu on either x86_64
+platforms or the ARM64 version that runs on the Raspberry Pi. On those
+platforms, I found the following command especially useful.
+
+    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
+
+## cscope
+
 If I have to build cscope from source, as sometimes happens, I also need the
 ncurses library.
 
     sudo apt-get install libncurses5-dev libncursesw5-dev
-
-I found valgrind not to work on my ARM Raspbian platforms, so my valgrind
-testing has been on x86_64 Ubuntu platforms. On those platforms on which
-valgrind works, I found the following command especially useful.
-
-    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
 
 I have found that cscope 15.9 on Ubuntu 21.10 "impish" on the Raspberry Pi 4B
 core dumps with a double free exception under some circumstances. Even so, I
