@@ -63,7 +63,7 @@ TARGET				:=	host# Build for the current host.
 # systems like Ubuntu and Raspbian require two slashes; the very same version
 # of make running under GNU bash 4.4.18 on Microsoft's Fedora-like distro
 # Common Base Linux (CBL) Mariner 1.0 requires one backslash. This can be
-# overridden in the host file.
+# overridden in the host file or on the make command line.
 
 BACKSLASHES			:= 2
 #BACKSLASHES		:= 1
