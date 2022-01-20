@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	73# API changes that may require that applications be modified.
 MINOR				:=	7# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -51,14 +51,27 @@ TARGET				:=	host# Build for the current host.
 #TARGET				:=	dumpling# Build for the Raspberry Pi Version B running buildroot/uClibc.
 #TARGET				:=	host1204# Build for the x86 running Ubuntu 12.04 LTS.
 #TARGET				:=	notgnu# Build for a host that is not GNU-based (testing).
-#TARGET				:=	orchard# Mac OS X 10.9.5 running on a Mac Mini "late 2012".
+#TARGET				:=	orchard# Build for Mac OS X 10.9.5 running on a Mac Mini "late 2012".
 #TARGET				:=	petticoat# Build inside cros_sdk chroot for the x86-generic running Chromium OS.
-#TARGET				:=	schoolmarm# Windows 8.1 Pro running Cygwin 2.850.
+#TARGET				:=	schoolmarm# Build for Windows 8.1 Pro running Cygwin 2.850.
 #TARGET				:=	stampede# Build for the Nvidia Jetson TK1 running Ubuntu 14.04.
+
+# On some platforms, makefiles require one backslash to escape a double quote;
+# on other platforms, two backslashes are required. There doesn't seem to be
+# any rhyme or reason for this, since the version of make may be the same on
+# both. Example: GNU Make 4.2.1 running under GNU bash 5.0.17 on Debian-based
+# systems like Ubuntu and Raspbian require two slashes; the very same version
+# of make running under GNU bash 4.4.18 on Microsoft's Fedora-like distro
+# Common Base Linux (CBL) Mariner 1.0 requires one backslash. This can be
+# overridden in the host file.
+
+BACKSLASHES			:= 2
+#BACKSLASHES		:= 1
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
 # sources, toolchains, etc.
+
 HOME_DIR			:=	$(HOME)/Projects
 
 ########## Directories
@@ -175,7 +188,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
-DISTROVERSION		:=	$(shell lsb_release -d | sed 's/^.*:\t*//') $(shell lsb_release -c | sed 's/^.*:\t*//')
+DISTROVERSION		:=	$(shell grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
 
 ########## Build Artifacts
 
@@ -440,12 +453,10 @@ $(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBX_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 # Avoid using the built-in C macros __DATE__ and __TIME__, and consider using the
 # faketime(1) utility to spoof the system time during builds.
 
-SLASHES=2
-
-ifeq ($(SLASHES), 1)
+ifeq ($(BACKSLASHES), 1)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
-	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
+	@echo MAKE_VERSION=$(MAKE_VERSION) BACKSLASHES=$(BACKSLASHES)
 	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
@@ -525,10 +536,10 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 
 endif
 
-ifeq ($(SLASHES), 2)
+ifeq ($(BACKSLASHES), 2)
 
 $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
-	@echo MAKE_VERSION=$(MAKE_VERSION) SLASHES=$(SLASHES)
+	@echo MAKE_VERSION=$(MAKE_VERSION) BACKSLASHES=$(BACKSLASHES)
 	D=`dirname $@`; mkdir -p $$D
 	echo '/* GENERATED FILE! DO NOT EDIT! */' > $@
 	echo '#include "com/diag/$(PROJECT)/$(PROJECT)_release.h"' >> $@
