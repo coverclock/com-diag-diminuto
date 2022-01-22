@@ -65,8 +65,7 @@ TARGET				:=	host# Build for the current host.
 # Common Base Linux (CBL) Mariner 1.0 requires one backslash. This can be
 # overridden in the host file or on the make command line.
 
-BACKSLASHES			:= 2
-#BACKSLASHES		:= 1
+BACKSLASHES			:= 1
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
