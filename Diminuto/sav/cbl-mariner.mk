@@ -65,8 +65,7 @@ TARGET				:=	host# Build for the current host.
 # Common Base Linux (CBL) Mariner 1.0 requires one backslash. This can be
 # overridden in the host file or on the make command line.
 
-BACKSLASHES			:= 2
-#BACKSLASHES		:= 1
+BACKSLASHES			:= 1
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
@@ -188,7 +187,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
-DISTROVERSION		:=	$(shell test -r /etc/os-release && grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell test -r /etc/os-release && grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
+DISTROVERSION		:=	$(shell grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
 
 ########## Build Artifacts
 
