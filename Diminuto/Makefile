@@ -188,7 +188,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
-DISTROVERSION		:=	$(shell grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
+DISTROVERSION		:=	$(shell test -r /etc/os-release && grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell test -r /etc/os-release && grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
 
 ########## Build Artifacts
 
