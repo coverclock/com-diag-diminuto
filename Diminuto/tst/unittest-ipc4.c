@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the IPC feature for IPv4.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -35,9 +35,10 @@ static const size_t TOTAL = 1024 * 1024 * 100;
 int main(int argc, char * argv[])
 {
     diminuto_ticks_t hertz;
-    const char * Address = 0;
-    const char * Interface = 0;
-    const char * Port = 0;
+    const char * Address = (const char *)0;
+    const char * Interface = (const char *)0;
+    const char * Port = (const char *)0;
+    const char * Host = (const char *)0;
     extern char * optarg;
     extern int optind;
     extern int opterr;
@@ -46,11 +47,15 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
-    while ((opt = getopt(argc, argv, "a:i:p:")) >= 0) {
+    while ((opt = getopt(argc, argv, "a:h:i:p:")) >= 0) {
         switch (opt) {
         case 'a':
             /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
             Address = optarg;
+            break;
+        case 'h':
+            /* e.g. "www.diag.com" */
+            Host = optarg;
             break;
         case 'i':
             /* e.g. "eth0" */
@@ -134,9 +139,11 @@ int main(int argc, char * argv[])
         COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)address, 0UL);
         EXPECT(address != 0UL);
 
-        address = diminuto_ipc4_address("diag.ddns.net");
-        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "diag.ddns.net", (long unsigned int)address, 0UL);
-        EXPECT(address != 0UL);
+        if (Host != (const char *)0) {
+            address = diminuto_ipc4_address(Host);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)address, 0UL);
+            EXPECT(address != 0UL);
+        }
 
         address = diminuto_ipc4_address("invalid.domain");
         COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "invalid.domain", (long unsigned int)address, 0UL);
@@ -231,18 +238,22 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc4_addresses("diag.ddns.net");
-        ASSERT(addresses != (diminuto_ipv4_t *)0);
+        if (Host != (const char *)0) {
 
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "diag.ddns.net", (long unsigned int)addresses[ii], 0UL);
-            if (addresses[ii] == 0UL) {
-                break;
+            addresses = diminuto_ipc4_addresses(Host);
+            ASSERT(addresses != (diminuto_ipv4_t *)0);
+
+            for (ii = 0; ii < LIMIT; ++ii) {
+                COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)addresses[ii], 0UL);
+                if (addresses[ii] == 0UL) {
+                    break;
+                }
             }
-        }
-        EXPECT(ii == 1);
+            EXPECT(ii == 1);
 
-        free(addresses);
+            free(addresses);
+
+        }
 
         STATUS();
     }
@@ -340,14 +351,25 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        NOTIFY("If the connection request times out, try it again.\n");
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("diag.ddns.net"), diminuto_ipc4_port("https", NULL))) >= 0);
-        EXPECT(diminuto_ipc_type(fd) == AF_INET);
-        EXPECT(diminuto_ipc4_close(fd) >= 0);
-
         EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
+
+        STATUS();
+
+    }
+
+    {
+        int fd;
+
+        TEST();
+
+        if (Host != (const char *)0) {
+            NOTIFY("If the connection request times out, try it again.\n");
+            EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address(Host), diminuto_ipc4_port("https", NULL))) >= 0);
+            EXPECT(diminuto_ipc_type(fd) == AF_INET);
+            EXPECT(diminuto_ipc4_close(fd) >= 0);
+        }
 
         STATUS();
     }

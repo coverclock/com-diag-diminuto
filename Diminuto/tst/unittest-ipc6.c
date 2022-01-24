@@ -70,9 +70,10 @@ static int ipv6only(int fd, void * vp)
 int main(int argc, char * argv[])
 {
     diminuto_ticks_t hertz;
-    const char * Address = 0;
-    const char * Interface = 0;
-    const char * Port = 0;
+    const char * Address = (const char *)0;
+    const char * Interface = (const char *)0;
+    const char * Port = (const char *)0;
+    const char * Host = (const char *)0;
     extern char * optarg;
     extern int optind;
     extern int opterr;
@@ -224,7 +225,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        char * effective6;
+        const char * effective6;
         diminuto_ipv6_t address6;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
@@ -268,8 +269,12 @@ int main(int argc, char * argv[])
 
         effective6 = "www.diag.com";
         address6 = diminuto_ipc6_address(effective6);
-        if (diminuto_ipc6_is_unspecified(&address6)) {
-            effective6 = "diag.ddns.net";
+        if (!diminuto_ipc6_is_unspecified(&address6)) {
+            /* Do nothing. */
+        } else if (Host == (const char *)0) {
+            /* Do nothing. */
+        } else {
+            effective6 = Host;
             address6 = diminuto_ipc6_address(effective6);
         }
         COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
@@ -428,7 +433,7 @@ int main(int argc, char * argv[])
     }
 
    {
-        char * effective6;
+        const char * effective6;
         diminuto_ipv6_t * addresses;
         size_t ii;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
@@ -437,8 +442,12 @@ int main(int argc, char * argv[])
 
         effective6 = "www.diag.com";
         addresses = diminuto_ipc6_addresses(effective6);
-        if (addresses == (diminuto_ipv6_t *)0) {
-            effective6 = "diag.ddns.net";
+        if (addresses != (diminuto_ipv6_t *)0) {
+            /* Do nothing. */
+        } else if (Host == (const char *)0) {
+            /* Do nothing. */
+        } else {
+            effective6 = Host;
             addresses = diminuto_ipc6_addresses(effective6);
         }
         ASSERT(addresses != (diminuto_ipv6_t *)0);
@@ -720,16 +729,26 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        NOTIFY("If the connection request times out, try it again.\n");
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("diag.ddns.net"), diminuto_ipc6_port("https", NULL))) >= 0);
-        EXPECT(diminuto_ipc_type(fd) == AF_INET6);
-        EXPECT(diminuto_ipc6_close(fd) >= 0);
-
-#if 0
+#if !0
         EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("amazon.com"), diminuto_ipc6_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 #endif
+
+        STATUS();
+}
+
+{
+        int fd;
+
+        TEST();
+
+        if (Host != (const char *)0) {
+            NOTIFY("If the connection request times out, try it again.\n");
+            EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address(Host), diminuto_ipc6_port("https", NULL))) >= 0);
+            EXPECT(diminuto_ipc_type(fd) == AF_INET6);
+            EXPECT(diminuto_ipc6_close(fd) >= 0);
+        }
 
         STATUS();
     }
