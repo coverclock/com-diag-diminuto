@@ -134,6 +134,10 @@ int main(int argc, char * argv[])
         COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)address, 0UL);
         EXPECT(address != 0UL);
 
+        address = diminuto_ipc4_address("diag.ddns.net");
+        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "diag.ddns.net", (long unsigned int)address, 0UL);
+        EXPECT(address != 0UL);
+
         address = diminuto_ipc4_address("invalid.domain");
         COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "invalid.domain", (long unsigned int)address, 0UL);
 
@@ -227,11 +231,11 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        addresses = diminuto_ipc4_addresses("www.diag.com");
+        addresses = diminuto_ipc4_addresses("diag.ddns.net");
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)addresses[ii], 0UL);
+            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "diag.ddns.net", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -267,6 +271,14 @@ int main(int argc, char * argv[])
         port = diminuto_ipc4_port("http", "tcp");
         COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
+
+        port = diminuto_ipc4_port("https", NULL);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
+        EXPECT(port == 443);
+
+        port = diminuto_ipc4_port("https", "tcp");
+        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
+        EXPECT(port == 443);
 
         port = diminuto_ipc4_port("tftp", "udp");
         COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
@@ -329,11 +341,11 @@ int main(int argc, char * argv[])
         TEST();
 
         NOTIFY("If the connection request times out, try it again.\n");
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.diag.com"), diminuto_ipc4_port("http", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("diag.ddns.net"), diminuto_ipc4_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("http", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 

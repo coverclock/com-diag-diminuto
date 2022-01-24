@@ -224,6 +224,7 @@ int main(int argc, char * argv[])
     }
 
     {
+        char * effective6;
         diminuto_ipv6_t address6;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
@@ -240,8 +241,13 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
         COMMENT("\"%s\" \"%s\"\n", "localhost", buffer);
 
-        address6 = diminuto_ipc6_address("ip6-localhost");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "ip6-localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        effective6 = "ip6-localhost"; /* Ubuntu. */
+        address6 = diminuto_ipc6_address(effective6);
+        if (diminuto_ipc6_is_unspecified(&address6)) {
+            effective6 = "ipv6-localhost"; /* CBL-Mariner */
+            address6 = diminuto_ipc6_address(effective6);
+        }
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * This next test depends on how the local host is administered with an
          * IPv6 local host address, or whether we get back a IPv4 local host
@@ -249,7 +255,7 @@ int main(int argc, char * argv[])
          */
         EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", "ip6-localhost", buffer);
+        COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
 
         /*
          * Long pause here, not sure why. strace(1) suggests it's blocked in
@@ -260,11 +266,16 @@ int main(int argc, char * argv[])
          * to DNS6 over the Hurricane Electric tunnel.
          */
 
-        address6 = diminuto_ipc6_address("www.diag.com");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "www.diag.com", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        effective6 = "www.diag.com";
+        address6 = diminuto_ipc6_address(effective6);
+        if (diminuto_ipc6_is_unspecified(&address6)) {
+            effective6 = "diag.ddns.net";
+            address6 = diminuto_ipc6_address(effective6);
+        }
+        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(!diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", "www.diag.com", buffer);
+        COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
         COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
@@ -417,22 +428,28 @@ int main(int argc, char * argv[])
     }
 
    {
+        char * effective6;
         diminuto_ipv6_t * addresses;
         size_t ii;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
-        addresses = diminuto_ipc6_addresses("www.diag.com");
+        effective6 = "www.diag.com";
+        addresses = diminuto_ipc6_addresses(effective6);
+        if (addresses == (diminuto_ipv6_t *)0) {
+            effective6 = "diag.ddns.net";
+            addresses = diminuto_ipc6_addresses(effective6);
+        }
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "www.diag.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", "www.diag.com", buffer);
+            COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -466,6 +483,14 @@ int main(int argc, char * argv[])
         port = diminuto_ipc6_port("http", "tcp");
         COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
+
+        port = diminuto_ipc6_port("https", NULL);
+        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
+        EXPECT(port == 443);    
+
+        port = diminuto_ipc6_port("https", "tcp");
+        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
+        EXPECT(port == 443);
 
         port = diminuto_ipc6_port("tftp", "udp");
         COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
@@ -696,13 +721,15 @@ int main(int argc, char * argv[])
         TEST();
 
         NOTIFY("If the connection request times out, try it again.\n");
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.diag.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("diag.ddns.net"), diminuto_ipc6_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
 
-        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("www.amazon.com"), diminuto_ipc6_port("http", NULL))) >= 0);
+#if 0
+        EXPECT((fd = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("amazon.com"), diminuto_ipc6_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET6);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
+#endif
 
         STATUS();
     }
