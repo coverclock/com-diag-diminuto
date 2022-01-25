@@ -82,11 +82,15 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
-    while ((opt = getopt(argc, argv, "a:i:p:")) >= 0) {
+    while ((opt = getopt(argc, argv, "a:h:i:p:")) >= 0) {
         switch (opt) {
         case 'a':
             /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
             Address = optarg;
+            break;
+        case 'h':
+            /* e.g. "www.diag.com" */
+            Host = optarg;
             break;
         case 'i':
             /* e.g. "eth0" */
@@ -214,11 +218,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address6 = diminuto_ipc6_address("::1");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "::1", DIMINUTO_IPC6_LOOPBACK.u16[0], DIMINUTO_IPC6_LOOPBACK.u16[1], DIMINUTO_IPC6_LOOPBACK.u16[2], DIMINUTO_IPC6_LOOPBACK.u16[3], DIMINUTO_IPC6_LOOPBACK.u16[4], DIMINUTO_IPC6_LOOPBACK.u16[5], DIMINUTO_IPC6_LOOPBACK.u16[6], DIMINUTO_IPC6_LOOPBACK.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "::1", DIMINUTO_IPC6_LOOPBACK.u16[0], DIMINUTO_IPC6_LOOPBACK.u16[1], DIMINUTO_IPC6_LOOPBACK.u16[2], DIMINUTO_IPC6_LOOPBACK.u16[3], DIMINUTO_IPC6_LOOPBACK.u16[4], DIMINUTO_IPC6_LOOPBACK.u16[5], DIMINUTO_IPC6_LOOPBACK.u16[6], DIMINUTO_IPC6_LOOPBACK.u16[7], address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         EXPECT(diminuto_ipc6_is_loopback(&address6));
 
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, "::1");
+        CHECKPOINT("\"%s\" \"%s\"\n", buffer, "::1");
         EXPECT(strcmp(buffer, "::1") == 0);
 
         STATUS();
@@ -232,7 +236,7 @@ int main(int argc, char * argv[])
         TEST();
 
         address6 = diminuto_ipc6_address("localhost");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * This next test depends on how the local host is administered with an
          * IPv6 local host address, or whether we get back a IPv4 local host
@@ -240,7 +244,7 @@ int main(int argc, char * argv[])
          */
         EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", "localhost", buffer);
+        CHECKPOINT("\"%s\" \"%s\"\n", "localhost", buffer);
 
         effective6 = "ip6-localhost"; /* Ubuntu. */
         address6 = diminuto_ipc6_address(effective6);
@@ -248,7 +252,7 @@ int main(int argc, char * argv[])
             effective6 = "ipv6-localhost"; /* CBL-Mariner */
             address6 = diminuto_ipc6_address(effective6);
         }
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
         /*
          * This next test depends on how the local host is administered with an
          * IPv6 local host address, or whether we get back a IPv4 local host
@@ -256,7 +260,7 @@ int main(int argc, char * argv[])
          */
         EXPECT(diminuto_ipc6_is_loopback(&address6) || diminuto_ipc6_is_loopback4(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
+        CHECKPOINT("\"%s\" \"%s\"\n", effective6, buffer);
 
         /*
          * Long pause here, not sure why. strace(1) suggests it's blocked in
@@ -267,23 +271,16 @@ int main(int argc, char * argv[])
          * to DNS6 over the Hurricane Electric tunnel.
          */
 
-        effective6 = "www.diag.com";
-        address6 = diminuto_ipc6_address(effective6);
-        if (!diminuto_ipc6_is_unspecified(&address6)) {
-            /* Do nothing. */
-        } else if (Host == (const char *)0) {
-            /* Do nothing. */
-        } else {
-            effective6 = Host;
-            address6 = diminuto_ipc6_address(effective6);
+        if (Host != (const char *)0) {
+            address6 = diminuto_ipc6_address(Host);
+            CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", Host, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+            EXPECT(!diminuto_ipc6_is_unspecified(&address6));
+            EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
+            CHECKPOINT("\"%s\" \"%s\"\n", Host, buffer);
         }
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
-        EXPECT(!diminuto_ipc6_is_unspecified(&address6));
-        EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
 
         address6 = diminuto_ipc6_address("invalid.domain");
-        COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
+        CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "invalid.domain", address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
 
         /*
          * Damned internet service providers map invalid domains to a "help"
@@ -292,7 +289,7 @@ int main(int argc, char * argv[])
          */
         ADVISE(diminuto_ipc6_is_unspecified(&address6));
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", "invalid.domain", buffer);
+        CHECKPOINT("\"%s\" \"%s\"\n", "invalid.domain", buffer);
 
         STATUS();
     }
@@ -316,7 +313,7 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT(diminuto_ipc6_colonnotation(address, buffer0, sizeof(buffer0)) == buffer0);
-        COMMENT("CON \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer0, address.u16[0], address.u16[1], address.u16[2], address.u16[3], address.u16[4], address.u16[5], address.u16[6], address.u16[7]);
+        CHECKPOINT("CON \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer0, address.u16[0], address.u16[1], address.u16[2], address.u16[3], address.u16[4], address.u16[5], address.u16[6], address.u16[7]);
 
         hints.ai_family = AF_INET6;
         rc = getaddrinfo(HOSTNAME, (const char *)0, &hints, &infop);
@@ -326,23 +323,23 @@ int main(int argc, char * argv[])
 #define IN6ADDR (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr)
 #define IN6ADDR16 (((struct sockaddr_in6 *)(infop->ai_addr))->sin6_addr.s6_addr16)
         ASSERT(inet_ntop(infop->ai_family, IN6ADDR, buffer1, sizeof(buffer1)) == buffer1);
-        COMMENT("RAW \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer1, IN6ADDR16[0], IN6ADDR16[1], IN6ADDR16[2], IN6ADDR16[3], IN6ADDR16[4], IN6ADDR16[5], IN6ADDR16[6], IN6ADDR16[7]);
+        CHECKPOINT("RAW \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer1, IN6ADDR16[0], IN6ADDR16[1], IN6ADDR16[2], IN6ADDR16[3], IN6ADDR16[4], IN6ADDR16[5], IN6ADDR16[6], IN6ADDR16[7]);
         freeaddrinfo(infop);
 
         host = diminuto_ipc6_address(HOSTNAME);
         ASSERT(diminuto_ipc6_colonnotation(host, buffer2, sizeof(buffer2)) == buffer2);
-        COMMENT("HBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer2, host.u16[0], host.u16[1], host.u16[2], host.u16[3], host.u16[4], host.u16[5], host.u16[6], host.u16[7]);
+        CHECKPOINT("HBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer2, host.u16[0], host.u16[1], host.u16[2], host.u16[3], host.u16[4], host.u16[5], host.u16[6], host.u16[7]);
 
         network = host;
         diminuto_ipc6_hton6(&network);
         ASSERT(inet_ntop(AF_INET6, &network, buffer3, sizeof(buffer3)) == buffer3);
-        COMMENT("NBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer3, network.u16[0], network.u16[1], network.u16[2], network.u16[3], network.u16[4], network.u16[5], network.u16[6], network.u16[7]);
+        CHECKPOINT("NBO \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer3, network.u16[0], network.u16[1], network.u16[2], network.u16[3], network.u16[4], network.u16[5], network.u16[6], network.u16[7]);
 
         prime = network;
         diminuto_ipc6_ntoh6(&prime);
         ASSERT(diminuto_ipc6_compare(&host, &prime) == 0);
         ASSERT(diminuto_ipc6_colonnotation(prime, buffer4, sizeof(buffer4)) == buffer4);
-        COMMENT("PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
+        CHECKPOINT("PRI \"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", buffer4, prime.u16[0], prime.u16[1], prime.u16[2], prime.u16[3], prime.u16[4], prime.u16[5], prime.u16[6], prime.u16[7]);
 
         STATUS();
     }
@@ -358,12 +355,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "localhost", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", "localhost", buffer);
+            CHECKPOINT("\"%s\" \"%s\"\n", "localhost", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -384,12 +381,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "google.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", "google.com", buffer);
+            CHECKPOINT("\"%s\" \"%s\"\n", "google.com", buffer);
         }
         /*
          * "nslookup google.com" used to resolve as multiple addresses. But
@@ -417,12 +414,12 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv6_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+            CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", "amazon.com", addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
             if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
                 break;
             }
             EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", "amazon.com", buffer);
+            CHECKPOINT("\"%s\" \"%s\"\n", "amazon.com", buffer);
         }
         EXPECT(ii > 0);
         EXPECT(ii < LIMIT);
@@ -433,37 +430,29 @@ int main(int argc, char * argv[])
     }
 
    {
-        const char * effective6;
         diminuto_ipv6_t * addresses;
         size_t ii;
         char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
-        effective6 = "www.diag.com";
-        addresses = diminuto_ipc6_addresses(effective6);
-        if (addresses != (diminuto_ipv6_t *)0) {
-            /* Do nothing. */
-        } else if (Host == (const char *)0) {
-            /* Do nothing. */
-        } else {
-            effective6 = Host;
-            addresses = diminuto_ipc6_addresses(effective6);
-        }
-        ASSERT(addresses != (diminuto_ipv6_t *)0);
+        if (Host != (const char *)0) {
+            addresses = diminuto_ipc6_addresses(Host);
+            ASSERT(addresses != (diminuto_ipv6_t *)0);
 
-        for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
-            if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
-                break;
+            for (ii = 0; ii < LIMIT; ++ii) {
+                CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", Host, addresses[ii].u16[0], addresses[ii].u16[1], addresses[ii].u16[2], addresses[ii].u16[3], addresses[ii].u16[4], addresses[ii].u16[5], addresses[ii].u16[6], addresses[ii].u16[7]);
+                if (diminuto_ipc6_is_unspecified(&addresses[ii])) {
+                    break;
+                }
+                EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
+                CHECKPOINT("\"%s\" \"%s\"\n", Host, buffer);
             }
-            EXPECT(diminuto_ipc6_colonnotation(addresses[ii], buffer, sizeof(buffer)) == buffer);
-            COMMENT("\"%s\" \"%s\"\n", effective6, buffer);
-        }
-        EXPECT(ii > 0);
-        EXPECT(ii < LIMIT);
+            EXPECT(ii > 0);
+            EXPECT(ii < LIMIT);
 
-        free(addresses);
+            free(addresses);
+        }
 
         STATUS();
     }
@@ -474,71 +463,71 @@ int main(int argc, char * argv[])
         TEST();
 
         port = diminuto_ipc6_port("80", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("80", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("80", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("http", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
         EXPECT(port == 80);    
 
         port = diminuto_ipc6_port("http", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc6_port("https", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
         EXPECT(port == 443);    
 
         port = diminuto_ipc6_port("https", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
         EXPECT(port == 443);
 
         port = diminuto_ipc6_port("tftp", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
         EXPECT(port == 69);
 
         port = diminuto_ipc6_port("login", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("login", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("login", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("who", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("who", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("who", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc6_port("unknown", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("unknown", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc6_port("unknown", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
         EXPECT(port == 0);
 
         STATUS();
@@ -559,7 +548,7 @@ int main(int argc, char * argv[])
         EXPECT(port != TEST_PORT);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" %u\n", buffer, port);
+        CHECKPOINT("\"%s\" %u\n", buffer, port);
 
         STATUS();
     }
@@ -580,7 +569,7 @@ int main(int argc, char * argv[])
         EXPECT(port != 0);
         EXPECT(diminuto_ipc6_close(fd) >= 0);
         EXPECT(diminuto_ipc6_colonnotation(address6, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" %u\n", buffer, port);
+        CHECKPOINT("\"%s\" %u\n", buffer, port);
 
         STATUS();
     }

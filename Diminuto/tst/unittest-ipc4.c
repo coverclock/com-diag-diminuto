@@ -80,11 +80,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_UNSPECIFIED);
+        CHECKPOINT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_UNSPECIFIED);
         EXPECT(address == DIMINUTO_IPC4_UNSPECIFIED);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
+        CHECKPOINT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -98,11 +98,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK);
+        CHECKPOINT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
+        CHECKPOINT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -116,11 +116,11 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address(name);
-        COMMENT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK2);
+        CHECKPOINT("\"%s\" 0x%8.8x 0x%8.8x\n", name, address, DIMINUTO_IPC4_LOOPBACK2);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK2);
 
         EXPECT(diminuto_ipc4_dotnotation(address, buffer, sizeof(buffer)) == buffer);
-        COMMENT("\"%s\" \"%s\"\n", buffer, name);
+        CHECKPOINT("\"%s\" \"%s\"\n", buffer, name);
         EXPECT(strcmp(buffer, name) == 0);
 
         STATUS();
@@ -132,21 +132,21 @@ int main(int argc, char * argv[])
         TEST();
 
         address = diminuto_ipc4_address("localhost");
-        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)address, (long unsigned int)DIMINUTO_IPC4_LOOPBACK);
+        CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)address, (long unsigned int)DIMINUTO_IPC4_LOOPBACK);
         EXPECT(address == DIMINUTO_IPC4_LOOPBACK);
 
         address = diminuto_ipc4_address("www.diag.com");
-        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)address, 0UL);
+        CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "www.diag.com", (long unsigned int)address, 0UL);
         EXPECT(address != 0UL);
 
         if (Host != (const char *)0) {
             address = diminuto_ipc4_address(Host);
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)address, 0UL);
+            CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)address, 0UL);
             EXPECT(address != 0UL);
         }
 
         address = diminuto_ipc4_address("invalid.domain");
-        COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "invalid.domain", (long unsigned int)address, 0UL);
+        CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "invalid.domain", (long unsigned int)address, 0UL);
 
         /*
          * Damned internet service providers map invalid domains to a "help"
@@ -168,7 +168,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)addresses[ii], 0UL);
+            CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "localhost", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -191,7 +191,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "google.com", (long unsigned int)addresses[ii], 0UL);
+            CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "google.com", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -219,7 +219,7 @@ int main(int argc, char * argv[])
         ASSERT(addresses != (diminuto_ipv4_t *)0);
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "amazon.com", (long unsigned int)addresses[ii], 0UL);
+            CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", "amazon.com", (long unsigned int)addresses[ii], 0UL);
             if (addresses[ii] == 0UL) {
                 break;
             }
@@ -244,7 +244,7 @@ int main(int argc, char * argv[])
             ASSERT(addresses != (diminuto_ipv4_t *)0);
 
             for (ii = 0; ii < LIMIT; ++ii) {
-                COMMENT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)addresses[ii], 0UL);
+                CHECKPOINT("\"%s\" 0x%8.8lx 0x%8.8lx\n", Host, (long unsigned int)addresses[ii], 0UL);
                 if (addresses[ii] == 0UL) {
                     break;
                 }
@@ -264,71 +264,71 @@ int main(int argc, char * argv[])
         TEST();
 
         port = diminuto_ipc4_port("80", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "(null)", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("80", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("80", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "80", "udp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("http", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "http", "(null)", port, 80);
         EXPECT(port == 80);    
 
         port = diminuto_ipc4_port("http", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "http", "tcp", port, 80);
         EXPECT(port == 80);
 
         port = diminuto_ipc4_port("https", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "https", "(null)", port, 443);
         EXPECT(port == 443);
 
         port = diminuto_ipc4_port("https", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "https", "tcp", port, 443);
         EXPECT(port == 443);
 
         port = diminuto_ipc4_port("tftp", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "tftp", "udp", port, 69);
         EXPECT(port == 69);
 
         port = diminuto_ipc4_port("login", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("login", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "tcp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("login", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "login", "udp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("who", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "(null)", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("who", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("who", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "who", "udp", port, 513);
         EXPECT(port == 513);
 
         port = diminuto_ipc4_port("unknown", NULL);
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "(null)", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("unknown", "tcp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "tcp", port, 0);
         EXPECT(port == 0);
 
         port = diminuto_ipc4_port("unknown", "udp");
-        COMMENT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
+        CHECKPOINT("\"%s\" \"%s\" %d %d\n", "unknown", "udp", port, 0);
         EXPECT(port == 0);
 
         STATUS();
@@ -470,7 +470,7 @@ int main(int argc, char * argv[])
         TEST();
 
         binding = diminuto_ipc4_address("localhost");
-        COMMENT("0x%8.8x %d\n", binding, 0);
+        CHECKPOINT("0x%8.8x %d\n", binding, 0);
 
         EXPECT((fd1 = diminuto_ipc4_datagram_peer(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(fd1, &address1, &port1) >= 0);
