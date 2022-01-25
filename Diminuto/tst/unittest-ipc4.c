@@ -351,7 +351,7 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("www.amazon.com"), diminuto_ipc4_port("https", NULL))) >= 0);
+        EXPECT((fd = diminuto_ipc4_stream_consumer(diminuto_ipc4_address("amazon.com"), diminuto_ipc4_port("https", NULL))) >= 0);
         EXPECT(diminuto_ipc_type(fd) == AF_INET);
         EXPECT(diminuto_ipc4_close(fd) >= 0);
 
