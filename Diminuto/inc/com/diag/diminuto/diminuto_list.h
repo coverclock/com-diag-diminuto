@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a circular doubly-linked list.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -140,6 +140,14 @@ typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
  */
 #define DIMINUTO_LIST_NULLINIT(_NODEP_) \
     DIMINUTO_LIST_DATAINIT(_NODEP_, (void *)0)
+
+/**
+ * @def DIMINUTO_LIST_INITIALIZER
+ * Generate a storage initializer for an anonymous node. The
+ * node will have to be reinitialized before first time it is used.
+ */
+#define DIMINUTO_LIST_INITIALIZER \
+    DIMINUTO_LIST_NULLINIT(DIMINUTO_LIST_NULL)
 
 /*******************************************************************************
  * MUTATORS
@@ -350,6 +358,16 @@ static inline void * diminuto_list_data(const diminuto_list_t * nodep) {
  ******************************************************************************/
 
 /**
+ * Return true if the list is uninitialized, perhaps having had its storage
+ * initialized using DIMINUTO_LIST_INITIALIZER.
+ * @param nodep points to a node.
+ * @return true if the list is uninitialized, false otherwise.
+ */
+static inline int diminuto_list_isuninitialized(const diminuto_list_t * nodep) {
+    return (DIMINUTO_LIST_NULL == nodep->root);
+}
+
+/**
  * Return true if the next node points to the node itself, indicating that
  * there are no other nodes on the list.
  * @param nodep points to a node.
@@ -393,6 +411,17 @@ static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, cons
 /*******************************************************************************
  * CONDITIONAL OPERATIONS
  ******************************************************************************/
+
+/**
+ * Initialize a node if it is uninitialized.
+ * @param nodep points to the node to be conditionally initialized.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_initif(diminuto_list_t * nodep) {
+    return diminuto_list_isuninitialized(nodep)
+        ? diminuto_list_init(nodep)
+        : nodep;
+}
 
 /**
  * Return the data pointer of a node or NULL if the node pointer is NULL.

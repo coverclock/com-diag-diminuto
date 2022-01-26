@@ -1019,6 +1019,7 @@ sanity:	unittest
 	unittest-ipc-endpoint
 	unittest-ipcl
 	unittest-list
+	unittest-list2
 	unittest-lock
 	unittest-log
 	unittest-macros
