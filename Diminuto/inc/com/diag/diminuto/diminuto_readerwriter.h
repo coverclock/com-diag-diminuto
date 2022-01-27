@@ -71,7 +71,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
-#include "com/diag/diminuto/diminuto_ring.h"
+#include "com/diag/diminuto/diminuto_list.h"
 #include <errno.h>
 #include <stdint.h>
 #include <pthread.h>
@@ -84,12 +84,12 @@
 /**
  * These are the error codes that Reader Writer might return itself, in
  * addition to those error codes that the underlying platform (like POSIX
- * threads) might generate. The FULL error code is an application error, while
- * ERROR and UNEXPECTED are probably indicitive of bugs in Reader Writer.
+ * threads) might generate. Most of these probably indicate a bug in Reader
+ * Writer or in Diminuto at large.
  */
 enum DiminutoReaderWriterError {
+    DIMINUTO_READERWRITER_BUSY          = EBUSY,    /**< FIFO not empty. */
     DIMINUTO_READERWRITER_ERROR         = EIO,      /**< Unspecified error. */
-    DIMINUTO_READERWRITER_FULL          = ENOSPC,   /**< Ring too small. */
     DIMINUTO_READERWRITER_UNEXPECTED    = EFAULT,   /**< Unexpected state. */
     DIMINUTO_READERWRITER_TIMEDOUT      = ETIMEDOUT,/**< Timed out. */
     DIMINUTO_READERWRITER_INTERRUPTED   = EINTR,    /**< Interrupted. */
@@ -100,15 +100,6 @@ enum DiminutoReaderWriterError {
  ******************************************************************************/
 
 /**
- * The application is responsible for allocating an array of this type for use
- * by Reader Writer. No initilization of the array is necesary. The dimension
- * of the array should be as large as the maximum number of threads using the
- * Reader Writer object. This array is used to implement a ring (circular)
- * buffer used to managing waiting threads.
- */
-typedef uint8_t diminuto_readerwriter_state_t;
-
-/**
  * This is the Reader Writer object, which maintains the state of the Reader
  * Writer synchronization.
  */
@@ -116,28 +107,28 @@ typedef struct DiminutoReaderWriter {
     pthread_mutex_t mutex;                      /**< Mutex semaphore. */
     pthread_cond_t reader;                      /**< Waiting readers. */
     pthread_cond_t writer;                      /**< Waiting writers. */
-    diminuto_ring_t ring;                       /**< Ring metadata. */
-    diminuto_readerwriter_state_t * state;      /**< Ring buffer. */
+    diminuto_list_t list;                       /**< FIFO of waiting threads. */
     FILE * fp;                                  /**< Debug file pointer. */
     int reading;                                /**< Active (>=0) readers. */
     int writing;                                /**< Active {0,1} writers. */
+    int waiting;                                /**< Waiting (>=0) threads. */
 } diminuto_readerwriter_t;
 
 /**
  * @def DIMINUTO_READERWRITER_INITIALIZER
  * This can be used for static initialization of a Reader Writer object.
- * The application is responsible for allocating a state array and
- * passing a pointer to it as @a _STATE_ and its capacity (dimension)
- * as @a _CAPACITY_.
+ * If a Reader Writer object is initialized statically, further
+ * initialization (for example, of the list object) will be done at
+ * run time the first time it is used.
  */
-#define DIMINUTO_READERWRITER_INITIALIZER(_STATE_, _CAPACITY_) \
+#define DIMINUTO_READERWRITER_INITIALIZER \
     { \
         PTHREAD_MUTEX_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
-        DIMINUTO_RING_INITIALIZER(_CAPACITY_), \
-        &((_STATE_)[0]), \
+        DIMINUTO_LIST_INITIALIZER, \
         (FILE *)0,  \
+        0, \
         0, \
         0, \
     }
@@ -163,20 +154,11 @@ static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks
  ******************************************************************************/
 
 /**
- * This performs a run-time initialization of a Reader Writer object. The
- * state array used for the ring buffer must be at least as large as the
- * maximum number of threads that will use the Reader Writer object. If
- * the application uses timeouts, the state array will need to be larger,
- * perhaps much larger, depending on how many timeouts occur and how soon
- * after a timeout a thread retries the operation. A timeout of zero (a.k.a.
- * POLL) is a special case and does not consume any additional space in the
- * state array.
+ * This performs a run-time initialization of a Reader Writer object.
  * @param rwp points to the Reader Writer object.
- * @param state points to the state array that will be used for the ring.
- * @param capacity is the dimension of the state array.
  * @return a pointer to the object if successful, NULL if an error occurred.
  */
-extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_state_t * state, size_t capacity);
+extern diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp);
 
 /**
  * This releases any dynamically allocated resources held by the Reader Writer
@@ -314,8 +296,6 @@ extern void diminuto_writer_cleanup(void * vp);
         diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
-#endif
-
 /*******************************************************************************
  * DEBUGGING
  ******************************************************************************/
@@ -331,3 +311,5 @@ extern void diminuto_writer_cleanup(void * vp);
  * @return the prior value of the file stream used for debugging.
  */
 extern FILE * diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp);
+
+#endif

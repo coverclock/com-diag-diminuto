@@ -26,6 +26,9 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_readerwriter.h"
+#include "diminuto_readerwriter.h"
+#include <stdlib.h>
 
 /*******************************************************************************
  * CONSTANTS
@@ -34,25 +37,128 @@
 /**
  * Reader Writer calling threads may assume the following "roles". These role
  * values are used as parameter to the Reader Writer scheduling functions
- * (below), or as tokens inserted and removed from the state ring buffer.
+ * (below), or as tokens inserted and removed from the waiting list.
  * "Pending" means the thread has been awakened from the condition variable but
- * has not yet removed its token from the ring buffer.
+ * has not yet removed its token from the circular list..
  */
 typedef enum Role {
     ANY     = '*',  /**< Any role. */
     NONE    = '-',  /**< No role. */
+    STARTED = 'S',  /**< Initial thread role. */
     READER  = 'R',  /**< Waiting reader role. */
     WRITER  = 'W',  /**< Waiting writer role. */
-    IGNORE  = 'X',  /**< Cancelled, timed out, failed, etc. */
+    FAILED  = 'X',  /**< Cancelled, timed out, failed, etc. */
     READING = 'r',  /**< Pending reader role. */
     WRITING = 'w',  /**< Pending writer role. */
+    RUNNING = 'A',  /**< Running thread role. */
 } role_t;
+
+/*******************************************************************************
+ * FILE GLOBAL
+ ******************************************************************************/
+
+/**
+ * This is the file global mutex used to control access to the key value
+ * used to access thread local data used by Reader Writer.
+ */
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/**
+ * This is the file global flag that, if true, indicates that the key value
+ * used to access thread local data used by Reader Writer has been initialized.
+ */
+static int initialized = 0;
+
+/**
+ * This is the key value used to access thread local data used by Reader Writer.
+ * The key will be initialized the first time it is needed by any Reader
+ * Writer object. Multiple Reader Writer objects will use the same key value.
+ */
+static pthread_key_t key;
+
+/*******************************************************************************
+ * THREAD LOCAL
+ ******************************************************************************/
+
+/**
+ * Release the object pointed to by the Reader Writer thread local storage.
+ * Typically this has to be done when a thread terminates, for example by
+ * exiting or by cancellation. In other languages, this would be known as
+ * a destructor.
+ * @param vp points to the thread local object for the terminating thread.
+ */
+static void release(void * vp)
+{
+    if (vp != (void *)0) {
+        diminuto_list_t * np = (diminuto_list_t *)0;
+        np = (diminuto_list_t *)vp;
+        (void)diminuto_list_remove(np);
+        free(np);
+        DIMINUTO_LOG_DEBUG("Local RELEASED %p", np);
+    }
+}
+
+/**
+ * Create the key used to identify the thread local storage associated with
+ * each thread that uses any Reader Writer object.
+ * @return 0 for success, or an error code otherwise.
+ */
+static int initialize()
+{
+    int rc = 0;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+
+        if (!initialized) {
+            rc = pthread_key_create(&key, &release);
+            if (rc != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_readerwriter: initialize: pthread_key_create");
+            } else {
+                DIMINUTO_LOG_DEBUG("Global INITIALIZED %u", key);
+                initialized = !0;
+            }
+        }
+
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return rc;
+}
+
+/**
+ * Return a pointer to the thread local object used by Reader Writer for the
+ * calling thread. This will be different for every thread.
+ * @return a pointer to the thread local object.
+ */
+static diminuto_list_t * acquire()
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+    void * vp = (void *)0;
+    int rc = 0;
+
+    if (initialize() != 0) {
+        /* Do nothing. */
+    } else if ((vp = pthread_getspecific(key)) != (void *)0) {
+        np = (diminuto_list_t *)vp;
+    } else if ((np = (diminuto_list_t *)malloc(sizeof(diminuto_list_t))) == (diminuto_list_t *)0) {
+        diminuto_perror("diminuto_readerwriter: acquire: malloc");
+    } else if ((rc = pthread_setspecific(key, diminuto_list_datainit(np, (void *)STARTED))) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_readerwriter: acquire: pthread_key_setspecific");
+        free(np);
+        np = (diminuto_list_t *)0;
+    } else {
+        DIMINUTO_LOG_DEBUG("Local ACQUIRED %p", np);
+    }
+
+    return np;
+}
 
 /*******************************************************************************
  * STRUCTORS
  ******************************************************************************/
 
-diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp, diminuto_readerwriter_state_t * state, size_t capacity)
+diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * rwp)
 {
     diminuto_readerwriter_t * result = (diminuto_readerwriter_t *)0;
     int rc = DIMINUTO_READERWRITER_ERROR;
@@ -66,13 +172,14 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
     } else if ((rc = pthread_cond_init(&(rwp->writer), (pthread_condattr_t *)0)) != 0) {
         errno = rc;
         diminuto_perror("diminution_readerwriter_init: pthread_cond_init: writer");
-    } else if (diminuto_ring_init(&(rwp->ring), capacity) != &(rwp->ring)) {
-        /* Error message already emitted. */
+    } else if (diminuto_list_init(&(rwp->list)) != &(rwp->list)) {
+        errno = DIMINUTO_READERWRITER_UNEXPECTED;
+        diminuto_perror("diminution_readerwriter_init: diminuto_list_init");
     } else {
-        rwp->state = state;
         rwp->fp = (FILE *)0;
         rwp->reading = 0;
         rwp->writing = 0;
+        rwp->waiting = 0;
         result = rwp;
     }
 
@@ -85,8 +192,12 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
     diminuto_readerwriter_t * result = rwp;
     int rc = DIMINUTO_READERWRITER_ERROR;
 
-    if (diminuto_ring_fini(&(rwp->ring)) != (diminuto_ring_t *)0) {
-        /* Error message already emitted. */
+    if (rwp->waiting > 0) {
+        errno = DIMINUTO_READERWRITER_BUSY;
+        diminuto_perror("diminuto_readerwriter_fini");
+    } else if (diminuto_list_fini(&(rwp->list)) != (diminuto_list_t *)0) {
+        errno = DIMINUTO_READERWRITER_UNEXPECTED;
+        diminuto_perror("diminuto_readerwriter_fini: diminuto_list_fini");
     } else if ((rc = pthread_cond_destroy(&(rwp->writer))) != 0) {
         errno = rc;
         diminuto_perror("diminuto_readerwriter_fini: pthread_cond_destroy: writer");
@@ -117,17 +228,21 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
     extern pthread_mutex_t diminuto_log_mutex;
-    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    diminuto_list_t * np = (diminuto_list_t *)0;
+    diminuto_list_t * rp = (diminuto_list_t *)0;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
     char * bp = (char *)0;
     size_t size = 0;
     int length = 0;
+    unsigned int started = 0;
     unsigned int pending = 0;
     unsigned int readers = 0;
     unsigned int writers = 0;
-    unsigned int ignored = 0;
+    unsigned int failed = 0;
+    unsigned int running = 0;
     unsigned int unknown = 0;
-    int count = 0;
-    int index = -1;
+    unsigned int queued = 0;
+    role_t role = NONE;
 
     bp = &(buffer[0]);
     size = sizeof(buffer) - 1;
@@ -141,19 +256,34 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dwriting", rwp->writing);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    index = diminuto_ring_consumer_peek(&(rwp->ring));
-    count = diminuto_ring_used(&(rwp->ring));
-    while ((count--) > 0) {
-        switch (rwp->state[index]) {
-        case READING: ++pending; break;
-        case WRITING: ++pending; break;
-        case READER:  ++readers; break;
-        case WRITER:  ++writers; break;
-        case IGNORE:  ++ignored; break;
-        default:      ++unknown; break;
+    length = snprintf(bp, size, " %dwaiting", rwp->waiting);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    rp = diminuto_list_root(&(rwp->list));
+    np = diminuto_list_next(rp);
+    while (np != rp) {
+        role = (role_t)diminuto_list_data(np);
+        switch (role) {
+            case STARTED: ++started; break; /* Should be zero. */
+            case READING: ++pending; break;
+            case WRITING: ++pending; break;
+            case READER:  ++readers; break;
+            case WRITER:  ++writers; break;
+            case FAILED:  ++failed;  break;
+            case RUNNING: ++running; break; /* Should be zero. */
+            default:      ++unknown; break; /* Should be zero. */
         }
-        index = diminuto_ring_next(&(rwp->ring), index);
+        length = snprintf(bp, size, " [%d]{%c}", queued, role);
+        if ((0 < length) && (length < size)) { bp += length; size -= length; }
+        ++queued;
+        np = diminuto_list_next(np);
     }
+
+    length = snprintf(bp, size, " %dqueued", queued);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dstarted", started);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dpending", pending);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
@@ -164,22 +294,25 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dwriters", writers);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dignored", ignored);
+    length = snprintf(bp, size, " %dfailed", failed);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %drunning", running);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dunknown", unknown);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    index = diminuto_ring_consumer_peek(&(rwp->ring));
-    count = diminuto_ring_used(&(rwp->ring));
-    while ((count--) > 0) {
-        length = snprintf(bp, size, " [%d]{%c}", index, rwp->state[index]);
-        if ((0 < length) && (length < size)) { bp += length; size -= length; }
-        index = diminuto_ring_next(&(rwp->ring), index);
-    }
-
     *(bp++) = '\n';
     *(bp) = '\0';
+
+    /*
+     * We mutually exclude on the logging system mutex so that if we are
+     * not a daemon (so that the log messages from the threads are all
+     * going to stderr) we don't step on any log messages. If we are a
+     * deamon, then we probably shouldn't be dumping stuff to stderr
+     * anyway (because it is probably redirected to /dev/null).
+     */
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
         fputs(buffer, fp);
@@ -192,48 +325,48 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
  ******************************************************************************/
 
 /**
- * Return the index of the head of the ring, without consuming it,
- * after first discarding any leading ignored tokens. This can also be
- * used just to discard leading ignored tokens.
+ * Return the node at the head of the list without removing it,
+ * after first discarding any leading failed nodes. This can also be
+ * used just to discard leading failed nodes. Nodes on the list can be
+ * in the failing state because they were cancelled, but could not be
+ * removed from the list because the caller did not hold the mutex.
  * @param rwp points to the Reader Writer object.
- * @return the index of the head of the ring or -1 if empty.
+ * @return the node at the head of the list or NULL if empty.
  */
-static int head(diminuto_readerwriter_t * rwp)
+static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
 {
-    int index = -1;
+    diminuto_list_t * np = (diminuto_list_t *)0;
 
     while (!0) {
-       if ((index = diminuto_ring_consumer_peek(&(rwp->ring))) < 0) {
+       if ((np = diminuto_list_head(&(rwp->list))) == (diminuto_list_t *)0) {
             break;
-        } else if (rwp->state[index] != IGNORE) {
-            break;
-        } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
-            errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("head: consumer");
-            index = -1;
+        } else if ((role_t)diminuto_list_data(np) != FAILED) {
             break;
         } else {
-            DIMINUTO_LOG_DEBUG("Failed %d IGNORED %dreading %dwriting %dwaiting", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+            (void)diminuto_list_remove(np);
+            rwp->waiting -= 1;
+            DIMINUTO_LOG_DEBUG("Failed REMOVED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
         }
     }
 
-    return index;
+    return np;
 }
 
+
 /**
- * Return true if the indicated slot in the ring is now at the head, and the
- * token in that slot is now pending, indicating that the waiting reader or
+ * Return true if the indicated node in the list is now at the head, and the
+ * state of that node is now pending, indicating that the waiting reader or
  * writer has been activated, false otherwise. Calling head has the side effect
  * of removing any ignored tokens, indicating wait failures, off the head of
- * the ring.
+ * the list.
  * @param rwp points to the Reader Writer object.
- * @param index is the index at the tail of the ring.
+ * @param np points to the thread local list node for the calling thread.
  * @param pending is the pending role to be used: READING or WRITING.
  * @return true if the token is both head and pending, false otherwise.
  */
-static inline int ready(diminuto_readerwriter_t * rwp, int index, role_t pending)
+static inline int ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t pending)
 {
-    return (head(rwp) == index) && (rwp->state[index] == pending);
+    return (head(rwp) == np) && ((role_t)diminuto_list_data(np) == pending);
 }
 
 /**
@@ -243,13 +376,13 @@ static inline int ready(diminuto_readerwriter_t * rwp, int index, role_t pending
  * timeout duration that applies no matter how many times the timed wait
  * has to be repeated after receiving a broadcast.
  * @param rwp points to the Reader Writer object.
- * @param index is the index at the tail of the ring.
+ * @param np points to the thread local list node for the calling thread.
  * @param pending is the pending role to be used: READING or WRITING.
  * @param conditionp points to the condition variable in the object to use.
  * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an error number otherwise.
  */
-static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+static int wait_conditional(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
     diminuto_sticks_t clocktime = 0;
@@ -262,12 +395,15 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
 
         do {
             if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_readerwriter: wait_conditional: pthread_cond_wait");
                 break;
             }
-        } while (!ready(rwp, index, pending));
+        } while (!ready(rwp, np, pending));
 
     } else if ((clocktime = diminuto_time_clock()) < 0) {
 
+        /* Error message already emitted. */
         rc = errno;
 
     } else {
@@ -289,9 +425,11 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
 
         do {
             if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_readerwriter: wait_conditional: pthread_cond_timedwait");
                 break;
             }
-        } while (!ready(rwp, index, pending));
+        } while (!ready(rwp, np, pending));
 
     }
 
@@ -299,119 +437,111 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, int index, role_t pen
 }
 
 /**
- * Clean up the ring if an abnormal wait occurs.
- * @param vp points to the slot representing the caller in the ring.
+ * Clean up the state if an abnormal wait occurs. Note that
+ * we can't remove the node from the list because we have no
+ * way of acquiring the mutex for the Reader Writer structure.
+ * So we set its state to FAILED and let someone who does hold
+ * the mutex clean it up.
+ * @param vp points to the thread local object for the associated thread.
  */
 static void wait_cleanup(void * vp)
 {
-    diminuto_readerwriter_state_t * sp = (diminuto_readerwriter_state_t *)vp;
+    diminuto_list_t * np = (diminuto_list_t *)vp;
 
-    *sp = IGNORE;
+    diminuto_list_dataset(np, (void *)FAILED);
 }
 
 /**
  * Place the calling thread in a wait on the condition variable in the
- * Reader Writer object identified by the specified role. The role token
- * is inserted into the tail of the state ring buffer before the thread
+ * Reader Writer object identified by the specified role. The local thread
+ * object is inserted into the tail of the wait list before the thread
  * waits. When the thread awakens, it will remove its token (which will have
  * been changed from a "waiting" token to a "pending" token) from the head
- * of the state ring buffer. The index of the token of the thread in the state
- * ring buffer is passed back when the thread awakens purely for purposes of
+ * of the wait list. The index of the token of the thread in the wait
+ * list is passed back when the thread awakens purely for purposes of
  * debugging.
  * @param rwp points to the Reader Writer object.
  * @param label is a string used for logging.
- * @param index is the index at the tail of the ring.
+ * @param np points to the thread local list node for the calling thread.
  * @param waiting is the waiting role to be used: READER or WRITER.
  * @param pending is the pending role to be used: READING or WRITING.
  * @param conditionp points to the condition variable in the object to use.
  * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an error number otherwise.
  */
-static int condition(diminuto_readerwriter_t * rwp, const char * label, int index, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+static int condition(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     /*
-     * Insert the token onto the tail of the ring.
+     * Insert the node onto the tail of the list.
      */
 
-    rwp->state[index] = waiting;
-    DIMINUTO_LOG_DEBUG("%s %d WAITING %dreading %dwriting %dwaiting", label, index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+    diminuto_list_dataset(np, (void *)waiting);
+    diminuto_list_insert(diminuto_list_prev(&(rwp->list)), np);
+    rwp->waiting += 1;
+
+    DIMINUTO_LOG_DEBUG("%s WAITING %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
 
     /*
-     * Wait until this thread is signaled, while at the head of the ring, and
+     * Wait until this thread is signaled, while at the head of the list, and
      * specifically selected. Note that POSIX doesn't guarantee FIFO
      * behavior on the part of condition variables. Use a cleanup handler to
-     * reconcile the slot in the ring if the caller is cancelled. We only
+     * reconcile the node in the list if the caller is cancelled. We only
      * return from the wait for two reasons: the wait failed or the waiter
      * is ready (activated). It is possible (I think) that both can be true!
      */
 
-    pthread_cleanup_push(wait_cleanup, &(rwp->state[index]));
+    pthread_cleanup_push(wait_cleanup, np);
 
-        rc = wait_conditional(rwp, index, pending, conditionp, timeout);
+        rc = wait_conditional(rwp, np, pending, conditionp, timeout);
 
     pthread_cleanup_pop(0);
 
     /*
-     * Normally I would suppress error messages for ETIMEDOUT and EINTR because
-     * those can be normal occurrences in many circumstances; but not this one:
-     * no silent failures. We emit an error message even if (below) the caller
-     * is in fact activated.
+     * Remove the node from (presumably) the head of the list.
      */
 
-    if (rc != 0) {
-        errno = rc;
-        diminuto_perror("condition: wait");
-    }
+    diminuto_list_remove(np);
+    rwp->waiting -= 1;
+    diminuto_list_dataset(np, (void *)RUNNING);
 
-    /*
-     * Consume this token and let the next waiter become the head
-     * of the ring. The initial check for an error return from above
-     * is made more complicated by the fact that I suspect there is a
-     * race condition that can stall the lock: the timed wait expired
-     * after another thread activated the waiting reader or writer but
-     * before the waiter reacquired the mutex and checked the wait exit
-     * condition. If the waiter has been activated, we don't really care
-     * that the wait failed. To ignore it would be to stall the progress
-     * of the waiters.
-     */
-
-    if (!ready(rwp, index, pending)) {
-        rwp->state[index] = IGNORE;
-    } else if (diminuto_ring_consumer_request(&(rwp->ring), 1) != index) {
-        rc = DIMINUTO_READERWRITER_UNEXPECTED;
-        errno = rc;
-        diminuto_perror("condition: consumer");
-    } else {
-        DIMINUTO_LOG_DEBUG("%s %d RUNNING %dreading %dwriting %dwaiting", label, index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
-    }
+    DIMINUTO_LOG_DEBUG("%s RUNNING %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
 
     return rc;
 }
 
 /**
- * Signal a waiting thread whose state token at the head of the state
- * ring buffer (if anyway). Prior to signaling the waiting thread,
- * the state token is changed from a waiting token to a pending token.
+ * Signal a waiting thread who is at the head of the list.
+ * Prior to signaling the waiting thread, the state is changed from a
+ * waiting state to a pending state.
  * @param rwp points to the Reader Writer object.
  * @param label is a string used for logging.
- * @param index is the index at the tail of the ring.
+ * @param np points to the thread local list node for the calling thread.
  * @param pending is the pending role to be used: READING or WRITING.
  * @param conditionp points to the condition variable in the object to use.
  * @return 0 for success, or an error number otherwise.
  */
-static int broadcast(diminuto_readerwriter_t * rwp, const char * label, int index, role_t pending, pthread_cond_t * conditionp)
+static int broadcast(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t pending, pthread_cond_t * conditionp)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
+    role_t role = NONE;
 
-    rwp->state[index] = pending;
+    /*
+     * We have to set the new role before we broadcast, because
+     * the waiting thread may wake up and run before we return
+     * from the broadcast.
+     */
+
+    role = (role_t)diminuto_list_data(np);
+    diminuto_list_dataset(np, (void *)pending);
 
     if ((rc = pthread_cond_broadcast(conditionp)) != 0) {
         errno = rc;
         diminuto_perror("broadcast: pthread_cond_broadcast");
+        diminuto_list_dataset(np, (void *)role);
     } else {
-        DIMINUTO_LOG_DEBUG("%s %d SIGNALED %dreading %dwriting %dwaiting", label, index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("%s SIGNALED %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
     }
 
     return rc;
@@ -422,39 +552,24 @@ static int broadcast(diminuto_readerwriter_t * rwp, const char * label, int inde
  ******************************************************************************/
 
 /**
- * Suspend the caller until the desired role is at the head of the ring.
+ * Suspend the caller until it is at the head of the list with the desired role.
  * @param rwp points to the Reader Writer object.
+ * @param np points to the thread local list node for the calling thread.
  * @param role is the role of the calling thread: READER or WRITER.
- * @param indexp is a value-result parameter into which the index is placed.
  * @param timeout is a timeout duration in ticks.
  * @return 0 for success, or an errno number otherwise.
  */
-static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp, diminuto_ticks_t timeout)
+static int suspend(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t role, diminuto_ticks_t timeout)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
-    int index = -1;
 
-    if ((index = diminuto_ring_producer_request(&(rwp->ring), 1)) < 0) {
+    if (role == READER) {
 
-        /*
-         * There isn't enough room in the ring that the application provided.
-         */
-
-        rc = DIMINUTO_READERWRITER_FULL;
-        errno = rc;
-        diminuto_perror("suspend: producer");
-
-    } else if (role == READER) {
-
-        if ((rc = condition(rwp, "Reader", index, READER, READING, &(rwp->reader), timeout)) == 0) {
-            *indexp = index; /* Just for logging. */
-        }
+        rc = condition(rwp, "Reader", np, READER, READING, &(rwp->reader), timeout);
 
     } else if (role == WRITER) {
 
-        if ((rc = condition(rwp, "Writer", index, WRITER, WRITING, &(rwp->writer), timeout)) == 0) {
-            *indexp = index; /* Just for logging. */
-        }
+        rc = condition(rwp, "Writer", np, WRITER, WRITING, &(rwp->writer), timeout);
 
     } else {
 
@@ -463,7 +578,7 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp, dim
          */
 
         errno = rc;
-        diminuto_perror("suspend: role");
+        diminuto_perror("diminuto_readerwriter: suspend: role");
 
     }
 
@@ -471,99 +586,100 @@ static int suspend(diminuto_readerwriter_t * rwp, role_t role, int * indexp, dim
 }
 
 /**
- * Resume the thread at the head of the ring whose token matches that
- * of the specified role, or any role if the role is ANY.
+ * Resume the thread at the head of the list whose role matches that
+ * of the required role, or any role if the role is ANY.
  * @param rwp points to the Reader Writer object.
- * @param role is the required role: READER, WRITER, or ANY.
+ * @param required is the required role: READER, WRITER, or ANY.
  * @return the role of the thread signaled: READER or WRITER.
  */
-static role_t resume(diminuto_readerwriter_t * rwp, role_t role)
+static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
 {
     role_t result = NONE;
-    int index = -1;
+    role_t role = NONE;
+    diminuto_list_t * np = (diminuto_list_t *)0;
 
-    if ((index = head(rwp)) < 0) {
+    if ((np = head(rwp)) != (diminuto_list_t *)0) {
 
-        /*
-         * There are no one waiting. We're done.
-         */
+        role = (role_t)diminuto_list_data(np);
 
-    } else if ((rwp->state[index] == READER) && ((role == READER) || (role == ANY))) {
+        if ((role == READER) && ((required == READER) || (required == ANY))) {
 
-        /*
-         * The next waiter is a reader. Signal it. It will resume
-         * the next waiter if it is also a reader. We do a broadcast
-         * because POSIX doesn't guarantee FIFO behavior on the part
-         * of condition variables. The signaled reader only resumes
-         * if it is at the head of the ring and it was placed into the
-         * pending state.
-         */
-
-        if (broadcast(rwp, "Reader", index, READING, &(rwp->reader)) == 0) {
-            result = READER;
-        }
-
-    } else if ((rwp->state[index] == WRITER) && ((role == WRITER) || (role == ANY))) {
-
-        /*
-         * The next waiter is a writer. Signal it. When it is done
-         * writing it will resume the next head of the ring,
-         * whatever it is. We do a broadcast because POSIX doesn't
-         * guarantee FIFO behavior on the part of condition variables.
-         * The signaled writer only resumes if it is at the head
-         * of the ring and it was placed into the pending state.
-         */
-
-        if (broadcast(rwp, "Writer", index, WRITING, &(rwp->writer)) == 0) {
-            result = WRITER;
-        }
-
-    } else {
-
-        /*
-         * The rest of this is just error checking because I'm paranoid.
-         */
-
-        switch (role) {
-        case READER:
-        case WRITER:
-        case ANY:
-            break;
-        default:
             /*
-             * The caller passed a role that wasn't READER, WRITER, or ANY,
-             * We emit an error message, but still pass back NONE.
+             * The next waiter is a reader. Signal it. It will resume
+             * the next waiter if it is also a reader. We do a broadcast
+             * because POSIX doesn't guarantee FIFO behavior on the part
+             * of condition variables. The signaled reader only resumes
+             * if it is at the head of the list and it was placed into the
+             * pending state.
              */
-            errno = DIMINUTO_READERWRITER_ERROR;
-            diminuto_perror("resume: role");
-            break;
-        }
 
-        switch (rwp->state[index]) {
-        case READER:
-        case WRITER:
-        case READING:
-        case WRITING:
-            break;
-        default:
+            if (broadcast(rwp, "Reader", np, READING, &(rwp->reader)) == 0) {
+                result = READER;
+            }
+
+        } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
+
             /*
-             * The state is invalid. This should be impossible.
-             * We emit an error message, but still pass back NONE.
+             * The next waiter is a writer. Signal it. When it is done
+             * writing it will resume the next head of the list,
+             * whatever it is. We do a broadcast because POSIX doesn't
+             * guarantee FIFO behavior on the part of condition variables.
+             * The signaled writer only resumes if it is at the head
+             * of the list and it was placed into the pending state.
              */
-            errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("resume: state");
-            break;
+
+            if (broadcast(rwp, "Writer", np, WRITING, &(rwp->writer)) == 0) {
+                result = WRITER;
+            }
+
+        } else {
+
+            /*
+             * The rest of this is just error checking because I'm paranoid.
+             */
+
+            switch (required) {
+            case READER:
+            case WRITER:
+            case ANY:
+                break;
+            default:
+                /*
+                 * The caller passed a role that wasn't READER, WRITER, or ANY,
+                 * We emit an error message, but still pass back NONE.
+                 */
+                errno = DIMINUTO_READERWRITER_ERROR;
+                diminuto_perror("diminuto_readerwriter: resume: required");
+                break;
+            }
+
+            switch (role) {
+            case READER:
+            case WRITER:
+            case READING:
+            case WRITING:
+                break;
+            default:
+                /*
+                 * The state is invalid. This should be impossible.
+                 * We emit an error message, but still pass back NONE.
+                 */
+                errno = DIMINUTO_READERWRITER_UNEXPECTED;
+                diminuto_perror("diminuto_readerwriter: resume: state");
+                break;
+            }
+
+            /*
+             * If no error detected: either the thread at the head of the list
+             * was not the role the caller wanted, or it is a thread that is
+             * pending and has not yet been scheduled to run. This is a possible
+             * state, and is especially likely for the multiple concurrent
+             * readers scenario in which a subsequent reader has ended after a
+             * prior reader has resumed the reader at the head of the list but
+             * that reader has not yet run.
+             */
         }
 
-        /*
-         * If no error detected: either the token at the head of the ring was
-         * not the role the caller wanted, or it represents a thread that is
-         * pending and has not yet been scheduled to run. This is a possible
-         * state, and is especially likely for the multiple concurrent readers
-         * scenario in which a subsequent reader has ended after a prior
-         * reader has resumed the reader at the head of the ring but that
-         * reader has not yet run.
-         */
     }
 
     return result;
@@ -584,7 +700,7 @@ static void mutex_cleanup(void * vp)
 
     if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("mutex_cleanup: pthread_mutex_unlock");
+        diminuto_perror("diminuto_readerwriter: mutex_cleanup: pthread_mutex_unlock");
     }
 }
 
@@ -620,14 +736,20 @@ static void mutex_cleanup(void * vp)
 int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
-    int index = -1;
+    diminuto_list_t * np = (diminuto_list_t *)0;
     role_t role = NONE;
+
+    if ((np = acquire()) == (diminuto_list_t *)0) {
+        return result;
+    }
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("Reader - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Reader BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
-        if ((rwp->writing <= 0) && (head(rwp) < 0)) {
+        diminuto_list_initif(&(rwp->list));
+
+        if ((rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
             /*
              * There are zero or more active writers and no one is waiting.
@@ -650,7 +772,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if (suspend(rwp, READER, &index, timeout) == 0) {
+        } else if (suspend(rwp, np, READER, timeout) == 0) {
 
             /*
              * Either there was an active writer or someone is waiting.
@@ -669,9 +791,9 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         }
 
         /*
-         * If we are running, a reader at the head of the ring can
+         * If we are running, a reader at the head of the list can
          * run as well. When such a reader runs, it will also check
-         * for another reader at the head of the ring.
+         * for another reader at the head of the list.
          */
 
         if (result < 0) {
@@ -681,7 +803,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         } else if ((role = resume(rwp, READER)) == NONE) {
 
             /*
-             * There isn't a reader at the head of the ring to resume.
+             * There isn't a reader at the head of the list to resume.
              */
 
         } else if (role == READER) {
@@ -707,20 +829,16 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
          * IMO) that the reader count already be incremented for any waiting
          * Reader that we resumed before we exit the critical section. Any
          * Reader that we resume will itself resume a Reader if it follows
-         * that Reader in the state ring buffer.
+         * that Reader in the wait list.
          */
 
-        if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Reader - BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
-        } else {
-            DIMINUTO_LOG_DEBUG("Reader %d BEGIN exit %dreading %dwriting %dwaiting %d", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
-        }
+        DIMINUTO_LOG_DEBUG("Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_reader_begin");
         }
 
-        diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0)) || (result < 0));
+        diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || (result < 0));
 
     END_CRITICAL_SECTION;
 
@@ -734,7 +852,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("Reader - END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Reader END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
 
@@ -745,7 +863,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         rwp->reading -= 1;
 
         /*
-         * Try to schedule the head of the ring to run.
+         * Try to schedule the head of the list to run.
          */
 
         if (rwp->reading > 0) {
@@ -804,13 +922,13 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
          * section.
          */
 
-        DIMINUTO_LOG_DEBUG("Reader - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Reader END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_reader_end");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || ((rwp->reading == 0) && (rwp->writing == 0) && (diminuto_ring_used(&(rwp->ring)) == 0)));
+        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
 
     END_CRITICAL_SECTION;
 
@@ -820,18 +938,25 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
 {
     int result = -1;
-    int index = -1;
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    if ((np = acquire()) == (diminuto_list_t *)0) {
+        return result;
+    }
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("Writer - BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Writer BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
-        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) < 0)) {
+        diminuto_list_initif(&(rwp->list));
+
+        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) != (diminuto_list_t *)0)) {
 
             /*
              * There are no active readers or writers and no one waiting.
              * Writer can proceed. Increment.
              */
+
             rwp->writing += 1;
             result = 0;
 
@@ -848,13 +973,13 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if (suspend(rwp, WRITER, &index, timeout) == 0) {
+        } else if (suspend(rwp, np, WRITER, timeout) == 0) {
 
             /*
              * Either there was at least active readers, an active
              * writer, or someone is waiting. (A waiter could be a thread
              * that has been resumed but has not run yet to remove itself
-             * from the ring.) The writer count has already been incremented
+             * from the list.) The writer count has already been incremented
              * by the thread that resumed us.
              */
 
@@ -866,17 +991,13 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         }
 
-        if (index < 0) {
-            DIMINUTO_LOG_DEBUG("Writer - BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
-        } else {
-            DIMINUTO_LOG_DEBUG("Writer %d BEGIN exit %dreading %dwriting %dwaiting %d", index, rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)), result);
-        }
+        DIMINUTO_LOG_DEBUG("Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_writer_begin");
         }
 
-        diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1)) || (result < 0));
+        diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || (result < 0));
 
     END_CRITICAL_SECTION;
 
@@ -890,7 +1011,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("Writer - END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Writer END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
 
@@ -902,7 +1023,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         /*
          * There should be no readers or writers running.
-         * Try to schedule the head of the ring to run.
+         * Try to schedule the head of the list to run.
          */
 
         if ((role = resume(rwp, ANY)) == NONE) {
@@ -949,13 +1070,13 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
          * section.
          */
 
-        DIMINUTO_LOG_DEBUG("Writer - END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, diminuto_ring_used(&(rwp->ring)));
+        DIMINUTO_LOG_DEBUG("Writer END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->fp != (FILE *)0) {
             dump(rwp->fp, rwp, "diminuto_writer_end");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0)) || ((rwp->reading == 0) && (rwp->writing == 1)) || ((rwp->reading == 0) && (rwp->writing == 0) && (diminuto_ring_used(&(rwp->ring)) == 0)));
+        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
 
     END_CRITICAL_SECTION;
 

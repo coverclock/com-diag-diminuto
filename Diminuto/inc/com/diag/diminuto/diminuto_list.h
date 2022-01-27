@@ -359,7 +359,9 @@ static inline void * diminuto_list_data(const diminuto_list_t * nodep) {
 
 /**
  * Return true if the list is uninitialized, perhaps having had its storage
- * initialized using DIMINUTO_LIST_INITIALIZER.
+ * initialized using DIMINUTO_LIST_INITIALIZER. Unitialized, in this context,
+ * means the root pointer is null; presumably the next and prev points will
+ * be null as well, but this isn't checked.
  * @param nodep points to a node.
  * @return true if the list is uninitialized, false otherwise.
  */
@@ -413,7 +415,9 @@ static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, cons
  ******************************************************************************/
 
 /**
- * Initialize a node if it is uninitialized.
+ * Initialize a node if it is uninitialized. Unitialized, in this context,
+ * means the root pointer is null; presumably the next and prev points will
+ * be null as well, but this isn't checked.
  * @param nodep points to the node to be conditionally initialized.
  * @return a pointer to the node.
  */

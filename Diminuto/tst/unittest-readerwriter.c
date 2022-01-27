@@ -23,13 +23,6 @@
  * also puts on an interesting show.
  *
  * COM_DIAG_DIMINUTO_LOG_MASK=0xfc unittest-readerwriter -d
- *
- * If you are using time outs other than 0 a.k.a. POLL (which I support,
- * and test, but find problematic), the following sequence is useful to
- * figure out how much of the ring, beyond the maximum number of threads,
- * you are using.
- *
- * unittest-readerwriter -d 2>&1 | grep ignored | awk '{print $7;}' | sort -n | uniq
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -39,13 +32,14 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_countof.h"
-#include "com/diag/diminuto/diminuto_ring.h"
+#include "com/diag/diminuto/diminuto_list.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
 #include <errno.h>
+#include "../src/diminuto_readerwriter.h"
 
 /******************************************************************************/
 
@@ -226,7 +220,6 @@ int main(int argc, char * argv[])
         TEST();
 
         ASSERT(DIMINUTO_READERWRITER_ERROR == EIO);
-        ASSERT(DIMINUTO_READERWRITER_FULL == ENOSPC);
         ASSERT(DIMINUTO_READERWRITER_UNEXPECTED == EFAULT);
         ASSERT(DIMINUTO_READERWRITER_TIMEDOUT == ETIMEDOUT);
         ASSERT(DIMINUTO_READERWRITER_INTERRUPTED == EINTR);
@@ -251,7 +244,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER((diminuto_readerwriter_state_t *)0, 0);
+        diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER;
 
         TEST();
 
@@ -265,37 +258,35 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[100];
-        diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER(state, diminuto_countof(state));
+        diminuto_readerwriter_t rw = DIMINUTO_READERWRITER_INITIALIZER;
 
         TEST();
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == (diminuto_list_t *)0);
+        ASSERT(rw.list.prev == (diminuto_list_t *)0);
+        ASSERT(rw.list.root == (diminuto_list_t *)0);
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         STATUS();
     }
 
     {
-        diminuto_readerwriter_state_t state[200];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -303,40 +294,39 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         { ASSERT(diminuto_reader_begin(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_begin(&rw) == 0); }
-                ASSERT(rw.ring.measure == 0);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -344,86 +334,85 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
-                ASSERT(rw.ring.measure == 0);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 1);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
-                ASSERT(rw.ring.measure == 0);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 1);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
-                ASSERT(rw.ring.measure == 0);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -431,34 +420,33 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success = 0;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         { ASSERT(diminuto_writer_begin(&rw) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         { ASSERT(diminuto_writer_end(&rw) == 0); }
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -467,56 +455,55 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         { ASSERT(diminuto_writer_begin_timed(&rw, frequency) == 0); }
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             ASSERT(errno == ETIMEDOUT);
-            ASSERT(rw.ring.measure == 1);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
         { ASSERT(diminuto_writer_end(&rw) == 0); }
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -524,34 +511,33 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success = 0;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -560,34 +546,33 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success = 0;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -596,61 +581,60 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -659,61 +643,60 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -722,103 +705,102 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_readerwriter_state_t state[64];
         diminuto_readerwriter_t rw;
         int success;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
-        ASSERT(rw.state == state);
-        ASSERT(rw.ring.capacity == diminuto_countof(state));
-        ASSERT(rw.ring.measure == 0);
-        ASSERT(rw.ring.producer == 0);
-        ASSERT(rw.ring.consumer == 0);
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
             DIMINUTO_READER_BEGIN(&rw);
-                ASSERT(rw.ring.measure == 0);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
                 success = success && !0;
                 DIMINUTO_READER_BEGIN(&rw);
-                    ASSERT(rw.ring.measure == 0);
                     ASSERT(rw.reading == 3);
                     ASSERT(rw.writing == 0);
+                    ASSERT(rw.waiting == 0);
                     success = success && !0;
             DIMINUTO_READER_END;
             DIMINUTO_READER_END;
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = success && !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
-            ASSERT(rw.ring.measure == 0);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
             success = !0;
         DIMINUTO_READER_END;
 
-        ASSERT(rw.ring.measure == 0);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -831,12 +813,11 @@ int main(int argc, char * argv[])
         diminuto_thread_t readers[3];
         struct Context reading[diminuto_countof(readers)];
         void * result[diminuto_countof(readers)];
-        diminuto_readerwriter_state_t state[diminuto_countof(readers)];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
@@ -896,12 +877,11 @@ int main(int argc, char * argv[])
         diminuto_thread_t writers[3];
         struct Context writing[diminuto_countof(writers)];
         void * result[diminuto_countof(writers)];
-        diminuto_readerwriter_state_t state[diminuto_countof(writers)];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
@@ -964,12 +944,11 @@ int main(int argc, char * argv[])
         struct Context writing[diminuto_countof(writers)];
         void * reads[countof(readers)];
         void * writes[countof(writers)];
-        diminuto_readerwriter_state_t state[diminuto_countof(readers) + diminuto_countof(writers)];
         diminuto_readerwriter_t rw;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
@@ -1086,24 +1065,12 @@ int main(int argc, char * argv[])
         static const int MAXIMUM = 64;
         static const int TOTAL = 64 + 8 + 4 + 2;
         static const int EXTRA = 100;
-        /*
-         * When allowing for failures that place IGNORE tokens in the
-         * state ring, it can be difficult to calcualte how big the
-         * ring needs to be. It all depends on how many times the reader
-         * or writer can retry before its IGNORE tokens are removed from
-         * the head of the ring by it or another reader or writer. The
-         * number below is just a SWAG based on my own testing. Because
-         * the parameters for each reader and writer below are deliberately
-         * random, this number might be too low. You'll know it's too low
-         * when you start seeing NOSPC ("No space left on device") errors.
-         */
-        diminuto_readerwriter_state_t state[TOTAL + EXTRA];
         diminuto_readerwriter_t rw;
         int ii;
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_init(&rw, state, diminuto_countof(state)) == &rw);
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
 
