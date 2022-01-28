@@ -77,25 +77,50 @@ static int initialized = 0;
 static pthread_key_t key;
 
 /*******************************************************************************
- * THREAD LOCAL
+ * CODE GENERATORS
  ******************************************************************************/
 
 /**
- * Release the object pointed to by the Reader Writer thread local storage.
- * Typically this has to be done when a thread terminates, for example by
- * exiting or by cancellation. In other languages, this would be known as
- * a destructor.
- * @param vp points to the thread local object for the terminating thread.
+ * @def BEGIN_CRITICAL_SECTION
+ * This is the opening bracket of a critical section using the mutex
+ * in the Reader Writer object pointed to by @a _RWP_.
  */
-static void key_cleanup(void * vp)
+#define BEGIN_CRITICAL_SECTION(_RWP_) \
+    do { \
+        diminuto_readerwriter_t * critical_section_rwp = (diminuto_readerwriter_t *)0; \
+        critical_section_rwp = (_RWP_); \
+        if ((errno = pthread_mutex_lock(&(critical_section_rwp->mutex))) != 0) { \
+            diminuto_perror("BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
+        } else { \
+            pthread_cleanup_push(mutex_cleanup, critical_section_rwp)
+
+/**
+ * @def END_CRITICAL_SECTION
+ * This is the closing bracket of a critical section using the mutex
+ * in the Reader Writer object pointed to by @a _RWP_.
+ */
+#define END_CRITICAL_SECTION \
+            pthread_cleanup_pop(!0); \
+            critical_section_rwp = (diminuto_readerwriter_t *)0; \
+        } \
+    } while (0)
+
+/*******************************************************************************
+ * CALLBACKS
+ ******************************************************************************/
+
+/**
+ * Clean up the mutex if an abnormal termination occurrs.
+ * @param vp points to the Reader Writer object.
+ */
+static void mutex_cleanup(void * vp)
 {
-    if (vp != (void *)0) {
-        diminuto_list_t * np = (diminuto_list_t *)0;
-        np = (diminuto_list_t *)vp;
-        /* TODO: use mutex in root Reader Writer if present. */
-        (void)diminuto_list_remove(np);
-        free(np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Local %p RELEASED", np);
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
+    int rc = DIMINUTO_READERWRITER_ERROR;
+
+    if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
+        errno = rc;
+        diminuto_perror("diminuto_readerwriter: mutex_cleanup: pthread_mutex_unlock");
     }
 }
 
@@ -116,6 +141,61 @@ static void exit_cleanup()
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Global %p RELEASED", np);
     }
 }
+
+/**
+ * Release the object pointed to by the Reader Writer thread local storage.
+ * Typically this has to be done when a thread terminates, for example by
+ * exiting or by cancellation. In other languages, this would be known as
+ * a destructor. The implementation of this is not entirely thread safe
+ * in the context of thread cancellation, especially asynchronous
+ * cancellation.
+ * @param vp points to the thread local object for the terminating thread.
+ */
+static void key_cleanup(void * vp)
+{
+    if (vp != (void *)0) {
+        diminuto_list_t * np = (diminuto_list_t *)vp;
+        diminuto_list_t * rp = (diminuto_list_t *)0;
+        diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
+
+        if (diminuto_list_isroot(np)) {
+            /* Do nothing. */
+        } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
+            /* Do nothing. */
+        } else {
+            BEGIN_CRITICAL_SECTION(rwp);
+
+                (void)diminuto_list_remove(np);
+
+            END_CRITICAL_SECTION;
+        }
+        free(np);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Local %p RELEASED", np);
+    }
+}
+
+/**
+ * Clean up the state if an abnormal wait occurs. Note that
+ * we can't remove the node from the list because we have no
+ * way of acquiring the mutex for the Reader Writer structure.
+ * So we set its state to FAILED and let someone who does hold
+ * the mutex clean it up.
+ * @param vp points to the thread local object for the associated thread.
+ */
+static void wait_cleanup(void * vp)
+{
+#if 0
+    diminuto_list_t * np = (diminuto_list_t *)vp;
+
+    diminuto_list_dataset(np, (void *)FAILED);
+#else
+    key_cleanup(vp);
+#endif
+}
+
+/*******************************************************************************
+ * THREAD LOCAL
+ ******************************************************************************/
 
 /**
  * Create the key used to identify the thread local storage associated with
@@ -461,21 +541,6 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
 }
 
 /**
- * Clean up the state if an abnormal wait occurs. Note that
- * we can't remove the node from the list because we have no
- * way of acquiring the mutex for the Reader Writer structure.
- * So we set its state to FAILED and let someone who does hold
- * the mutex clean it up.
- * @param vp points to the thread local object for the associated thread.
- */
-static void wait_cleanup(void * vp)
-{
-    diminuto_list_t * np = (diminuto_list_t *)vp;
-
-    diminuto_list_dataset(np, (void *)FAILED);
-}
-
-/**
  * Place the calling thread in a wait on the condition variable in the
  * Reader Writer object identified by the specified role. The local thread
  * object is inserted into the tail of the wait list before the thread
@@ -708,50 +773,6 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
 
     return result;
 }
-
-/*******************************************************************************
- * GENERATORS
- ******************************************************************************/
-
-/**
- * Clean up the mutex if an abnormal termination occurrs.
- * @param vp points to the Reader Writer object.
- */
-static void mutex_cleanup(void * vp)
-{
-    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)vp;
-    int rc = DIMINUTO_READERWRITER_ERROR;
-
-    if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
-        errno = rc;
-        diminuto_perror("diminuto_readerwriter: mutex_cleanup: pthread_mutex_unlock");
-    }
-}
-
-/**
- * @def BEGIN_CRITICAL_SECTION
- * This is the opening bracket of a critical section using the mutex
- * in the Reader Writer object pointed to by @a _RWP_.
- */
-#define BEGIN_CRITICAL_SECTION(_RWP_) \
-    do { \
-        diminuto_readerwriter_t * critical_section_rwp = (diminuto_readerwriter_t *)0; \
-        critical_section_rwp = (_RWP_); \
-        if ((errno = pthread_mutex_lock(&(critical_section_rwp->mutex))) != 0) { \
-            diminuto_perror("BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
-        } else { \
-            pthread_cleanup_push(mutex_cleanup, critical_section_rwp)
-
-/**
- * @def END_CRITICAL_SECTION
- * This is the closing bracket of a critical section using the mutex
- * in the Reader Writer object pointed to by @a _RWP_.
- */
-#define END_CRITICAL_SECTION \
-            pthread_cleanup_pop(!0); \
-            critical_section_rwp = (diminuto_readerwriter_t *)0; \
-        } \
-    } while (0)
 
 /*******************************************************************************
  * POLICY
