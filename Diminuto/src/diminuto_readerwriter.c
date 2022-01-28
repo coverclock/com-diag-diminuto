@@ -136,7 +136,6 @@ static void exit_cleanup()
     if ((vp = pthread_getspecific(key)) != (void *)0) {
         diminuto_list_t * np = (diminuto_list_t *)0;
         np = (diminuto_list_t *)vp;
-        (void)diminuto_list_remove(np);
         free(np);
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Global %p RELEASED", np);
     }
