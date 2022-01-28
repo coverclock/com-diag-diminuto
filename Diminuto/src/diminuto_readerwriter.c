@@ -90,7 +90,7 @@ static pthread_key_t key;
         diminuto_readerwriter_t * critical_section_rwp = (diminuto_readerwriter_t *)0; \
         critical_section_rwp = (_RWP_); \
         if ((errno = pthread_mutex_lock(&(critical_section_rwp->mutex))) != 0) { \
-            diminuto_perror("BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
+            diminuto_perror("diminuto_readerwriter: BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
         } else { \
             pthread_cleanup_push(mutex_cleanup, critical_section_rwp)
 
