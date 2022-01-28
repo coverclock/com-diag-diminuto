@@ -172,10 +172,8 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
     } else if ((rc = pthread_cond_init(&(rwp->writer), (pthread_condattr_t *)0)) != 0) {
         errno = rc;
         diminuto_perror("diminution_readerwriter_init: pthread_cond_init: writer");
-    } else if (diminuto_list_init(&(rwp->list)) != &(rwp->list)) {
-        errno = DIMINUTO_READERWRITER_UNEXPECTED;
-        diminuto_perror("diminution_readerwriter_init: diminuto_list_init");
     } else {
+        diminuto_list_datainit(&(rwp->list), (void *)0);
         rwp->fp = (FILE *)0;
         rwp->reading = 0;
         rwp->writing = 0;
@@ -754,6 +752,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("Reader BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_initif(&(rwp->list));
+        rwp->list.data = (void *)0;
 
         if ((rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
@@ -955,6 +954,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("Writer BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_initif(&(rwp->list));
+        rwp->list.data = (void *)0;
 
         if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
