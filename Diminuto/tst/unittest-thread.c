@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Thread feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -309,6 +309,7 @@ int main(void)
 
     {
         TEST();
+        COMMENT("main.pthread_self=0x%08lx\n", pthread_self());
         ASSERT(pthread_equal(pthread_self(), diminuto_thread_self()));
         ASSERT(diminuto_thread_yield() == 0);
         ASSERT(diminuto_thread_notifications() == 0);

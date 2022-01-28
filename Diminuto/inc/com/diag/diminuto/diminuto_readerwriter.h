@@ -28,9 +28,9 @@
  * Although I've made some effort to make this work correctly in the face
  * of thread cancellation, I haven't tested that specific scenario - and I
  * probably won't. I'm not really a believer in cancellation in general, and
- * asynchronous cancellation terrifies me. This is why Diminuto threads -
- * on which Reader Writer does NOT depend - provides a its own notification
- * mechanism.
+ * asynchronous cancellation terrifies me (it should terrify you, too).
+ * This is why Diminuto threads - on which Reader Writer does NOT depend -
+ * provides a its own notification mechanism.
  *
  * REFERENCES
  *

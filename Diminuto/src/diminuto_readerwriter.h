@@ -13,4 +13,9 @@
  * This file defines the private API for the Reader Writer feature.
  */
 
+/*
+ * This private API will be defined when and if I have to expose
+ * some of the internal functions for unit testing.
+ */
+
 #endif

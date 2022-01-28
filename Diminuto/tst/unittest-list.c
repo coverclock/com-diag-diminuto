@@ -230,6 +230,56 @@ int main(void)
 
         STATUS();
     }
+
+    {
+        /* Static Initializer */
+
+        static const diminuto_list_t HEAD = DIMINUTO_LIST_INITIALIZER;
+        char datum[] = "datum";
+        char other[] = "other";
+
+        TEST();
+
+        ASSERT(sizeof(head) == sizeof(HEAD));
+        memcpy(&head, &HEAD, sizeof(head));
+        ASSERT(head.next == (diminuto_list_t *)0);
+        ASSERT(head.prev == (diminuto_list_t *)0);
+        ASSERT(head.root == (diminuto_list_t *)0);
+        ASSERT(head.data == (void *)0);
+
+        head.root = &head;
+        diminuto_list_initif(&head);
+        ASSERT(head.next == (diminuto_list_t *)0);
+        ASSERT(head.prev == (diminuto_list_t *)0);
+        ASSERT(head.root == &head);
+        ASSERT(head.data == (void *)0);
+
+        head.root = (diminuto_list_t *)0;
+        diminuto_list_initif(&head);
+        ASSERT(head.next == &head);
+        ASSERT(head.prev == &head);
+        ASSERT(head.root == &head);
+        ASSERT(head.data == (void *)0);
+        ASSERT(diminuto_list_isempty(&head));
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        diminuto_list_datasetif(&head, datum);
+        ASSERT((const char *)diminuto_list_data(&head) == datum);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        diminuto_list_datasetif(&head, other);
+        ASSERT((const char *)diminuto_list_data(&head) == datum);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        diminuto_list_dataset(&head, other);
+        ASSERT((const char *)diminuto_list_data(&head) == other);
+        audit(__FILE__, __LINE__, &head, &head, &head, DIMINUTO_LIST_NULL);
+
+        ASSERT(diminuto_list_fini(&head) == (diminuto_list_t *)0);
+
+        STATUS();
+    }
+
     {
         /* Stack Operations */
 

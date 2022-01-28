@@ -283,7 +283,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -305,7 +305,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -345,7 +345,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -432,7 +432,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -466,7 +466,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -523,7 +523,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -558,7 +558,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -593,7 +593,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -655,7 +655,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
@@ -717,7 +717,7 @@ int main(int argc, char * argv[])
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
         ASSERT(rw.list.root == &(rw.list));
-        ASSERT(rw.list.data == (void *)0);
+        ASSERT(rw.list.data == (void *)&rw);
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);

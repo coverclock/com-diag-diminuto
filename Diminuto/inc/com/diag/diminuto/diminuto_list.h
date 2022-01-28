@@ -280,40 +280,6 @@ static inline diminuto_list_t * diminuto_list_fini(diminuto_list_t * nodep) {
 }
 
 /*******************************************************************************
- * SETTORS
- ******************************************************************************/
-
-/**
- * Set the data pointer to the data and return a pointer to the data.
- * @param nodep points to a node.
- * @param datap points to the data.
- * @return a pointer to the node.
- */
-static inline diminuto_list_t * diminuto_list_dataset(diminuto_list_t * nodep, void * datap) {
-    nodep->data = datap;
-    return nodep;
-}
-
-/**
- * Initialize a node and set its data pointer.
- * @param nodep points to a node.
- * @param datap points to the data.
- * @return a pointer to the node.
- */
-static inline diminuto_list_t * diminuto_list_datainit(diminuto_list_t * nodep, void * datap)  {
-    return diminuto_list_dataset(diminuto_list_init(nodep), datap);
-}
-
-/**
- * Initialize a node and set its data pointer to NULL.
- * @param nodep points to a node.
- * @return a pointer to the node.
- */
-static inline diminuto_list_t * diminuto_list_nullinit(diminuto_list_t * nodep) {
-    return diminuto_list_datainit(nodep, (void *)0);
-}
-
-/*******************************************************************************
  * GETTORS
  ******************************************************************************/
 
@@ -351,6 +317,40 @@ static inline diminuto_list_t * diminuto_list_root(const diminuto_list_t * nodep
  */
 static inline void * diminuto_list_data(const diminuto_list_t * nodep) {
     return nodep->data;
+}
+
+/*******************************************************************************
+ * SETTORS
+ ******************************************************************************/
+
+/**
+ * Set the data pointer to the data.
+ * @param nodep points to a node.
+ * @param datap points to the data.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_dataset(diminuto_list_t * nodep, void * datap) {
+    nodep->data = datap;
+    return nodep;
+}
+
+/**
+ * Initialize a node and set its data pointer.
+ * @param nodep points to a node.
+ * @param datap points to the data.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_datainit(diminuto_list_t * nodep, void * datap)  {
+    return diminuto_list_dataset(diminuto_list_init(nodep), datap);
+}
+
+/**
+ * Initialize a node and set its data pointer to NULL.
+ * @param nodep points to a node.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_nullinit(diminuto_list_t * nodep) {
+    return diminuto_list_datainit(nodep, (void *)0);
 }
 
 /*******************************************************************************
@@ -415,9 +415,24 @@ static inline int diminuto_list_aresiblings(const diminuto_list_t * firstp, cons
  ******************************************************************************/
 
 /**
+ * Set the data pointer to the data if it is uninitialized. Uninitialized, in
+ * this context, means the data pointer is null. This occurs when the static
+ * initializer is used.
+ * @param nodep points to a node.
+ * @param datap points to the data.
+ * @return a pointer to the node.
+ */
+static inline diminuto_list_t * diminuto_list_datasetif(diminuto_list_t * nodep, void * datap) {
+    return (diminuto_list_data(nodep) == (void *)0)
+        ? diminuto_list_dataset(nodep, datap)
+        : nodep;
+}
+
+/**
  * Initialize a node if it is uninitialized. Unitialized, in this context,
  * means the root pointer is null; presumably the next and prev points will
- * be null as well, but this isn't checked.
+ * be null as well, but this isn't checked. This occurs when the static
+ * initializer is used.
  * @param nodep points to the node to be conditionally initialized.
  * @return a pointer to the node.
  */
