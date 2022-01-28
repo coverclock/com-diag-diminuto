@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -64,8 +64,8 @@ typedef enum Role {
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
- * This is the file global flag that, if true, indicates that the key value
- * used to access thread local data used by Reader Writer has been initialized.
+ * This is the file global flag that insures that the initialization routine
+ * is performed once and only once.
  */
 static int initialized = 0;
 
@@ -256,7 +256,7 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dwriting", rwp->writing);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwaiting", rwp->waiting);
+    length = snprintf(bp, size, " %dwaiting {", rwp->waiting);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     rp = diminuto_list_root(&(rwp->list));
@@ -273,13 +273,13 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
             case RUNNING: ++running; break; /* Should be zero. */
             default:      ++unknown; break; /* Should be zero. */
         }
-        length = snprintf(bp, size, " [%d]{%c}", queued, role);
+        length = snprintf(bp, size, " %c", role);
         if ((0 < length) && (length < size)) { bp += length; size -= length; }
         ++queued;
         np = diminuto_list_next(np);
     }
 
-    length = snprintf(bp, size, " %dqueued", queued);
+    length = snprintf(bp, size, " } %dqueued", queued);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dstarted", started);
@@ -424,7 +424,13 @@ static int wait_conditional(diminuto_readerwriter_t * rwp, diminuto_list_t * np,
         absolutetime.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
 
         do {
-            if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) != 0) {
+            if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) == 0) {
+                /* Do nothing. */
+            } else if (rc == ETIMEDOUT) {
+                errno = rc;
+                /* Suppress error message. */
+                break;
+            } else {
                 errno = rc;
                 diminuto_perror("diminuto_readerwriter: wait_conditional: pthread_cond_timedwait");
                 break;
@@ -950,7 +956,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         diminuto_list_initif(&(rwp->list));
 
-        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) != (diminuto_list_t *)0)) {
+        if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
             /*
              * There are no active readers or writers and no one waiting.

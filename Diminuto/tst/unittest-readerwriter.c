@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -373,13 +373,13 @@ int main(int argc, char * argv[])
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
-            ASSERT(rw.waiting == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
-            ASSERT(rw.waiting == 1);
+            ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
@@ -393,13 +393,13 @@ int main(int argc, char * argv[])
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
-            ASSERT(rw.waiting == 1);
+            ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
-            ASSERT(rw.waiting == 1);
+            ASSERT(rw.waiting == 0);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
