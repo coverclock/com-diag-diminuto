@@ -251,8 +251,8 @@ extern void diminuto_writer_cleanup(void * vp);
  * This is the opening bracket of a Reader section of code. The calling thread
  * will wait if necessary until the resource is available. Once access to the
  * resource is granted, the calling thread will signal (broadcast) other reader
- * threads that are waiting behind it.
- * @a _RWP_ is a pointer to an initialized Reader Writer object.
+ * threads that are waiting behind it. @a _RWP_ points to an initialized
+ * Reader Writer object; the argument is dereferenced once and only once.
  */
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
@@ -269,14 +269,14 @@ extern void diminuto_writer_cleanup(void * vp);
 #define DIMINUTO_READER_END \
             pthread_cleanup_pop(!0); \
         } \
-        diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 /**
  * @def DIMINUTO_WRITER_BEGIN
  * This is the opening bracket of a Writer section of code. The calling thread
- * will wait if necessary until the resource is available.
- * @a _RWP_ is a pointer to an initialized Reader Writer object.
+ * will wait if necessary until the resource is available. @a _RWP_ points to
+ * an initialized Reader Writer object; the argument is dereferenced once and
+ * only once.
  */
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
@@ -293,7 +293,6 @@ extern void diminuto_writer_cleanup(void * vp);
 #define DIMINUTO_WRITER_END \
             pthread_cleanup_pop(!0); \
         } \
-        diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 /*******************************************************************************

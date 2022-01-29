@@ -31,7 +31,7 @@
 #include "diminuto_readerwriter.h"
 
 /*******************************************************************************
- * CONSTANTS
+ * SYMBOLS
  ******************************************************************************/
 
 /**
@@ -54,7 +54,7 @@ typedef enum Role {
 } role_t;
 
 /*******************************************************************************
- * FILE GLOBAL
+ * STATICS
  ******************************************************************************/
 
 /**
@@ -77,36 +77,35 @@ static int initialized = 0;
 static pthread_key_t key;
 
 /*******************************************************************************
- * CODE GENERATORS
+ * GENERATORS
  ******************************************************************************/
 
 /**
  * @def BEGIN_CRITICAL_SECTION
  * This is the opening bracket of a critical section using the mutex
- * in the Reader Writer object pointed to by @a _RWP_.
+ * in the Reader Writer object pointed to by @a _RWP_. Note that
+ * _RWP_ is referenced more than once, so must be devoid of side
+ * effects.
  */
 #define BEGIN_CRITICAL_SECTION(_RWP_) \
     do { \
-        diminuto_readerwriter_t * critical_section_rwp = (diminuto_readerwriter_t *)0; \
-        critical_section_rwp = (_RWP_); \
-        if ((errno = pthread_mutex_lock(&(critical_section_rwp->mutex))) != 0) { \
+        if ((errno = pthread_mutex_lock(&((_RWP_)->mutex))) != 0) { \
             diminuto_perror("diminuto_readerwriter: BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
         } else { \
-            pthread_cleanup_push(mutex_cleanup, critical_section_rwp)
+            pthread_cleanup_push(mutex_cleanup, (_RWP_))
 
 /**
  * @def END_CRITICAL_SECTION
  * This is the closing bracket of a critical section using the mutex
- * in the Reader Writer object pointed to by @a _RWP_.
+ * in the Reader Writer object.
  */
 #define END_CRITICAL_SECTION \
             pthread_cleanup_pop(!0); \
-            critical_section_rwp = (diminuto_readerwriter_t *)0; \
         } \
     } while (0)
 
 /*******************************************************************************
- * CALLBACKS
+ * INTERNAL CALLBACKS
  ******************************************************************************/
 
 /**
@@ -137,7 +136,7 @@ static void exit_cleanup()
         diminuto_list_t * np = (diminuto_list_t *)0;
         np = (diminuto_list_t *)vp;
         free(np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Global %p RELEASED", np);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %p RELEASED", np);
     }
 }
 
@@ -169,7 +168,7 @@ static void key_cleanup(void * vp)
             END_CRITICAL_SECTION;
         }
         free(np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Local %p RELEASED", np);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Tnread %p RELEASED", np);
     }
 }
 
@@ -215,7 +214,7 @@ static int initialize()
         } else if ((rc = atexit(&exit_cleanup)) != 0) {
             diminuto_perror("diminuto_readerwriter: initialize: atexit");
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Global %u ACQUIRED", key);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %u ACQUIRED", key);
             initialized = !0;
         }
 
@@ -247,7 +246,7 @@ static diminuto_list_t * acquire()
         free(np);
         np = (diminuto_list_t *)0;
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Local %p ACQUIRED", np);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Thread %p ACQUIRED", np);
     }
 
     return np;
@@ -1130,7 +1129,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 }
 
 /*******************************************************************************
- * CALLBACKS
+ * EXTERNAL CALLBACKS
  ******************************************************************************/
 
 void diminuto_reader_cleanup(void * vp)
