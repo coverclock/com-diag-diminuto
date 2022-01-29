@@ -764,7 +764,7 @@ int main(int argc, char * argv[])
                     ASSERT(rw.writing == 0);
                     ASSERT(rw.waiting == 0);
                     success = success && !0;
-            DIMINUTO_READER_END;
+                DIMINUTO_READER_END;
             DIMINUTO_READER_END;
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
