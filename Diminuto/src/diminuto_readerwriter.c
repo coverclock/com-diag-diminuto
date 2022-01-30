@@ -147,14 +147,9 @@ static void exit_cleanup()
 static void wait_cleanup(void * vp)
 {
     diminuto_list_t * np = (diminuto_list_t *)vp;
-    diminuto_list_t * rp = (diminuto_list_t *)0;
-    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
 
-    if (diminuto_list_isroot(np)) {
-        /* Do nothing. */
-    } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
-        /* Do nothing. */
-    } else {
+    if (!diminuto_list_isroot(np)) {
+        diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np));
         BEGIN_CRITICAL_SECTION(rwp);
 
             (void)diminuto_list_remove(np);
@@ -174,24 +169,9 @@ static void wait_cleanup(void * vp)
  */
 static void key_cleanup(void * vp)
 {
-    diminuto_list_t * np = (diminuto_list_t *)vp;
-    diminuto_list_t * rp = (diminuto_list_t *)0;
-    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
-
-    if (diminuto_list_isroot(np)) {
-        /* Do nothing. */
-    } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
-        /* Do nothing. */
-    } else {
-        BEGIN_CRITICAL_SECTION(rwp);
-
-            (void)diminuto_list_remove(np);
-
-        END_CRITICAL_SECTION;
-    }
-
-    free(np);
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Tnread %p RELEASED", np);
+    wait_cleanup(vp);
+    free(vp);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Thread %p RELEASED", vp);
 }
 
 /*******************************************************************************
