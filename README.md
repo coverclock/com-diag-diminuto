@@ -591,8 +591,8 @@ leveraging the functional programming paradigm in the library. This is best
 illustrated in its header file that defines the API.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/inc/com/diag/diminuto/diminuto_scattergather.h>
 * The Diminuto Reader/Writer feature and its unit test is a reasonably complex
-example of using POSIX thread capabilities for mutual exclusion and
-synchronization.
+example of using Diminuto features with POSIX thread capabilities for mutual
+exclusion and synchronization.
 <https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
 
 # Issues
