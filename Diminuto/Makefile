@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	74# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1227,9 +1227,9 @@ cxxcapi:
 	make -C cxx
 
 readerwriter:
-	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee log/unittest-readerwriter.log
-	grep '[2-9]writing' log/unittest-readerwriter.log || true
-	grep '[1-9]started' log/unittest-readerwriter.log || true
-	grep '[1-9]failed'  log/unittest-readerwriter.log || true
-	grep '[1-9]running' log/unittest-readerwriter.log || true
-	grep '[1-9]unknown' log/unittest-readerwriter.log || true
+	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
+	grep '[2-9]writing' ${TEMP_DIR}/unittest-readerwriter.log && false || true
+	grep '[1-9]started' ${TEMP_DIR}/unittest-readerwriter.log && false || true
+	grep '[1-9]failed'  ${TEMP_DIR}/unittest-readerwriter.log && false || true
+	grep '[1-9]running' ${TEMP_DIR}/unittest-readerwriter.log && false || true
+	grep '[1-9]unknown' ${TEMP_DIR}/unittest-readerwriter.log && false || true
