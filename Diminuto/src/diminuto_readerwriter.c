@@ -141,54 +141,57 @@ static void exit_cleanup()
 }
 
 /**
- * Release the object pointed to by the Reader Writer thread local storage.
- * Typically this has to be done when a thread terminates, for example by
- * exiting or by cancellation. In other languages, this would be known as
- * a destructor. The implementation of this is not entirely thread safe
- * in the context of thread cancellation, especially asynchronous
- * cancellation.
- * @param vp points to the thread local object for the terminating thread.
- */
-static void key_cleanup(void * vp)
-{
-    if (vp != (void *)0) {
-        diminuto_list_t * np = (diminuto_list_t *)vp;
-        diminuto_list_t * rp = (diminuto_list_t *)0;
-        diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
-
-        if (diminuto_list_isroot(np)) {
-            /* Do nothing. */
-        } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
-            /* Do nothing. */
-        } else {
-            BEGIN_CRITICAL_SECTION(rwp);
-
-                (void)diminuto_list_remove(np);
-
-            END_CRITICAL_SECTION;
-        }
-        free(np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Tnread %p RELEASED", np);
-    }
-}
-
-/**
- * Clean up the state if an abnormal wait occurs. Note that
- * we can't remove the node from the list because we have no
- * way of acquiring the mutex for the Reader Writer structure.
- * So we set its state to FAILED and let someone who does hold
- * the mutex clean it up.
+ * Clean up the state if an abnormal wait occurs.
  * @param vp points to the thread local object for the associated thread.
  */
 static void wait_cleanup(void * vp)
 {
-#if 0
     diminuto_list_t * np = (diminuto_list_t *)vp;
+    diminuto_list_t * rp = (diminuto_list_t *)0;
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
 
-    diminuto_list_dataset(np, (void *)FAILED);
-#else
-    key_cleanup(vp);
-#endif
+    if (diminuto_list_isroot(np)) {
+        /* Do nothing. */
+    } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
+        /* Do nothing. */
+    } else {
+        BEGIN_CRITICAL_SECTION(rwp);
+
+            (void)diminuto_list_remove(np);
+            rwp->waiting -= 1;
+            diminuto_list_dataset(np, (void *)FAILED);
+
+        END_CRITICAL_SECTION;
+    }
+}
+
+/**
+ * Release the object pointed to by the Reader Writer thread local storage.
+ * Typically this has to be done when a thread terminates, for example by
+ * exiting or by cancellation. In other languages, this would be known as
+ * a destructor.
+ * @param vp points to the thread local object for the terminating thread.
+ */
+static void key_cleanup(void * vp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)vp;
+    diminuto_list_t * rp = (diminuto_list_t *)0;
+    diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)0;
+
+    if (diminuto_list_isroot(np)) {
+        /* Do nothing. */
+    } else if ((rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np))) == (diminuto_readerwriter_t *)0) {
+        /* Do nothing. */
+    } else {
+        BEGIN_CRITICAL_SECTION(rwp);
+
+            (void)diminuto_list_remove(np);
+
+        END_CRITICAL_SECTION;
+    }
+
+    free(np);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Tnread %p RELEASED", np);
 }
 
 /*******************************************************************************
@@ -790,8 +793,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
-        diminuto_list_initif(&(rwp->list));
-        diminuto_list_datasetif(&(rwp->list), (void *)rwp);
+        diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
         if ((rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
@@ -992,8 +994,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
-        diminuto_list_initif(&(rwp->list));
-        diminuto_list_datasetif(&(rwp->list), (void *)rwp);
+        diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
         if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
