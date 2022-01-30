@@ -415,7 +415,7 @@ platforms, so my valgrind testing has been on Ubuntu on either x86_64
 platforms or the ARM64 version that runs on the Raspberry Pi. On those
 platforms, I found the following command especially useful.
 
-    valgrind --leak-check=full --show-leak-kinds=all <PROGRAM>
+    valgrind --leak-check=full --show-leak-kinds=all <COMMAND...>
 
 ## cscope
 
