@@ -207,7 +207,7 @@ static int initialize()
         } else if ((rc = atexit(&exit_cleanup)) != 0) {
             diminuto_perror("diminuto_readerwriter: initialize: atexit");
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %u ACQUIRED", key);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %u INITIALIZED", key);
             initialized = !0;
         }
 
