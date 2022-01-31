@@ -777,16 +777,6 @@ Open Group, pthread_cond_broadcast, pthead_cond_signal, Open Group Base Specific
 
 Open Group, pthread_cond_timedwait, pthead_cond_wait, Open Group Base Specification Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
 
-C. Overclock, "Fibonacci Scaling", <http://coverclock.blogspot.com/2011/12/fibonacci-scaling_09.html>
-
-C. Overclock, "First-Come First-Served Readers and Writers in C using Monitors", 2020-12
-
-C. Overclock, "Rate Control Using Throttles", January 2007, <http://coverclock.blogspot.com/2007/01/rate-control-and-throttles.html>
-
-C. Overclock, "Traffic Contracts", January 2007, <http://coverclock.blogspot.com/2007/01/traffic-contracts.html>
-
-C. Overclock, "Traffic Management", December 2006, <http://coverclock.blogspot.com/2006/12/traffic-management.html>
-
 V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem", 2013
 
 POSIX 1003.1-2001 (readv, writev)
@@ -867,17 +857,25 @@ Wikipedia, "X-Macro", <https://en.wikipedia.org/wiki/X_Macro>
 
 <https://xkcd.com/1179/>
 
-# Soundtrack
-
-<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
-
 # Articles
+
+Chip Overclock, "Traffic Management", 2006-12,
+<http://coverclock.blogspot.com/2006/12/traffic-management.html>
+
+Chip Overclock, "Traffic Contracts", 2007-01,
+<http://coverclock.blogspot.com/2007/01/traffic-contracts.html>
+
+Chip Overclock, "Rate Control Using Throttles", 2007-01,
+<http://coverclock.blogspot.com/2007/01/rate-control-and-throttles.html>
 
 Chip Overclock, "In Praise of do while (false)", 2009-12,
 <https://coverclock.blogspot.com/2009/12/in-praise-of-do-while-false.html>
 
-Chip Overclock, "Can't We All Jut Get Along, C++ and C", 2011-02,
+Chip Overclock, "Can't We All Just Get Along, C++ and C", 2011-02,
 <https://coverclock.blogspot.com/2011/02/cant-we-all-just-get-along-c-and-c.html>
+
+Chip Overclock, "Fibonacci Scaling", 2011-12,
+<http://coverclock.blogspot.com/2011/12/fibonacci-scaling_09.html>
 
 Chip Overclock, "Being Evidence-Based Using the sizeof Operator", 2015-03,
 <https://coverclock.blogspot.com/2015/03/being-evidence-based-using-sizeof.html>
@@ -924,6 +922,10 @@ Condition Variables", 2020-12,
 
 Chip Overclock, "Where the RF Meets the Road", 2021-03,
 <https://coverclock.blogspot.com/2021/03/where-rf-meets-road.html>
+
+# Soundtrack
+
+<https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
 
 # Acknowledgements
 
