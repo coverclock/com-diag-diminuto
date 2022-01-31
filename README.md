@@ -797,7 +797,7 @@ W. Stevens, "TCP/IP Illustrated Volume 1: The Protocols", Addison-Wesley, 1994
 
 W. Stevens, M. Thomas, E. Nordmark, T. Jinmei, "Advanced Sockets Applications Program Interface (API) for IPv6", RFC 3542, 2003-05
 
-O.Li, T. Jimmel, K. Shima, IPV6 CORE PROTOCOLS IMPLEMENTATION, Morgan Kaufmann, 2007
+O. Li, T. Jimmel, K. Shima, IPV6 CORE PROTOCOLS IMPLEMENTATION, Morgan Kaufmann, 2007
 
 S. Tardieu, "The third readers-writers problem", rfc1149.net, 2011-11-07
 
