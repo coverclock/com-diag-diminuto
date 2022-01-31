@@ -125,18 +125,18 @@ static void mutex_cleanup(void * vp)
 
 /**
  * Cleanup allocated memory in the main thread at process exit. This does
- * seem pointless, doesn't it? But it keeps valgrind(1) happy, since it
- * complains about the Reader Writer unit test.
+ * seem pointless, doesn't it? But it keeps valgrind(1) happy, since otherwise
+ * it complains about the Reader Writer unit test leaving dynamically allocated
+ * memory behind that is part of the implicit "main" thread that participates
+ * in the early unit tests, before explicit threads are started.
  */
 static void exit_cleanup()
 {
     void * vp = (void *)0;
 
     if ((vp = pthread_getspecific(key)) != (void *)0) {
-        diminuto_list_t * np = (diminuto_list_t *)0;
-        np = (diminuto_list_t *)vp;
-        free(np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %p RELEASED", np);
+        free(vp);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %p RELEASED", vp);
     }
 }
 
@@ -147,6 +147,16 @@ static void exit_cleanup()
 static void wait_cleanup(void * vp)
 {
     diminuto_list_t * np = (diminuto_list_t *)vp;
+
+    /*
+     * I grapple with how thread safe this code is, and how safe it needs
+     * to be. The fact that all modifications of the Reader Writer list
+     * should be done in a critical section, such sections implement
+     * appropriate read and write memory barriers, the reading of the root
+     * and data fields in the structure should be atomic, and the root and
+     * data fields are not modified after initialization, assuages my concern
+     * somewhat.
+     */
 
     if (!diminuto_list_isroot(np)) {
         diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np));
@@ -313,10 +323,10 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     char * bp = (char *)0;
     size_t size = 0;
     int length = 0;
-    unsigned int started = 0;
     unsigned int pending = 0;
     unsigned int readers = 0;
     unsigned int writers = 0;
+    unsigned int started = 0;
     unsigned int failed = 0;
     unsigned int running = 0;
     unsigned int unknown = 0;
@@ -326,16 +336,16 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     bp = &(buffer[0]);
     size = sizeof(buffer) - 1;
 
-    length = snprintf(bp, size, "%s(%p):", label, rwp);
+    length = snprintf(bp, size, "%s dump(%p)", label, rwp);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dreading", rwp->reading);
+    length = snprintf(bp, size, " %dreading", rwp->reading); /* Should be >= 0. */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwriting", rwp->writing);
+    length = snprintf(bp, size, " %dwriting", rwp->writing); /* Should be 0 or 1. */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwaiting {", rwp->waiting);
+    length = snprintf(bp, size, " %dwaiting {", rwp->waiting); /* Should be >= 0. */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     rp = diminuto_list_root(&(rwp->list));
@@ -343,25 +353,22 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     while (np != rp) {
         role = (role_t)diminuto_list_data(np);
         switch (role) {
-            case STARTED: ++started; break; /* Should be zero. */
-            case READING: ++pending; break;
-            case WRITING: ++pending; break;
-            case READER:  ++readers; break;
-            case WRITER:  ++writers; break;
-            case FAILED:  ++failed;  break;
-            case RUNNING: ++running; break; /* Should be zero. */
-            default:      ++unknown; break; /* Should be zero. */
+            case READING: ++pending; break; /* Should be >= 0. */
+            case WRITING: ++pending; break; /* Should be 0 or 1. */
+            case READER:  ++readers; break; /* Should be >= 0. */
+            case WRITER:  ++writers; break; /* Should be >= 0. */
+            case STARTED: ++started; break; /* Should be 0. */
+            case FAILED:  ++failed;  break; /* Should be 0. */
+            case RUNNING: ++running; break; /* Should be 0. */
+            default:      ++unknown; break; /* Should be 0. */
         }
         length = snprintf(bp, size, " %c", role);
         if ((0 < length) && (length < size)) { bp += length; size -= length; }
-        ++queued;
+        queued += 1; /* Should be ==waiting. */
         np = diminuto_list_next(np);
     }
 
     length = snprintf(bp, size, " } %dqueued", queued);
-    if ((0 < length) && (length < size)) { bp += length; size -= length; }
-
-    length = snprintf(bp, size, " %dstarted", started);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dpending", pending);
@@ -371,6 +378,9 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dwriters", writers);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dstarted", started);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dfailed", failed);
@@ -861,7 +871,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp, "diminuto_reader_begin");
+            dump(rwp->fp, rwp, "diminuto_readerwriter: Reader BEGIN");
         }
 
         diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || (result < 0));
@@ -951,7 +961,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp, "diminuto_reader_end");
+            dump(rwp->fp, rwp, "diminuto_readerwriter: Reader END");
         }
 
         diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
@@ -1020,7 +1030,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp, "diminuto_writer_begin");
+            dump(rwp->fp, rwp, "diminuto_readerwriter: Writer BEGIN");
         }
 
         diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || (result < 0));
@@ -1099,7 +1109,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->fp != (FILE *)0) {
-            dump(rwp->fp, rwp, "diminuto_writer_end");
+            dump(rwp->fp, rwp, "diminuto_readerwriter: Writer END");
         }
 
         diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
