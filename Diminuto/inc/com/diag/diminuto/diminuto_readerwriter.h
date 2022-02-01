@@ -178,7 +178,7 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  * returns immediately, with failure if the lock was not available. A timeout
  * of the maximum value (INFINITY) causes the caller to wait indefinitely.
  * A priority argument determines whether the caller is suspended at the end
- * of the queue (low priority) or at the front of the queue (high priority).
+ * of the list (low priority) or at the front of the list (high priority).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @param priority is true for high, false for low.
@@ -199,7 +199,7 @@ extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
  * returns immediately, with failure if the lock was not available. A timeout
  * of the maximum value (INFINITY) causes the caller to wait indefinitely.
  * A priority argument determines whether the caller is suspended at the end
- * of the queue (low priority) or at the front of the queue (high priority).
+ * of the list (low priority) or at the front of the list (high priority).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
  * @param priority is true for high, false for low.
@@ -233,7 +233,7 @@ static inline int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, dim
 
 /**
  * This function is called to begin a Reader segment of code. If the reader
- * has to wait, it does so at the beginning of the queue.
+ * has to wait, it does so at the beginning of the list.
  * @param rwp points to the Reader Writer object.
  * @return 0 for success, <0 otherwise.
  */
@@ -265,7 +265,7 @@ static inline int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, dim
 
 /**
  * This function is called to begin a Writer segment of code. If the writer
- * has to wait, it does so at the beginning of the queue.
+ * has to wait, it does so at the beginning of the list.
  * @param rwp points to the Reader Writer object.
  * @return 0 for success, <0 otherwise.
  */

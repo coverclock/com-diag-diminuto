@@ -444,6 +444,36 @@ static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
     return np;
 }
 
+/**
+ * Return the node in the list that is the closest to the head of the list
+ * without being pending. If the list is empty, this will be the head of the
+ * list.
+ * @param rwp points to the Reader Writer object.
+ * @return the node after which a priority node can be inserted.
+ */
+static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    np = diminuto_list_next(&(rwp->list));
+    while (!0) {
+        if (diminuto_list_isroot(np)) {
+            /* List is empty or wrapped around to root. */
+            break;
+        } else if ((role_t)diminuto_list_data(np) == READING) {
+            /* Waiting reader has already been activated. */
+            np = diminuto_list_next(np);
+        } else if ((role_t)diminuto_list_data(np) == WRITING) {
+            /* Waiting writer has already been activated. */
+            np = diminuto_list_next(np);
+        } else {
+            /* Found the first non-pending waiting node. */
+            break;
+        }
+    }
+
+    return np;
+}
 
 /**
  * Return true if the indicated node in the list is now at the head, and the
@@ -550,19 +580,24 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
  * @param pending is the pending role to be used: READING or WRITING.
  * @param conditionp points to the condition variable in the object to use.
  * @param timeout is a timeout duration in ticks.
+ * @param priority if true gives the caller priority in the list.
  * @return 0 for success, or an error number otherwise.
  */
-static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout)
+static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout, int priority)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
+    diminuto_list_t * fp = (diminuto_list_t *)0;
 
     /*
-     * Insert the node onto the tail of the list.
+     * Insert the node onto the list. It is either inserted at the end
+     * (normal priority) or as close to the front as possible (high priority).
      */
 
     diminuto_list_dataset(np, (void *)waiting);
     rwp->waiting += 1;
-    diminuto_list_insert(diminuto_list_prev(&(rwp->list)), np);
+
+    fp = priority ? front(rwp) : &(rwp->list);
+    diminuto_list_insert(diminuto_list_prev(fp), np);
 
     DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s WAITING %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
 
@@ -640,19 +675,20 @@ static int broadcast(diminuto_readerwriter_t * rwp, const char * label, diminuto
  * @param np points to the thread local list node for the calling thread.
  * @param role is the role of the calling thread: READER or WRITER.
  * @param timeout is a timeout duration in ticks.
+ * @param priority if true gives the caller priority in the list.
  * @return 0 for success, or an errno number otherwise.
  */
-static int suspend(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t role, diminuto_ticks_t timeout)
+static int suspend(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t role, diminuto_ticks_t timeout, int priority)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
 
     if (role == READER) {
 
-        rc = queue(rwp, "Reader", np, READER, READING, &(rwp->reader), timeout);
+        rc = queue(rwp, "Reader", np, READER, READING, &(rwp->reader), timeout, priority);
 
     } else if (role == WRITER) {
 
-        rc = queue(rwp, "Writer", np, WRITER, WRITING, &(rwp->writer), timeout);
+        rc = queue(rwp, "Writer", np, WRITER, WRITING, &(rwp->writer), timeout, priority);
 
     } else {
 
@@ -817,7 +853,7 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if ((rc = suspend(rwp, np, READER, timeout)) == 0) {
+        } else if ((rc = suspend(rwp, np, READER, timeout, priority)) == 0) {
 
             /*
              * Either there was an active writer or someone is waiting.
@@ -1020,7 +1056,7 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if ((rc = suspend(rwp, np, WRITER, timeout)) == 0) {
+        } else if ((rc = suspend(rwp, np, WRITER, timeout, priority)) == 0) {
 
             /*
              * Either there was at least active readers, an active
