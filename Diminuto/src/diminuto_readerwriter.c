@@ -317,6 +317,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
 {
     extern pthread_mutex_t diminuto_log_mutex;
+    int save = errno;
     diminuto_list_t * np = (diminuto_list_t *)0;
     diminuto_list_t * rp = (diminuto_list_t *)0;
     char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
@@ -407,6 +408,8 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
         fputs(buffer, fp);
         fflush(fp);
     DIMINUTO_CRITICAL_SECTION_END;
+
+    errno = save;
 }
 
 /*******************************************************************************
@@ -677,6 +680,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
     role_t result = NONE;
     role_t role = NONE;
     diminuto_list_t * np = (diminuto_list_t *)0;
+    int rc = -1;
 
     if ((np = head(rwp)) != (diminuto_list_t *)0) {
 
@@ -693,8 +697,10 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
              * pending state.
              */
 
-            if (broadcast(rwp, "Reader", np, READING, &(rwp->reader)) == 0) {
+            if ((rc = broadcast(rwp, "Reader", np, READING, &(rwp->reader))) == 0) {
                 result = READER;
+            } else {
+                errno = rc;
             }
 
         } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
@@ -708,8 +714,10 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
              * of the list and it was placed into the pending state.
              */
 
-            if (broadcast(rwp, "Writer", np, WRITING, &(rwp->writer)) == 0) {
+            if ((rc = broadcast(rwp, "Writer", np, WRITING, &(rwp->writer))) == 0) {
                 result = WRITER;
+            } else {
+                errno = rc;
             }
 
         } else {
@@ -774,6 +782,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
     int result = -1;
     diminuto_list_t * np = (diminuto_list_t *)0;
     role_t role = NONE;
+    int rc = 0;
 
     if ((np = acquire()) == (diminuto_list_t *)0) {
         return result;
@@ -808,7 +817,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if (suspend(rwp, np, READER, timeout) == 0) {
+        } else if ((rc = suspend(rwp, np, READER, timeout)) == 0) {
 
             /*
              * Either there was an active writer or someone is waiting.
@@ -823,6 +832,7 @@ int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         } else {
 
             /* An error message has already been emitted. */
+            errno = rc;
 
         }
 
@@ -975,6 +985,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 {
     int result = -1;
     diminuto_list_t * np = (diminuto_list_t *)0;
+    int rc = 0;
 
     if ((np = acquire()) == (diminuto_list_t *)0) {
         return result;
@@ -1009,7 +1020,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
 
             errno = DIMINUTO_READERWRITER_TIMEDOUT;
 
-        } else if (suspend(rwp, np, WRITER, timeout) == 0) {
+        } else if ((rc = suspend(rwp, np, WRITER, timeout)) == 0) {
 
             /*
              * Either there was at least active readers, an active
@@ -1024,6 +1035,7 @@ int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t 
         } else {
 
             /* An error message has already been emitted. */
+            errno = rc;
 
         }
 

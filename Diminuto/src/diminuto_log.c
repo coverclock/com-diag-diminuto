@@ -326,34 +326,42 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
 
 void diminuto_log_syslog(int priority, const char * format, ...)
 {
+    int save = errno;
     va_list ap;
     va_start(ap, format);
     diminuto_log_vsyslog(priority, format, ap);
     va_end(ap);
+    errno = save;
 }
 
 void diminuto_log_write(int fd, int priority, const char * format, ...)
 {
+    int save = errno;
     va_list ap;
     va_start(ap, format);
     diminuto_log_vwrite(fd, priority, format, ap);
     va_end(ap);
+    errno = save;
 }
 
 void diminuto_log_log(int priority, const char * format, ...)
 {
+    int save = errno;
     va_list ap;
     va_start(ap, format);
     diminuto_log_vlog(priority, format, ap);
     va_end(ap);
+    errno = save;
 }
 
 void diminuto_log_emit(const char * format, ...)
 {
+    int save = errno;
     va_list ap;
     va_start(ap, format);
     diminuto_log_vlog(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
     va_end(ap);
+    errno = save;
 }
 
 /*******************************************************************************
@@ -362,16 +370,14 @@ void diminuto_log_emit(const char * format, ...)
 
 void diminuto_serror_f(const char * f, int l, const char * s)
 {
-    int save;
-    save = errno;
+    int save = errno;
     diminuto_log_syslog(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }
 
 void diminuto_perror_f(const char * f, int l, const char * s)
 {
-    int save;
-    save = errno;
+    int save = errno;
     diminuto_log_log(DIMINUTO_LOG_PRIORITY_ERROR, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, strerror(save), save);
     errno = save;
 }

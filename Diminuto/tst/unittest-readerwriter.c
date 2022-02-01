@@ -364,12 +364,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
@@ -377,6 +379,7 @@ int main(int argc, char * argv[])
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
@@ -390,12 +393,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
@@ -477,24 +482,28 @@ int main(int argc, char * argv[])
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, 0) < 0); }
+            diminuto_perror("diminuto_reader_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
+            diminuto_perror("diminuto_reader_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
+            diminuto_perror("diminuto_writer_begin_timed");
             ASSERT(errno == ETIMEDOUT);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
