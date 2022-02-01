@@ -340,13 +340,13 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, "%s dump(%p)", label, rwp);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dreading", rwp->reading); /* Should be >= 0. */
+    length = snprintf(bp, size, " %dreading", rwp->reading); /* >= 0 */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwriting", rwp->writing); /* Should be 0 or 1. */
+    length = snprintf(bp, size, " %dwriting", rwp->writing); /* 0 or 1 */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwaiting {", rwp->waiting); /* Should be >= 0. */
+    length = snprintf(bp, size, " %dwaiting {", rwp->waiting); /* >= 0 */
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     rp = diminuto_list_root(&(rwp->list));
@@ -354,18 +354,18 @@ static void dump(FILE * fp, diminuto_readerwriter_t * rwp, const char * label)
     while (np != rp) {
         role = (role_t)diminuto_list_data(np);
         switch (role) {
-            case READING: ++pending; break; /* Should be >= 0. */
-            case WRITING: ++pending; break; /* Should be 0 or 1. */
-            case READER:  ++readers; break; /* Should be >= 0. */
-            case WRITER:  ++writers; break; /* Should be >= 0. */
-            case STARTED: ++started; break; /* Should be 0. */
-            case FAILED:  ++failed;  break; /* Should be 0. */
-            case RUNNING: ++running; break; /* Should be 0. */
-            default:      ++unknown; break; /* Should be 0. */
+            case READING: ++pending; break; /* >= 0 */
+            case WRITING: ++pending; break; /* 0 or 1 */
+            case READER:  ++readers; break; /* >= 0 */
+            case WRITER:  ++writers; break; /* >= 0 */
+            case STARTED: ++started; break; /* 0 */
+            case FAILED:  ++failed;  break; /* 0 */
+            case RUNNING: ++running; break; /* 0 */
+            default:      ++unknown; break; /* 0 */
         }
         length = snprintf(bp, size, " %c", role);
         if ((0 < length) && (length < size)) { bp += length; size -= length; }
-        queued += 1; /* Should be ==waiting. */
+        queued += 1; /* ==waiting */
         np = diminuto_list_next(np);
     }
 
@@ -777,7 +777,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
  * POLICY
  ******************************************************************************/
 
-int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
+int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout, int priority)
 {
     int result = -1;
     diminuto_list_t * np = (diminuto_list_t *)0;
@@ -981,7 +981,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
     return result;
 }
 
-int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout)
+int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout, int priority)
 {
     int result = -1;
     diminuto_list_t * np = (diminuto_list_t *)0;

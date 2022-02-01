@@ -139,12 +139,12 @@ typedef struct DiminutoReaderWriter {
 
 /**
  * This value when used as a timeout specifies that the caller polls and
- * does not block.
+ * does not wait.
  */
 static const diminuto_ticks_t DIMINUTO_READERWRITER_POLL = 0;
 
 /**
- * This value when used as a timeout specifies that the caller blocks
+ * This value when used as a timeout specifies that the caller waits
  * indefinitely.
  */
 static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks_t)0);
@@ -176,21 +176,15 @@ extern diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwrite
  * This function is called to begin a Reader segment of code with a relative
  * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
  * returns immediately, with failure if the lock was not available. A timeout
- * of the maximum value (INFINITY) causes the caller to block indefinitely.
+ * of the maximum value (INFINITY) causes the caller to wait indefinitely.
+ * A priority argument determines whether the caller is suspended at the end
+ * of the queue (low priority) or at the front of the queue (high priority).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
+ * @param priority is true for high, false for low.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
-
-/**
- * This function is called to begin a Reader segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
-static inline int diminuto_reader_begin(diminuto_readerwriter_t * rwp) {
-    return diminuto_reader_begin_timed(rwp, DIMINUTO_READERWRITER_INFINITY);
-}
+extern int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout, int priority);
 
 /**
  * This function is called to end a Reader segment of code.
@@ -203,21 +197,15 @@ extern int diminuto_reader_end(diminuto_readerwriter_t * rwp);
  * This function is called to begin a Writer segment of code with a relative
  * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
  * returns immediately, with failure if the lock was not available. A timeout
- * of the maximum value (INFINITY) causes the caller to block indefinitely.
+ * of the maximum value (INFINITY) causes the caller to wait indefinitely.
+ * A priority argument determines whether the caller is suspended at the end
+ * of the queue (low priority) or at the front of the queue (high priority).
  * @param rwp points to the Reader Writer object.
  * @param timeout is the timeout duration in ticks (POLL to INFINITY).
+ * @param priority is true for high, false for low.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout);
-
-/**
- * This function is called to begin a Writer segment of code.
- * @param rwp points to the Reader Writer object.
- * @return 0 for success, <0 otherwise.
- */
-static inline int diminuto_writer_begin(diminuto_readerwriter_t * rwp) {
-    return diminuto_writer_begin_timed(rwp, DIMINUTO_READERWRITER_INFINITY);
-}
+extern int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout, int priority);
 
 /**
  * This function is called to end a Writer segment of code.
@@ -225,6 +213,74 @@ static inline int diminuto_writer_begin(diminuto_readerwriter_t * rwp) {
  * @return 0 for success, <0 otherwise.
  */
 extern int diminuto_writer_end(diminuto_readerwriter_t * rwp);
+
+/*******************************************************************************
+ * SPECIALIZATIONS
+ ******************************************************************************/
+
+/**
+ * This function is called to begin a Reader segment of code with a relative
+ * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
+ * returns immediately, with failure if the lock was not available. A timeout
+ * of the maximum value (INFINITY) causes the caller to wait indefinitely.
+ * @param rwp points to the Reader Writer object.
+ * @param timeout is the timeout duration in ticks (POLL to INFINITY).
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_reader_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout) {
+    return diminuto_reader_begin_f(rwp, timeout, 0);
+}
+
+/**
+ * This function is called to begin a Reader segment of code. If the reader
+ * has to wait, it does so at the beginning of the queue.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_reader_begin_priority(diminuto_readerwriter_t * rwp) {
+    return diminuto_reader_begin_f(rwp, DIMINUTO_READERWRITER_INFINITY, !0);
+}
+
+/**
+ * This function is called to begin a Reader segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_reader_begin(diminuto_readerwriter_t * rwp) {
+    return diminuto_reader_begin_f(rwp, DIMINUTO_READERWRITER_INFINITY, 0);
+}
+
+/**
+ * This function is called to begin a Writer segment of code with a relative
+ * duration timeout (NOT an absolute clocktime). A timeout of zero (POLL)
+ * returns immediately, with failure if the lock was not available. A timeout
+ * of the maximum value (INFINITY) causes the caller to wait indefinitely.
+ * @param rwp points to the Reader Writer object.
+ * @param timeout is the timeout duration in ticks (POLL to INFINITY).
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, diminuto_ticks_t timeout) {
+    return diminuto_writer_begin_f(rwp, timeout, 0);
+}
+
+/**
+ * This function is called to begin a Writer segment of code. If the writer
+ * has to wait, it does so at the beginning of the queue.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_writer_priority(diminuto_readerwriter_t * rwp) {
+    return diminuto_writer_begin_f(rwp, DIMINUTO_READERWRITER_INFINITY, !0);
+}
+
+/**
+ * This function is called to begin a Writer segment of code.
+ * @param rwp points to the Reader Writer object.
+ * @return 0 for success, <0 otherwise.
+ */
+static inline int diminuto_writer_begin(diminuto_readerwriter_t * rwp) {
+    return diminuto_writer_begin_f(rwp, DIMINUTO_READERWRITER_INFINITY, 0);
+}
 
 /*******************************************************************************
  * CALLBACKS
