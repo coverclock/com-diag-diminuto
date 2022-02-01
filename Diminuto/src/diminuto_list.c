@@ -163,12 +163,12 @@ const diminuto_list_t * diminuto_list_audit(
     const diminuto_list_t * prevp = nodep;
     while (!0) {
         if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
-            DIMINUTO_LOG_DEBUG("%s@%d: diminuto_list_audit FAILED!\n", __FILE__, __LINE__);
+            DIMINUTO_LOG_DEBUG("diminuto_list_audit: FAILED!\n");
             diminuto_list_log(nextp);
             nodep = nextp;
             break;
         } else if ((prevp->root != rootp) || (prevp->prev->next != prevp) || (prevp->next->prev != prevp)) {
-            DIMINUTO_LOG_DEBUG("%s@%d: diminuto_list_audit FAILED!\n", __FILE__, __LINE__);
+            DIMINUTO_LOG_DEBUG("diminuto_list_audit: FAILED!\n");
             diminuto_list_log(prevp);
             nodep = prevp;
             break;

@@ -203,6 +203,74 @@ static void * impatientwriter(void * vp)
     return (void *)(intptr_t)(!0);
 }
 
+static void * assertivereader(void * vp)
+{
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    struct Context * cp = (struct Context *)vp;
+    int ii;
+    int success;
+
+    CHECKPOINT("assertivereader[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
+
+    for (ii = 0; ii < cp->iterations; ++ii) {
+        success = 0;
+        diminuto_delay(cp->latency, 0);
+        if (diminuto_reader_begin_priority(cp->rwp) == 0) {
+            pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                ++readers;
+            DIMINUTO_CRITICAL_SECTION_END;
+            success = ((readers > 0) && (writers == 0));
+            CHECKPOINT("assertivereader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            if (success) {
+                diminuto_delay(cp->workload, 0);
+            }
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                readers--;
+            DIMINUTO_CRITICAL_SECTION_END;
+            pthread_cleanup_pop(!0);
+        } else {
+            CHECKPOINT("assertivereader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+        }
+    }
+
+    return (void *)(intptr_t)(!0);
+}
+
+static void * assertivewriter(void * vp)
+{
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    struct Context * cp = (struct Context *)vp;
+    int ii;
+    int success;
+
+    CHECKPOINT("assertivewriter[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
+
+    for (ii = 0; ii < cp->iterations; ++ii) {
+        success = 0;
+        diminuto_delay(cp->latency, 0);
+        if (diminuto_writer_begin_priority(cp->rwp) == 0) {
+            pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                ++writers;
+            DIMINUTO_CRITICAL_SECTION_END;
+            success = ((readers == 0) && (writers == 1));
+            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            if (success) {
+                diminuto_delay(cp->workload, 0);
+            }
+            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+                writers--;
+            DIMINUTO_CRITICAL_SECTION_END;
+            pthread_cleanup_pop(!0);
+        } else {
+            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+        }
+    }
+
+    return (void *)(intptr_t)(!0);
+}
+
 /******************************************************************************/
 
 int main(int argc, char * argv[])
@@ -248,11 +316,11 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == (FILE *)0);
-        ASSERT(diminuto_readerwriter_debug(&rw, stderr) == (FILE *)0);
-        ASSERT(diminuto_readerwriter_debug(&rw, stdout) == stderr);
-        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == stdout);
-        ASSERT(diminuto_readerwriter_debug(&rw, (FILE *)0) == (FILE *)0);
+        ASSERT(!diminuto_readerwriter_debug(&rw, 0));
+        ASSERT(!diminuto_readerwriter_debug(&rw, !0));
+        ASSERT(diminuto_readerwriter_debug(&rw, !0));
+        ASSERT(diminuto_readerwriter_debug(&rw, 0));
+        ASSERT(!diminuto_readerwriter_debug(&rw, 0));
 
         STATUS();
     }
@@ -300,7 +368,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -340,7 +408,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -432,7 +500,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -466,7 +534,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -527,7 +595,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -562,7 +630,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -597,7 +665,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -659,7 +727,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -721,7 +789,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         ASSERT(rw.list.next == &(rw.list));
         ASSERT(rw.list.prev == &(rw.list));
@@ -817,7 +885,81 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-#if !0
+    {
+        diminuto_readerwriter_t rw;
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
+
+        diminuto_readerwriter_debug(&rw, debug);
+
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)&rw);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
+
+        { ASSERT(diminuto_reader_begin_priority(&rw) == 0); }
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
+            { ASSERT(diminuto_reader_begin_priority(&rw) == 0); }
+                ASSERT(rw.reading == 2);
+                ASSERT(rw.writing == 0);
+                ASSERT(rw.waiting == 0);
+            { ASSERT(diminuto_reader_end(&rw) == 0); }
+            ASSERT(rw.reading == 1);
+            ASSERT(rw.writing == 0);
+            ASSERT(rw.waiting == 0);
+        { ASSERT(diminuto_reader_end(&rw) == 0); }
+
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_readerwriter_t rw;
+        int success = 0;
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
+
+        diminuto_readerwriter_debug(&rw, debug);
+
+        ASSERT(rw.list.next == &(rw.list));
+        ASSERT(rw.list.prev == &(rw.list));
+        ASSERT(rw.list.root == &(rw.list));
+        ASSERT(rw.list.data == (void *)&rw);
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
+
+        { ASSERT(diminuto_writer_begin_priority(&rw) == 0); }
+            ASSERT(rw.reading == 0);
+            ASSERT(rw.writing == 1);
+            ASSERT(rw.waiting == 0);
+            success = !0;
+        { ASSERT(diminuto_writer_end(&rw) == 0); }
+
+        ASSERT(rw.reading == 0);
+        ASSERT(rw.writing == 0);
+        ASSERT(rw.waiting == 0);
+        ASSERT(success == !0);
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+
     {
         diminuto_thread_t readers[3];
         struct Context reading[diminuto_countof(readers)];
@@ -828,7 +970,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         reading[0].identifier = 0;
         reading[0].rwp = &rw;
@@ -879,9 +1021,7 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
-#endif
 
-#if !0
     {
         diminuto_thread_t writers[3];
         struct Context writing[diminuto_countof(writers)];
@@ -892,7 +1032,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         writing[0].identifier = 0;
         writing[0].rwp = &rw;
@@ -943,9 +1083,7 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
-#endif
 
-#if !0
     {
         diminuto_thread_t readers[3];
         diminuto_thread_t writers[3];
@@ -959,7 +1097,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         reading[0].identifier = 0;
         reading[0].rwp = &rw;
@@ -1055,25 +1193,28 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
-#endif
 
-#if !0
     {
         diminuto_thread_t readers[64];
         diminuto_thread_t writers[8];
         diminuto_thread_t impatientreaders[4];
         diminuto_thread_t impatientwriters[2];
+        diminuto_thread_t assertivereaders[1];
+        diminuto_thread_t assertivewriters[1];
         struct Context reading[diminuto_countof(readers)];
         struct Context writing[diminuto_countof(writers)];
         struct Context impatientreading[diminuto_countof(impatientreaders)];
         struct Context impatientwriting[diminuto_countof(impatientwriters)];
+        struct Context assertivereading[diminuto_countof(assertivereaders)];
+        struct Context assertivewriting[diminuto_countof(assertivewriters)];
         void * reads[diminuto_countof(readers)];
         void * writes[diminuto_countof(writers)];
         void * impatientreads[diminuto_countof(impatientreaders)];
         void * impatientwrites[diminuto_countof(impatientwriters)];
+        void * assertivereads[diminuto_countof(assertivereaders)];
+        void * assertivewrites[diminuto_countof(assertivewriters)];
         static const int MAXIMUM = 64;
-        static const int TOTAL = 64 + 8 + 4 + 2;
-        static const int EXTRA = 100;
+        static const int TOTAL = 64 + 8 + 4 + 2 + 1 + 1;
         diminuto_readerwriter_t rw;
         int ii;
 
@@ -1081,7 +1222,7 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
-        if (debug) { diminuto_readerwriter_debug(&rw, stderr); }
+        diminuto_readerwriter_debug(&rw, debug);
 
         for (ii = 0; ii < diminuto_countof(readers); ++ii) {
             reading[ii].identifier = ii;
@@ -1127,6 +1268,28 @@ int main(int argc, char * argv[])
             ASSERT(diminuto_thread_init(&impatientwriters[ii], impatientwriter) == &impatientwriters[ii]);
         }
 
+        for (ii = 0; ii < diminuto_countof(assertivereaders); ++ii) {
+            assertivereading[ii].identifier = ii;
+            assertivereading[ii].rwp = &rw;
+            assertivereading[ii].latency = frequency * randy(0, 3);
+            assertivereading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
+            assertivereading[ii].workload = frequency * randy(1, 5);
+            assertivereading[ii].iterations = randy(2, 13);
+            assertivereads[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&assertivereaders[ii], assertivereader) == &assertivereaders[ii]);
+        }
+
+        for (ii = 0; ii < diminuto_countof(assertivewriters); ++ii) {
+            assertivewriting[ii].identifier = ii;
+            assertivewriting[ii].rwp = &rw;
+            assertivewriting[ii].latency = frequency * randy(0, 3);
+            assertivewriting[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
+            assertivewriting[ii].workload = frequency * randy(1, 5);
+            assertivewriting[ii].iterations = randy(2, 13);
+            assertivewrites[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&assertivewriters[ii], assertivewriter) == &assertivewriters[ii]);
+        }
+
         for (ii = 0; ii < MAXIMUM; ++ii) {
             if (ii < diminuto_countof(readers)) {
                 ASSERT(diminuto_thread_start(&readers[ii], &reading[ii]) == 0);
@@ -1139,6 +1302,12 @@ int main(int argc, char * argv[])
             }
             if (ii < diminuto_countof(impatientwriters)) {
                 ASSERT(diminuto_thread_start(&impatientwriters[ii], &impatientwriting[ii]) == 0);
+            }
+            if (ii < diminuto_countof(assertivereaders)) {
+                ASSERT(diminuto_thread_start(&assertivereaders[ii], &assertivereading[ii]) == 0);
+            }
+            if (ii < diminuto_countof(assertivewriters)) {
+                ASSERT(diminuto_thread_start(&assertivewriters[ii], &assertivewriting[ii]) == 0);
             }
         }
 
@@ -1159,6 +1328,14 @@ int main(int argc, char * argv[])
                 ASSERT(diminuto_thread_join(&impatientwriters[ii], &impatientwrites[ii]) == 0);
                 CHECKPOINT("impatientwrites[%d]=%d\n", ii, (int)(intptr_t)impatientwrites[ii]);
             }
+            if (ii < diminuto_countof(assertivereaders)) {
+                ASSERT(diminuto_thread_join(&assertivereaders[ii], &assertivereads[ii]) == 0);
+                CHECKPOINT("assertivereads[%d]=%d\n", ii, (int)(intptr_t)assertivereads[ii]);
+            }
+            if (ii < diminuto_countof(assertivewriters)) {
+                ASSERT(diminuto_thread_join(&assertivewriters[ii], &assertivewrites[ii]) == 0);
+                CHECKPOINT("assertivewrites[%d]=%d\n", ii, (int)(intptr_t)assertivewrites[ii]);
+            }
         }
 
         for (ii = 0; ii < MAXIMUM; ++ii) {
@@ -1174,13 +1351,18 @@ int main(int argc, char * argv[])
             if (ii < diminuto_countof(impatientwriters)) {
                 ASSERT(((intptr_t)impatientwrites[ii]) != 0);
             }
+            if (ii < diminuto_countof(assertivereaders)) {
+                ASSERT(((intptr_t)assertivereads[ii]) != 0);
+            }
+            if (ii < diminuto_countof(assertivewriters)) {
+                ASSERT(((intptr_t)assertivewrites[ii]) != 0);
+            }
         }
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
         STATUS();
     }
-#endif
 
     EXIT();
 }

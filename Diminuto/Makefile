@@ -29,8 +29,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	74# API changes that may require that applications be modified.
-MINOR				:=	3# Only functionality or features added with no legacy API changes.
+MAJOR				:=	75# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
@@ -1228,8 +1228,3 @@ cxxcapi:
 
 readerwriter:
 	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
-	grep '[2-9]writing' ${TEMP_DIR}/unittest-readerwriter.log && false || true
-	grep '[1-9]started' ${TEMP_DIR}/unittest-readerwriter.log && false || true
-	grep '[1-9]failed'  ${TEMP_DIR}/unittest-readerwriter.log && false || true
-	grep '[1-9]running' ${TEMP_DIR}/unittest-readerwriter.log && false || true
-	grep '[1-9]unknown' ${TEMP_DIR}/unittest-readerwriter.log && false || true

@@ -247,7 +247,7 @@ extern void diminuto_list_log(const diminuto_list_t * nodep);
  * to be incorrect, or NULL if the list appears correct. Next, previous, and
  * root pointers are checked. The list is traversed bi-directionally and only
  * stops when an error is found or the traversals meet back at the original
- * node.
+ * node. Diagnostic output is emitted to the log at DEBUG level.
  * @param nodep points to a node on the list.
  * @return a pointer to the first incorrect node or NULL if none.
  */

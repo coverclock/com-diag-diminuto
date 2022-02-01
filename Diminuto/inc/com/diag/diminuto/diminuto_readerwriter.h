@@ -108,7 +108,7 @@ typedef struct DiminutoReaderWriter {
     pthread_cond_t reader;                      /**< Waiting readers. */
     pthread_cond_t writer;                      /**< Waiting writers. */
     diminuto_list_t list;                       /**< FIFO of waiting threads. */
-    FILE * fp;                                  /**< Debug file pointer. */
+    int debugging;                              /**< Debug flag. */
     int reading;                                /**< Active (>=0) readers. */
     int writing;                                /**< Active {0,1} writers. */
     int waiting;                                /**< Waiting (>=0) threads. */
@@ -127,7 +127,7 @@ typedef struct DiminutoReaderWriter {
         PTHREAD_COND_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_LIST_INITIALIZER, \
-        (FILE *)0,  \
+        0, \
         0, \
         0, \
         0, \
@@ -269,7 +269,7 @@ static inline int diminuto_writer_begin_timed(diminuto_readerwriter_t * rwp, dim
  * @param rwp points to the Reader Writer object.
  * @return 0 for success, <0 otherwise.
  */
-static inline int diminuto_writer_priority(diminuto_readerwriter_t * rwp) {
+static inline int diminuto_writer_begin_priority(diminuto_readerwriter_t * rwp) {
     return diminuto_writer_begin_f(rwp, DIMINUTO_READERWRITER_INFINITY, !0);
 }
 
@@ -356,15 +356,16 @@ extern void diminuto_writer_cleanup(void * vp);
  ******************************************************************************/
 
 /**
- * This function enables (or disables) additional debugging information to be
- * emitted to the specified file stream. This is specific to the Reader Writer
- * object passed as an argument. (The generation and emission of the debug
- * data is done within the Reader Writer object's critical section, so may
- * impact the performance of the application.)
+ * This function enables (or disables) additional diagnostic information to be
+ * emitted to the log at DEBUG level for the specified Reader Writer object.
+ * The generation and emission of the debug information is done within the
+ * critical section of the object's mutex during execution of the API. This
+ * also audits the object; failure of the audit can cause an assertion
+ * exception.
  * @param rwp points to the Reader Writer object.
- * @param fp is the file stream, or NULL to disable the debugging output.
- * @return the prior value of the file stream used for debugging.
+ * @param debug is true to enable debugging, false otherwise.
+ * @return the prior value of the debugging flag.
  */
-extern FILE * diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, FILE * fp);
+extern int diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, int debugging);
 
 #endif
