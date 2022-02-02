@@ -1252,7 +1252,7 @@ void diminuto_readerwriter_dequeue(diminuto_readerwriter_t * rwp, diminuto_list_
     dequeue(rwp, np);
 }
 
-diminuto_list_t * diminuto_readerwiter_head(diminuto_readerwriter_t * rwp)
+diminuto_list_t * diminuto_readerwriter_head(diminuto_readerwriter_t * rwp)
 {
     return head(rwp);
 }

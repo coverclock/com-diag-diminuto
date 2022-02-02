@@ -363,6 +363,206 @@ int main(int argc, char * argv[])
 
     {
         diminuto_readerwriter_t rw;
+        diminuto_list_t node1;
+        diminuto_list_t node2;
+        diminuto_list_t node3;
+        diminuto_list_t node4;
+
+        /* This unit test uses the private API just for unit testing. */
+
+        TEST();
+
+        ASSERT(diminuto_readerwriter_init(&rw) == &rw);
+        ASSERT(rw.waiting == 0);
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &rw.list);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == (diminuto_list_t *)0);
+
+        /* NODE 1 (READABLE or WRITABLE) */
+
+        ASSERT(diminuto_list_init(&node1) == &node1);
+        diminuto_list_dataset(&node1, (void *)READABLE);
+
+        /* We will never enqueue a READABLE outside of unit test. */
+
+        diminuto_readerwriter_enqueue(&rw, &node1, 0);
+        ASSERT(rw.waiting == 1);
+        ASSERT(diminuto_list_head(&rw.list) == &node1);
+        ASSERT(diminuto_list_next(&node1) == &rw.list);
+
+        ASSERT(diminuto_readerwriter_ready(&rw, &node1, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node1, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &rw.list);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node1);
+
+        /* We will never enqueue a WRITABLE outside of unit test. */
+
+        diminuto_list_dataset(&node1, (void *)WRITABLE);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node1, READABLE));
+        ASSERT(diminuto_readerwriter_ready(&rw, &node1, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &rw.list);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node1);
+
+        /* NODE 2 (FAILED) */
+
+        ASSERT(diminuto_list_init(&node2) == &node2);
+        diminuto_list_dataset(&node2, (void *)FAILED);
+
+        /* We will never enqueue a FAILED outside of unit test. */
+
+        diminuto_readerwriter_enqueue(&rw, &node2, 0);
+        ASSERT(rw.waiting == 2);
+        ASSERT(diminuto_list_head(&rw.list) == &node1);
+        ASSERT(diminuto_list_next(&node1) == &node2);
+        ASSERT(diminuto_list_next(&node2) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node1, READABLE));
+        ASSERT(diminuto_readerwriter_ready(&rw, &node1, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node2);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node1);
+
+        /* NODE 3 (READER) */
+
+        ASSERT(diminuto_list_init(&node3) == &node3);
+        diminuto_list_dataset(&node3, (void *)READER);
+
+        diminuto_readerwriter_enqueue(&rw, &node3, !0);
+        ASSERT(rw.waiting == 3);
+        ASSERT(diminuto_list_head(&rw.list) == &node1);
+        ASSERT(diminuto_list_next(&node1) == &node3);
+        ASSERT(diminuto_list_next(&node3) == &node2);
+        ASSERT(diminuto_list_next(&node2) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node1, READABLE));
+        ASSERT(diminuto_readerwriter_ready(&rw, &node1, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node3);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node1);
+
+        /* NODE 4 (WRITER) */
+
+        ASSERT(diminuto_list_init(&node4) == &node4);
+        diminuto_list_dataset(&node3, (void *)WRITER);
+
+        diminuto_readerwriter_enqueue(&rw, &node4, 0);
+        ASSERT(rw.waiting == 4);
+        ASSERT(diminuto_list_head(&rw.list) == &node1);
+        ASSERT(diminuto_list_next(&node1) == &node3);
+        ASSERT(diminuto_list_next(&node3) == &node2);
+        ASSERT(diminuto_list_next(&node2) == &node4);
+        ASSERT(diminuto_list_next(&node4) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node1, READABLE));
+        ASSERT(diminuto_readerwriter_ready(&rw, &node1, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node3);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node1);
+
+        /* Not empty. */
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == &rw);
+
+        /* NODE 1 */
+
+        diminuto_readerwriter_dequeue(&rw, &node1);
+        ASSERT(rw.waiting == 3);
+        ASSERT(diminuto_list_head(&rw.list) == &node3);
+        ASSERT(diminuto_list_next(&node3) == &node2);
+        ASSERT(diminuto_list_next(&node2) == &node4);
+        ASSERT(diminuto_list_next(&node4) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node3);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node3);
+
+        diminuto_list_dataset(&node3, (void *)READABLE);
+
+        ASSERT(diminuto_readerwriter_ready(&rw, &node3, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node3, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node2);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node3);
+
+        /* NODE 3 */
+
+        diminuto_readerwriter_dequeue(&rw, &node3);
+        ASSERT(rw.waiting == 2);
+        ASSERT(diminuto_list_head(&rw.list) == &node2);
+        ASSERT(diminuto_list_next(&node2) == &node4);
+        ASSERT(diminuto_list_next(&node4) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node2, WRITABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        /* NODE 2 removed as a side effect of ready/head. */
+
+        ASSERT(rw.waiting == 1);
+        ASSERT(diminuto_list_head(&rw.list) == &node4);
+        ASSERT(diminuto_list_next(&node4) == &rw.list);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        ASSERT(diminuto_readerwriter_front(&rw) == &node4);
+
+        ASSERT(diminuto_readerwriter_head(&rw) == &node4);
+
+        diminuto_list_dataset(&node4, (void *)WRITABLE);
+
+        ASSERT(!diminuto_readerwriter_ready(&rw, &node4, READABLE));
+        ASSERT(diminuto_readerwriter_ready(&rw, &node4, WRITABLE));
+
+        /* NODE 4 */
+
+        diminuto_readerwriter_dequeue(&rw, &node4);
+        ASSERT(rw.waiting == 0);
+        ASSERT(diminuto_list_head(&rw.list) == (diminuto_list_t *)0);
+
+        /* Finish. */
+
+        ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_readerwriter_t rw;
 
         TEST();
 
