@@ -457,7 +457,7 @@ int main(int argc, char * argv[])
         /* NODE 4 (WRITER) */
 
         ASSERT(diminuto_list_init(&node4) == &node4);
-        diminuto_list_dataset(&node3, (void *)WRITER);
+        diminuto_list_dataset(&node4, (void *)WRITER);
 
         diminuto_readerwriter_enqueue(&rw, &node4, 0);
         ASSERT(rw.waiting == 4);
