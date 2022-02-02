@@ -31,27 +31,10 @@
 #include "diminuto_readerwriter.h"
 
 /*******************************************************************************
- * SYMBOLS
+ * TYPES
  ******************************************************************************/
 
-/**
- * Reader Writer calling threads may assume the following "roles". These role
- * values are used as parameter to the Reader Writer scheduling functions
- * (below), or as tokens inserted and removed from the waiting list.
- * "Pending" means the thread has been awakened from the condition variable but
- * has not yet removed its token from the circular list..
- */
-typedef enum Role {
-    ANY         = '*',  /**< Any role. */
-    NONE        = '-',  /**< No role. */
-    STARTED     = 'S',  /**< Initial thread role. */
-    READER      = 'R',  /**< Waiting reader role. */
-    WRITER      = 'W',  /**< Waiting writer role. */
-    FAILED      = 'X',  /**< Cancelled, timed out, failed, etc. */
-    READABLE    = 'r',  /**< Pending reader role. */
-    WRITABLE    = 'w',  /**< Pending writer role. */
-    RUNNING     = 'A',  /**< Running thread role. */
-} role_t;
+typedef diminuto_readerwriter_role_t role_t;
 
 /*******************************************************************************
  * STATICS
@@ -1252,3 +1235,36 @@ int diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, int debugging)
 
     return prior;
 }
+
+/*******************************************************************************
+ * PRIVATE
+ ******************************************************************************/
+
+#if !0
+
+void diminuto_readerwriter_enqueue(diminuto_readerwriter_t * rwp, diminuto_list_t * np, int priority)
+{
+    enqueue(rwp, np, priority);
+}
+
+void diminuto_readerwriter_dequeue(diminuto_readerwriter_t * rwp, diminuto_list_t * np)
+{
+    dequeue(rwp, np);
+}
+
+diminuto_list_t * diminuto_readerwiter_head(diminuto_readerwriter_t * rwp)
+{
+    return head(rwp);
+}
+
+diminuto_list_t * diminuto_readerwriter_front(diminuto_readerwriter_t * rwp)
+{
+   return front(rwp);
+} 
+
+int diminuto_readerwriter_ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, diminuto_readerwriter_role_t pending)
+{
+    return ready(rwp, np, pending);
+}
+
+#endif
