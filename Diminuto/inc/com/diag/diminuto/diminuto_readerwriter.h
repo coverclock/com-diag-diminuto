@@ -18,7 +18,10 @@
  * implementation of condition variables implements a FIFO queue, or what the
  * priorities of the calling threads may be.
  *
- * The underlying public API supports timeouts (using a relative duration,
+ * The public API supports expedited requests by allowing the calling
+ * thread to be queued at the head of the list instead of at the tail.
+ *
+ * The public API supports timeouts (using a relative duration,
  * NOT an absolute clocktime). Timeouts are not supported when using the
  * macros instead of the functions. This is in part because supporting
  * timeouts in the functions allowed me to test certain failure scenarios,
