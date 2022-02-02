@@ -105,6 +105,107 @@ static pthread_key_t key;
     } while (0)
 
 /*******************************************************************************
+ * QUEUE
+ ******************************************************************************/
+
+/**
+ * Remove a node from the wait list.
+ * @param rwp points to the Reader Writer object.
+ * @param np points to the node to be removed.
+ */
+static inline void dequeue(diminuto_readerwriter_t * rwp, diminuto_list_t * np)
+{
+    (void)diminuto_list_remove(np);
+    rwp->waiting -= 1;
+}
+
+/**
+ * Return the node at the head of the wait list without removing it,
+ * after first discarding any leading failed nodes. This can also be
+ * used just to discard leading failed nodes. Nodes on the wait list can be
+ * in the failing state because they were cancelled, but could not be
+ * removed from the wait list because the caller did not hold the mutex.
+ * @param rwp points to the Reader Writer object.
+ * @return a pointer to the node at the head of the wait list or NULL if empty.
+ */
+static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    while (!0) {
+       if ((np = diminuto_list_head(&(rwp->list))) == (diminuto_list_t *)0) {
+            break;
+        } else if ((role_t)diminuto_list_data(np) != FAILED) {
+            break;
+        } else {
+            dequeue(rwp, np);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Failed %p REMOVED %dreading %dwriting %dwaiting", np, rwp->reading, rwp->writing, rwp->waiting);
+        }
+    }
+
+    return np;
+}
+
+/**
+ * Return the node in the wait list that is the closest to the head of the list
+ * without being pending. If the wait list is empty, this will be the head of
+ * the list.
+ * @param rwp points to the Reader Writer object.
+ * @return the node after which a priority node can be inserted.
+ */
+static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+
+    np = diminuto_list_next(&(rwp->list));
+    while (!0) {
+        if (diminuto_list_isroot(np)) {
+            /* List is empty or wrapped around to root. */
+            break;
+        } else if ((role_t)diminuto_list_data(np) == READABLE) {
+            /* Waiting reader has already been activated. */
+            np = diminuto_list_next(np);
+        } else if ((role_t)diminuto_list_data(np) == WRITABLE) {
+            /* Waiting writer has already been activated. */
+            np = diminuto_list_next(np);
+        } else {
+            /* Found the first non-pending waiting node. */
+            break;
+        }
+    }
+
+    return np;
+}
+
+/**
+ * Insert a node onto the wait list.
+ * @param rwp points to the Reader Writer object.
+ * @param np points to the node to be inserted.
+ * @param priority is true if high priority, false otherwise.
+ */
+static inline void enqueue(diminuto_readerwriter_t * rwp, diminuto_list_t * np, int priority)
+{
+    rwp->waiting += 1;
+    diminuto_list_insert(diminuto_list_prev(priority ? front(rwp) : &(rwp->list)), np);
+}
+
+/**
+ * Return true if the indicated node in the list is now at the head, and the
+ * state of that node is now pending, indicating that the waiting reader or
+ * writer has been activated, false otherwise. Calling head has the side effect
+ * of removing any ignored tokens, indicating wait failures, off the head of
+ * the list.
+ * @param rwp points to the Reader Writer object.
+ * @param np points to the list node for the calling thread.
+ * @param pending is the pending role to be used: READABLE or WRITABLE.
+ * @return true if the token is both head and pending, false otherwise.
+ */
+static inline int ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t pending)
+{
+    return (head(rwp) == np) && ((role_t)diminuto_list_data(np) == pending);
+}
+
+/*******************************************************************************
  * INTERNAL CALLBACKS
  ******************************************************************************/
 
@@ -160,10 +261,10 @@ static void wait_cleanup(void * vp)
 
     if (!diminuto_list_isroot(np)) {
         diminuto_readerwriter_t * rwp = (diminuto_readerwriter_t *)diminuto_list_data(diminuto_list_root(np));
+
         BEGIN_CRITICAL_SECTION(rwp);
 
-            (void)diminuto_list_remove(np);
-            rwp->waiting -= 1;
+            dequeue(rwp, np);
             diminuto_list_dataset(np, (void *)FAILED);
 
         END_CRITICAL_SECTION;
@@ -185,7 +286,7 @@ static void key_cleanup(void * vp)
 }
 
 /*******************************************************************************
- * THREAD LOCAL
+ * STORAGE
  ******************************************************************************/
 
 /**
@@ -304,7 +405,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 }
 
 /*******************************************************************************
- * HELPERS
+ * AUDITOR
  ******************************************************************************/
 
 /**
@@ -410,10 +511,9 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dunknown", unknown);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    *(bp++) = '\n';
     *(bp) = '\0';
 
-    DIMINUTO_LOG_DEBUG(buffer);
+    DIMINUTO_LOG_DEBUG("%s\n", buffer); /* Warning otherwise. */
 
     /*
      * Enforce the invariants.
@@ -445,81 +545,6 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
 /*******************************************************************************
  * SCHEDULING
  ******************************************************************************/
-
-/**
- * Return the node at the head of the list without removing it,
- * after first discarding any leading failed nodes. This can also be
- * used just to discard leading failed nodes. Nodes on the list can be
- * in the failing state because they were cancelled, but could not be
- * removed from the list because the caller did not hold the mutex.
- * @param rwp points to the Reader Writer object.
- * @return the node at the head of the list or NULL if empty.
- */
-static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
-{
-    diminuto_list_t * np = (diminuto_list_t *)0;
-
-    while (!0) {
-       if ((np = diminuto_list_head(&(rwp->list))) == (diminuto_list_t *)0) {
-            break;
-        } else if ((role_t)diminuto_list_data(np) != FAILED) {
-            break;
-        } else {
-            (void)diminuto_list_remove(np);
-            rwp->waiting -= 1;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Failed %p REMOVED %dreading %dwriting %dwaiting", np, rwp->reading, rwp->writing, rwp->waiting);
-        }
-    }
-
-    return np;
-}
-
-/**
- * Return the node in the list that is the closest to the head of the list
- * without being pending. If the list is empty, this will be the head of the
- * list.
- * @param rwp points to the Reader Writer object.
- * @return the node after which a priority node can be inserted.
- */
-static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
-{
-    diminuto_list_t * np = (diminuto_list_t *)0;
-
-    np = diminuto_list_next(&(rwp->list));
-    while (!0) {
-        if (diminuto_list_isroot(np)) {
-            /* List is empty or wrapped around to root. */
-            break;
-        } else if ((role_t)diminuto_list_data(np) == READABLE) {
-            /* Waiting reader has already been activated. */
-            np = diminuto_list_next(np);
-        } else if ((role_t)diminuto_list_data(np) == WRITABLE) {
-            /* Waiting writer has already been activated. */
-            np = diminuto_list_next(np);
-        } else {
-            /* Found the first non-pending waiting node. */
-            break;
-        }
-    }
-
-    return np;
-}
-
-/**
- * Return true if the indicated node in the list is now at the head, and the
- * state of that node is now pending, indicating that the waiting reader or
- * writer has been activated, false otherwise. Calling head has the side effect
- * of removing any ignored tokens, indicating wait failures, off the head of
- * the list.
- * @param rwp points to the Reader Writer object.
- * @param np points to the thread local list node for the calling thread.
- * @param pending is the pending role to be used: READABLE or WRITABLE.
- * @return true if the token is both head and pending, false otherwise.
- */
-static inline int ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t pending)
-{
-    return (head(rwp) == np) && ((role_t)diminuto_list_data(np) == pending);
-}
 
 /**
  * Perform either an infinite wait or a timed wait as specified. If a timed
@@ -616,7 +641,6 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
 static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout, int priority)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
-    diminuto_list_t * fp = (diminuto_list_t *)0;
 
     /*
      * Insert the node onto the list. It is either inserted at the end
@@ -624,10 +648,7 @@ static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_lis
      */
 
     diminuto_list_dataset(np, (void *)waiting);
-    rwp->waiting += 1;
-
-    fp = priority ? front(rwp) : &(rwp->list);
-    diminuto_list_insert(diminuto_list_prev(fp), np);
+    enqueue(rwp, np, priority);
 
     DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %s WAITING %dreading %dwriting %dwaiting", label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
 
@@ -650,8 +671,7 @@ static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_lis
      * Remove the node from (presumably) the head of the list.
      */
 
-    diminuto_list_remove(np);
-    rwp->waiting -= 1;
+    dequeue(rwp, np);
     diminuto_list_dataset(np, (void *)RUNNING);
 
     DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s RUNNING %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
