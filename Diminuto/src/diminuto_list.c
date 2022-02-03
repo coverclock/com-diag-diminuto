@@ -165,10 +165,8 @@ void diminuto_list_log(
     }
 }
 
-/**
- * This is the limit on how many iterations the audit may run before it
- * declares defeat. It is a global variable, but is not part of the public
- * API.
+/*
+ * This is a global variable but it is not part of the public API.
  */
 int diminuto_list_audit_limit = maximumof(int);
 
@@ -176,7 +174,8 @@ int diminuto_list_audit_limit = maximumof(int);
  * This is hardly the first time I've been temporarily baffled by my own
  * code (especially code I wrote eleven years ago). What this audit does
  * is traverse the list bidirectionally simultaneously, stopping when it
- * reaches a point where the two traversals meet.
+ * reaches a point where the two traversals meet. This is documented in
+ * the API specification; I should read my own comments.
  */
 const diminuto_list_t * diminuto_list_audit(
     const diminuto_list_t * nodep

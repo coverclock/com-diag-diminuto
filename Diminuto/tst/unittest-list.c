@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include "../src/diminuto_list.h"
 
 static diminuto_list_t head;
 static diminuto_list_t node[3];
@@ -150,7 +151,6 @@ int main(void)
         /* Core Operations */
 
         char datum[] = "datum";
-        extern int diminuto_list_audit_limit;
         int save;
 
         TEST();

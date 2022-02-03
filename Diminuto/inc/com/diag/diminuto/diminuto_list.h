@@ -246,8 +246,9 @@ extern void diminuto_list_log(const diminuto_list_t * nodep);
  * Audit a list. Return a pointer to the first node on the list that appears
  * to be incorrect, or NULL if the list appears correct. Next, previous, and
  * root pointers are checked. The list is traversed bi-directionally and only
- * stops when an error is found or the traversals meet back at the original
- * node. Diagnostic output is emitted to the log at DEBUG level.
+ * stops when an error, found or the traversals meet back at the original
+ * node, or the number of iterations exceeds a predefined limit. Diagnostic
+ * output is emitted to the log at DEBUG level.
  * @param nodep points to a node on the list.
  * @return a pointer to the first incorrect node or NULL if none.
  */
