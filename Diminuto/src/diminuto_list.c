@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2013 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the List feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_list.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 
 /**
  * This is a private internal general reroot operator that reroots a range of
@@ -155,23 +156,34 @@ void diminuto_list_log(
     }
 }
 
+/*
+ * This is hardly the first time I've been temporarily baffled by my own
+ * code (especially code I wrote eleven years ago). What this audit does
+ * is traverse the list bidirectionally simultaneously, stopping when it
+ * reaches a point where the two traversals meet.
+ */
 const diminuto_list_t * diminuto_list_audit(
     const diminuto_list_t * nodep
 ) {
     const diminuto_list_t * rootp = diminuto_list_root(nodep);
     const diminuto_list_t * nextp = nodep;
     const diminuto_list_t * prevp = nodep;
+    int limit = maximumof(int);
     while (!0) {
         if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
-            DIMINUTO_LOG_DEBUG("diminuto_list_audit: FAILED!\n");
+            DIMINUTO_LOG_DEBUG("diminuto_list_audit: next FAILED!\n");
             diminuto_list_log(nextp);
             nodep = nextp;
             break;
         } else if ((prevp->root != rootp) || (prevp->prev->next != prevp) || (prevp->next->prev != prevp)) {
-            DIMINUTO_LOG_DEBUG("diminuto_list_audit: FAILED!\n");
+            DIMINUTO_LOG_DEBUG("diminuto_list_audit: prev FAILED!\n");
             diminuto_list_log(prevp);
             nodep = prevp;
             break;
+        } else if ((--limit) <= 0) {
+            DIMINUTO_LOG_DEBUG("diminuto_list_audit: limit FAILED!\n");
+            diminuto_list_log(rootp);
+            nodep = rootp;
         } else if ((nextp = nextp->next) == (prevp = prevp->prev)) {
             nodep = DIMINUTO_LIST_NULL;
             break;
