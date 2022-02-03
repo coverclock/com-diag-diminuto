@@ -150,6 +150,8 @@ int main(void)
         /* Core Operations */
 
         char datum[] = "datum";
+        extern int diminuto_list_audit_limit;
+        int save;
 
         TEST();
 
@@ -174,6 +176,15 @@ int main(void)
         diminuto_list_insert(&head, &node[1]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[2], &node[0], &head, DIMINUTO_LIST_NULL);
         ASSERT(!diminuto_list_isempty(&head));
+
+        ASSERT(diminuto_list_audit(&head) == (diminuto_list_t *)0);
+        save = diminuto_list_audit_limit;
+        COMMENT("diminuto_list_audit_limit=%d\n", save);
+        ASSERT(save > 0);
+        diminuto_list_audit_limit = 1;
+        ASSERT(diminuto_list_audit(&head) != (diminuto_list_t *)0);
+        diminuto_list_audit_limit = save;
+        ASSERT(diminuto_list_audit(&head) == (diminuto_list_t *)0);
 
         diminuto_list_remove(&node[2]);
         audit(__FILE__, __LINE__, &head, &head, &node[1], &node[0], &head, DIMINUTO_LIST_NULL);

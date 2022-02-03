@@ -30,6 +30,7 @@ static diminuto_list_t * reroot(
     diminuto_list_t * rootp
 ) {
     diminuto_list_t * nextp = firstp;
+
     do {
         nextp->root = rootp;
         if (nextp == lastp) {
@@ -37,6 +38,7 @@ static diminuto_list_t * reroot(
         }
         nextp = nextp->next;
     } while (nextp != firstp);
+
     return rootp;
 }
 
@@ -57,6 +59,7 @@ diminuto_list_t * diminuto_list_remove(
         nodep->prev->next = nodep->next;
         diminuto_list_init(nodep);
     }
+
     return nodep;
 }
 
@@ -70,6 +73,7 @@ diminuto_list_t * diminuto_list_insert(
     rootp->next->prev = nodep;
     rootp->next = nodep;
     nodep->root = rootp->root;
+
     return nodep;
 }
 
@@ -98,6 +102,7 @@ diminuto_list_t * diminuto_list_cut(
         lastp->next = firstp;
         reroot(firstp, lastp, firstp);
     }
+
     return firstp;
 }
 
@@ -116,6 +121,7 @@ diminuto_list_t * diminuto_list_splice(
         top->next = fromp;
         fromp->prev = top;
     }
+
     return fromp;
 }
 
@@ -124,6 +130,7 @@ diminuto_list_t * diminuto_list_replace(
     diminuto_list_t * newp
 ) {
     diminuto_list_insert(oldp, newp);
+
     return diminuto_list_remove(oldp);
 }
 
@@ -132,7 +139,8 @@ diminuto_list_t * diminuto_list_apply(
     diminuto_list_t * nodep,
     void * contextp
 ) {
-    int rc;
+    int rc = 0;
+
     while (!0) {
         rc = (*funcp)(nodep->data, contextp);
         if (rc < 0) {
@@ -143,6 +151,7 @@ diminuto_list_t * diminuto_list_apply(
             break;
         }
     }
+
     return nodep;
 }
 
@@ -156,6 +165,13 @@ void diminuto_list_log(
     }
 }
 
+/**
+ * This is the limit on how many iterations the audit may run before it
+ * declares defeat. It is a global variable, but is not part of the public
+ * API.
+ */
+int diminuto_list_audit_limit = maximumof(int);
+
 /*
  * This is hardly the first time I've been temporarily baffled by my own
  * code (especially code I wrote eleven years ago). What this audit does
@@ -168,7 +184,8 @@ const diminuto_list_t * diminuto_list_audit(
     const diminuto_list_t * rootp = diminuto_list_root(nodep);
     const diminuto_list_t * nextp = nodep;
     const diminuto_list_t * prevp = nodep;
-    int limit = maximumof(int);
+    int limit = diminuto_list_audit_limit;
+
     while (!0) {
         if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
             DIMINUTO_LOG_DEBUG("diminuto_list_audit: next FAILED!\n");
@@ -184,6 +201,7 @@ const diminuto_list_t * diminuto_list_audit(
             DIMINUTO_LOG_DEBUG("diminuto_list_audit: limit FAILED!\n");
             diminuto_list_log(rootp);
             nodep = rootp;
+            break;
         } else if ((nextp = nextp->next) == (prevp = prevp->prev)) {
             nodep = DIMINUTO_LIST_NULL;
             break;
@@ -191,5 +209,6 @@ const diminuto_list_t * diminuto_list_audit(
             continue;
         }
     }
+
     return nodep;
 }
