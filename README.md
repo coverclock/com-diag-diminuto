@@ -923,6 +923,10 @@ Condition Variables", 2020-12,
 Chip Overclock, "Where the RF Meets the Road", 2021-03,
 <https://coverclock.blogspot.com/2021/03/where-rf-meets-road.html>
 
+Chip Overclock, "Revisiting the First-Come First-Served Reader-Writer Solution",
+2022-02,
+<https://coverclock.blogspot.com/2022/02/revisiting-first-come-first-served.html>
+
 # Soundtrack
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
