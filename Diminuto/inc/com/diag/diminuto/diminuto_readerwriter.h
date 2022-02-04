@@ -66,6 +66,9 @@
  *
  * C. Overclock, "First-Come First-Served Readers and Writers in C using
  * Monitors", 2020-12
+ *
+ * C. Overclock, "Revisiting the First-Come First-Served Reader-Writer
+ * Solution", 2022-02
  */
 
 /*******************************************************************************
