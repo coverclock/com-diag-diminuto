@@ -194,7 +194,7 @@ Make="GNU Make 4.0"
 * ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
 * ipcl - UNIX domain ("local") socket interface.
-* list - doubly linked list implementation.
+* list - circular doubly linked list implementation.
 * lock - lock, unlock, and check for lock files.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
 * macros - insane macros to implement conditional and recursive code generation.
