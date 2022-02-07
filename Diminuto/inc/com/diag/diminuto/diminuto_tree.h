@@ -163,7 +163,7 @@ extern diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp);
  * @param nodep points to a node on the tree.
  * @return a pointer to the next node on the tree or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep);
+extern diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep);
 
 /**
  * Given a pointer to a node on the tree, return a pointer to the previous node
@@ -172,7 +172,7 @@ extern diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep);
  * @param nodep points to a node on the tree.
  * @return a pointer to the previous node on the tree or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep);
+extern diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep);
 
 /*******************************************************************************
  * MUTATORS

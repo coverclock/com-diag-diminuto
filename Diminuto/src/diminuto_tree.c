@@ -489,7 +489,7 @@ diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_tree_t 
  * ITERATORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_next(const diminuto_tree_t * nodep)
 {
     diminuto_tree_t * parentp;
 
@@ -510,7 +510,7 @@ diminuto_tree_t * diminuto_tree_next(diminuto_tree_t * nodep)
     return parentp;
 }
 
-diminuto_tree_t * diminuto_tree_prev(diminuto_tree_t * nodep)
+diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep)
 {
     diminuto_tree_t * parentp;
 
