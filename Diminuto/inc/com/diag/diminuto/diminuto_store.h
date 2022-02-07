@@ -42,6 +42,12 @@ typedef struct DiminutoStore {
 } diminuto_store_t;
 
 /**
+ * This type defines a pointer to a store node, which is frequently used
+ * as a argument.
+ */
+typedef diminuto_store_t * diminuto_store_root_t;
+
+/**
  * Like the function strcmp(3), the comparator returns <0, 0, or >0 if the first
  * node is less than, equal to, or greater than, the second node (whatever that
  * means in the context of the application).
@@ -74,9 +80,9 @@ typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
  * @param pointer is a pointer to a root store pointer.
  * @return a poiinter to a root tree pointer.
  */
-static inline diminuto_tree_t ** diminuto_store_rootcast(diminuto_store_t ** pointer)
+static inline diminuto_tree_root_t * diminuto_store_rootcast(const diminuto_store_root_t * pointer)
 {
-    return (diminuto_tree_t **)pointer;
+    return (diminuto_tree_root_t *)pointer;
 }
 
 /*******************************************************************************
@@ -98,7 +104,7 @@ static inline int diminuto_store_ismissing(const diminuto_store_t * nodep)
  * @param rootp is a pointer to a pointer to the root of the store.
  * @return true if the store is empty, false otherwise.
  */
-static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
+static inline int diminuto_store_isempty(const diminuto_store_root_t * rootp)
 {
     return diminuto_tree_isempty(diminuto_store_rootcast(rootp));
 }
@@ -184,7 +190,7 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the matching node in the store or null if it is missing.
  */
-extern diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_find(const diminuto_store_root_t * rootp, const diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 /*******************************************************************************
  * MUTATORS
@@ -199,7 +205,7 @@ extern diminuto_store_t * diminuto_store_find(diminuto_store_t ** rootp, diminut
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the newly inserted node, or null if a matching node exists.
  */
-extern diminuto_store_t * diminuto_store_insert(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_insert(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 /**
  * Insert a new node into the store. If an existing node matches the new node
@@ -211,7 +217,7 @@ extern diminuto_store_t * diminuto_store_insert(diminuto_store_t ** rootp, dimin
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the removed matching node, or null if there is no match.
  */
-extern diminuto_store_t * diminuto_store_replace(diminuto_store_t ** rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+extern diminuto_store_t * diminuto_store_replace(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
 
 /**
  * Remove a node from the store. The node is specified by pointer; you must
@@ -231,7 +237,7 @@ extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
  * @param rootp is the pointer to the root pointer of the store.
  * @return a pointer to the first node in the store or null if none.
  */
-static inline diminuto_store_t * diminuto_store_first(diminuto_store_t ** rootp)
+static inline diminuto_store_t * diminuto_store_first(const diminuto_store_root_t * rootp)
 {
     return diminuto_store_downcast(diminuto_tree_first(diminuto_store_rootcast(rootp)));
 }
@@ -242,7 +248,7 @@ static inline diminuto_store_t * diminuto_store_first(diminuto_store_t ** rootp)
  * @param rootp is the pointer to the root pointer of the store.
  * @return a pointer to the last node in the store or null if none.
  */
-static inline diminuto_store_t * diminuto_store_last(diminuto_store_t ** rootp)
+static inline diminuto_store_t * diminuto_store_last(const diminuto_store_root_t * rootp)
 {
     return diminuto_store_downcast(diminuto_tree_last(diminuto_store_rootcast(rootp)));
 }
@@ -403,7 +409,7 @@ extern void diminuto_store_log(diminuto_store_t * nodep);
  * Audit a store. Applies the tree audit to the underlying tree structure.
  * @return a pointer to the first node at which an error was found or null.
  */
-static inline diminuto_store_t * diminuto_store_audit(diminuto_store_t ** rootp)
+static inline diminuto_store_t * diminuto_store_audit(const diminuto_store_root_t * rootp)
 {
     return diminuto_store_downcast(diminuto_tree_audit(diminuto_store_rootcast(rootp)));
 }

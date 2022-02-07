@@ -27,7 +27,7 @@
  * PRIVATE
  ******************************************************************************/
 
-static void rotate_left(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
+static void rotate_left(diminuto_tree_t * nodep, diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * rightp;
     diminuto_tree_t * parentp;
@@ -56,7 +56,7 @@ static void rotate_left(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
     nodep->parent = rightp;
 }
 
-static void rotate_right(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
+static void rotate_right(diminuto_tree_t * nodep, diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * leftp;
     diminuto_tree_t * parentp;
@@ -85,7 +85,7 @@ static void rotate_right(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
     nodep->parent = leftp;
 }
 
-static void insert_fixup(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
+static void insert_fixup(diminuto_tree_t * nodep, diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * parentp;
     diminuto_tree_t * grandp;
@@ -152,7 +152,7 @@ static void insert_fixup(diminuto_tree_t * nodep, diminuto_tree_t ** rootp)
     (*rootp)->color = DIMINUTO_TREE_COLOR_BLACK;
 }
 
-static void remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp)
+static void remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * siblingp;
 
@@ -262,7 +262,7 @@ static void remove_fixup(diminuto_tree_t * nodep, diminuto_tree_t * parentp, dim
     }
 }
 
-static void link_together(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp, diminuto_tree_t ** linkp)
+static void link_together(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp, diminuto_tree_root_t * linkp)
 {
     nodep->color = DIMINUTO_TREE_COLOR_RED;
     nodep->parent = parentp;
@@ -276,7 +276,7 @@ static void link_together(diminuto_tree_t * nodep, diminuto_tree_t * parentp, di
  * MUTATORS
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
+diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp)
 {
     if (!diminuto_tree_isorphan(nodep)) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
@@ -299,7 +299,7 @@ diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, dim
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp)
+diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp)
 {
     if (!diminuto_tree_isorphan(nodep)) {
         nodep = DIMINUTO_TREE_NULL; /* Error: already on a tree! */
@@ -327,7 +327,7 @@ diminuto_tree_t * diminuto_tree_remove(diminuto_tree_t * nodep)
     diminuto_tree_t * gonep = DIMINUTO_TREE_NULL;
     diminuto_tree_t * childp;
     diminuto_tree_t * parentp;
-    diminuto_tree_t ** rootp;
+    diminuto_tree_root_t * rootp;
     int color;
 
     if (diminuto_tree_isleaf(nodep)) {
@@ -531,7 +531,7 @@ diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep)
     return parentp;
 }
 
-diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp)
+diminuto_tree_t * diminuto_tree_first(const diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * nodep;
 
@@ -544,7 +544,7 @@ diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp)
     return nodep;
 }
 
-diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
+diminuto_tree_t * diminuto_tree_last(const diminuto_tree_root_t * rootp)
 {
     diminuto_tree_t * nodep;
 
@@ -561,7 +561,7 @@ diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp)
  * SEARCH
  ******************************************************************************/
 
-diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp)
+diminuto_tree_t * diminuto_tree_search(const diminuto_tree_t * nodep, const diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp)
 {
     if (diminuto_tree_isleaf(nodep)) {
         /* Do nothing. */
@@ -580,10 +580,10 @@ diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t 
         }
     }
 
-    return nodep;
+    return (diminuto_tree_t *)nodep;
 }
 
-diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace)
+diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_root_t * rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace)
 {
     diminuto_tree_t * nodep;
     diminuto_tree_t * parentp;
@@ -619,9 +619,9 @@ void diminuto_tree_log(const diminuto_tree_t * nodep)
     }
 }
 
-static diminuto_tree_t * audit(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t ** rootp, int height, int * heightp)
+static const diminuto_tree_t * audit(const diminuto_tree_t * nodep, const diminuto_tree_t * parentp, const diminuto_tree_root_t * rootp, int height, int * heightp)
 {
-    diminuto_tree_t * result = DIMINUTO_TREE_NULL;
+    const diminuto_tree_t * result = DIMINUTO_TREE_NULL;
     int line = -1;
     do {
         if (!diminuto_tree_isleaf(nodep)) {
@@ -729,8 +729,8 @@ static diminuto_tree_t * audit(diminuto_tree_t * nodep, diminuto_tree_t * parent
     return result;
 }
 
-diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp)
+diminuto_tree_t * diminuto_tree_audit(const diminuto_tree_root_t * rootp)
 {
     int height = -1;
-    return audit(*rootp, DIMINUTO_TREE_NULL, rootp, 0, &height);
+    return (diminuto_tree_t *)audit(*rootp, DIMINUTO_TREE_NULL, rootp, 0, &height);
 }

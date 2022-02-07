@@ -30,25 +30,25 @@ static inline char * strfry(char *string) {
 
 static const char SPACES[] = "                                                                                ";
 
-static void dumpp(diminuto_tree_t * nodep)
+static void dumpp(const diminuto_tree_t * nodep)
 {
     CHECKPOINT("data=%p\n", nodep->data);
 }
 
-static void dumps(diminuto_tree_t * nodep)
+static void dumps(const diminuto_tree_t * nodep)
 {
     CHECKPOINT("data=\"%s\"\n", (const char *)nodep->data);
 }
 
-typedef void (dumpf_t)(diminuto_tree_t * nodep);
+typedef void (dumpf_t)(const diminuto_tree_t * nodep);
 
-static void dumpn(diminuto_tree_t * nodep, dumpf_t * dumpfp)
+static void dumpn(const diminuto_tree_t * nodep, dumpf_t * dumpfp)
 {
     CHECKPOINT("node=%p color=%s parent=%p left=%p right=%p root=%p error=%d ", (void *)nodep, diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", (void *)diminuto_tree_parent(nodep), (void *)diminuto_tree_left(nodep), (void *)diminuto_tree_right(nodep), (void *)diminuto_tree_root(nodep), diminuto_tree_error(nodep));
     (*dumpfp)(nodep);
 }
 
-static void dumpr(int depth, int height, diminuto_tree_t * nodep, dumpf_t * dumpfp)
+static void dumpr(int depth, int height, const diminuto_tree_t * nodep, dumpf_t * dumpfp)
 {
     if (diminuto_tree_isblack(nodep)) {
         ++height;
@@ -64,7 +64,7 @@ static void dumpr(int depth, int height, diminuto_tree_t * nodep, dumpf_t * dump
     }
 }
 
-static void dump(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static void dump(int line, const diminuto_tree_root_t * rootp, dumpf_t * dumpfp)
 {
     CHECKPOINT("dump: line=%d root=%p\n", line, (void *)rootp);
     if (!diminuto_tree_isempty(rootp)) {
@@ -72,7 +72,7 @@ static void dump(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
-static void traverser(diminuto_tree_t * nodep, dumpf_t * dumpfp)
+static void traverser(const diminuto_tree_t * nodep, dumpf_t * dumpfp)
 {
     if (!diminuto_tree_isleaf(nodep->left)) {
         traverser(nodep->left, dumpfp);
@@ -84,7 +84,7 @@ static void traverser(diminuto_tree_t * nodep, dumpf_t * dumpfp)
     }
 }
 
-static void traverse(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static void traverse(int line, const diminuto_tree_root_t * rootp, dumpf_t * dumpfp)
 {
     CHECKPOINT("traverse: line=%d root=%p\n", line, (void *)rootp);
     if (!diminuto_tree_isempty(rootp)) {
@@ -92,7 +92,7 @@ static void traverse(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
-static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static void list(int line, const diminuto_tree_root_t * rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
     CHECKPOINT("list: line=%d root=%p\n", line, (void *)rootp);
@@ -102,7 +102,7 @@ static void list(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
     }
 }
 
-static diminuto_tree_t *audit(int line, diminuto_tree_t ** rootp, dumpf_t * dumpfp)
+static diminuto_tree_t * audit(int line, const diminuto_tree_root_t * rootp, dumpf_t * dumpfp)
 {
     diminuto_tree_t * nodep;
     diminuto_tree_t * prevp;
@@ -130,7 +130,7 @@ static int comparator(const diminuto_tree_t * nodep, const diminuto_tree_t * tar
     return strcmp(nodep->data, targetp->data);
 }
 
-static diminuto_tree_t * find(diminuto_tree_t ** rootp, void * key)
+static diminuto_tree_t * find(const diminuto_tree_root_t * rootp, void * key)
 {
     diminuto_tree_t * nodep;
     diminuto_tree_t target = DIMINUTO_TREE_NULLINIT;
@@ -206,7 +206,7 @@ int main(void)
         TEST();
 
         ASSERT(DIMINUTO_TREE_NULL == (diminuto_tree_t *)0);
-        ASSERT(DIMINUTO_TREE_ORPHAN == (diminuto_tree_t **)0);
+        ASSERT(DIMINUTO_TREE_ORPHAN == (diminuto_tree_root_t *)0);
         ASSERT((DIMINUTO_TREE_COLOR_RED == 0) || (DIMINUTO_TREE_COLOR_RED == 1));
         ASSERT((DIMINUTO_TREE_COLOR_BLACK == 0) || (DIMINUTO_TREE_COLOR_BLACK == 1));
         ASSERT(DIMINUTO_TREE_COLOR_RED != DIMINUTO_TREE_COLOR_BLACK);
@@ -368,14 +368,14 @@ int main(void)
         node.parent = (diminuto_tree_t *)0x11111111;
         node.left = (diminuto_tree_t *)0x22222222;
         node.right = (diminuto_tree_t *)0x33333333;
-        node.root = (diminuto_tree_t **)0x44444444;
+        node.root = (diminuto_tree_root_t *)0x44444444;
         ASSERT(!diminuto_tree_isred(&node));
         ASSERT(diminuto_tree_isblack(&node));
         ASSERT(diminuto_tree_error(&node));
         ASSERT(diminuto_tree_parent(&node) == (diminuto_tree_t *)0x11111111);
         ASSERT(diminuto_tree_left(&node) == (diminuto_tree_t *)0x22222222);
         ASSERT(diminuto_tree_right(&node) == (diminuto_tree_t *)0x33333333);
-        ASSERT(diminuto_tree_root(&node) == (diminuto_tree_t **)0x44444444);
+        ASSERT(diminuto_tree_root(&node) == (diminuto_tree_root_t *)0x44444444);
         ASSERT(diminuto_tree_dataset(&node, (void *)0x55555555) == &node);
         ASSERT(diminuto_tree_data(&node) == (void *)0x55555555);
         ASSERT(diminuto_tree_clear(&node));
@@ -653,7 +653,7 @@ int main(void)
         node.parent = (diminuto_tree_t *)0x11111111;
         node.left = (diminuto_tree_t *)0x22222222;
         node.right = (diminuto_tree_t *)0x33333333;
-        node.root = (diminuto_tree_t **)0x44444444;
+        node.root = (diminuto_tree_root_t *)0x44444444;
         node.data = (diminuto_tree_t *)0x55555555;
         diminuto_tree_log(&node);
 

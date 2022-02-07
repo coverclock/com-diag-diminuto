@@ -84,6 +84,21 @@ typedef struct DiminutoTree {
 } diminuto_tree_t;
 
 /**
+ * This type describes the root of a tree, which is just a pointer to
+ * a pointer to a tree node. But it's defined explicitly because it is
+ * used a lot. Applications will not declare a variable of this type
+ * specifically, but they will pass the address of a tree node pointer
+ * to functions in the public API. This is done because the address of
+ * the root of the tree may change as the tree is rebalanced. Hence,
+ * the value of the pointer to the root node changes over time. So,
+ * applications that pass the tree to other functions should pass not
+ * a pointer to the root node, but a pointer to the variable that contains
+ * the pointer to the root node, if those functions may cause the tree
+ * to be rebalanced.
+ */
+typedef diminuto_tree_t * diminuto_tree_root_t;
+
+/**
  * This type describes the prototype of a function that compares two nodes, and
  * returns a negative number of the first node is less than the second node,
  * zero of the two nodes are equal, and a positive number if the first node is
@@ -115,7 +130,7 @@ typedef int (diminuto_tree_comparator_t)(const diminuto_tree_t *, const diminuto
  * @def DIMINUTO_TREE_ORPHAN
  * If a node is not on a tree, this is the value its root pointer will have.
  */
-#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_t **)0)
+#define DIMINUTO_TREE_ORPHAN ((diminuto_tree_root_t *)0)
 
 /**
  * @def DIMINUTO_TREE_DATAINIT
@@ -140,7 +155,7 @@ typedef int (diminuto_tree_comparator_t)(const diminuto_tree_t *, const diminuto
  * @param rootp points to the root pointer of the tree.
  * @return a pointer to the first node on the tree or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);
+extern diminuto_tree_t * diminuto_tree_first(const diminuto_tree_root_t * rootp);
 
 /**
  * Return the pointer to the last node on the tree (in terms of a depth first
@@ -148,7 +163,7 @@ extern diminuto_tree_t * diminuto_tree_first(diminuto_tree_t ** rootp);
  * @param rootp points to the root pointer of the tree.
  * @return a pointer to the last node on the tree or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_last(diminuto_tree_t ** rootp);
+extern diminuto_tree_t * diminuto_tree_last(const diminuto_tree_root_t * rootp);
 
 /**
  * Given a pointer to a node on the tree, return a pointer to the next node
@@ -182,7 +197,7 @@ extern diminuto_tree_t * diminuto_tree_prev(const diminuto_tree_t * nodep);
  * @param rootp points to the root pointer of the tree.
  * @return a pointer to the newly inserted node or null if error.
  */
-extern diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
+extern diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp);
 
 /**
  * Insert an orphaned node either to the right of an existing node on the tree
@@ -194,7 +209,7 @@ extern diminuto_tree_t * diminuto_tree_insert_left_or_root(diminuto_tree_t * nod
  * @param rootp points to the root pointer of the tree.
  * @return a pointer to the newly inserted node or null if error.
  */
-extern diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_t **rootp);
+extern diminuto_tree_t * diminuto_tree_insert_right_or_root(diminuto_tree_t * nodep, diminuto_tree_t * parentp, diminuto_tree_root_t * rootp);
 
 /**
  * Remove a node from the tree.
@@ -251,7 +266,7 @@ static inline diminuto_tree_t * diminuto_tree_right(const diminuto_tree_t * node
  * @param nodep points to an existing node.
  * @return a pointer to the root pointer of the tree of the existing node.
  */
-static inline diminuto_tree_t ** diminuto_tree_root(const diminuto_tree_t * nodep)
+static inline diminuto_tree_root_t * diminuto_tree_root(const diminuto_tree_t * nodep)
 {
     return nodep->root;
 }
@@ -286,7 +301,7 @@ static inline int diminuto_tree_error(const diminuto_tree_t * nodep)
  * @param rootp points to the root pointer of the tree.
  * @return true if the tree is empty.
  */
-static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
+static inline int diminuto_tree_isempty(const diminuto_tree_root_t * rootp)
 {
     return (*rootp == DIMINUTO_TREE_EMPTY);
 }
@@ -457,7 +472,7 @@ static inline diminuto_tree_t * diminuto_tree_nullinit(diminuto_tree_t * nodep)
  * @param rcp points to an variable into which the return code is stored.
  * @return a pointer to the nearest node or null if none.
  */
-extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp);
+extern diminuto_tree_t * diminuto_tree_search(const diminuto_tree_t * nodep, const diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int * rcp);
 
 /**
  * Search the tree starting at the root for a target node that is not on
@@ -475,7 +490,7 @@ extern diminuto_tree_t * diminuto_tree_search(diminuto_tree_t * nodep, diminuto_
  * @param replace if true causes a matching node (if any) to be replaced.
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
-extern diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace);
+extern diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_root_t * rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp, int replace);
 
 /*******************************************************************************
  * HELPERS
@@ -487,7 +502,7 @@ extern diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_t 
  * @param rootp points to the root pointer of the empty tree.
  * @return a pointer to the newly inserted node or null if error.
  */
-static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_t **rootp)
+static inline diminuto_tree_t * diminuto_tree_insert_root(diminuto_tree_t * nodep, diminuto_tree_root_t * rootp)
 {
     return diminuto_tree_insert_left_or_root(nodep, DIMINUTO_TREE_NULL, rootp);
 }
@@ -527,7 +542,7 @@ static inline diminuto_tree_t * diminuto_tree_insert_right(diminuto_tree_t * nod
  * @param comparatorp points to a comparator function.
  * @return a pointer to the target node, or null if an error.
  */
-static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_root_t * rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
 {
     return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, 0);
 }
@@ -543,7 +558,7 @@ static inline diminuto_tree_t * diminuto_tree_search_insert(diminuto_tree_t ** r
  * @param comparatorp points to a comparator function.
  * @return a pointer to the target node, the replaced node, or null if an error.
  */
-static inline diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
+static inline diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_root_t * rootp, diminuto_tree_t * targetp, diminuto_tree_comparator_t * comparatorp)
 {
     return diminuto_tree_search_insert_or_replace(rootp, targetp, comparatorp, !0);
 }
@@ -571,6 +586,6 @@ extern void diminuto_tree_log(const diminuto_tree_t * nodep);
  * @param rootp points to a pointer to the root of the tree.
  * @return a pointer to the first node at which an error was found or null.
  */
-extern diminuto_tree_t *  diminuto_tree_audit(diminuto_tree_t ** rootp);
+extern diminuto_tree_t *  diminuto_tree_audit(const diminuto_tree_root_t * rootp);
 
 #endif
