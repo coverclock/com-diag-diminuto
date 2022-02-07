@@ -310,7 +310,7 @@ static inline int diminuto_tree_isleaf(const diminuto_tree_t * nodep)
  * @param nodep points to a node.
  * @return true if the node is an orphan.
  */
-static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
+static inline int diminuto_tree_isorphan(const diminuto_tree_t * nodep)
 {
     return (diminuto_tree_root(nodep) == DIMINUTO_TREE_ORPHAN);
 }
@@ -561,7 +561,7 @@ static inline diminuto_tree_t * diminuto_tree_search_replace(diminuto_tree_t ** 
  * log.
  * @param nodep points to a node.
  */
-extern void diminuto_tree_log(diminuto_tree_t * nodep);
+extern void diminuto_tree_log(const diminuto_tree_t * nodep);
 
 /**
  * Audit a tree. The audit recursively walks the entire tree depth first, left
