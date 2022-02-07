@@ -91,7 +91,11 @@ typedef struct DiminutoTree {
  * from the first node). What this comparison means is completely up to the
  * implementor. Typically, the node structures would actually be part of a
  * larger structure being used by the application, or would contain data
- * pointers to application specific data that is compared.
+ * pointers to application specific data that is compared. N.B. The pointers
+ * in the argument list should really be const, but that turns out to be
+ * remarkably difficult to do in the code that uses Diminuto Tree: Diminuto
+ * store, and the projects Assay, Codex, and Hazer, at last count. It is
+ * certainly my intent that the comparator functor not modify the nodes.
  */
 typedef int (diminuto_tree_comparator_t)(diminuto_tree_t *, diminuto_tree_t *);
 
@@ -220,7 +224,7 @@ extern diminuto_tree_t * diminuto_tree_replace(diminuto_tree_t * oldp, diminuto_
  * @param nodep points to an existing node.
  * @return a pointer to the parent of the existing node.
  */
-static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep)
+static inline diminuto_tree_t * diminuto_tree_parent(const diminuto_tree_t * nodep)
 {
     return nodep->parent;
 }
@@ -230,7 +234,7 @@ static inline diminuto_tree_t * diminuto_tree_parent(diminuto_tree_t * nodep)
  * @param nodep points to an existing node.
  * @return a pointer to the left child of the existing node.
  */
-static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep)
+static inline diminuto_tree_t * diminuto_tree_left(const diminuto_tree_t * nodep)
 {
     return nodep->left;
 }
@@ -240,7 +244,7 @@ static inline diminuto_tree_t * diminuto_tree_left(diminuto_tree_t * nodep)
  * @param nodep points to an existing node.
  * @return a pointer to the right child of the existing node.
  */
-static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep)
+static inline diminuto_tree_t * diminuto_tree_right(const diminuto_tree_t * nodep)
 {
     return nodep->right;
 }
@@ -251,7 +255,7 @@ static inline diminuto_tree_t * diminuto_tree_right(diminuto_tree_t * nodep)
  * @param nodep points to an existing node.
  * @return a pointer to the root pointer of the tree of the existing node.
  */
-static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
+static inline diminuto_tree_t ** diminuto_tree_root(const diminuto_tree_t * nodep)
 {
     return nodep->root;
 }
@@ -261,7 +265,7 @@ static inline diminuto_tree_t ** diminuto_tree_root(diminuto_tree_t * nodep)
  * @param nodep points to an existing node.
  * @return a pointer to the data (payload) of the existing node.
  */
-static inline void * diminuto_tree_data(diminuto_tree_t * nodep)
+static inline void * diminuto_tree_data(const diminuto_tree_t * nodep)
 {
     return nodep->data;
 }
@@ -272,7 +276,7 @@ static inline void * diminuto_tree_data(diminuto_tree_t * nodep)
  * @param nodep points to an existing node.
  * @return the error bit.
  */
-static inline int diminuto_tree_error(diminuto_tree_t * nodep)
+static inline int diminuto_tree_error(const diminuto_tree_t * nodep)
 {
     return nodep->error;
 }
@@ -296,7 +300,7 @@ static inline int diminuto_tree_isempty(diminuto_tree_t ** rootp)
  * @param nodep points a node, which may be null.
  * @return true if the node is a leaf.
  */
-static inline int diminuto_tree_isleaf(diminuto_tree_t * nodep)
+static inline int diminuto_tree_isleaf(const diminuto_tree_t * nodep)
 {
     return (nodep == DIMINUTO_TREE_NULL);
 }
@@ -317,7 +321,7 @@ static inline int diminuto_tree_isorphan(diminuto_tree_t * nodep)
  * @param nodep points to a node on the tree.
  * @return true if the node is colored red.
  */
-static inline int diminuto_tree_isred(diminuto_tree_t * nodep)
+static inline int diminuto_tree_isred(const diminuto_tree_t * nodep)
 {
     return (nodep->color == DIMINUTO_TREE_COLOR_RED);
 }
@@ -328,7 +332,7 @@ static inline int diminuto_tree_isred(diminuto_tree_t * nodep)
  * @param nodep points to a node on the tree.
  * @return true if the node is colored red.
  */
-static inline int diminuto_tree_isblack(diminuto_tree_t * nodep)
+static inline int diminuto_tree_isblack(const diminuto_tree_t * nodep)
 {
     return (nodep->color == DIMINUTO_TREE_COLOR_BLACK);
 }
