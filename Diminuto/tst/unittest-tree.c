@@ -125,7 +125,7 @@ static diminuto_tree_t *audit(int line, diminuto_tree_t ** rootp, dumpf_t * dump
     return nodep;
 }
 
-static int comparator(diminuto_tree_t * nodep, diminuto_tree_t * targetp)
+static int comparator(const diminuto_tree_t * nodep, const diminuto_tree_t * targetp)
 {
     return strcmp(nodep->data, targetp->data);
 }

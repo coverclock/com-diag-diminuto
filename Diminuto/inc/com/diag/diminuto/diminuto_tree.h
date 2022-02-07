@@ -91,15 +91,9 @@ typedef struct DiminutoTree {
  * from the first node). What this comparison means is completely up to the
  * implementor. Typically, the node structures would actually be part of a
  * larger structure being used by the application, or would contain data
- * pointers to application specific data that is compared. N.B. The pointers
- * in the argument list should really be const, but that turns out to be
- * remarkably difficult to do in the code that uses Diminuto Tree: Diminuto
- * Store, and the projects Assay, Codex, and Hazer, at last count. It is
- * certainly my intent that the comparator functor not modify the nodes.
- * (The correct use of the const keyword in a declaration like TYPE **
- * is also a subject of additional research on my part.)
+ * pointers to application specific data that is compared.
  */
-typedef int (diminuto_tree_comparator_t)(diminuto_tree_t *, diminuto_tree_t *);
+typedef int (diminuto_tree_comparator_t)(const diminuto_tree_t *, const diminuto_tree_t *);
 
 /*******************************************************************************
  * GENERATORS

@@ -88,7 +88,7 @@ static inline diminuto_tree_t ** diminuto_store_rootcast(diminuto_store_t ** poi
  * @param nodep is a pointer to a node or null if missing.
  * @return true if the node is missing, false otherwise.
  */
-static inline int diminuto_store_ismissing(diminuto_store_t * nodep)
+static inline int diminuto_store_ismissing(const diminuto_store_t * nodep)
 {
     return (nodep == DIMINUTO_STORE_NULL);
 }
@@ -113,9 +113,9 @@ static inline int diminuto_store_isempty(diminuto_store_t ** rootp)
  * @param pointer is a pointer to a store node.
  * @return a pointer to a tree node.
  */
-static inline diminuto_tree_t * diminuto_store_upcast(diminuto_store_t * pointer)
+static inline diminuto_tree_t * diminuto_store_upcast(const diminuto_store_t * pointer)
 {
-    return diminuto_store_ismissing(pointer) ? DIMINUTO_TREE_NULL : &(pointer->tree);
+    return diminuto_store_ismissing(pointer) ? DIMINUTO_TREE_NULL : (diminuto_tree_t *)&(pointer->tree);
 }
 
 /**
@@ -124,9 +124,9 @@ static inline diminuto_tree_t * diminuto_store_upcast(diminuto_store_t * pointer
  * @param pointer is a pointer to a tree node.
  * @return a pointer to a store node.
  */
-static inline diminuto_store_t * diminuto_store_downcast(diminuto_tree_t * pointer)
+static inline diminuto_store_t * diminuto_store_downcast(const diminuto_tree_t * pointer)
 {
-    return diminuto_tree_isleaf(pointer) ? DIMINUTO_STORE_NULL : diminuto_containerof(diminuto_store_t, tree, pointer);
+    return diminuto_tree_isleaf(pointer) ? DIMINUTO_STORE_NULL : (diminuto_store_t *)diminuto_containerof(const diminuto_store_t, tree, pointer);
 }
 
 /*******************************************************************************
@@ -144,7 +144,7 @@ static inline diminuto_store_t * diminuto_store_downcast(diminuto_tree_t * point
  * @return <0, 0, or >0 if the first node is less than, equal to, or greater
  * than the second.
  */
-static inline int diminuto_store_compare_strings(diminuto_tree_t * thisp, diminuto_tree_t * thatp)
+static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, const diminuto_tree_t * thatp)
 {
     return strcmp((const char *)(diminuto_store_downcast(thisp)->key), (const char *)(diminuto_store_downcast(thatp)->key));
 }

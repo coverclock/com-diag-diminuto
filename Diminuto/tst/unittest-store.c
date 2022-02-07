@@ -27,7 +27,7 @@ static inline char * strfry(char *string) {
 }
 #endif
 
-static int compare_strings(diminuto_store_t * thisp, diminuto_store_t * thatp)
+static int compare_strings(const diminuto_store_t * thisp, const diminuto_store_t * thatp)
 {
     return diminuto_store_compare_strings(diminuto_store_upcast(thisp), diminuto_store_upcast(thatp));
 }
