@@ -97,7 +97,7 @@ typedef struct DiminutoTree {
  * Store, and the projects Assay, Codex, and Hazer, at last count. It is
  * certainly my intent that the comparator functor not modify the nodes.
  * (The correct use of the const keyword in a declaration like TYPE **
- * is also a matter of research on my part.)
+ * is also a subject of additional research on my part.)
  */
 typedef int (diminuto_tree_comparator_t)(diminuto_tree_t *, diminuto_tree_t *);
 
