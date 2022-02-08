@@ -76,7 +76,8 @@ typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
 
 /**
  * Cast a pointer to a root store pointer to a pointer to the tree store
- * pointer. (This is part of the private API.)
+ * pointer. N.B. This casts away const to return a pointer to a mutable
+ * object. (This is part of the private API.)
  * @param pointer is a pointer to a root store pointer.
  * @return a poiinter to a root tree pointer.
  */
@@ -114,7 +115,8 @@ static inline int diminuto_store_isempty(const diminuto_store_root_t * rootp)
  ******************************************************************************/
 
 /**
- * Upcast a store node pointer to a tree node pointer. (This is part of the
+ * Upcast a store node pointer to a tree node pointer. N.B. This casts away
+ * const to return a pointer to a mutable object. (This is part of the
  * private API).
  * @param pointer is a pointer to a store node.
  * @return a pointer to a tree node.
@@ -125,7 +127,8 @@ static inline diminuto_tree_t * diminuto_store_upcast(const diminuto_store_t * p
 }
 
 /**
- * Downcast a tree node pointer to a store node pointer. (This is part of the
+ * Downcast a tree node pointer to a store node pointer. N.B. This casts away
+ * consts to return a pointer to a mutable object. (This is part of the
  * private API).
  * @param pointer is a pointer to a tree node.
  * @return a pointer to a store node.
