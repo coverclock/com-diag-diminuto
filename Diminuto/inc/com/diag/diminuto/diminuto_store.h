@@ -183,6 +183,27 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
  ******************************************************************************/
 
 /**
+ * Find a node in the store. Return a pointer to the node, or a pointer to
+ * the closest node if a matching node is missing. The store is searching by
+ * comparing a node on the tree with a node provided by the caller using a
+ * comparator function. Only as much of the provided node need be initialized
+ * as it used by the comparator function (for example, only the key field if
+ * that is all the comparator looks at). If the return code is zero, then an
+ * exact match for the target node was found. If the return code is negative,
+ * then the returned node is less than the target node. If the return code is
+ * positive, then the returned node is greater than the target node.
+ * @param rootp is a pointer to the root pointer of the store.
+ * @param nodep is a pointer to the provided node.
+ * @param comparefp is a pointer to the comparator function.
+ * @param rcp points to a the return code variable.
+ * @return a pointer to the matching or closest node in the store.
+ */
+static inline diminuto_store_t * diminuto_store_find_close(const diminuto_store_t * candidatep, const diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp, int * rcp)
+{
+    return diminuto_store_downcast(diminuto_tree_search(diminuto_store_upcast(candidatep), diminuto_store_upcast(targetp), comparefp, rcp));
+}
+
+/**
  * Find a node in the store. Return a pointer to the node, or null if the node
  * is missing. The store is searching by comparing a node on the tree with a
  * node provided by the caller using a comparator function. Only as much of the
@@ -193,11 +214,30 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the matching node in the store or null if it is missing.
  */
-extern diminuto_store_t * diminuto_store_find(const diminuto_store_root_t * rootp, const diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+static inline diminuto_store_t * diminuto_store_find(const diminuto_store_root_t * rootp, const diminuto_store_t * targetp, diminuto_store_comparator_t * comparefp)
+{
+    diminuto_store_t * candidatep = (diminuto_store_t *)0;
+    int rc = 0;
+    candidatep = diminuto_store_find_close(*rootp, targetp, comparefp, &rc);
+    return (rc == 0) ? candidatep : DIMINUTO_STORE_NULL;
+}
 
 /*******************************************************************************
  * MUTATORS
  ******************************************************************************/
+
+/**
+ * Insert or replace a node into the store, depending on the flag.
+ * @param rootp is a pointer to the root pointer of the store.
+ * @param nodep points to the new node to be inserted.
+ * @param comparefp is a pointer to the comparator function.
+ * @param replace if true then replace else insert.
+ * @return a pointer to the newly inserted or replaced node, or null if a matching node exists during insert.
+ */
+static inline diminuto_store_t * diminuto_store_insert_or_replace(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp, int replace)
+{
+    return diminuto_store_downcast(diminuto_tree_search_insert_or_replace(diminuto_store_rootcast(rootp), diminuto_store_upcast(nodep), comparefp, replace));
+}
 
 /**
  * Insert a new node into the store. If an existing node matches the new node
@@ -208,7 +248,10 @@ extern diminuto_store_t * diminuto_store_find(const diminuto_store_root_t * root
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the newly inserted node, or null if a matching node exists.
  */
-extern diminuto_store_t * diminuto_store_insert(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+static inline diminuto_store_t * diminuto_store_insert(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+{
+    return diminuto_store_insert_or_replace(rootp, nodep, comparefp, 0);
+}
 
 /**
  * Insert a new node into the store. If an existing node matches the new node
@@ -220,7 +263,10 @@ extern diminuto_store_t * diminuto_store_insert(diminuto_store_root_t * rootp, d
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the removed matching node, or null if there is no match.
  */
-extern diminuto_store_t * diminuto_store_replace(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp);
+static inline diminuto_store_t * diminuto_store_replace(diminuto_store_root_t * rootp, diminuto_store_t * nodep, diminuto_store_comparator_t * comparefp)
+{
+    return diminuto_store_insert_or_replace(rootp, nodep, comparefp, !0);
+}
 
 /**
  * Remove a node from the store. The node is specified by pointer; you must
@@ -228,7 +274,10 @@ extern diminuto_store_t * diminuto_store_replace(diminuto_store_root_t * rootp, 
  * @param nodep is a pointer to a node in the store.
  * @return a pointer to the removed node.
  */
-extern diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep);
+static inline diminuto_store_t * diminuto_store_remove(diminuto_store_t * nodep)
+{
+    return diminuto_store_downcast(diminuto_tree_remove(diminuto_store_upcast(nodep)));
+}
 
 /*******************************************************************************
  * ITERATORS
