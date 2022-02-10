@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implement IF ELSE, FOR EACH, and APPLY preprocessor macros.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -13,7 +13,7 @@
  * Implement IF ELSE, FOR EACH, and APPLY preprocessor macros as described by
  * Jonathan Heathcoat of BBC R&D.
  *
- * Important safety tip: if you have a compile error in the code genreated
+ * Important safety tip: if you have a compile error in the code generated
  * by the user-specified macro you pass as the first argument to APPLY,
  * the recursive action of FOREACH will create an explosion of error
  * output from the compiler. The root cause will typically be in the
@@ -30,7 +30,14 @@
  * have figured this out, I'm pretty certain I would never have thought
  * is was possible in the first place.
  *
- * See the unit test for some examples of how to use these macros.
+ * See the unit test for some examples of how to use these macros. Crank up
+ * the log level to see more output. E.g.
+ *
+ *     COM_DIAG_DIMINUTO_LOG_MASK=0xff unittest-macros
+ *
+ * Yeah, I know the name of this feature - "macros" - isn't very imaginative.
+ * As soon as I think of a more descriptive name ("mindblown" didn't seem
+ * appropriate) I'll change it.
  *
  * REFERENCES
  *
