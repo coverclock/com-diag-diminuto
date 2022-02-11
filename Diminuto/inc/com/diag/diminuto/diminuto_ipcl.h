@@ -18,7 +18,7 @@
  * that are running in the same process environment and file system. In
  * addition to the stream and datagram APIs that the IPC4 and IPC6
  * features provide, IPCL also provides sockets that can be used with
- * sequential packets via the more specialised sendmsg(2) and recvmsg(2)
+ * sequenced packets via the more specialised sendmsg(2) and recvmsg(2)
  * system calls.
  *
  * REFERENCES
@@ -420,7 +420,7 @@ static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, s
  ******************************************************************************/
 
 /**
- * Create a provider-side sequential packet socket bound to a specific Local
+ * Create a provider-side sequenced packet socket bound to a specific Local
  * path and with a specific connection backlog. If an optional function is
  * provided by the caller, invoke it to set socket options before the listen(2)
  * is performed.
@@ -428,26 +428,26 @@ static inline ssize_t diminuto_ipcl_datagram_send(int fd, const void * buffer, s
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
  * @param functionp points to an optional function to set socket options.
  * @param datap is passed to the optional function.
- * @return a provider-side sequential packet socket or <0 if an error occurred.
+ * @return a provider-side sequenced packet socket or <0 if an error occurred.
  */
 extern int diminuto_ipcl_packet_provider_base(const char * path, int backlog, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Create a provider-side sequential packet socket bound to a specific path and
+ * Create a provider-side sequenced packet socket bound to a specific path and
  * with a specific connection backlog.
  * @param path is the path in the file system or "" for an unnamed socket.
  * @param backlog is the limit to how many incoming connections may be queued, <0 for the default.
- * @return a provider-side sequential packet socket or <0 if an error occurred.
+ * @return a provider-side sequenced packet socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_packet_provider_generic(const char * path, int backlog) {
     return diminuto_ipcl_packet_provider_base(path, backlog, diminuto_ipc_inject_defaults, (void *)0);
 }
 
 /**
- * Create a provider-side sequential packet socket with the maximum connection
+ * Create a provider-side sequenced packet socket with the maximum connection
  * backlog.
  * @param path is the path in the file system or "" for an unnamed socket.
- * @return a provider-side sequential packet socket or <0 if an error occurred.
+ * @return a provider-side sequenced packet socket or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_packet_provider(const char * path) {
     return diminuto_ipcl_packet_provider_generic(path, -1);
@@ -455,8 +455,8 @@ static inline int diminuto_ipcl_packet_provider(const char * path) {
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * sequential packet socket.
- * @param fd is the provider-side sequential packet socket.
+ * sequenced packet socket.
+ * @param fd is the provider-side sequenced packet socket.
  * @param pathp if non-NULL points to where the path will be stored.
  * @param psize is the size of the path variable in bytes.
  * @return a packet socket to the provider or <0 if an error occurred.
@@ -468,8 +468,8 @@ static inline int diminuto_ipcl_packet_accept_generic(int fd, char * pathp, size
 
 /**
  * Wait for and accept a connection request from a consumer on a provider-side
- * sequential packet socket.
- * @param fd is the provider-side sequential packet socket.
+ * sequenced packet socket.
+ * @param fd is the provider-side sequenced packet socket.
  * @return a packet socket to the provider or <0 if an error occurred.
  */
 static inline int diminuto_ipcl_packet_accept(int fd) {
@@ -477,7 +477,7 @@ static inline int diminuto_ipcl_packet_accept(int fd) {
 }
 
 /**
- * Request a consumer-side sequential packet socket to a provider using a
+ * Request a consumer-side sequenced packet socket to a provider using a
  * specific path. If an optional function is provided by the caller, invoke
  * it to set socket options before the connect(2) is performed.
  * @param path is the provider path in the file system.
@@ -489,7 +489,7 @@ static inline int diminuto_ipcl_packet_accept(int fd) {
 extern int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, diminuto_ipc_injector_t * functionp, void * datap);
 
 /**
- * Request a consumer-side sequential packet socket to a provider using a
+ * Request a consumer-side sequenced packet socket to a provider using a
  * specific path.
  * @param path is the provider path in the file system.
  * @param path0 is the consumer path in the file system or "" for unnamed.
@@ -500,7 +500,7 @@ static inline int diminuto_ipcl_packet_consumer_generic(const char * path, const
 }
 
 /**
- * Request a consumer-side sequential packet socket to a provider.
+ * Request a consumer-side sequenced packet socket to a provider.
  * @param path is the provider path in the file system.
  * @return a packet socket to the consumer or <0 if an error occurred.
  */

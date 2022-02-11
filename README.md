@@ -234,6 +234,7 @@ Make="GNU Make 4.0"
 * token - macros for preprocessor token handling.
 * tree - red/black balanced binary tree implementation.
 * types - common library types.
+* typeof - macro to infer the type of a variable in a typedef manner.
 * uninterruptiblesection - macros to implement scoped blocked signals.
 * unittest - simple unit test framework.
 * well - like the pool feature but maintains requested alignment of objects.
