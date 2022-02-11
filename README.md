@@ -928,6 +928,9 @@ Chip Overclock, "Revisiting the First-Come First-Served Reader-Writer Solution",
 2022-02,
 <https://coverclock.blogspot.com/2022/02/revisiting-first-come-first-served.html>
 
+Chip Overclock, "Layers II", 2022-11,
+<https://coverclock.blogspot.com/2022/02/layers-ii.html>
+
 # Soundtrack
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
