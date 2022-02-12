@@ -257,7 +257,7 @@ Make="GNU Make 4.0"
 * frequency - display Diminuto base tick frequency in hertz.
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexidecimal.
-* internettool - verify internet connectectivity.
+* internettool - verify internet connectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
 * juliet - display the local time in ISO 8601 format.
