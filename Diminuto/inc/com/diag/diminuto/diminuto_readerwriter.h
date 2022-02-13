@@ -369,7 +369,7 @@ extern void diminuto_writer_cleanup(void * vp);
  * also audits the object; failure of the audit can cause an assertion
  * exception.
  * @param rwp points to the Reader Writer object.
- * @param debug is true to enable debugging, false otherwise.
+ * @param debugging is true to enable debugging, false otherwise.
  * @return the prior value of the debugging flag.
  */
 extern int diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, int debugging);

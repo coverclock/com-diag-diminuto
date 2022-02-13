@@ -186,14 +186,14 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
  * Find a node in the store. Return a pointer to the node, or a pointer to
  * the closest node if a matching node is missing. The store is searching by
  * comparing a node on the tree with a node provided by the caller using a
- * comparator function. Only as much of the provided node need be initialized
+ * comparator function. Only as much of the target node need be initialized
  * as it used by the comparator function (for example, only the key field if
  * that is all the comparator looks at). If the return code is zero, then an
  * exact match for the target node was found. If the return code is negative,
  * then the returned node is less than the target node. If the return code is
  * positive, then the returned node is greater than the target node.
- * @param rootp is a pointer to the root pointer of the store.
- * @param nodep is a pointer to the provided node.
+ * @param candidatep is a pointer starting node for the search.
+ * @param targetp is a pointer to the target node.
  * @param comparefp is a pointer to the comparator function.
  * @param rcp points to a the return code variable.
  * @return a pointer to the matching or closest node in the store.
@@ -207,10 +207,10 @@ static inline diminuto_store_t * diminuto_store_find_close(const diminuto_store_
  * Find a node in the store. Return a pointer to the node, or null if the node
  * is missing. The store is searching by comparing a node on the tree with a
  * node provided by the caller using a comparator function. Only as much of the
- * provided node need be initialized as it used by the comparator function (for
+ * target node need be initialized as it used by the comparator function (for
  * example, only the key field if that is all the comparator looks at).
  * @param rootp is a pointer to the root pointer of the store.
- * @param nodep is a pointer to the provided node.
+ * @param targetp is a pointer to the target node.
  * @param comparefp is a pointer to the comparator function.
  * @return a pointer to the matching node in the store or null if it is missing.
  */
