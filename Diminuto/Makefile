@@ -29,8 +29,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	77# API changes that may require that applications be modified.
-MINOR				:=	2# Only functionality or features added with no legacy API changes.
+MAJOR				:=	78# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
@@ -970,7 +970,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged renameat2 sanity signals sockets sourcing threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged privileged4 privileged6 readerwriter renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1024,6 +1024,7 @@ sanity:	unittest
 	unittest-log
 	unittest-macros
 	unittest-memory
+	unittest-memberof
 	unittest-minmaxof
 	unittest-mutex
 	unittest-mux4 -q
@@ -1060,15 +1061,14 @@ sanity:	unittest
 	unittest-well
 	unittest-widthof
 
-mostest:	most
-	unittest-module
-
-privileged:
+privileged4:
 	unittest-ping4
-	unittest-map
 
-privileged-ipv6:
-	unittest-ping6 # Will only work with IPv6 routing.
+privileged6:
+	unittest-ping6# Requires IPv6 routing.
+
+privileged:	privileged4 privileged6
+	unittest-map# Worked on x86_64 but not on arm64.
 
 extended:
 	unittest-alarm
@@ -1076,7 +1076,6 @@ extended:
 	unittest-controller
 	unittest-ipc-ancillary
 	unittest-modulator
-	unittest-mux4
 	unittest-muxl
 	unittest-mux-eventloop
 	unittest-oneshot1
@@ -1085,7 +1084,6 @@ extended:
 	unittest-periodic1
 	unittest-periodic2
 	unittest-periodic3
-	unittest-poll4
 	unittest-polll
 	unittest-poll-eventloop
 	unittest-readerwriter
@@ -1095,17 +1093,14 @@ extended:
 geologic:
 	unittest-epoch
 
-nohup:
+signals:
+	unittest-alarm
+	unittest-interrupter
 	unittest-hangup-wan
 	unittest-hangup-too
 	unittest-hangup-tree
 	unittest-hangup-fore
-
-signals:
-	unittest-alarm
-	echo "nohup make nohup" 1>&2
-	unittest-interrupter
-	unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat
+	unittest-pipe | cat > /dev/null & sleep 1 && pkill -x -n cat
 	unittest-reaper
 	unittest-terminator
 
@@ -1120,9 +1115,7 @@ threads:
 	unittest-serializedsection
 
 gnuish:
-	make nohup
 	unittest-lock
-	make most
 	unittest-module
 	unittest-mutex
 	unittest-poll4
@@ -1195,19 +1188,23 @@ timers:
 	unittest-uninterruptible
 	unittest-modulator
 
-sockets4:
+sockets0:
 	unittest-fd
 	unittest-ipc
+
+socketsl:
+	unittest-ipcl
+	unittest-muxl
+	unittest-polll
+
+sockets4:
 	unittest-ipc4
 	unittest-ipc-ancillary
-	unittest-ipcl
 	unittest-ipc-scattergather
 	unittest-mux4
 	unittest-mux-eventloop
-	unittest-muxl
 	unittest-poll4
 	unittest-poll-eventloop
-	unittest-polll
 	unittest-scattergather4
 
 sockets6:
@@ -1216,7 +1213,7 @@ sockets6:
 	unittest-poll6
 	unittest-scattergather6
 
-sockets:	sockets4 sockets6
+sockets:	sockets0 socketsl sockets4 sockets6
 
 renameat2:
 	unittest-renameat2
