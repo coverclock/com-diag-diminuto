@@ -24,13 +24,13 @@
 #include <sys/time.h>
 #include "../src/diminuto_time.h"
 
-#if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)
+#if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0) && defined(CLOCK_REALTIME)
 
 /**
  * Return the number of ticks since the epoch using a POSIX real-time clock.
  * @param clock is the POSIX clock type to use.
  * @param logging is true if this is being used by the Log feature.
- * @return ticks since the epoch.
+ * @return ticks since the epoch or DIMINUTO_TIME_ERROR if an error occurred.
  */
 static diminuto_sticks_t diminuto_time_generic(clockid_t clock, int logging)
 {
@@ -56,7 +56,7 @@ static diminuto_sticks_t diminuto_time_generic(clockid_t clock, int logging)
  * Return the number of ticks since the epoch using the system clock.
  * @param clock is unused.
  * @param logging is true if this is being used by the Log feature.
- * @return ticks since the epoch.
+ * @return ticks since the epoch or DIMINUTO_TIME_ERROR.
  */
 static diminuto_sticks_t diminuto_time_generic(int32_t clock, int logging)
 {
@@ -92,16 +92,12 @@ diminuto_sticks_t diminuto_time_clock_log()
 
 diminuto_sticks_t diminuto_time_atomic()
 {
-#if (!defined(_POSIX_TIMERS)) || (_POSIX_TIMERS <= 0)
+#if (!defined(_POSIX_TIMERS)) || (_POSIX_TIMERS <= 0) || (!defined(CLOCK_TAI))
     errno = ENOSYS;
     diminuto_perror("diminuto_time_atomic");
     return DIMINUTO_TIME_ERROR;
-#elif defined(CLOCK_TAI)
-    return diminuto_time_generic(CLOCK_TAI, 0);
 #else
-    errno = ENOSYS;
-    diminuto_perror("diminuto_time_atomic");
-    return DIMINUTO_TIME_ERROR;
+    return diminuto_time_generic(CLOCK_TAI, 0);
 #endif
 }
 
@@ -205,7 +201,7 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
     return result;
 }
 
-diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t timezone, diminuto_sticks_t daylightsaving)
+diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, diminuto_ticks_t tick, diminuto_sticks_t timezone, diminuto_sticks_t daylightsaving)
 {
     diminuto_sticks_t ticks = DIMINUTO_TIME_ERROR;
     struct tm datetime = { 0, };
@@ -221,9 +217,32 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
     do {
 
-#if !defined(__USE_GNU)
+#if defined(__USE_GNU)
 
-#       warning timegm(3) not available on this platform so using mktime(3) instead!
+        /*
+         * timegm(3) is a GNU extension since 2.19. It might be non-standard
+         * but it sure solves a thorny problem. Note that -1 is an error
+         * return, but it is also a legitimate return value indicating one
+         * second prior to the Epoch. So we check the errno value as well
+         * and hope the function sets it.
+         */
+
+        errno = 0;
+        seconds = timegm(&datetime);
+        if (seconds != (time_t)-1) {
+            /* Do nothing. */
+        } else if (errno == 0) {
+            /* Do nothing. */
+        } else {
+            diminuto_perror("diminuto_time_epoch: timegm");
+            break;
+        }
+
+        ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
+
+#else
+
+#       warning timegm(3) not available on this platform!
 
         /*
          * mktime(3) indicates that a return of -1 indicates an error. But
@@ -255,29 +274,6 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
         ticks += diminuto_time_timezone();
         ticks += diminuto_time_daylightsaving(seconds);
 
-#else
-
-        /*
-         * timegm(3) is a GNU extension since 2.19. It might be non-standard
-         * but it sure solves a thorny problem. Note that -1 is an error
-         * return, but it is also a legitimate return value indicating one
-         * second prior to the Epoch. So we check the errno value as well
-         * and hope the function sets it.
-         */
-
-        errno = 0;
-        seconds = timegm(&datetime);
-        if (seconds != (time_t)-1) {
-            /* Do nothing. */
-        } else if (errno == 0) {
-            /* Do nothing. */
-        } else {
-            diminuto_perror("diminuto_time_epoch: timegm");
-            break;
-        }
-
-        ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
-
 #endif
 
 #if !0
@@ -306,7 +302,7 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
         } else if ((year == 1969) && (month == 12) && (day == 31) && (hour == 23) && (minute == 59) && (second == 59)) {
             /* Do nothing. */
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09d %lld %lld\n", year, month, day, hour, minute, second, tick, (diminuto_lld_t)timezone, (diminuto_lld_t)daylightsaving);
+            DIMINUTO_LOG_DEBUG("diminuto_time_epoch: overflow %02d/%02d/%02d %02d:%02d:%02d.%09llu %lld %lld\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, (diminuto_lld_t)timezone, (diminuto_lld_t)daylightsaving);
             errno = EOVERFLOW;
             diminuto_perror("diminuto_time_epoch: overflow");
             ticks = DIMINUTO_TIME_ERROR;
@@ -332,6 +328,14 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
         /*
          * Finally, we add in the fractional second provided by the caller.
+         * time_t is a signed type, and the time_t value returned by mktime(3)
+         * or timegm(3) may legitimately be negative, indicating a reverse
+         * offset from the Epoch. That's why this function returns a signed
+         * value, why the error return is the special negative value
+         * DIMINUTO_TIME_ERROR, and why we have to check the errno returned
+         * by mktime(3) and timegm(3). The fractional tick value is always
+         * positive, so we add it to the signed ticks, which will move either
+         * a positive or negative result forward on the time line.
          */
 
         ticks += tick;
@@ -342,9 +346,40 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 }
 
 /**
+ * Separate the whole seconds and fractional seconds in ticks from a full
+ * ticks value. In the case that the ticks value is negative (which is
+ * valid, indicating an offset before the Epoch), the fractional seconds
+ * is converted from a reverse offset into a forward offset by borrowing
+ * a second, preparing it to be the decimal fractional seconds part of a
+ * time stamp.
+ * @param ticks is the full ticks value.
+ * @param fractionp points to the fractional seconds variable in ticks.
+ * @return the whole seconds.
+ */
+static time_t diminuto_time_separate(diminuto_sticks_t ticks, diminuto_ticks_t * fractionp)
+{
+    time_t seconds = 0;
+    diminuto_ticks_t fraction = 0;
+
+    seconds = diminuto_frequency_ticks2wholeseconds(ticks);
+    fraction = diminuto_frequency_ticks2fractionalseconds(abs64(ticks), diminuto_frequency());
+    if (seconds >=0) {
+        /* Do nothing. */
+    } else if (fraction == 0) {
+        /* Do nothing. */
+    } else {
+        seconds -= 1;
+        fraction = diminuto_frequency() - fraction;
+    }
+    *fractionp = fraction;
+
+    return seconds;
+}
+
+/**
  * Extract the portions of the tm structure into separate variables.
  * @param datetimep points to a tm structure.
- * @param ticks is the value of ticks used to populate the tm structure.
+ * @param ticks is the fractions of a second in ticks.
  * @param yearp points to the year variable.
  * @param monthp points to the month variable.
  * @param dayp points to the day of the month variable.
@@ -353,25 +388,15 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
  * @param secondp points to the second variable.
  * @param tickp points to the fraction of a second in ticks variable.
  */
-static void diminuto_time_stamp(const struct tm *datetimep, diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
+static void diminuto_time_extract(const struct tm *datetimep, diminuto_ticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
-    diminuto_ticks_t fraction = 0;
-
     if (yearp != (int *)0) { *yearp = datetimep->tm_year + 1900; }
     if (monthp != (int *)0) { *monthp = datetimep->tm_mon + 1; }
     if (dayp != (int *)0) { *dayp = datetimep->tm_mday; }
     if (hourp != (int *)0) { *hourp = datetimep->tm_hour; }
     if (minutep != (int *)0) { *minutep = datetimep->tm_min; }
     if (secondp != (int *)0) { *secondp = datetimep->tm_sec; }
-    fraction = diminuto_frequency_ticks2fractionalseconds(abs64(ticks), diminuto_frequency());
-    if (ticks >= 0) {
-        /* Do nothing. */
-    } else if (fraction == 0) {
-        /* Do nothing. */
-    } else {
-        fraction = diminuto_frequency() - fraction;
-    }
-    if (tickp != (diminuto_ticks_t *)0) { *tickp = fraction; }
+    if (tickp != (diminuto_ticks_t *)0) { *tickp = ticks; }
 }
 
 int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
@@ -380,10 +405,11 @@ int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int *
     struct tm datetime = { 0, };
     struct tm * datetimep = (struct tm *)0;
     time_t zulu = 0;
+    diminuto_ticks_t fraction = 0;
 
-    zulu = diminuto_frequency_ticks2wholeseconds(ticks);
+    zulu = diminuto_time_separate(ticks, &fraction);
     if ((datetimep = gmtime_r(&zulu, &datetime)) != (struct tm *)0) {
-        diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
+        diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
         rc = 0;
     } else {
         perror("diminuto_time_timestamp: gmtime_r");
@@ -398,10 +424,11 @@ int diminuto_time_zulu_log(diminuto_sticks_t ticks, int * yearp, int * monthp, i
     struct tm datetime = { 0, };
     struct tm * datetimep = (struct tm *)0;
     time_t zulu = 0;
+    diminuto_ticks_t fraction = 0;
 
-    zulu = diminuto_frequency_ticks2wholeseconds(ticks);
+    zulu = diminuto_time_separate(ticks, &fraction);
     if ((datetimep = gmtime_r(&zulu, &datetime)) != (struct tm *)0) {
-        diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
+        diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
         rc = 0;
     } else {
         /* Do nothing. */
@@ -416,13 +443,14 @@ int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int
     struct tm datetime = { 0, };
     struct tm * datetimep = (struct tm *)0;
     time_t juliet = 0;
+    diminuto_ticks_t fraction = 0;
 
-    juliet = diminuto_frequency_ticks2wholeseconds(ticks);
+    juliet = diminuto_time_separate(ticks, &fraction);
     if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
         diminuto_perror("diminuto_time_timestamp: localtime_r");
         rc = -1;
     } else {
-        diminuto_time_stamp(datetimep, ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
+        diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
     }
 
     return rc;

@@ -184,7 +184,7 @@ extern diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks);
  * @param daylightsaving is the number of ticks offset for DST (0 if UTC).
  * @return the number of ticks since the Epoch, or -1 with (errno!=0) for error.
  */
-extern diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, int tick, diminuto_sticks_t offset, diminuto_sticks_t daylightsaving);
+extern diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, int minute, int second, diminuto_ticks_t tick, diminuto_sticks_t offset, diminuto_sticks_t daylightsaving);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601

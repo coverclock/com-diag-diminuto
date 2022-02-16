@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <string.h>
 
 #define SANITY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
@@ -83,29 +84,29 @@ static void test1(void)
     diminuto_ticks_t tick = (diminuto_ticks_t)-1;
 
     now = diminuto_time_clock();
-    CHECKPOINT("clock %lld\n", (long long int)now);
+    CHECKPOINT("clock %lld\n", (diminuto_lld_t)now);
     ASSERT(now >= 0);
 
     zone = diminuto_time_timezone();
-    CHECKPOINT("timezone %lld\n", (long long int)zone);
+    CHECKPOINT("timezone %lld\n", (diminuto_lld_t)zone);
     /* zone can be positive or negatuve. */
 
     dst = diminuto_time_daylightsaving(now);
-    CHECKPOINT("daylightsaving  %lld\n", (long long int)dst);
+    CHECKPOINT("daylightsaving  %lld\n", (diminuto_lld_t)dst);
     ASSERT(dst >= 0);
 
     rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
-    CHECKPOINT("zulu %04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (long long int)tick);
+    CHECKPOINT("zulu %04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)tick);
 
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, 0, 0);
     ASSERT((then >= 0) || (errno == 0));
-    CHECKPOINT("epoch %lld\n", (long long int)then);
+    CHECKPOINT("epoch %lld\n", (diminuto_lld_t)then);
 
     delta = then - now;
-    CHECKPOINT("delta %lld\n", (long long int)delta);
+    CHECKPOINT("delta %lld\n", (diminuto_lld_t)delta);
     ASSERT(delta == 0);
 }
 
@@ -126,29 +127,29 @@ static void test2(void)
     diminuto_ticks_t tick = (diminuto_ticks_t)-1;
 
     now = diminuto_time_clock();
-    CHECKPOINT("clock %lld\n", (long long int)now);
+    CHECKPOINT("clock %lld\n", (diminuto_lld_t)now);
     ASSERT(now >= 0);
 
     zone = diminuto_time_timezone();
-    CHECKPOINT("timezone %lld\n", (long long int)zone);
+    CHECKPOINT("timezone %lld\n", (diminuto_lld_t)zone);
     /* zone can be positive or negatuve. */
 
     dst = diminuto_time_daylightsaving(now);
-    CHECKPOINT("daylightsaving %lld\n", (long long int)dst);
+    CHECKPOINT("daylightsaving %lld\n", (diminuto_lld_t)dst);
     ASSERT(dst >= 0);
 
     rc = diminuto_time_juliet(now, &year, &month, &day, &hour, &minute, &second, &tick);
     ASSERT(rc >= 0);
-    CHECKPOINT("juliet %04d-%02d-%02dT%02d:%02d:%02d.%09llu\n", year, month, day, hour, minute, second, (long long int)tick);
+    CHECKPOINT("juliet %04d-%02d-%02dT%02d:%02d:%02d.%09llu\n", year, month, day, hour, minute, second, (diminuto_lld_t)tick);
 
     SANITY(year, month, day, hour, minute, second, tick);
 
     then = diminuto_time_epoch(year, month, day, hour, minute, second, tick, zone, dst);
     ASSERT((then >= 0) || (errno == 0));
-    CHECKPOINT("epoch %lld\n", (long long int)then);
+    CHECKPOINT("epoch %lld\n", (diminuto_lld_t)then);
 
     delta = then - now;
-    CHECKPOINT("delta %lld\n", (long long int)delta);
+    CHECKPOINT("delta %lld\n", (diminuto_lld_t)delta);
     ASSERT(delta == 0);
 }
 
@@ -236,14 +237,20 @@ static void test3(diminuto_sticks_t now, int verbose)
             notfirst = !0;
         }
         CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
-            , (long long int)now, (long long int)zulu, (long long int)juliet, (long long int)offset
-            , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick
-            , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick
-            , dday, dhour, dminute, dsecond, (long long unsigned int)dtick
-            , (long long int)timezone, (long long int)daylightsaving
+            , (diminuto_lld_t)now, (diminuto_lld_t)zulu, (diminuto_lld_t)juliet, (diminuto_lld_t)offset
+            , zyear, zmonth, zday, zhour, zminute, zsecond, (diminuto_llu_t)ztick
+            , jyear, jmonth, jday, jhour, jminute, jsecond, (diminuto_llu_t)jtick
+            , dday, dhour, dminute, dsecond, (diminuto_llu_t)dtick
+            , (diminuto_lld_t)timezone, (diminuto_lld_t)daylightsaving
         );
     }
 }
+
+enum Scope {
+    SANITY = 'S',
+    EXTENDED = 'E',
+    GEOLOGIC = 'G',
+};
 
 int main(int argc, char ** argv)
 {
@@ -252,8 +259,23 @@ int main(int argc, char ** argv)
     extern char *tzname[2];
     extern long timezone;
     extern int daylight;
+    enum Scope scope = GEOLOGIC;
+
+    if (argc < 2) {
+        /* Do nothing. */
+    } else if (strcasecmp(argv[1], "sanity") == 0) {
+        scope = SANITY;
+    } else if (strcasecmp(argv[1], "extended") == 0) {
+        scope = EXTENDED;
+    } else if (strcasecmp(argv[1], "geologic") == 0) {
+        scope = GEOLOGIC;
+    } else {
+        /* Do nothing. */
+    }
 
     SETLOGMASK();
+
+    /* SANITY */
 
     {
         static const int32_t LOWEST = diminuto_minimumof(int32_t);
@@ -274,67 +296,68 @@ int main(int argc, char ** argv)
         minimum = hertz * (low + (60 * 60 * 24));
         maximum = hertz * (high - (60 * 60 * 24));
 
-        CHECKPOINT("hertz %lld\n", (long long int)hertz);
-        CHECKPOINT("timezone %lld\n", (long long int)timezone);
-        CHECKPOINT("daylight %lld\n", (long long int)daylight);
+        CHECKPOINT("scope %c\n", scope);
+        CHECKPOINT("hertz %lld\n", (diminuto_lld_t)hertz);
+        CHECKPOINT("timezone %lld\n", (diminuto_lld_t)timezone);
+        CHECKPOINT("daylight %lld\n", (diminuto_lld_t)daylight);
 
-        CHECKPOINT("low %lld 0x%llx\n", (long long int)low, (long long int)low);
+        CHECKPOINT("low %lld 0x%llx\n", (diminuto_lld_t)low, (diminuto_lld_t)low);
         ticks = low;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("minimum %lld 0x%llx\n", (long long int)(minimum / hertz), (long long int)(minimum / hertz));
+        CHECKPOINT("minimum %lld 0x%llx\n", (diminuto_lld_t)(minimum / hertz), (diminuto_lld_t)(minimum / hertz));
         ticks = minimum;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("epoch %lld 0x%llx\n", (long long int)epoch, (long long int)epoch);
+        CHECKPOINT("epoch %lld 0x%llx\n", (diminuto_lld_t)epoch, (diminuto_lld_t)epoch);
         ticks = epoch;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("maximum %lld 0x%llx\n", (long long int)(maximum / hertz), (long long int)(maximum / hertz));
+        CHECKPOINT("maximum %lld 0x%llx\n", (diminuto_lld_t)(maximum / hertz), (diminuto_lld_t)(maximum / hertz));
         ticks = maximum;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("high %lld 0x%llx\n", (long long int)high, (long long int)high);
+        CHECKPOINT("high %lld 0x%llx\n", (diminuto_lld_t)high, (diminuto_lld_t)high);
         ticks = high;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluZ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
-        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (long long unsigned int)tick, rc, errno);
+        CHECKPOINT("high %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
         STATUS();
     }
@@ -442,6 +465,9 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    /* EXTENDED */
+    if (scope == SANITY) { goto fini; }
+
     {
         TEST();
 
@@ -454,6 +480,9 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    /* GEOLOGIC */
+    if (scope == EXTENDED) { goto fini; }
+
     {
         TEST();
 
@@ -465,6 +494,8 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+fini:
 
     EXIT();
 }

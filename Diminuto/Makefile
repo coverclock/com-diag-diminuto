@@ -1004,6 +1004,7 @@ sanity:	unittest
 	unittest-datum
 	unittest-dump
 	unittest-endianess
+	unittest-epoch sanity
 	unittest-escape
 	unittest-fatal && false || true
 	unittest-fd
@@ -1074,6 +1075,7 @@ extended:
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
+	unittest-epoch extended
 	unittest-ipc-ancillary
 	unittest-modulator
 	unittest-muxl
@@ -1091,18 +1093,20 @@ extended:
 	unittest-time-cost
 
 geologic:
-	unittest-epoch
+	unittest-epoch geologic
 
 signals:
 	unittest-alarm
 	unittest-interrupter
+	unittest-pipe | cat > /dev/null & sleep 1 && pkill -x -n cat
+	unittest-reaper
+	unittest-terminator
+
+hangup:
 	unittest-hangup-wan
 	unittest-hangup-too
 	unittest-hangup-tree
 	unittest-hangup-fore
-	unittest-pipe | cat > /dev/null & sleep 1 && pkill -x -n cat
-	unittest-reaper
-	unittest-terminator
 
 threads:
 	unittest-mutex

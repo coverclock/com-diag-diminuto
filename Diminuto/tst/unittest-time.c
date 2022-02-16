@@ -1,13 +1,14 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the Time feature.
+ * @brief This is a partial unit test of the Time feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the Time feature.
+ * This is a partial unit test of the Time feature. See the Epoch unit test
+ * for further testing.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -16,6 +17,8 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -31,6 +34,8 @@ int main(int argc, char ** argv)
     diminuto_ticks_t before;
     diminuto_ticks_t after;
     diminuto_sticks_t elapsed;
+    diminuto_ticks_t atomic;
+    diminuto_ticks_t atomicprime;
     diminuto_ticks_t process;
     diminuto_ticks_t thread;
     diminuto_ticks_t rc;
@@ -74,23 +79,30 @@ int main(int argc, char ** argv)
 
     first = !0;
 
-    CHECKPOINT(" %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %21s %35s %35s\n" , "logical" , "difference" , "requested" , "remaining" , "claimed" , "measured" , "difference" , "elapsed" , "difference" , "error-z" , "error-j" , "process" , "thread" , "duration" , "zulu" , "juliet");
+    ASSERT(issigned(typeof(DIMINUTO_TIME_ERROR)));
+    ASSERT(DIMINUTO_TIME_ERROR < 0);
+
+    CHECKPOINT(" %8s %12s %12s %12s %12s %12s %12s %12s %12s %6s %6s %12s %12s %21s %35s %35s\n", "logical", "atomic", "requested", "remaining", "claimed", "measured", "delta", "elapsed", "delta", "err-z", "err-j", "process", "thread", "duration", "zulu", "juliet");
 
     for (requested = 0; requested <= (hertz * 240); requested = (requested > 0) ? requested * 2 : 1) {
         logical = diminuto_time_logical();
-        ASSERT(first || (logical > logicalprime));
+        ASSERT(first || ((logical > logicalprime) && ((logical - logicalprime) == 1)));
+        result = diminuto_time_atomic();
+        ASSERT(result >= 0);
+        ASSERT(first || (atomic >= atomicprime));
+        atomic = result;
         result = diminuto_time_elapsed();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         then = result;
         result = diminuto_time_clock();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         before = result;
         remaining = diminuto_delay(requested, 0);
         result = diminuto_time_elapsed();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         now = result;
         result = diminuto_time_clock();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         after = result;
         claimed = requested - remaining;
         ASSERT(claimed >= 0);
@@ -140,30 +152,32 @@ int main(int argc, char ** argv)
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         ASSERT((juliet >= 0) || (errno == 0));
         result = diminuto_time_process();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         process = result;
         result = diminuto_time_thread();
-        ASSERT(result != (diminuto_sticks_t)-1);
+        ASSERT(result >= 0);
         thread = result;
-        CHECKPOINT("%12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
-            , (long long int)logical, (long long int)(first ? 0 : logical - logicalprime)
-            , (long long int)requested, (long long int)remaining
-            , (long long int)claimed
-            , (long long int)measured, (long long int)(measured - requested)
-            , (long long int)elapsed, (long long int)(elapsed - requested)
-            , (long long int)(after - zulu)
-            , (long long int)(after - juliet)
-            , (long long int)process, (long long int)thread
-            , ss, dday, dhour, dminute, dsecond, (long long unsigned int)dtick
-            , zyear, zmonth, zday, zhour, zminute, zsecond, (long long unsigned int)ztick, 0, 0
-            , jyear, jmonth, jday, jhour, jminute, jsecond, (long long unsigned int)jtick, (offset < 0) ? '-' : '+', zh, zm
+        CHECKPOINT("%8lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %6lld %6lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
+            , (diminuto_lld_t)logical
+            , (diminuto_lld_t)(first ? 0 : atomic - atomicprime)
+            , (diminuto_lld_t)requested, (diminuto_lld_t)remaining
+            , (diminuto_lld_t)claimed
+            , (diminuto_lld_t)measured, (diminuto_lld_t)(measured - requested)
+            , (diminuto_lld_t)elapsed, (diminuto_lld_t)(elapsed - requested)
+            , (diminuto_lld_t)(after - zulu)
+            , (diminuto_lld_t)(after - juliet)
+            , (diminuto_lld_t)process, (diminuto_lld_t)thread
+            , ss, dday, dhour, dminute, dsecond, (diminuto_llu_t)dtick
+            , zyear, zmonth, zday, zhour, zminute, zsecond, (diminuto_llu_t)ztick, 0, 0
+            , jyear, jmonth, jday, jhour, jminute, jsecond, (diminuto_llu_t)jtick, (offset < 0) ? '-' : '+', zh, zm
         );
         ASSERT(remaining == 0);
         ASSERT(after == zulu);
         ASSERT(after == juliet);
-        diminuto_yield();
         first = 0;
         logicalprime = logical;
+        atomicprime = atomic;
+        diminuto_yield();
     }
 
     EXIT();
