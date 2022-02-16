@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "../src/diminuto_time.h"
 
 /*******************************************************************************
  * LOCALS
@@ -181,19 +182,31 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 
 void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 {
-    diminuto_ticks_t now;
-    int year, month, day, hour, minute, second;
-    diminuto_ticks_t nanosecond;
-    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
-    int rc;
+    diminuto_sticks_t now = -1;
+    int year, month, day, hour, minute, second = 0;
+    diminuto_ticks_t nanosecond = 0;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
+    int rc = -1;
     char * pointer = buffer;
     size_t space = sizeof(buffer);
     size_t total = 0;
     char * bufferp = buffer;
     static char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM] = { '\0', };
 
-    now = diminuto_time_clock();
-    diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &nanosecond);
+    /*
+     * We use special versions of these functions from the private Time API
+     * that do not log messages in the event of an error. This is to prevent
+     * an infinite recursion (at least, until the stack runs out) if the
+     * underlying C library functions or kernel system calls fail.
+     */
+
+    if ((now = diminuto_time_clock_log()) == DIMINUTO_TIME_ERROR) {
+        /* Do nothing. */
+    } else if (diminuto_time_zulu_log(now, &year, &month, &day, &hour, &minute, &second, &nanosecond) < 0) {
+        now = DIMINUTO_TIME_ERROR;
+    } else {
+        /* Do nothing. */
+    }
 
     /*
      * Note that the hostname is cached; subsequent log emissions
@@ -222,7 +235,11 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * yyyy-mm-ddThh:mm:ss.uuuuuuuuuZ "hostname" <priority> [pid] {tid} ...
      */
 
-    rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (long long unsigned int)nanosecond, hostname, PRIORITIES[priority & 0x7], (signed long long int)getpid(), (unsigned long long int)pthread_self());
+    if (now >= 0) {
+        rc = snprintf(pointer, space, "%4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ \"%s\" <%s> [%lld] {%llx} ", year, month, day, hour, minute, second, (diminuto_llu_t)nanosecond, hostname, PRIORITIES[priority & 0x7], (diminuto_lld_t)getpid(), (diminuto_llu_t)pthread_self());
+    } else {
+        rc = snprintf(pointer, space, "****-**-**T**:**:**.*********T \"%s\" <%s> [%lld] {%llx} ", hostname, PRIORITIES[priority & 0x7], (diminuto_lld_t)getpid(), (diminuto_llu_t)pthread_self());
+    }
     if (rc < 0) {
         rc = 0;
     } else if (rc >= space) {
