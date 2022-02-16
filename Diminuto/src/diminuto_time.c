@@ -363,7 +363,12 @@ static time_t diminuto_time_separate(diminuto_sticks_t ticks, diminuto_ticks_t *
 
     seconds = diminuto_frequency_ticks2wholeseconds(ticks);
     fraction = diminuto_frequency_ticks2fractionalseconds(abs64(ticks), diminuto_frequency());
-    if (seconds >=0) {
+    /*
+     * Note that we *must* check ticks here, not seconds. The former can be
+     * negative (but less than one second) but the latter might be zero (and
+     * hence effectively positive).
+     */
+    if (ticks >=0) {
         /* Do nothing. */
     } else if (fraction == 0) {
         /* Do nothing. */

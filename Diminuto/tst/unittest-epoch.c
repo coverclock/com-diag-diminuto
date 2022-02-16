@@ -66,7 +66,7 @@ static const time_t HIGH = (time_t)diminuto_maximumof(int32_t);
 
 static const diminuto_sticks_t MINIMUM = COM_DIAG_DIMINUTO_FREQUENCY * ((diminuto_sticks_t)diminuto_minimumof(int32_t) + (60LL * 60LL * 24LL));
 static const diminuto_sticks_t MAXIMUM = COM_DIAG_DIMINUTO_FREQUENCY * ((diminuto_sticks_t)diminuto_maximumof(int32_t) - (60LL * 60LL * 24LL));
-static const diminuto_sticks_t FRACTION = 999999999LL;
+static const diminuto_sticks_t FRACTION = COM_DIAG_DIMINUTO_FREQUENCY - 1;
 
 
 static void test1(void)
@@ -164,7 +164,7 @@ static int zsecond = -1;
 static diminuto_ticks_t ztick = (diminuto_ticks_t)-1;
 static int notfirst = 0;
 
-static void test3(diminuto_sticks_t now, int verbose)
+static void test3(diminuto_sticks_t now, int line)
 {
     int dday = -1;
     int dhour = -1;
@@ -233,17 +233,18 @@ static void test3(diminuto_sticks_t now, int verbose)
     if (rc < 0) { dday = -dday; }
     SANITY(2017, 9, 29, dhour, dminute, dsecond, dtick);
 
-    if ((now != zulu) || (now != juliet) || verbose) {
+    if ((now != zulu) || (now != juliet) || line) {
         if (!notfirst) {
-            CHECKPOINT("%20s %20s %20s %18s %30s %30s %25s %15s %15s\n" , "NOW", "ZULU", "JULIET", "OFFSET" , "ZULU", "JULIET", "DURATION" , "TIMEZONE", "DAYLIGHTSAVING");
+            CHECKPOINT("%20s %20s %20s %18s %30s %30s %25s %15s %15s %4s\n" , "NOW", "ZULU", "JULIET", "OFFSET" , "ZULU", "JULIET", "DURATION" , "TIMEZONE", "DAYLIGHTSAVING", "LINE");
             notfirst = !0;
         }
-        CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld\n"
+        CHECKPOINT("%20lld %20lld %20lld 0x%016llx %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluZ %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9lluJ %6d/%2.2d:%2.2d:%2.2d.%9.9llu %15lld %15lld %4d\n"
             , (diminuto_lld_t)now, (diminuto_lld_t)zulu, (diminuto_lld_t)juliet, (diminuto_lld_t)offset
             , zyear, zmonth, zday, zhour, zminute, zsecond, (diminuto_llu_t)ztick
             , jyear, jmonth, jday, jhour, jminute, jsecond, (diminuto_llu_t)jtick
             , dday, dhour, dminute, dsecond, (diminuto_llu_t)dtick
             , (diminuto_lld_t)timezone, (diminuto_lld_t)daylightsaving
+            , line
         );
     }
 }
@@ -382,53 +383,95 @@ int main(int argc, char ** argv)
          * See also fun/timestuff.c
          */
 
-        test3((ticks = LOW * hertz), !0);
+        CHECKPOINT("Group 1");
+
+        test3((ticks = LOW * hertz), __LINE__);
         VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
-        test3((ticks = MINIMUM), !0);
+        test3((ticks = MINIMUM), __LINE__);
         VERIFY(1901, 12, 14, 20, 45, 52, 0);
 
-        test3((ticks = ((EPOCH - 1) * hertz) - FRACTION), !0);
-        test3((ticks = (EPOCH - 1) * hertz), !0);
-        test3((ticks = ((EPOCH - 1) * hertz) + FRACTION), !0);
-
-        test3((ticks = (EPOCH * hertz) - FRACTION), !0);
-        test3((ticks = EPOCH * hertz), !0);
-        VERIFY(1970, 1, 1, 0, 0, 0, 0);
-        test3((ticks = (EPOCH * hertz) + FRACTION), !0);
-
-        test3((ticks = ((EPOCH + 1) * hertz) - FRACTION), !0);
-        test3((ticks = (EPOCH + 1) * hertz), !0);
-        VERIFY(1970, 1, 1, 0, 0, 0, 1);
-        test3((ticks = (EPOCH + 1) + FRACTION), !0);
-
-        test3((ticks = hertz - 1), !0);
-        VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
-
-        test3((ticks = hertz), !0);
-        VERIFY(1970, 1, 1, 0, 0, 1, 0);
-
-        test3((ticks = hertz + 1), !0);
-
-        test3((ticks = -hertz), !0);
+        test3((ticks = -hertz), __LINE__);
         VERIFY(1969, 12, 31, 23, 59, 59, 0);
 
-        test3((ticks = 1000000000LL * hertz), !0);
+        test3((ticks = hertz - 1), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, FRACTION);
+
+        test3((ticks = hertz), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 1, 0);
+
+        test3((ticks = hertz + 1), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 1, 1);
+
+        CHECKPOINT("Group 2");
+
+        test3((ticks = ((EPOCH - 1) * hertz) - FRACTION), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 58, 1);
+
+        test3((ticks = ((EPOCH - 1) * hertz) - 1), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 58, FRACTION);
+
+        test3((ticks = (EPOCH - 1) * hertz), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 59, 0);
+
+        test3((ticks = ((EPOCH - 1) * hertz) + 1), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 59, 1);
+
+        test3((ticks = ((EPOCH - 1) * hertz) + FRACTION), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 59, FRACTION);
+
+        CHECKPOINT("Group 3");
+
+        test3((ticks = (EPOCH * hertz) - FRACTION), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 59, 1);
+
+        test3((ticks = (EPOCH * hertz) - 1), __LINE__);
+        VERIFY(1969, 12, 31, 23, 59, 59, FRACTION);
+
+        test3((ticks = EPOCH * hertz), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, 0);
+
+        test3((ticks = (EPOCH * hertz) + 1), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, 1);
+
+        test3((ticks = (EPOCH * hertz) + FRACTION), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, FRACTION);
+
+        CHECKPOINT("Group 4");
+
+        test3((ticks = ((EPOCH + 1) * hertz) - FRACTION), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, 1);
+
+        test3((ticks = ((EPOCH + 1) * hertz) - 1), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 0, FRACTION);
+
+        test3((ticks = (EPOCH + 1) * hertz), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 1, 0);
+
+        test3((ticks = ((EPOCH + 1) * hertz) + 1), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 1, 1);
+
+        test3((ticks = ((EPOCH + 1) * hertz) + FRACTION), __LINE__);
+        VERIFY(1970, 1, 1, 0, 0, 1, FRACTION);
+
+        CHECKPOINT("Group 5");
+
+        test3((ticks = 1000000000LL * hertz), __LINE__);
         VERIFY(2001, 9, 9, 1, 46, 40, 0);
 
-        test3((ticks = 1234567890LL * hertz), !0);
+        test3((ticks = 1234567890LL * hertz), __LINE__);
         VERIFY(2009, 2, 13, 23, 31, 30, 0);
 
-        test3((ticks = 15000LL * 24LL * 3600LL * hertz), !0);
+        test3((ticks = 15000LL * 24LL * 3600LL * hertz), __LINE__);
         VERIFY(2011, 1, 26, 0, 0, 0, 0);
 
-        test3((ticks = 1400000000LL * hertz), !0);
+        test3((ticks = 1400000000LL * hertz), __LINE__);
         VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-        test3((ticks = MAXIMUM), !0);
+        test3((ticks = MAXIMUM), __LINE__);
         VERIFY(2038, 1, 18, 3, 14, 7, 0);
 
-        test3((ticks = HIGH) * hertz, !0);
+        test3((ticks = HIGH) * hertz, __LINE__);
         VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
         STATUS();

@@ -143,6 +143,8 @@ extern void diminuto_unittest_flush(void);
  * @def TEST
  * Emit a notice message identifying the the start of a new unit test
  * and an optional @a _TITLE_ constant string e.g. TEST("Thread Safety").
+ * Every TEST() must be bracketed in the source code with subsequent
+ * STATUS().
  */
 #define TEST(_TITLE_) \
     do { \
@@ -160,6 +162,8 @@ extern void diminuto_unittest_flush(void);
  * @def STATUS
  * Emit a count of the errors so far and an optional @a _TITLE_ constant
  * string e.g. STATUS("So far, so good") at the end of a unit test.
+ * Every STATUS() must be bracketed in the source code with a
+ * preceeding TEST().
  */
 #define STATUS(_TITLE_) \
         } while (0); \
@@ -170,7 +174,7 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_errors; \
             diminuto_unittest_added = diminuto_unittest_count - diminuto_unittest_local; \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d total=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_added, diminuto_unittest_count, (diminuto_unittest_added > 0) ? "SUCCESS." : "FAILURE!"); \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d total=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_added, diminuto_unittest_count, (diminuto_unittest_added == 0) ? "SUCCESS." : "FAILURE!"); \
             diminuto_unittest_flush(); \
         } while (0); \
     } while (0);
