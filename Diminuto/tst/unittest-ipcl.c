@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the IPC feature for Local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -360,6 +360,8 @@ int main(int argc, char * argv[])
         EXPECT(diminuto_ipcl_close(fd2) >= 0);
 
         ASSERT(diminuto_ipcl_remove(LOCAL2) >= 0);
+
+        STATUS();
     }
 
     {
@@ -556,6 +558,8 @@ int main(int argc, char * argv[])
         int service;
         pid_t pid;
 
+        TEST();
+
         /*
          * Named consumer.
          */
@@ -634,6 +638,8 @@ int main(int argc, char * argv[])
         int service;
         pid_t pid;
 
+        TEST();
+
         /*
          * Unnamed consumer.
          */
@@ -710,6 +716,8 @@ int main(int argc, char * argv[])
         int service;
         pid_t pid;
 
+        TEST();
+
         /*
          * Streamlined.
          */
@@ -770,11 +778,11 @@ int main(int argc, char * argv[])
         int service;
         pid_t pid;
 
+        TEST();
+
         /*
          * Reversed,
          */
-
-        TEST();
 
         EXPECT((service = diminuto_ipcl_stream_provider(LOCAL1)) >= 0);
 
@@ -1062,6 +1070,8 @@ int main(int argc, char * argv[])
         diminuto_local_t local;
         int service;
         pid_t pid;
+
+        TEST();
 
         /*
          * Named consumer.

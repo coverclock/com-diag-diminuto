@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a simple unit test framework.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -72,7 +72,7 @@
 extern int diminuto_unittest_tests;
 
 /**
- * Number of errors in current test.
+ * Total number of errors in all tests so far.
  */
 extern int diminuto_unittest_errors;
 
@@ -146,26 +146,34 @@ extern void diminuto_unittest_flush(void);
  */
 #define TEST(_TITLE_) \
     do { \
-        int diminuto_unittest_number = 0; \
-        diminuto_unittest_number = diminuto_unittest_test(); \
-        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: %d tests=%d " _TITLE_ "\n", (__COUNTER__), diminuto_unittest_number); \
-        diminuto_unittest_flush(); \
-    } while (0)
+        int diminuto_unittest_local = 0; \
+        do { \
+            int diminuto_unittest_number = 0; \
+            diminuto_unittest_number = diminuto_unittest_test(); \
+            diminuto_unittest_local = diminuto_unittest_errors; \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "TEST: %d tests=%d " _TITLE_ "\n", (__COUNTER__), diminuto_unittest_number); \
+            diminuto_unittest_flush(); \
+        } while (0); \
+        do {
 
 /**
  * @def STATUS
  * Emit a count of the errors so far and an optional @a _TITLE_ constant
- * string e.g. STATUS("So far, so good").
+ * string e.g. STATUS("So far, so good") at the end of a unit test.
  */
 #define STATUS(_TITLE_) \
-    do { \
-        int diminuto_unittest_number; \
-        int diminuto_unittest_count; \
-        diminuto_unittest_number = diminuto_unittest_tests; \
-        diminuto_unittest_count = diminuto_unittest_errors; \
-        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_count, (diminuto_unittest_errors == 0) ? "SUCCESS." : "FAILURE!"); \
-        diminuto_unittest_flush(); \
-    } while (0)
+        } while (0); \
+        do { \
+            int diminuto_unittest_number; \
+            int diminuto_unittest_count; \
+            int diminuto_unittest_added; \
+            diminuto_unittest_number = diminuto_unittest_tests; \
+            diminuto_unittest_count = diminuto_unittest_errors; \
+            diminuto_unittest_added = diminuto_unittest_count - diminuto_unittest_local; \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d total=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_added, diminuto_unittest_count, (diminuto_unittest_added > 0) ? "SUCCESS." : "FAILURE!"); \
+            diminuto_unittest_flush(); \
+        } while (0); \
+    } while (0);
 
 /**
  * @def FAILURE

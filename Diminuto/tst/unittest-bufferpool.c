@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Buffer Pool feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -77,6 +77,7 @@ int main(void)
         EXPECT(diminuto_buffer_pool_init(&mine, 7, 1000) == &mine);
         EXPECT(diminuto_buffer_pool_init(&mine, 11, 10000) == (diminuto_buffer_pool_t *)0);
         EXPECT(diminuto_buffer_pool_fini(&mine) == (diminuto_buffer_pool_t *)0);
+        STATUS();
     }
 
     EXIT();

@@ -89,7 +89,6 @@ int main(int argc, char ** argv)
         ASSERT(first || ((logical > logicalprime) && ((logical - logicalprime) == 1)));
         result = diminuto_time_atomic();
         ASSERT(result >= 0);
-        ASSERT(first || (atomic >= atomicprime));
         atomic = result;
         result = diminuto_time_elapsed();
         ASSERT(result >= 0);
@@ -104,6 +103,10 @@ int main(int argc, char ** argv)
         result = diminuto_time_clock();
         ASSERT(result >= 0);
         after = result;
+        result = diminuto_time_atomic();
+        ASSERT(result >= 0);
+        atomicprime = result;
+        ASSERT(atomicprime >= atomic);
         claimed = requested - remaining;
         ASSERT(claimed >= 0);
         measured = now - then;
@@ -159,7 +162,7 @@ int main(int argc, char ** argv)
         thread = result;
         CHECKPOINT("%8lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %12lld %6lld %6lld %12lld %12lld %c%1.1d/%2.2d:%2.2d:%2.2d.%9.9llu %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu+%2.2d:%2.2d %4.4d-%2.2d-%2.2dT%2.2d:%2.2d:%2.2d.%9.9llu%c%2.2d:%2.2d\n"
             , (diminuto_lld_t)logical
-            , (diminuto_lld_t)(first ? 0 : atomic - atomicprime)
+            , (diminuto_lld_t)(atomicprime - atomic)
             , (diminuto_lld_t)requested, (diminuto_lld_t)remaining
             , (diminuto_lld_t)claimed
             , (diminuto_lld_t)measured, (diminuto_lld_t)(measured - requested)
@@ -176,7 +179,6 @@ int main(int argc, char ** argv)
         ASSERT(after == juliet);
         first = 0;
         logicalprime = logical;
-        atomicprime = atomic;
         diminuto_yield();
     }
 

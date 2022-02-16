@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Hangup feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -101,6 +101,8 @@ int main(int argc, char ** argv)
         CHECKPOINT("unittest-hangup-wan CHILD END\n");
 
     }
+
+    STATUS();
 
     EXIT();
 }

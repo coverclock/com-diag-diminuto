@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Lock feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -128,6 +128,8 @@ int main(int argc, char ** argv)
         pid_t pid3;
         pid_t pid4;
         pid_t pid5;
+
+        TEST();
 
         (void)unlink(FILENAME);
 

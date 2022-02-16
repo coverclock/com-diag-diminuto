@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Coreable feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -20,5 +20,6 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_core_enable() >= 0);
     *((volatile int *)0) = 0;
     FAILURE();
+    STATUS();
     EXIT();
 }

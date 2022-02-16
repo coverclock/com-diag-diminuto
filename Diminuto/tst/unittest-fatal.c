@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2016 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2016-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Fatal portion of the Core feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -21,5 +21,6 @@ int main(int argc, char ** argv)
     ASSERT(diminuto_core_enable() >= 0);
     diminuto_core_fatal();
     FAILURE();
+    STATUS();
     EXIT();
 }

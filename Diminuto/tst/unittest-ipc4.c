@@ -834,6 +834,8 @@ int main(int argc, char * argv[])
         int service;
         pid_t pid;
 
+        TEST();
+
         EXPECT((service = diminuto_ipc4_stream_provider(0)) >= 0);
         EXPECT(diminuto_ipc4_nearend(service, (diminuto_ipv4_t *)0, &rendezvous) >= 0);
 

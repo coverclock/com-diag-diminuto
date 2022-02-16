@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Poll feature for IPv4.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -261,8 +261,6 @@ int main(int argc, char ** argv)
             EXPECT(WIFEXITED(status));
             EXPECT(WEXITSTATUS(status) == 0);
 
-            STATUS();
-
         } else {
 
             /* CONSUMER */
@@ -365,6 +363,7 @@ int main(int argc, char ** argv)
             exit(0);
         }
 
+        STATUS();
 
     }
 

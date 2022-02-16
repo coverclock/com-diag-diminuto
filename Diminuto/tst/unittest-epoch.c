@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Epoch portion of the Time feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -49,8 +49,8 @@
 
 #define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
-        COMMENT("VERIFY %u %u %u %u %u %u %u\n", _YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, (int)_TICK_); \
-        COMMENT("VERIFY %u %u %u %u %u %u %u\n", zyear, zmonth, zday, zhour, zminute, zsecond, (int)ztick); \
+        COMMENT("VERIFY A %u %u %u %u %u %u %u\n", _YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, (int)_TICK_); \
+        COMMENT("VERIFY B %u %u %u %u %u %u %u\n", zyear, zmonth, zday, zhour, zminute, zsecond, (int)ztick); \
         EXPECT(zyear == (_YEAR_)); \
         EXPECT(zmonth == (_MONTH_)); \
         EXPECT(zday == (_DAY_)); \
@@ -60,12 +60,14 @@
         EXPECT(ztick == (_TICK_)); \
     } while (0)
 
-static time_t low  = 0;
-static time_t epoch = 0;
-static time_t high = 0;
+static const time_t LOW  = (time_t)diminuto_minimumof(int32_t);
+static const time_t EPOCH = 0;
+static const time_t HIGH = (time_t)diminuto_maximumof(int32_t);
 
-static diminuto_sticks_t minimum = 0;
-static diminuto_sticks_t maximum = 0;
+static const diminuto_sticks_t MINIMUM = COM_DIAG_DIMINUTO_FREQUENCY * ((diminuto_sticks_t)diminuto_minimumof(int32_t) + (60LL * 60LL * 24LL));
+static const diminuto_sticks_t MAXIMUM = COM_DIAG_DIMINUTO_FREQUENCY * ((diminuto_sticks_t)diminuto_maximumof(int32_t) - (60LL * 60LL * 24LL));
+static const diminuto_sticks_t FRACTION = 999999999LL;
+
 
 static void test1(void)
 {
@@ -218,7 +220,7 @@ static void test3(diminuto_sticks_t now, int verbose)
     rc = diminuto_time_juliet(now, &jyear, &jmonth, &jday, &jhour, &jminute, &jsecond, &jtick);
     ASSERT(rc == 0);
     SANITY(jyear, jmonth, jday, jhour, jminute, jsecond, jtick);
-    if ((minimum <= now) && (now <= maximum)) {
+    if ((MINIMUM <= now) && (now <= MAXIMUM)) {
         juliet = diminuto_time_epoch(jyear, jmonth, jday, jhour, jminute, jsecond, jtick, timezone, daylightsaving);
         ASSERT((juliet >= 0) || (errno == 0));
         EXPECT(now == juliet);
@@ -278,31 +280,24 @@ int main(int argc, char ** argv)
     /* SANITY */
 
     {
-        static const int32_t LOWEST = diminuto_minimumof(int32_t);
-        static const int32_t HIGHEST = diminuto_maximumof(int32_t);
         int year, month, day, hour, minute, second;
         diminuto_ticks_t tick;
         int rc;
 
         TEST();
 
-        low = LOWEST;
-        epoch = 0;
-        high = HIGHEST;
-
-        hertz = diminuto_frequency();
         tzset();
 
-        minimum = hertz * (low + (60 * 60 * 24));
-        maximum = hertz * (high - (60 * 60 * 24));
+        hertz = diminuto_frequency();
+        ASSERT(hertz == COM_DIAG_DIMINUTO_FREQUENCY);
 
         CHECKPOINT("scope %c\n", scope);
         CHECKPOINT("hertz %lld\n", (diminuto_lld_t)hertz);
         CHECKPOINT("timezone %lld\n", (diminuto_lld_t)timezone);
         CHECKPOINT("daylight %lld\n", (diminuto_lld_t)daylight);
 
-        CHECKPOINT("low %lld 0x%llx\n", (diminuto_lld_t)low, (diminuto_lld_t)low);
-        ticks = low;
+        CHECKPOINT("low %lld 0x%llx\n", (diminuto_lld_t)LOW, (diminuto_lld_t)LOW);
+        ticks = LOW;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -313,8 +308,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("low %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("minimum %lld 0x%llx\n", (diminuto_lld_t)(minimum / hertz), (diminuto_lld_t)(minimum / hertz));
-        ticks = minimum;
+        CHECKPOINT("minimum %lld 0x%llx\n", (diminuto_lld_t)(MINIMUM / hertz), (diminuto_lld_t)(MINIMUM / hertz));
+        ticks = MINIMUM;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
@@ -324,8 +319,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("minimum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("epoch %lld 0x%llx\n", (diminuto_lld_t)epoch, (diminuto_lld_t)epoch);
-        ticks = epoch;
+        CHECKPOINT("epoch %lld 0x%llx\n", (diminuto_lld_t)EPOCH, (diminuto_lld_t)EPOCH);
+        ticks = EPOCH;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -336,8 +331,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("epoch %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("maximum %lld 0x%llx\n", (diminuto_lld_t)(maximum / hertz), (diminuto_lld_t)(maximum / hertz));
-        ticks = maximum;
+        CHECKPOINT("maximum %lld 0x%llx\n", (diminuto_lld_t)(MAXIMUM / hertz), (diminuto_lld_t)(MAXIMUM / hertz));
+        ticks = MAXIMUM;
 
         year = month = day = hour = minute = second = tick = 0;
         rc = diminuto_time_zulu(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
@@ -347,8 +342,8 @@ int main(int argc, char ** argv)
         rc = diminuto_time_juliet(ticks, &year, &month, &day, &hour, &minute, &second, &tick);
         CHECKPOINT("maximum %02d-%02d-%02dT%02d:%02d:%02d.%09lluJ %d %d\n", year, month, day, hour, minute, second, (diminuto_llu_t)tick, rc, errno);
 
-        CHECKPOINT("high %lld 0x%llx\n", (diminuto_lld_t)high, (diminuto_lld_t)high);
-        ticks = high;
+        CHECKPOINT("high %lld 0x%llx\n", (diminuto_lld_t)HIGH, (diminuto_lld_t)HIGH);
+        ticks = HIGH;
         ticks *= hertz;
 
         year = month = day = hour = minute = second = tick = 0;
@@ -387,43 +382,53 @@ int main(int argc, char ** argv)
          * See also fun/timestuff.c
          */
 
-        test3((ticks = low) * hertz, !0);
+        test3((ticks = LOW * hertz), !0);
         VERIFY(1901, 12, 13, 20, 45, 52, 0);
 
-        test3((ticks = minimum), !0);
+        test3((ticks = MINIMUM), !0);
         VERIFY(1901, 12, 14, 20, 45, 52, 0);
 
-        test3(ticks = epoch, !0);
+        test3((ticks = ((EPOCH - 1) * hertz) - FRACTION), !0);
+        test3((ticks = (EPOCH - 1) * hertz), !0);
+        test3((ticks = ((EPOCH - 1) * hertz) + FRACTION), !0);
+
+        test3((ticks = (EPOCH * hertz) - FRACTION), !0);
+        test3((ticks = EPOCH * hertz), !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 0);
+        test3((ticks = (EPOCH * hertz) + FRACTION), !0);
 
-        test3(ticks = 1, !0);
+        test3((ticks = ((EPOCH + 1) * hertz) - FRACTION), !0);
+        test3((ticks = (EPOCH + 1) * hertz), !0);
         VERIFY(1970, 1, 1, 0, 0, 0, 1);
+        test3((ticks = (EPOCH + 1) + FRACTION), !0);
 
-        test3(ticks = hertz - 1, !0);
+        test3((ticks = hertz - 1), !0);
         VERIFY(1970, 1, 1, 0, 0, 0, hertz - 1);
 
-        test3(ticks = hertz, !0);
+        test3((ticks = hertz), !0);
         VERIFY(1970, 1, 1, 0, 0, 1, 0);
 
-        test3(ticks = -hertz, !0);
+        test3((ticks = hertz + 1), !0);
+
+        test3((ticks = -hertz), !0);
         VERIFY(1969, 12, 31, 23, 59, 59, 0);
 
-        test3(ticks = 1000000000LL * hertz, !0);
+        test3((ticks = 1000000000LL * hertz), !0);
         VERIFY(2001, 9, 9, 1, 46, 40, 0);
 
-        test3(ticks = 1234567890LL * hertz, !0);
+        test3((ticks = 1234567890LL * hertz), !0);
         VERIFY(2009, 2, 13, 23, 31, 30, 0);
 
-        test3(ticks = 15000LL * 24LL * 3600LL * hertz, !0);
+        test3((ticks = 15000LL * 24LL * 3600LL * hertz), !0);
         VERIFY(2011, 1, 26, 0, 0, 0, 0);
 
-        test3(ticks = 1400000000LL * hertz, !0);
+        test3((ticks = 1400000000LL * hertz), !0);
         VERIFY(2014, 5, 13, 16, 53, 20, 0);
 
-        test3((ticks = maximum), !0);
+        test3((ticks = MAXIMUM), !0);
         VERIFY(2038, 1, 18, 3, 14, 7, 0);
 
-        test3((ticks = high) * hertz, !0);
+        test3((ticks = HIGH) * hertz, !0);
         VERIFY(2038, 1, 19, 3, 14, 7, 0);
 
         STATUS();
@@ -434,7 +439,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = low; ticks <= high; ticks += (365 * 24 * 60 * 60)) {
+        for (ticks = LOW; ticks <= HIGH; ticks += (365 * 24 * 60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -446,7 +451,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = low; ticks <= high; ticks += (24 * 60 * 60)) {
+        for (ticks = LOW; ticks <= HIGH; ticks += (24 * 60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -458,7 +463,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = low; ticks <= high; ticks += (60 * 60)) {
+        for (ticks = LOW; ticks <= HIGH; ticks += (60 * 60)) {
             test3(ticks * hertz, 0);
         }
 
@@ -473,7 +478,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = low; ticks <= high; ticks += 60) {
+        for (ticks = LOW; ticks <= HIGH; ticks += 60) {
             test3(ticks * hertz, 0);
         }
 
@@ -488,7 +493,7 @@ int main(int argc, char ** argv)
 
         notfirst = 0;
 
-        for (ticks = low; ticks <= high; ticks += 1) {
+        for (ticks = LOW; ticks <= HIGH; ticks += 1) {
             test3(ticks * hertz, 0);
         }
 
