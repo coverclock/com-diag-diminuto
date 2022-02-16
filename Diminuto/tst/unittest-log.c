@@ -34,9 +34,9 @@
 int main(int argc, char ** argv)
 {
 
-    SETLOGMASK();
-
     {
+        SETLOGMASK();
+
         TEST();
 
         diminuto_log_mask = 0;
@@ -58,6 +58,8 @@ int main(int argc, char ** argv)
         char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
         int ii;
 
+        SETLOGMASK();
+
         TEST();
 
         diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, DIMINUTO_LOG_HERE "HERE");
@@ -73,6 +75,8 @@ int main(int argc, char ** argv)
 
     {
         FILE * fp;
+
+        SETLOGMASK();
 
         TEST();
 
@@ -113,6 +117,8 @@ int main(int argc, char ** argv)
     {
 
         TEST();
+
+        SETLOGMASK();
 
         diminuto_log_emit("BEGIN\n");
         yes();
@@ -241,6 +247,8 @@ int main(int argc, char ** argv)
         char buffer[sizeof("ERRNO[XXXXXXXXXX]")];
         int ii;
 
+        SETLOGMASK();
+
         TEST();
 
         for (ii = 0; ii < countof(ERRNO); ++ii) {
@@ -259,6 +267,8 @@ int main(int argc, char ** argv)
 
     {
         char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM];
+
+        SETLOGMASK();
 
         TEST();
 

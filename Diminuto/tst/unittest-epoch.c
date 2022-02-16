@@ -36,6 +36,7 @@
 
 #define SANITY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
+        COMMENT("SANITY %u %u %u %u %u %u %u\n", _YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, (int)_TICK_); \
         ASSERT((1901 <= _YEAR_) && (_YEAR_ <= 2038)); \
         ASSERT((1 <= _MONTH_) && (_MONTH_ <= 12)); \
         ASSERT((1 <= _DAY_) && (_DAY_ <= 31)); \
@@ -47,6 +48,8 @@
 
 #define VERIFY(_YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, _TICK_) \
     do { \
+        COMMENT("VERIFY %u %u %u %u %u %u %u\n", _YEAR_, _MONTH_, _DAY_, _HOUR_, _MINUTE_, _SECOND_, (int)_TICK_); \
+        COMMENT("VERIFY %u %u %u %u %u %u %u\n", zyear, zmonth, zday, zhour, zminute, zsecond, (int)ztick); \
         EXPECT(zyear == (_YEAR_)); \
         EXPECT(zmonth == (_MONTH_)); \
         EXPECT(zday == (_DAY_)); \

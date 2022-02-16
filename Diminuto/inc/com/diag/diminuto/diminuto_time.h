@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2008-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a consistent interface for dealing with time;
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -26,6 +26,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <unistd.h> /* For _POSIX_TIMERS. */
 
 #if (defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0))
@@ -70,13 +71,40 @@ static inline diminuto_sticks_t diminuto_time_frequency(void) {
 }
 
 /**
+ * @def COM_DIAG_DIMINUTO_TIME_ERROR
+ * This manifest constant is used as an error return for those functions
+ * that return a signed number of ticks since the Epoch. This is because
+ * negative values since the Epoch are valid. However, functions that
+ * return clock time like diminuto_time_clock() should never legitimately
+ * return a negative value upon success.
+ */
+#define COM_DIAG_DIMINUTO_TIME_ERROR diminuto_minimumof(diminuto_sticks_t);
+
+/**
+ * This constant is used as an error return for those functions that
+ * return a signed number of ticks since the Epoch. This is because
+ * negative values since the Epoch are valid. However, functions that
+ * return clock time like diminuto_time_clock() should never legitimately
+ * return a negative value upon success.
+ */
+static const diminuto_sticks_t DIMINUTO_TIME_ERROR = COM_DIAG_DIMINUTO_TIME_ERROR;
+
+/**
  * Return the system clock time in Coordinated Universal Time (UTC) in
  * ticks since the Epoch (shown here in ISO8601 format)
  * 1970-01-01T00:00:00+0000.
- * @return the number of ticks elapsed since the Epoch or -1 with
+ * @return the number of ticks elapsed since the Epoch or <0 with
  * errno set if an error occurred.
  */
 extern diminuto_sticks_t diminuto_time_clock(void);
+
+/**
+ * Return the time in International Atomic Time (TAI) in ticks since the
+ * Epoch (shown here in ISO8601 format) 1970-01-01T00:00:00+0000.
+ * @return the number of ticks elapsed since the Epoch or <0 with
+ * errno set if an error occurred.
+ */
+extern diminuto_sticks_t diminuto_time_atomic(void);
 
 /**
  * Return the elapsed time in ticks of a monotonically increasing
@@ -85,21 +113,21 @@ extern diminuto_sticks_t diminuto_time_clock(void);
  * platform does not support this feature, the standard clock time is returned;
  * however this time may have discontinuities due to NTP or manual time changes.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * -1 with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_sticks_t diminuto_time_elapsed(void);
 
 /**
  * Return the CPU time in ticks for the calling process.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * -1 with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_sticks_t diminuto_time_process(void);
 
 /**
  * Return the CPU time in ticks for the calling thread.
  * @return the number of ticks elapsed since an arbitrary epoch or
- * -1 with errno set if an error occurred.
+ * <0 with errno set if an error occurred.
  */
 extern diminuto_sticks_t diminuto_time_thread(void);
 
