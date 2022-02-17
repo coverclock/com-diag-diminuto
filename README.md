@@ -156,90 +156,136 @@ Make="GNU Make 4.0"
 
 * setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
 * diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+* countof - macro to compute number array positions.
 
 # Features
 
-* alarm - receive and check for a SIGALRM signal.
+## Basics
+
 * assert - similar to assert(3) but with more output.
-* barrier - acquire and release memory barriers.
+* containerof - macro to compute address of structure from address of a field.
+* cxxcapi - helpers to allow C code to call C++ functions with type safety.
+* macros - insane macros to implement conditional and recursive code generation.
+* minmaxof - macros to compute minimum and maximum of integral types.
+* offsetof - macro for determining field offset in structures.
+* token - macros for preprocessor token handling.
+* types - common library types.
+* typeof - macro to infer the type of a variable in a typedef manner.
+* unittest - simple unit test framework.
+* widthof - macro to return width in bits of a type.
+
+## Data Structures
+
 * bits - get, set, and clear bits in a bit field array.
+* list - circular doubly linked list implementation.
+* ring - generic support for ring (circular) buffers.
+* store - uses the tree feature to implement an in-memory key/value store.
+* tree - red/black balanced binary tree implementation.
+* well - like the pool feature but maintains requested alignment of objects.
+
+## Signals
+
+* alarm - receive and check for a SIGALRM signal.
+* hangup - receive and check for a SIGHUP signal.
+* interrupter - receive and check for a SIGINT signal.
+* pipe - receive and check for a SIGPIPE signal.
+* reaper - receive and check for a SIGCLHD signal and reap child processes.
+* terminator - receive and check for a SIGTERM signal.
+* uninterruptiblesection - macros to implement scoped blocked signals.
+
+## Memory
+
+* barrier - acquire and release memory barriers.
 * buffer - used with heap feature to replace malloc/free with buffer pool.
 * buffer_pool - buffer pool used with buffer feature.
+* coherentsection - macros to implement scoped acquire/release memory barriers.
+* heap - dependency injection mechanism for malloc/free alternatives.
+* pool - manage a pool of objects from which they can be allocated and freed.
+
+## Utilities
+
 * command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
-* containerof - macro to compute address of structure from address of a field.
-* controller - proportional/integral/derivative (PID) controller.
-* core - enable core dumps.
-* coherentsection - macros to implement scoped acquire/release memory barriers.
-* condition - error checking wrapper around pthread condition.
-* countof - macro to compute number array positions.
-* criticalsection - macros to implement scoped pthread mutex serialization.
-* cue - logic level debouncer and edge detector.
-* cxxcapi - helpers to allow C code to call C++ functions with type safety.
 * debug - simple debug tools to help with Work In Progress (WIP).
-* daemon - process deamonizer.
-* datum - memory mapped register operators for device drivers.
-* delay - time delay and execution yield.
 * dump - a variety of formatted memory dump functions.
 * emit - example of how to use the log feature to make your own log output.
 * endianess - determine processor endianess.
-* endpoint - parse a string into an IP address and port or a UNIX domain path.
 * escape - collapse and expand escape sequences in strings.
+* fletcher - implement the Fletcher-16 checksum.
+* hamming - implement the Hamming(8,4) code.
+* log - generic logging mechanism for applications, daemons, and kernel modules.
+* number - alternative interfaces to strtol(3) and strtoul(3).
+* phex - emit printable and unprintable characters in a printable form.
+* proxy - macros to implement a proxy feature like heap.
+* string - some useful string manipulation stuff.
+* testify - common functions for interpreting yes/no questions.
+
+## Sockets
+
+* endpoint - parse a string into an IP address and port or a UNIX domain path.
 * fd - general handling of file descriptors (including sockets).
-* frequency - determine common library time frequency.
-* fs - file system walking framework.
-* hangup - receive and check for a SIGHUP signal.
-* heap - dependency injection mechanism for malloc/free alternatives.
-* i2c - Simplified thread-safe API around Linux I2C API.
 * ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
 * ipcl - UNIX domain ("local") socket interface.
-* list - circular doubly linked list implementation.
-* lock - lock, unlock, and check for lock files.
-* log - generic logging mechanism for applications, daemons, and kernel modules.
-* macros - insane macros to implement conditional and recursive code generation.
-* map - memory mapping in user or kernel state.
-* memory - query system for memory architecture.
-* minmaxof - macros to compute minimum and maximum of integral types.
-* mmdriver - kernel module implementing memory mapped I/O.
-* modulator - software pulse width modulator (PWM) generator.
-* module - support for dynamically linked user space modules.
-* mutex - error checking wrapper around pthread mutex.
 * mux - file descriptor multiplexer using select(2).
-* number - alternative interfaces to strtol(3) and strtoul(3).
-* observation - atomically instantiate data files from temporary files.
-* offsetof - macro for determining field offset in structures.
-* path - find a file from a list in a PATH-like environmental variable.
-* phex - emit printable and unprintable characters in a printable form.
-* pin - get and set GPIO pins using the sysfs interface.
 * ping4 - programmatic ICMP ECHO REQUEST.
 * ping6 - programmatic ICMP6 ECHO REQUEST.
-* platform - try to determine what kind of system or target is being used.
 * poll - file descriptor multiplexer using poll(2).
-* pool - manage a pool of objects from which they can be allocated and freed.
-* proxy - macros to implement a proxy feature like heap.
-* readerwriter - a first-come, first-served Reader-Writer lock;
-* ring - generic support for ring (circular) buffers.
 * scattergather - support for vector I/O and IPC.
-* serial - get and set parameters for a serial port.
-* serializedsection - macros to implement scoped spinlocked code blocks.
-* shaper - use the throttle feature to implement a bursty traffic shaper.
-* stacktrace - print a stack trace.
-* store - uses the tree feature to implement an in-memory key/value store.
-* string - some useful string manipulation stuff.
-* thread - error checking wrapper around pthread thread.
-* throttle - implement a traffic shaper for a traffic contract.
+
+## Time
+
+* delay - time delay and execution yield.
+* frequency - determine common library time frequency.
 * time - comprehensive time of day functions plus timestamp formatting.
 * timer - periodic and one-shot timers.
-* token - macros for preprocessor token handling.
-* tree - red/black balanced binary tree implementation.
-* types - common library types.
-* typeof - macro to infer the type of a variable in a typedef manner.
-* uninterruptiblesection - macros to implement scoped blocked signals.
-* unittest - simple unit test framework.
-* well - like the pool feature but maintains requested alignment of objects.
-* widthof - macro to return width in bits of a type.
- 
+
+## Processes
+
+* core - enable core dumps.
+* daemon - process deamonizer.
+* lock - lock, unlock, and check for lock files.
+
+## Threads
+
+* condition - error checking wrapper around pthread condition.
+* criticalsection - macros to implement scoped pthread mutex serialization.
+* mutex - error checking wrapper around pthread mutex.
+* readerwriter - a first-come, first-served Reader-Writer lock;
+* thread - error checking wrapper around pthread thread.
+* serializedsection - macros to implement scoped spinlocked code blocks.
+
+## File System
+
+* fs - file system walking framework.
+* observation - atomically instantiate data files from temporary files.
+* path - find a file from a list in a PATH-like environmental variable.
+* renameat2 - atomically rename a file or swap files in the same file system.
+
+## Real-Time
+
+* shaper - use the throttle feature to implement a bursty traffic shaper.
+* throttle - implement a traffic shaper for a traffic contract.
+
+## Hardware
+
+* controller - proportional/integral/derivative (PID) controller.
+* cue - logic level debouncer and edge detector.
+* i2c - Simplified thread-safe API around Linux I2C API.
+* pin - get and set GPIO pins using the sysfs interface.
+* modulator - software pulse width modulator (PWM) generator.
+* serial - get and set parameters for a serial port.
+
+## System
+
+* datum - memory mapped register operators for device drivers.
+* map - memory mapping in user or kernel state.
+* memory - query system for memory architecture.
+* mmdriver - kernel module implementing memory mapped I/O.
+* module - support for dynamically linked user space modules.
+* platform - try to determine what kind of system or target is being used.
+* stacktrace - print a stack trace.
+
 # Utilities
  
 * bakepi - monitors Raspberry Pi core temperature which throttles at 82C.
