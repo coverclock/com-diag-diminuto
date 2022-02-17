@@ -286,7 +286,7 @@ Make="GNU Make 4.0"
 * platform - try to determine what kind of system or target is being used.
 * stacktrace - print a stack trace.
 
-# Utilities
+# Command Line Utilities
  
 * bakepi - monitors Raspberry Pi core temperature which throttles at 82C.
 * bucketbrigade - read from a serial port and forward to another serial port.
