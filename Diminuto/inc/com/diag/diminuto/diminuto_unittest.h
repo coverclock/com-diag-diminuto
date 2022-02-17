@@ -174,7 +174,7 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_errors; \
             diminuto_unittest_added = diminuto_unittest_count - diminuto_unittest_local; \
-            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d total=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_added, diminuto_unittest_count, (diminuto_unittest_added == 0) ? "SUCCESS." : "FAILURE!"); \
+            DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "STATUS: tests=%d errors=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_count, (diminuto_unittest_added == 0) ? "SUCCESS." : "FAILURE!"); \
             diminuto_unittest_flush(); \
         } while (0); \
     } while (0);
