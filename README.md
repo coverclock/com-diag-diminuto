@@ -391,6 +391,7 @@ or as a user - e.g. pi - that is in the gpio group.)
 * out/$(TARGET)/inc - include (header) files.
 * out/$(TARGET)/lib - shared objects for dynamic linking.
 * out/$(TARGET)/log - log files produced at run-time.
+* out/$(TARGET)/mod - dynamically loadable application modules.
 * out/$(TARGET)/obc - object files.
 * out/$(TARGET)/sym - utility unstripped binary executables.
 * out/$(TARGET)/tmp - temporary files supporting headless operation.
