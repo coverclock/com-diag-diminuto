@@ -228,9 +228,7 @@ TARGETNOTESTS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETFUNCTIONALS) $(TARG
 
 .PHONY:	all most plus dist tidy clean pristine clobber scratch notests onlytests
 
-all:	$(TARGETALL)
-
-most:	$(TARGETMOST)
+all:	$(TARGETMOST)
 
 # On the Raspberry Pi, this is what worked for me:
 # sudo apt-get install raspberrypi-kernel-headers
@@ -970,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging mostest nohup privileged privileged4 privileged6 readerwriter renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging nohup privileged privileged4 privileged6 readerwriter renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1027,6 +1025,7 @@ sanity:	unittest
 	unittest-memory
 	unittest-memberof
 	unittest-minmaxof
+	unittest-module
 	unittest-mutex
 	unittest-mux4 -q
 	unittest-number
@@ -1229,3 +1228,5 @@ cxxcapi:
 
 readerwriter:
 	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
+
+tagging:	sanity sockets threads signals gnuish logging timers sockets renameat2 cxxcapi extended geologic
