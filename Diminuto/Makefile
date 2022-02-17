@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging nohup privileged privileged4 privileged6 readerwriter renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging nohup privileged privileged4 privileged6 readerwriter renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
