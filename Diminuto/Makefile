@@ -1229,4 +1229,6 @@ cxxcapi:
 readerwriter:
 	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
 
-tagging:	sanity sockets threads signals gnuish logging timers sockets renameat2 cxxcapi extended geologic
+reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
+
+tagging:	reassuring geologic
