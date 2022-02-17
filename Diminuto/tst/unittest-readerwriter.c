@@ -45,18 +45,28 @@
 
 static unsigned int randy(unsigned int low, unsigned int high)
 {
-    unsigned long long result;
+    unsigned int result;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static unsigned int seed;
     static int initialized = 0;
 
     if (!initialized) {
-        seed = (unsigned int)diminuto_time_clock();
-        initialized = !0;
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            if (!initialized) {
+                seed = (unsigned int)diminuto_time_clock();
+                initialized = !0;
+            }
+        DIMINUTO_CRITICAL_SECTION_END;
     }
 
-    /* rand_r: [0..RAND_MAX=2147483647] */
+    ASSERT(initialized);
 
-    return low + (rand_r(&seed) % (high - low + 1));
+    result = rand_r(&seed); /* rand_r: [0..RAND_MAX=2147483647] */
+    result = low + (result % (high - low + 1));
+
+    ASSERT((low <= result) && (result <= high));
+
+    return result;
 }
 
 /******************************************************************************/
@@ -88,12 +98,11 @@ static void * reader(void * vp)
         DIMINUTO_READER_BEGIN(cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++readers;
+                success = ((readers > 0) && (writers == 0));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers > 0) && (writers == 0));
-            CHECKPOINT("reader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("reader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 readers--;
             DIMINUTO_CRITICAL_SECTION_END;
@@ -119,12 +128,11 @@ static void * writer(void * vp)
         DIMINUTO_WRITER_BEGIN(cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++writers;
+                success = ((readers == 0) && (writers == 1));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers == 0) && (writers == 1));
-            CHECKPOINT("writer[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("writer[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 writers--;
             DIMINUTO_CRITICAL_SECTION_END;
@@ -151,18 +159,18 @@ static void * impatientreader(void * vp)
             pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++readers;
+                success = ((readers > 0) && (writers == 0));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers > 0) && (writers == 0));
-            CHECKPOINT("impatientreader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("impatientreader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 readers--;
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("impatientreader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            CHECKPOINT("impatientreader[%d] readers=%d writers=%d timeout?\n", cp->identifier, readers, writers);
+            /* Can legitimately fail. */
         }
     }
 
@@ -185,18 +193,18 @@ static void * impatientwriter(void * vp)
             pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++writers;
+                success = ((readers == 0) && (writers == 1));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers == 0) && (writers == 1));
-            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d =%s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 writers--;
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d timeout?\n", cp->identifier, readers, writers);
+            /* Can legitimately fail. */
         }
     }
 
@@ -219,18 +227,18 @@ static void * assertivereader(void * vp)
             pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++readers;
+                success = ((readers > 0) && (writers == 0));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers > 0) && (writers == 0));
-            CHECKPOINT("assertivereader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("assertivereader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 readers--;
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("assertivereader[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            CHECKPOINT("assertivereader[%d] readers=%d writers=%d ERROR!\n", cp->identifier, readers, writers);
+            EXPECT(success);
         }
     }
 
@@ -253,18 +261,18 @@ static void * assertivewriter(void * vp)
             pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 ++writers;
+                success = ((readers == 0) && (writers == 1));
             DIMINUTO_CRITICAL_SECTION_END;
-            success = ((readers == 0) && (writers == 1));
-            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
-            if (success) {
-                diminuto_delay(cp->workload, 0);
-            }
+            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
+            EXPECT(success);
+            diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
                 writers--;
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d success=%d\n", cp->identifier, readers, writers, success);
+            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d ERROR!\n", cp->identifier, readers, writers);
+            EXPECT(success);
         }
     }
 
@@ -1413,8 +1421,8 @@ int main(int argc, char * argv[])
         void * impatientwrites[diminuto_countof(impatientwriters)];
         void * assertivereads[diminuto_countof(assertivereaders)];
         void * assertivewrites[diminuto_countof(assertivewriters)];
-        static const int MAXIMUM = 64;
-        static const int TOTAL = 64 + 8 + 4 + 2 + 1 + 1;
+        static const int MAXIMUM = countof(readers);
+        static const int TOTAL = countof(readers) + countof(writers) + countof(impatientreaders) + countof(impatientwriters) + countof(assertivereaders) + countof(assertivewriters);
         diminuto_readerwriter_t rw;
         int ii;
 
