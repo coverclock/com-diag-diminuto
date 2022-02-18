@@ -132,13 +132,7 @@ gcc (Raspbian 8.3.0-6+rpi1) 8.3.0
 ldd (Debian GLIBC 2.28-10+rpi1) 2.28    
 GNU Make 4.2.1    
 
-# Bash Sourcing Files
-
-* setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
-* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
-* countof - macro to compute number array positions.
-
-# Features
+# Library
 
 ## Basics
 
@@ -265,6 +259,11 @@ GNU Make 4.2.1
 * module - support for dynamically linked user space modules.
 * platform - try to determine what kind of system or target is being used.
 * stacktrace - print a stack trace.
+
+# Bash Sourcing Files
+
+* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+* setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
 
 # Command Line Utilities
  
