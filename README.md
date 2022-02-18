@@ -155,7 +155,6 @@ GNU Make 4.2.1
 * ring - generic support for ring (circular) buffers.
 * store - uses the tree feature to implement an in-memory key/value store.
 * tree - red/black balanced binary tree implementation.
-* well - like the pool feature but maintains requested alignment of objects.
 
 ## Signals
 
@@ -175,6 +174,7 @@ GNU Make 4.2.1
 * coherentsection - macros to implement scoped acquire/release memory barriers.
 * heap - dependency injection mechanism for malloc/free alternatives.
 * pool - manage a pool of objects from which they can be allocated and freed.
+* well - like the pool feature but maintains requested alignment of objects.
 
 ## Utilities
 
