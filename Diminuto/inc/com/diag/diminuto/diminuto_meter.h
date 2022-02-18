@@ -70,7 +70,15 @@ static inline int diminuto_meter_event_now(diminuto_meter_t * mp)
     return diminuto_meter_events_now(mp, 1);
 }
 
-extern double diminuto_meter_peak(const diminuto_meter_t * mp);
+static inline size_t diminuto_meter_burst(const diminuto_meter_t * mp)
+{
+    return mp->burst;
+}
+
+static inline double diminuto_meter_peak(const diminuto_meter_t * mp)
+{
+    return mp->peak;
+}
 
 extern double diminuto_meter_sustained(const diminuto_meter_t * mp);
 

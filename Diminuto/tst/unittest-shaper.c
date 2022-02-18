@@ -81,6 +81,10 @@ int main(int argc, char ** argv)
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
             ASSERT(delay >= 0);
+            /*
+             * The delay reflects the time it took to transmit the *previous*
+             * payload, not the one whose size we compute below.
+             */
             now += delay;
             duration += delay;
             if (iops <= 0) {
@@ -123,7 +127,7 @@ int main(int argc, char ** argv)
         sustained /= duration;
         CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), PEAK, peak, SUSTAINED, sustained);
         ASSERT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
-        ADVISE(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
+        ASSERT(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);
 
         STATUS();
@@ -131,4 +135,3 @@ int main(int argc, char ** argv)
 
     EXIT();
 }
-

@@ -80,18 +80,13 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t e
     return result;
 }
 
-double diminuto_meter_peak(const diminuto_meter_t * mp)
-{
-    return (mp->events > 0) ? mp->peak : 0.0;;
-}
-
 double diminuto_meter_sustained(const diminuto_meter_t * mp)
 {
     double result = 0.0;
 
     if (mp->events == 0) {
         /* Do nothing. */
-    } else if (mp->last < mp->start) {
+    } else if (mp->last <= mp->start) {
         result = HUGE_VAL;
     } else {
         result = mp->events;
