@@ -1024,6 +1024,7 @@ sanity:	unittest
 	unittest-macros
 	unittest-memory
 	unittest-memberof
+	unittest-meter
 	unittest-minmaxof
 	unittest-module
 	unittest-mutex

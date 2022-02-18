@@ -12,7 +12,6 @@
 
 #include "com/diag/diminuto/diminuto_meter.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_typeof.h"
 #include <errno.h>
 

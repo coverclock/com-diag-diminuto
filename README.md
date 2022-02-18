@@ -238,6 +238,7 @@ GNU Make 4.2.1
 
 ## Real-Time
 
+* meter - measures a stream of events for peak and sustainable rates.
 * shaper - use the throttle feature to implement a bursty traffic shaper.
 * throttle - implement a traffic shaper for a traffic contract.
 

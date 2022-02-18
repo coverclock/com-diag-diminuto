@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a GCRA using a virtual scheduler.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -12,22 +12,23 @@
  * @details
  *
  * The Throttle feature implements a Generic Cell Rate Algorithm (GCRA) using
- * a Virtual Scheduler. This can in turn be used to implement a variety of traffic
- * shaping and rate control algorithms. The VS works by monitoring the inter-arrival
- * interval of events and comparing that interval to the expected value. When the
- * cumulative error in the inter-arrival interval exceeds a threshold, the throttle
- * becomes "alarmed" and the traffic stream is in violation of its contract. In the
- * original TM spec, an event was the emission (if traffic shaping) or arrival
- * (if traffic policing) of an ATM cell, but it could be data blocks, error
- * reports, or any other kind of real-time activity. In this implementation,
- * it can even be variable length data blocks, in which the traffic contract
- * describes the mean bandwidth of the traffic stream, not the instantaneous
- * bandwidth as with ATM. In the original TM spec, the variable "i" was the
- * increment or contracted inter-arrival interval, "l" was the limit or
- * threshold, "x" was the expected inter-arrival interval for the next event,
- * and "x1" was the actual inter-arrival interval of that event. A throttle can
- * be used to smooth out low frequency events over a long duration, or to
- * implement a leaky bucket algorithm.
+ * a Virtual Scheduler. This can in turn be used to implement a variety of
+ * traffic shaping and rate control algorithms. The VS works by monitoring the
+ * inter-arrival interval of events and comparing that interval to the expected
+ * value. When the cumulative error in the inter-arrival interval exceeds a
+ * threshold, the throttle becomes "alarmed" and the traffic stream is in
+ * violation of its contract. In the original TM spec, an event was the
+ * emission (if traffic shaping) or arrival (if traffic policing) of an ATM
+ * cell, but it could be data blocks, error reports, or any other kind of
+ * real-time activity. In this implementation, it can even be variable length
+ * data blocks, in which the traffic contract describes the mean bandwidth of
+ * the traffic stream, not the instantaneous bandwidth as with ATM. In the
+ * original TM spec, the variable "i" was the increment or contracted
+ * inter-arrival interval, "l" was the limit or threshold, "x" was the
+ * expected inter-arrival interval for the next event, and "x1" was the
+ * actual inter-arrival interval of that event. A throttle can be used to
+ * smooth out low frequency events over a long duration, or to implement a
+ * leaky bucket algorithm.
  *
  * REFERENCES
  *
@@ -47,24 +48,28 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
 
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
+
 /**
  * This structure contains the state of a throttle.
  */
 typedef struct DiminutoThrottle {
-    diminuto_ticks_t now;
-    diminuto_ticks_t then;
-    diminuto_ticks_t increment;     /* GCRA i */
-    diminuto_ticks_t limit;         /* GCRA l */
-    diminuto_ticks_t expected;      /* GCRA x */
-    diminuto_ticks_t actual;        /* GCRA x1 */
-    unsigned int full0 : 1;         /* The leaky bucket will fill. */
-    unsigned int full1 : 1;         /* The leaky bucket is filling. */
-    unsigned int full2 : 1;         /* The leaky bucket was filled. */
-    unsigned int empty0 : 1;        /* The leaky bucket will empty. */
-    unsigned int empty1 : 1;        /* The leaky bucket is emptying. */
-    unsigned int empty2 : 1;        /* The leaky bucket was emptied. */
-    unsigned int alarmed1 : 1;      /* The throttle is alarmed. */
-    unsigned int alarmed2 : 1;      /* The throttle was alarmed. */
+    diminuto_ticks_t now;           /**< Time of the most recent event. */
+    diminuto_ticks_t then;          /**< Time of the previous event. */
+    diminuto_ticks_t increment;     /**< GCRA increment a.k.a. i. */
+    diminuto_ticks_t limit;         /**< GCRA limit a.k.a. l. */
+    diminuto_ticks_t expected;      /**< GCRA expected IAT a.k.a. x. */
+    diminuto_ticks_t actual;        /**< GCRA actual IAT a.k.a x1. */
+    unsigned int full0 : 1;         /**< The leaky bucket will fill. */
+    unsigned int full1 : 1;         /**< The leaky bucket is filling. */
+    unsigned int full2 : 1;         /**< The leaky bucket was filled. */
+    unsigned int empty0 : 1;        /**< The leaky bucket will empty. */
+    unsigned int empty1 : 1;        /**< The leaky bucket is emptying. */
+    unsigned int empty2 : 1;        /**< The leaky bucket was emptied. */
+    unsigned int alarmed1 : 1;      /**< The throttle is alarmed. */
+    unsigned int alarmed2 : 1;      /**< The throttle was alarmed. */
 } diminuto_throttle_t;
 
 /*******************************************************************************

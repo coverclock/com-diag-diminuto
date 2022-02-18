@@ -4,9 +4,9 @@
 
 /**
  * @file
- * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements a traffic shaper using a peak and sustained rate throttle.
+ * @brief Implements a traffic Shaper using a peak and sustained rate throttle.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -39,8 +39,8 @@
  * for the peak contract, and another throttle for the sustained contract.
  */
 typedef struct DiminutoShaper {
-    diminuto_throttle_t peak;
-    diminuto_throttle_t sustained;
+    diminuto_throttle_t peak;           /**< The peak throttle. */
+    diminuto_throttle_t sustained;      /**< The sustainable throttle. */
 } diminuto_shaper_t;
 
 /*******************************************************************************
