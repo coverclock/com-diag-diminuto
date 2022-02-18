@@ -107,50 +107,30 @@ Android platforms.
 
 # Platforms
 
-This code is typically regression tested against one or more of the
-following hardware targets and software platforms. (It has been built
-and used for specific projects on a much wider variety of targets
-and platforms.)
+This code was tested against following hardware targets and software
+platforms. (It has been built and used for specific projects on a much
+wider variety of targets and platforms.)
 
-Intel NUC7i7BNH    
-Arch="x86_64"    
-Cc="gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0"    
-Distro="Ubuntu 20.04.1 LTS (focal)"    
-Kernel="5.4.0-48-generic"    
-Libc="ldd (Ubuntu GLIBC 2.31-0ubuntu9.1) 2.31"    
-Make="GNU Make 4.2.1"    
+Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz x86_64     
+Ubuntu 20.04.3 LTS focal    
+Linux 5.13.0-28-generic    
+gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0    
+ldd (Ubuntu GLIBC 2.31-0ubuntu9.2) 2.31    
+GNU Make 4.2.1    
 
-Intel NUC5i7RYH    
-Arch="x86_64"    
-Cc="gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0"    
-Distro="Ubuntu 18.04.5 LTS bionic"    
-Kernel="4.15.0-122-generic"    
-Libc="ldd (Ubuntu GLIBC 2.27-3ubuntu1.2) 2.27"    
-Make="GNU Make 4.1"    
+Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114 aarch64    
+Ubuntu 21.10 impish    
+Linux 5.13.0-1016-raspi    
+gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0    
+ldd (Ubuntu GLIBC 2.34-0ubuntu3) 2.34    
+GNU Make 4.3    
 
-Rasbberry Pi 3B+    
-Arch="arm"    
-Cc="gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516"    
-Distro="Raspbian GNU/Linux 9.8 (stretch)"    
-Kernel="4.14.98-v7+"    
-Libc="ldd (Debian GLIBC 2.24-11+deb9u4) 2.24"    
-Make="GNU Make 4.1"    
-
-Raspberry Pi 4B    
-Arch="arm"    
-Cc="gcc (Raspbian 8.3.0-6+rpi1) 8.3.0"    
-Distro="Raspbian GNU/Linux 10 (buster)"    
-Kernel="4.19.97-v7l+"    
-Libc="ldd (Debian GLIBC 2.28-10+rpi1) 2.28"    
-Make="GNU Make 4.2.1"    
-
-Raspberry Pi 3B    
-Arch="arm"    
-Cc="gcc (Raspbian 4.9.2-10+deb8u2) 4.9.2"    
-Distro="Raspbian GNU/Linux 8.0 (jessie)"    
-Kernel="4.9.35-v7+"    
-Libc="ldd (Debian GLIBC 2.19-18+deb8u10) 2.19"    
-Make="GNU Make 4.0"    
+Raspberry Pi 4 Model B Rev 1.1 BCM2711 c03111 armv7l    
+Raspbian GNU/Linux 10 (buster)    
+Linux 5.4.51-v7l+    
+gcc (Raspbian 8.3.0-6+rpi1) 8.3.0    
+ldd (Debian GLIBC 2.28-10+rpi1) 2.28    
+GNU Make 4.2.1    
 
 # Bash Sourcing Files
 
