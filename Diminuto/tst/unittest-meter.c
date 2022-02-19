@@ -33,6 +33,29 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+        diminuto_meter_t meter = DIMINUTO_METER_INITIALIZER;
+
+        TEST();
+
+        ASSERT(meter.start == 0);
+        ASSERT(meter.last == 0);
+        ASSERT(meter.peak == 0.0);
+        ASSERT(meter.events == 0);
+        ASSERT(meter.burst == 0);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(DIMINUTO_METER_OVERFLOW == diminuto_maximumof(size_t));
+        ASSERT(DIMINUTO_METER_ERROR == HUGE_VAL);
+
+        STATUS();
+    }
+
+    {
         diminuto_sticks_t now;
         diminuto_sticks_t then;
         diminuto_sticks_t later;
@@ -54,7 +77,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT(diminuto_meter_init(&meter, 0) == &meter); 
+        ASSERT(diminuto_meter_init_zero(&meter) == &meter); 
 
         ASSERT(diminuto_meter_events(&meter, DIMINUTO_TIME_ERROR, 0) < 0);
         ASSERT(errno == EINVAL);
@@ -75,6 +98,20 @@ int main(int argc, char ** argv)
         ASSERT(errno == EOVERFLOW);
 
         ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0); 
+
+        STATUS();
+    }
+
+    {
+        diminuto_meter_t meter;
+
+        TEST();
+
+        ASSERT(diminuto_meter_init(&meter, 0) == &meter);
+        ASSERT(diminuto_meter_init_now(&meter) == &meter);
+        ASSERT(diminuto_meter_init_zero(&meter) == &meter);
+
+        ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0);
 
         STATUS();
     }
@@ -151,16 +188,18 @@ int main(int argc, char ** argv)
         duration += delay;
         diminuto_shaper_update(sp, now);
 
-        peak = diminuto_meter_peak(mp);
-        ASSERT(peak != HUGE_VAL);
-        sustained = diminuto_meter_sustained(mp);
-        ASSERT(sustained != HUGE_VAL);
-
-        size = diminuto_meter_burst(mp);
-        ASSERT(size >= 0);
-
         ASSERT(total > 0);
         ASSERT(duration > frequency);
+
+        rc = diminuto_meter_events(mp, now, size);
+        if (rc < 0) { diminuto_perror("diminuto_meter_events"); }
+        ASSERT(rc >= 0);
+
+        ASSERT(diminuto_meter_interval(mp) == duration);
+        ASSERT(diminuto_meter_total(mp) == total);
+        ASSERT((size = diminuto_meter_burst(mp)) > 0);
+        ASSERT((peak = diminuto_meter_peak(mp)) != DIMINUTO_METER_ERROR);
+        ASSERT((sustained = diminuto_meter_sustained(mp)) != DIMINUTO_METER_ERROR);
 
         diminuto_shaper_log(sp);
 

@@ -11,8 +11,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_meter.h"
-#include "com/diag/diminuto/diminuto_minmaxof.h"
-#include "com/diag/diminuto/diminuto_typeof.h"
 #include <errno.h>
 
 diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_sticks_t now)
@@ -24,6 +22,7 @@ diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_sticks_t
         mp->last = now;
         mp->peak = 0.0;
         mp->events = 0;
+        mp->burst = 0;
         result = mp;
     }
 
@@ -33,7 +32,6 @@ diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_sticks_t
 int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t events)
 {
     int result = 0;
-    static const typeof(mp->events) LIMIT = maximumof(typeof(mp->events));
 
     if (now < 0) {
         errno = EINVAL;
@@ -43,9 +41,9 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t e
         result = -1;
     } else if (events == 0) {
         mp->last = now;
-    } else if ((LIMIT - mp->events) < events) {
+    } else if ((DIMINUTO_METER_OVERFLOW - mp->events) < events) {
         mp->last = now;
-        mp->events = LIMIT;
+        mp->events = DIMINUTO_METER_OVERFLOW;
         errno = EOVERFLOW;
         result = -1;
     } else if (mp->events == 0) {
@@ -53,7 +51,7 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t e
         mp->events = events;
         mp->burst = events;
     } else if (now == mp->last) {
-        mp->peak = HUGE_VAL;
+        mp->peak = DIMINUTO_METER_ERROR;
         mp->last = now;
         mp->events += events;
         if (events > mp->burst) {
@@ -86,7 +84,7 @@ double diminuto_meter_sustained(const diminuto_meter_t * mp)
     if (mp->events == 0) {
         /* Do nothing. */
     } else if (mp->last <= mp->start) {
-        result = HUGE_VAL;
+        result = DIMINUTO_METER_ERROR;
     } else {
         result = mp->events;
         result *= diminuto_frequency();

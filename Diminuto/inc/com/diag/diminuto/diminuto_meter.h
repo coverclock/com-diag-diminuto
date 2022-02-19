@@ -11,13 +11,17 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * Implements a Meter that measures the peak and sustainable rate.
- * See also the Throttle and Shaper features.
+ * See also the Throttle and Shaper features. Note that floating point
+ * arithmetic is used by the Meter to compute its metrics.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
-#include <math.h>
+#include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_memberof.h"
+#include "com/diag/diminuto/diminuto_typeof.h"
+#include <math.h> /* For HUGE_VAL. */
 
 /*******************************************************************************
  * TYPES
@@ -36,8 +40,35 @@ typedef struct DiminutoMeter {
     size_t burst;               /**< Largest burst size of events. */
 } diminuto_meter_t;
 
+/**
+ * @def DIMINUTO_METER_INITIALIZER
+ * This macro generates a static initializer for a Meter object.
+ */
+#define DIMINUTO_METER_INITIALIZER \
+    { \
+        0, \
+        0, \
+        0.0, \
+        0, \
+        0, \
+    }
+
 /*******************************************************************************
- * INITIALIZATION
+ * CONSTANTS
+ ******************************************************************************/
+
+/**
+ * When an event count gets too large, this is the value to which it is set.
+ */
+static const diminuto_typeof(diminuto_memberof(struct DiminutoMeter, events)) DIMINUTO_METER_OVERFLOW = diminuto_maximumof(diminuto_typeof(diminuto_memberof(struct DiminutoMeter, events)));
+
+/**
+ * When a rate cannot be computed, this is the value to which it is set.
+ */
+static const diminuto_typeof(diminuto_memberof(struct DiminutoMeter, peak)) DIMINUTO_METER_ERROR = HUGE_VAL;
+
+/*******************************************************************************
+ * TIME
  ******************************************************************************/
 
 /**
@@ -48,7 +79,7 @@ typedef struct DiminutoMeter {
  * for use in those cases where it is useful to have the value at compile time.
  * However, you chould always prefer to use the inline function when possible.
  */
-#define COM_DIAG_DIMINUTO_METER_FREQUENCY (COM_DIAG_DIMINUTO_FREQUENCY)
+#define COM_DIAG_DIMINUTO_METER_FREQUENCY (COM_DIAG_DIMINUTO_TIME_FREQUENCY)
 
 /**
  * Return the resolution of the Diminuto Meter time units in ticks per second
@@ -70,6 +101,10 @@ static inline diminuto_sticks_t diminuto_meter_now()
     return diminuto_time_elapsed();
 }
 
+/*******************************************************************************
+ * RESET
+ ******************************************************************************/
+
 /**
  * Reset a Meter to the beginning of time.
  * @param mp points to the Meter.
@@ -90,6 +125,20 @@ static inline diminuto_meter_t * diminuto_meter_reset_now(diminuto_meter_t * mp)
 }
 
 /**
+ * Reset a Meter so that the beginning of time is taken to be zero.
+ * @param mp points to the Meter.
+ * @return a pointer to the Meter or NULL with errno set if an error occurred.
+ */
+static inline diminuto_meter_t * diminuto_meter_reset_zero(diminuto_meter_t * mp)
+{
+    return diminuto_meter_reset(mp, 0);
+}
+
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
+
+/**
  * Intialize a Meter.
  * @param mp points to the Meter.
  * @param now is the time from which the sustainable rate will be computed.
@@ -108,7 +157,18 @@ static inline diminuto_meter_t * diminuto_meter_init(diminuto_meter_t * mp, dimi
  */
 static inline diminuto_meter_t * diminuto_meter_init_now(diminuto_meter_t * mp)
 {
-    return diminuto_meter_init(mp, diminuto_meter_now());
+    return diminuto_meter_reset_now(mp);
+}
+
+/**
+ * Intialize a Meter. The timestamps used to compute the sustainable rate, and
+ * normally set by a monotonically increasing clock, are initialized to zero.
+ * @param mp points to the Meter.
+ * @return a pointer to the Meter or NULL with errno set if an error occurred.
+ */
+static inline diminuto_meter_t * diminuto_meter_init_zero(diminuto_meter_t * mp)
+{
+    return diminuto_meter_reset_zero(mp);
 }
 
 /**
@@ -172,6 +232,26 @@ static inline int diminuto_meter_event_now(diminuto_meter_t * mp)
 /*******************************************************************************
  * GETTORS
  ******************************************************************************/
+
+/**
+ * Return the time interval between the last and start events in ticks.
+ * @param mp points to the Meter.
+ * @return the time interval in ticks.
+ */
+static inline diminuto_ticks_t diminuto_meter_interval(const diminuto_meter_t * mp)
+{
+    return (mp->last - mp->start);
+}
+
+/**
+ * Return the total number of events.
+ * @param mp points to the Meter.
+ * @return the total number of events.
+ */
+static inline size_t diminuto_meter_total(const diminuto_meter_t * mp)
+{
+    return mp->events;
+}
 
 /**
  * Return the current maximum burst size from a Meter.
