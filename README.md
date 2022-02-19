@@ -182,7 +182,6 @@ GNU Make 4.2.1
 * comparator - prototype of comparator function for search feartures.
 * debug - simple debug tools to help with Work In Progress (WIP).
 * dump - a variety of formatted memory dump functions.
-* emit - example of how to use the log feature to make your own log output.
 * endianess - determine processor endianess.
 * escape - collapse and expand escape sequences in strings.
 * fletcher - implement the Fletcher-16 checksum.
