@@ -1066,10 +1066,10 @@ privileged4:
 	unittest-ping4
 
 privileged6:
-	unittest-ping6# Requires IPv6 routing.
+	unittest-ping6# Requires native IPv6 routing.
 
 privileged:	privileged4 privileged6
-	unittest-map# Worked on x86_64 but not on arm64.
+	unittest-map# 78.0.0 worked on x86_64 but not on arm64.
 
 extended:
 	unittest-alarm
