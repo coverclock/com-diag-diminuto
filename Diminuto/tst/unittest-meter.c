@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -32,9 +33,18 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+        diminuto_sticks_t now;
+        diminuto_sticks_t then;
+        diminuto_sticks_t later;
+
         TEST();
 
-        ASSERT(diminuto_meter_now() >= 0);
+        ASSERT((now = diminuto_meter_now()) >= 0);
+        ASSERT((then = diminuto_meter_now()) >= 0);
+        ASSERT(then >= now);
+        ASSERT(diminuto_delay(diminuto_frequency(), 0) == 0);
+        ASSERT((later = diminuto_meter_now()) >= 0);
+        ASSERT(later > then);
 
         STATUS();
     }
