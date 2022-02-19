@@ -209,6 +209,7 @@ int main(int argc, char ** argv)
         EXPECT(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
         EXPECT(size <= BURST);
 
+        ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);
 
         STATUS();
