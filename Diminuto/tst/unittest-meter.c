@@ -77,10 +77,7 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        ASSERT(diminuto_meter_init_zero(&meter) == &meter); 
-
-        ASSERT(diminuto_meter_events(&meter, DIMINUTO_TIME_ERROR, 0) < 0);
-        ASSERT(errno == EINVAL);
+        ASSERT(diminuto_meter_init(&meter, 0) == &meter); 
 
         ASSERT(diminuto_meter_events(&meter, 0, 0) == 0);
 
@@ -108,8 +105,6 @@ int main(int argc, char ** argv)
         TEST();
 
         ASSERT(diminuto_meter_init(&meter, 0) == &meter);
-        ASSERT(diminuto_meter_init_now(&meter) == &meter);
-        ASSERT(diminuto_meter_init_zero(&meter) == &meter);
 
         ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0);
 

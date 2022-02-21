@@ -44,17 +44,42 @@ typedef struct DiminutoShaper {
 } diminuto_shaper_t;
 
 /*******************************************************************************
- * INITIALIZATION
+ * TIME
  ******************************************************************************/
 
 /**
- * Return the current time from a monotonically increasing clock.
- * @return the current time from a monotonically increasing clock in ticks.
+ * @def COM_DIAG_DIMINUTO_SHAPER_FREQUENCY
+ * This manifest constant is the frequency in Hertz at which this feature
+ * operates. The inverse of this value is the smallest unit of time in fractions
+ * of a second that this feature can express or use. This constant is provided
+ * for use in those cases where it is useful to have the value at compile time.
+ * However, you chould always prefer to use the inline function when possible.
  */
-static inline diminuto_ticks_t diminuto_shaper_now(void)
+#define COM_DIAG_DIMINUTO_SHAPER_FREQUENCY (COM_DIAG_DIMINUTO_THROTTLE_FREQUENCY)
+
+/**
+ * Return the resolution of the Diminuto shaper time units in ticks per second
+ * (Hertz). Time intervals smaller than the equivalent period in ticks will
+ * not yield the expected results.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_sticks_t diminuto_shaper_frequency(void)
+{
+    return diminuto_throttle_frequency();
+}
+
+/**
+ * Return the current time from a monotonically increasing clock.
+ * @return the current time from a monotonically increasing clock in ticks or <0 if an error occurred.
+ */
+static inline diminuto_sticks_t diminuto_shaper_now(void)
 {
     return diminuto_throttle_now();
 }
+
+/*******************************************************************************
+ * RESET
+ ******************************************************************************/
 
 /**
  * Reset a shaper to the beginning of time such that all past sins are
@@ -65,6 +90,10 @@ static inline diminuto_ticks_t diminuto_shaper_now(void)
  * @return a pointer to the shaper.
  */
 extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, diminuto_ticks_t now);
+
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
 
 /**
  * Initialize a shaper.

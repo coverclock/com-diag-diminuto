@@ -73,7 +73,7 @@ typedef struct DiminutoThrottle {
 } diminuto_throttle_t;
 
 /*******************************************************************************
- * INITIALIZATION
+ * TIME
  ******************************************************************************/
 
 /**
@@ -99,12 +99,16 @@ static inline diminuto_sticks_t diminuto_throttle_frequency(void)
 
 /**
  * Return the current time from a monotonically increasing clock.
- * @return the current time from a monotonically increasing clock in ticks.
+ * @return the current time from a monotonically increasing clock in ticks or <0 of an error occurred.
  */
-static inline diminuto_ticks_t diminuto_throttle_now(void)
+static inline diminuto_sticks_t diminuto_throttle_now(void)
 {
     return diminuto_time_elapsed();
 }
+
+/*******************************************************************************
+ * RESET
+ ******************************************************************************/
 
 /**
  * Reset a throttle to the beginning of time such that all past sins are
@@ -118,6 +122,10 @@ static inline diminuto_ticks_t diminuto_throttle_now(void)
  * @return a pointer to the throttle.
  */
 extern diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now);
+
+/*******************************************************************************
+ * INITIALIZATION
+ ******************************************************************************/
 
 /**
  * Initialize a throttle.

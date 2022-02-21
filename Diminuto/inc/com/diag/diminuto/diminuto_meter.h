@@ -94,7 +94,7 @@ static inline diminuto_sticks_t diminuto_meter_frequency(void)
 
 /**
  * Return the current time from a monotonically increasing clock.
- * @return the current time from a monotonically increasing clock.
+ * @return the current time from a monotonically increasing clock or <0 of an error occurred.
  */
 static inline diminuto_sticks_t diminuto_meter_now()
 {
@@ -111,28 +111,7 @@ static inline diminuto_sticks_t diminuto_meter_now()
  * @param now is the time from which the sustainable rate will be computed.
  * @return a pointer to the Meter or NULL with errno set if an error occurred.
  */
-extern diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_sticks_t now);
-
-/**
- * Reset a Meter so that the beginning of time is taken from a monotonically
- * increasing clock.
- * @param mp points to the Meter.
- * @return a pointer to the Meter or NULL with errno set if an error occurred.
- */
-static inline diminuto_meter_t * diminuto_meter_reset_now(diminuto_meter_t * mp)
-{
-    return diminuto_meter_reset(mp, diminuto_meter_now());
-}
-
-/**
- * Reset a Meter so that the beginning of time is taken to be zero.
- * @param mp points to the Meter.
- * @return a pointer to the Meter or NULL with errno set if an error occurred.
- */
-static inline diminuto_meter_t * diminuto_meter_reset_zero(diminuto_meter_t * mp)
-{
-    return diminuto_meter_reset(mp, 0);
-}
+extern diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_ticks_t now);
 
 /*******************************************************************************
  * INITIALIZATION
@@ -144,31 +123,9 @@ static inline diminuto_meter_t * diminuto_meter_reset_zero(diminuto_meter_t * mp
  * @param now is the time from which the sustainable rate will be computed.
  * @return a pointer to the Meter or NULL with errno set if an error occurred.
  */
-static inline diminuto_meter_t * diminuto_meter_init(diminuto_meter_t * mp, diminuto_sticks_t now)
+static inline diminuto_meter_t * diminuto_meter_init(diminuto_meter_t * mp, diminuto_ticks_t now)
 {
     return diminuto_meter_reset(mp, now);
-}
-
-/**
- * Intialize a Meter. The sustainable rate will be computed from the current
- * time of a monotonically increasing clock.
- * @param mp points to the Meter.
- * @return a pointer to the Meter or NULL with errno set if an error occurred.
- */
-static inline diminuto_meter_t * diminuto_meter_init_now(diminuto_meter_t * mp)
-{
-    return diminuto_meter_reset_now(mp);
-}
-
-/**
- * Intialize a Meter. The timestamps used to compute the sustainable rate, and
- * normally set by a monotonically increasing clock, are initialized to zero.
- * @param mp points to the Meter.
- * @return a pointer to the Meter or NULL with errno set if an error occurred.
- */
-static inline diminuto_meter_t * diminuto_meter_init_zero(diminuto_meter_t * mp)
-{
-    return diminuto_meter_reset_zero(mp);
 }
 
 /**
@@ -193,7 +150,7 @@ static inline diminuto_meter_t * diminuto_meter_fini(diminuto_meter_t * mp)
  * @param events is the number of events.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
-extern int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t events);
+extern int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t events);
 
 /**
  * Add a single event at a specified time to a Meter.
@@ -201,32 +158,9 @@ extern int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, s
  * @param now is the time at which the event occurred.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
-static int diminuto_meter_event(diminuto_meter_t * mp, diminuto_sticks_t now)
+static int diminuto_meter_event(diminuto_meter_t * mp, diminuto_ticks_t now)
 {
     return diminuto_meter_events(mp, now, 1);
-}
-
-/**
- * Added a specified number of events starting at the time from a monotonically
- * increasing clock.
- * @param mp points to the Meter.
- * @param events is the number of events.
- * @return 0 for success or <0 with errno set if an error occurred.
- */
-static inline int diminuto_meter_events_now(diminuto_meter_t * mp, size_t events)
-{
-    return diminuto_meter_events(mp, diminuto_meter_now(), events);
-}
-
-/**
- * Add a single event at a specified time to a Meter at the time from ta
- * monotonically increasing clock.
- * @param mp points to the Meter.
- * @return 0 for success or <0 with errno set if an error occurred.
- */
-static inline int diminuto_meter_event_now(diminuto_meter_t * mp)
-{
-    return diminuto_meter_events_now(mp, 1);
 }
 
 /*******************************************************************************

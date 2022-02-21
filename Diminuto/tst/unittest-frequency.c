@@ -20,6 +20,7 @@
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_poll.h"
 #include "com/diag/diminuto/diminuto_throttle.h"
+#include "com/diag/diminuto/diminuto_shaper.h"
 #include "com/diag/diminuto/diminuto_meter.h"
 #include <stdio.h>
 #include <errno.h>
@@ -48,6 +49,7 @@ int main(int argc, char ** argv)
         EXPECT(diminuto_modulator_frequency() == COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY);
         EXPECT(diminuto_mux_frequency() == COM_DIAG_DIMINUTO_MUX_FREQUENCY);
         EXPECT(diminuto_poll_frequency() == COM_DIAG_DIMINUTO_POLL_FREQUENCY);
+        EXPECT(diminuto_shaper_frequency() == COM_DIAG_DIMINUTO_SHAPER_FREQUENCY);
         EXPECT(diminuto_throttle_frequency() == COM_DIAG_DIMINUTO_THROTTLE_FREQUENCY);
         EXPECT(diminuto_time_frequency() == COM_DIAG_DIMINUTO_TIME_FREQUENCY);
         EXPECT(diminuto_timer_frequency() == COM_DIAG_DIMINUTO_TIMER_FREQUENCY);
@@ -62,8 +64,10 @@ int main(int argc, char ** argv)
         EXPECT(diminuto_modulator_frequency() <= diminuto_frequency());
         EXPECT(diminuto_mux_frequency() <= diminuto_frequency());
         EXPECT(diminuto_poll_frequency() <= diminuto_frequency());
+        EXPECT(diminuto_shaper_frequency() <= diminuto_frequency());
         EXPECT(diminuto_throttle_frequency() <= diminuto_frequency());
         EXPECT(diminuto_time_frequency() <= diminuto_frequency());
+        EXPECT(diminuto_timer_frequency() <= diminuto_frequency());
         EXPECT(diminuto_timer_frequency() <= diminuto_frequency());
         STATUS();
     }
@@ -76,6 +80,7 @@ int main(int argc, char ** argv)
         CHECKPOINT("f(modulator)=%lldHz p(modulator)=%lldticks\n", (long long int)diminuto_modulator_frequency(), (long long int)(diminuto_frequency() / diminuto_modulator_frequency()));
         CHECKPOINT("f(mux)=%lldHz p(mux)=%lldticks\n", (long long int)diminuto_mux_frequency(), (long long int)(diminuto_frequency() / diminuto_mux_frequency()));
         CHECKPOINT("f(poll)=%lldHz p(poll)=%lldticks\n", (long long int)diminuto_poll_frequency(), (long long int)(diminuto_frequency() / diminuto_poll_frequency()));
+        CHECKPOINT("f(shaper)=%lldHz p(shaper)=%lldticks\n", (long long int)diminuto_shaper_frequency(), (long long int)(diminuto_frequency() / diminuto_shaper_frequency()));
         CHECKPOINT("f(throttle)=%lldHz p(throttle)=%lldticks\n", (long long int)diminuto_throttle_frequency(), (long long int)(diminuto_frequency() / diminuto_throttle_frequency()));
         CHECKPOINT("f(time)=%lldHz p(time)=%lldticks\n", (long long int)diminuto_time_frequency(), (long long int)(diminuto_frequency() / diminuto_time_frequency()));
         CHECKPOINT("f(timer)=%lldHz p(timer)=%lldticks\n", (long long int)diminuto_timer_frequency(), (long long int)(diminuto_frequency() / diminuto_timer_frequency()));

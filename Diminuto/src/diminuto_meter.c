@@ -13,30 +13,22 @@
 #include "com/diag/diminuto/diminuto_meter.h"
 #include <errno.h>
 
-diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_sticks_t now)
+diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_ticks_t now)
 {
-    diminuto_meter_t * result = (diminuto_meter_t *)0;
+    mp->start = now;
+    mp->last = now;
+    mp->peak = 0.0;
+    mp->events = 0;
+    mp->burst = 0;
 
-    if (now >= 0) {
-        mp->start = now;
-        mp->last = now;
-        mp->peak = 0.0;
-        mp->events = 0;
-        mp->burst = 0;
-        result = mp;
-    }
-
-    return result;
+    return mp;
 }
 
-int diminuto_meter_events(diminuto_meter_t * mp, diminuto_sticks_t now, size_t events)
+int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t events)
 {
     int result = 0;
 
-    if (now < 0) {
-        errno = EINVAL;
-        result = -1;
-    } else if (now < mp->last) {
+    if (now < mp->last) {
         errno = ERANGE;
         result = -1;
     } else if (events == 0) {
