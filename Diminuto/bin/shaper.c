@@ -397,7 +397,7 @@ int main(int argc, char * argv[])
 
     /* CONTRACT */
 
-    epoch = diminuto_time_elapsed();
+    epoch = diminuto_shaper_now();
     if (shaped) {
         peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
         sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
@@ -411,7 +411,7 @@ int main(int argc, char * argv[])
 
         /* PEAK */
 
-        now = diminuto_time_elapsed();
+        now = diminuto_shaper_now();
         if (count > 1) {
             elapsed = now - then;
             if (elapsed > 0) {
@@ -449,7 +449,7 @@ int main(int argc, char * argv[])
 
         /* SHAPE */
 
-        now = diminuto_time_elapsed();
+        now = diminuto_shaper_now();
         if (shaped) {
             delay = 0.0;
             while (!0) {
@@ -462,7 +462,7 @@ int main(int argc, char * argv[])
                     diminuto_delay_uninterruptible(interval);
                 }
                 delay += (double)interval / (double)frequency;
-                now = diminuto_time_elapsed();
+                now = diminuto_shaper_now();
             }
             diminuto_shaper_commitn(&shaper, size);
         }
@@ -504,7 +504,7 @@ int main(int argc, char * argv[])
         } else {
             diminuto_delay_uninterruptible(interval);
         }
-        now = diminuto_time_elapsed();
+        now = diminuto_shaper_now();
         diminuto_shaper_update(&shaper, now);
     }
 
@@ -521,6 +521,8 @@ int main(int argc, char * argv[])
     /* REPORT */
 
     report();
+
+    diminuto_shaper_fini(&shaper);
 
     return 0;
 }

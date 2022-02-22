@@ -178,6 +178,7 @@ GNU Make 4.2.1
 
 ## Utilities
 
+* clocks - logs the current values of UTC time, atomic time, and elapsed time.
 * command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
 * debug - simple debug tools to help with Work In Progress (WIP).

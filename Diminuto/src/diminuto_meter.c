@@ -20,6 +20,7 @@ diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_ticks_t 
     mp->peak = 0.0;
     mp->events = 0;
     mp->burst = 0;
+    mp->count = 0;
 
     return mp;
 }
@@ -38,10 +39,16 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t ev
         mp->events = DIMINUTO_METER_OVERFLOW;
         errno = EOVERFLOW;
         result = -1;
+    } else if ((DIMINUTO_METER_OVERFLOW - mp->count) < 1) {
+        mp->last = now;
+        mp->count = DIMINUTO_METER_OVERFLOW;
+        errno = EOVERFLOW;
+        result = -1;
     } else if (mp->events == 0) {
         mp->last = now;
         mp->events = events;
         mp->burst = events;
+        mp->count += 1;
     } else if (now == mp->last) {
         mp->peak = DIMINUTO_METER_ERROR;
         mp->last = now;
@@ -49,6 +56,7 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t ev
         if (events > mp->burst) {
             mp->burst = events;
         }
+        mp->count += 1;
     } else {
         diminuto_ticks_t interarrival = 0;
         double rate = 0.0;
@@ -64,6 +72,7 @@ int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t ev
         if (events > mp->burst) {
             mp->burst = events;
         }
+        mp->count += 1;
     }
 
     return result;

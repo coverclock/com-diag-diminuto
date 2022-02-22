@@ -42,6 +42,7 @@ int main(int argc, char ** argv)
         ASSERT(meter.peak == 0.0);
         ASSERT(meter.events == 0);
         ASSERT(meter.burst == 0);
+        ASSERT(meter.count == 0);
 
         STATUS();
     }
@@ -133,8 +134,12 @@ int main(int argc, char ** argv)
         diminuto_ticks_t jittertolerance;
         diminuto_ticks_t sustainedincrement;
         diminuto_ticks_t bursttolerance;
+        size_t count;
         double peak;
         double sustained;
+        double average;
+        diminuto_ticks_t interval;
+        size_t events;
         int rc;
 
         TEST();
@@ -190,19 +195,22 @@ int main(int argc, char ** argv)
         if (rc < 0) { diminuto_perror("diminuto_meter_events"); }
         ASSERT(rc >= 0);
 
-        ASSERT(diminuto_meter_interval(mp) == duration);
-        ASSERT(diminuto_meter_total(mp) == total);
+        ASSERT((interval = diminuto_meter_interval(mp)) == duration);
+        ASSERT((events = diminuto_meter_total(mp)) == total);
         ASSERT((size = diminuto_meter_burst(mp)) > 0);
         ASSERT((peak = diminuto_meter_peak(mp)) != DIMINUTO_METER_ERROR);
         ASSERT((sustained = diminuto_meter_sustained(mp)) != DIMINUTO_METER_ERROR);
+        ASSERT((average = diminuto_meter_average(mp)) > 0.0);
+        ASSERT((count = diminuto_meter_count(mp)) == iops);
 
         diminuto_shaper_log(sp);
 
-        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes burst=%llubytes duration=%lluseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, (diminuto_llu_t)total, (diminuto_llu_t)(total / iops), (diminuto_llu_t)size, (diminuto_llu_t)(duration / diminuto_frequency()), PEAK, peak, SUSTAINED, sustained);
+        CHECKPOINT("operations=%zu total=%zubytes average=%lfbytes/io burst=%zubytes duration=%lluseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", count, events, average, size, (diminuto_llu_t)(interval / diminuto_frequency()), PEAK, peak, SUSTAINED, sustained);
 
         EXPECT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
         EXPECT(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
         EXPECT(size <= BURST);
+        EXPECT((0 < average) && (average < BURST));
 
         ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);

@@ -38,6 +38,7 @@ typedef struct DiminutoMeter {
     double peak;                /**< Highest instananeous rate. */
     size_t events;              /**< Total number of events. */
     size_t burst;               /**< Largest burst size of events. */
+    size_t count;               /**< Number of measurements taken. */
 } diminuto_meter_t;
 
 /**
@@ -49,6 +50,7 @@ typedef struct DiminutoMeter {
         0, \
         0, \
         0.0, \
+        0, \
         0, \
         0, \
     }
@@ -195,6 +197,31 @@ static inline size_t diminuto_meter_total(const diminuto_meter_t * mp)
 static inline size_t diminuto_meter_burst(const diminuto_meter_t * mp)
 {
     return mp->burst;
+}
+
+/**
+ * Return the current average block size from a Meter.
+ * @param mp points to the Meter.
+ * @return the average block size.
+ */
+static inline double diminuto_meter_average(const diminuto_meter_t * mp)
+{
+    double result = 0.0;
+
+    result = mp->events;
+    result /= mp->count;
+
+    return result;
+}
+
+/**
+ * Return the current measurement count from a Meter.
+ * @param mp points to the Meter.
+ * @return the current measurement count.
+ */
+static inline size_t diminuto_meter_count(const diminuto_meter_t * mp)
+{
+    return mp->count;
 }
 
 /**
