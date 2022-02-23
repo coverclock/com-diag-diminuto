@@ -97,7 +97,7 @@ int diminuto_shaper_admitn(diminuto_shaper_t * shaperp, diminuto_ticks_t now, si
     return (peak || sustained);
 }
 
-diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
+diminuto_ticks_t diminuto_shaper_getexpected(const diminuto_shaper_t * shaperp)
 {
     diminuto_ticks_t peak = 0;
     diminuto_ticks_t sustained = 0;
@@ -108,7 +108,7 @@ diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp)
     return (peak > sustained) ? peak : sustained;
 }
 
-int diminuto_shaper_isempty(diminuto_shaper_t * shaperp)
+int diminuto_shaper_isempty(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -119,7 +119,7 @@ int diminuto_shaper_isempty(diminuto_shaper_t * shaperp)
     return peak && sustained;
 }
 
-int diminuto_shaper_isfull(diminuto_shaper_t * shaperp)
+int diminuto_shaper_isfull(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -130,7 +130,7 @@ int diminuto_shaper_isfull(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
+int diminuto_shaper_isalarmed(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -141,7 +141,7 @@ int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-int diminuto_shaper_emptied(diminuto_shaper_t * shaperp)
+int diminuto_shaper_emptied(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -152,7 +152,7 @@ int diminuto_shaper_emptied(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-int diminuto_shaper_filled(diminuto_shaper_t * shaperp)
+int diminuto_shaper_filled(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -163,7 +163,7 @@ int diminuto_shaper_filled(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp)
+int diminuto_shaper_alarmed(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -174,7 +174,7 @@ int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
+int diminuto_shaper_cleared(const diminuto_shaper_t * shaperp)
 {
     int peak = 0;
     int sustained = 0;
@@ -185,11 +185,13 @@ int diminuto_shaper_cleared(diminuto_shaper_t * shaperp)
     return peak || sustained;
 }
 
-void diminuto_shaper_log(diminuto_shaper_t * shaperp)
+void diminuto_shaper_log(const diminuto_shaper_t * shaperp)
 {
     if (shaperp != (diminuto_shaper_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: peak:\n", shaperp, sizeof(*shaperp)); diminuto_throttle_log(&(shaperp->peak));
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: sustained:\n", shaperp, sizeof(*shaperp)); diminuto_throttle_log(&(shaperp->sustained));
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: peak@%p\n", shaperp, sizeof(*shaperp), &(shaperp->peak));
+        diminuto_throttle_log(&(shaperp->peak));
+        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: sustained@%p\n", shaperp, sizeof(*shaperp), &(shaperp->sustained));
+        diminuto_throttle_log(&(shaperp->sustained));
     } else {
         DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]\n", shaperp, sizeof(*shaperp));
     }

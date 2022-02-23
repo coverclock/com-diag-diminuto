@@ -245,7 +245,7 @@ static inline int diminuto_throttle_update(diminuto_throttle_t * throttlep, dimi
  * @param throttlep is a pointer to the throttle.
  * @return the requisite delay in ticks for the event to be expected.
  */
-static inline diminuto_ticks_t diminuto_throttle_getexpected(diminuto_throttle_t * throttlep)
+static inline diminuto_ticks_t diminuto_throttle_getexpected(const diminuto_throttle_t * throttlep)
 {
     return throttlep->expected;
 }
@@ -255,7 +255,7 @@ static inline diminuto_ticks_t diminuto_throttle_getexpected(diminuto_throttle_t
  * @param throttlep is a pointer to the throttle.
  * @return true if the throttle is clear.
  */
-static inline int diminuto_throttle_isempty(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_isempty(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->empty1 != 0);
 }
@@ -265,7 +265,7 @@ static inline int diminuto_throttle_isempty(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the leaky bucket is full.
  */
-static inline int diminuto_throttle_isfull(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_isfull(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->full1 != 0);
 }
@@ -275,7 +275,7 @@ static inline int diminuto_throttle_isfull(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the throttle is alarmed.
  */
-static inline int diminuto_throttle_isalarmed(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_isalarmed(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->alarmed1 != 0);
 }
@@ -289,7 +289,7 @@ static inline int diminuto_throttle_isalarmed(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-static inline int diminuto_throttle_emptied(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_emptied(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->empty1 != 0) && (throttlep->empty2 == 0);
 }
@@ -299,7 +299,7 @@ static inline int diminuto_throttle_emptied(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-static inline int diminuto_throttle_filled(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_filled(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->full1 != 0) && (throttlep->full2 == 0);
 }
@@ -309,7 +309,7 @@ static inline int diminuto_throttle_filled(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the throttle just alarmed.
  */
-static inline int diminuto_throttle_alarmed(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_alarmed(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->alarmed1 != 0) && (throttlep->alarmed2 == 0);
 }
@@ -319,7 +319,7 @@ static inline int diminuto_throttle_alarmed(diminuto_throttle_t * throttlep)
  * @param throttlep is a pointer to the throttle.
  * @return true if the throttle just cleared.
  */
-static inline int diminuto_throttle_cleared(diminuto_throttle_t * throttlep)
+static inline int diminuto_throttle_cleared(const diminuto_throttle_t * throttlep)
 {
     return (throttlep->alarmed1 == 0) && (throttlep->alarmed2 != 0);
 }
@@ -352,6 +352,6 @@ extern diminuto_ticks_t diminuto_throttle_jittertolerance(diminuto_ticks_t incre
  * Log the state of a throttle.
  * @param throttlep is a pointer to the throttle.
  */
-extern void diminuto_throttle_log(diminuto_throttle_t * throttlep);
+extern void diminuto_throttle_log(const diminuto_throttle_t * throttlep);
 
 #endif

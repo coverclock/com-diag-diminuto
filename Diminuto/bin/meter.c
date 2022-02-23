@@ -10,11 +10,11 @@
  *
  * USAGE
  *
- * meter [ -d ] [ -v ] [ -b BYTES ] [ -c | -l ]
+ * meter [ -d ] [ -v ] [ -b BYTES ]
  *
  * EXAMPLES
  *
- * source | shaper -p 512 -s 256 | meter | sink
+ * yes | shaper -p 512 -s 256 -m 512 | meter > /dev/null & pkill -HUP meter
  *
  * ABSTRACT
  *
@@ -133,6 +133,10 @@ int main(int argc, char * argv[])
     now = diminuto_meter_now();
     diminuto_meter_init(&meter, now);
 
+    if (debug) {
+        diminuto_meter_log(&meter);
+    }
+
     /* WORKLOOP */
 
     while (!0) {
@@ -184,6 +188,10 @@ int main(int argc, char * argv[])
             report(&meter);
         }
 
+        if (debug) {
+            diminuto_meter_log(&meter);
+        }
+
     }
 
     /* FINI */
@@ -192,6 +200,10 @@ int main(int argc, char * argv[])
     diminuto_meter_update(&meter, now);
 
     report(&meter);
+
+    if (debug) {
+        diminuto_meter_log(&meter);
+    }
 
     diminuto_meter_fini(&meter);
 

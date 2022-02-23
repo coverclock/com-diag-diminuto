@@ -11,6 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_meter.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
 
 diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * meterp, diminuto_ticks_t now)
@@ -34,21 +35,21 @@ int diminuto_meter_events(diminuto_meter_t * meterp, diminuto_ticks_t now, size_
         result = -1;
     } else if (events == 0) {
         meterp->last = now;
-    } else if ((DIMINUTO_METER_OVERFLOW - meterp->events) < events) {
+    } else if (meterp->count == 0) {
         meterp->last = now;
-        meterp->events = DIMINUTO_METER_OVERFLOW;
-        errno = EOVERFLOW;
-        result = -1;
+        meterp->events = events;
+        meterp->burst = events;
+        meterp->count = 1;
     } else if ((DIMINUTO_METER_OVERFLOW - meterp->count) < 1) {
         meterp->last = now;
         meterp->count = DIMINUTO_METER_OVERFLOW;
         errno = EOVERFLOW;
         result = -1;
-    } else if (meterp->events == 0) {
+    } else if ((DIMINUTO_METER_OVERFLOW - meterp->events) < events) {
         meterp->last = now;
-        meterp->events = events;
-        meterp->burst = events;
-        meterp->count += 1;
+        meterp->events = DIMINUTO_METER_OVERFLOW;
+        errno = EOVERFLOW;
+        result = -1;
     } else if (now == meterp->last) {
         meterp->peak = DIMINUTO_METER_ERROR;
         meterp->last = now;
@@ -93,4 +94,13 @@ double diminuto_meter_sustained(const diminuto_meter_t * meterp)
     }
 
     return result;
+}
+
+void diminuto_meter_log(const diminuto_meter_t * meterp)
+{
+    if (meterp != (diminuto_meter_t *)0) {
+        DIMINUTO_LOG_DEBUG("diminuto_meter_t@%p[%zu]: { dt=%llu p=%lf e=%zu b=%zu n=%zu }\n", meterp, sizeof(*meterp), (diminuto_llu_t)(meterp->last - meterp->start), meterp->peak, meterp->events, meterp->burst, meterp->count);
+    } else {
+        DIMINUTO_LOG_DEBUG("diminuto_meter_t@%p[%zu]\n", meterp, sizeof(*meterp));
+    }
 }

@@ -151,14 +151,15 @@ int main(int argc, char ** argv)
         sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
         bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
 
-        mp = diminuto_meter_init(&meter, now);
-        ASSERT(mp == &meter);
+        srand(diminuto_time_clock());
 
         sp = diminuto_shaper_init(&shaper, peakincrement, 0 /* jittertolerance */, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);
         diminuto_shaper_log(sp);
 
-        srand(diminuto_time_clock());
+        mp = diminuto_meter_init(&meter, now);
+        ASSERT(mp == &meter);
+        diminuto_meter_log(mp);
 
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
@@ -212,8 +213,11 @@ int main(int argc, char ** argv)
         EXPECT(size <= BURST);
         EXPECT((0 < average) && (average < BURST));
 
-        ASSERT(diminuto_meter_fini(&meter) == (diminuto_meter_t *)0);
-        ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);
+        diminuto_shaper_log(sp);
+        diminuto_meter_log(mp);
+
+        ASSERT(diminuto_meter_fini(mp) == (diminuto_meter_t *)0);
+        ASSERT(diminuto_shaper_fini(sp) == (diminuto_shaper_t *)0);
 
         STATUS();
      }

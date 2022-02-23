@@ -216,28 +216,28 @@ static inline int diminuto_shaper_update(diminuto_shaper_t * shaperp, diminuto_t
  * @param shaperp is a pointer to the throttle.
  * @return the requisite delay in ticks for the event to be expected.
  */
-extern diminuto_ticks_t diminuto_shaper_getexpected(diminuto_shaper_t * shaperp);
+extern diminuto_ticks_t diminuto_shaper_getexpected(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket is empty.
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket is empty.
  */
-extern int diminuto_shaper_isempty(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_isempty(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket is full.
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket is full.
  */
-extern int diminuto_shaper_isfull(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_isfull(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle is alarmed.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle is alarmed.
  */
-extern int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_isalarmed(const diminuto_shaper_t * shaperp);
 
 /*******************************************************************************
  * TRANSITION STATE
@@ -255,28 +255,28 @@ extern int diminuto_shaper_isalarmed(diminuto_shaper_t * shaperp);
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-extern int diminuto_shaper_emptied(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_emptied(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the leaky bucket just filled.
  * @param shaperp is a pointer to the throttle.
  * @return true if the leaky bucket just filled.
  */
-extern int diminuto_shaper_filled(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_filled(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle just alarmed.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle just alarmed.
  */
-extern int diminuto_shaper_alarmed(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_alarmed(const diminuto_shaper_t * shaperp);
 
 /**
  * Returns true if the throttle just cleared.
  * @param shaperp is a pointer to the throttle.
  * @return true if the throttle just cleared.
  */
-extern int diminuto_shaper_cleared(diminuto_shaper_t * shaperp);
+extern int diminuto_shaper_cleared(const diminuto_shaper_t * shaperp);
 
 /*******************************************************************************
  * ANCILLARY
@@ -298,6 +298,6 @@ extern diminuto_ticks_t diminuto_shaper_bursttolerance(diminuto_ticks_t peakincr
  * Log the state of a shaper.
  * @param shaperp is a pointer to the shaper.
  */
-extern void diminuto_shaper_log(diminuto_shaper_t * shaperp);
+extern void diminuto_shaper_log(const diminuto_shaper_t * shaperp);
 
 #endif

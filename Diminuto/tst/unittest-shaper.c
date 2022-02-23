@@ -73,10 +73,10 @@ int main(int argc, char ** argv)
         sustainedincrement = diminuto_throttle_interarrivaltime(SUSTAINED, 1, frequency);
         bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, BURST);
         /**/
+        srand(diminuto_time_clock());
         sp = diminuto_shaper_init(&shaper, peakincrement, 0 /* jittertolerance */, sustainedincrement, bursttolerance, now);
         ASSERT(sp == &shaper);
         diminuto_shaper_log(sp);
-        srand(diminuto_time_clock());
         /**/
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_shaper_request(sp, now);
@@ -128,6 +128,7 @@ int main(int argc, char ** argv)
         CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds peak=%zubytes/second measured=%lfbytes/second sustained=%zubytes/second measured=%lfdbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), PEAK, peak, SUSTAINED, sustained);
         ASSERT(fabs(sustained - SUSTAINED) < (SUSTAINED / 200) /* 0.5% */);
         ASSERT(fabs(peak - PEAK) < (PEAK / 200) /* 0.5% */);
+        diminuto_shaper_log(sp);
         ASSERT(diminuto_shaper_fini(&shaper) == (diminuto_shaper_t *)0);
 
         STATUS();

@@ -18,9 +18,7 @@
  *
  * EXAMPLES
  *
- * source | shaper | sink<BR>
- * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
- * dd if=/dev/urandom bs=512 count=100 | shaper -b 512 | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper -b 512 > /dev/null<BR>
+ * yes | shaper -p 512 -s 256 -m 512 | meter > /dev/null
  *
  * ABSTRACT
  *
@@ -213,7 +211,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -d                   Enable debugging output.\n");
             fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", (long long int)jittertolerance);
             fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
-            fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes.\n");
+            fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES instead of %zu bytes.\n", maximumburstsize);
             fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -v                   Enable verbose output.\n");
             return 1;
@@ -235,18 +233,6 @@ int main(int argc, char * argv[])
         errno = EINVAL;
         perror("-s");
         return 1;
-    }
-
-    if (debug) {
-        fprintf(stderr, "%s: -d\n", program);
-        fprintf(stderr, "%s: -b %zuB\n", program, blocksize);
-        fprintf(stderr, "%s: -p %zuB/s\n", program, peakrate);
-        fprintf(stderr, "%s: -j %lldticks\n", program, (long long int)jittertolerance);
-        fprintf(stderr, "%s: -s %zuB/s\n", program, sustainedrate);
-        fprintf(stderr, "%s: -m %zuB\n", program, maximumburstsize);
-        if (verbose) {
-            fprintf(stderr, "%s: -v\n", program);
-        }
     }
 
     /* SETUP */
@@ -282,8 +268,13 @@ int main(int argc, char * argv[])
     epoch = diminuto_shaper_now();
     peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
     sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
+    jittertolerance = diminuto_frequency_units2ticks(jittertolerance, 1000000LL);
     bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
     diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
+
+    if (debug) {
+        diminuto_shaper_log(&shaper);
+    }
 
     /* WORKLOOP */
 
@@ -373,6 +364,10 @@ int main(int argc, char * argv[])
             break;
         }
 
+        if (debug) {
+            diminuto_shaper_log(&shaper);
+        }
+
     }
 
     /* TIMELINE */
@@ -401,6 +396,10 @@ int main(int argc, char * argv[])
     /* REPORT */
 
     report();
+
+    if (debug) {
+        diminuto_shaper_log(&shaper);
+    }
 
     diminuto_shaper_fini(&shaper);
 

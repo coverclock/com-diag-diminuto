@@ -166,7 +166,7 @@ static int diminuto_meter_event(diminuto_meter_t * meterp, diminuto_ticks_t now)
 /**
  * Process zero events to indicate that time has passed without an event
  * occurring, updating the state of the meter.
- * @param shaperp is a pointer to the meter.
+ * @param meterp is a pointer to the meter.
  * @param now is the current time on a monotonically increasing clock.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
@@ -251,5 +251,15 @@ static inline double diminuto_meter_peak(const diminuto_meter_t * meterp)
  * @return the sustained rate.
  */
 extern double diminuto_meter_sustained(const diminuto_meter_t * meterp);
+
+/*******************************************************************************
+ * ANCILLARY
+ ******************************************************************************/
+
+/**
+ * Log the state of a meter.
+ * @param meterp is a pointer to the meter.
+ */
+extern void diminuto_meter_log(const diminuto_meter_t * meterp);
 
 #endif

@@ -694,10 +694,10 @@ int main(int argc, char ** argv)
         increment = diminuto_throttle_interarrivaltime(BANDWIDTH * 3, 3, frequency);
         limit = diminuto_throttle_jittertolerance(increment, BLOCKSIZE);
         /**/
+        srand(diminuto_time_clock());
         tp = diminuto_throttle_init(&throttle, increment, 0 /* limit */, now);
         ASSERT(tp == &throttle);
         diminuto_throttle_log(tp);
-        srand(diminuto_time_clock());
         /**/
         for (iops = 0; iops < OPERATIONS; ++iops) {
             delay = diminuto_throttle_request(tp, now);
@@ -746,6 +746,7 @@ int main(int argc, char ** argv)
         ASSERT(fabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         ADVISE(fabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         /**/
+        diminuto_throttle_log(tp);
         ASSERT(diminuto_throttle_fini(&throttle) == (diminuto_throttle_t *)0);
         STATUS();
      }

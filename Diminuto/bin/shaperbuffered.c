@@ -315,7 +315,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", (long long int)jittertolerance);
             fprintf(stderr, "       -l                   Do line I/O instead of block I/O.\n");
             fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
-            fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes.\n");
+            fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES instead of %zu bytes.\n", maximumburstsize);
             fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -v                   Enable verbose output.\n");
             return 1;
@@ -355,7 +355,7 @@ int main(int argc, char * argv[])
         }
         fprintf(stderr, "%s: -b %zuB\n", program, blocksize);
         fprintf(stderr, "%s: -p %zuB/s\n", program, peakrate);
-        fprintf(stderr, "%s: -j %lldticks\n", program, (long long int)jittertolerance);
+        fprintf(stderr, "%s: -j %lldusec\n", program, (long long int)jittertolerance);
         fprintf(stderr, "%s: -s %zuB/s\n", program, sustainedrate);
         fprintf(stderr, "%s: -m %zuB\n", program, maximumburstsize);
         if (verbose) {
@@ -399,6 +399,7 @@ int main(int argc, char * argv[])
     if (shaped) {
         peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
         sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
+        jittertolerance = diminuto_frequency_units2ticks(jittertolerance, 1000000LL);
         bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
         diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
     }
