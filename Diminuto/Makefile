@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	78# API changes that may require that applications be modified.
 MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1220,9 +1220,9 @@ sockets6:
 sockets:	sockets0 socketsl sockets4 sockets6
 
 realtime:
-	unittest-meter
-	unittest-shaper
 	unittest-throttle
+	unittest-shaper
+	unittest-meter
 
 renameat2:
 	unittest-renameat2

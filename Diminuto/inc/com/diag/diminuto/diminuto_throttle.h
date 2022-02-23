@@ -90,7 +90,7 @@ typedef struct DiminutoThrottle {
  * Return the resolution of the Diminuto throttle time units in ticks per second
  * (Hertz). Time intervals smaller than the equivalent period in ticks will
  * not yield the expected results.
- * @return the resolution in ticks per second.
+ * @return the resolution in ticks per second or <0 if an error occurred.
  */
 static inline diminuto_sticks_t diminuto_throttle_frequency(void)
 {
@@ -119,7 +119,7 @@ static inline diminuto_sticks_t diminuto_throttle_now(void)
  * either alarmed or not cleared unless an event arrives).
  * @param throttlep is a pointer to the throttle.
  * @param now is the current time from a monotonically increasing clock.
- * @return a pointer to the throttle.
+ * @return a pointer to the throttle or NULL if an error occurred.
  */
 extern diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throttlep, diminuto_ticks_t now);
 
@@ -133,14 +133,14 @@ extern diminuto_throttle_t * diminuto_throttle_reset(diminuto_throttle_t * throt
  * @param increment is the contracted inter-arrival interval in ticks.
  * @param limit is the contracted threshold in ticks.
  * @param now is the current time on a monotonically increasing clock.
- * @return a pointer to the throttle.
+ * @return a pointer to the throttle or NULL if an error occurred.
  */
 extern diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, diminuto_ticks_t increment, diminuto_ticks_t limit, diminuto_ticks_t now);
 
 /**
  * Release any resources held by the throttle object.
  * @param throttlep points to the object.
- * @return NULL if successful, a pointer to the object otherwise.
+ * @return NULL or a pointer to the throttle if an error occurred.
  */
 static inline diminuto_throttle_t * diminuto_throttle_fini(diminuto_throttle_t * throttlep) {
     return (diminuto_throttle_t *)0;

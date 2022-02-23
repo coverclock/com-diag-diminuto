@@ -30,6 +30,7 @@
 #include "com/diag/diminuto/diminuto_hangup.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
+#include "com/diag/diminuto/diminuto_pipe.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include <stdio.h>
@@ -46,9 +47,9 @@ static void report(const diminuto_meter_t * mp)
     diminuto_log_emit("%s: elapsed=%lfs\n", program, (double)diminuto_meter_interval(mp) / (double)diminuto_frequency());
     diminuto_log_emit("%s: total=%zuB\n", program, diminuto_meter_total(mp));
     diminuto_log_emit("%s: mean=%lfB/io\n", program, diminuto_meter_average(mp));
+    diminuto_log_emit("%s: burst=%zuB\n", program, diminuto_meter_burst(mp));
     diminuto_log_emit("%s: peak=%lfB/s\n", program, diminuto_meter_peak(mp));
     diminuto_log_emit("%s: sustained=%lfB/s\n", program, diminuto_meter_sustained(mp));
-    diminuto_log_emit("%s: burst=%zuB\n", program, diminuto_meter_burst(mp));
 }
 
 int main(int argc, char * argv[])
@@ -124,6 +125,10 @@ int main(int argc, char * argv[])
         return 2;
     }
 
+    if (diminuto_pipe_install(0) < 0) {
+        return 2;
+    }
+
     now = diminuto_meter_now();
     diminuto_meter_init(&meter, now);
 
@@ -171,6 +176,10 @@ int main(int argc, char * argv[])
         }
 
         if (diminuto_terminator_check() > 0) {
+            break;
+        }
+
+        if (diminuto_pipe_check() > 0) {
             break;
         }
 

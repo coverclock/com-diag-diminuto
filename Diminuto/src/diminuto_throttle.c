@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Throttle feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -16,7 +16,7 @@
 
 diminuto_ticks_t diminuto_throttle_interarrivaltime(size_t numerator, size_t denominator, diminuto_ticks_t frequency)
 {
-    diminuto_ticks_t increment;
+    diminuto_ticks_t increment = 0;
 
     /* i = f / (n / d) = f * d / n */
 
@@ -71,8 +71,8 @@ diminuto_throttle_t * diminuto_throttle_init(diminuto_throttle_t * throttlep, di
 
 diminuto_ticks_t diminuto_throttle_request(diminuto_throttle_t * throttlep, diminuto_ticks_t now)
 {
-    diminuto_ticks_t delay;
-    diminuto_ticks_t elapsed;
+    diminuto_ticks_t delay = 0;
+    diminuto_ticks_t elapsed = 0;
 
     elapsed = (throttlep->now = now) - throttlep->then;
     if (throttlep->expected <= elapsed) {

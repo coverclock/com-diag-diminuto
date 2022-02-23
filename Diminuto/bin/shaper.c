@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Traffic shape and measure throughput from stdin to stdout.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -62,8 +62,8 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_uninterruptiblesection.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -82,7 +82,6 @@ static const diminuto_ticks_t JITTERTOLERANCE = 0;
 
 static io_t io = BLOCK;
 static const char * program = (const char *)0;
-static pid_t pid = 0;
 static size_t count = 0;
 static size_t total = 0;
 static size_t burst = 0;
@@ -97,20 +96,20 @@ static int verbose = 0;
 
 static void report(void)
 {
-    fprintf(stderr, "shaper[%d]: count=%zuio\n", pid, count);
-    fprintf(stderr, "shaper[%d]: elapsed=%lfs\n", pid, (float)duration / (float)frequency);
-    fprintf(stderr, "shaper[%d]: total=%zuB\n", pid, total);
-    fprintf(stderr, "shaper[%d]: mean=%lfB/io\n", pid, (float)total / (float)count);
-    fprintf(stderr, "shaper[%d]: peak=%lfB/s\n", pid, peak);
-    fprintf(stderr, "shaper[%d]: sustained=%lfB/s\n", pid, sustained);
-    fprintf(stderr, "shaper[%d]: burst=%zuB\n", pid, burst);
-    fprintf(stderr, "shaper[%d]: fletcher16=0x%4.4x\n", pid, fletcher16c);
+    diminuto_log_emit("%s: count=%zuio\n", program, count);
+    diminuto_log_emit("%s: elapsed=%lfs\n", program, (float)duration / (float)frequency);
+    diminuto_log_emit("%s: total=%zuB\n", program, total);
+    diminuto_log_emit("%s: mean=%lfB/io\n", program, (float)total / (float)count);
+    diminuto_log_emit("%s: burst=%zuB\n", program, burst);
+    diminuto_log_emit("%s: peak=%lfB/s\n", program, peak);
+    diminuto_log_emit("%s: sustained=%lfB/s\n", program, sustained);
+    diminuto_log_emit("%s: fletcher16=0x%4.4x\n", program, fletcher16c);
 }
 
 static void handler(int signum)
 {
     report();
-    if ((signum == SIGINT) || (signum == SIGTERM) || (signum == SIGQUIT)) {
+    if ((signum == SIGINT) || (signum == SIGTERM) || (signum == SIGQUIT) | (signum == SIGPIPE)) {
         exit(0);
     }
 }
@@ -233,7 +232,6 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    pid = getpid();
     frequency = diminuto_frequency();
 
     io = BLOCK;
@@ -342,26 +340,26 @@ int main(int argc, char * argv[])
     }
 
     if (debug) {
-        fprintf(stderr, "shaper[%d]: -d\n", pid);
+        fprintf(stderr, "%s: -d\n", program);
         switch (io) {
         case BLOCK:
             break;
         case CHARACTER:
-            fprintf(stderr, "shaper[%d]: -c\n", pid);
+            fprintf(stderr, "%s: -c\n", program);
             break;
         case LINE:
-            fprintf(stderr, "shaper[%d]: -l\n", pid);
+            fprintf(stderr, "%s: -l\n", program);
             break;
         default:
             break;
         }
-        fprintf(stderr, "shaper[%d]: -b %zuB\n", pid, blocksize);
-        fprintf(stderr, "shaper[%d]: -p %zuB/s\n", pid, peakrate);
-        fprintf(stderr, "shaper[%d]: -j %lldticks\n", pid, (long long int)jittertolerance);
-        fprintf(stderr, "shaper[%d]: -s %zuB/s\n", pid, sustainedrate);
-        fprintf(stderr, "shaper[%d]: -m %zuB\n", pid, maximumburstsize);
+        fprintf(stderr, "%s: -b %zuB\n", program, blocksize);
+        fprintf(stderr, "%s: -p %zuB/s\n", program, peakrate);
+        fprintf(stderr, "%s: -j %lldticks\n", program, (long long int)jittertolerance);
+        fprintf(stderr, "%s: -s %zuB/s\n", program, sustainedrate);
+        fprintf(stderr, "%s: -m %zuB\n", program, maximumburstsize);
         if (verbose) {
-            fprintf(stderr, "shaper[%d]: -v\n", pid);
+            fprintf(stderr, "%s: -v\n", program);
         }
     }
 
@@ -468,7 +466,7 @@ int main(int argc, char * argv[])
         }
 
         if (verbose) {
-            fprintf(stderr, "shaper[%d]: count=%zuio size=%zuB total=%zuB delay=%lfs fletcher16=0x%4.4x\n", pid, count, size, total, delay, fletcher16c);
+            fprintf(stderr, "%s: count=%zuio size=%zuB total=%zuB delay=%lfs fletcher16=0x%4.4x\n", program, count, size, total, delay, fletcher16c);
         }
 
         /* SUSTAINED */

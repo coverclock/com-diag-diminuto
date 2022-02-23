@@ -61,7 +61,7 @@ typedef struct DiminutoShaper {
  * Return the resolution of the Diminuto shaper time units in ticks per second
  * (Hertz). Time intervals smaller than the equivalent period in ticks will
  * not yield the expected results.
- * @return the resolution in ticks per second.
+ * @return the resolution in ticks per second or <0 if an error occurred.
  */
 static inline diminuto_sticks_t diminuto_shaper_frequency(void)
 {
@@ -87,7 +87,7 @@ static inline diminuto_sticks_t diminuto_shaper_now(void)
  * no debt on its limit.
  * @param shaperp is a pointer to the shaper.
  * @param now is the current time from a monotonically increasing clock.
- * @return a pointer to the shaper.
+ * @return a pointer to the shaper or NULL if an error occurred.
  */
 extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, diminuto_ticks_t now);
 
@@ -103,14 +103,14 @@ extern diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, di
  * @param sustainedincrement is the average interarrival time in ticks.
  * @param bursttolerance is the burst tolerance in ticks for the sustained rate.
  * @param now is the current time on a monotonically increasing clock.
- * @return a pointer to the shaper.
+ * @return a pointer to the shaper or NULL if an error occurred.
  */
 extern diminuto_shaper_t * diminuto_shaper_init(diminuto_shaper_t * shaperp, diminuto_ticks_t peakincrement, diminuto_ticks_t jittertolerance, diminuto_ticks_t sustainedincrement, diminuto_ticks_t bursttolerance, diminuto_ticks_t now);
 
 /**
  * Release any resources held by the shaper object.
  * @param shaperp points to the object.
- * @return NULL if successful, a pointer to the object otherwise.
+ * @return NULL or a pointer to the shaper if an error occurred.
  */
 static inline diminuto_shaper_t * diminuto_shaper_fini(diminuto_shaper_t * shaperp) {
     return (diminuto_shaper_t *)0;

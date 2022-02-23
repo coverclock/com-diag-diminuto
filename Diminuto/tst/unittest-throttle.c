@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Throttle feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -742,7 +742,7 @@ int main(int argc, char ** argv)
         sustained = total;
         sustained *= frequency;
         sustained /= duration;
-        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds requested=%zubytes/second sustained=%lfbytes/second peak=%lfbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), BANDWIDTH, sustained, peak);
+        CHECKPOINT("operations=%zu total=%llubytes average=%llubytes duration=%lluseconds requested=%zubytes/second peak=%lfbytes/second sustained=%lfbytes/second\n", iops, (long long unsigned int)total, (long long unsigned int)(total / iops), (long long unsigned int)(duration / diminuto_frequency()), BANDWIDTH, peak, sustained);
         ASSERT(fabs(sustained - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         ADVISE(fabs(peak - BANDWIDTH) <= (BANDWIDTH / 200) /* 0.5% */);
         /**/
