@@ -19,8 +19,6 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
-#include "com/diag/diminuto/diminuto_memberof.h"
-#include "com/diag/diminuto/diminuto_typeof.h"
 #include <math.h> /* For HUGE_VAL. */
 
 /*******************************************************************************
@@ -62,12 +60,12 @@ typedef struct DiminutoMeter {
 /**
  * When an event count gets too large, this is the value to which it is set.
  */
-static const diminuto_typeof(diminuto_memberof(struct DiminutoMeter, events)) DIMINUTO_METER_OVERFLOW = diminuto_maximumof(diminuto_typeof(diminuto_memberof(struct DiminutoMeter, events)));
+static const size_t DIMINUTO_METER_OVERFLOW = diminuto_maximumof(size_t);
 
 /**
  * When a rate cannot be computed, this is the value to which it is set.
  */
-static const diminuto_typeof(diminuto_memberof(struct DiminutoMeter, peak)) DIMINUTO_METER_ERROR = HUGE_VAL;
+static const double DIMINUTO_METER_ERROR = HUGE_VAL;
 
 /*******************************************************************************
  * TIME
@@ -109,11 +107,11 @@ static inline diminuto_sticks_t diminuto_meter_now()
 
 /**
  * Reset a Meter to the beginning of time.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @param now is the time from which the sustainable rate will be computed.
  * @return a pointer to the Meter or NULL with errno set if an error occurred.
  */
-extern diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_ticks_t now);
+extern diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * meterp, diminuto_ticks_t now);
 
 /*******************************************************************************
  * INITIALIZATION
@@ -121,22 +119,22 @@ extern diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_t
 
 /**
  * Intialize a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @param now is the time from which the sustainable rate will be computed.
  * @return a pointer to the Meter or NULL with errno set if an error occurred.
  */
-static inline diminuto_meter_t * diminuto_meter_init(diminuto_meter_t * mp, diminuto_ticks_t now)
+static inline diminuto_meter_t * diminuto_meter_init(diminuto_meter_t * meterp, diminuto_ticks_t now)
 {
-    return diminuto_meter_reset(mp, now);
+    return diminuto_meter_reset(meterp, now);
 }
 
 /**
  * Release any resources held by a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return NULL for success or a pointer to the Meter with errno set if an
  * error occurred.
  */
-static inline diminuto_meter_t * diminuto_meter_fini(diminuto_meter_t * mp)
+static inline diminuto_meter_t * diminuto_meter_fini(diminuto_meter_t * meterp)
 {
     return (diminuto_meter_t *)0;
 }
@@ -147,22 +145,34 @@ static inline diminuto_meter_t * diminuto_meter_fini(diminuto_meter_t * mp)
 
 /**
  * Added a specified number of events starting at a specified time to a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @param now is the time at which the events occurred.
  * @param events is the number of events.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
-extern int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t events);
+extern int diminuto_meter_events(diminuto_meter_t * meterp, diminuto_ticks_t now, size_t events);
 
 /**
  * Add a single event at a specified time to a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @param now is the time at which the event occurred.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
-static int diminuto_meter_event(diminuto_meter_t * mp, diminuto_ticks_t now)
+static int diminuto_meter_event(diminuto_meter_t * meterp, diminuto_ticks_t now)
 {
-    return diminuto_meter_events(mp, now, 1);
+    return diminuto_meter_events(meterp, now, 1);
+}
+
+/**
+ * Process zero events to indicate that time has passed without an event
+ * occurring, updating the state of the meter.
+ * @param shaperp is a pointer to the meter.
+ * @param now is the current time on a monotonically increasing clock.
+ * @return 0 for success or <0 with errno set if an error occurred.
+ */
+static inline int diminuto_meter_update(diminuto_meter_t * meterp, diminuto_ticks_t now)
+{
+    return diminuto_meter_events(meterp, now, 0);
 }
 
 /*******************************************************************************
@@ -171,75 +181,75 @@ static int diminuto_meter_event(diminuto_meter_t * mp, diminuto_ticks_t now)
 
 /**
  * Return the time interval between the last and start events in ticks.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the time interval in ticks.
  */
-static inline diminuto_ticks_t diminuto_meter_interval(const diminuto_meter_t * mp)
+static inline diminuto_ticks_t diminuto_meter_interval(const diminuto_meter_t * meterp)
 {
-    return (mp->last - mp->start);
+    return (meterp->last - meterp->start);
 }
 
 /**
  * Return the total number of events.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the total number of events.
  */
-static inline size_t diminuto_meter_total(const diminuto_meter_t * mp)
+static inline size_t diminuto_meter_total(const diminuto_meter_t * meterp)
 {
-    return mp->events;
+    return meterp->events;
 }
 
 /**
  * Return the current maximum burst size from a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the maximum burst size.
  */
-static inline size_t diminuto_meter_burst(const diminuto_meter_t * mp)
+static inline size_t diminuto_meter_burst(const diminuto_meter_t * meterp)
 {
-    return mp->burst;
+    return meterp->burst;
 }
 
 /**
  * Return the current average block size from a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the average block size.
  */
-static inline double diminuto_meter_average(const diminuto_meter_t * mp)
+static inline double diminuto_meter_average(const diminuto_meter_t * meterp)
 {
     double result = 0.0;
 
-    result = mp->events;
-    result /= mp->count;
+    result = meterp->events;
+    result /= meterp->count;
 
     return result;
 }
 
 /**
  * Return the current measurement count from a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the current measurement count.
  */
-static inline size_t diminuto_meter_count(const diminuto_meter_t * mp)
+static inline size_t diminuto_meter_count(const diminuto_meter_t * meterp)
 {
-    return mp->count;
+    return meterp->count;
 }
 
 /**
  * Return the peak rate from a Meter.
- * @param mp points to the Meter.
+ * @param meterp points to the Meter.
  * @return the peak rate.
  */
-static inline double diminuto_meter_peak(const diminuto_meter_t * mp)
+static inline double diminuto_meter_peak(const diminuto_meter_t * meterp)
 {
-    return mp->peak;
+    return meterp->peak;
 }
 
 /**
  * Compute the sustained rate from a Meter based on the start time and
  * the last time and the total number of events.
- * @param mp points to the meter.
+ * @param meterp points to the meter.
  * @return the sustained rate.
  */
-extern double diminuto_meter_sustained(const diminuto_meter_t * mp);
+extern double diminuto_meter_sustained(const diminuto_meter_t * meterp);
 
 #endif

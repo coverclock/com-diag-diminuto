@@ -10,7 +10,7 @@
  *
  * USAGE
  *
- * shaper [ -d ] [ -v ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j TICKS ] [ -s BYTESPERSECOND ] [ -m BYTES ]
+ * shaperlegacy [ -d ] [ -v ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j TICKS ] [ -s BYTESPERSECOND ] [ -m BYTES ]
  *
  * Consider letting the jitter tolerance ("-j") default to zero ticks and
  * setting the maximum burst size ("-m") to the same value in bytes as the
@@ -18,9 +18,9 @@
  *
  * EXAMPLES
  *
- * source | shaper | sink<BR>
- * source | shaper -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
- * dd if=/dev/urandom bs=512 count=100 | shaper -b 512 | shaper -b 512 -p 2048 -s 1024 -m 512 | shaper -b 512 > /dev/null<BR>
+ * source | shaperlegacy | sink<BR>
+ * source | shaperlegacy -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
+ * dd if=/dev/urandom bs=512 count=100 | shaperlegacy -b 512 | shaperlegacy -b 512 -p 2048 -s 1024 -m 512 | shaperlegacy -b 512 > /dev/null<BR>
  *
  * ABSTRACT
  *
@@ -64,7 +64,6 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_fd.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -72,9 +71,16 @@
 #include <unistd.h>
 #include <signal.h>
 
+typedef enum IO {
+    BLOCK,
+    CHARACTER,
+    LINE,
+} io_t;
+
 static const size_t BLOCKSIZE = 512;
 static const diminuto_ticks_t JITTERTOLERANCE = 0;
 
+static io_t io = BLOCK;
 static const char * program = (const char *)0;
 static size_t count = 0;
 static size_t total = 0;
@@ -108,9 +114,93 @@ static void handler(int signum)
     }
 }
 
+static ssize_t input(uint8_t * buffer, size_t size)
+{
+    ssize_t rc = 0;
+    int ch = '\0';
+
+    switch (io) {
+    case BLOCK:
+        rc = fread(buffer, 1, size, stdin);
+        break;
+    case CHARACTER:
+        if ((ch = fgetc(stdin)) != EOF) {
+            *buffer = ch;
+            rc = 1;
+        }
+        break;
+    case LINE:
+        if (fgets((char *)buffer, (int)size, stdin) != NULL) {
+            buffer[size - 1] = '\0';
+            rc = (ssize_t)strlen((char *)buffer);
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (rc > 0) {
+        /* Do nothing. */
+    } else if (feof(stdin)) {
+        rc = 0;
+    } else if (ferror(stdin)) {
+        errno = EIO;
+        perror("fread");
+        rc = -1;
+    } else {
+        errno = EINVAL;
+        perror("fread");
+        rc = -1;
+    }
+
+    return rc;
+}
+
+static ssize_t output(const uint8_t * buffer, size_t size)
+{
+    ssize_t rc = 0;
+    int ch = 0;
+
+    switch (io) {
+    case BLOCK:
+        if ((rc = fwrite(buffer, size, 1, stdout)) == 1) {
+            rc = size;
+        }
+        break;
+    case CHARACTER:
+        ch = *buffer;
+        if (fputc(ch, stdout) != EOF) {
+            rc = 1;
+        }
+        break;
+    case LINE:
+        if (fputs((char *)buffer, stdout) > 0) {
+            rc = size;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (rc > 0) {
+        /* Do nothing. */
+    } else if (feof(stdout)) {
+        rc = 0;
+    } else if (ferror(stdout)) {
+        errno = EIO;
+        perror("fwrite");
+        rc = -1;
+    } else {
+        errno = EINVAL;
+        perror("fwrite");
+        rc = -1;
+    }
+
+    return rc;
+}
+
 int main(int argc, char * argv[])
 {
-    int xc = 0;
     diminuto_shaper_t shaper;
     size_t peakrate = 0;
     size_t sustainedrate = 0;
@@ -121,6 +211,7 @@ int main(int argc, char * argv[])
     diminuto_ticks_t bursttolerance = 0;
     uint8_t fletcher16a = 0;
     uint8_t fletcher16b = 0;
+    int shaped = 0;
     diminuto_ticks_t now = 0;
     diminuto_ticks_t then = 0;
     diminuto_ticks_t interval = 0;
@@ -143,6 +234,7 @@ int main(int argc, char * argv[])
 
     frequency = diminuto_frequency();
 
+    io = BLOCK;
     blocksize = BLOCKSIZE;
     jittertolerance = JITTERTOLERANCE;
 
@@ -150,7 +242,7 @@ int main(int argc, char * argv[])
 
     /* PARAMETERS */
 
-    while ((opt = getopt(argc, argv, "b:dj:m:p:s:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "b:cdj:lm:p:s:v")) >= 0) {
 
         switch (opt) {
 
@@ -161,6 +253,10 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 return 1;
             }
+            break;
+
+        case 'c':
+            io = CHARACTER;
             break;
 
         case 'd':
@@ -174,6 +270,10 @@ int main(int argc, char * argv[])
                 perror(optarg);
                 return 1;
             }
+            break;
+
+        case 'l':
+            io = LINE;
             break;
 
         case 'm':
@@ -208,10 +308,12 @@ int main(int argc, char * argv[])
             break;
 
         default:
-            fprintf(stderr, "usage: %s [ -d ] [ -v ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
+            fprintf(stderr, "usage: %s [ -d ] [ -v ] [ -l | -c ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
             fprintf(stderr, "       -b BYTES             Use an I/O buffer of size BYTES instead of %zu bytes.\n", blocksize);
+            fprintf(stderr, "       -c                   Do character I/O instead of block I/O.\n");
             fprintf(stderr, "       -d                   Enable debugging output.\n");
             fprintf(stderr, "       -j USECONDS          Use a jitter tolerance of USECONDS instead of %lld microseconds.\n", (long long int)jittertolerance);
+            fprintf(stderr, "       -l                   Do line I/O instead of block I/O.\n");
             fprintf(stderr, "       -p BYTESPERSECOND    Set the peak rate to BYTESPERSECOND bytes per second.\n");
             fprintf(stderr, "       -m BYTES             Set the maximum burst size to BYTES bytes.\n");
             fprintf(stderr, "       -s BYTESPERSECOND    Set the sustained rate to BYTESPERSECOND bytes per second.\n");
@@ -239,6 +341,18 @@ int main(int argc, char * argv[])
 
     if (debug) {
         fprintf(stderr, "%s: -d\n", program);
+        switch (io) {
+        case BLOCK:
+            break;
+        case CHARACTER:
+            fprintf(stderr, "%s: -c\n", program);
+            break;
+        case LINE:
+            fprintf(stderr, "%s: -l\n", program);
+            break;
+        default:
+            break;
+        }
         fprintf(stderr, "%s: -b %zuB\n", program, blocksize);
         fprintf(stderr, "%s: -p %zuB/s\n", program, peakrate);
         fprintf(stderr, "%s: -j %lldticks\n", program, (long long int)jittertolerance);
@@ -250,6 +364,8 @@ int main(int argc, char * argv[])
     }
 
     /* SETUP */
+
+    shaped = (peakrate > 0) && (sustainedrate > 0) && (sustainedrate <= peakrate);
 
     buffer = malloc(blocksize);
     if (buffer == (uint8_t *)0) {
@@ -280,10 +396,12 @@ int main(int argc, char * argv[])
     /* CONTRACT */
 
     epoch = diminuto_shaper_now();
-    peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
-    sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
-    bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
-    diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
+    if (shaped) {
+        peakincrement = diminuto_throttle_interarrivaltime(peakrate, 1, frequency);
+        sustainedincrement = diminuto_throttle_interarrivaltime(sustainedrate, 1, frequency);
+        bursttolerance = diminuto_shaper_bursttolerance(peakincrement, jittertolerance, sustainedincrement, maximumburstsize);
+        diminuto_shaper_init(&shaper, peakincrement, jittertolerance, sustainedincrement, bursttolerance, epoch);
+    }
 
     /* WORKLOOP */
 
@@ -307,15 +425,12 @@ int main(int argc, char * argv[])
 
         /* INPUT */
 
-        if ((rc = diminuto_fd_read_generic(STDIN_FILENO, buffer, 1, blocksize)) > 0) {
+        if ((rc = input(buffer, blocksize)) > 0) {
             size = rc;
         } else if (rc == 0) {
             break;
-        } else if (errno == EINTR) {
-            continue;
         } else {
-            xc = 3;
-            break;
+            return 3;
         }
 
         /* BURST */
@@ -333,20 +448,22 @@ int main(int argc, char * argv[])
         /* SHAPE */
 
         now = diminuto_shaper_now();
-        delay = 0.0;
-        while (!0) {
-            interval = diminuto_shaper_request(&shaper, now);
-            if (interval <= 0) {
-                break;
-            } else if (interval < minimum) {
-                diminuto_yield();
-            } else {
-                diminuto_delay_uninterruptible(interval);
+        if (shaped) {
+            delay = 0.0;
+            while (!0) {
+                interval = diminuto_shaper_request(&shaper, now);
+                if (interval <= 0) {
+                    break;
+                } else if (interval < minimum) {
+                    diminuto_yield();
+                } else {
+                    diminuto_delay_uninterruptible(interval);
+                }
+                delay += (double)interval / (double)frequency;
+                now = diminuto_shaper_now();
             }
-            delay += (double)interval / (double)frequency;
-            now = diminuto_shaper_now();
+            diminuto_shaper_commitn(&shaper, size);
         }
-        diminuto_shaper_commitn(&shaper, size);
 
         if (verbose) {
             fprintf(stderr, "%s: count=%zuio size=%zuB total=%zuB delay=%lfs fletcher16=0x%4.4x\n", program, count, size, total, delay, fletcher16c);
@@ -364,29 +481,30 @@ int main(int argc, char * argv[])
 
         /* OUTPUT */
 
-        if ((rc = diminuto_fd_write(STDOUT_FILENO, buffer, size)) > 0) {
+        if ((rc = output(buffer, size)) > 0) {
             /* Do nothing. */
         } else if (rc == 0) {
             break;
         } else {
-            xc = 4;
-            break;
+            return 4;
         }
 
     }
 
     /* TIMELINE */
 
-    interval = diminuto_shaper_getexpected(&shaper);
-    if (interval <= 0) {
-        /* Do nothing. */
-    } else if (interval < minimum) {
-        diminuto_yield();
-    } else {
-        diminuto_delay_uninterruptible(interval);
+    if (shaped) {
+        interval = diminuto_shaper_getexpected(&shaper);
+        if (interval <= 0) {
+            /* Do nothing. */
+        } else if (interval < minimum) {
+            diminuto_yield();
+        } else {
+            diminuto_delay_uninterruptible(interval);
+        }
+        now = diminuto_shaper_now();
+        diminuto_shaper_update(&shaper, now);
     }
-    now = diminuto_shaper_now();
-    diminuto_shaper_update(&shaper, now);
 
     /* SUSTAINED */
 
@@ -404,5 +522,5 @@ int main(int argc, char * argv[])
 
     diminuto_shaper_fini(&shaper);
 
-    return xc;
+    return 0;
 }

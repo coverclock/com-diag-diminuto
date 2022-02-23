@@ -13,83 +13,83 @@
 #include "com/diag/diminuto/diminuto_meter.h"
 #include <errno.h>
 
-diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * mp, diminuto_ticks_t now)
+diminuto_meter_t * diminuto_meter_reset(diminuto_meter_t * meterp, diminuto_ticks_t now)
 {
-    mp->start = now;
-    mp->last = now;
-    mp->peak = 0.0;
-    mp->events = 0;
-    mp->burst = 0;
-    mp->count = 0;
+    meterp->start = now;
+    meterp->last = now;
+    meterp->peak = 0.0;
+    meterp->events = 0;
+    meterp->burst = 0;
+    meterp->count = 0;
 
-    return mp;
+    return meterp;
 }
 
-int diminuto_meter_events(diminuto_meter_t * mp, diminuto_ticks_t now, size_t events)
+int diminuto_meter_events(diminuto_meter_t * meterp, diminuto_ticks_t now, size_t events)
 {
     int result = 0;
 
-    if (now < mp->last) {
+    if (now < meterp->last) {
         errno = ERANGE;
         result = -1;
     } else if (events == 0) {
-        mp->last = now;
-    } else if ((DIMINUTO_METER_OVERFLOW - mp->events) < events) {
-        mp->last = now;
-        mp->events = DIMINUTO_METER_OVERFLOW;
+        meterp->last = now;
+    } else if ((DIMINUTO_METER_OVERFLOW - meterp->events) < events) {
+        meterp->last = now;
+        meterp->events = DIMINUTO_METER_OVERFLOW;
         errno = EOVERFLOW;
         result = -1;
-    } else if ((DIMINUTO_METER_OVERFLOW - mp->count) < 1) {
-        mp->last = now;
-        mp->count = DIMINUTO_METER_OVERFLOW;
+    } else if ((DIMINUTO_METER_OVERFLOW - meterp->count) < 1) {
+        meterp->last = now;
+        meterp->count = DIMINUTO_METER_OVERFLOW;
         errno = EOVERFLOW;
         result = -1;
-    } else if (mp->events == 0) {
-        mp->last = now;
-        mp->events = events;
-        mp->burst = events;
-        mp->count += 1;
-    } else if (now == mp->last) {
-        mp->peak = DIMINUTO_METER_ERROR;
-        mp->last = now;
-        mp->events += events;
-        if (events > mp->burst) {
-            mp->burst = events;
+    } else if (meterp->events == 0) {
+        meterp->last = now;
+        meterp->events = events;
+        meterp->burst = events;
+        meterp->count += 1;
+    } else if (now == meterp->last) {
+        meterp->peak = DIMINUTO_METER_ERROR;
+        meterp->last = now;
+        meterp->events += events;
+        if (events > meterp->burst) {
+            meterp->burst = events;
         }
-        mp->count += 1;
+        meterp->count += 1;
     } else {
         diminuto_ticks_t interarrival = 0;
         double rate = 0.0;
-        interarrival = now - mp->last;
+        interarrival = now - meterp->last;
         rate = events;
         rate *= diminuto_frequency();
         rate /= interarrival;
-        if (rate > mp->peak) {
-            mp->peak = rate;
+        if (rate > meterp->peak) {
+            meterp->peak = rate;
         }
-        mp->last = now;
-        mp->events += events;
-        if (events > mp->burst) {
-            mp->burst = events;
+        meterp->last = now;
+        meterp->events += events;
+        if (events > meterp->burst) {
+            meterp->burst = events;
         }
-        mp->count += 1;
+        meterp->count += 1;
     }
 
     return result;
 }
 
-double diminuto_meter_sustained(const diminuto_meter_t * mp)
+double diminuto_meter_sustained(const diminuto_meter_t * meterp)
 {
     double result = 0.0;
 
-    if (mp->events == 0) {
+    if (meterp->events == 0) {
         /* Do nothing. */
-    } else if (mp->last <= mp->start) {
+    } else if (meterp->last <= meterp->start) {
         result = DIMINUTO_METER_ERROR;
     } else {
-        result = mp->events;
+        result = meterp->events;
         result *= diminuto_frequency();
-        result /= (mp->last - mp->start);
+        result /= (meterp->last - meterp->start);
     }
 
     return result;

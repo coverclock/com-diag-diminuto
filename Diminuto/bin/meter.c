@@ -54,6 +54,7 @@ static void report(const diminuto_meter_t * mp)
 
 int main(int argc, char * argv[])
 {
+    int xc = 0;
     diminuto_meter_t meter = DIMINUTO_METER_INITIALIZER;
     diminuto_ticks_t now = 0;
     int debug = 0;
@@ -143,29 +144,25 @@ int main(int argc, char * argv[])
         } else if (rc == 0) {
             break;
         } else if (errno == EINTR) {
-            size = 0;
+            continue;
         } else {
-            diminuto_perror("read");
+            xc = 3;
             break;
         }
 
         /* MEASURE */
 
-        if (size > 0) {
-            now = diminuto_meter_now();
-            diminuto_meter_events(&meter, now, size);
-        }
+        now = diminuto_meter_now();
+        diminuto_meter_events(&meter, now, size);
 
         /* OUTPUT */
 
-        if (size <= 0) {
-            /* Do nothing. */
-        } else if ((rc = diminuto_fd_write(STDOUT_FILENO, buffer, size)) > 0) {
+        if ((rc = diminuto_fd_write(STDOUT_FILENO, buffer, size)) > 0) {
             /* Do nothing. */
         } else if (rc == 0) {
             break;
         } else {
-            diminuto_perror("write");
+            xc = 3;
             break;
         }
 
@@ -191,9 +188,12 @@ int main(int argc, char * argv[])
 
     /* FINI */
 
+    now = diminuto_meter_now();
+    diminuto_meter_update(&meter, now);
+
     report(&meter);
 
     diminuto_meter_fini(&meter);
 
-    return 0;
+    return xc;
 }
