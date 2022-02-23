@@ -253,7 +253,7 @@ header file.
 * cue - logic level debouncer and edge detector.
 * i2c - simplified thread-safe API around Linux I2C API.
 * pin - get and set GPIO pins using the sysfs interface.
-* modulator - software pulse width modulator (PWM) generator.
+* modulator - software pulse width modulation (PWM) generator.
 * serial - get and set parameters for a serial port.
 
 ## System
