@@ -251,7 +251,7 @@ header file.
 
 * controller - proportional/integral/derivative (PID) controller.
 * cue - logic level debouncer and edge detector.
-* i2c - Simplified thread-safe API around Linux I2C API.
+* i2c - simplified thread-safe API around Linux I2C API.
 * pin - get and set GPIO pins using the sysfs interface.
 * modulator - software pulse width modulator (PWM) generator.
 * serial - get and set parameters for a serial port.
