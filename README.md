@@ -134,9 +134,10 @@ GNU Make 4.2.1
 
 # Library
 
-Each of the feature names below can be found in a unique header file in the
-'''inc/com/diag/diminuto''' directory. For example, the "assert" feature is
-defined by the '''inc/com/diag/diminuto/diminuto_assert.h''' header file.
+A header file associated with each of the feature names below can be found in the
+```inc/com/diag/diminuto``` directory. For example, the public API for the
+"assert" feature is defined by the ```inc/com/diag/diminuto/diminuto_assert.h```
+header file.
 
 ## Basics
 
