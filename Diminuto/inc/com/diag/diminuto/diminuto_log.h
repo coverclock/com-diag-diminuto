@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a common logging API.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -156,8 +156,8 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_ERROR         = ANDROID_LOG_ERROR,
     DIMINUTO_LOG_PRIORITY_WARNING       = ANDROID_LOG_WARN,
     DIMINUTO_LOG_PRIORITY_NOTICE        = ANDROID_LOG_INFO,
-    DIMINUTO_LOG_PRIORITY_INFORMATION   = ANDROID_LOG_DEBUG,
-    DIMINUTO_LOG_PRIORITY_DEBUG         = ANDROID_LOG_VERBOSE,
+    DIMINUTO_LOG_PRIORITY_INFORMATION   = ANDROID_LOG_VERBOSE,
+    DIMINUTO_LOG_PRIORITY_DEBUG         = ANDROID_LOG_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = ANDROID_LOG_INFO,
 }
 
@@ -227,7 +227,8 @@ enum DiminutoLogDefaults {
 
 /**
  * The enumerates the default file descriptor used when not using any other
- * system logging mechanism.
+ * system logging mechanism. It must match the fileno(3) of the default log
+ * file stream. This is enforced by the diminuto_log_stream() function.
  */
 enum DiminutoLogDescriptor {
     DIMINUTO_LOG_DESCRIPTOR_DEFAULT = STDERR_FILENO,
@@ -235,9 +236,13 @@ enum DiminutoLogDescriptor {
 
 /**
  * @def DIMINUTO_LOG_STREAM_DEFAULT
- * This is the default value used for an unset log output stream FILE pointer.
+ * This is the default value used for the log output stream FILE pointer.
+ * Its fileno(3) must match the value of the default file descriptor. This
+ * is enforced by the diminuto_log_stream() function. Note that this manifest
+ * constant cannot be set to, for example, stderr because it is a FILE pointer
+ * variable dynamically set by the C run-time system.
  */
-#define DIMINUTO_LOG_STREAM_DEFAULT ((FILE *)0)
+#define DIMINUTO_LOG_STREAM_DEFAULT (FILE *)0
 
 /**
  * @def DIMINUTO_LOG_MASK_NAME_DEFAULT
@@ -355,6 +360,12 @@ extern diminuto_log_strategy_t diminuto_log_strategy;
  */
 extern bool diminuto_log_cached;
 
+/**
+ * This is the default log priority for those log functions which do not
+ * have a priority parameter.
+ */
+extern int diminuto_log_priority;
+
 /******************************************************************************/
 
 /**
@@ -469,7 +480,10 @@ extern void diminuto_log_log(int priority, const char * format, ...)  __attribut
 /**
  * If the calling process is interactive, format and print
  * the argument list to stderr; if it is, format and log the argument
- * list to syslog. The message is logged at the default priority.
+ * list to syslog. The message is logged at the default priority and
+ * is emitted unconditionally regardless of the current value of the
+ * log mask (i.e. it is emitted at the default priority even if that
+ * priority is not enabled in the log mask).
  * @param format points to a printf-style format string.
  */
 extern void diminuto_log_emit(const char * format, ...)  __attribute__ ((format (printf, 1, 2)));

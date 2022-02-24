@@ -52,7 +52,6 @@ static uint8_t initialized = 0;
  */
 static pthread_mutex_t mutexinit = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexopen = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t mutexclose = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexstream = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexroute = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexhostname = PTHREAD_MUTEX_INITIALIZER;
@@ -80,6 +79,8 @@ const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 diminuto_log_strategy_t diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
 
 bool diminuto_log_cached = false;
+
+int diminuto_log_priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
 
 /*******************************************************************************
  * BASE FUNCTIONS
@@ -139,7 +140,7 @@ void diminuto_log_open(const char * name)
 
 void diminuto_log_close(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexclose);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexopen);
 
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
         if (initialized) {
@@ -154,6 +155,19 @@ void diminuto_log_close(void)
 FILE * diminuto_log_stream(void)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutexstream);
+
+        if (diminuto_log_file == (FILE *)0) {
+            /* Do nothing. */
+        } else if (diminuto_log_descriptor == fileno(diminuto_log_file)) {
+            /* Do nothing. */
+        } else if (diminuto_log_file == stdout) {
+            diminuto_log_file = (FILE *)0;
+        } else if (diminuto_log_file == stderr) {
+            diminuto_log_file = (FILE *)0;
+        } else {
+            (void)fclose(diminuto_log_file);
+            diminuto_log_file = (FILE *)0;
+        }
 
         if (diminuto_log_file != (FILE *)0) {
             /* Do nothing. */
@@ -380,7 +394,7 @@ void diminuto_log_emit(const char * format, ...)
     va_list ap;
 
     va_start(ap, format);
-    diminuto_log_vlog(DIMINUTO_LOG_PRIORITY_DEFAULT, format, ap);
+    diminuto_log_vlog(diminuto_log_priority, format, ap);
     va_end(ap);
     errno = save;
 }

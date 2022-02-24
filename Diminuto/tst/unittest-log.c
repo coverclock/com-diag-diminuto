@@ -7,7 +7,9 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the Log feature.
+ * This is a unit test of the Log feature. Because the Unit Test framework
+ * uses the Log feature, this unit test is not built on top of the Unit Test
+ * framework.
  *
  * It's useful to run this as
  *
@@ -21,7 +23,7 @@
  * by its session identifier or who its parent process is.
  */
 
-#include "com/diag/diminuto/diminuto_unittest.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_countof.h"
@@ -30,63 +32,205 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 int main(int argc, char ** argv)
 {
+    {
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_EMERGENCY;
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALERT;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_CRITICAL;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ERROR;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_WARNING;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NOTICE;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_INFORMATION;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_DEBUG;
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_ALL;
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ERROR));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_WARNING));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_NOTICE));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG));
+
+        diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_DEFAULT;
+    }
 
     {
-        SETLOGMASK();
-
-        TEST();
 
         diminuto_log_mask = 0;
-        ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
         diminuto_log_setmask();
-        ASSERT(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
-        ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
+        assert(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();
-        ASSERT(diminuto_log_mask == 0);
-        ASSERT(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+        assert(diminuto_log_mask == 0);
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
         diminuto_log_setmask();
-        ASSERT(diminuto_log_mask == 255);
+        assert(diminuto_log_mask == 255);
         diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
-        STATUS();
     }
 
     {
         char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
         int ii;
 
-        SETLOGMASK();
+        assert(diminuto_log_priority == DIMINUTO_LOG_PRIORITY_DEFAULT);
 
-        TEST();
-
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, DIMINUTO_LOG_HERE "HERE");
+        diminuto_log_log(diminuto_log_priority, DIMINUTO_LOG_HERE "HERE");
         for (ii = 0; ii < sizeof(buffer) - 1; ++ii) {
             buffer[ii] = (ii % ('~' - ' ' + 1)) + ' ';
         }
         buffer[sizeof(buffer) - 1] = '\0';
-        diminuto_log_log(DIMINUTO_LOG_PRIORITY_DEFAULT, "%s%s%s", DIMINUTO_LOG_HERE, "THERE", buffer);
-
-        STATUS();
+        diminuto_log_log(diminuto_log_priority, "%s%s%s", DIMINUTO_LOG_HERE, "THERE", buffer);
 
     }
 
     {
         FILE * fp;
+        int fd;
 
-        SETLOGMASK();
-
-        TEST();
+        assert(diminuto_log_descriptor == STDERR_FILENO);
+        assert(diminuto_log_file == (FILE *)0);
 
         fp = diminuto_log_stream();
-        ASSERT(fp != (FILE *)0);
-        ASSERT(fp == diminuto_log_file);
-        ASSERT((diminuto_log_descriptor != STDOUT_FILENO) || (fp == stdout));
-        ASSERT((diminuto_log_descriptor != STDERR_FILENO) || (fp == stderr));
+        assert(fp != (FILE *)0);
+        assert(fp == diminuto_log_file);
+        assert(fileno(fp) == fileno(diminuto_log_file));
+        assert(fp == stderr);
+        assert(fileno(fp) == fileno(stderr));
 
-        STATUS();
+        assert(diminuto_log_descriptor == STDERR_FILENO);
+        assert(diminuto_log_file == stderr);
+        assert(fileno(diminuto_log_file) == fileno(stderr));
+        assert(fileno(diminuto_log_file) == STDERR_FILENO);
+
+        diminuto_log_descriptor = STDOUT_FILENO;
+        fp = diminuto_log_stream();
+        assert(fp != (FILE *)0);
+        assert(fp == diminuto_log_file);
+        assert(fileno(fp) == fileno(diminuto_log_file));
+        assert(fp == stdout);
+        assert(fileno(fp) == fileno(stdout));
+
+        assert(diminuto_log_descriptor == STDOUT_FILENO);
+        assert(diminuto_log_file == stdout);
+        assert(fileno(diminuto_log_file) == fileno(stdout));
+        assert(fileno(diminuto_log_file) == STDOUT_FILENO);
+
+        fd = dup(STDOUT_FILENO);
+        diminuto_log_descriptor = fd;
+        fp = diminuto_log_stream();
+        assert(fp != (FILE *)0);
+        assert(fp == diminuto_log_file);
+        assert(fileno(fp) == fileno(diminuto_log_file));
+        assert(fp != stdout);
+
+        assert(diminuto_log_descriptor == fd);
+        assert(diminuto_log_file != stdout);
+        assert(fileno(diminuto_log_file) != fileno(stdout));
+        assert(fileno(diminuto_log_file) != STDOUT_FILENO);
+
+        diminuto_log_descriptor = STDERR_FILENO;
+        diminuto_log_file = (FILE *)0;
+
+        fp = diminuto_log_stream();
+        assert(fp != (FILE *)0);
+        assert(fp == diminuto_log_file);
+        assert(fileno(fp) == fileno(diminuto_log_file));
+        assert(fp == stderr);
+        assert(fileno(fp) == fileno(stderr));
+
+        assert(diminuto_log_descriptor == STDERR_FILENO);
+        assert(diminuto_log_file == stderr);
+        assert(fileno(diminuto_log_file) == fileno(stderr));
+        assert(fileno(diminuto_log_file) == STDERR_FILENO);
+
     }
 
     if (argc < 2) {
@@ -116,10 +260,7 @@ int main(int argc, char ** argv)
 
     {
 
-        TEST();
-
-        SETLOGMASK();
-
+        diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
         diminuto_log_emit("BEGIN\n");
         yes();
         no();
@@ -237,19 +378,15 @@ int main(int argc, char ** argv)
         all();
         none();
         mine();
+        diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
         diminuto_log_emit("END\n");
 
-        STATUS();
     }
 
     {
         const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
         char buffer[sizeof("ERRNO[XXXXXXXXXX]")];
         int ii;
-
-        SETLOGMASK();
-
-        TEST();
 
         for (ii = 0; ii < countof(ERRNO); ++ii) {
             snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
@@ -262,20 +399,16 @@ int main(int argc, char ** argv)
             diminuto_serror(buffer);
         }
 
-        STATUS();
     }
 
     {
         char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM];
 
-        SETLOGMASK();
+        assert(sizeof(hostname) >= sizeof("localhost"));
 
-        TEST();
-
-        ASSERT(sizeof(hostname) >= sizeof("localhost"));
-
-        STATUS();
     }
 
-    EXIT();
+    fprintf(stderr, "%s[%d]: SUCCESS.\n", __FILE__, __LINE__);
+
+    exit(0);
 }
