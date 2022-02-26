@@ -41,6 +41,15 @@
  * shorter names from these, for example define DBG(...) to
  * be DIMINUTO_LOG_DEBUG(__VA_ARGS__).
  *
+ * Much of the internal variables used by the Log feature are exposed
+ * directly to the application, rather than following the usual Diminuto
+ * approach of using gettor and settor functions, or exposing them via
+ * a private API. This is because of all the Diminuto features, the Log
+ * feature is the one that is mostly likely, and the most useful, to
+ * be used in an existing application. In those circumstances, it may
+ * require some customization to integrate into an the legacy logging
+ * environment.
+ *
  * N.B. The Log functions that are used to print error messages
  * from the value of errno, as well as those macros in the Unit Test
  * framework that uses the Log functions, display the values of the
@@ -123,6 +132,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_INFORMATION   = KERN_INFO,
     DIMINUTO_LOG_PRIORITY_DEBUG         = KERN_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = KERN_NOTICE,
+    DIMINUTO_LOG_PRIORITY_PERROR        = KERN_ERR,
 };
 
 /**
@@ -159,6 +169,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_INFORMATION   = ANDROID_LOG_VERBOSE,
     DIMINUTO_LOG_PRIORITY_DEBUG         = ANDROID_LOG_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = ANDROID_LOG_INFO,
+    DIMINUTO_LOG_PRIORITY_PERROR        = ANDROID_LOG_ERROR,
 }
 
 /**
@@ -201,6 +212,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_INFORMATION   = LOG_INFO,
     DIMINUTO_LOG_PRIORITY_DEBUG         = LOG_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = LOG_NOTICE,
+    DIMINUTO_LOG_PRIORITY_PERROR        = LOG_ERR,
 };
 
 /**
@@ -362,9 +374,15 @@ extern bool diminuto_log_cached;
 
 /**
  * This is the default log priority for those log functions which do not
- * have a priority parameter.
+ * have a priority parameter, like diminuto_log_emit().
  */
 extern int diminuto_log_priority;
+
+/**
+ * This is the default log priority for those log functions which print
+ * the text associated with an error number, like diminuto_log_perror().
+ */
+extern int diminuto_log_error;
 
 /******************************************************************************/
 
@@ -496,13 +514,13 @@ extern void diminuto_log_emit(const char * format, ...)  __attribute__ ((format 
  * @param s points to a nul-terminated string prepended to the error string.
  * @see perror(3).
  */
-extern void diminuto_serror_f(const char * f, int l, const char * s);
+extern void diminuto_log_serror(const char * f, int l, const char * s);
 
 /**
  * @def diminuto_serror
  * Calls diminuto_serror_f with __FILE__, __LINE__, and @a _STRING_.
  */
-#define diminuto_serror(_STRING_) diminuto_serror_f(__FILE__, __LINE__, _STRING_)
+#define diminuto_serror(_STRING_) diminuto_log_serror(__FILE__, __LINE__, _STRING_)
 
 /**
  * If the calling process is interactive, emulate the stdio
@@ -513,13 +531,13 @@ extern void diminuto_serror_f(const char * f, int l, const char * s);
  * @param s points to a nul-terminated string prepended to the error string.
  * @see perror(3).
  */
-extern void diminuto_perror_f(const char * f, int l, const char * s);
+extern void diminuto_log_perror(const char * f, int l, const char * s);
 
 /**
  * @def diminuto_perror
  * Calls diminuto_perror_f with __FILE__, __LINE__, and @a _STRING_.
  */
-#define diminuto_perror(_STRING_) diminuto_perror_f(__FILE__, __LINE__, _STRING_)
+#define diminuto_perror(_STRING_) diminuto_log_perror(__FILE__, __LINE__, _STRING_)
 
 #endif
 

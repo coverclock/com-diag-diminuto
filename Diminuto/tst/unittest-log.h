@@ -16,6 +16,7 @@
 
 static void maybe(void)
 {
+    diminuto_log_emit("TEST maybe:");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
 }
 
@@ -24,6 +25,7 @@ static void maybe(void)
 
 static void no(void)
 {
+    diminuto_log_emit("TEST no:");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: no!\n", __FILE__, __LINE__);
 }
 
@@ -32,19 +34,21 @@ static void no(void)
 
 static void yes(void)
 {
+    diminuto_log_emit("TEST yes:");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d]: yes.\n", __FILE__, __LINE__);
 }
 
 static void all(void)
 {
-   DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ALERT("%s[%d]: Alert.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_CRITICAL("%s[%d]: Critical.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ERROR("%s[%d]: Error.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_WARNING("%s[%d]: Warning.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_NOTICE("%s[%d]: Notice.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_INFORMATION("%s[%d]: Information.\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_DEBUG("%s[%d]: Debug.\n", __FILE__, __LINE__);
+    diminuto_log_emit("TEST all:");
+    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ALERT("%s[%d]: Alert.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ERROR("%s[%d]: Error.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_WARNING("%s[%d]: Warning.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_NOTICE("%s[%d]: Notice.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_INFORMATION("%s[%d]: Information.\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_DEBUG("%s[%d]: Debug.\n", __FILE__, __LINE__);
 }
 
 #define DIMINUTO_LOG_EMERGENCY_DISABLE
@@ -59,14 +63,15 @@ static void all(void)
 
 static void none(void)
 {
-   DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ALERT("%s[%d]: Alert!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_CRITICAL("%s[%d]: Critical!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ERROR("%s[%d]: Error!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_WARNING("%s[%d]: Warning!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_NOTICE("%s[%d]: Notice!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_INFORMATION("%s[%d]: Information!\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
+    diminuto_log_emit("TEST none:");
+    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ALERT("%s[%d]: Alert!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ERROR("%s[%d]: Error!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_WARNING("%s[%d]: Warning!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_NOTICE("%s[%d]: Notice!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_INFORMATION("%s[%d]: Information!\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
 }
 
 static diminuto_log_mask_t diminuto_log_subsystem[] = { DIMINUTO_LOG_MASK_NONE };
@@ -88,12 +93,13 @@ EXPORT_SYMBOL(diminuto_log_subsystem);
 
 static void mine(void)
 {
-   DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ALERT("%s[%d]: Alert?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_CRITICAL("%s[%d]: Critical?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_ERROR("%s[%d]: Error?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_WARNING("%s[%d]: Warning?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_NOTICE("%s[%d]: Notice?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_INFORMATION("%s[%d]: Information?\n", __FILE__, __LINE__);
-   DIMINUTO_LOG_DEBUG("%s[%d]: Debug?\n", __FILE__, __LINE__);
+    diminuto_log_emit("TEST mine:");
+    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ALERT("%s[%d]: Alert?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_ERROR("%s[%d]: Error?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_WARNING("%s[%d]: Warning?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_NOTICE("%s[%d]: Notice?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_INFORMATION("%s[%d]: Information?\n", __FILE__, __LINE__);
+    DIMINUTO_LOG_DEBUG("%s[%d]: Debug?\n", __FILE__, __LINE__);
 }
