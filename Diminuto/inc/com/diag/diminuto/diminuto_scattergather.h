@@ -107,7 +107,6 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <stdint.h>
-#include <stdio.h>
 
 /*******************************************************************************
  * CONSTANTS
@@ -402,13 +401,11 @@ extern size_t diminuto_scattergather_record_enumerate(const diminuto_scattergath
 extern size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record_t * rp);
 
 /**
- * Dump a report of useful information about a Record to the specified FILE
- * (e.g. stderr).
- * @param fp points to the FILE.
+ * Dump a report of useful information about a Record to the log.
  * @param rp points to the Record.
  * @return a pointer to the Record.
  */
-extern const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, const diminuto_scattergather_record_t * rp);
+extern const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(const diminuto_scattergather_record_t * rp);
 
 /**
  * Vectorize a Record by populating an I/O vector of a specified size with

@@ -159,9 +159,9 @@ void diminuto_list_log(
     const diminuto_list_t * nodep
 ) {
     if (nodep) {
-        DIMINUTO_LOG_DEBUG("diminuto_list_t@%p[%zu]: { next=%p prev=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->next, nodep->prev, nodep->root, nodep->data);
+        diminuto_log_emit("diminuto_list_t@%p[%zu]: { next=%p prev=%p root=%p data=%p }\n", nodep, sizeof(*nodep), nodep->next, nodep->prev, nodep->root, nodep->data);
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_list_t@%p[%zu]\n", nodep, sizeof(*nodep));
+        diminuto_log_emit("diminuto_list_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }
 }
 
@@ -187,17 +187,17 @@ const diminuto_list_t * diminuto_list_audit(
 
     while (!0) {
         if ((nextp->root != rootp) || (nextp->next->prev != nextp) || (nextp->prev->next != nextp)) {
-            DIMINUTO_LOG_DEBUG("diminuto_list_audit: next FAILED!\n");
+            diminuto_log_emit("diminuto_list_audit: next FAILED!\n");
             diminuto_list_log(nextp);
             nodep = nextp;
             break;
         } else if ((prevp->root != rootp) || (prevp->prev->next != prevp) || (prevp->next->prev != prevp)) {
-            DIMINUTO_LOG_DEBUG("diminuto_list_audit: prev FAILED!\n");
+            diminuto_log_emit("diminuto_list_audit: prev FAILED!\n");
             diminuto_list_log(prevp);
             nodep = prevp;
             break;
         } else if ((--limit) <= 0) {
-            DIMINUTO_LOG_DEBUG("diminuto_list_audit: limit FAILED!\n");
+            diminuto_log_emit("diminuto_list_audit: limit FAILED!\n");
             diminuto_list_log(rootp);
             nodep = rootp;
             break;

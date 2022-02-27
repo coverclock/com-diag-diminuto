@@ -334,7 +334,7 @@ int streamserver6(int listensocket)
 
         fprintf(stderr, "streamserver6: THREE\n");
 
-        diminuto_scattergather_record_dump(stderr, rp);
+        diminuto_scattergather_record_dump(rp);
         fprintf(stderr, "READ [%zd]:\n", total);
 
         address = *(diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
@@ -374,7 +374,7 @@ int streamserver6(int listensocket)
             break;
         }
 
-        diminuto_scattergather_record_dump(stderr, rp);
+        diminuto_scattergather_record_dump(rp);
         fprintf(stderr, "READ [%zd]:\n", total);
 
         if (length > 0) {
@@ -445,7 +445,7 @@ int streamserver6(int listensocket)
 
         fprintf(stderr, "streamserver6: FOUR\n");
 
-        diminuto_scattergather_record_dump(stderr, rp);
+        diminuto_scattergather_record_dump(rp);
         fprintf(stderr, "READ [%zd]:\n", total);
 
         address = *(diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
@@ -485,7 +485,7 @@ int streamserver6(int listensocket)
             break;
         }
 
-        diminuto_scattergather_record_dump(stderr, rp);
+        diminuto_scattergather_record_dump(rp);
         fprintf(stderr, "READ [%zd]:\n", total);
 
         if (length > 0) {
@@ -792,7 +792,7 @@ int datagrampeer6(int datagramsocket)
 
         fprintf(stderr, "datagrampeer6: THREE\n");
 
-        diminuto_scattergather_record_dump(stderr, rp);
+        diminuto_scattergather_record_dump(rp);
         fprintf(stderr, "RECEIVE [%zd]:\n", total);
 
         address = *(diminuto_ipv6_t *)diminuto_scattergather_segment_payload_get(sp = diminuto_scattergather_record_segment_head(rp));
@@ -915,7 +915,7 @@ int main(void)
 
         ASSERT(diminuto_scattergather_record_enumerate(&record) == 0);
         ASSERT(diminuto_scattergather_record_measure(&record) == 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, &record) == &record);
+        ASSERT(diminuto_scattergather_record_dump(&record) == &record);
 
         STATUS();
     }
@@ -928,7 +928,7 @@ int main(void)
         ASSERT(diminuto_scattergather_record_init(&record) == &record);
         ASSERT(diminuto_scattergather_record_enumerate(&record) == 0);
         ASSERT(diminuto_scattergather_record_measure(&record) == 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, &record) == &record);
+        ASSERT(diminuto_scattergather_record_dump(&record) == &record);
         diminuto_scattergather_record_fini(&record);
 
         STATUS();
@@ -1086,7 +1086,7 @@ int main(void)
         ASSERT((rp = diminuto_scattergather_record_allocate(&pool)) != (diminuto_scattergather_record_t *)0);
         ASSERT(diminuto_scattergather_record_enumerate(rp) == 0);
         ASSERT(diminuto_scattergather_record_measure(rp) == 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, rp) == rp);
+        ASSERT(diminuto_scattergather_record_dump(rp) == rp);
 
         STATUS();
     }
@@ -1111,7 +1111,7 @@ int main(void)
 
         ASSERT(diminuto_scattergather_record_enumerate(rp) == 1);
         ASSERT(diminuto_scattergather_record_measure(rp) > 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, rp) == rp);
+        ASSERT(diminuto_scattergather_record_dump(rp) == rp);
 
         STATUS();
     }
@@ -1148,7 +1148,7 @@ int main(void)
     
         ASSERT(diminuto_scattergather_record_enumerate(rp) == 3);
         ASSERT(diminuto_scattergather_record_measure(rp) > 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, rp) == rp);
+        ASSERT(diminuto_scattergather_record_dump(rp) == rp);
 
         STATUS();
     }
@@ -1261,7 +1261,7 @@ int main(void)
     
         ASSERT(diminuto_scattergather_record_enumerate(rp) == 5);
         ASSERT(diminuto_scattergather_record_measure(rp) > 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, rp) == rp);
+        ASSERT(diminuto_scattergather_record_dump(rp) == rp);
 
         STATUS();
     }
@@ -1332,7 +1332,7 @@ int main(void)
     
         ASSERT(diminuto_scattergather_record_enumerate(rp) == 5);
         ASSERT(diminuto_scattergather_record_measure(rp) > 0);
-        ASSERT(diminuto_scattergather_record_dump(stderr, rp) == rp);
+        ASSERT(diminuto_scattergather_record_dump(rp) == rp);
 
         STATUS();
     }

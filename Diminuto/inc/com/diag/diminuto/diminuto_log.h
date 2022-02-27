@@ -56,10 +56,11 @@
  * pre-defined preprocessor symbols __FILE__ and __LINE__ as part of
  * the logged message. This is useful - sometimes vital - for debugging
  * and troubleshooting. But it can represent a major security hole in
- * that it may reveal internals of the application. The contents of the
- * system log, and for that matter of standard error output stream on
- * the user terminal, should be treated with the same level of security
- * as that of the application itself.
+ * that it may reveal internals of the application, for example through
+ * the names of source files. The contents of the system log, and for
+ * that matter of standard error output stream on the user terminal,
+ * should be treated with the same level of security as that of the
+ * application itself.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -70,7 +71,9 @@
 #include <stdbool.h>
 #include <limits.h>
 
-/******************************************************************************/
+/*******************************************************************************
+ * LOG MASKS
+ ******************************************************************************/
 
 /**
  * The log mask has one bit for every message priority that can be enabled or
@@ -105,7 +108,9 @@ enum DiminutoLogMask {
     DIMINUTO_LOG_MASK_DEFAULT       = (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE),
 };
 
-/******************************************************************************/
+/*******************************************************************************
+ * PLATFORM: LINUX KERNEL
+ ******************************************************************************/
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 
@@ -122,7 +127,7 @@ enum DiminutoLogMask {
  * This enumerates the log priority values that map from the log level
  * to one of the log priority values used by the Linux kernel.
  */
-enum DiminutoLogPriority {
+typedef enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = KERN_EMERG,
     DIMINUTO_LOG_PRIORITY_ALERT         = KERN_ALERT,
     DIMINUTO_LOG_PRIORITY_CRITICAL      = KERN_CRIT,
@@ -133,7 +138,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEBUG         = KERN_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = KERN_NOTICE,
     DIMINUTO_LOG_PRIORITY_PERROR        = KERN_ERR,
-};
+} diminuto_log_priority_t;
 
 /**
  * This is the current log mask when combiling for the Linux kernel.
@@ -142,6 +147,10 @@ enum DiminutoLogPriority {
 static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #else
+
+/*******************************************************************************
+ * PLATFORM: ANDROID BIONIC
+ ******************************************************************************/
 
 #   if defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
@@ -159,7 +168,7 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
  * This enumerates the log priority values that map from the log level
  * to one of the log priority values used by the Android Bionic library.
  */
-enum DiminutoLogPriority {
+typedef enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = ANDROID_LOG_FATAL,
     DIMINUTO_LOG_PRIORITY_ALERT         = ANDROID_LOG_FATAL,
     DIMINUTO_LOG_PRIORITY_CRITICAL      = ANDROID_LOG_FATAL,
@@ -170,7 +179,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEBUG         = ANDROID_LOG_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = ANDROID_LOG_INFO,
     DIMINUTO_LOG_PRIORITY_PERROR        = ANDROID_LOG_ERROR,
-}
+} diminuto_log_priority_t;
 
 /**
  * This is the default log identifier used by the Android Bionic library.
@@ -188,6 +197,10 @@ enum DiminutoLogDefaults {
 
 #   else
 
+/*******************************************************************************
+ * PLATFORM: GNU SYSLOG
+ ******************************************************************************/
+
 /*
  * Logging can be done from an application or a daemon, in the former
  * case it prints to standard error, and in the latter it logs to the
@@ -202,7 +215,7 @@ enum DiminutoLogDefaults {
  * This enumerates the log priority values that map from the log level
  * to one of the log priority values used by the Linux/GNU system logger.
  */
-enum DiminutoLogPriority {
+typedef enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_EMERGENCY     = LOG_EMERG,
     DIMINUTO_LOG_PRIORITY_ALERT         = LOG_ALERT,
     DIMINUTO_LOG_PRIORITY_CRITICAL      = LOG_CRIT,
@@ -213,7 +226,7 @@ enum DiminutoLogPriority {
     DIMINUTO_LOG_PRIORITY_DEBUG         = LOG_DEBUG,
     DIMINUTO_LOG_PRIORITY_DEFAULT       = LOG_NOTICE,
     DIMINUTO_LOG_PRIORITY_PERROR        = LOG_ERR,
-};
+} diminuto_log_priority_t;
 
 /**
  * @def DIMINUTO_LOG_IDENT_DEFAULT
@@ -233,14 +246,17 @@ enum DiminutoLogDefaults {
 
 #   endif
 
+/*******************************************************************************
+ * PLATFORM: ALL
+ ******************************************************************************/
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
 
 /**
  * The enumerates the default file descriptor used when not using any other
- * system logging mechanism. It must match the fileno(3) of the default log
- * file stream. This is enforced by the diminuto_log_stream() function.
+ * system logging mechanism.
  */
 enum DiminutoLogDescriptor {
     DIMINUTO_LOG_DESCRIPTOR_DEFAULT = STDERR_FILENO,
@@ -315,13 +331,16 @@ extern int diminuto_log_facility;
 
 /**
  * This is the file descriptor to which log messages will be written if the
- * caller is not running as a daemon.
+ * caller is not running as a daemon. It must match the fileno(3) of the
+ * default log file stream. This is enforced by the diminuto_log_stream()
+ * function.
  */
 extern int diminuto_log_descriptor;
 
 /**
  * This is the file stream object which corresponds to the file descriptor.
- * (Some platforms have underlying logging mechanisms that need this.)
+ * (Some platforms have underlying logging mechanisms that need this.) This
+ * is enforced by the diminuto_log_stream() function.
  */
 extern FILE * diminuto_log_file;
 
@@ -376,13 +395,13 @@ extern bool diminuto_log_cached;
  * This is the default log priority for those log functions which do not
  * have a priority parameter, like diminuto_log_emit().
  */
-extern int diminuto_log_priority;
+extern diminuto_log_priority_t diminuto_log_priority;
 
 /**
  * This is the default log priority for those log functions which print
  * the text associated with an error number, like diminuto_log_perror().
  */
-extern int diminuto_log_error;
+extern diminuto_log_priority_t diminuto_log_error;
 
 /******************************************************************************/
 
@@ -548,6 +567,10 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #define DIMINUTO_LOG_HERE __FILE__ "@" DIMINUTO_TOKEN_TOKEN(__LINE__) ": "
 
 #endif
+
+/*******************************************************************************
+ * END OF IDEMPOTENT HEADER
+ ******************************************************************************/
 
 /******************************************************************************/
 

@@ -613,9 +613,9 @@ diminuto_tree_t * diminuto_tree_search_insert_or_replace(diminuto_tree_root_t * 
 void diminuto_tree_log(const diminuto_tree_t * nodep)
 {
     if (nodep) {
-        DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]: { color=%s parent=%p left=%p right=%p root=%p data=%p error=%d }\n", nodep, sizeof(*nodep), diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", diminuto_tree_parent(nodep), diminuto_tree_left(nodep), diminuto_tree_right(nodep), diminuto_tree_root(nodep), diminuto_tree_data(nodep), diminuto_tree_error(nodep));
+        diminuto_log_emit("diminuto_tree_t@%p[%zu]: { color=%s parent=%p left=%p right=%p root=%p data=%p error=%d }\n", nodep, sizeof(*nodep), diminuto_tree_isblack(nodep) ? "black" : diminuto_tree_isred(nodep) ? "red" : "invalid", diminuto_tree_parent(nodep), diminuto_tree_left(nodep), diminuto_tree_right(nodep), diminuto_tree_root(nodep), diminuto_tree_data(nodep), diminuto_tree_error(nodep));
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_tree_t@%p[%zu]\n", nodep, sizeof(*nodep));
+        diminuto_log_emit("diminuto_tree_t@%p[%zu]\n", nodep, sizeof(*nodep));
     }
 }
 
@@ -723,7 +723,7 @@ static const diminuto_tree_t * audit(const diminuto_tree_t * nodep, const diminu
     } else if (line < 0) {
         /* Do nothing: error message already logged. */
     } else {
-        DIMINUTO_LOG_DEBUG("%s@%d: diminuto_tree_audit FAILED!\n", __FILE__, line);
+        diminuto_log_emit("%s@%d: diminuto_tree_audit FAILED!\n", __FILE__, line);
         diminuto_tree_log(result);
     }
     return result;

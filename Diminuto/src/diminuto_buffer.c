@@ -82,7 +82,7 @@ void * diminuto_buffer_malloc(size_t size)
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
+        diminuto_log_emit("diminuto_buffer_malloc: size=%zu ptr=%p\n", size, ptr);
     }
 
     return ptr;
@@ -91,7 +91,7 @@ void * diminuto_buffer_malloc(size_t size)
 void diminuto_buffer_free(void * ptr)
 {
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_free: ptr=%p\n", ptr);
+        diminuto_log_emit("diminuto_buffer_free: ptr=%p\n", ptr);
     }
 
     if (ptr != (void *)0) {
@@ -143,7 +143,7 @@ void * diminuto_buffer_realloc(void * ptr, size_t size)
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_realloc: ptr=%p size=%zu pointer=%p\n", ptr, size, ptrprime);
+        diminuto_log_emit("diminuto_buffer_realloc: ptr=%p size=%zu pointer=%p\n", ptr, size, ptrprime);
     }
 
     return ptrprime;
@@ -161,7 +161,7 @@ void * diminuto_buffer_calloc(size_t nmemb, size_t size)
     }
 
     if (debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_buffer_calloc: nmemb=%zu size=%zu ptr=%p\n", nmemb, size, ptr);
+        diminuto_log_emit("diminuto_buffer_calloc: nmemb=%zu size=%zu ptr=%p\n", nmemb, size, ptr);
     }
 
     return ptr;

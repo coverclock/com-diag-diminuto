@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <stdio.h>
 #include "../src/diminuto_ipc4.h"
 #include "../src/diminuto_ipc6.h"
 
@@ -137,24 +138,28 @@ size_t diminuto_scattergather_record_measure(const diminuto_scattergather_record
     return ll;    
 }
 
-const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(FILE * fp, const diminuto_scattergather_record_t * rp)
+const diminuto_scattergather_record_t * diminuto_scattergather_record_dump(const diminuto_scattergather_record_t * rp)
 {
     const diminuto_scattergather_segment_t * sp = (const diminuto_scattergather_segment_t *)0;
     void * pp = 0;
     size_t ii = 0;
     size_t ll = 0;
     size_t tt = 0;
+    FILE * fp = (FILE *)0;
 
-    fprintf(fp, "RECORD %p:\n", rp);
+    diminuto_log_emit("RECORD %p:\n", rp);
+    fp = diminuto_log_stream();
     for (sp = diminuto_scattergather_record_segment_head(rp); sp != (diminuto_scattergather_segment_t *)0; sp = diminuto_scattergather_record_segment_next(sp)) {
-        fprintf(fp, "  SEGMENT %p: #%zu\n", sp, ii++);
+        diminuto_log_emit("  SEGMENT %p: #%zu\n", sp, ii++);
         pp = diminuto_scattergather_segment_payload_get(sp);
         ll = diminuto_scattergather_segment_length_get(sp);
         tt += ll;
-        fprintf(fp, "    PAYLOAD %p: [%zu]\n", pp, ll);
-        diminuto_dump_general(fp, pp, ll, 0, '.', 0, 0, 6);
+        diminuto_log_emit("    PAYLOAD %p: [%zu]\n", pp, ll);
+        if (fp != (FILE *)0) {
+            diminuto_dump_general(fp, pp, ll, 0, '.', 0, 0, 6);
+        }
     }
-    fprintf(fp, "  TOTAL %p: #%zu [%zu]\n", rp, ii, tt);
+    diminuto_log_emit("  TOTAL %p: #%zu [%zu]\n", rp, ii, tt);
 
     return rp;    
 }

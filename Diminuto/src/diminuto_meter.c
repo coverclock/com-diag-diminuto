@@ -99,8 +99,8 @@ double diminuto_meter_sustained(const diminuto_meter_t * meterp)
 void diminuto_meter_log(const diminuto_meter_t * meterp)
 {
     if (meterp != (diminuto_meter_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_meter_t@%p[%zu]: { dt=%llu p=%lf e=%zu b=%zu n=%zu }\n", meterp, sizeof(*meterp), (diminuto_llu_t)(meterp->last - meterp->start), meterp->peak, meterp->events, meterp->burst, meterp->count);
+        diminuto_log_emit("diminuto_meter_t@%p[%zu]: { dt=%llu p=%lf e=%zu b=%zu n=%zu }\n", meterp, sizeof(*meterp), (diminuto_llu_t)(meterp->last - meterp->start), meterp->peak, meterp->events, meterp->burst, meterp->count);
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_meter_t@%p[%zu]\n", meterp, sizeof(*meterp));
+        diminuto_log_emit("diminuto_meter_t@%p[%zu]\n", meterp, sizeof(*meterp));
     }
 }

@@ -68,9 +68,9 @@ diminuto_log_strategy_t diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
 
 bool diminuto_log_cached = false;
 
-int diminuto_log_priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
+diminuto_log_priority_t diminuto_log_priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
 
-int diminuto_log_error = DIMINUTO_LOG_PRIORITY_PERROR;
+diminuto_log_priority_t diminuto_log_error = DIMINUTO_LOG_PRIORITY_PERROR;
 
 /*******************************************************************************
  * BASE FUNCTIONS
@@ -148,13 +148,27 @@ FILE * diminuto_log_stream(void)
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
 
+        /*
+         * If the file number of the log FILE object does not match
+         * that of the log file descriptor, close it (to be reopened
+         * later using the log file descriptor), unless that log FILE
+         * object happends to be stderr or stdout, or unless the file
+         * number of the log FILE object happends to be the file number
+         * of stderr or stdout. (Log never closes stdout or stderr, either
+         * via their FILE objects or their file descriptors.)
+         */
+
         if (diminuto_log_file == (FILE *)0) {
             /* Do nothing. */
         } else if (diminuto_log_descriptor == fileno(diminuto_log_file)) {
             /* Do nothing. */
+        } else if (diminuto_log_file == stderr) {
+            diminuto_log_file = (FILE *)0;
         } else if (diminuto_log_file == stdout) {
             diminuto_log_file = (FILE *)0;
-        } else if (diminuto_log_file == stderr) {
+        } else if (fileno(diminuto_log_file) == STDERR_FILENO) {
+            diminuto_log_file = (FILE *)0;
+        } else if (fileno(diminuto_log_file) == STDOUT_FILENO) {
             diminuto_log_file = (FILE *)0;
         } else if (fclose(diminuto_log_file) == EOF) {
             perror("diminuto_log_stream: fclose");
@@ -162,6 +176,12 @@ FILE * diminuto_log_stream(void)
         } else {
             diminuto_log_file = (FILE *)0;
         }
+
+        /*
+         * If we don't have a log FILE object, make one from the log file
+         * descriptor, unless the log file descriptor happens to be the
+         * file number of stderr or stdout, in which case just use those.
+         */
 
         if (diminuto_log_file != (FILE *)0) {
             /* Do nothing. */
@@ -303,10 +323,16 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
                 continue; /* Nominal. */
             } else if (errno == EINTR) {
                 rc = 0;
-                continue; /* Interrupted; keep trying. */
+                continue; /* Interrupted; try again. */
+            } else if (errno == EAGAIN) {
+                rc = 0;
+                continue; /* Temporary failure; try again. */
+            } else if (errno == EWOULDBLOCK) {
+                rc = 0;
+                continue; /* Blocked; try again. */
             } else {
                 perror("diminuto_log_vwrite");
-                break; /* Fatal error. */
+                break; /* Permanent failure. */
             }
         }
 

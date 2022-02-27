@@ -188,11 +188,11 @@ int diminuto_shaper_cleared(const diminuto_shaper_t * shaperp)
 void diminuto_shaper_log(const diminuto_shaper_t * shaperp)
 {
     if (shaperp != (diminuto_shaper_t *)0) {
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: peak@%p\n", shaperp, sizeof(*shaperp), &(shaperp->peak));
+        diminuto_log_emit("diminuto_shaper_t@%p[%zu]: peak@%p\n", shaperp, sizeof(*shaperp), &(shaperp->peak));
         diminuto_throttle_log(&(shaperp->peak));
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]: sustained@%p\n", shaperp, sizeof(*shaperp), &(shaperp->sustained));
+        diminuto_log_emit("diminuto_shaper_t@%p[%zu]: sustained@%p\n", shaperp, sizeof(*shaperp), &(shaperp->sustained));
         diminuto_throttle_log(&(shaperp->sustained));
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_shaper_t@%p[%zu]\n", shaperp, sizeof(*shaperp));
+        diminuto_log_emit("diminuto_shaper_t@%p[%zu]\n", shaperp, sizeof(*shaperp));
     }
 }
