@@ -14,4 +14,9 @@
  * This defines the IPC private API.
  */
 
+/**
+ * Enables IPC debugging via the private API.
+ */
+extern int diminuto_ipc_debug;
+
 #endif

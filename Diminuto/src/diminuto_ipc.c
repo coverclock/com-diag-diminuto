@@ -236,7 +236,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     static const int MAXIMUM = diminuto_maximumof(int);
 
     if (diminuto_ipc_debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_ipc_set_linger: fd=%d ticks=0x%llx\n", fd, (unsigned long long)ticks);
+        diminuto_log_emit("diminuto_ipc_set_linger: fd=%d ticks=0x%llx\n", fd, (unsigned long long)ticks);
     }
 
     if (ticks == 0) {
@@ -254,7 +254,7 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
     }
 
     if (diminuto_ipc_debug) {
-        DIMINUTO_LOG_DEBUG("diminuto_ipc_set_linger: l_onoff=%d l_linger=%d\n", opt.l_onoff, opt.l_linger);
+        diminuto_log_emit("diminuto_ipc_set_linger: l_onoff=%d l_linger=%d\n", opt.l_onoff, opt.l_linger);
     }
 
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {

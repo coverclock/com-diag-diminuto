@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include "../src/diminuto_ipc.h"
 
 int main(int argc, char * argv[])
 {
@@ -71,7 +72,6 @@ int main(int argc, char * argv[])
         }
 
         {
-            extern int diminuto_ipc_debug;
             diminuto_ipc_debug = !0;
         }
 
@@ -99,7 +99,6 @@ int main(int argc, char * argv[])
         EXPECT(rc >= 0);
 
         {
-            extern int diminuto_ipc_debug;
             diminuto_ipc_debug = 0;
         }
 

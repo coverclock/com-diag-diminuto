@@ -31,7 +31,7 @@ diminuto_module_handle_t diminuto_module_load_generic(const char * filename, int
         /* Do nothing: nominal. */
 #endif
     } else {
-        DIMINUTO_LOG_ERROR("diminuto_module_load_generic: dlopen: %s\n", dlerror());
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "diminuto_module_load_generic: dlopen: %s\n", dlerror());
     }
 
     return handle;
@@ -92,7 +92,7 @@ void * diminuto_module_symbol(diminuto_module_handle_t handle, const char * symb
     }
 #endif
     if (resolved == (void *)0) {
-        DIMINUTO_LOG_ERROR("diminuto_module_symbol: %s: %s", label, dlerror());
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "diminuto_module_symbol: %s: %s", label, dlerror());
     }
 
     return resolved;
@@ -130,7 +130,7 @@ diminuto_module_handle_t diminuto_module_unload(diminuto_module_handle_t handle,
     } else if (rc == 0) {
         handle = (diminuto_module_handle_t)0;
     } else {
-        DIMINUTO_LOG_ERROR("diminuto_module_unload: dlclose: %s\n", dlerror());
+        DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "diminuto_module_unload: dlclose: %s\n", dlerror());
     }
 
     return handle;

@@ -118,7 +118,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
             /* Do nothing. */
         }
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu] name=\"%s\"[%zu]\n", path, total, name, length); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_walker: path=\"%s\"[%zu] name=\"%s\"[%zu]\n", path, total, name, length); }
 
         /*
          * Contstruct a path (maybe be relative or absolute depending
@@ -137,7 +137,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
         strcat(path, name);
         total += length;
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, total); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, total); }
 
         /*
          * Get the attributes for the file identified by the path. SOme errors
@@ -237,7 +237,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 
         path[prior] = '\0';
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, prior); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_walker: path=\"%s\"[%zu]\n", path, prior); }
 
     } while (0);
 
@@ -291,7 +291,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
             length += 1; /* Including terminating NUL. */
         }
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: path=\"%s\"\n", path); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_mkdir_p: path=\"%s\"\n", path); }
 
         source = (char *)alloca(length); /* No failure return. */
         strncpy(source, path, length);
@@ -306,7 +306,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
             *token = '\0';
         }
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: source=\"%s\"\n", source); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_mkdir_p: source=\"%s\"\n", source); }
 
         sink = (char *)alloca(length);
         memset(sink, 0, length);
@@ -314,12 +314,12 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
         target = source;
 
         while ((token = strtok_r(target, SLASH, &saveptr)) != (char *)0) {
-            if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: token=\"%s\"\n", token); }
+            if (Debug) { diminuto_log_emit("diminuto_fs_mkdir_p: token=\"%s\"\n", token); }
             if (token != source) {
                 strcat(sink, SLASH);
             }
             strcat(sink, token);
-            if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_mkdir_p: sink=\"%s\"\n", sink); }
+            if (Debug) { diminuto_log_emit("diminuto_fs_mkdir_p: sink=\"%s\"\n", sink); }
             rc = mkdir(sink, mode);
             if (rc == 0) {
                 /* Do nothing. */
@@ -350,7 +350,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
 
     do {
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: relative=\"%s\"\n", path); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_canonicalize: relative=\"%s\"\n", path); }
 
         /*
          * There are a number of special or pathological cases that
@@ -421,7 +421,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
          * path, plength, file, and flength are set.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: path=\"%s\"[%zu] file=\"%s\"[%zu]\n", path, plength - flength, file, flength); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_canonicalize: path=\"%s\"[%zu] file=\"%s\"[%zu]\n", path, plength - flength, file, flength); }
 
         /*
          * plength is only zero if the only path is the root directory,
@@ -442,7 +442,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
          * prefix is set. xlength is set. length is set to the total length.
          */
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: prefix=\"%s\"\n", prefix); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_canonicalize: prefix=\"%s\"\n", prefix); }
 
         if (length >= size) {
             errno = ENAMETOOLONG;
@@ -461,7 +461,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
         }
         strcat(buffer, file);
 
-        if (Debug) { DIMINUTO_LOG_DEBUG("diminuto_fs_canonicalize: absolute=\"%s\"\n", buffer); }
+        if (Debug) { diminuto_log_emit("diminuto_fs_canonicalize: absolute=\"%s\"\n", buffer); }
 
         rc = 0;
 
