@@ -412,6 +412,8 @@ int main(int argc, char ** argv)
 
     }
 
+    assert(diminuto_log_lost == 0);
+
     fprintf(stderr, "%s[%d]: SUCCESS.\n", __FILE__, __LINE__);
 
     exit(0);
