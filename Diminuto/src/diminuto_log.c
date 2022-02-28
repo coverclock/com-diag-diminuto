@@ -311,7 +311,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
 
-        for (pointer = buffer; total > 0; total -= rc) {
+        for (pointer = buffer; total > 0; total -= rc, pointer += rc) {
             rc = write(fd, pointer, total);
             if (rc == 0) {
                 errno = ECOMM;
@@ -322,7 +322,6 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
                 rc = total;
                 continue; /* Should never happen. */
             } else if (rc > 0) {
-                pointer += rc;
                 continue; /* Nominal. */
             } else if (errno == EINTR) {
                 rc = 0;

@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging nohup privileged privileged4 privileged6 readerwriter reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logging logger nohup privileged privileged4 privileged6 readerwriter reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -976,13 +976,16 @@ vintage:	$(OUT)/$(SYM_DIR)/vintage
 sourcing:	vintage
 	unittest-sourcing
 
-criticalsection:	sourcing
-	unittest-criticalsection
+logger:	sourcing
+	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-log
 
-unittest:	criticalsection
+unittest:	logger
 	unittest-unittest
 
-sanity:	unittest
+criticalsection:	unittest
+	unittest-criticalsection
+
+sanity:	criticalsection
 	unittest-absolute
 	unittest-arraytype
 	unittest-assert && false || true
@@ -1128,7 +1131,7 @@ gnuish:
 	unittest-renameat2
 	unittest-thread
 
-logging:
+logging:	$(OUT)/$(SYM_DIR)/logging
 	logging
 	unittest-log
 	unittest-log daemon

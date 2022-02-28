@@ -178,6 +178,10 @@ int main(int argc, char ** argv)
         assert(diminuto_log_descriptor == STDERR_FILENO);
         assert(diminuto_log_file == (FILE *)0);
 
+        diminuto_log_emit("1: Logging\n");
+        fprintf(stderr, "1: Printing\n");
+        write(STDERR_FILENO, "1: Writing\n", 11);
+
         fp = diminuto_log_stream();
         assert(fp != (FILE *)0);
         assert(fp == diminuto_log_file);
@@ -189,6 +193,10 @@ int main(int argc, char ** argv)
         assert(diminuto_log_file == stderr);
         assert(fileno(diminuto_log_file) == fileno(stderr));
         assert(fileno(diminuto_log_file) == STDERR_FILENO);
+
+        diminuto_log_emit("2: Logging\n");
+        fprintf(diminuto_log_file, "2: Printing\n");
+        write(diminuto_log_descriptor, "2: Writing\n", 11);
 
         diminuto_log_descriptor = STDOUT_FILENO;
         fp = diminuto_log_stream();
@@ -203,23 +211,35 @@ int main(int argc, char ** argv)
         assert(fileno(diminuto_log_file) == fileno(stdout));
         assert(fileno(diminuto_log_file) == STDOUT_FILENO);
 
+        diminuto_log_emit("3: Logging\n");
+        fprintf(diminuto_log_file, "3: Printing\n");
+        fflush(diminuto_log_file); /* Buffered. */
+        write(diminuto_log_descriptor, "3: Writing\n", 11);
+
         fd = dup(STDOUT_FILENO);
+        assert(fd != STDOUT_FILENO);
+        assert(fd != STDERR_FILENO);
         diminuto_log_descriptor = fd;
-        fp = diminuto_log_stream();
+        fp = diminuto_log_stream(); /* Will fdopen(3). */
         assert(fp != (FILE *)0);
         assert(fp == diminuto_log_file);
-        assert(fileno(fp) == fileno(diminuto_log_file));
         assert(fp != stdout);
+        assert(fp != stderr);
+        assert(fileno(fp) == fileno(diminuto_log_file));
+        assert(fileno(fp) != STDOUT_FILENO);
+        assert(fileno(fp) != STDERR_FILENO);
 
         assert(diminuto_log_descriptor == fd);
         assert(diminuto_log_file != stdout);
         assert(fileno(diminuto_log_file) != fileno(stdout));
         assert(fileno(diminuto_log_file) != STDOUT_FILENO);
 
-        diminuto_log_descriptor = STDERR_FILENO;
-        diminuto_log_file = (FILE *)0;
+        diminuto_log_emit("4: Logging\n");
+        fprintf(diminuto_log_file, "4: Printing\n");
+        write(diminuto_log_descriptor, "4: Writing\n", 11);
 
-        fp = diminuto_log_stream();
+        diminuto_log_descriptor = STDERR_FILENO;
+        fp = diminuto_log_stream(); /* Will fdclose(3). */
         assert(fp != (FILE *)0);
         assert(fp == diminuto_log_file);
         assert(fileno(fp) == fileno(diminuto_log_file));
@@ -230,6 +250,10 @@ int main(int argc, char ** argv)
         assert(diminuto_log_file == stderr);
         assert(fileno(diminuto_log_file) == fileno(stderr));
         assert(fileno(diminuto_log_file) == STDERR_FILENO);
+
+        diminuto_log_emit("5: Logging\n");
+        fprintf(diminuto_log_file, "5: Printing\n");
+        write(diminuto_log_descriptor, "5: Writing\n", 11);
 
     }
 
