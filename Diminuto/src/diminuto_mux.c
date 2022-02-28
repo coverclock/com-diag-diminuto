@@ -404,7 +404,7 @@ void diminuto_mux_sigs_dump(sigset_t * sigs)
 
     for (signum = 1; signum < NSIG; ++signum) {
         if (sigismember(sigs, signum)) {
-            diminuto_log_emit(" %d", signum);
+            diminuto_log_emit("mux.sigset_t@%p: %d", sigs, signum);
         }
     }
 }
@@ -417,7 +417,7 @@ void diminuto_mux_fds_dump(fd_set * fds)
     nfds = diminuto_fd_count();
     for (fd = 0; fd < nfds; ++fd) {
         if (FD_ISSET(fd, fds)) {
-            diminuto_log_emit(" %d", fd);
+            diminuto_log_emit("mux.fd_set@%p: %d", fds, fd);
         }
     }
 
@@ -431,20 +431,25 @@ void diminuto_mux_set_dump(diminuto_mux_t * muxp, diminuto_mux_set_t * setp)
     diminuto_log_emit("mux@%p: %s.next=%d", muxp, name, setp->next);
     diminuto_log_emit("mux@%p: %s.min=%d", muxp, name, setp->min);
     diminuto_log_emit("mux@%p: %s.max=%d", muxp, name, setp->max);
-    diminuto_log_emit("mux@%p: %s.active=<", muxp, name); diminuto_mux_fds_dump(&setp->active); diminuto_log_emit(">");
-    diminuto_log_emit("mux@%p: %s.ready=<", muxp, name); diminuto_mux_fds_dump(&setp->ready); diminuto_log_emit(">");
+    diminuto_log_emit("mux@%p: %s.active:", muxp, name);
+    diminuto_mux_fds_dump(&setp->active);
+    diminuto_log_emit("mux@%p: %s.ready:", muxp, name);
+    diminuto_mux_fds_dump(&setp->ready);
 }
 
 void diminuto_mux_dump(diminuto_mux_t * muxp)
 {
     int signum;
 
-    diminuto_log_emit("mux@%p: read_or_accept=<", muxp); diminuto_mux_fds_dump(&muxp->read_or_accept); diminuto_log_emit(">");
-    diminuto_log_emit("mux@%p: urgent_or_interrupt=<", muxp); diminuto_mux_fds_dump(&muxp->urgent_or_interrupt); diminuto_log_emit(">");
+    diminuto_log_emit("mux@%p: read_or_accept:", muxp);
+    diminuto_mux_fds_dump(&muxp->read_or_accept);
+    diminuto_log_emit("mux@%p: urgent_or_interrupt:", muxp);
+    diminuto_mux_fds_dump(&muxp->urgent_or_interrupt);
     diminuto_mux_set_dump(muxp, &muxp->read);
     diminuto_mux_set_dump(muxp, &muxp->write);
     diminuto_mux_set_dump(muxp, &muxp->accept);
     diminuto_mux_set_dump(muxp, &muxp->urgent);
     diminuto_mux_set_dump(muxp, &muxp->interrupt);
-    diminuto_log_emit("mux@%p: mask=<", muxp); diminuto_mux_sigs_dump(&muxp->mask); diminuto_log_emit(">");
+    diminuto_log_emit("mux@%p: mask:", muxp);
+    diminuto_mux_sigs_dump(&muxp->mask);
 }

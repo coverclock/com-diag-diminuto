@@ -111,6 +111,12 @@
  * recvmsg(2) man page
  *
  * cmsg(3) man page
+ *
+ * N.B. 2022-02-28: There is a bug that I have not found either in this unit
+ * test or in the underlying features. I have seen this unit test get hung up
+ * in the dispatcher loop, timing out over and over. This occurred once on a
+ * Raspberry Pi 4B running Raspbian 10 "buster". It worked on a subsequent
+ * try.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -712,6 +718,7 @@ static void * dispatcher(void * arg /* listensocket */)
             /* Do nothing. */
         } else if (ready == 0) {
             CHECKPOINT("dispatcher: timeout\n");
+            diminuto_mux_dump(&mux); /* For debugging. */
             continue;
         } else if (errno == EINTR) {
             CHECKPOINT("dispatcher: signaled\n");

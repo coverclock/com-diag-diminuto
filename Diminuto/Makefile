@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logging logger nohup privileged privileged4 privileged6 readerwriter reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish log logger logging nohup privileged privileged4 privileged6 readerwriter reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -977,7 +977,7 @@ sourcing:	vintage
 	unittest-sourcing
 
 logger:	sourcing
-	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-log
+	unittest-log
 
 unittest:	logger
 	unittest-unittest
@@ -1237,6 +1237,9 @@ cxxcapi:
 
 readerwriter:
 	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
+
+log:
+	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-log 2>&1 | tee ${TEMP_DIR}/unittest-log.log
 
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
 
