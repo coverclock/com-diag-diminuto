@@ -174,11 +174,11 @@ enum {
 
 static const char INSTANCEPATH[] = "/tmp/unittest-ipc-ancillary.sock";
 
-static const diminuto_ticks_t DURATION = 10;
+static const uint64_t DURATION = 10; /* Seconds. */
 
-static const diminuto_ticks_t FRACTION = 4;
+static const uint64_t FRACTION = 4; /* Fraction of a second. */
 
-static const diminuto_ticks_t TIMEOUT = 5;
+static const uint64_t TIMEOUT = 5; /* Seconds. */
 
 /*******************************************************************************
  * GLOBALS
@@ -874,15 +874,22 @@ static void instance(void)
      */
 
     while (!0) {
-        if ((ready = diminuto_mux_wait(&mux, -1)) > 0) {
-            FATAL("instance: unexpected");
-        } else if (ready == 0) {
-            FATAL("instance: timeout");
-        } else if (errno != EINTR) {
-            FATAL("instance: error");
-        } else if (diminuto_interrupter_check() > 0) {
+        if (diminuto_interrupter_check() > 0) {
             CHECKPOINT("instance: interrupted\n");
             break;
+        } else if ((ready = diminuto_mux_wait(&mux, diminuto_frequency() * TIMEOUT)) > 0) {
+            FATAL("instance: unexpected");
+        } else if (ready == 0) {
+            /*
+             * Must timeout to check for SIGINT. It is possible for the signal
+             * to arrrive when we are not waiting on the select(2) in the Mux,
+             * especially on a multicore processor (which is, basically, all of
+             * them).
+             */
+            CHECKPOINT("instance: timeout");
+            continue;
+        } else if (errno != EINTR) {
+            FATAL("instance: error");
         } else {
             CHECKPOINT("instance: signaled\n");
             continue;
