@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish log logger logging nohup privileged privileged4 privileged6 readerwriter reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection cxxcapi extended geologic gnuish logger logging nohup privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1235,12 +1235,19 @@ renameat2:
 cxxcapi:
 	make -C cxx
 
-readerwriter:
-	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-readerwriter -d 2>&1 | tee ${TEMP_DIR}/unittest-readerwriter.log
-
-log:
-	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all unittest-log 2>&1 | tee ${TEMP_DIR}/unittest-log.log
-
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
 
 tagging:	reassuring geologic
+
+########## Valgrind (not available on all platforms)
+
+.PHONY:	log readerwriter valgrind
+
+valgrind:
+	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM) 2>&1 | tee ${TEMP_DIR}/$(PROGRAM).log
+
+readerwriter:
+	make valgrind PROGRAM=unittest-readerwriter
+
+log:
+	make valgrind PROGRAM=unittest-log
