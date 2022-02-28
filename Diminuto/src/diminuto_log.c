@@ -72,6 +72,8 @@ diminuto_log_priority_t diminuto_log_priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
 
 diminuto_log_priority_t diminuto_log_error = DIMINUTO_LOG_PRIORITY_PERROR;
 
+size_t diminuto_log_lost = 0;
+
 /*******************************************************************************
  * BASE FUNCTIONS
  *****************************************************************************/
@@ -314,6 +316,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
             if (rc == 0) {
                 errno = ECOMM;
                 perror("diminuto_log_vwrite");
+                diminuto_log_lost += 1;
                 break; /* Far end closed. */
             } else if (rc > total) {
                 rc = total;
@@ -325,13 +328,16 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
                 rc = 0;
                 continue; /* Interrupted; try again. */
             } else if (errno == EAGAIN) {
-                rc = 0;
-                continue; /* Temporary failure; try again. */
+                perror("diminuto_log_vwrite");
+                diminuto_log_lost += 1;
+                break; /* Temporary failure. */
             } else if (errno == EWOULDBLOCK) {
-                rc = 0;
-                continue; /* Blocked; try again. */
+                perror("diminuto_log_vwrite");
+                diminuto_log_lost += 1;
+                break; /* Blocked. */
             } else {
                 perror("diminuto_log_vwrite");
+                diminuto_log_lost += 1;
                 break; /* Permanent failure. */
             }
         }

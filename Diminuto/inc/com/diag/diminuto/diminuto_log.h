@@ -403,6 +403,12 @@ extern diminuto_log_priority_t diminuto_log_priority;
  */
 extern diminuto_log_priority_t diminuto_log_error;
 
+/**
+ * This counter is incremented every time a log message is believed to
+ * have been lost.
+ */
+extern size_t diminuto_log_lost;
+
 /******************************************************************************/
 
 /**
