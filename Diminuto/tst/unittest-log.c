@@ -403,6 +403,7 @@ int main(int argc, char ** argv)
         {
             diminuto_log_mask_t mask;
             char buffer[5];
+
             for (mask = 0; mask < 256; ++mask) {
 
                 (void)snprintf(buffer, sizeof(buffer), "%u", mask);
@@ -419,6 +420,34 @@ int main(int argc, char ** argv)
                 assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
+            }
+        }
+
+        {
+            char buffer[5];
+            static const diminuto_log_priority_t PRIORITY[] = {
+                DIMINUTO_LOG_PRIORITY_EMERGENCY,
+                DIMINUTO_LOG_PRIORITY_ALERT,
+                DIMINUTO_LOG_PRIORITY_CRITICAL,
+                DIMINUTO_LOG_PRIORITY_ERROR,
+                DIMINUTO_LOG_PRIORITY_WARNING,
+                DIMINUTO_LOG_PRIORITY_NOTICE,
+                DIMINUTO_LOG_PRIORITY_INFORMATION,
+                DIMINUTO_LOG_PRIORITY_DEBUG,
+            };
+            diminuto_log_priority_t priority;
+            diminuto_log_mask_t mask;
+            int ii;
+
+            for (ii = 0; ii < countof(PRIORITY); ++ii) {
+                priority = PRIORITY[ii];
+                mask = diminuto_log_priority2mask(priority);
+                (void)snprintf(buffer, sizeof(buffer), "%u", mask);
+                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                diminuto_log_setmask();
+                assert(diminuto_log_mask == mask);
+                assert(diminuto_log_mask_isenabled(mask));
+                assert(diminuto_log_priority_isenabled(priority));
             }
         }
 
