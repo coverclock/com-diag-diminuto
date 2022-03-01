@@ -90,7 +90,8 @@ using tag
 .
 
 The unit tests (```Diminuto/tst```), functional tests (```Diminuto/fun```), and command line
-uilities (```Diminuto/bin```) contain useful examples of how to use the Diminuto library.
+uilities (```Diminuto/bin```) contain useful and non-trivial examples of how to use the
+Diminuto library.
 
 # Details
 
