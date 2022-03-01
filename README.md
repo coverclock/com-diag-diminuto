@@ -77,7 +77,7 @@ of the library that are especially useful in shell scripts.
 
 See the Features section below for a more complete list.
 
-# Pre-Built Documentation
+# Manual Pages and Reference Manual
 
 These PDFs of
 [manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
