@@ -379,15 +379,49 @@ int main(int argc, char ** argv)
     {
 
         diminuto_log_mask = 0;
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
-        diminuto_log_setmask();
-        assert(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
+
         assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0);
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "255", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 255);
+
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0377", !0) == 0);
+        diminuto_log_setmask();
+        assert(diminuto_log_mask == 0377);
+
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+        diminuto_log_setmask();
+        assert(diminuto_log_mask == 0xff);
+
+        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
+        diminuto_log_setmask();
+        assert(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
+
+        {
+            diminuto_log_mask_t mask;
+            char buffer[5];
+            for (mask = 0; mask < 256; ++mask) {
+
+                (void)snprintf(buffer, sizeof(buffer), "%u", mask);
+                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                diminuto_log_setmask();
+                assert(diminuto_log_mask == mask);
+
+                (void)snprintf(buffer, sizeof(buffer), "0x%x", mask);
+                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                diminuto_log_setmask();
+                assert(diminuto_log_mask == mask);
+
+                (void)snprintf(buffer, sizeof(buffer), "0%o", mask);
+                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                diminuto_log_setmask();
+                assert(diminuto_log_mask == mask);
+            }
+        }
+
         diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
     }
