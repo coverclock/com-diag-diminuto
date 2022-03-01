@@ -77,6 +77,18 @@ of the library that are especially useful in shell scripts.
 
 See the Features section below for a more complete list.
 
+# Pre-Built Documentation
+
+These PDFs of
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
+and associated
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
+were built from the Diminuto's embedded Doxygen comments on
+2022-03-01
+using tag
+79.0.5
+.
+
 # Details
 
 Diminuto isn't intended to be portable. It is specifically designed to
