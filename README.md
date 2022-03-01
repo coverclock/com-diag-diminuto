@@ -89,8 +89,8 @@ using tag
 79.0.5
 .
 
-The unit tests (```tst```), functional tests (```fun```), and command line
-uilities (```bin```) contain useful examples of how to use the Diminuto library.
+The unit tests (```Diminuto/tst```), functional tests (```Diminuto/fun```), and command line
+uilities (```Diminuto/bin```) contain useful examples of how to use the Diminuto library.
 
 # Details
 
