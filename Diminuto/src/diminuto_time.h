@@ -21,16 +21,18 @@
 /**
  * Return the system clock time in Coordinated Universal Time (UTC) in
  * ticks since the Epoch (shown here in ISO8601 format)
- * 1970-01-01T00:00:00+0000.
+ * 1970-01-01T00:00:00+0000. If an error occurs, no error message is
+ * logged.
  * @return the number of ticks elapsed since the Epoch or -1 with
  * errno set if an error occurred.
  */
-extern diminuto_sticks_t diminuto_time_clock_log(void);
+extern diminuto_sticks_t diminuto_time_clock_logging(void);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
  * format) 1970-01-01T00:00:00+0000 into individual fields representing the
- * Common Era (CE) date and and Coordinated Universal Time (UTC) time.
+ * Common Era (CE) date and and Coordinated Universal Time (UTC) time. If
+ * an error occurs, no error message is logged.
  * @param ticks is the number of ticks since the Epoch.
  * @param yearp is where the year including the century will be returned.
  * @param monthp is where the month of the year will be returned.
@@ -41,6 +43,6 @@ extern diminuto_sticks_t diminuto_time_clock_log(void);
  * @param tickp is where the fraction of a second will be returned.
  * @return 0 for success, <0 otherwise.
  */
-extern int diminuto_time_zulu_log(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
+extern int diminuto_time_zulu_logging(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
 #endif

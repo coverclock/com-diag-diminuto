@@ -232,9 +232,9 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * underlying C library functions or kernel system calls fail.
      */
 
-    if ((now = diminuto_time_clock_log()) == DIMINUTO_TIME_ERROR) {
+    if ((now = diminuto_time_clock_logging()) == DIMINUTO_TIME_ERROR) {
         /* Do nothing. */
-    } else if (diminuto_time_zulu_log(now, &year, &month, &day, &hour, &minute, &second, &nanosecond) < 0) {
+    } else if (diminuto_time_zulu_logging(now, &year, &month, &day, &hour, &minute, &second, &nanosecond) < 0) {
         now = DIMINUTO_TIME_ERROR;
     } else {
         /* Do nothing. */
@@ -325,15 +325,15 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
                 continue; /* Nominal. */
             } else if (errno == EINTR) {
                 rc = 0;
-                continue; /* Interrupted; try again. */
+                continue; /* Interrupted: retry. */
+#if 0
             } else if (errno == EAGAIN) {
-                perror("diminuto_log_vwrite");
-                diminuto_log_lost += 1;
-                break; /* Temporary failure. */
+                rc = 0;
+                continue; /* Temporary failure: retry. */
             } else if (errno == EWOULDBLOCK) {
-                perror("diminuto_log_vwrite");
-                diminuto_log_lost += 1;
-                break; /* Blocked. */
+                rc = 0;
+                continue; /* Blocked: retry. */
+#endif
             } else {
                 perror("diminuto_log_vwrite");
                 diminuto_log_lost += 1;

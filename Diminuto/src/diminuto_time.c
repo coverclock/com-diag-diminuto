@@ -85,7 +85,7 @@ diminuto_sticks_t diminuto_time_clock()
     return diminuto_time_generic(CLOCK_REALTIME, 0);
 }
 
-diminuto_sticks_t diminuto_time_clock_log()
+diminuto_sticks_t diminuto_time_clock_logging()
 {
     return diminuto_time_generic(CLOCK_REALTIME, !0);
 }
@@ -404,7 +404,22 @@ static void diminuto_time_extract(const struct tm *datetimep, diminuto_ticks_t t
     if (tickp != (diminuto_ticks_t *)0) { *tickp = ticks; }
 }
 
-int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
+/**
+ * Convert the number in ticks since the Epoch (shown here in ISO8601
+ * format) 1970-01-01T00:00:00+0000 into individual fields representing the
+ * Common Era (CE) date and and Coordinated Universal Time (UTC) time.
+ * @param ticks is the number of ticks since the Epoch.
+ * @param yearp is where the year including the century will be returned.
+ * @param monthp is where the month of the year will be returned.
+ * @param dayp is where the day of the month will be returned.
+ * @param hourp is where the hour of the day will be returned.
+ * @param minutep is where the minute of the hour will be returned.
+ * @param secondp is where the second of the minute will be returned.
+ * @param tickp is where the fraction of a second will be returned.
+ * @param logging is true if this is being used by the Log feature.
+ * @return 0 for success, <0 otherwise.
+ */
+static int diminuto_time_zulu_generic(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp, int logging)
 {
     int rc = -1;
     struct tm datetime = { 0, };
@@ -416,30 +431,23 @@ int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int *
     if ((datetimep = gmtime_r(&zulu, &datetime)) != (struct tm *)0) {
         diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
         rc = 0;
+    } else if (logging) {
+        /* Do nothing. */
     } else {
-        perror("diminuto_time_timestamp: gmtime_r");
+        diminuto_perror("diminuto_time_timestamp: gmtime_r");
     }
 
     return rc;
 }
 
-int diminuto_time_zulu_log(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
+int diminuto_time_zulu(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
 {
-    int rc = -1;
-    struct tm datetime = { 0, };
-    struct tm * datetimep = (struct tm *)0;
-    time_t zulu = 0;
-    diminuto_ticks_t fraction = 0;
+    return diminuto_time_zulu_generic(ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp, 0);
+}
 
-    zulu = diminuto_time_separate(ticks, &fraction);
-    if ((datetimep = gmtime_r(&zulu, &datetime)) != (struct tm *)0) {
-        diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
-        rc = 0;
-    } else {
-        /* Do nothing. */
-    }
-
-    return rc;
+int diminuto_time_zulu_logging(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
+{
+    return diminuto_time_zulu_generic(ticks, yearp, monthp, dayp, hourp, minutep, secondp, tickp, !0);
 }
 
 int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp)
