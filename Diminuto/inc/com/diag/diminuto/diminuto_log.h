@@ -72,7 +72,7 @@
 #include <limits.h>
 
 /*******************************************************************************
- * LOG MASKS
+ * MASKS
  ******************************************************************************/
 
 /**
@@ -104,6 +104,7 @@ enum DiminutoLogMask {
     DIMINUTO_LOG_MASK_INFORMATION   = (1 << (7 - 6)),
     DIMINUTO_LOG_MASK_DEBUG         = (1 << (7 - 7)),
     DIMINUTO_LOG_MASK_ALL           = (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE | DIMINUTO_LOG_MASK_INFORMATION | DIMINUTO_LOG_MASK_DEBUG),
+    DIMINUTO_LOG_MASK_ANY           = DIMINUTO_LOG_MASK_ALL,
     DIMINUTO_LOG_MASK_NONE          = (0),
     DIMINUTO_LOG_MASK_DEFAULT       = (DIMINUTO_LOG_MASK_EMERGENCY | DIMINUTO_LOG_MASK_ALERT | DIMINUTO_LOG_MASK_CRITICAL | DIMINUTO_LOG_MASK_ERROR | DIMINUTO_LOG_MASK_WARNING | DIMINUTO_LOG_MASK_NOTICE),
 };
@@ -141,8 +142,11 @@ typedef enum DiminutoLogPriority {
 } diminuto_log_priority_t;
 
 /**
- * This is the current log mask when combiling for the Linux kernel.
- * Note that it is a local private variable.
+ * This is the current log mask when compiling for the Linux kernel.
+ * Note that it is a local private variable. One possible use for it
+ * it to set its value using features of the Linux kernel, like at
+ * run-time using the /proc file system, or at load-time using a
+ * kernel module paramter.
  */
 static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
@@ -247,20 +251,46 @@ enum DiminutoLogDefaults {
 #   endif
 
 /*******************************************************************************
- * PLATFORM: ALL
+ * PLATFORM: NOT KERNEL
+ ******************************************************************************/
+
+/*******************************************************************************
+ * CONSTANTS
  ******************************************************************************/
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <unistd.h>
 
 /**
- * The enumerates the default file descriptor used when not using any other
- * system logging mechanism.
+ * This enumeration defines some manifest constants used by the Log
+ * feature.
  */
-enum DiminutoLogDescriptor {
+enum DiminutoLogConstants {
+    /* 
+     * The defines the default file descriptor used when not using any other
+     * system logging mechanism.
+     */
     DIMINUTO_LOG_DESCRIPTOR_DEFAULT = STDERR_FILENO,
+    /**
+     * This defines the maximum size of the log buffer.
+     */
+    DIMINUTO_LOG_BUFFER_MAXIMUM = 1024,
+    /**
+     * This defines the maximum size of a host name.
+     * RFC1035 and RFC2181 restrict a fully qualified domain name
+     * (FQDN) to 253 characters, and each element between the dots
+     * to 63 characters. The actual hostname isn't quite either of
+     * of these things, but this is a reasonable rationale. This
+     * value includes the terminating NUL, and must be at least long
+     * enough to hold the string "localhost", the default value if
+     * no hostname is available.
+     */
+    DIMINUTO_LOG_HOSTNAME_MAXIMUM = HOST_NAME_MAX,
 };
+
+/*******************************************************************************
+ * GENERATORS
+ ******************************************************************************/
 
 /**
  * @def DIMINUTO_LOG_STREAM_DEFAULT
@@ -270,7 +300,7 @@ enum DiminutoLogDescriptor {
  * constant cannot be set to, for example, stderr because it is a FILE pointer
  * variable dynamically set by the C run-time system.
  */
-#define DIMINUTO_LOG_STREAM_DEFAULT (FILE *)0
+#define DIMINUTO_LOG_STREAM_DEFAULT ((FILE *)0)
 
 /**
  * @def DIMINUTO_LOG_MASK_NAME_DEFAULT
@@ -285,28 +315,24 @@ enum DiminutoLogDescriptor {
  */
 #define DIMINUTO_LOG_MASK_VALUE_ALL "~0"
 
-/**
- * This enumerates the maximum size of the log buffer.
- */
-enum DiminutoLogBuffer {
-    DIMINUTO_LOG_BUFFER_MAXIMUM = 1024,
-};
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
 
 /**
- * This enumerates the maximum size of a host name.
- * RFC1035 and RFC2181 restrict a fully qualified domain name
- * (FQDN) to 253 characters, and each element between the dots
- * to 63 characters. The actual hostname isn't quite either of
- * of these things, but this is a reasonable rationale. This
- * value includes the terminating NUL, and must be at least long
- * enough to hold the string "localhost", the default value if
- * no hostname is available.
+ * THese are the strategies the log feature may use to determine to where
+ * to send logging output. The automatic option makes the choice depending
+ * on whether the caller has a controlling terminal, and is the default.
  */
-enum DiminutoLogHostname {
-    DIMINUTO_LOG_HOSTNAME_MAXIMUM = HOST_NAME_MAX,
-};
+typedef enum DiminutoLogStrategy {
+    DIMINUTO_LOG_STRATEGY_AUTOMATIC = 'A',
+    DIMINUTO_LOG_STRATEGY_STDERR    = 'E',
+    DIMINUTO_LOG_STRATEGY_SYSLOG    = 'S',
+} diminuto_log_strategy_t;
 
-/******************************************************************************/
+/*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
 
 /**
  * This is the log identity string used when openlog(3) is called. If the
@@ -359,17 +385,6 @@ extern const char * diminuto_log_mask_name;
 extern diminuto_log_mask_t diminuto_log_mask;
 
 /**
- * THese are the strategies the log feature may use to determine to where
- * to send logging output. The automatic option makes the choice depending
- * on whether the caller has a controlling terminal, and is the default.
- */
-typedef enum DiminutoLogStrategy {
-    DIMINUTO_LOG_STRATEGY_AUTOMATIC = 'A',
-    DIMINUTO_LOG_STRATEGY_STDERR    = 'E',
-    DIMINUTO_LOG_STRATEGY_SYSLOG    = 'S',
-} diminuto_log_strategy_t;
-
-/**
  * This variable determines how log messages are routed: to standard
  * error, to the system log, or automatically based on the characteristics
  * of the caller.
@@ -409,7 +424,46 @@ extern diminuto_log_priority_t diminuto_log_error;
  */
 extern size_t diminuto_log_lost;
 
-/******************************************************************************/
+/*******************************************************************************
+ * FUNCTIONS
+ ******************************************************************************/
+
+#include <stdarg.h>
+
+/**
+ * Map a specified priority into a mask in which the single corresponding bit
+ * is set. The Log feature makes use of the actual priority values of the
+ * different platforms - GNU syslog, Android Bionic, Linux Kernel - which may
+ * differ from platform to platform. So we can't just do a simple bit shift to
+ * map from the priority to the log mask. The macros defined in the Log header
+ * file avoid this overhead by having a different macro for every priority.
+ * Note that an unknown priority maps to ALL mask bits instead of NONE.
+ * @param priority is the specified priority.
+ * @return the corresponding mask.
+ */
+extern diminuto_log_mask_t diminuto_log_priority2mask(diminuto_log_priority_t priority);
+
+/**
+ * Return true if the specified mask and the log mask and to non-zero,
+ * indicating that ANY bit in the specified mask is set in the log mask.
+ * @param mask is the specified mask.
+ * @return true if enabled, false otherwise.
+ */
+static inline bool diminuto_log_mask_isenabled(diminuto_log_mask_t mask)
+{
+    return ((diminuto_log_mask & mask) != 0);
+}
+
+/**
+ * Return true if the corresponding bit in the log mask for the specified
+ * priority is set. 
+ * @param priority is the specified priority.
+ * @return true if enabled, false otherwise.
+ */
+static inline bool diminuto_log_priority_isenabled(diminuto_log_priority_t priority)
+{
+    return diminuto_log_mask_isenabled(diminuto_log_priority2mask(priority));
+}
 
 /**
  * Returns true if the calling process is not the session leader (this suggests
@@ -566,7 +620,13 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PLATFORM: ANY
+ ******************************************************************************/
+
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
 
 #include "com/diag/diminuto/diminuto_token.h"
 
@@ -578,7 +638,14 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
  * END OF IDEMPOTENT HEADER
  ******************************************************************************/
 
-/******************************************************************************/
+/*
+ * The Log header file may be included more than once. The preprocessor macros
+ * below may be redefined upon subsequent inclusions.
+ */
+
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
 
 #if !defined(DIMINUTO_LOG_MASK)
 #   define DIMINUTO_LOG_MASK diminuto_log_mask
@@ -589,8 +656,6 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #endif
 
 #define DIMINUTO_LOG_ENABLED(_MASK_) (((DIMINUTO_LOG_MASK) & (_MASK_)) != 0)
-
-/******************************************************************************/
 
 #if defined(DIMINUTO_LOG)
 #   undef DIMINUTO_LOG
@@ -611,7 +676,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_IF(_MASK_, _PRIORITY_, ...) (DIMINUTO_LOG_ENABLED(_MASK_) ? diminuto_log_log(_PRIORITY_, __VA_ARGS__) : ((void)0))
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: EMERGENCY
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_EMERGENCY)
 #   undef DIMINUTO_LOG_EMERGENCY
@@ -623,7 +690,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_EMERGENCY(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_EMERGENCY, DIMINUTO_LOG_PRIORITY_EMERGENCY, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: ALERT
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ALERT)
 #   undef DIMINUTO_LOG_ALERT
@@ -635,7 +704,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_ALERT(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ALERT, DIMINUTO_LOG_PRIORITY_ALERT, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: CRITICAL
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_CRITICAL)
 #   undef DIMINUTO_LOG_CRITICAL
@@ -647,7 +718,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_CRITICAL(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_CRITICAL, DIMINUTO_LOG_PRIORITY_CRITICAL, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: ERROR
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_ERROR)
 #   undef DIMINUTO_LOG_ERROR
@@ -659,7 +732,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_ERROR(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_ERROR, DIMINUTO_LOG_PRIORITY_ERROR, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: WARNING
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_WARNING)
 #   undef DIMINUTO_LOG_WARNING
@@ -671,7 +746,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_WARNING(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_WARNING, DIMINUTO_LOG_PRIORITY_WARNING, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: NOTICE
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_NOTICE)
 #   undef DIMINUTO_LOG_NOTICE
@@ -683,7 +760,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_NOTICE(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_NOTICE, DIMINUTO_LOG_PRIORITY_NOTICE, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: INFORMATION
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_INFORMATION)
 #   undef DIMINUTO_LOG_INFORMATION
@@ -695,7 +774,9 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_INFORMATION(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_INFORMATION, DIMINUTO_LOG_PRIORITY_INFORMATION, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * PRIORITY: DEBUG
+ ******************************************************************************/
 
 #if defined(DIMINUTO_LOG_DEBUG)
 #   undef DIMINUTO_LOG_DEBUG
@@ -707,4 +788,6 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
 #   define DIMINUTO_LOG_DEBUG(...) DIMINUTO_LOG_IF(DIMINUTO_LOG_MASK_DEBUG, DIMINUTO_LOG_PRIORITY_DEBUG, __VA_ARGS__)
 #endif
 
-/******************************************************************************/
+/*******************************************************************************
+ * END
+ ******************************************************************************/

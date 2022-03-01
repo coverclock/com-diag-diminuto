@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is part of the Log unit test.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -13,10 +13,11 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include <stdio.h>
 
 static void maybe(void)
 {
-    diminuto_log_emit("TEST maybe:");
+    fprintf(stderr, "TEST maybe:\n");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
 }
 
@@ -25,7 +26,7 @@ static void maybe(void)
 
 static void no(void)
 {
-    diminuto_log_emit("TEST no:");
+    fprintf(stderr, "TEST no:\n");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: no!\n", __FILE__, __LINE__);
 }
 
@@ -34,13 +35,13 @@ static void no(void)
 
 static void yes(void)
 {
-    diminuto_log_emit("TEST yes:");
+    fprintf(stderr, "TEST yes:\n");
     DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d]: yes.\n", __FILE__, __LINE__);
 }
 
 static void all(void)
 {
-    diminuto_log_emit("TEST all:");
+    fprintf(stderr, "TEST all:\n");
     DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency.\n", __FILE__, __LINE__);
     DIMINUTO_LOG_ALERT("%s[%d]: Alert.\n", __FILE__, __LINE__);
     DIMINUTO_LOG_CRITICAL("%s[%d]: Critical.\n", __FILE__, __LINE__);
@@ -63,7 +64,7 @@ static void all(void)
 
 static void none(void)
 {
-    diminuto_log_emit("TEST none:");
+    fprintf(stderr, "TEST none:\n");
     DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency!\n", __FILE__, __LINE__);
     DIMINUTO_LOG_ALERT("%s[%d]: Alert!\n", __FILE__, __LINE__);
     DIMINUTO_LOG_CRITICAL("%s[%d]: Critical!\n", __FILE__, __LINE__);
@@ -93,7 +94,7 @@ EXPORT_SYMBOL(diminuto_log_subsystem);
 
 static void mine(void)
 {
-    diminuto_log_emit("TEST mine:");
+    fprintf(stderr, "TEST mine:\n");
     DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency?\n", __FILE__, __LINE__);
     DIMINUTO_LOG_ALERT("%s[%d]: Alert?\n", __FILE__, __LINE__);
     DIMINUTO_LOG_CRITICAL("%s[%d]: Critical?\n", __FILE__, __LINE__);

@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Log feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -36,6 +36,242 @@
 
 int main(int argc, char ** argv)
 {
+    {
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_EMERGENCY)   == DIMINUTO_LOG_MASK_EMERGENCY);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_ALERT)       == DIMINUTO_LOG_MASK_ALERT);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_CRITICAL)    == DIMINUTO_LOG_MASK_CRITICAL);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_ERROR)       == DIMINUTO_LOG_MASK_ERROR);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_WARNING)     == DIMINUTO_LOG_MASK_WARNING);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_NOTICE)      == DIMINUTO_LOG_MASK_NOTICE);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_INFORMATION) == DIMINUTO_LOG_MASK_INFORMATION);
+        assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_DEBUG)       == DIMINUTO_LOG_MASK_DEBUG);
+        assert(diminuto_log_priority2mask((diminuto_log_priority_t)(-1))     == DIMINUTO_LOG_MASK_ANY);
+    }
+
+    {
+        diminuto_log_mask = DIMINUTO_LOG_MASK_NONE;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_EMERGENCY;
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ALERT;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_CRITICAL;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ERROR;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_WARNING;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_NOTICE;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_INFORMATION;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_DEBUG;
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ALL;
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ERROR));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_WARNING));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NOTICE));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_INFORMATION));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_DEBUG));
+        assert(diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ANY));
+        assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_NONE));
+    }
+
+    {
+        diminuto_log_mask = DIMINUTO_LOG_MASK_NONE;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_EMERGENCY;
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ALERT;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_CRITICAL;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ERROR;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_WARNING;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_NOTICE;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_INFORMATION;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_DEBUG;
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+
+        diminuto_log_mask = DIMINUTO_LOG_MASK_ALL;
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ERROR));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_WARNING));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_NOTICE));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_INFORMATION));
+        assert(diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_DEBUG));
+    }
+
     {
         diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
         assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));

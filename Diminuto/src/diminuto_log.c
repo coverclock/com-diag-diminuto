@@ -78,6 +78,43 @@ size_t diminuto_log_lost = 0;
  * BASE FUNCTIONS
  *****************************************************************************/
 
+diminuto_log_mask_t diminuto_log_priority2mask(diminuto_log_priority_t priority)
+{
+    diminuto_log_mask_t mask = 0;
+
+    switch (priority) {
+    case DIMINUTO_LOG_PRIORITY_EMERGENCY:
+        mask = DIMINUTO_LOG_MASK_EMERGENCY;
+        break;
+    case DIMINUTO_LOG_PRIORITY_ALERT:
+        mask = DIMINUTO_LOG_MASK_ALERT;
+        break;
+    case DIMINUTO_LOG_PRIORITY_CRITICAL:
+        mask = DIMINUTO_LOG_MASK_CRITICAL;
+        break;
+    case DIMINUTO_LOG_PRIORITY_ERROR:
+        mask = DIMINUTO_LOG_MASK_ERROR;
+        break;
+    case DIMINUTO_LOG_PRIORITY_WARNING:
+        mask = DIMINUTO_LOG_MASK_WARNING;
+        break;
+    case DIMINUTO_LOG_PRIORITY_NOTICE:
+        mask = DIMINUTO_LOG_MASK_NOTICE;
+        break;
+    case DIMINUTO_LOG_PRIORITY_INFORMATION:
+        mask = DIMINUTO_LOG_MASK_INFORMATION;
+        break;
+    case DIMINUTO_LOG_PRIORITY_DEBUG:
+        mask = DIMINUTO_LOG_MASK_DEBUG;
+        break;
+    default:
+        mask = DIMINUTO_LOG_MASK_ALL;
+        break;
+    }
+
+    return mask;
+}
+
 diminuto_log_mask_t diminuto_log_setmask(void)
 {
     const char * mask = (const char *)0;
