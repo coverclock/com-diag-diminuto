@@ -378,7 +378,7 @@ int main(int argc, char ** argv)
 
     {
 
-        diminuto_log_mask = 0;
+        diminuto_log_mask = -1;
 
         assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();

@@ -7,7 +7,7 @@ A Linux/GNU systems programming library in C.
 
 Copyright 2008-2022 by the Digital Aggregates Corporation, Colorado, USA.
 
-This software is an original work of its author.
+Except where noted, this software is an original work of its author.
 
 # License
 
@@ -76,6 +76,22 @@ Diminuto also provides many command-line utilities using the features
 of the library that are especially useful in shell scripts.
 
 See the Features section below for a more complete list.
+
+# Manual Pages and Reference Manual
+
+These PDFs of
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
+and associated
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
+were built from Diminuto's embedded Doxygen comments on
+2022-03-01
+using tag
+79.0.5
+.
+
+The unit tests (```Diminuto/tst```), functional tests (```Diminuto/fun```), and command line
+uilities (```Diminuto/bin```) contain useful and non-trivial examples of how to use the
+Diminuto library.
 
 # Details
 
@@ -269,7 +285,7 @@ header file.
 
 # Bash Sourcing Files
 
-* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+* diminuto - defines and exports shell variables like Arch, Release, Revision, and Vintage into the environment.
 * setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
 
 # Command Line Utilities
@@ -446,8 +462,10 @@ For my own workflow, I installed the following tools.
 
 I found valgrind not to work on my ARM Raspbian (a.k.a. Raspberry Pi OS)
 platforms, so my valgrind testing has been on Ubuntu on either x86_64
-platforms or the ARM64 version that runs on the Raspberry Pi. On those
-platforms, I found the following command especially useful.
+platforms, or the ARM64 version that runs under Ubuntu on the Raspberry Pi.
+On those platforms, I found the following command especially useful. There
+are some special unit test targets in the Makefile that uses this form of
+the command.
 
     valgrind --leak-check=full --show-leak-kinds=all <COMMAND...>
 
