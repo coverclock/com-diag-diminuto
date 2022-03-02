@@ -284,7 +284,7 @@ header file.
 
 # Bash Sourcing Files
 
-* diminuto - defines shell variables like Arch, Release, Revision, and Vintage into the current shell.
+* diminuto - defines and exports shell variables like Arch, Release, Revision, and Vintage into the environment.
 * setup - defines and exports shell variables like PATH and LD_LIBRARY_PATH into the environment.
 
 # Command Line Utilities
