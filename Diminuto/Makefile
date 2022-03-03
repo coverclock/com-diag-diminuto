@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	5# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	6# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1244,10 +1244,18 @@ tagging:	reassuring geologic
 .PHONY:	log readerwriter valgrind
 
 valgrind:
-	COM_DIAG_DIMINUTO_LOG_MASK=0xff valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM) 2>&1 | tee ${TEMP_DIR}/$(PROGRAM).log
+	valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM)
 
 readerwriter:
 	make valgrind PROGRAM=unittest-readerwriter
 
 log:
 	make valgrind PROGRAM=unittest-log
+
+##########  Repeat
+
+.PHONY:	repeat
+
+# e.g. make repeat PROGRAM='unittest-readerwriter -d'
+repeat:
+	while $(PROGRAM); do date; done

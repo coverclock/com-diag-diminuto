@@ -458,13 +458,13 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
             case RUNNING:  ++running; break;
             default:       ++unknown; break;
         }
-        length = snprintf(bp, size, " %c", role);
+        length = snprintf(bp, size, "%c", role);
         if ((0 < length) && (length < size)) { bp += length; size -= length; }
         queued += 1;
         np = diminuto_list_next(np);
     }
 
-    length = snprintf(bp, size, " } %dqueued", queued);
+    length = snprintf(bp, size, "} %dqueued", queued);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dreadable", readable);
@@ -657,7 +657,7 @@ static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_lis
     dequeue(rwp, np);
     diminuto_list_dataset(np, (void *)RUNNING);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s RUNNING %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %dreading %dwriting %dwaiting", label, (rc == 0) ? "SATISFIED" : "UNSATISFIED", rwp->reading, rwp->writing, rwp->waiting);
 
     return rc;
 }
@@ -1001,14 +1001,24 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         } else if (role == READER) {
 
             /*
-             * This shouldn't happen: a reader should never have waited.
-             * We'll handle it anyway, but whine about it. This is where
-             * a formerly suspended and now resumed reader may get its
-             * increment.
+             * This is where a formerly suspended and now resumed reader may
+             * get its increment. It used to be this couldn't happen, but since
+             * I added timeouts, it can if an impatient writer at the head of
+             * the queue times out ahead of a waiting reader behind it. Never
+             * the less, I replaced the former ERRNO log output with a DEBUG
+             * log message. Both the old code and this code activates the
+             * waiting reader in any case. Maybe a better approach is for a
+             * timing out writer to activate any readers behind it. The
+             * complication is that whether any readers at the head of the
+             * queue can be activated depends not on caller that just timed
+             * out (which could be anywhere in the queue), but whether it is
+             * one or more readers that currently hold the resource. Hence, it
+             * is neither the caller running this code nor the waiter that
+             * timed out that is in a position to make that decision.
              */
 
-            errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("diminuto_reader_end: reader");
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "diminuto_readerwriter: Reader END reader stalled");
+
             rwp->reading += 1;
             result = 0;
 

@@ -1,0 +1,46 @@
+2022-03-03T19:51:31.882347574Z "nickel" <DBUG> [3655703] {7f2fbe7fc700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 74waiting
+2022-03-03T19:51:31.882370085Z "nickel" <DBUG> [3655703] {7f2fbe7fc700} diminuto_readerwriter: Reader Inf Lo WAITING 1reading 0writing 75waiting
+2022-03-03T19:51:31.882497118Z "nickel" <DBUG> [3655703] {7f2fb5ffb700} diminuto_readerwriter: Thread 0x7f2fd00010e0 ACQUIRED
+2022-03-03T19:51:31.882540261Z "nickel" <DBUG> [3655703] {7f2fb5ffb700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 75waiting
+2022-03-03T19:51:31.882557407Z "nickel" <DBUG> [3655703] {7f2fb5ffb700} diminuto_readerwriter: Reader Inf Lo WAITING 1reading 0writing 76waiting
+2022-03-03T19:51:31.882724835Z "nickel" <DBUG> [3655703] {7f2f9ffff700} diminuto_readerwriter: Thread 0x7f2fdc0010e0 ACQUIRED
+2022-03-03T19:51:31.882745955Z "nickel" <DBUG> [3655703] {7f2f9ffff700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 76waiting
+2022-03-03T19:51:31.882764089Z "nickel" <DBUG> [3655703] {7f2f9ffff700} diminuto_readerwriter: Reader Inf Lo WAITING 1reading 0writing 77waiting
+2022-03-03T19:51:32.873085943Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 77waiting
+2022-03-03T19:51:32.873127123Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN exit 1reading 0writing 77waiting -1
+2022-03-03T19:51:32.873181532Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN audit@0x7ffeb36d2780[184] 1reading 0writing 77waiting {RWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 77queued 0readable 0writable 77blocked 67readers 10writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:32.873197248Z "nickel" <INFO> [3655703] {7f3031167700} tst/unittest-readerwriter.c@176: CHECKPOINT: impatientreader[0] timedout!
+2022-03-03T19:51:32.877201278Z "nickel" <DBUG> [3655703] {7f3013fff700} diminuto_readerwriter: Reader UNSATISFIED 1reading 0writing 76waiting
+2022-03-03T19:51:32.877240087Z "nickel" <DBUG> [3655703] {7f3013fff700} diminuto_readerwriter: Reader BEGIN exit 1reading 0writing 76waiting -1
+2022-03-03T19:51:32.877295118Z "nickel" <DBUG> [3655703] {7f3013fff700} diminuto_readerwriter: Reader BEGIN audit@0x7ffeb36d2780[184] 1reading 0writing 76waiting {RWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 76queued 0readable 0writable 76blocked 66readers 10writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:32.877316708Z "nickel" <INFO> [3655703] {7f3013fff700} tst/unittest-readerwriter.c@176: CHECKPOINT: impatientreader[2] timedout!
+2022-03-03T19:51:33.873345408Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 76waiting
+2022-03-03T19:51:33.873384157Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN exit 1reading 0writing 76waiting -1
+2022-03-03T19:51:33.873438942Z "nickel" <DBUG> [3655703] {7f3031167700} diminuto_readerwriter: Reader BEGIN audit@0x7ffeb36d2780[184] 1reading 0writing 76waiting {RWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 76queued 0readable 0writable 76blocked 66readers 10writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:33.873455144Z "nickel" <INFO> [3655703] {7f3031167700} tst/unittest-readerwriter.c@176: CHECKPOINT: impatientreader[0] timedout!
+2022-03-03T19:51:33.874170802Z "nickel" <INFO> [3655703] {7f30217fa700} tst/unittest-readerwriter.c@108: CHECKPOINT: reader[2] readers=0 writers=0 exiting.
+2022-03-03T19:51:33.874193239Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader END enter 1reading 0writing 76waiting
+2022-03-03T19:51:33.874721277Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader SIGNALED 0reading 0writing 76waiting
+2022-03-03T19:51:33.874757079Z "nickel" <DBUG> [3655703] {7f30217fa700} src/diminuto_readerwriter.c@1015: diminuto_readerwriter: Reader END reader stalled
+2022-03-03T19:51:33.874776368Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader END exit 1reading 0writing 76waiting
+2022-03-03T19:51:33.874835453Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader END audit@0x7ffeb36d2780[184] 1reading 0writing 76waiting {rWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 76queued 1readable 0writable 75blocked 65readers 10writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:33.874923836Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader BEGIN enter 1reading 0writing 76waiting
+2022-03-03T19:51:33.874939958Z "nickel" <DBUG> [3655703] {7f30217fa700} diminuto_readerwriter: Reader Inf Lo WAITING 1reading 0writing 77waiting
+2022-03-03T19:51:33.875902661Z "nickel" <DBUG> [3655703] {7f303296a700} diminuto_readerwriter: Reader SATISFIED 1reading 0writing 76waiting
+2022-03-03T19:51:33.875935050Z "nickel" <DBUG> [3655703] {7f303296a700} diminuto_readerwriter: Reader BEGIN exit 1reading 0writing 76waiting 0
+2022-03-03T19:51:33.875988934Z "nickel" <DBUG> [3655703] {7f303296a700} diminuto_readerwriter: Reader BEGIN audit@0x7ffeb36d2780[184] 1reading 0writing 76waiting {WWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRRR} 76queued 0readable 0writable 76blocked 66readers 10writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:33.876012327Z "nickel" <INFO> [3655703] {7f303296a700} tst/unittest-readerwriter.c@230: CHECKPOINT: aggressivereader[0] readers=1 writers=0 entering.
+2022-03-03T19:51:33.876251174Z "nickel" <DBUG> [3655703] {7f3021ffb700} diminuto_readerwriter: Writer UNSATISFIED 1reading 0writing 75waiting
+2022-03-03T19:51:33.876277715Z "nickel" <DBUG> [3655703] {7f3021ffb700} diminuto_readerwriter: Writer BEGIN exit 1reading 0writing 75waiting -1
+2022-03-03T19:51:33.876325850Z "nickel" <DBUG> [3655703] {7f3021ffb700} diminuto_readerwriter: Writer BEGIN audit@0x7ffeb36d2780[184] 1reading 0writing 75waiting {WWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRRR} 75queued 0readable 0writable 75blocked 66readers 9writers 0started 0failed 0running 0unknown
+2022-03-03T19:51:33.876351965Z "nickel" <INFO> [3655703] {7f3021ffb700} tst/unittest-readerwriter.c@209: CHECKPOINT: impatientwriter[1] timedout!
+
+
+
+
+
+{RWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 77queued 0readable 0writable 77blocked 67readers 10writers 0started 0failed 0running 0unknown
+{RWWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRR!WWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRR} 76queued 0readable 0writable 76blocked 66readers 10writers 0started 0failed 0running 0unknown
+
+{WWWRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRRR} 76queued 0readable 0writable 76blocked 66readers 10writers 0started 0failed 0running 0unknown
+{WW!RRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRWWRRRRRRRRRRRRRRRRRRRRRRRRWRWWRRRRRRRRRRR} 75queued 0readable 0writable 75blocked 66readers  9writers 0started 0failed 0running 0unknown

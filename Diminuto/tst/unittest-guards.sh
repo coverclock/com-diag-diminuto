@@ -16,11 +16,12 @@
 
 ARCDIR=$(readlink -e $(dirname ${0})/../arc)
 INCDIR=$(readlink -e $(dirname ${0})/../../../inc)
+SRCDIR=$(readlink -e $(dirname ${0})/../../../src)
 GENDIR=$(readlink -e $(dirname ${0})/../inc)
 SRCFIL=$(mktemp ${TMPDIR:-"/tmp"}/$(basename ${0} .sh)-XXXXXXXXXX.c)
 OUTFIL=$(mktemp ${TMPDIR:-"/tmp"}/$(basename ${0} .sh)-XXXXXXXXXX.out)
 trap "rm -f ${SRCFIL} ${OUTFIL}" 0 1 2 3 15
-find ${INCDIR} ${GENDIR} -type f -name '*.h' -print | awk '
+find ${INCDIR} ${SRCDIR} ${GENDIR} -type f -name '*.h' -print | awk '
 	{ print "#include \""$1"\""; }
 	{ print "#include \""$1"\""; }
 	' > ${SRCFIL}

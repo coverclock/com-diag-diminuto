@@ -80,37 +80,39 @@ struct Context {
     int iterations;
 };
 
-static int readers = 0;
-static int writers = 0;
+static int nreaders = 0;
+static int nwriters = 0;
 
 static void * reader(void * vp)
 {
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
+    bool check;
 
     CHECKPOINT("reader[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
+        check = false;
         DIMINUTO_READER_BEGIN(cp->rwp);
+            check = true;
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++readers;
-                success = ((readers > 0) && (writers == 0));
+                ++nreaders;
+                CHECKPOINT("reader[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders > 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("reader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
             diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                readers--;
+                nreaders--;
+                CHECKPOINT("reader[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders >= 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
         DIMINUTO_READER_END;
-        if (!success) { break; }
+        ASSERT(check);
     }
 
-    return (void *)(intptr_t)success;
+    return (void *)(intptr_t)(!0);
 }
 
 static void * writer(void * vp)
@@ -118,29 +120,31 @@ static void * writer(void * vp)
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
+    bool check;
 
     CHECKPOINT("writer[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
+        check = false;
         DIMINUTO_WRITER_BEGIN(cp->rwp);
+            check = true;
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++writers;
-                success = ((readers == 0) && (writers == 1));
+                ++nwriters;
+                CHECKPOINT("writer[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders == 0) && (nwriters == 1));
             DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("writer[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
             diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                writers--;
+                nwriters--;
+                CHECKPOINT("writer[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders == 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
         DIMINUTO_WRITER_END;
-        if (!success) { break; }
+        ASSERT(check);
     }
 
-    return (void *)(intptr_t)success;
+    return (void *)(intptr_t)(!0);
 }
 
 static void * impatientreader(void * vp)
@@ -148,29 +152,28 @@ static void * impatientreader(void * vp)
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
 
     CHECKPOINT("impatientreader[%d] rwp=%p latency=%llu timeout=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->timeout), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
         if (diminuto_reader_begin_timed(cp->rwp, cp->timeout) == 0) {
             pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++readers;
-                success = ((readers > 0) && (writers == 0));
+                ++nreaders;
+                CHECKPOINT("impatientreader[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders > 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("impatientreader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
             diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                readers--;
+                nreaders--;
+                CHECKPOINT("impatientreader[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders >= 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("impatientreader[%d] readers=%d writers=%d timeout?\n", cp->identifier, readers, writers);
-            /* Can legitimately fail. */
+            ASSERT(errno == DIMINUTO_READERWRITER_TIMEDOUT);
+            CHECKPOINT("impatientreader[%d] timedout!\n", cp->identifier);
         }
     }
 
@@ -182,98 +185,87 @@ static void * impatientwriter(void * vp)
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
 
     CHECKPOINT("impatientwriter[%d] rwp=%p latency=%llu timeout=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->timeout), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
         if (diminuto_writer_begin_timed(cp->rwp, cp->timeout) == 0) {
             pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++writers;
-                success = ((readers == 0) && (writers == 1));
+                ++nwriters;
+                CHECKPOINT("impatientwriter[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders == 0) && (nwriters == 1));
             DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d =%s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
             diminuto_delay(cp->workload, 0);
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                writers--;
+                nwriters--;
+                CHECKPOINT("impatientwriter[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+                ASSERT((nreaders == 0) && (nwriters == 0));
             DIMINUTO_CRITICAL_SECTION_END;
             pthread_cleanup_pop(!0);
         } else {
-            CHECKPOINT("impatientwriter[%d] readers=%d writers=%d timeout?\n", cp->identifier, readers, writers);
-            /* Can legitimately fail. */
+            ASSERT(errno == DIMINUTO_READERWRITER_TIMEDOUT);
+            CHECKPOINT("impatientwriter[%d] timedout!\n", cp->identifier);
         }
     }
 
     return (void *)(intptr_t)(!0);
 }
 
-static void * assertivereader(void * vp)
+static void * aggressivereader(void * vp)
 {
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
 
-    CHECKPOINT("assertivereader[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
+    CHECKPOINT("aggressivereader[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
-        if (diminuto_reader_begin_priority(cp->rwp) == 0) {
-            pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++readers;
-                success = ((readers > 0) && (writers == 0));
-            DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("assertivereader[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
-            diminuto_delay(cp->workload, 0);
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                readers--;
-            DIMINUTO_CRITICAL_SECTION_END;
-            pthread_cleanup_pop(!0);
-        } else {
-            CHECKPOINT("assertivereader[%d] readers=%d writers=%d ERROR!\n", cp->identifier, readers, writers);
-            EXPECT(success);
-        }
+        ASSERT(diminuto_reader_begin_priority(cp->rwp) == 0);
+        pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            ++nreaders;
+            CHECKPOINT("aggressivereader[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+            ASSERT((nreaders > 0) && (nwriters == 0));
+        DIMINUTO_CRITICAL_SECTION_END;
+        diminuto_delay(cp->workload, 0);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            nreaders--;
+            CHECKPOINT("aggressivereader[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+            ASSERT((nreaders >= 0) && (nwriters == 0));
+        DIMINUTO_CRITICAL_SECTION_END;
+        pthread_cleanup_pop(!0);
     }
 
     return (void *)(intptr_t)(!0);
 }
 
-static void * assertivewriter(void * vp)
+static void * aggressivewriter(void * vp)
 {
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     struct Context * cp = (struct Context *)vp;
     int ii;
-    int success;
 
-    CHECKPOINT("assertivewriter[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
+    CHECKPOINT("aggressivewriter[%d] rwp=%p latency=%llu workload=%llu iterations=%d\n", cp->identifier, cp->rwp, (unsigned long long)(cp->latency), (unsigned long long)(cp->workload), cp->iterations);
 
     for (ii = 0; ii < cp->iterations; ++ii) {
-        success = 0;
         diminuto_delay(cp->latency, 0);
-        if (diminuto_writer_begin_priority(cp->rwp) == 0) {
-            pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                ++writers;
-                success = ((readers == 0) && (writers == 1));
-            DIMINUTO_CRITICAL_SECTION_END;
-            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d %s\n", cp->identifier, readers, writers, success ? "success." : "failure!");
-            EXPECT(success);
-            diminuto_delay(cp->workload, 0);
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                writers--;
-            DIMINUTO_CRITICAL_SECTION_END;
-            pthread_cleanup_pop(!0);
-        } else {
-            CHECKPOINT("assertivewriter[%d] readers=%d writers=%d ERROR!\n", cp->identifier, readers, writers);
-            EXPECT(success);
-        }
+        ASSERT(diminuto_writer_begin_priority(cp->rwp) == 0);
+        pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            ++nwriters;
+            CHECKPOINT("aggressivewriter[%d] readers=%d writers=%d entering.\n", cp->identifier, nreaders, nwriters);
+            ASSERT((nreaders == 0) && (nwriters == 1));
+        DIMINUTO_CRITICAL_SECTION_END;
+        diminuto_delay(cp->workload, 0);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            nwriters--;
+            CHECKPOINT("aggressivewriter[%d] readers=%d writers=%d exiting.\n", cp->identifier, nreaders, nwriters);
+            ASSERT((nreaders == 0) && (nwriters == 0));
+        DIMINUTO_CRITICAL_SECTION_END;
+        pthread_cleanup_pop(!0);
     }
 
     return (void *)(intptr_t)(!0);
@@ -1176,6 +1168,9 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        nreaders = 0;
+        nwriters = 0;
+
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
         diminuto_readerwriter_debug(&rw, debug);
@@ -1237,6 +1232,9 @@ int main(int argc, char * argv[])
         diminuto_readerwriter_t rw;
 
         TEST();
+
+        nreaders = 0;
+        nwriters = 0;
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
@@ -1302,6 +1300,9 @@ int main(int argc, char * argv[])
         diminuto_readerwriter_t rw;
 
         TEST();
+
+        nreaders = 0;
+        nwriters = 0;
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
@@ -1407,26 +1408,29 @@ int main(int argc, char * argv[])
         diminuto_thread_t writers[8];
         diminuto_thread_t impatientreaders[4];
         diminuto_thread_t impatientwriters[2];
-        diminuto_thread_t assertivereaders[1];
-        diminuto_thread_t assertivewriters[1];
+        diminuto_thread_t aggressivereaders[1];
+        diminuto_thread_t aggressivewriters[1];
         struct Context reading[diminuto_countof(readers)];
         struct Context writing[diminuto_countof(writers)];
         struct Context impatientreading[diminuto_countof(impatientreaders)];
         struct Context impatientwriting[diminuto_countof(impatientwriters)];
-        struct Context assertivereading[diminuto_countof(assertivereaders)];
-        struct Context assertivewriting[diminuto_countof(assertivewriters)];
+        struct Context aggressivereading[diminuto_countof(aggressivereaders)];
+        struct Context aggressivewriting[diminuto_countof(aggressivewriters)];
         void * reads[diminuto_countof(readers)];
         void * writes[diminuto_countof(writers)];
         void * impatientreads[diminuto_countof(impatientreaders)];
         void * impatientwrites[diminuto_countof(impatientwriters)];
-        void * assertivereads[diminuto_countof(assertivereaders)];
-        void * assertivewrites[diminuto_countof(assertivewriters)];
+        void * aggressivereads[diminuto_countof(aggressivereaders)];
+        void * aggressivewrites[diminuto_countof(aggressivewriters)];
         static const int MAXIMUM = countof(readers);
-        static const int TOTAL = countof(readers) + countof(writers) + countof(impatientreaders) + countof(impatientwriters) + countof(assertivereaders) + countof(assertivewriters);
+        static const int TOTAL = countof(readers) + countof(writers) + countof(impatientreaders) + countof(impatientwriters) + countof(aggressivereaders) + countof(aggressivewriters);
         diminuto_readerwriter_t rw;
         int ii;
 
         TEST();
+
+        nreaders = 0;
+        nwriters = 0;
 
         ASSERT(diminuto_readerwriter_init(&rw) == &rw);
 
@@ -1476,26 +1480,26 @@ int main(int argc, char * argv[])
             ASSERT(diminuto_thread_init(&impatientwriters[ii], impatientwriter) == &impatientwriters[ii]);
         }
 
-        for (ii = 0; ii < diminuto_countof(assertivereaders); ++ii) {
-            assertivereading[ii].identifier = ii;
-            assertivereading[ii].rwp = &rw;
-            assertivereading[ii].latency = frequency * randy(0, 3);
-            assertivereading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
-            assertivereading[ii].workload = frequency * randy(1, 5);
-            assertivereading[ii].iterations = randy(2, 13);
-            assertivereads[ii] = (void *)0;
-            ASSERT(diminuto_thread_init(&assertivereaders[ii], assertivereader) == &assertivereaders[ii]);
+        for (ii = 0; ii < diminuto_countof(aggressivereaders); ++ii) {
+            aggressivereading[ii].identifier = ii;
+            aggressivereading[ii].rwp = &rw;
+            aggressivereading[ii].latency = frequency * randy(0, 3);
+            aggressivereading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
+            aggressivereading[ii].workload = frequency * randy(1, 5);
+            aggressivereading[ii].iterations = randy(2, 13);
+            aggressivereads[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&aggressivereaders[ii], aggressivereader) == &aggressivereaders[ii]);
         }
 
-        for (ii = 0; ii < diminuto_countof(assertivewriters); ++ii) {
-            assertivewriting[ii].identifier = ii;
-            assertivewriting[ii].rwp = &rw;
-            assertivewriting[ii].latency = frequency * randy(0, 3);
-            assertivewriting[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
-            assertivewriting[ii].workload = frequency * randy(1, 5);
-            assertivewriting[ii].iterations = randy(2, 13);
-            assertivewrites[ii] = (void *)0;
-            ASSERT(diminuto_thread_init(&assertivewriters[ii], assertivewriter) == &assertivewriters[ii]);
+        for (ii = 0; ii < diminuto_countof(aggressivewriters); ++ii) {
+            aggressivewriting[ii].identifier = ii;
+            aggressivewriting[ii].rwp = &rw;
+            aggressivewriting[ii].latency = frequency * randy(0, 3);
+            aggressivewriting[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
+            aggressivewriting[ii].workload = frequency * randy(1, 5);
+            aggressivewriting[ii].iterations = randy(2, 13);
+            aggressivewrites[ii] = (void *)0;
+            ASSERT(diminuto_thread_init(&aggressivewriters[ii], aggressivewriter) == &aggressivewriters[ii]);
         }
 
         for (ii = 0; ii < MAXIMUM; ++ii) {
@@ -1511,11 +1515,11 @@ int main(int argc, char * argv[])
             if (ii < diminuto_countof(impatientwriters)) {
                 ASSERT(diminuto_thread_start(&impatientwriters[ii], &impatientwriting[ii]) == 0);
             }
-            if (ii < diminuto_countof(assertivereaders)) {
-                ASSERT(diminuto_thread_start(&assertivereaders[ii], &assertivereading[ii]) == 0);
+            if (ii < diminuto_countof(aggressivereaders)) {
+                ASSERT(diminuto_thread_start(&aggressivereaders[ii], &aggressivereading[ii]) == 0);
             }
-            if (ii < diminuto_countof(assertivewriters)) {
-                ASSERT(diminuto_thread_start(&assertivewriters[ii], &assertivewriting[ii]) == 0);
+            if (ii < diminuto_countof(aggressivewriters)) {
+                ASSERT(diminuto_thread_start(&aggressivewriters[ii], &aggressivewriting[ii]) == 0);
             }
         }
 
@@ -1536,13 +1540,13 @@ int main(int argc, char * argv[])
                 ASSERT(diminuto_thread_join(&impatientwriters[ii], &impatientwrites[ii]) == 0);
                 CHECKPOINT("impatientwrites[%d]=%d\n", ii, (int)(intptr_t)impatientwrites[ii]);
             }
-            if (ii < diminuto_countof(assertivereaders)) {
-                ASSERT(diminuto_thread_join(&assertivereaders[ii], &assertivereads[ii]) == 0);
-                CHECKPOINT("assertivereads[%d]=%d\n", ii, (int)(intptr_t)assertivereads[ii]);
+            if (ii < diminuto_countof(aggressivereaders)) {
+                ASSERT(diminuto_thread_join(&aggressivereaders[ii], &aggressivereads[ii]) == 0);
+                CHECKPOINT("aggressivereads[%d]=%d\n", ii, (int)(intptr_t)aggressivereads[ii]);
             }
-            if (ii < diminuto_countof(assertivewriters)) {
-                ASSERT(diminuto_thread_join(&assertivewriters[ii], &assertivewrites[ii]) == 0);
-                CHECKPOINT("assertivewrites[%d]=%d\n", ii, (int)(intptr_t)assertivewrites[ii]);
+            if (ii < diminuto_countof(aggressivewriters)) {
+                ASSERT(diminuto_thread_join(&aggressivewriters[ii], &aggressivewrites[ii]) == 0);
+                CHECKPOINT("aggressivewrites[%d]=%d\n", ii, (int)(intptr_t)aggressivewrites[ii]);
             }
         }
 
@@ -1559,11 +1563,11 @@ int main(int argc, char * argv[])
             if (ii < diminuto_countof(impatientwriters)) {
                 ASSERT(((intptr_t)impatientwrites[ii]) != 0);
             }
-            if (ii < diminuto_countof(assertivereaders)) {
-                ASSERT(((intptr_t)assertivereads[ii]) != 0);
+            if (ii < diminuto_countof(aggressivereaders)) {
+                ASSERT(((intptr_t)aggressivereads[ii]) != 0);
             }
-            if (ii < diminuto_countof(assertivewriters)) {
-                ASSERT(((intptr_t)assertivewrites[ii]) != 0);
+            if (ii < diminuto_countof(aggressivewriters)) {
+                ASSERT(((intptr_t)aggressivewrites[ii]) != 0);
             }
         }
 

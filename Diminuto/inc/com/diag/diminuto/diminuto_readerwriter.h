@@ -315,22 +315,29 @@ extern void diminuto_writer_cleanup(void * vp);
  * resource is granted, the calling thread will signal (broadcast) other reader
  * threads that are waiting behind it. @a _RWP_ points to an initialized
  * Reader Writer object; the argument is dereferenced once and only once.
+ * Bracketed code may break to exit the bracket.
  */
 #define DIMINUTO_READER_BEGIN(_RWP_) \
     do { \
         diminuto_readerwriter_t * diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_reader_rwp = (_RWP_); \
         if (diminuto_reader_begin(diminuto_reader_rwp) == 0) { \
-            pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp)
+            pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp); \
+            do {
 
 /**
  * @def DIMINUTO_READER_END
  * This is the closing bracket of a Reader section of code. The calling thread
  * will signal (broadcast) another thread that is waiting for the resource.
+ * The zeroing of the stack variable enforces correct bracketing of the macros
+ * with an error number. The application can detect this by setting its own
+ * flag inside the bracketed code.
  */
 #define DIMINUTO_READER_END \
+            } while (0); \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_reader_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 /**
@@ -338,23 +345,30 @@ extern void diminuto_writer_cleanup(void * vp);
  * This is the opening bracket of a Writer section of code. The calling thread
  * will wait if necessary until the resource is available. @a _RWP_ points to
  * an initialized Reader Writer object; the argument is dereferenced once and
- * only once.
+ * only once. Bracketed code may break to exit the bracket.
  */
 #define DIMINUTO_WRITER_BEGIN(_RWP_) \
     do { \
         diminuto_readerwriter_t * diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
         diminuto_writer_rwp = (_RWP_); \
         if (diminuto_writer_begin(diminuto_writer_rwp) == 0) { \
-            pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp)
+            pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp); \
+            do {
 
 /**
  * @def DIMINUTO_WRITER_END
  * This is the closing bracket of a Writer section of code. The calling thread
  * will signal (broadcast) another thread that is waiting for the resource.
+ * The zeroing of the stack variable enforces correct bracketing of the macros
+ * at compile time. Note that if the BEGIN block fails, errno should be left
+ * with an error number. The application can detect this by setting its own
+ * flag inside the bracketed code.
  */
 #define DIMINUTO_WRITER_END \
+            } while (0); \
             pthread_cleanup_pop(!0); \
         } \
+        diminuto_writer_rwp = (diminuto_readerwriter_t *)0; \
     } while (0)
 
 /*******************************************************************************
