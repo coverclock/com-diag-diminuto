@@ -199,6 +199,7 @@ header file.
 
 ## Utilities
 
+* alerts - emits zero or more BEL characters with a delay in between.
 * clocks - logs the current values of UTC time, atomic time, and elapsed time.
 * command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
