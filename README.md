@@ -247,7 +247,7 @@ header file.
 * condition - error checking wrapper around pthread condition.
 * criticalsection - macros to implement scoped pthread mutex serialization.
 * mutex - error checking wrapper around pthread mutex.
-* readerwriter - a first-come, first-served Reader-Writer lock;
+* readerwriter - a FIFO lock that starves neither readers nor writers.
 * thread - error checking wrapper around pthread thread.
 * serializedsection - macros to implement scoped spinlocked code blocks.
 
