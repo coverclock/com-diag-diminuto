@@ -199,7 +199,6 @@ header file.
 
 ## Utilities
 
-* alerts - emits zero or more BEL characters with a delay in between.
 * clocks - logs the current values of UTC time, atomic time, and elapsed time.
 * command - reconstruct the command line from argc and argv.
 * comparator - prototype of comparator function for search feartures.
@@ -290,6 +289,7 @@ header file.
 
 # Command Line Utilities
  
+* alerts - emits zero or more BEL characters with a delay in between.
 * bakepi - monitors Raspberry Pi core temperature which throttles at 82C.
 * bucketbrigade - read from a serial port and forward to another serial port.
 * coreable - enable core dumps.
