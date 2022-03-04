@@ -323,7 +323,8 @@ extern void diminuto_writer_cleanup(void * vp);
         diminuto_reader_rwp = (_RWP_); \
         if (diminuto_reader_begin(diminuto_reader_rwp) == 0) { \
             pthread_cleanup_push(diminuto_reader_cleanup, diminuto_reader_rwp); \
-            do {
+            do { \
+                ((void)0)
 
 /**
  * @def DIMINUTO_READER_END
@@ -353,7 +354,8 @@ extern void diminuto_writer_cleanup(void * vp);
         diminuto_writer_rwp = (_RWP_); \
         if (diminuto_writer_begin(diminuto_writer_rwp) == 0) { \
             pthread_cleanup_push(diminuto_writer_cleanup, diminuto_writer_rwp); \
-            do {
+            do { \
+                ((void)0)
 
 /**
  * @def DIMINUTO_WRITER_END
