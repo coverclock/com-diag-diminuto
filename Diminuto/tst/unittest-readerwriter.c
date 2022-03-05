@@ -29,6 +29,8 @@
  * concurrently) to configure each worker thread for the maximum
  * possible iterations (MAXINT). For all practical purposes, this
  * test will not complete.
+ *
+ * unittest-readerwriter -c
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -1476,8 +1478,8 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(impatientreaders); ++ii) {
             impatientreading[ii].identifier = ii;
             impatientreading[ii].rwp = &rw;
-            impatientreading[ii].latency = frequency * randy(1, 3);
-            impatientreading[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);;
+            impatientreading[ii].latency = frequency * randy(3, 5);
+            impatientreading[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);
             impatientreading[ii].workload = frequency * randy(1, 5);
             impatientreading[ii].iterations = continuous ? LIMIT : randy(2, 13);
             impatientreads[ii] = (void *)0;
@@ -1487,8 +1489,8 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(impatientwriters); ++ii) {
             impatientwriting[ii].identifier = ii;
             impatientwriting[ii].rwp = &rw;
-            impatientwriting[ii].latency = frequency * randy(1, 3);
-            impatientwriting[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);;
+            impatientwriting[ii].latency = frequency * randy(3, 5);
+            impatientwriting[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);
             impatientwriting[ii].workload = frequency * randy(1, 5);
             impatientwriting[ii].iterations = continuous ? LIMIT : randy(2, 13);
             impatientwrites[ii] = (void *)0;
@@ -1498,7 +1500,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(aggressivereaders); ++ii) {
             aggressivereading[ii].identifier = ii;
             aggressivereading[ii].rwp = &rw;
-            aggressivereading[ii].latency = frequency * randy(1, 3);
+            aggressivereading[ii].latency = frequency * randy(5, 7);
             aggressivereading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             aggressivereading[ii].workload = frequency * randy(1, 5);
             aggressivereading[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1509,7 +1511,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(aggressivewriters); ++ii) {
             aggressivewriting[ii].identifier = ii;
             aggressivewriting[ii].rwp = &rw;
-            aggressivewriting[ii].latency = frequency * randy(1, 3);
+            aggressivewriting[ii].latency = frequency * randy(5, 7);
             aggressivewriting[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             aggressivewriting[ii].workload = frequency * randy(1, 5);
             aggressivewriting[ii].iterations = continuous ? LIMIT : randy(2, 13);
