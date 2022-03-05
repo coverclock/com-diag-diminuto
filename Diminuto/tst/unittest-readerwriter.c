@@ -1454,7 +1454,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(readers); ++ii) {
             reading[ii].identifier = ii;
             reading[ii].rwp = &rw;
-            reading[ii].latency = frequency * randy(0, 3);
+            reading[ii].latency = frequency * randy(1, 3);
             reading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             reading[ii].workload = frequency * randy(1, 5);
             reading[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1465,7 +1465,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(writers); ++ii) {
             writing[ii].identifier = ii;
             writing[ii].rwp = &rw;
-            writing[ii].latency = frequency * randy(0, 3);
+            writing[ii].latency = frequency * randy(1, 3);
             writing[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             writing[ii].workload = frequency * randy(1, 5);
             writing[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1476,7 +1476,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(impatientreaders); ++ii) {
             impatientreading[ii].identifier = ii;
             impatientreading[ii].rwp = &rw;
-            impatientreading[ii].latency = frequency * randy(0, 3);
+            impatientreading[ii].latency = frequency * randy(1, 3);
             impatientreading[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);;
             impatientreading[ii].workload = frequency * randy(1, 5);
             impatientreading[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1487,7 +1487,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(impatientwriters); ++ii) {
             impatientwriting[ii].identifier = ii;
             impatientwriting[ii].rwp = &rw;
-            impatientwriting[ii].latency = frequency * randy(0, 3);
+            impatientwriting[ii].latency = frequency * randy(1, 3);
             impatientwriting[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);;
             impatientwriting[ii].workload = frequency * randy(1, 5);
             impatientwriting[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1498,7 +1498,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(aggressivereaders); ++ii) {
             aggressivereading[ii].identifier = ii;
             aggressivereading[ii].rwp = &rw;
-            aggressivereading[ii].latency = frequency * randy(0, 3);
+            aggressivereading[ii].latency = frequency * randy(1, 3);
             aggressivereading[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             aggressivereading[ii].workload = frequency * randy(1, 5);
             aggressivereading[ii].iterations = continuous ? LIMIT : randy(2, 13);
@@ -1509,7 +1509,7 @@ int main(int argc, char * argv[])
         for (ii = 0; ii < diminuto_countof(aggressivewriters); ++ii) {
             aggressivewriting[ii].identifier = ii;
             aggressivewriting[ii].rwp = &rw;
-            aggressivewriting[ii].latency = frequency * randy(0, 3);
+            aggressivewriting[ii].latency = frequency * randy(1, 3);
             aggressivewriting[ii].timeout = DIMINUTO_READERWRITER_INFINITY;
             aggressivewriting[ii].workload = frequency * randy(1, 5);
             aggressivewriting[ii].iterations = continuous ? LIMIT : randy(2, 13);
