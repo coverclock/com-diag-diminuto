@@ -499,16 +499,12 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     DIMINUTO_LOG_DEBUG("%s\n", buffer); /* Warning otherwise. */
 
     /*
-     * Enforce the invariants.
+     * The reading and writing invariants are enforced every time RW
+     * is used, whether audit() is called or not, so we don't check
+     * them again here.
      */
 
-    diminuto_assert(
-        ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)) ||
-        ((rwp->reading >  0) && (rwp->writing == 0) && (rwp->waiting >= 0)) ||
-        ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0))
-    );
-
-    diminuto_assert(rwp->waiting == queued);
+    diminuto_assert(queued == rwp->waiting);
 
     diminuto_assert(
         ((readable == 0) && (writable == 0)) ||
