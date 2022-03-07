@@ -249,8 +249,9 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     for (ii = 1; ii < argc; ++ii) {
-        if (strcmp(argv[ii], "-d") == 0) { debug = !0; }
-        if (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
+        if      (strcmp(argv[ii], "-d") == 0) { debug = !0; }
+        else if (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
+        else                                  { /* Do nothing. */ }
     }
 
     CHECKPOINT("debug=%d continuous=%d\n", debug, continuous);
