@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	7# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	8# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1042,6 +1042,7 @@ sanity:	criticalsection
 	unittest-pool
 	unittest-proxy
 	unittest-reaper
+	unittest-readerwriter
 	unittest-renameat2
 	unittest-ring
 	unittest-scattergather4
@@ -1091,7 +1092,7 @@ extended:
 	unittest-periodic3
 	unittest-polll
 	unittest-poll-eventloop
-	unittest-readerwriter
+	unittest-readerwriter -d -f
 	unittest-time
 	unittest-time-cost
 
@@ -1118,7 +1119,7 @@ threads:
 	unittest-coherentsection
 	unittest-criticalsection
 	unittest-ipc-ancillary
-	unittest-readerwriter
+	unittest-readerwriter -d -f
 	unittest-serializedsection
 
 gnuish:
@@ -1247,7 +1248,7 @@ valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM)
 
 readerwriter:
-	make valgrind PROGRAM=unittest-readerwriter
+	make valgrind PROGRAM='unittest-readerwriter -d -f'
 
 log:
 	make valgrind PROGRAM=unittest-log

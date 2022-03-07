@@ -24,6 +24,9 @@
  *
  * COM_DIAG_DIMINUTO_LOG_MASK=0xfc unittest-readerwriter -d
  *
+ * Using the "-f" flag or the "-c" flag (see below) is required to
+ * get the final (long) test sequence to run.
+ *
  * Using the "-c" flag on the command line results in the final test
  * (the one with six different thread behaviors all operating
  * concurrently) to configure each worker thread for the maximum
@@ -81,6 +84,7 @@ struct Context {
 
 static void * reader(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
     bool check;
@@ -97,16 +101,18 @@ static void * reader(void * vp)
             ASSERT(database == 0);
             diminuto_delay(cp->workload, 0);
             ASSERT(database == 0);
+            count += 1;
         DIMINUTO_READER_END;
         CHECKPOINT("reader[%d] relinquished.\n", cp->identifier);
         ASSERT(check);
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 static void * writer(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
     bool check;
@@ -125,16 +131,18 @@ static void * writer(void * vp)
             diminuto_delay(cp->workload, 0);
             database -= 1;
             ASSERT(database == 0);
+            count += 1;
         DIMINUTO_WRITER_END;
         CHECKPOINT("writer[%d] relinquished.\n", cp->identifier);
         ASSERT(check);
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 static void * impatientreader(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
 
@@ -149,6 +157,7 @@ static void * impatientreader(void * vp)
                 ASSERT(database == 0);
                 diminuto_delay(cp->workload, 0);
                 ASSERT(database == 0);
+                count += 1;
             pthread_cleanup_pop(!0);
             CHECKPOINT("impatientreader[%d] relinquished.\n", cp->identifier);
         } else {
@@ -157,11 +166,12 @@ static void * impatientreader(void * vp)
         }
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 static void * impatientwriter(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
 
@@ -178,6 +188,7 @@ static void * impatientwriter(void * vp)
                 diminuto_delay(cp->workload, 0);
                 database -= 1;
                 ASSERT(database == 0);
+                count += 1;
             pthread_cleanup_pop(!0);
             CHECKPOINT("impatientwriter[%d] relinquished.\n", cp->identifier);
         } else {
@@ -186,11 +197,12 @@ static void * impatientwriter(void * vp)
         }
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 static void * aggressivereader(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
 
@@ -205,15 +217,17 @@ static void * aggressivereader(void * vp)
                 ASSERT(database == 0);
                 diminuto_delay(cp->workload, 0);
                 ASSERT(database == 0);
+                count += 1;
             pthread_cleanup_pop(!0);
         CHECKPOINT("aggressivereader[%d] relinquished.\n", cp->identifier);
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 static void * aggressivewriter(void * vp)
 {
+    int count = 0;
     struct Context * cp = (struct Context *)vp;
     int ii;
 
@@ -230,11 +244,12 @@ static void * aggressivewriter(void * vp)
                 diminuto_delay(cp->workload, 0);
                 database -= 1;
                 ASSERT(database == 0);
+                count += 1;
             pthread_cleanup_pop(!0);
         CHECKPOINT("aggressivewriter[%d] relinquished.\n", cp->identifier);
     }
 
-    return (void *)(intptr_t)(!0);
+    return (void *)(intptr_t)(count);
 }
 
 /******************************************************************************/
@@ -242,6 +257,7 @@ static void * aggressivewriter(void * vp)
 int main(int argc, char * argv[])
 {
     int debug = 0;
+    int full = 0;
     int continuous = 0;
     int ii;
     diminuto_ticks_t frequency;
@@ -249,12 +265,13 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     for (ii = 1; ii < argc; ++ii) {
-        if      (strcmp(argv[ii], "-d") == 0) { debug = !0; }
-        else if (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
+        if      (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
+        else if (strcmp(argv[ii], "-d") == 0) { debug = !0; }
+        else if (strcmp(argv[ii], "-f") == 0) { full = !0; }
         else                                  { /* Do nothing. */ }
     }
 
-    CHECKPOINT("debug=%d continuous=%d\n", debug, continuous);
+    CHECKPOINT("debug=%d full=%d continuous=%d\n", debug, full, continuous);
 
     frequency = diminuto_frequency();
 
@@ -1370,6 +1387,8 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    if ((!continuous) && (!full)) { goto complete; }
+
     {
         diminuto_thread_t readers[64];
         diminuto_thread_t writers[8];
@@ -1427,7 +1446,7 @@ int main(int argc, char * argv[])
             impatientreading[ii].identifier = ii;
             impatientreading[ii].rwp = &rw;
             impatientreading[ii].latency = frequency * randy(3, 5);
-            impatientreading[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);
+            impatientreading[ii].timeout = (ii == 0) ? 0 : frequency * randy(5, 60);
             impatientreading[ii].workload = frequency * randy(1, 5);
             impatientreading[ii].iterations = continuous ? LIMIT : randy(2, 13);
             impatientreads[ii] = (void *)0;
@@ -1438,7 +1457,7 @@ int main(int argc, char * argv[])
             impatientwriting[ii].identifier = ii;
             impatientwriting[ii].rwp = &rw;
             impatientwriting[ii].latency = frequency * randy(3, 5);
-            impatientwriting[ii].timeout = (ii == 0) ? 0 : frequency * randy(1, 7);
+            impatientwriting[ii].timeout = (ii == 0) ? 0 : frequency * randy(5, 300);
             impatientwriting[ii].workload = frequency * randy(1, 5);
             impatientwriting[ii].iterations = continuous ? LIMIT : randy(2, 13);
             impatientwrites[ii] = (void *)0;
@@ -1517,22 +1536,22 @@ int main(int argc, char * argv[])
 
         for (ii = 0; ii < MAXIMUM; ++ii) {
             if (ii < diminuto_countof(readers)) {
-                ASSERT(((intptr_t)reads[ii]) != 0);
+                ASSERT(((intptr_t)reads[ii]) > 0);
             }
             if (ii < diminuto_countof(writers)) {
-                ASSERT(((intptr_t)writes[ii]) != 0);
+                ASSERT(((intptr_t)writes[ii]) > 0);
             }
             if (ii < diminuto_countof(impatientreaders)) {
-                ASSERT(((intptr_t)impatientreads[ii]) != 0);
+                ADVISE(((intptr_t)impatientreads[ii]) > 0);
             }
             if (ii < diminuto_countof(impatientwriters)) {
-                ASSERT(((intptr_t)impatientwrites[ii]) != 0);
+                ADVISE(((intptr_t)impatientwrites[ii]) > 0);
             }
             if (ii < diminuto_countof(aggressivereaders)) {
-                ASSERT(((intptr_t)aggressivereads[ii]) != 0);
+                ASSERT(((intptr_t)aggressivereads[ii]) > 0);
             }
             if (ii < diminuto_countof(aggressivewriters)) {
-                ASSERT(((intptr_t)aggressivewrites[ii]) != 0);
+                ASSERT(((intptr_t)aggressivewrites[ii]) > 0);
             }
         }
 
@@ -1540,6 +1559,8 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+
+complete:
 
     EXIT();
 }
