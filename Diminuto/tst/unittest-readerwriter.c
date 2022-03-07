@@ -96,12 +96,12 @@ static void * reader(void * vp)
         check = false;
         CHECKPOINT("reader[%d] requesting.\n", cp->identifier);
         DIMINUTO_READER_BEGIN(cp->rwp);
-            CHECKPOINT("reader[%d] running.\n", cp->identifier);
+            count += 1;
+            CHECKPOINT("reader[%d] running %d.\n", cp->identifier, count);
             check = true;
             ASSERT(database == 0);
             diminuto_delay(cp->workload, 0);
             ASSERT(database == 0);
-            count += 1;
         DIMINUTO_READER_END;
         CHECKPOINT("reader[%d] relinquished.\n", cp->identifier);
         ASSERT(check);
@@ -124,14 +124,14 @@ static void * writer(void * vp)
         check = false;
         CHECKPOINT("writer[%d] requesting.\n", cp->identifier);
         DIMINUTO_WRITER_BEGIN(cp->rwp);
-            CHECKPOINT("writer[%d] running.\n", cp->identifier);
+            count += 1;
+            CHECKPOINT("writer[%d] running %d.\n", cp->identifier, count);
             check = true;
             database += 1;
             ASSERT(database == 1);
             diminuto_delay(cp->workload, 0);
             database -= 1;
             ASSERT(database == 0);
-            count += 1;
         DIMINUTO_WRITER_END;
         CHECKPOINT("writer[%d] relinquished.\n", cp->identifier);
         ASSERT(check);
@@ -153,11 +153,11 @@ static void * impatientreader(void * vp)
         CHECKPOINT("impatientreader[%d] requesting.\n", cp->identifier);
         if (diminuto_reader_begin_timed(cp->rwp, cp->timeout) == 0) {
             pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
-                CHECKPOINT("impatientreader[%d] running.\n", cp->identifier);
+                count += 1;
+                CHECKPOINT("impatientreader[%d] running %d.\n", cp->identifier, count);
                 ASSERT(database == 0);
                 diminuto_delay(cp->workload, 0);
                 ASSERT(database == 0);
-                count += 1;
             pthread_cleanup_pop(!0);
             CHECKPOINT("impatientreader[%d] relinquished.\n", cp->identifier);
         } else {
@@ -182,13 +182,13 @@ static void * impatientwriter(void * vp)
         CHECKPOINT("impatientwriter[%d] requesting.\n", cp->identifier);
         if (diminuto_writer_begin_timed(cp->rwp, cp->timeout) == 0) {
             pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
-                CHECKPOINT("impatientwriter[%d] running.\n", cp->identifier);
+                count += 1;
+                CHECKPOINT("impatientwriter[%d] running %d.\n", cp->identifier, count);
                 database += 1;
                 ASSERT(database == 1);
                 diminuto_delay(cp->workload, 0);
                 database -= 1;
                 ASSERT(database == 0);
-                count += 1;
             pthread_cleanup_pop(!0);
             CHECKPOINT("impatientwriter[%d] relinquished.\n", cp->identifier);
         } else {
@@ -213,11 +213,11 @@ static void * aggressivereader(void * vp)
         CHECKPOINT("aggressivereader[%d] requesting.\n", cp->identifier);
         ASSERT(diminuto_reader_begin_priority(cp->rwp) == 0);
             pthread_cleanup_push(diminuto_reader_cleanup, cp->rwp);
-                CHECKPOINT("aggressivereader[%d] running.\n", cp->identifier);
+                count += 1;
+                CHECKPOINT("aggressivereader[%d] running %d.\n", cp->identifier, count);
                 ASSERT(database == 0);
                 diminuto_delay(cp->workload, 0);
                 ASSERT(database == 0);
-                count += 1;
             pthread_cleanup_pop(!0);
         CHECKPOINT("aggressivereader[%d] relinquished.\n", cp->identifier);
     }
@@ -238,13 +238,13 @@ static void * aggressivewriter(void * vp)
         CHECKPOINT("aggressivewriter[%d] requested.\n", cp->identifier);
         ASSERT(diminuto_writer_begin_priority(cp->rwp) == 0);
             pthread_cleanup_push(diminuto_writer_cleanup, cp->rwp);
-                CHECKPOINT("aggressivewriter[%d] running.\n", cp->identifier);
+                count += 1;
+                CHECKPOINT("aggressivewriter[%d] running %d.\n", cp->identifier, count);
                 database += 1;
                 ASSERT(database == 1);
                 diminuto_delay(cp->workload, 0);
                 database -= 1;
                 ASSERT(database == 0);
-                count += 1;
             pthread_cleanup_pop(!0);
         CHECKPOINT("aggressivewriter[%d] relinquished.\n", cp->identifier);
     }
