@@ -1410,6 +1410,8 @@ int main(int argc, char * argv[])
         void * aggressivewrites[diminuto_countof(aggressivewriters)];
         static const int MAXIMUM = countof(readers);
         static const int TOTAL = countof(readers) + countof(writers) + countof(impatientreaders) + countof(impatientwriters) + countof(aggressivereaders) + countof(aggressivewriters);
+        size_t successfulimpatientreaders = 0;
+        size_t successfulimpatientwriters = 0;
         static const int LIMIT = maximumof(int);
         diminuto_readerwriter_t rw;
         int ii;
@@ -1541,12 +1543,6 @@ int main(int argc, char * argv[])
             if (ii < diminuto_countof(writers)) {
                 ASSERT(((intptr_t)writes[ii]) > 0);
             }
-            if (ii < diminuto_countof(impatientreaders)) {
-                ADVISE(((intptr_t)impatientreads[ii]) > 0);
-            }
-            if (ii < diminuto_countof(impatientwriters)) {
-                ADVISE(((intptr_t)impatientwrites[ii]) > 0);
-            }
             if (ii < diminuto_countof(aggressivereaders)) {
                 ASSERT(((intptr_t)aggressivereads[ii]) > 0);
             }
@@ -1554,6 +1550,22 @@ int main(int argc, char * argv[])
                 ASSERT(((intptr_t)aggressivewrites[ii]) > 0);
             }
         }
+
+        for (ii = 0; ii < diminuto_countof(impatientreaders); ++ii) {
+            if ((intptr_t)impatientreads[ii] > 0) {
+                successfulimpatientreaders += 1;
+            }
+        }
+        NOTIFY("%zu of %zu impatientreaders were successful.\n", successfulimpatientreaders, diminuto_countof(impatientreaders));
+        ADVISE(successfulimpatientreaders != diminuto_countof(impatientreaders));
+
+        for (ii = 0; ii < diminuto_countof(impatientwriters); ++ii) {
+            if ((intptr_t)impatientwrites[ii] > 0) {
+                successfulimpatientwriters += 1;
+            }
+        }
+        NOTIFY("%zu of %zu impatientwriters were successful.\n", successfulimpatientwriters, diminuto_countof(impatientwriters));
+        ADVISE(successfulimpatientwriters != diminuto_countof(impatientwriters));
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
