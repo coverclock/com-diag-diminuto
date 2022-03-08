@@ -256,6 +256,7 @@ static void * aggressivewriter(void * vp)
 
 int main(int argc, char * argv[])
 {
+    const char * program;
     int debug = 0;
     int full = 0;
     int continuous = 0;
@@ -264,8 +265,11 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
+    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
     for (ii = 1; ii < argc; ++ii) {
-        if      (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
+        if      (strcmp(argv[ii], "-?") == 0) { fprintf(stderr, "usage: %s [ -c ] [ -d ] [ -f ]\n", program); exit(0); }
+        else if (strcmp(argv[ii], "-c") == 0) { continuous = !0; }
         else if (strcmp(argv[ii], "-d") == 0) { debug = !0; }
         else if (strcmp(argv[ii], "-f") == 0) { full = !0; }
         else                                  { /* Do nothing. */ }
