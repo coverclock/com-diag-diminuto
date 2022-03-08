@@ -1257,6 +1257,6 @@ log:
 
 .PHONY:	repeat
 
-# e.g. make repeat PROGRAM='unittest-readerwriter -d'
+# e.g. make repeat PROGRAM='unittest-readerwriter -d -f'
 repeat:
 	while $(PROGRAM); do date; done
