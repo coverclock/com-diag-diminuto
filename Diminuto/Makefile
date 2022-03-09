@@ -1107,10 +1107,10 @@ signals:
 	unittest-terminator
 
 hangup:
-	rm -f nohup.out && nohup unittest-hangup-1 && cat nohup.out
-	rm -f nohup.out && nohup unittest-hangup-2 && cat nohup.out
-	rm -f nohup.out && nohup unittest-hangup-3 && cat nohup.out
-	rm -f nohup.out && nohup unittest-hangup-4 && cat nohup.out
+	unittest-hangup-1
+	unittest-hangup-2
+	unittest-hangup-3
+	unittest-hangup-4
 
 threads:
 	unittest-mutex
