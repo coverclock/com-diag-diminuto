@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish hangup logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1015,6 +1015,10 @@ sanity:	criticalsection
 	unittest-fs
 	unittest-guards
 	unittest-hamming
+	unittest-hangup-1
+	unittest-hangup-2
+	unittest-hangup-3
+	unittest-hangup-4
 	unittest-heap
 	unittest-interrupter
 	unittest-ipc
@@ -1101,16 +1105,14 @@ geologic:
 
 signals:
 	unittest-alarm
-	unittest-interrupter
-	unittest-pipe | sleep 5
-	unittest-reaper
-	unittest-terminator
-
-hangup:
 	unittest-hangup-1
 	unittest-hangup-2
 	unittest-hangup-3
 	unittest-hangup-4
+	unittest-interrupter
+	unittest-pipe | sleep 5
+	unittest-reaper
+	unittest-terminator
 
 threads:
 	unittest-mutex
@@ -1236,16 +1238,19 @@ renameat2:
 cxxcapi:
 	make -C cxx
 
-criticalsections:	criticalsection hangup
+criticalsections:	criticalsection
 	unittest-alarm
 	unittest-buffer
+	unittest-hangup-1
+	unittest-hangup-2
+	unittest-hangup-3
+	unittest-hangup-4
 	unittest-interrupter
 	unittest-ipc-ancillary
 	unittest-ipc-scattergather
 	unittest-pipe | sleep 5
-	unittest-readerwriter -d -f
+	unittest-readerwriter
 	unittest-reaper
-	unittest-ipc-scattergather
 	unittest-terminator
 	unittest-thread
 	unittest-time
