@@ -104,6 +104,9 @@ int main(int argc, char ** argv)
 
         CHECKPOINT("unittest-hangup-tree CHILD READY\n");
 
+        pid = getppid();
+        ASSERT(pid >= 0);
+
         rc = diminuto_hangup_signal(pid);
         ASSERT(rc == 0);
 

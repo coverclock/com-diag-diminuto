@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish logger logging nohup privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish hangup logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1107,10 +1107,10 @@ signals:
 	unittest-terminator
 
 hangup:
-	unittest-hangup-1
-	unittest-hangup-2
-	unittest-hangup-3
-	unittest-hangup-4
+	rm -f nohup.out && nohup unittest-hangup-1 && cat nohup.out
+	rm -f nohup.out && nohup unittest-hangup-2 && cat nohup.out
+	rm -f nohup.out && nohup unittest-hangup-3 && cat nohup.out
+	rm -f nohup.out && nohup unittest-hangup-4 && cat nohup.out
 
 threads:
 	unittest-mutex
@@ -1236,13 +1236,9 @@ renameat2:
 cxxcapi:
 	make -C cxx
 
-criticalsections:	criticalsection
+criticalsections:	criticalsection hangup
 	unittest-alarm
 	unittest-buffer
-	# unittest-hangup-1
-	# unittest-hangup-2
-	# unittest-hangup-3
-	# unittest-hangup-4
 	unittest-interrupter
 	unittest-ipc-ancillary
 	unittest-ipc-scattergather

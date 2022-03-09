@@ -8,6 +8,11 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is a unit test of the Hangup feature.
+ *
+ * Model: parent creates lock file, parent forks child, parent delays for SIGHUP
+ * signal from child indicating successful initialization, child populates lock
+ * file and signals parent with SIGHUP, parent checks lock file, parent waits
+ * for child to exit, parent verifies child status is zero.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -97,6 +102,9 @@ int main(int argc, char ** argv)
         ASSERT(rc == 0);
 
         CHECKPOINT("unittest-hangup-fore CHILD READY\n");
+
+        pid = getppid();
+        ASSERT(pid >= 0);
 
         rc = diminuto_hangup_signal(pid);
         ASSERT(rc == 0);
