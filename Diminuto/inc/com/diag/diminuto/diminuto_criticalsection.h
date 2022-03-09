@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements critical section begin and end operators.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -17,6 +17,7 @@
  */
 
 #include <pthread.h>
+#include "com/diag/diminuto/diminuto_log.h"
 
 /**
  * This is the thread cleanup action.
@@ -31,9 +32,13 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
  */
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
+        pthread_mutex_t * diminuto_criticalsection_mp; \
+        int diminuto_criticalsection_rc; \
         diminuto_criticalsection_mp = (_MP_); \
-        if (pthread_mutex_lock(diminuto_criticalsection_mp) == 0) { \
+        if ((diminuto_criticalsection_rc = pthread_mutex_lock(diminuto_criticalsection_mp)) != 0) { \
+            errno = diminuto_criticalsection_rc; \
+            diminuto_perror("DIMINUTO_CRITICAL_SECTION_BEGIN: pthread_mutex_lock"); \
+        } else { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
                 (void)0
@@ -46,9 +51,15 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
  */
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
+        pthread_mutex_t * diminuto_criticalsection_mp; \
+        int diminuto_criticalsection_rc; \
         diminuto_criticalsection_mp = (_MP_); \
-        if (pthread_mutex_trylock(diminuto_criticalsection_mp) == 0) { \
+        if ((diminuto_criticalsection_rc = pthread_mutex_trylock(diminuto_criticalsection_mp)) == EBUSY) { \
+            errno = diminuto_criticalsection_rc; \
+        } else if (diminuto_criticalsection_rc != 0) { \
+            errno = diminuto_criticalsection_rc; \
+            diminuto_perror("DIMINUTO_CRITICAL_SECTION_BEGIN: pthread_mutex_lock"); \
+        } else { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
                 (void)0
@@ -62,7 +73,6 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
             } while (0); \
             pthread_cleanup_pop(!0); \
         } \
-        diminuto_criticalsection_mp = (pthread_mutex_t *)0; \
     } while (0)
 
 #endif

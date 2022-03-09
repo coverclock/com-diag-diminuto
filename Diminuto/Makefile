@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	12# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	13# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection cxxcapi extended geologic gnuish logger logging nohup privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish logger logging nohup privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1102,15 +1102,15 @@ geologic:
 signals:
 	unittest-alarm
 	unittest-interrupter
-	unittest-pipe | cat > /dev/null & sleep 1 && pkill -x -n cat
+	unittest-pipe | sleep 5
 	unittest-reaper
 	unittest-terminator
 
 hangup:
-	unittest-hangup-wan
-	unittest-hangup-too
-	unittest-hangup-tree
-	unittest-hangup-fore
+	unittest-hangup-1
+	unittest-hangup-2
+	unittest-hangup-3
+	unittest-hangup-4
 
 threads:
 	unittest-mutex
@@ -1235,6 +1235,25 @@ renameat2:
 
 cxxcapi:
 	make -C cxx
+
+criticalsections:	criticalsection
+	unittest-alarm
+	unittest-buffer
+	# unittest-hangup-1
+	# unittest-hangup-2
+	# unittest-hangup-3
+	# unittest-hangup-4
+	unittest-interrupter
+	unittest-ipc-ancillary
+	unittest-ipc-scattergather
+	unittest-pipe | sleep 5
+	unittest-readerwriter -d -f
+	unittest-reaper
+	unittest-ipc-scattergather
+	unittest-terminator
+	unittest-thread
+	unittest-time
+	unittest-timer
 
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
 

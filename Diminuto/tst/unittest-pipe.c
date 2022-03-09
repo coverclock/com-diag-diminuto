@@ -11,9 +11,7 @@
  *
  * EXAMPLE
  *
- * unittest-pipe | cat > /dev/null &
- *
- * pkill cat
+ * unittest-pipe | sleep 5
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -25,7 +23,7 @@
 
 extern int diminuto_pipe_debug;
 
-static const char BUFFER[] = "unittest-pipe | cat > /dev/null & sleep 1 & pkill -x -n cat\n";
+static const char BUFFER[] = "unittest-pipe | sleep 5\n";
 
 int main(int argc, char ** argv)
 {

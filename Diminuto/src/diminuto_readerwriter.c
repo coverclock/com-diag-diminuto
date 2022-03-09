@@ -66,16 +66,20 @@ static pthread_key_t key;
 /**
  * @def BEGIN_CRITICAL_SECTION
  * This is the opening bracket of a critical section using the mutex
- * in the Reader Writer object pointed to by @a _RWP_. Note that
- * _RWP_ is referenced more than once, so must be devoid of side
- * effects.
+ * in the Reader Writer object pointed to by @a _RWP_.
  */
 #define BEGIN_CRITICAL_SECTION(_RWP_) \
     do { \
-        if ((errno = pthread_mutex_lock(&((_RWP_)->mutex))) != 0) { \
+        diminuto_readerwriter_t * diminuto_readerwriter_rwp; \
+        int diminuto_readerwriter_rc; \
+        diminuto_readerwriter_rwp = (_RWP_); \
+        if ((diminuto_readerwriter_rc = pthread_mutex_lock(&(diminuto_readerwriter_rwp->mutex))) != 0) { \
+            errno = diminuto_readerwriter_rc; \
             diminuto_perror("diminuto_readerwriter: BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
         } else { \
-            pthread_cleanup_push(mutex_cleanup, (_RWP_))
+            pthread_cleanup_push(mutex_cleanup, diminuto_readerwriter_rwp); \
+            do { \
+                ((void)0)
 
 /**
  * @def END_CRITICAL_SECTION
@@ -83,6 +87,7 @@ static pthread_key_t key;
  * in the Reader Writer object.
  */
 #define END_CRITICAL_SECTION \
+            } while (0); \
             pthread_cleanup_pop(!0); \
         } \
     } while (0)
