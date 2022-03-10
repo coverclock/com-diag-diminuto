@@ -15,9 +15,25 @@
  * code sections that cannot be interrupted by specified set of signals.
  */
 
+#include "com/diag/diminuto/diminuto_countof.h"
 #include <signal.h>
 #include <pthread.h>
-#include "com/diag/diminuto/diminuto_countof.h"
+
+/**
+ * Populate the provided signal set with the currently blocked signals and
+ * then additionally block the signals in the provided array.
+ * @param signals is an array of signal numbers.
+ * @param count is the number of signal numbers in the array.
+ * @param sp points to the signal set of previously block signals.
+ * @return 0 for success, or <0 with errno set if an error occurred.
+ */
+extern int diminuto_uninterruptiblesection_block(const int signals[], size_t count, sigset_t * sp);
+
+/**
+ * Restore the blocked signals to those signals in the provided signal set.
+ * @param vp points to the set of prior blocked signals.
+ */
+extern void diminuto_uninterruptiblesection_cleanup(void * vp);
 
 /**
  * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN
@@ -27,17 +43,12 @@
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(...) \
     do { \
-        const int diminuto_uninterruptible_section_signals[] = { __VA_ARGS__ }; \
-        int diminuto_uninterruptible_section_ndx = 0; \
-        sigset_t diminuto_uninterruptible_section_now; \
-        sigset_t diminuto_uninterruptible_section_was; \
-        sigemptyset(&diminuto_uninterruptible_section_now); \
-        for (diminuto_uninterruptible_section_ndx = 0; diminuto_uninterruptible_section_ndx < diminuto_countof(diminuto_uninterruptible_section_signals); ++diminuto_uninterruptible_section_ndx) { \
-            sigaddset(&diminuto_uninterruptible_section_now, diminuto_uninterruptible_section_signals[diminuto_uninterruptible_section_ndx]); \
-        } \
-        pthread_sigmask(SIG_BLOCK, &diminuto_uninterruptible_section_now, &diminuto_uninterruptible_section_was); \
-        do { \
-            ((void)0)
+        const int diminuto_uninterruptiblesection_signals[] = { __VA_ARGS__ }; \
+        sigset_t diminuto_uninterruptiblesection_set; \
+        if (diminuto_uninterruptiblesection_block(diminuto_uninterruptiblesection_signals, diminuto_countof(diminuto_uninterruptiblesection_signals), &diminuto_uninterruptiblesection_set) == 0) { \
+            pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &diminuto_uninterruptiblesection_set); \
+            do { \
+                ((void)0)
 
 /**
  * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_END
@@ -46,8 +57,9 @@
  * original state at the beginning of the block.
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
-        } while (0); \
-        pthread_sigmask(SIG_SETMASK, &diminuto_uninterruptible_section_was, (sigset_t *)0); \
+            } while (0); \
+            pthread_cleanup_pop(!0); \
+        } \
     } while (0)
 
 #endif
