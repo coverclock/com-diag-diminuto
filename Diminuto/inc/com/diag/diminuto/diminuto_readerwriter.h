@@ -118,6 +118,7 @@ typedef struct DiminutoReaderWriter {
     int reading;                                /**< Active (>=0) readers. */
     int writing;                                /**< Active {0,1} writers. */
     int waiting;                                /**< Waiting (>=0) threads. */
+    int maximum;                                /**< Maximum waiting. */
 } diminuto_readerwriter_t;
 
 /**
@@ -133,6 +134,7 @@ typedef struct DiminutoReaderWriter {
         PTHREAD_COND_INITIALIZER, \
         PTHREAD_COND_INITIALIZER, \
         DIMINUTO_LIST_INITIALIZER, \
+        0, \
         0, \
         0, \
         0, \
@@ -389,5 +391,12 @@ extern void diminuto_writer_cleanup(void * vp);
  * @return the prior value of the debugging flag.
  */
 extern int diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, int debugging);
+
+/**
+ * Return the maximum size of the wait queue and reset the maximum to the
+ * current size of the wait queue.
+ * @param rwp points to the Reader Writer object.
+ */
+extern int diminuto_readerwriter_maximum(diminuto_readerwriter_t * rwp);
 
 #endif

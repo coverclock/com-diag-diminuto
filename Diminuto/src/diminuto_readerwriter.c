@@ -174,6 +174,7 @@ static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
 static inline void enqueue(diminuto_readerwriter_t * rwp, diminuto_list_t * np, int priority)
 {
     rwp->waiting += 1;
+    if (rwp->waiting > rwp->maximum) { rwp->maximum = rwp->waiting; }
     diminuto_list_insert(diminuto_list_prev(priority ? front(rwp) : &(rwp->list)), np);
 }
 
@@ -358,6 +359,7 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
         rwp->reading = 0;
         rwp->writing = 0;
         rwp->waiting = 0;
+        rwp->maximum = 0;
         result = rwp;
     }
 
@@ -446,7 +448,10 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dwriting", rwp->writing);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dwaiting {", rwp->waiting);
+    length = snprintf(bp, size, " %dwaiting", rwp->waiting);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dmaximum {", rwp->maximum);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     rp = diminuto_list_root(&(rwp->list));
@@ -510,6 +515,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
      */
 
     diminuto_assert(queued == rwp->waiting);
+    diminuto_assert(rwp->waiting <= rwp->maximum);
 
     diminuto_assert(
         ((readable == 0) && (writable == 0)) ||
@@ -1245,6 +1251,20 @@ int diminuto_readerwriter_debug(diminuto_readerwriter_t * rwp, int debugging)
     END_CRITICAL_SECTION;
 
     return prior;
+}
+
+int diminuto_readerwriter_maximum(diminuto_readerwriter_t * rwp)
+{
+    int maximum = 0;
+
+    BEGIN_CRITICAL_SECTION(rwp);
+
+        maximum = rwp->maximum;
+        rwp->maximum = rwp->waiting;
+
+    END_CRITICAL_SECTION;
+
+    return maximum;
 }
 
 /*******************************************************************************

@@ -376,6 +376,8 @@ int main(int argc, char * argv[])
 
         ASSERT(diminuto_readerwriter_head(&rw) == (diminuto_list_t *)0);
 
+        ASSERT(rw.maximum == 0);
+
         /* NODE 1 (READABLE or WRITABLE) */
 
         ASSERT(diminuto_list_init(&node1) == &node1);
@@ -385,6 +387,7 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_enqueue(&rw, &node1, 0);
         ASSERT(rw.waiting == 1);
+        ASSERT(rw.maximum == 1);
         ASSERT(diminuto_list_head(&rw.list) == &node1);
         ASSERT(diminuto_list_next(&node1) == &rw.list);
 
@@ -415,6 +418,7 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_enqueue(&rw, &node2, 0);
         ASSERT(rw.waiting == 2);
+        ASSERT(rw.maximum == 2);
         ASSERT(diminuto_list_head(&rw.list) == &node1);
         ASSERT(diminuto_list_next(&node1) == &node2);
         ASSERT(diminuto_list_next(&node2) == &rw.list);
@@ -435,6 +439,7 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_enqueue(&rw, &node3, !0);
         ASSERT(rw.waiting == 3);
+        ASSERT(rw.maximum == 3);
         ASSERT(diminuto_list_head(&rw.list) == &node1);
         ASSERT(diminuto_list_next(&node1) == &node3);
         ASSERT(diminuto_list_next(&node3) == &node2);
@@ -458,6 +463,7 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_enqueue(&rw, &node4, 0);
         ASSERT(rw.waiting == 4);
+        ASSERT(rw.maximum == 4);
         ASSERT(diminuto_list_head(&rw.list) == &node1);
         ASSERT(diminuto_list_next(&node1) == &node3);
         ASSERT(diminuto_list_next(&node3) == &node2);
@@ -485,10 +491,14 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_dequeue(&rw, &node1);
         ASSERT(rw.waiting == 3);
+        ASSERT(rw.maximum == 4);
         ASSERT(diminuto_list_head(&rw.list) == &node3);
         ASSERT(diminuto_list_next(&node3) == &node2);
         ASSERT(diminuto_list_next(&node2) == &node4);
         ASSERT(diminuto_list_next(&node4) == &rw.list);
+
+        ASSERT(diminuto_readerwriter_maximum(&rw) == 4);
+        ASSERT(diminuto_readerwriter_maximum(&rw) == 3);
 
         ASSERT(!diminuto_readerwriter_ready(&rw, &node3, READABLE));
         ASSERT(!diminuto_readerwriter_ready(&rw, &node3, WRITABLE));
@@ -518,6 +528,7 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_dequeue(&rw, &node3);
         ASSERT(rw.waiting == 2);
+        ASSERT(rw.maximum == 3);
         ASSERT(diminuto_list_head(&rw.list) == &node2);
         ASSERT(diminuto_list_next(&node2) == &node4);
         ASSERT(diminuto_list_next(&node4) == &rw.list);
@@ -530,6 +541,7 @@ int main(int argc, char * argv[])
         /* NODE 2 removed as a side effect of ready/head. */
 
         ASSERT(rw.waiting == 1);
+        ASSERT(rw.maximum == 3);
         ASSERT(diminuto_list_head(&rw.list) == &node4);
         ASSERT(diminuto_list_next(&node4) == &rw.list);
 
@@ -549,7 +561,11 @@ int main(int argc, char * argv[])
 
         diminuto_readerwriter_dequeue(&rw, &node4);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 3);
         ASSERT(diminuto_list_head(&rw.list) == (diminuto_list_t *)0);
+
+        ASSERT(diminuto_readerwriter_maximum(&rw) == 3);
+        ASSERT(diminuto_readerwriter_maximum(&rw) == 0);
 
         /* Finish. */
 
@@ -574,24 +590,29 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_reader_begin(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_begin(&rw) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -614,19 +635,23 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -634,6 +659,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -641,6 +667,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             ASSERT(errno == ETIMEDOUT);
@@ -648,14 +675,17 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 1);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -663,6 +693,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -670,19 +701,23 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 1);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 1);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -706,17 +741,20 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_writer_begin(&rw) == 0); }
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         { ASSERT(diminuto_writer_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -740,11 +778,13 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_writer_begin_timed(&rw, frequency) == 0); }
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, 0) < 0); }
             diminuto_perror("diminuto_reader_begin_timed");
@@ -752,6 +792,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, 0) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -759,6 +800,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             errno = 0;
             { ASSERT(diminuto_reader_begin_timed(&rw, frequency) < 0); }
             diminuto_perror("diminuto_reader_begin_timed");
@@ -766,6 +808,7 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
             errno = 0;
             { ASSERT(diminuto_writer_begin_timed(&rw, frequency) < 0); }
             diminuto_perror("diminuto_writer_begin_timed");
@@ -773,11 +816,13 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 1);
         { ASSERT(diminuto_writer_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 1);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -801,17 +846,20 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         DIMINUTO_READER_BEGIN(&rw);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -836,17 +884,20 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         DIMINUTO_WRITER_BEGIN(&rw);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -871,18 +922,21 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -890,12 +944,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -903,12 +959,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -933,18 +991,21 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         success = 0;
         DIMINUTO_WRITER_BEGIN(&rw);
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -952,12 +1013,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -965,12 +1028,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -995,18 +1060,21 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         success = 0;
         DIMINUTO_READER_BEGIN(&rw);
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -1014,12 +1082,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -1027,28 +1097,33 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
             DIMINUTO_READER_BEGIN(&rw);
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 0);
                 success = success && !0;
                 DIMINUTO_READER_BEGIN(&rw);
                     ASSERT(rw.reading == 3);
                     ASSERT(rw.writing == 0);
                     ASSERT(rw.waiting == 0);
+                    ASSERT(rw.maximum == 0);
                     success = success && !0;
                 DIMINUTO_READER_END;
             DIMINUTO_READER_END;
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = success && !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -1056,12 +1131,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_WRITER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         success = 0;
@@ -1069,12 +1146,14 @@ int main(int argc, char * argv[])
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         DIMINUTO_READER_END;
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
@@ -1098,24 +1177,29 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_reader_begin_priority(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_begin_priority(&rw) == 0); }
                 ASSERT(rw.reading == 2);
                 ASSERT(rw.writing == 0);
                 ASSERT(rw.waiting == 0);
+                ASSERT(rw.maximum == 0);
             { ASSERT(diminuto_reader_end(&rw) == 0); }
             ASSERT(rw.reading == 1);
             ASSERT(rw.writing == 0);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
         { ASSERT(diminuto_reader_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 
@@ -1139,17 +1223,20 @@ int main(int argc, char * argv[])
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
 
         { ASSERT(diminuto_writer_begin_priority(&rw) == 0); }
             ASSERT(rw.reading == 0);
             ASSERT(rw.writing == 1);
             ASSERT(rw.waiting == 0);
+            ASSERT(rw.maximum == 0);
             success = !0;
         { ASSERT(diminuto_writer_end(&rw) == 0); }
 
         ASSERT(rw.reading == 0);
         ASSERT(rw.writing == 0);
         ASSERT(rw.waiting == 0);
+        ASSERT(rw.maximum == 0);
         ASSERT(success == !0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
