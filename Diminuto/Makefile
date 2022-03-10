@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	79# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -968,7 +968,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: criticalsection criticalsections cxxcapi extended geologic gnuish logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: brackets criticalsection criticalsections cxxcapi extended geologic gnuish logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage
 	vintage
@@ -1255,6 +1255,13 @@ criticalsections:	criticalsection
 	unittest-thread
 	unittest-time
 	unittest-timer
+
+brackets:
+	unittest-barrier
+	unittest-coherentsection
+	unittest-criticalsection
+	unittest-serializedsection
+	unittest-uninterruptiblesection
 
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
 

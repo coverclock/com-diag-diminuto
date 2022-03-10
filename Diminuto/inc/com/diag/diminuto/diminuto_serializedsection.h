@@ -4,14 +4,16 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2019 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements macros to to bracket sections serialized with spin locks.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * The Serialized Section feature uses the Barrier feature to implement
- * a code section serialized between multiple processors. EXPERIMENTAL.
+ *
+ * The Serialized Section feature uses the Barrier feature with bracketing
+ * macros to implement a code section serialized between multiple processors.
+ * EXPERIMENTAL.
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"
@@ -25,14 +27,18 @@
  * Start a code block that is serialized using a spin lock and busy waiting by
  * blocking on an integer lock variable specified by the caller as a pointer to
  * a volatile variable of type int but be provided as the argument @a _INTP_.
+ * Note that the while loop iterates as long as the builtin returns !0 (true,
+ * or already locked by someone else), and exits once the builtin returns
+ * 0 (false, or unlocked), indicating that the lock has transitioned to !0
+ * (true, or locked on the caller's behalf).
  */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                    volatile diminuto_spinlock_t * diminuto_serialized_section_spinlock_p = (volatile diminuto_spinlock_t *)0; \
+                    volatile diminuto_spinlock_t * diminuto_serialized_section_spinlock_p; \
                     diminuto_serialized_section_spinlock_p = (_INTP_); \
-                    while (__sync_lock_test_and_set(diminuto_serialized_section_spinlock_p, 1)); \
+                    while (__sync_lock_test_and_set(diminuto_serialized_section_spinlock_p, !0)); \
                     do { \
-                        (void)0
+                        ((void)0)
 
 /**
  * @def DIMINUTO_SERIALIZED_SECTION_END
@@ -51,7 +57,7 @@
 #if !defined(DIMINUTO_SERIALIZED_SECTION_BEGIN) || !defined(DIMINUTO_SERIALIZED_SECTION_END)
 #   warning DIMINUTO_SERIALISED_SECTION_BEGIN and DIMINUTO_SERIALIZED_SECTION_END are no-ops!
 #   undef DIMINUTO_SERIALIZED_SECTION_BEGIN
-#   defined DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) do {
+#   defined DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) do { ((void)0)
 #   undef DIMINUTO_SERIALIZED_SECTION_END
 #   defined DIMINUTO_SERIALIZED_SECTION_END } while (0)
 #endif

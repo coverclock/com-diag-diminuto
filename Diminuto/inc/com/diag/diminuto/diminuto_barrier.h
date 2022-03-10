@@ -10,7 +10,9 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is experimental.
+ * 
+ * Provides an interface to memory barriers with acquire and release semantics.
+ * EXPERIMENTAL
  */
 
 typedef int diminuto_spinlock_t;

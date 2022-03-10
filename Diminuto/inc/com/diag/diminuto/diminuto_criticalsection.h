@@ -12,8 +12,9 @@
  * @details
  *
  * The Critical Section feature implements a critical section of
- * code using a POSIX pthread mutex. The mutex is automatically
- * unlocked if the thread cleanup action is invoked.
+ * code using a POSIX pthread mutex in a set of bracketing macros.
+ * The mutex is automatically unlocked if the thread cleanup action
+ * is invoked.
  */
 
 #include <pthread.h>
@@ -51,7 +52,7 @@ extern void diminuto_criticalsection_cleanup(void * vp);
         if (diminuto_criticalsection_lock(diminuto_criticalsection_mp) == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
-                (void)0
+                ((void)0)
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_TRY
@@ -66,7 +67,7 @@ extern void diminuto_criticalsection_cleanup(void * vp);
         if (diminuto_criticalsection_trylock(diminuto_criticalsection_mp) == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
-                (void)0
+                ((void)0)
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_END

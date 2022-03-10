@@ -4,15 +4,15 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements macros to begin and end sections that cannot be interrupted by kill(2) signals.
+ * @brief Implements bracketing macros for code that cannot be interrupted.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * The Uninterruptible Section feature provides a code section that
- * cannot be interrupted by a signal.
+ * The Uninterruptible Section feature provides bracketing macros for
+ * code sections that cannot be interrupted by specified set of signals.
  */
 
 #include <signal.h>
@@ -27,17 +27,17 @@
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(...) \
     do { \
+        const int diminuto_uninterruptible_section_signals[] = { __VA_ARGS__ }; \
+        int diminuto_uninterruptible_section_ndx = 0; \
         sigset_t diminuto_uninterruptible_section_now; \
         sigset_t diminuto_uninterruptible_section_was; \
         sigemptyset(&diminuto_uninterruptible_section_now); \
-        int diminuto_uninterruptible_section_signals[] = { __VA_ARGS__ }; \
-        int diminuto_uninterruptible_section_ndx = 0; \
         for (diminuto_uninterruptible_section_ndx = 0; diminuto_uninterruptible_section_ndx < diminuto_countof(diminuto_uninterruptible_section_signals); ++diminuto_uninterruptible_section_ndx) { \
             sigaddset(&diminuto_uninterruptible_section_now, diminuto_uninterruptible_section_signals[diminuto_uninterruptible_section_ndx]); \
         } \
         pthread_sigmask(SIG_BLOCK, &diminuto_uninterruptible_section_now, &diminuto_uninterruptible_section_was); \
         do { \
-            (void)0
+            ((void)0)
 
 /**
  * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_END
