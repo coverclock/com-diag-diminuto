@@ -1066,7 +1066,7 @@ sanity:	criticalsection
 	unittest-time-zone
 	unittest-tree
 	unittest-types
-	unittest-uninterruptible
+	unittest-uninterruptiblesection
 	unittest-well
 	unittest-widthof
 
@@ -1195,7 +1195,7 @@ timers:
 	unittest-periodic3
 	unittest-periodic4
 	unittest-alarm
-	unittest-uninterruptible
+	unittest-uninterruptiblesection
 	unittest-modulator
 
 sockets0:
