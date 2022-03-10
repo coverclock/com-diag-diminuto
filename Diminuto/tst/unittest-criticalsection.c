@@ -70,22 +70,18 @@ int main(void)
 
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex1);
 
-            int error = EBUSY;
-
-            ASSERT(pthread_mutex_trylock(&mutex1) == error);
+            ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
             ASSERT(pthread_mutex_trylock(&mutex2) == 0);
             pthread_mutex_unlock(&mutex2);
 
             DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex2);
 
-                int error = EBUSY;
-
-                ASSERT(pthread_mutex_trylock(&mutex1) == error);
-                ASSERT(pthread_mutex_trylock(&mutex2) == error);
+                ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
+                ASSERT(pthread_mutex_trylock(&mutex2) == EBUSY);
 
             DIMINUTO_CRITICAL_SECTION_END;
 
-            ASSERT(pthread_mutex_trylock(&mutex1) == error);
+            ASSERT(pthread_mutex_trylock(&mutex1) == EBUSY);
             ASSERT(pthread_mutex_trylock(&mutex2) == 0);
             pthread_mutex_unlock(&mutex2);
 
@@ -158,8 +154,9 @@ int main(void)
             DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
                 rc = 2;
             DIMINUTO_CRITICAL_SECTION_END;
+            ASSERT(rc == 1);
+            ASSERT(errno == EBUSY);
         DIMINUTO_CRITICAL_SECTION_END;
-        ASSERT(rc == 1);
 
         rc = 0;
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
@@ -167,8 +164,9 @@ int main(void)
             DIMINUTO_CRITICAL_SECTION_TRY(&mutex);
                 rc = 2;
             DIMINUTO_CRITICAL_SECTION_END;
+            ASSERT(rc == 1);
+            ASSERT(errno == EBUSY);
         DIMINUTO_CRITICAL_SECTION_END;
-        ASSERT(rc == 1);
 
         STATUS();
     }

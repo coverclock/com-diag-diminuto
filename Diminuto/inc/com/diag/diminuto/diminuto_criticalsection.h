@@ -17,13 +17,27 @@
  */
 
 #include <pthread.h>
-#include "com/diag/diminuto/diminuto_log.h"
 
 /**
- * This is the thread cleanup action.
- * @param voidp is the pointer POSIX passes to the cleanup function.
+ * Lock a POSIX mutex.
+ * @param mp points to the mutex.
+ * @return 0 for success, <0 with errno set if an error occurred.
  */
-extern void diminuto_criticalsection_cleanup(void * voidp);
+extern int diminuto_criticalsection_lock(pthread_mutex_t * mp);
+
+/**
+ * Try to lock a POSIX mutex. Return <0 with errno set to EBUSY if
+ * the mutex was already locked.
+ * @param mp points to the mutex.
+ * @return 0 for success, <0 with errno set if an error occurred.
+ */
+extern int diminuto_criticalsection_trylock(pthread_mutex_t * mp);
+
+/**
+ * This is the thread cleanup callback.
+ * @param vp is the pointer POSIX passes to the cleanup function.
+ */
+extern void diminuto_criticalsection_cleanup(void * vp);
 
 /**
  * @def DIMINUTO_CRITICAL_SECTION_BEGIN
@@ -33,12 +47,8 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MP_) \
     do { \
         pthread_mutex_t * diminuto_criticalsection_mp; \
-        int diminuto_criticalsection_rc; \
         diminuto_criticalsection_mp = (_MP_); \
-        if ((diminuto_criticalsection_rc = pthread_mutex_lock(diminuto_criticalsection_mp)) != 0) { \
-            errno = diminuto_criticalsection_rc; \
-            diminuto_perror("DIMINUTO_CRITICAL_SECTION_BEGIN: pthread_mutex_lock"); \
-        } else { \
+        if (diminuto_criticalsection_lock(diminuto_criticalsection_mp) == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
                 (void)0
@@ -52,14 +62,8 @@ extern void diminuto_criticalsection_cleanup(void * voidp);
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MP_) \
     do { \
         pthread_mutex_t * diminuto_criticalsection_mp; \
-        int diminuto_criticalsection_rc; \
         diminuto_criticalsection_mp = (_MP_); \
-        if ((diminuto_criticalsection_rc = pthread_mutex_trylock(diminuto_criticalsection_mp)) == EBUSY) { \
-            errno = diminuto_criticalsection_rc; \
-        } else if (diminuto_criticalsection_rc != 0) { \
-            errno = diminuto_criticalsection_rc; \
-            diminuto_perror("DIMINUTO_CRITICAL_SECTION_BEGIN: pthread_mutex_lock"); \
-        } else { \
+        if (diminuto_criticalsection_trylock(diminuto_criticalsection_mp) == 0) { \
             pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
             do { \
                 (void)0
