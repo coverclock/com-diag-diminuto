@@ -1104,6 +1104,7 @@ geologic:
 	unittest-epoch geologic
 
 signals:
+	unittest-uninterruptiblesection
 	unittest-alarm
 	unittest-hangup-1
 	unittest-hangup-2
