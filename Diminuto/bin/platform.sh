@@ -4,8 +4,8 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 #
-# This script generates the platform descriptions I use in the README when
-# it is run on the target. Note that in the case of cross-compilation, there
+# When run on the target, this script generates the platform descriptions I
+# use in the project's README. Note that in the case of cross-compilation, there
 # will be two platforms: the one on which the project is built, and the on
 # which the project is run.
 #
