@@ -11,28 +11,28 @@
 #
 # EXAMPLES
 #
-# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz x86_64
+# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz x86_64 x4
 # Ubuntu 20.04.3 LTS (Focal Fossa)
 # Linux 5.13.0-28-generic
 # gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0
 # ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
 # GNU Make 4.2.1
 #
-# Intel(R) Core(TM) i7-5557U CPU @ 3.10GHz x86_64
+# Intel(R) Core(TM) i7-5557U CPU @ 3.10GHz x86_64 x4
 # Ubuntu 20.04.3 LTS (Focal Fossa)
 # Linux 5.4.0-97-generic
 # gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0
 # ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
 # GNU Make 4.2.1
 #
-# Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114 aarch64
+# Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114 aarch64 x4
 # Ubuntu 21.10 (Impish Indri)
 # Linux 5.13.0-1017-raspi
 # gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0
 # ldd (Ubuntu GLIBC 2.34-0ubuntu3.2) 2.34
 # GNU Make 4.3
 #
-# Raspberry Pi 4 Model B Rev 1.1 ARMv7 Processor rev 3 (v7l) BCM2711 c03111 armv7l
+# Raspberry Pi 4 Model B Rev 1.1 ARMv7 Processor rev 3 (v7l) BCM2711 c03111 armv7l x4
 # Raspbian GNU/Linux 10 (buster)
 # Linux 5.4.51-v7l+
 # gcc (Raspbian 8.3.0-6+rpi1) 8.3.0
@@ -42,15 +42,27 @@
 . /etc/os-release
 
 MODELNAME=$(grep '^model name[	]*: ' /proc/cpuinfo | head -1 | sed 's/^model name[	]*: //')
+
 MODEL=$(grep '^Model[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Model[	]*: //')
+
 HARDWARE=$(grep '^Hardware[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Hardware[	]*: //')
+
 REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*: //')
+
+PROCESSORS=$(grep '^processor[	]*: ' /proc/cpuinfo | wc -l)
+
 PROCESSORTYPE=$(uname -m)
+
 OPERATINGSYSTEM="${NAME} ${VERSION}"
+
 KERNELNAME=$(uname -s)
+
 KERNELRELEASE=$(uname -r)
+
 GCCVERSION=$(gcc --version | head -1)
+
 LIBCVERSION=$(ldd --version | head -1)
+
 MAKEVERSION=$(make --version | head -1)
 
 TARGET="${MODEL}"
@@ -64,7 +76,7 @@ if [[ -n "${REVISION}" ]]; then
 	TARGET="${TARGET} ${REVISION}"
 fi
 
-echo ${TARGET} ${PROCESSORTYPE}
+echo ${TARGET} ${PROCESSORTYPE} x${PROCESSORS}
 echo ${OPERATINGSYSTEM}
 echo ${KERNELNAME} ${KERNELRELEASE}
 echo ${GCCVERSION}
