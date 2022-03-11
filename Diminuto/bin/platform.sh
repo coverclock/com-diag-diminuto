@@ -25,14 +25,14 @@
 # ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
 # GNU Make 4.2.1
 #
-# aarch64
+# Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114 aarch64
 # Ubuntu 21.10 (Impish Indri)
 # Linux 5.13.0-1017-raspi
 # gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0
 # ldd (Ubuntu GLIBC 2.34-0ubuntu3.2) 2.34
 # GNU Make 4.3
 #
-# ARMv7 Processor rev 3 (v7l) armv7l
+# Raspberry Pi 4 Model B Rev 1.1 ARMv7 Processor rev 3 (v7l) BCM2711 c03111 armv7l
 # Raspbian GNU/Linux 10 (buster)
 # Linux 5.4.51-v7l+
 # gcc (Raspbian 8.3.0-6+rpi1) 8.3.0
@@ -41,7 +41,10 @@
 
 . /etc/os-release
 
-MODELNAME=$(grep '^model name	: ' /proc/cpuinfo | head -1 | sed 's/^model name	: //')
+MODELNAME=$(grep '^model name[	]*: ' /proc/cpuinfo | head -1 | sed 's/^model name[	]*: //')
+MODEL=$(grep '^Model[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Model[	]*: //')
+HARDWARE=$(grep '^Hardware[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Hardware[	]*: //')
+REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*: //')
 PROCESSORTYPE=$(uname -m)
 OPERATINGSYSTEM="${NAME} ${VERSION}"
 KERNELNAME=$(uname -s)
@@ -50,7 +53,18 @@ GCCVERSION=$(gcc --version | head -1)
 LIBCVERSION=$(ldd --version | head -1)
 MAKEVERSION=$(make --version | head -1)
 
-echo ${MODELNAME} ${PROCESSORTYPE}
+TARGET="${MODEL}"
+if [[ -n "${MODELNAME}" ]]; then
+	TARGET="${TARGET} ${MODELNAME}"
+fi
+if [[ -n "${HARDWARE}" ]]; then
+	TARGET="${TARGET} ${HARDWARE}"
+fi
+if [[ -n "${REVISION}" ]]; then
+	TARGET="${TARGET} ${REVISION}"
+fi
+
+echo ${TARGET} ${PROCESSORTYPE}
 echo ${OPERATINGSYSTEM}
 echo ${KERNELNAME} ${KERNELRELEASE}
 echo ${GCCVERSION}
