@@ -319,6 +319,7 @@ header file.
 * phex - display standard input in a printable form.
 * pinchange - execute a command when a GPIO pin changes state.
 * pintool - manipulate GPIO pins.
+* platform - generate the platform description used in the README.
 * pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin.
 * renametool - atomically rename or swap files in the same file system.
 * serialtool - manipulate serial ports.
