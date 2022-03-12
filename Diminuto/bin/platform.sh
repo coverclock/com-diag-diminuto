@@ -22,30 +22,26 @@
 # GNU Make 4.2.1
 #
 
-MODELNAME=$(grep '^model name[	]*: ' /proc/cpuinfo | head -1 | sed 's/^model name[	]*: //')
+PROCESSORS=1
+if [[ -r /proc/cpuinfo ]]; then
+	MODELNAME=$(grep '^model name[	]*: ' /proc/cpuinfo | head -1 | sed 's/^model name[	]*: //')
+	MODEL=$(grep '^Model[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Model[	]*: //')
+	HARDWARE=$(grep '^Hardware[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Hardware[	]*: //')
+	REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*: //')
+	PROCESSORS=$(grep '^processor[	]*: ' /proc/cpuinfo | wc -l)
+fi
 
-MODEL=$(grep '^Model[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Model[	]*: //')
-
-HARDWARE=$(grep '^Hardware[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Hardware[	]*: //')
-
-REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*: //')
-
-PROCESSORS=$(grep '^processor[	]*: ' /proc/cpuinfo | wc -l)
-
-. /etc/os-release
-
-OPERATINGSYSTEM="${NAME} ${VERSION}"
+if [[ -r /etc/os-release ]]; then
+	. /etc/os-release
+	OPERATINGSYSTEM="${NAME} ${VERSION}"
+fi
 
 PROCESSORTYPE=$(uname -m)
-
 KERNELNAME=$(uname -s)
-
 KERNELRELEASE=$(uname -r)
 
 GCCVERSION=$(gcc --version | head -1)
-
 LIBCVERSION=$(ldd --version | head -1)
-
 MAKEVERSION=$(make --version | head -1)
 
 TARGET="${MODEL}"
