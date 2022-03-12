@@ -8,10 +8,19 @@
 # use in the project's README. Note that in the case of cross-compilation, there
 # will be two platforms: the one on which the project is built, and the on
 # which the project is run. See the platforms listed in the Diminuto README
-# for examples.
+# for additional examples.
 #
-
-. /etc/os-release
+# EXAMPLE
+#
+# $ platform
+# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz
+# x86_64 x4
+# Ubuntu 20.04.3 LTS (Focal Fossa)
+# Linux 5.13.0-28-generic
+# gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0
+# ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
+# GNU Make 4.2.1
+#
 
 MODELNAME=$(grep '^model name[	]*: ' /proc/cpuinfo | head -1 | sed 's/^model name[	]*: //')
 
@@ -23,9 +32,11 @@ REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*
 
 PROCESSORS=$(grep '^processor[	]*: ' /proc/cpuinfo | wc -l)
 
-PROCESSORTYPE=$(uname -m)
+. /etc/os-release
 
 OPERATINGSYSTEM="${NAME} ${VERSION}"
+
+PROCESSORTYPE=$(uname -m)
 
 KERNELNAME=$(uname -s)
 
