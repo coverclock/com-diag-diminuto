@@ -970,8 +970,10 @@ install-include:
 
 .PHONY: brackets criticalsection criticalsections cxxcapi extended geologic gnuish logger logging privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
-vintage:	$(OUT)/$(SYM_DIR)/vintage
+vintage:	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(BIN_DIR)/platform $(OUT)/$(BIN_DIR)/sizeof
 	vintage
+	platform
+	sizeof
 
 sourcing:	vintage
 	unittest-sourcing
