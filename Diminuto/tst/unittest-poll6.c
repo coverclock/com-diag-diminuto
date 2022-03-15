@@ -22,7 +22,6 @@
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_fd.h"
-#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
 #include <errno.h>
 #include <stdio.h>
@@ -138,7 +137,7 @@ int main(int argc, char ** argv)
             diminuto_poll_dump(&poll);
 
             ASSERT(diminuto_alarm_install(0) == 0);
-            ASSERT(diminuto_timer_oneshot(diminuto_frequency()) == 0);
+            ASSERT(diminuto_timer_periodic(diminuto_frequency()) == 0);
 
             here = output;
             used = sizeof(output);
@@ -255,9 +254,9 @@ int main(int argc, char ** argv)
 
             ASSERT(input_16 == output_16);
 
-            CHECKPOINT("timeouts=%d\n", timeouts);
+            NOTIFY("timeouts=%d\n", timeouts);
             ADVISE(timeouts > 0);
-            CHECKPOINT("alarms=%d\n", alarms);
+            NOTIFY("alarms=%d\n", alarms);
             ADVISE(alarms > 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
@@ -285,6 +284,8 @@ int main(int argc, char ** argv)
             ASSERT(diminuto_ipc6_close(listener) >= 0);
 
             ASSERT(diminuto_poll_init(&poll) == &poll);
+
+            ASSERT(diminuto_delay(diminuto_frequency() * 2, !0) >= 0);
 
             ASSERT((consumer = diminuto_ipc6_stream_consumer(diminuto_ipc6_address("localhost"), rendezvous)) >= 0);
             ASSERT(diminuto_poll_register_read(&poll, consumer) >= 0);
