@@ -1648,7 +1648,7 @@ int main(int argc, char * argv[])
             }
         }
         NOTIFY("%zu of %zu impatientreaders were successful.\n", successfulimpatientreaders, diminuto_countof(impatientreaders));
-        ADVISE(successfulimpatientreaders == diminuto_countof(impatientreaders));
+        ADVISE(successfulimpatientreaders > 0);
 
         for (ii = 0; ii < diminuto_countof(impatientwriters); ++ii) {
             if ((intptr_t)impatientwrites[ii] > 0) {
@@ -1656,7 +1656,7 @@ int main(int argc, char * argv[])
             }
         }
         NOTIFY("%zu of %zu impatientwriters were successful.\n", successfulimpatientwriters, diminuto_countof(impatientwriters));
-        ADVISE(successfulimpatientwriters == diminuto_countof(impatientwriters));
+        ADVISE(successfulimpatientwriters > 0);
 
         ASSERT(diminuto_readerwriter_fini(&rw) == (diminuto_readerwriter_t *)0);
 

@@ -110,6 +110,9 @@ int main(int argc, char ** argv)
 
             diminuto_poll_dump(&poll);
 
+            timeouts = 0;
+            alarms = 0;
+
             while (!0) {
                 if ((ready = diminuto_poll_wait(&poll, diminuto_frequency())) > 0) {
                     break;
@@ -146,9 +149,6 @@ int main(int argc, char ** argv)
             there = input;
             available = sizeof(input);
             received = 0;
-
-            timeouts = 0;
-            alarms = 0;
 
             totalsent = 0;
             totalreceived = 0;
@@ -254,7 +254,9 @@ int main(int argc, char ** argv)
 
             ASSERT(input_16 == output_16);
 
+            CHECKPOINT("timeouts=%d\n", timeouts);
             ADVISE(timeouts > 0);
+            CHECKPOINT("alarms=%d\n", alarms);
             ADVISE(alarms > 0);
 
             EXPECT(waitpid(pid, &status, 0) == pid);
