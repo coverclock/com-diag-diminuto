@@ -33,6 +33,7 @@ static inline diminuto_mux_set_t * diminuto_mux_set_init(diminuto_mux_set_t * se
     setp->next = -1;
     FD_ZERO(&setp->active);
     FD_ZERO(&setp->ready);
+
     return setp;
 }
 
@@ -109,5 +110,34 @@ static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * set
  * @return 0 for success or <0 for failure (e.g. the fd was not registered).
  */
 static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent);
+
+/**
+ * Return the name of a multiplexer set.
+ * @param muxp points to a multiplexer structure.
+ * @param setp points to a set structure in the same multiplexer structure.
+ * @return the canonical name of the set.
+ */
+const char * diminuto_mux_set_name(const diminuto_mux_t * muxp, const diminuto_mux_set_t * setp);
+
+/**
+ * Dump the signals in a signal set.
+ * @param muxp points to a multiplexer structure.
+ * @param sigs points to the signal set.
+ */
+extern void diminuto_mux_sigs_dump(const diminuto_mux_t * muxp, const sigset_t * sigs);
+
+/**
+ * Dump the file descriptors in a file descriptor set.
+ * @param muxp points to a multiplexer structure.
+ * @param fds points to the file descriptor set.
+ */
+extern void diminuto_mux_fds_dump(const diminuto_mux_t * muxp, const fd_set * fds);
+
+/**
+ * Dump a set structure in a multiplexer structure.
+ * @param muxp points to the multiplexer structure.
+ * @param setp points to a set structure in the same multiplexer structure.
+ */
+extern void diminuto_mux_set_dump(const diminuto_mux_t * muxp, const diminuto_mux_set_t * setp);
 
 #endif

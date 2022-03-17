@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2016 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a model for doing multiplexing using pselect(2).
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -295,36 +295,9 @@ extern int diminuto_mux_ready_interrupt(diminuto_mux_t * muxp);
 extern int diminuto_mux_close(diminuto_mux_t * muxp, int fd);
 
 /**
- * Return the name of a multiplexer set.
- * @param muxp points to a multiplexer structure.
- * @param setp points to a set structure in the same multiplexer structure.
- * @return the canonical name of the set.
- */
-const char * diminuto_mux_set_name(diminuto_mux_t * muxp, diminuto_mux_set_t * setp);
-
-/**
- * Dump the signals in a signal set.
- * @param sigs points to the signal set.
- */
-extern void diminuto_mux_sigs_dump(sigset_t * sigs);
-
-/**
- * Dump the file descriptors in a file descriptor set.
- * @param fds points to the file descriptor set.
- */
-extern void diminuto_mux_fds_dump(fd_set * fds);
-
-/**
- * Dump a set structure in a multiplexer structure.
- * @param muxp points to the multiplexer structure.
- * @param setp points to a set structure in the same multiplexer structure.
- */
-extern void diminuto_mux_set_dump(diminuto_mux_t * muxp, diminuto_mux_set_t * setp);
-
-/**
  * Dump a multiplexer structure.
  * @param muxp points to the multiplexer structure.
  */
-extern void diminuto_mux_dump(diminuto_mux_t * muxp);
+extern void diminuto_mux_dump(const diminuto_mux_t * muxp);
 
 #endif

@@ -108,10 +108,15 @@ int main(int argc, char ** argv)
             ASSERT(sigprocmask(SIG_BLOCK, &mask, (sigset_t *)0) == 0);
 
             ASSERT(diminuto_mux_init(&mux) == &mux);
+            NOTIFY("diminuto_mux_init diminuto_mux_dump");
+            diminuto_mux_dump(&mux);
 
             ASSERT(diminuto_mux_register_accept(&mux, listener) >= 0);
-            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
+            NOTIFY("diminuto_mux_register_accept diminuto_mux_dump");
+            diminuto_mux_dump(&mux);
 
+            ASSERT(diminuto_mux_unregister_signal(&mux, SIGALRM) >= 0);
+            NOTIFY("diminuto_mux_unregister_signal diminuto_mux_dump");
             diminuto_mux_dump(&mux);
 
             timeouts = 0;
