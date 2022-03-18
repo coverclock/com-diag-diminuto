@@ -55,12 +55,12 @@ if [[ -n "${REVISION}" ]]; then
 	TARGET="${TARGET} ${REVISION}"
 fi
 
-echo ${TARGET}
-echo ${PROCESSORTYPE} x${PROCESSORS}
-echo ${OPERATINGSYSTEM}
-echo ${KERNELNAME} ${KERNELRELEASE}
-echo ${GCCVERSION}
-echo ${LIBCVERSION}
-echo ${MAKEVERSION}
+echo ${TARGET} "    "
+echo ${PROCESSORTYPE} x${PROCESSORS} "    "
+echo ${OPERATINGSYSTEM} "    "
+echo ${KERNELNAME} ${KERNELRELEASE} "    "
+echo ${GCCVERSION} "    "
+echo ${LIBCVERSION} "    "
+echo ${MAKEVERSION} "    "
 
 exit 0

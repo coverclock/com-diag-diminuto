@@ -151,21 +151,21 @@ gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0
 ldd (Ubuntu GLIBC 2.34-0ubuntu3.2) 2.34    
 GNU Make 4.3    
 
-Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111
-aarch64 x4
-Debian GNU/Linux 11 (bullseye)
-Linux 5.10.103-v8+
-gcc (Debian 10.2.1-6) 10.2.1 20210110
-ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u2) 2.31
-GNU Make 4.3
+Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111    
+aarch64 x4    
+Debian GNU/Linux 11 (bullseye)    
+Linux 5.10.103-v8+    
+gcc (Debian 10.2.1-6) 10.2.1 20210110    
+ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u2) 2.31    
+GNU Make 4.3    
 
-ARMv7 Processor rev 4 (v7l) BCM2835 a020d3
-armv7l x4
-Raspbian GNU/Linux 9 (stretch)
-Linux 4.19.66-v7+
-gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516
-ldd (Debian GLIBC 2.24-11+deb9u4) 2.24
-GNU Make 4.1
+ARMv7 Processor rev 4 (v7l) BCM2835 a020d3    
+armv7l x4    
+Raspbian GNU/Linux 9 (stretch)    
+Linux 4.19.66-v7+    
+gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516    
+ldd (Debian GLIBC 2.24-11+deb9u4) 2.24    
+GNU Make 4.1    
 
 # Library
 
