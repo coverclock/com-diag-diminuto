@@ -30,7 +30,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	80# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
@@ -189,7 +189,8 @@ MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
 DISTROVERSION		:=	$(shell test -r /etc/os-release && grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell test -r /etc/os-release && grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
-ABI					:=  $(shell basename $(shell readlink -e $(shell which $(CC))))
+ABI					:=	$(shell basename $(shell readlink -e $(shell which $(CC))))
+TRIPLET				:=	$(shell $(CC) -dumpmachine)
 
 ########## Build Artifacts
 
@@ -493,6 +494,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Target=\"$(TARGET)\"\n"' >> $@
 	echo '    "Title=\"$(TITLE)\"\n"' >> $@
 	echo '    "Toolchain=\"$(TOOLCHAIN)\"\n"' >> $@
+	echo '    "Triplet=\"$(TRIPLET)\"\n"' >> $@
 	echo '    "User=\"$(USER)\"\n"' >> $@
 	echo '    "Vintage=\"" COM_DIAG_$(SYMBOL)_VINTAGE "\"\n"' >> $@
 	echo ';' >> $@
@@ -577,6 +579,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    "Target=\\"$(TARGET)\\"\\n"' >> $@
 	echo '    "Title=\\"$(TITLE)\\"\\n"' >> $@
 	echo '    "Toolchain=\\"$(TOOLCHAIN)\\"\\n"' >> $@
+	echo '    "Triplet=\\"$(TRIPLET)\\"\\n"' >> $@
 	echo '    "User=\\"$(USER)\\"\\n"' >> $@
 	echo '    "Vintage=\\"" COM_DIAG_$(SYMBOL)_VINTAGE "\\"\\n"' >> $@
 	echo ';' >> $@
