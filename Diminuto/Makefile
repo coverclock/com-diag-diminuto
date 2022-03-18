@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	80# API changes that may require that applications be modified.
-MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	1# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -189,6 +189,7 @@ MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
 DISTROVERSION		:=	$(shell test -r /etc/os-release && grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell test -r /etc/os-release && grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
+ABI					:=  $(shell basename $(shell readlink -e $(shell which $(CC))))
 
 ########## Build Artifacts
 
@@ -468,6 +469,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
+	echo '    "Abi=\"$(ABI)\"\n"' >> $@
 	echo '    "Arch=\"$(ARCH)\"\n"' >> $@
 	echo '    "Branch=\"$(BRANCH)\"\n"' >> $@
 	echo '    "Cc=\"$(CCVERSION)\"\n"' >> $@
@@ -551,6 +553,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '#include <stdio.h>' >> $@
 	echo '#include <assert.h>' >> $@
 	echo 'static const char METADATA[] =' >> $@
+	echo '    "Abi=\\"$(ABI)\\"\\n"' >> $@
 	echo '    "Arch=\\"$(ARCH)\\"\\n"' >> $@
 	echo '    "Branch=\\"$(BRANCH)\\"\\n"' >> $@
 	echo '    "Cc=\\"$(CCVERSION)\\"\\n"' >> $@

@@ -6,20 +6,21 @@
 #
 # When run on the target, this script generates the platform descriptions I
 # use in the project's README. Note that in the case of cross-compilation, there
-# will be two platforms: the one on which the project is built, and the on
-# which the project is run. See the platforms listed in the Diminuto README
-# for additional examples.
+# will effectively be three platforms: the one on which the project is built,
+# the one defined by the cross-compilation toolchain on the platform on which
+# the project is built, and the on which the project is actually run. See the
+# platforms listed in the Diminuto README for additional examples.
 #
 # EXAMPLE
 #
 # $ platform
-# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz
-# x86_64 x4
-# Ubuntu 20.04.3 LTS (Focal Fossa)
-# Linux 5.13.0-28-generic
-# gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0
-# ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
-# GNU Make 4.2.1
+# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz    
+# x86_64 x4    
+# Ubuntu 20.04.3 LTS (Focal Fossa)    
+# Linux 5.13.0-28-generic    
+# gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0    
+# ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31    
+# GNU Make 4.2.1    
 #
 
 PROCESSORS=1
