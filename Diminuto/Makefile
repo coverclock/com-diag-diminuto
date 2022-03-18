@@ -30,7 +30,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	80# API changes that may require that applications be modified.
-MINOR				:=	2# Only functionality or features added with no legacy API changes.
+MINOR				:=	3# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
@@ -188,6 +188,7 @@ VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
 MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
+BINUTILSVERSION		:=	$(shell $(LD) --version < /dev/null 2>&1 | head -1)
 DISTROVERSION		:=	$(shell test -r /etc/os-release && grep '^NAME=' /etc/os-release | sed 's/^NAME="//' | sed 's/"//') $(shell test -r /etc/os-release && grep '^VERSION=' /etc/os-release | sed 's/^VERSION="//' | sed 's/"//')
 ABI					:=	$(shell basename $(shell readlink -e $(shell which $(CC))))
 TRIPLET				:=	$(shell $(CC) -dumpmachine)
@@ -472,6 +473,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'static const char METADATA[] =' >> $@
 	echo '    "Abi=\"$(ABI)\"\n"' >> $@
 	echo '    "Arch=\"$(ARCH)\"\n"' >> $@
+	echo '    "Binutuls=\"$(BINUTILSVERSION)\"\n"' >> $@
 	echo '    "Branch=\"$(BRANCH)\"\n"' >> $@
 	echo '    "Cc=\"$(CCVERSION)\"\n"' >> $@
 	echo '    "Contact=\"$(CONTACT)\"\n"' >> $@
@@ -557,6 +559,7 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo 'static const char METADATA[] =' >> $@
 	echo '    "Abi=\\"$(ABI)\\"\\n"' >> $@
 	echo '    "Arch=\\"$(ARCH)\\"\\n"' >> $@
+	echo '    "Binutils=\\"$(BINUTILSVERSION)\\"\\n"' >> $@
 	echo '    "Branch=\\"$(BRANCH)\\"\\n"' >> $@
 	echo '    "Cc=\\"$(CCVERSION)\\"\\n"' >> $@
 	echo '    "Contact=\\"$(CONTACT)\\"\\n"' >> $@
