@@ -419,8 +419,6 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     char * bp = (char *)0;
     size_t size = 0;
     int length = 0;
-    unsigned int blocked = 0;
-    unsigned int faulty = 0;
     unsigned int readable = 0;
     unsigned int writable = 0;
     unsigned int readers = 0;
@@ -448,6 +446,10 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, "%s audit@%p[%zu]", label, rwp, sizeof(*rwp));
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
+    /*
+     * These counters are part of the Reader Writer object state.
+     */
+
     length = snprintf(bp, size, " %dreading", rwp->reading);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
@@ -460,18 +462,22 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dmaximum {", rwp->maximum);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
+    /*
+     * Step through the wait list.
+     */
+
     rp = diminuto_list_root(&(rwp->list));
     np = diminuto_list_next(rp);
     while (np != rp) {
         role = (role_t)diminuto_list_data(np);
         switch (role) {
-            case READABLE: ++readable; if (blocked > 0) { ++faulty; } break;
-            case WRITABLE: ++writable; if (blocked > 0) { ++faulty; } break;
-            case READER:   ++readers; ++blocked; break;
-            case WRITER:   ++writers; ++blocked; break;
-            case STARTED:  ++started; break;
-            case FAILED:   ++failed;  break;
-            case RUNNING:  ++running; break;
+            case READABLE: ++readable; break;
+            case WRITABLE: ++writable; break;
+            case READER:   ++readers;  break;
+            case WRITER:   ++writers;  break;
+            case STARTED:  ++started;  break;
+            case FAILED:   ++failed;   break;
+            case RUNNING:  ++running;  break;
             default:       ++unknown; role = UNKNOWN; break;
         }
         length = snprintf(bp, size, "%c", role);
@@ -480,16 +486,11 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
         np = diminuto_list_next(np);
     }
 
+    /*
+     * These counters may be zero or greater.
+     */
+
     length = snprintf(bp, size, "} %dqueued", queued);
-    if ((0 < length) && (length < size)) { bp += length; size -= length; }
-
-    length = snprintf(bp, size, " %dreadable", readable);
-    if ((0 < length) && (length < size)) { bp += length; size -= length; }
-
-    length = snprintf(bp, size, " %dwritable", writable);
-    if ((0 < length) && (length < size)) { bp += length; size -= length; }
-
-    length = snprintf(bp, size, " %dblocked", blocked);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %dreaders", readers);
@@ -498,10 +499,20 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     length = snprintf(bp, size, " %dwriters", writers);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
+    length = snprintf(bp, size, " %dfailed", failed);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    /*
+     * These counters should always be zero.
+     */
+
     length = snprintf(bp, size, " %dstarted", started);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
-    length = snprintf(bp, size, " %dfailed", failed);
+    length = snprintf(bp, size, " %dreadable", readable);
+    if ((0 < length) && (length < size)) { bp += length; size -= length; }
+
+    length = snprintf(bp, size, " %dwritable", writable);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     length = snprintf(bp, size, " %drunning", running);
@@ -520,20 +531,29 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
      * them again here.
      */
 
-    diminuto_assert(queued == rwp->waiting);
+    diminuto_assert(rwp->reading >= 0);
+    diminuto_assert(rwp->writing >= 0);
+    diminuto_assert(rwp->waiting >= 0);
+    diminuto_assert(rwp->maximum >= 0);
+
     diminuto_assert(rwp->waiting <= rwp->maximum);
 
-    diminuto_assert(
-        ((readable == 0) && (writable == 0)) ||
-        ((readable >  0) && (writable == 0)) ||
-        ((readable == 0) && (writable == 1))
-    );
+    diminuto_assert(queued  >= 0);
+    diminuto_assert(readers >= 0);
+    diminuto_assert(writers >= 0);
+    diminuto_assert(failed  >= 0);
 
-    diminuto_assert(faulty  == 0);
-    diminuto_assert(started == 0);
-    diminuto_assert(failed  == 0);
-    diminuto_assert(running == 0);
-    diminuto_assert(unknown == 0);
+    diminuto_assert(queued == rwp->waiting);
+
+    /*
+     * None of these states should have been on the wait list.
+     */
+
+    diminuto_assert(readable == 0);
+    diminuto_assert(writable == 0);
+    diminuto_assert(started  == 0);
+    diminuto_assert(running  == 0);
+    diminuto_assert(unknown  == 0);
 
     errno = save;
 }
@@ -655,7 +675,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
     diminuto_list_dataset(np, (void *)waiting);
     enqueue(rwp, np, priority);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %s WAITING %dreading %dwriting %dwaiting", label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s WAITING %s %s %dreading %dwriting %dwaiting", label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
 
     /*
      * Wait until this thread is signaled and activated. Note that POSIX
@@ -690,7 +710,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
 
     diminuto_list_dataset(np, (void *)RUNNING);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %dreading %dwriting %dwaiting", label, (rc == 0) ? "SATISFIED" : "UNSATISFIED", rwp->reading, rwp->writing, rwp->waiting);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %dreading %dwriting %dwaiting", label, (rc == 0) ? "ACTIVATED" : "TIMEDOUT", rwp->reading, rwp->writing, rwp->waiting);
 
     return rc;
 }
@@ -776,7 +796,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             cp = &(rwp->reader);
             result = role;
             required = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader SIGNALED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader ACTIVATED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
             continue;
 
         } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
@@ -791,7 +811,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             rwp->writing += 1; /* WRITING COUNTER INCREMENT */
             cp = &(rwp->writer);
             result = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer SIGNALED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer ACTIVATED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
             break;
 
         } else {
