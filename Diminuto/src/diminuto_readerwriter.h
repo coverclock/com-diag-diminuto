@@ -28,6 +28,7 @@
 typedef enum DiminutoReaderWriterRole {
     ANY         = '*',  /**< Any role. */
     NONE        = '-',  /**< No role. */
+    UNKNOWN     = '?',  /**< Unknown role. */
     STARTED     = 'S',  /**< Initial thread role. */
     READER      = 'R',  /**< Waiting reader role. */
     WRITER      = 'W',  /**< Waiting writer role. */
@@ -36,6 +37,11 @@ typedef enum DiminutoReaderWriterRole {
     WRITABLE    = 'w',  /**< Pending writer role. */
     RUNNING     = 'A',  /**< Running thread role. */
 } diminuto_readerwriter_role_t;
+
+/*
+ * According to spell(1), this is the correct spelling for the word "writable".
+ * Seems wrong to me.
+ */
 
 /*******************************************************************************
  * PRIVATE
@@ -77,11 +83,10 @@ extern void diminuto_readerwriter_enqueue(diminuto_readerwriter_t * rwp, diminut
  * Return true if the indicated node in the list is now at the head, and the
  * state of that node is now pending, indicating that the waiting reader or
  * writer has been activated, false otherwise.
- * @param rwp points to the Reader Writer object.
  * @param np points to the list node for the calling thread.
  * @param pending is the pending role to be used: READABLE or WRITABLE.
  * @return true if the token is both head and pending, false otherwise.
  */
-extern int diminuto_readerwriter_ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, diminuto_readerwriter_role_t pending);
+extern int diminuto_readerwriter_ready(diminuto_list_t * np, diminuto_readerwriter_role_t pending);
 
 #endif

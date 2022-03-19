@@ -264,10 +264,9 @@ extern void diminuto_unittest_flush(void);
         diminuto_unittest_number = diminuto_unittest_tests; \
         diminuto_unittest_count = diminuto_unittest_error(); \
         DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "PANIC: tests=%d errors=%d errno=%d %s " _TITLE_ "\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno, "PANIC!"); \
+        diminuto_stacktrace(); \
         diminuto_unittest_flush(); \
-        diminuto_core_enable(); \
         diminuto_core_fatal(); \
-        exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
     } while (0)
 
 /*******************************************************************************
@@ -335,8 +334,9 @@ extern void diminuto_unittest_flush(void);
             diminuto_unittest_number = diminuto_unittest_tests; \
             diminuto_unittest_count = diminuto_unittest_error(); \
             DIMINUTO_LOG_ERROR(DIMINUTO_LOG_HERE "ASSERT: tests=%d errors=%d errno=%d !(%s)!\n", diminuto_unittest_number, diminuto_unittest_count, diminuto_unittest_errno,  #_CONDITION_); \
+            diminuto_stacktrace(); \
             diminuto_unittest_flush(); \
-            exit(diminuto_unittest_count > DIMINUTO_UNITTEST_MAXIMUM ? DIMINUTO_UNITTEST_MAXIMUM : diminuto_unittest_count); \
+            diminuto_core_fatal(); \
         } \
     } while (0)
 

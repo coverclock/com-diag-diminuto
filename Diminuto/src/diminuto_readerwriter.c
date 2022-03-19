@@ -18,6 +18,21 @@
  * header file for more details. But the asserts failing indicates a very
  * serious bug in my code, implying the reader-writer synchronization is
  * unreliable.
+ *
+ * This is Generation 3 of the Reader Writer feature. The implementation of
+ * the various generations vary significantly, although the API and its
+ * semantics (at least from the caller's point of view) remains the same.
+ * The differences between the generations represent successive optimizations
+ * ("Make it work; then make it fast.").
+ *
+ * Generation 2 replaced the token ring buffer with the doubly-linked wait
+ * list.
+ *
+ * Generation 3 removed activated threads immediately from the wait list
+ * and updated the Reader Writer lock state rather than wait for the threads
+ * to activate and do it themselves. It also replaced the condition variable
+ * broadcast signal done by every activating thread by a single broadcast
+ * signal for a bulk activation (this made a big difference for readers).
  */
 
 #include "com/diag/diminuto/diminuto_readerwriter.h"
@@ -97,6 +112,49 @@ static pthread_key_t key;
  ******************************************************************************/
 
 /**
+ * Return the node in the wait list that is the closest to the head of the list
+ * without being pending. If the wait list is empty, this will be the head of
+ * the list, not a node on the list. A new node, representing a soon-to-be
+ * waiting thread, that requests priority scheduling, will be scheduled before
+ * the returned node.
+ * @param rwp points to the Reader Writer object.
+ * @return the node after which a priority node can be inserted.
+ */
+static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
+{
+    diminuto_list_t * np = (diminuto_list_t *)0;
+    role_t role = NONE;
+
+    for (np = diminuto_list_next(&(rwp->list)); !diminuto_list_isroot(np); np = diminuto_list_next(np)) {
+        role = (role_t)diminuto_list_data(np);
+        if (role == READER) {
+            break;
+        } else if (role == WRITER) {
+            break;
+        } else if (role == FAILED) {
+            break;
+        } else {
+            /* Do nothing. */
+        }
+    }
+
+    return np;
+}
+
+/**
+ * Insert a node onto the wait list.
+ * @param rwp points to the Reader Writer object.
+ * @param np points to the node to be inserted.
+ * @param priority is true if high priority, false otherwise.
+ */
+static inline void enqueue(diminuto_readerwriter_t * rwp, diminuto_list_t * np, int priority)
+{
+    rwp->waiting += 1; /* WAITING COUNTER INCREMENT */
+    if (rwp->waiting > rwp->maximum) { rwp->maximum = rwp->waiting; }
+    (void)diminuto_list_insert(diminuto_list_prev(priority ? front(rwp) : &(rwp->list)), np);
+}
+
+/**
  * Remove a node from the wait list.
  * @param rwp points to the Reader Writer object.
  * @param np points to the node to be removed.
@@ -104,7 +162,21 @@ static pthread_key_t key;
 static inline void dequeue(diminuto_readerwriter_t * rwp, diminuto_list_t * np)
 {
     (void)diminuto_list_remove(np);
-    rwp->waiting -= 1;
+    rwp->waiting -= 1; /* WAITING COUNTER DECREMENT */
+}
+
+/**
+ * Return true if the state of the indicated node in the list is now pending,
+ * indicating that the waiting reader or writer has been activated, false
+ * otherwise. Calling head has the side effect of removing any failed threads
+ * off the head of the list.
+ * @param np points to the list node for the calling thread.
+ * @param pending is the pending role to be used: READABLE or WRITABLE.
+ * @return true if the token is both head and pending, false otherwise.
+ */
+static inline int ready(diminuto_list_t * np, role_t pending)
+{
+    return ((role_t)diminuto_list_data(np) == pending);
 }
 
 /**
@@ -120,78 +192,12 @@ static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
 {
     diminuto_list_t * np = (diminuto_list_t *)0;
 
-    while (!0) {
-       if ((np = diminuto_list_head(&(rwp->list))) == (diminuto_list_t *)0) {
-            break;
-        } else if ((role_t)diminuto_list_data(np) != FAILED) {
-            break;
-        } else {
-            dequeue(rwp, np);
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Failed %p REMOVED %dreading %dwriting %dwaiting", np, rwp->reading, rwp->writing, rwp->waiting);
-        }
+    while (((np = diminuto_list_head(&(rwp->list))) != (diminuto_list_t *)0) && ((role_t)diminuto_list_data(np) == FAILED)) {
+        dequeue(rwp, np);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Failed %p REMOVED %dreading %dwriting %dwaiting", np, rwp->reading, rwp->writing, rwp->waiting);
     }
 
     return np;
-}
-
-/**
- * Return the node in the wait list that is the closest to the head of the list
- * without being pending. If the wait list is empty, this will be the head of
- * the list.
- * @param rwp points to the Reader Writer object.
- * @return the node after which a priority node can be inserted.
- */
-static diminuto_list_t * front(diminuto_readerwriter_t * rwp)
-{
-    diminuto_list_t * np = (diminuto_list_t *)0;
-
-    np = diminuto_list_next(&(rwp->list));
-    while (!0) {
-        if (diminuto_list_isroot(np)) {
-            /* List is empty or wrapped around to root. */
-            break;
-        } else if ((role_t)diminuto_list_data(np) == READABLE) {
-            /* Waiting reader has already been activated. */
-            np = diminuto_list_next(np);
-        } else if ((role_t)diminuto_list_data(np) == WRITABLE) {
-            /* Waiting writer has already been activated. */
-            np = diminuto_list_next(np);
-        } else {
-            /* Found the first non-pending waiting node. */
-            break;
-        }
-    }
-
-    return np;
-}
-
-/**
- * Insert a node onto the wait list.
- * @param rwp points to the Reader Writer object.
- * @param np points to the node to be inserted.
- * @param priority is true if high priority, false otherwise.
- */
-static inline void enqueue(diminuto_readerwriter_t * rwp, diminuto_list_t * np, int priority)
-{
-    rwp->waiting += 1;
-    if (rwp->waiting > rwp->maximum) { rwp->maximum = rwp->waiting; }
-    diminuto_list_insert(diminuto_list_prev(priority ? front(rwp) : &(rwp->list)), np);
-}
-
-/**
- * Return true if the indicated node in the list is now at the head, and the
- * state of that node is now pending, indicating that the waiting reader or
- * writer has been activated, false otherwise. Calling head has the side effect
- * of removing any ignored tokens, indicating wait failures, off the head of
- * the list.
- * @param rwp points to the Reader Writer object.
- * @param np points to the list node for the calling thread.
- * @param pending is the pending role to be used: READABLE or WRITABLE.
- * @return true if the token is both head and pending, false otherwise.
- */
-static inline int ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t pending)
-{
-    return (head(rwp) == np) && ((role_t)diminuto_list_data(np) == pending);
 }
 
 /*******************************************************************************
@@ -466,7 +472,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
             case STARTED:  ++started; break;
             case FAILED:   ++failed;  break;
             case RUNNING:  ++running; break;
-            default:       ++unknown; break;
+            default:       ++unknown; role = UNKNOWN; break;
         }
         length = snprintf(bp, size, "%c", role);
         if ((0 < length) && (length < size)) { bp += length; size -= length; }
@@ -560,13 +566,17 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
          * Caller specified an infinite timeout, so we do an untimed wait.
          */
 
-        do {
-            if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
-                errno = rc;
-                diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_wait");
-                break;
-            }
-        } while (!ready(rwp, np, pending));
+        pthread_cleanup_push(wait_cleanup, np);
+
+            do {
+                if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
+                    errno = rc;
+                    diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_wait");
+                    break;
+                }
+            } while (!ready(np, pending));
+
+        pthread_cleanup_pop(0);
 
     } else if ((clocktime = diminuto_time_clock()) < 0) {
 
@@ -590,19 +600,23 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
         absolutetime.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
         absolutetime.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
 
-        do {
-            if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) == 0) {
-                /* Do nothing. */
-            } else if (rc == ETIMEDOUT) {
-                errno = rc;
-                /* Suppress error message but return error number. */
-                break;
-            } else {
-                errno = rc;
-                diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_timedwait");
-                break;
-            }
-        } while (!ready(rwp, np, pending));
+        pthread_cleanup_push(wait_cleanup, np);
+
+            do {
+                if ((rc = pthread_cond_timedwait(conditionp, &(rwp->mutex), &absolutetime)) == 0) {
+                    /* Do nothing. */
+                } else if (rc != ETIMEDOUT) {
+                    errno = rc;
+                    diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_timedwait");
+                    break;
+                } else {
+                    errno = rc;
+                    /* Suppress error message but return error number. */
+                    break;
+                }
+            } while (!ready(np, pending));
+
+        pthread_cleanup_pop(0);
 
     }
 
@@ -628,9 +642,10 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
  * @param priority if true gives the caller priority in the list.
  * @return 0 for success, or an error number otherwise.
  */
-static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout, int priority)
+static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t waiting, role_t pending, pthread_cond_t * conditionp, diminuto_ticks_t timeout, int priority)
 {
     int rc = DIMINUTO_READERWRITER_ERROR;
+    role_t role = NONE;
 
     /*
      * Insert the node onto the list. It is either inserted at the end
@@ -643,64 +658,39 @@ static int queue(diminuto_readerwriter_t * rwp, const char * label, diminuto_lis
     DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %s WAITING %dreading %dwriting %dwaiting", label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
 
     /*
-     * Wait until this thread is signaled, while at the head of the list, and
-     * specifically selected. Note that POSIX doesn't guarantee FIFO
-     * behavior on the part of condition variables. Use a cleanup handler to
-     * reconcile the node in the list if the caller is cancelled. We only
-     * return from the wait for two reasons: the wait failed or the waiter
-     * is ready (activated). It is possible (I think) that both can be true!
+     * Wait until this thread is signaled and activated. Note that POSIX
+     * doesn't guarantee FIFO behavior on the part of condition variables.
+     *
+     * We only return from the wait for two reasons: the wait failed or the
+     * waiting thread is ready (a.k.a. activated). It is possible (I think)
+     * that both can be true!
+     *
+     * If both are true, then the the reading or writing counter has already
+     * been incremented, and the thread has already been removed from the wait
+     * list. Effectively, it has succesfully waited, and we can ignore the
+     * error.
+     *
+     * If the thread has NOT been activated, we must remove it from the wait
+     * list. And in any case, the thread is now running.
      */
 
-    pthread_cleanup_push(wait_cleanup, np);
+    rc = satisfy(rwp, np, pending, conditionp, timeout);
+    if (rc != 0) {
+        role = (role_t)diminuto_list_data(np);
+        if (role == READABLE) {
+            DIMINUTO_LOG_WARNING("diminuto_readerwriter: Reader ready AND timedout!");
+            rc = 0;
+        } else if (role == WRITABLE) {
+            DIMINUTO_LOG_WARNING("diminuto_readerwriter: Writer ready AND timedout!");
+            rc = 0;
+        } else {
+            dequeue(rwp, np);
+        }
+    }
 
-        rc = satisfy(rwp, np, pending, conditionp, timeout);
-
-    pthread_cleanup_pop(0);
-
-    /*
-     * Remove the node from (presumably) the head of the list.
-     */
-
-    dequeue(rwp, np);
     diminuto_list_dataset(np, (void *)RUNNING);
 
     DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %dreading %dwriting %dwaiting", label, (rc == 0) ? "SATISFIED" : "UNSATISFIED", rwp->reading, rwp->writing, rwp->waiting);
-
-    return rc;
-}
-
-/**
- * Signal a waiting thread who is at the head of the list.
- * Prior to signaling the waiting thread, the state is changed from a
- * waiting state to a pending state.
- * @param rwp points to the Reader Writer object.
- * @param label is a string used for logging.
- * @param np points to the thread local list node for the calling thread.
- * @param pending is the pending role to be used: READABLE or WRITABLE.
- * @param conditionp points to the condition variable in the object to use.
- * @return 0 for success, or an error number otherwise.
- */
-static int broadcast(diminuto_readerwriter_t * rwp, const char * label, diminuto_list_t * np, role_t pending, pthread_cond_t * conditionp)
-{
-    int rc = DIMINUTO_READERWRITER_ERROR;
-    role_t role = NONE;
-
-    /*
-     * We have to set the new role before we broadcast, because
-     * the waiting thread may wake up and run before we return
-     * from the broadcast.
-     */
-
-    role = (role_t)diminuto_list_data(np);
-    diminuto_list_dataset(np, (void *)pending);
-
-    if ((rc = pthread_cond_broadcast(conditionp)) != 0) {
-        errno = rc;
-        diminuto_perror("broadcast: pthread_cond_broadcast");
-        diminuto_list_dataset(np, (void *)role);
-    } else {
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s SIGNALED %dreading %dwriting %dwaiting", label, rwp->reading, rwp->writing, rwp->waiting);
-    }
 
     return rc;
 }
@@ -724,11 +714,11 @@ static int suspend(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t r
 
     if (role == READER) {
 
-        rc = queue(rwp, "Reader", np, READER, READABLE, &(rwp->reader), timeout, priority);
+        rc = schedule(rwp, "Reader", np, READER, READABLE, &(rwp->reader), timeout, priority);
 
     } else if (role == WRITER) {
 
-        rc = queue(rwp, "Writer", np, WRITER, WRITABLE, &(rwp->writer), timeout, priority);
+        rc = schedule(rwp, "Writer", np, WRITER, WRITABLE, &(rwp->writer), timeout, priority);
 
     } else {
 
@@ -756,94 +746,79 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
     role_t result = NONE;
     role_t role = NONE;
     diminuto_list_t * np = (diminuto_list_t *)0;
+    pthread_cond_t * cp = (pthread_cond_t *)0;
     int rc = -1;
 
-    if ((np = head(rwp)) != (diminuto_list_t *)0) {
+    /*
+     * In the case of readers, we activate all of them at the head of
+     * the list. In the case of a writer, we activate only the first one
+     * at the head of the list. head() automatically cleans up failed
+     * threads off the list. We signal the appropriate condition variable,
+     * for readers or for writers once we're done iterating.
+     */
+
+    while ((np = head(rwp)) != (diminuto_list_t *)0) {
 
         role = (role_t)diminuto_list_data(np);
-
         if ((role == READER) && ((required == READER) || (required == ANY))) {
 
             /*
-             * The next waiter is a reader. Signal it. It will resume
-             * the next waiter if it is also a reader. We do a broadcast
-             * because POSIX doesn't guarantee FIFO behavior on the part
-             * of condition variables. The signaled reader only resumes
-             * if it is at the head of the list and it was placed into the
-             * pending state.
+             * The next waiter is a reader. Remove it from the queue, place
+             * it in the pending state, and remember to signal it. Continue
+             * to look for more readers behind this one. Once we activate a
+             * reader, we can only activate readers subsequently, so we
+             * must update the required role.
              */
 
-            if ((rc = broadcast(rwp, "Reader", np, READABLE, &(rwp->reader))) == 0) {
-                result = READER;
-            } else {
-                errno = rc;
-            }
+            dequeue(rwp, np);
+            diminuto_list_dataset(np, (void *)READABLE);
+            rwp->reading += 1; /* READING COUNTER INCREMENT */
+            cp = &(rwp->reader);
+            result = role;
+            required = role;
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader SIGNALED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            continue;
 
         } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
 
             /*
-             * The next waiter is a writer. Signal it. When it is done
-             * writing it will resume the next head of the list,
-             * whatever it is. We do a broadcast because POSIX doesn't
-             * guarantee FIFO behavior on the part of condition variables.
-             * The signaled writer only resumes if it is at the head
-             * of the list and it was placed into the pending state.
+             * The next waiter is a writer. Remove it from the queue, place
+             * it into the pending state, and remember to signal it.
              */
 
-            if ((rc = broadcast(rwp, "Writer", np, WRITABLE, &(rwp->writer))) == 0) {
-                result = WRITER;
-            } else {
-                errno = rc;
-            }
+            dequeue(rwp, np);
+            diminuto_list_dataset(np, (void *)WRITABLE);
+            rwp->writing += 1; /* WRITING COUNTER INCREMENT */
+            cp = &(rwp->writer);
+            result = role;
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer SIGNALED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            break;
 
         } else {
 
             /*
-             * The rest of this is just error checking because I'm paranoid.
+             * Either we have activated a bunch of readers, or one writer,
+             * or there was no viable candidate on the list.
              */
+            break;
 
-            switch (required) {
-            case READER:
-            case WRITER:
-            case ANY:
-                break;
-            default:
-                /*
-                 * The caller passed a role that wasn't READER, WRITER, or ANY,
-                 * We emit an error message, but still pass back NONE.
-                 */
-                errno = DIMINUTO_READERWRITER_ERROR;
-                diminuto_perror("diminuto_readerwriter: resume: required");
-                break;
-            }
-
-            switch (role) {
-            case READER:
-            case WRITER:
-            case READABLE:
-            case WRITABLE:
-                break;
-            default:
-                /*
-                 * The state is invalid. This should be impossible.
-                 * We emit an error message, but still pass back NONE.
-                 */
-                errno = DIMINUTO_READERWRITER_UNEXPECTED;
-                diminuto_perror("diminuto_readerwriter: resume: state");
-                break;
-            }
-
-            /*
-             * If no error detected: either the thread at the head of the list
-             * was not the role the caller wanted, or it is a thread that is
-             * pending and has not yet been scheduled to run. This is a possible
-             * state, and is especially likely for the multiple concurrent
-             * readers scenario in which a subsequent reader has ended after a
-             * prior reader has resumed the reader at the head of the list but
-             * that reader has not yet run.
-             */
         }
 
+    }
+
+    /*
+     * The conditional variable pointer may point to the reader condition, the
+     * writer condition, or may be NULL.
+     */
+
+    if (cp == (pthread_cond_t *)0) {
+        /* Do nothing. */
+    } else if ((rc = pthread_cond_broadcast(cp)) == 0) {
+        /* Do nothing. */
+    } else {
+        errno = rc;
+        diminuto_perror("broadcast: pthread_cond_broadcast");
+        result = NONE;
     }
 
     return result;
@@ -873,11 +848,11 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
         if ((rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
             /*
-             * There are zero or more active writers and no one is waiting.
+             * There are zero or less active writers and no one is waiting.
              * Reader can proceeed. Increment.
              */
 
-            rwp->reading += 1;
+            rwp->reading += 1; /* READING COUNTER INCREMENT */
             result = 0;
 
         } else if (timeout == DIMINUTO_READERWRITER_POLL) {
@@ -913,45 +888,14 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
         }
 
         /*
-         * If we are running, a reader at the head of the list can
-         * run as well. When such a reader runs, it will also check
-         * for another reader at the head of the list.
-         */
-
-        if (result < 0) {
-
-            /* Do nothing */
-
-        } else if ((role = resume(rwp, READER)) == NONE) {
-
-            /*
-             * There isn't a reader at the head of the list to resume.
-             */
-
-        } else if (role == READER) {
-
-            /*
-             * There's another reader. It will in turn resume the following
-             * reader if there is one. This is where a formerly suspended
-             * and now resumed reader may get its increment.
-             */
-
-            rwp->reading += 1;
-
-        } else {
-
-            errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("diminuto_reader_begin: role");
-            result = -1;
-
-        }
-
-        /*
+         * We are running. Either we did not wait and incremented
+         * the reading count ourselves, or we waited, and another
+         * thread resumed us and incremented the reading count.
+         *
          * Is is important for fairness and correctness (and fairly subtle
-         * IMO) that the reader count already be incremented for any waiting
-         * Reader that we resumed before we exit the critical section. Any
-         * Reader that we resume will itself resume a Reader if it follows
-         * that Reader in the wait list.
+         * IMO) that the reading or writing count already be incremented
+         * for any waiting Reader or Writer that we resumed before we exit
+         * the critical section.
          */
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
@@ -982,7 +926,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
          * Decrement.
          */
 
-        rwp->reading -= 1;
+        rwp->reading -= 1; /* READING COUNTER DECREMENT */
 
         /*
          * Try to schedule the head of the list to run.
@@ -1008,36 +952,21 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         } else if (role == READER) {
 
             /*
-             * This is where a formerly suspended and now resumed reader may
-             * get its increment. It used to be this couldn't happen, but since
-             * I added timeouts, it can if an impatient writer at the head of
-             * the queue times out ahead of a waiting reader behind it. Never
-             * the less, I replaced the former ERRNO log output with a DEBUG
-             * log message. Both the old code and this code activates the
-             * waiting reader in any case. Maybe a better approach is for a
-             * timing out writer to activate any readers behind it. The
-             * complication is that whether any readers at the head of the
-             * queue can be activated depends not on caller that just timed
-             * out (which could be anywhere in the queue), but whether it is
-             * one or more readers that currently hold the resource. Hence, it
-             * is neither the caller running this code nor the waiter that
-             * timed out that is in a position to make that decision.
+             * We're resuming one or more readers who who have been
+             * waiting. It used to be this couldn't happen, but since
+             * I added timeouts, it can if an impatient writer at the
+             * head of the queue times out ahead of a waiting reader
+             * behind it.
              */
 
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "diminuto_readerwriter: Reader END reader stalled");
-
-            rwp->reading += 1;
             result = 0;
 
         } else if (role == WRITER) {
 
             /*
-             * We're resuming a writer who has been waiting. This is
-             * where a formerly suspended and now resumed writer may get
-             * its increment.
+             * We're resuming a writer who has been waiting.
              */
 
-            rwp->writing += 1;
             result = 0;
 
         } else {
@@ -1048,10 +977,10 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         }
 
         /*
-         * Is is important for fairness and correctness (and fairly subtle IMO)
-         * that the reader or writer count already be incremented for any
-         * waiting Reader or Writer that we resumed before we exit the critical
-         * section.
+         * Is is important for fairness and correctness (and fairly subtle
+         * IMO) that the reading or writing count already be incremented
+         * for any waiting Reader or Writer that we resumed before we exit
+         * the critical section.
          */
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
@@ -1086,11 +1015,11 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
         if ((rwp->reading <= 0) && (rwp->writing <= 0) && (head(rwp) == (diminuto_list_t *)0)) {
 
             /*
-             * There are no active readers or writers and no one waiting.
+             * There are no active readers nor writer and no one waiting.
              * Writer can proceed. Increment.
              */
 
-            rwp->writing += 1;
+            rwp->writing += 1; /* WRITING COUNTER INCREMENT */
             result = 0;
 
         } else if (timeout == DIMINUTO_READERWRITER_POLL) {
@@ -1125,6 +1054,17 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
         }
 
+        /*
+         * We are running. Either we did not wait and incremented
+         * the reading count ourselves, or we waited, and another
+         * thread resumed us and incremented the reading count.
+         *
+         * Is is important for fairness and correctness (and fairly subtle
+         * IMO) that the reading or writing count already be incremented
+         * for any waiting Reader or Writer that we resumed before we exit
+         * the critical section.
+         */
+
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->debugging) {
@@ -1153,7 +1093,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
          * Decrement.
          */
 
-        rwp->writing -= 1;
+        rwp->writing -= 1; /* WRITING COUNTER DECREMENT */
 
         /*
          * There should be no readers or writers running.
@@ -1171,23 +1111,18 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         } else if (role == READER) {
 
             /*
-             * We're activating a reader who has been waiting. This is
-             * where a formerly suspended and now resumed reader may
-             * gets its increment.
+             * We're activating one or more readers who have
+             * been waiting.
              */
 
-            rwp->reading += 1;
             result = 0;
 
         } else if (role == WRITER) {
 
             /*
-             * We're activating a writer who has been waiting. This is
-             * where a formerly suspended and now resumed writer may
-             * get its increment.
+             * We're activating a writer who has been waiting.
              */
 
-            rwp->writing += 1;
             result = 0;
 
         } else {
@@ -1198,10 +1133,10 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         }
 
         /*
-         * Is is important for fairness and correctness (and fairly subtle IMO)
-         * that the reader or writer count already be incremented for any
-         * waiting Reader or Writer that we resumed before we exit the critical
-         * section.
+         * Is is important for fairness and correctness (and fairly subtle
+         * IMO) that the reading or writing count already be incremented
+         * for any waiting Reader or Writer that we resumed before we exit
+         * the critical section.
          */
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
@@ -1293,9 +1228,9 @@ diminuto_list_t * diminuto_readerwriter_front(diminuto_readerwriter_t * rwp)
    return front(rwp);
 } 
 
-int diminuto_readerwriter_ready(diminuto_readerwriter_t * rwp, diminuto_list_t * np, diminuto_readerwriter_role_t pending)
+int diminuto_readerwriter_ready(diminuto_list_t * np, diminuto_readerwriter_role_t pending)
 {
-    return ready(rwp, np, pending);
+    return ready(np, pending);
 }
 
 #endif
