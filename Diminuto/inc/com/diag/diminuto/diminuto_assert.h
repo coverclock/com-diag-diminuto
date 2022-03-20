@@ -11,33 +11,44 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined (which should happen only
- * under the most exceptional of circumstances and perhaps only for debugging),
- * these functions evaluate the condition but do nothing else.
+ * If COM_DIAG_DIMINUTO_ASSERT_NDEBUG is defined these functions evaluate the
+ * condition but do nothing else.
  *
  * If COM_DIAG_DIMINUTO_ASSERT_DEBUG is defined, the asserts are turned into
  * expects (which do everything assert does except the abort).
  *
- * If neither is defined, assert and expect work as intended; if the
- * condition is not met, either logs an error, and assert aborts while
- * expect merely returns.
+ * If COM_DIAG_DIMINUTO_ASSERT_FDEBUG is defined, the condition is evaluated
+ * and passed to the assert function, which either logs or doesn't, and if
+ * it logs, either aborts or doesn't, depending on its arguments.
  *
- * This file can be included more than once.
+ * If none are defined, assert and expect work as intended; if the condition
+ * is not met, either logs an error, and assert aborts while expect merely
+ * merely returns.
+ *
+ * This file can be included more than once. This is the beginning of the
+ * idempotent section of the header.
  */
 
 #include <errno.h>
 
 /**
  * If the asserted condition is not true, log an error message and then if
- * the flag is true, call abort();
+ * the fatal is true, call abort(). This function is invoked by the macros
+ * defined below, but can also be called as a standalone function, passing
+ * the condition expression as an argument, which will be evaluated once and
+ * only once by the compiler.
  * @param condition is the condition, treated as a boolean.
  * @param string is the stringified condition.
  * @param file is the name of the translation unit.
  * @param line is the line number within the translation unit.
  * @param error is the errno error number.
- * @param flag if true, causes an abort.
+ * @param fatal if true, causes an abort.
  */
-extern void diminuto_assert_f(int condition, const char * string, const char * file, int line, int error, int flag);
+extern void diminuto_assert_f(int condition, const char * string, const char * file, int line, int error, int fatal);
+
+/*
+ * End of idempotent section.
+ */
 
 #endif
 
@@ -49,62 +60,68 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
 #   undef diminuto_expect
 #endif
 
+/*
+ * N.B. It is important to evaluate the condition once and only once,
+ *      since the expression may have side effects. For the same reason,
+ *      it is important to evaluate the expression whether the condition
+ *      is used or not. The compiler will optimize away code that has no
+ *      effect.
+ */
+
 #if defined(COM_DIAG_DIMINUTO_ASSERT_NDEBUG)
 
-/*
- * As bizzare as it sounds, we still evaluate the condition in order
- * to produce any side effects, then throw the result away. We let the
- * compiler optimize away the code if there is nothing to be achieved.
- */
-
-/**
- * @def diminuto_assert
- * Evaluate @a _CONDITION_ and throw the result away.
- */
+    /**
+     * @def diminuto_assert
+     * Evaluate @a _CONDITION_ and throw the result away.
+     */
 #   define diminuto_assert(_CONDITION_) ((void)(_CONDITION_))
 
-/**
- * @def diminuto_expect
- * Evaluate @a _CONDITION_ and throw the result away.
- */
+    /**
+     * @def diminuto_expect
+     * Evaluate @a _CONDITION_ and throw the result away.
+     */
 #   define diminuto_expect(_CONDITION_) ((void)(_CONDITION_))
 
 #elif defined(COM_DIAG_DIMINUTO_ASSERT_DEBUG)
 
-/*
- * N.B. It is important to evaluate the condition once and only once,
- *      since the expression may have side effects.
- */
-
-/**
- * @def diminuto_assert
- * If @a _CONDITION_ is false then call diminuto_assert_f to abort.
- */
+    /**
+     * @def diminuto_assert
+     * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
+     */
 #   define diminuto_assert(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
-/**
- * @def diminuto_expect
- * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
- */
+    /**
+     * @def diminuto_expect
+     * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
+     */
 #   define diminuto_expect(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, 0) : ((void)0))
+
+#elif defined(COM_DIAG_DIMINUTO_ASSERT_FDEBUG)
+
+    /**
+     * @def diminuto_assert
+     * Call diminuto_assert_f to abort.
+     */
+#   define diminuto_assert(_CONDITION_) diminuto_assert_f((_CONDITION_), #_CONDITION_, __FILE__, __LINE__, errno, !0)
+
+    /**
+     * @def diminuto_expect
+     * Call diminuto_assert_f and continue.
+     */
+#   define diminuto_expect(_CONDITION_) diminuto_assert_f((_CONDITION_), #_CONDITION_, __FILE__, __LINE__, errno, 0)
 
 #else
 
-/*
- * N.B. It is important to evaluate the condition once and only once,
- *      since the expression may have side effects.
- */
-
-/**
- * @def diminuto_assert
- * If @a _CONDITION_ is false then call diminuto_assert_f to abort.
- */
+    /**
+     * @def diminuto_assert
+     * If @a _CONDITION_ is false then call diminuto_assert_f to abort.
+     */
 #   define diminuto_assert(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, !0) : ((void)0))
 
-/**
- * @def diminuto_expect
- * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
- */
+    /**
+     * @def diminuto_expect
+     * If @a _CONDITION_ is false then call diminuto_assert_f and continue.
+     */
 #   define diminuto_expect(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
 #endif

@@ -23,12 +23,14 @@
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+
     return -1;
 }
 
 int diminuto_stacktrace()
 {
     errno = EPERM;
+
     return -1;
 }
 
@@ -39,12 +41,14 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+
     return -1;
 }
 
 int diminuto_stacktrace()
 {
     errno = EPERM;
+
     return -1;
 }
 
@@ -55,12 +59,14 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+
     return -1;
 }
 
 int diminuto_stacktrace()
 {
     errno = EPERM;
+
     return -1;
 }
 
@@ -71,12 +77,14 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+
     return -1;
 }
 
 int diminuto_stacktrace()
 {
     errno = EPERM;
+
     return -1;
 }
 
@@ -86,14 +94,17 @@ int diminuto_stacktrace()
 
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
-    int rc;
+    int rc = 0;
+
     backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
-return rc;
+
+    return rc;
 }
 
 int diminuto_stacktrace()
 {
     void * buffer[DIMINUTO_STACKTRACE_SIZE];
+
     return diminuto_stacktrace_fd(buffer, countof(buffer), STDERR_FILENO);
 }
 
