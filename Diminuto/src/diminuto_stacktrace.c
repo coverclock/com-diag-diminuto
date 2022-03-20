@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_stacktrace.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include "com/diag/diminuto/diminuto_error.h"
 #include <errno.h>
 #include <unistd.h>
 
@@ -23,6 +24,7 @@
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace_fd");
 
     return -1;
 }
@@ -30,6 +32,7 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 int diminuto_stacktrace()
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace");
 
     return -1;
 }
@@ -41,6 +44,7 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace_fd");
 
     return -1;
 }
@@ -48,6 +52,7 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 int diminuto_stacktrace()
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace");
 
     return -1;
 }
@@ -59,6 +64,7 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace_fd");
 
     return -1;
 }
@@ -66,6 +72,7 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 int diminuto_stacktrace()
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace");
 
     return -1;
 }
@@ -77,6 +84,7 @@ int diminuto_stacktrace()
 int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace_fd");
 
     return -1;
 }
@@ -84,6 +92,7 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 int diminuto_stacktrace()
 {
     errno = EPERM;
+    diminuto_perror("diminuto_stacktace");
 
     return -1;
 }
@@ -96,7 +105,14 @@ int diminuto_stacktrace_fd(void ** buffer, size_t size, int fd)
 {
     int rc = 0;
 
-    backtrace_symbols_fd(buffer, rc = backtrace(buffer, size), fd);
+    rc = backtrace(buffer, size);
+    if ((0 <= rc) && (rc < size)) {
+        /* Do nothing. */
+    } else {
+        if (rc >= size) { errno = E2BIG; }
+        diminuto_perror("diminuto_stacktace_fd: backtrace");
+    }
+    backtrace_symbols_fd(buffer, rc, fd);
 
     return rc;
 }

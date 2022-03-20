@@ -210,7 +210,11 @@ FILE * diminuto_log_stream(void)
         } else if (fileno(diminuto_log_file) == STDOUT_FILENO) {
             diminuto_log_file = (FILE *)0;
         } else if (fclose(diminuto_log_file) == EOF) {
-            perror("diminuto_log_stream: fclose");
+            /*
+             * diminuto_perror() does not depend on diminuto_log_stream()
+             * nor the value of diminuto_log_file.
+             */
+            diminuto_perror("diminuto_log_stream: fclose");
             diminuto_log_file = (FILE *)0;
         } else {
             diminuto_log_file = (FILE *)0;
@@ -229,7 +233,11 @@ FILE * diminuto_log_stream(void)
         } else if (diminuto_log_descriptor == fileno(stdout)) {
             diminuto_log_file = stdout;
         } else if ((diminuto_log_file = fdopen(diminuto_log_descriptor, "a")) == (FILE *)0) {
-            perror("diminuto_log_stream: fdopen");
+            /*
+             * diminuto_perror() does not depend on diminuto_log_stream()
+             * nor the value of diminuto_log_file.
+             */
+            diminuto_perror("diminuto_log_stream: fdopen");
         } else {
             /* Do nothing. */
         }

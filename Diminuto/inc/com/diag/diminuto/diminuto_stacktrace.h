@@ -17,7 +17,7 @@
 #include "com/diag/diminuto/diminuto_types.h"
 
 enum {
-    DIMINUTO_STACKTRACE_SIZE = 128,
+    DIMINUTO_STACKTRACE_SIZE = 128, /**< Maximum size of a stack trace vector. */
 };
 
 /**

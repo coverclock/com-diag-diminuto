@@ -24,6 +24,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_countof.h"
