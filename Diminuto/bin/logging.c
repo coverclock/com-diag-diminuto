@@ -14,9 +14,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "com/diag/diminuto/diminuto_log.h"
+#include "../src/diminuto_log.h"
 
 #define P(_NAME_, _FORMAT_) printf("%s=" _FORMAT_ "\n", #_NAME_, _NAME_)
 #define PV(_NAME_, _FORMAT_) printf("%s=" _FORMAT_ "\n", #_NAME_, (void *)_NAME_)
+#define PE(_NAME_, _FORMAT_, _VALUE_) printf("%s=" _FORMAT_ "\n", _NAME_, _VALUE_)
 
 int main(void)
 {
@@ -74,7 +76,7 @@ int main(void)
 
     P(diminuto_log_mask, "0x%02x");
     P(diminuto_log_mask_name, "\"%s\"");
-    P(getenv(diminuto_log_mask_name), "\"%s\"");
+    PE(diminuto_log_mask_name, "\"%s\"", getenv(diminuto_log_mask_name));
     P(diminuto_log_setmask(), "0x%02x");
     P(diminuto_log_mask, "0x%02x");
     P(DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_DEBUG), "%d");

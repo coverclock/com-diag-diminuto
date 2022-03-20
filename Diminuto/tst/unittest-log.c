@@ -28,12 +28,13 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_countof.h"
-#include "unittest-log.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include "../src/diminuto_log.h"
+#include "unittest-log.h"
 
 int main(int argc, char ** argv)
 {

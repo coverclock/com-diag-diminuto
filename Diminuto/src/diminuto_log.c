@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "../src/diminuto_log.h"
 #include "../src/diminuto_time.h"
 
 /*******************************************************************************

@@ -35,6 +35,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "../src/diminuto_log.h"
 
 int main(int argc, char * argv[])
 {
