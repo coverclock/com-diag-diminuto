@@ -10,30 +10,23 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * Provides a mechanism through which a library can provide a thread-safe
+ * settor in which the caller-specified read-modify-write of a shared library
+ * variable is done without the caller having to know any more than the data
+ * type of the shared variable.
  * EXPERIMENTAL
- *
- * EXAMPLE
- *
- * void * application_functor(void * dp, void * cp) {
- *     void * rp = (void *)*(int *)dp;
- *     *(int *)dp = (int)cp;
- *     return rp;
- * }
- *
- * static inline int library_settor(diminuto_atomicapply_functor_t * fp, int value) {
- *     extern pthread_mutex_t library_mutex;
- *     extern int library_variable;
- *     return (int)diminuto_atomicapply(&library_mutex, fp, &library_variable, (void *)value);
- * }
  */
 
+#include <stdint.h>
 #include <pthread.h>
+
+static const void * DIMINUTO_ATOMIC_ERROR = (void *)(intptr_t)-1;
 
 /**
  * This defines the prototype for a functor that applies a context (whatever
  * that is) to a shared data variable and returns some result.
  */
-typedef void * (diminuto_atomicapply_functor_t)(void * datap, void * contextp);
+typedef void * (diminuto_atomic_functor_t)(void * datap, void * contextp);
 
 /**
  * Atomically apply a caller-provided functor to a shared data variable along
@@ -45,6 +38,6 @@ typedef void * (diminuto_atomicapply_functor_t)(void * datap, void * contextp);
  * @param contextp points to the caller context.
  * @return a value.
  */
-extern void * diminuto_atomicapply(pthread_mutex_t * mutexp, diminuto_atomicapply_functor_t * functorp, void * datap, void * contextp);
+extern void * diminuto_atomic_apply(pthread_mutex_t * mutexp, diminuto_atomic_functor_t * functorp, void * datap, void * contextp);
 
 #endif

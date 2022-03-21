@@ -13,9 +13,9 @@
 #include "com/diag/diminuto/diminuto_atomicapply.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 
-void * diminuto_atomicapply(pthread_mutex_t * mutexp, diminuto_atomicapply_functor_t * functorp, void * datap, void * contextp)
+void * diminuto_atomic_apply(pthread_mutex_t * mutexp, diminuto_atomic_functor_t * functorp, void * datap, void * contextp)
 {
-	void * resultp = (void *)0;
+	void * resultp = (void *)DIMINUTO_ATOMIC_ERROR;
 
 	DIMINUTO_CRITICAL_SECTION_BEGIN(mutexp);
 		resultp = (*functorp)(datap, contextp);
