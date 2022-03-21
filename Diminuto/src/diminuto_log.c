@@ -22,7 +22,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
-#include <pthread.h>
 #include "../src/diminuto_log.h"
 #include "../src/diminuto_time.h"
 
@@ -46,12 +45,16 @@ static const char ALL[] = DIMINUTO_LOG_MASK_VALUE_ALL;
 static uint8_t initialized = 0;
 
 /*******************************************************************************
- * GLOBALS
+ * PUBLIC GLOBALS
+ *****************************************************************************/
+
+diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
+
+/*******************************************************************************
+ * PRIVATE GLOBALS
  *****************************************************************************/
 
 pthread_mutex_t diminuto_log_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 const char * diminuto_log_ident = DIMINUTO_LOG_IDENT_DEFAULT;
 
@@ -352,7 +355,12 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
     /*
      * Serialize the emission of the log message so that processes and
-     * threads can't intermingle the texts of messages.
+     * threads can't intermingle the texts of messages. Note that if an
+     * error occurs in this code block, the standard perror(3) function
+     * is used to display (or not) an error message. This is to prevent
+     * a recursive error condition. In the event that the error message
+     * cannot be displayed (for example, there is no controlling terminal),
+     * at least a counter is incremented.
      */
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);

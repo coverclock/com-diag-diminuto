@@ -16,10 +16,18 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
+#include <pthread.h>
 
 /*******************************************************************************
  * GLOBALS
  ******************************************************************************/
+
+/**
+ * This is the mutex used to serialize access to shared variables internal
+ * to the log feature. It is global so that applications may synchronize
+ * read-modify-write operations to, for example, the log mask.
+ */
+extern pthread_mutex_t diminuto_log_mutex;
 
 /**
  * This is the log identity string used when openlog(3) is called. If the
