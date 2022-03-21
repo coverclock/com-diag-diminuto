@@ -15,32 +15,32 @@
 #include <stdint.h>
 
 /*
- * LIBRARY: PRIVATE
+ * LIBRARY: PRIVATE IMPLEMENTATION
  */
 
 static pthread_mutex_t library_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static intptr_t library_database = 0;
-
-static intptr_t library_settor(diminuto_atomic_functor_t * fp, intptr_t value) {
-    extern pthread_mutex_t library_mutex;
-    extern intptr_t library_database;
-    return (intptr_t)diminuto_atomic_apply(&library_mutex, fp, &library_database, (void *)value);
-}
+static int library_database = 0;
 
 /*
- * LIBRARY: PUBLIC
+ * LIBRARY: PUBLIC API
  */
 
-extern intptr_t library_settor(diminuto_atomic_functor_t * fp, intptr_t value);
+static inline int library_settor(diminuto_atomic_functor_t * fp, int value) {
+    extern pthread_mutex_t library_mutex;
+    extern int library_database;
+    return (int)(intptr_t)diminuto_atomic_apply(&library_mutex, fp, &library_database, (void *)(intptr_t)value);
+}
 
 /*
  * APPLICATION
  */
 
 static void * application_functor(void * dp, void * cp) {
-	void * rp = (void *)*(intptr_t *)dp;
-    *(intptr_t *)dp += (intptr_t)cp;
+    int * ip = (int *)dp;
+	void * rp = (void *)(intptr_t)*ip;
+    int vp = (intptr_t)cp;
+    *ip += vp;
     return rp;
 }
 
