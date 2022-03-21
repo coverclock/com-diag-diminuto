@@ -37,7 +37,7 @@ typedef void * (diminuto_atomicapply_functor_t)(void * datap, void * contextp);
 
 /**
  * Atomically apply a caller-provided functor to a shared data variable along
- * with a caller-provided context without requiring the caller to only know
+ * with a caller-provided context while requiring the caller to only know
  * about the underlying type of the shared data variable.
  * @param mutexp points to a mutex used to serialized the operation.
  * @param functorp points to the caller functor.
