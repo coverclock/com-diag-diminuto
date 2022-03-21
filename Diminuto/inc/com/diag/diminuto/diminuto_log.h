@@ -41,14 +41,9 @@
  * shorter names from these, for example define DBG(...) to
  * be DIMINUTO_LOG_DEBUG(__VA_ARGS__).
  *
- * Much of the internal variables used by the Log feature are exposed
- * directly to the application, rather than following the usual Diminuto
- * approach of using gettor and settor functions, or exposing them via
- * a private API. This is because of all the Diminuto features, the Log
- * feature is the one that is mostly likely, and the most useful, to
- * be used in an existing application. In those circumstances, it may
- * require some customization to integrate into an the legacy logging
- * environment.
+ * Some of the internal variables used by the Log feature are exposed
+ * via a private API header file to facilitate integrating the feature
+ * into legacy systems, including with an existing logging system.
  *
  * N.B. The Log functions that are used to print error messages
  * from the value of errno, as well as those macros in the Unit Test
