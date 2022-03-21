@@ -23,7 +23,7 @@
  * static inline int library_settor(diminuto_atomicapply_functor_t * fp, int value) {
  *     extern pthread_mutex_t library_mutex;
  *     extern int library_variable;
- *     return (int)diminuto_atomicapply(&library_mutex, fp, &library_shared, (void *)value);
+ *     return (int)diminuto_atomicapply(&library_mutex, fp, &library_variable, (void *)value);
  * }
  */
 
