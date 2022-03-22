@@ -19,4 +19,9 @@
  */
 extern int diminuto_ipc_debug;
 
+/**
+ * Changes default IPC Endpoint type from IPv4 to IPv6 via the private API.
+ */
+extern int diminuto_ipc_endpoint_ipv6;
+
 #endif

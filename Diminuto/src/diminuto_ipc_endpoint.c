@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+int diminuto_ipc_endpoint_ipv6 = 0;
+
 static int debug = 0;
 
 int diminuto_ipc_endpoint_debug(int now)
@@ -533,10 +535,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * may be a service, and that service could have resolved to be
          * either a TCP or UDP port or both. Ephemeral ports are a
          * special case where everything is zero but the parser succeeded;
-         * examples: "[::]", "0.0.0.0", "0"; the default is IPV6, but that
-         * is totally a judgement call on my part, and it could easily be
-         * IPV4 (I have decided to use IPV6 in the case where either could
-         * be used).
+         * examples: "[::]", "0.0.0.0", "0".
          */
 
         if (!diminuto_ipc6_is_unspecified(&(endpoint->ipv6))) {
@@ -546,20 +545,24 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (diminuto_ipc6_is_v4mapped(&(endpoint->ipv6))) {
                 is_ipv6 = false;
                 is_ipv4 = true;
-            } else {
+            } else if (diminuto_ipc_endpoint_ipv6) {
                 is_ipv6 = true;
+                is_ipv4 = false;
+            } else {
+                is_ipv6 = false;
                 is_ipv4 = true;
             }
         } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
             is_ipv6 = false;
             is_ipv4 = true;
-        } else if (is_ipv6) {
-            /* Do nothing. */
-        } else if (is_ipv4) {
-            /* Do nothing. */
+        } else if (is_ipv4 && is_ipv6) {
+            is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
+            is_ipv4 = !diminuto_ipc_endpoint_ipv6;
+        } else if ((!is_ipv4) && (!is_ipv6)) {
+            is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
+            is_ipv4 = !diminuto_ipc_endpoint_ipv6;
         } else {
-            is_ipv6 = true;
-            is_ipv4 = true;
+            /* Do nothing: parser decided. */
         }
 
         /*
