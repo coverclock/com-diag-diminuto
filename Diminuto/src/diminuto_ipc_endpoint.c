@@ -112,6 +112,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     bool is_ipv6 = false;
     bool is_ipcl = false;
     size_t length = 0;
+    diminuto_ipv4_buffer_t buffer4 = { '\0', };
+    diminuto_ipv6_buffer_t buffer6 = { '\0', };
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
@@ -129,7 +131,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         do {
 
             if (debug) {
-                diminuto_log_emit("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
             }
 
             switch (state) {
@@ -368,9 +370,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         } while (state != S_STOP);
 
-        if (debug) {
-            diminuto_log_emit("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\" rc=%d\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path), rc);
-        }
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\"\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path));
 
         /*
          * If (rc < 0) at this point, our simple little parser
@@ -402,8 +402,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
                 is_ipv4 = true;
             } else {
-                errno = EINVAL;
-                diminuto_perror(fqdn);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: fqdn=\"%s\" invalid!\n", fqdn);
                 rc = -2;
             }
         } else if (ipv6 != (char *)0) {
@@ -451,8 +450,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else if (endpoint->udp != 0) {
                     /* Do nothing. */
                 } else {
-                    errno = EINVAL;
-                    diminuto_perror(name);
+                    DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: name=\"%s\" invalid!\n", name);
                     rc = -3;
                 }
             }
@@ -473,8 +471,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if  (endpoint->udp != 0) {
                 /* Do nothing. */
             } else {
-                errno = EINVAL;
-                diminuto_perror(service);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: service=\"%s\" invalid!\n", service);
                 rc = -4;
             }
         } else if (port != (char *)0) {
@@ -508,16 +505,18 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (diminuto_ipcl_path(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
             is_ipcl = true;
         } else {
+            DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: path=\"%s\" invalid!\n", path);
             rc = -5;
         }
 
         /*
          * If (rc < 0) at this point, we had a semantic error.
-         * No point in continuing. (We've already displayed an
-         * error message.)
+         * No point in continuing.
          */
 
         if (rc < 0) {
+            errno = EINVAL;
+            diminuto_perror(string);
             return rc;
         }
 
@@ -534,7 +533,10 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
          * may be a service, and that service could have resolved to be
          * either a TCP or UDP port or both. Ephemeral ports are a
          * special case where everything is zero but the parser succeeded;
-         * examples: "[::]", "0.0.0.0", "0".
+         * examples: "[::]", "0.0.0.0", "0"; the default is IPV6, but that
+         * is totally a judgement call on my part, and it could easily be
+         * IPV4 (I have decided to use IPV6 in the case where either could
+         * be used).
          */
 
         if (!diminuto_ipc6_is_unspecified(&(endpoint->ipv6))) {
@@ -546,12 +548,17 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 is_ipv4 = true;
             } else {
                 is_ipv6 = true;
-                is_ipv4 = false;
+                is_ipv4 = true;
             }
         } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
             is_ipv6 = false;
             is_ipv4 = true;
+        } else if (is_ipv6) {
+            /* Do nothing. */
+        } else if (is_ipv4) {
+            /* Do nothing. */
         } else {
+            is_ipv6 = true;
             is_ipv4 = true;
         }
 
@@ -571,6 +578,18 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else {
             /* Do nothing. */
         }
+
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d local=\"%s\"\n",
+            string,
+            (endpoint->type == DIMINUTO_IPC_TYPE_IPV4) ? "IPv4" :
+                (endpoint->type == DIMINUTO_IPC_TYPE_IPV6) ? "IPv6" :
+                    (endpoint->type == DIMINUTO_IPC_TYPE_LOCAL) ? "Local" :
+                        "Unspecified",
+            diminuto_ipc4_address2string(endpoint->ipv4, buffer4, sizeof(buffer4)),
+            diminuto_ipc6_address2string(endpoint->ipv6, buffer6, sizeof(buffer6)),
+            endpoint->tcp,
+            endpoint->udp,
+            diminuto_ipcl_path2string(endpoint->local));
 
     } while (0);
 
