@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Endpoint portion of the IPC feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -21,6 +21,7 @@
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_ipc6.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include "../src/diminuto_ipc.h"
 
 #define FQDN4 "prairiethorn.org"
 #define FQDN46 "google.com"
@@ -50,7 +51,7 @@ static const char * type2string(diminuto_ipc_type_t type)
     return result;
 }
 
-#define SETUP \
+#define PREFACE \
     char * endpoint = (char *)0; \
     diminuto_ipv4_buffer_t ipv4buffer = { '\0', }; \
     diminuto_ipv6_buffer_t ipv6buffer = { '\0', }; \
@@ -205,13 +206,20 @@ int main(int argc, char * argv[])
         COMMENT("time udp=%d\n", eitherudp);
     }
 
+    {
+        TEST();
+        ASSERT(!diminuto_ipc_endpoint_ipv6);
+        STATUS();
+    }
+
     /*
      * Below are the sunny day scenarios I expect to succeed. To test
      * arbitary endpoint strings, see the endpoint utility.
      */
 
+
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = PORT, &parse);
         DISPLAY;
@@ -220,7 +228,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":" PORT, &parse);
         DISPLAY;
@@ -229,7 +237,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = TCP, &parse);
         DISPLAY;
@@ -238,7 +246,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":" TCP, &parse);
         DISPLAY;
@@ -247,7 +255,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = UDP, &parse);
         DISPLAY;
@@ -256,7 +264,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":" UDP, &parse);
         DISPLAY;
@@ -265,7 +273,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = EITHER, &parse);
         DISPLAY;
@@ -274,7 +282,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":" EITHER, &parse);
         DISPLAY;
@@ -283,7 +291,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "localhost:" PORT, &parse);
         DISPLAY;
@@ -292,7 +300,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "localhost:" TCP, &parse);
         DISPLAY;
@@ -301,7 +309,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "localhost:" UDP, &parse);
         DISPLAY;
@@ -310,7 +318,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "localhost:" EITHER, &parse);
         DISPLAY;
@@ -319,7 +327,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4, &parse);
         DISPLAY;
@@ -328,7 +336,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":0", &parse);
         DISPLAY;
@@ -337,7 +345,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" PORT, &parse);
         VERIFYINET4(&parse, fqdn44, fqdn46, porttcp, portudp);
@@ -345,7 +353,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" TCP, &parse);
         DISPLAY;
@@ -354,7 +362,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" UDP, &parse);
         DISPLAY;
@@ -363,7 +371,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":" EITHER, &parse);
         DISPLAY;
@@ -372,7 +380,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0", &parse);
         DISPLAY;
@@ -381,7 +389,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:0", &parse);
         DISPLAY;
@@ -390,7 +398,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:" PORT, &parse);
         DISPLAY;
@@ -399,7 +407,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:" TCP, &parse);
         DISPLAY;
@@ -408,7 +416,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:" UDP, &parse);
         DISPLAY;
@@ -417,7 +425,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0.0.0.0:" EITHER, &parse);
         DISPLAY;
@@ -426,7 +434,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4, &parse);
         DISPLAY;
@@ -435,7 +443,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":0", &parse);
         DISPLAY;
@@ -444,7 +452,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" PORT, &parse);
         DISPLAY;
@@ -453,7 +461,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" TCP, &parse);
         DISPLAY;
@@ -462,7 +470,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" UDP, &parse);
         DISPLAY;
@@ -471,7 +479,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" EITHER, &parse);
         DISPLAY;
@@ -480,7 +488,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46, &parse);
         DISPLAY;
@@ -489,7 +497,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46 ":0", &parse);
         DISPLAY;
@@ -498,7 +506,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46 ":" PORT, &parse);
         VERIFYINET4(&parse, fqdn64, fqdn66, porttcp, portudp);
@@ -506,7 +514,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46 ":" TCP, &parse);
         DISPLAY;
@@ -515,7 +523,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46 ":" UDP, &parse);
         DISPLAY;
@@ -524,7 +532,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN46 ":" EITHER, &parse);
         DISPLAY;
@@ -533,7 +541,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]", &parse);
         DISPLAY;
@@ -542,7 +550,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]:0", &parse);
         DISPLAY;
@@ -551,7 +559,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]:" PORT, &parse);
         DISPLAY;
@@ -560,7 +568,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]:" TCP, &parse);
         DISPLAY;
@@ -569,7 +577,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]:" UDP, &parse);
         DISPLAY;
@@ -578,7 +586,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::]:" EITHER, &parse);
         DISPLAY;
@@ -587,7 +595,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]", &parse);
         DISPLAY;
@@ -596,7 +604,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:0", &parse);
         DISPLAY;
@@ -605,7 +613,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:" PORT, &parse);
         DISPLAY;
@@ -614,7 +622,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:" TCP, &parse);
         DISPLAY;
@@ -623,7 +631,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:" UDP, &parse);
         DISPLAY;
@@ -632,7 +640,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:" EITHER, &parse);
         DISPLAY;
@@ -641,7 +649,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]", &parse);
         DISPLAY;
@@ -650,7 +658,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:0", &parse);
         DISPLAY;
@@ -659,7 +667,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:" PORT, &parse);
         DISPLAY;
@@ -668,7 +676,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:" TCP, &parse);
         DISPLAY;
@@ -677,7 +685,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:" UDP, &parse);
         DISPLAY;
@@ -686,7 +694,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:" EITHER, &parse);
         DISPLAY;
@@ -695,7 +703,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "0", &parse);
         DISPLAY;
@@ -704,7 +712,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":0", &parse);
         DISPLAY;
@@ -713,7 +721,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "", &parse);
         DISPLAY;
@@ -722,7 +730,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/" LOCAL, &parse);
         DISPLAY;
@@ -731,7 +739,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "./" LOCAL, &parse);
         DISPLAY;
@@ -740,7 +748,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "../" LOCAL, &parse);
         DISPLAY;
@@ -749,7 +757,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ".//..///.////" LOCAL, &parse);
         DISPLAY;
@@ -758,7 +766,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/run/" LOCAL, &parse);
         DISPLAY;
@@ -767,7 +775,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/" LOCAL, &parse);
         DISPLAY;
@@ -776,7 +784,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/../run/" LOCAL, &parse);
         DISPLAY;
@@ -785,7 +793,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = LOCAL, &parse);
         DISPLAY;
@@ -794,7 +802,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/I-hope-this-directory-does-not-exist/" LOCAL, &parse);
         DISPLAY;
@@ -803,7 +811,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "/var/tmp/", &parse);
         DISPLAY;
@@ -812,7 +820,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "I-hope-this-domain-name-is-unresolvable.com", &parse);
         DISPLAY;
@@ -821,7 +829,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "(I-hope-this-does-not-look-like-anything-valid)", &parse);
         DISPLAY;
@@ -830,7 +838,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "undefinedthing", &parse);
         DISPLAY;
@@ -839,7 +847,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = ":undefinedthing", &parse);
         DISPLAY;
@@ -848,7 +856,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = FQDN4 ":undefinedthing", &parse);
         DISPLAY;
@@ -857,7 +865,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":undefinedthing", &parse);
         DISPLAY;
@@ -866,7 +874,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6 "]:undefinedthing", &parse);
         DISPLAY;
@@ -875,7 +883,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        SETUP;
+        PREFACE;
         TEST();
         rc = diminuto_ipc_endpoint(endpoint = "[::ffff:" IPV4 "]:undefinedthing", &parse);
         DISPLAY;

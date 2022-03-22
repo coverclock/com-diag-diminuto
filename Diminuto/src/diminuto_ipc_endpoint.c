@@ -545,24 +545,18 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (diminuto_ipc6_is_v4mapped(&(endpoint->ipv6))) {
                 is_ipv6 = false;
                 is_ipv4 = true;
-            } else if (diminuto_ipc_endpoint_ipv6) {
-                is_ipv6 = true;
-                is_ipv4 = false;
             } else {
-                is_ipv6 = false;
-                is_ipv4 = true;
+                is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
+                is_ipv4 = !diminuto_ipc_endpoint_ipv6;
             }
         } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
             is_ipv6 = false;
             is_ipv4 = true;
-        } else if (is_ipv4 && is_ipv6) {
-            is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
-            is_ipv4 = !diminuto_ipc_endpoint_ipv6;
-        } else if ((!is_ipv4) && (!is_ipv6)) {
+        } else if (is_ipv4 == is_ipv6) {
             is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
             is_ipv4 = !diminuto_ipc_endpoint_ipv6;
         } else {
-            /* Do nothing: parser decided. */
+            /* Do nothing: no ambiguity. */
         }
 
         /*
