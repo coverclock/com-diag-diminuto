@@ -33,7 +33,7 @@ static inline int library_settor(diminuto_atomic_functor_t * fp, int value) {
 }
 
 /*
- * APPLICATION
+ * APPLICATION: FUNCTOR
  */
 
 static void * application_functor(void * dp, void * cp) {

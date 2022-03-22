@@ -26,7 +26,7 @@ static const void * DIMINUTO_ATOMIC_ERROR = (void *)(intptr_t)-1;
  * This defines the prototype for a functor that applies a context (whatever
  * that is) to a shared data variable and returns some result.
  */
-typedef void * (diminuto_atomic_functor_t)(void * datap, void * contextp);
+typedef void * (diminuto_atomic_functor_t)(void * sharedp, void * contextp);
 
 /**
  * Atomically apply a caller-provided functor to a shared data variable along
@@ -34,10 +34,10 @@ typedef void * (diminuto_atomic_functor_t)(void * datap, void * contextp);
  * about the underlying type of the shared data variable.
  * @param mutexp points to a mutex used to serialized the operation.
  * @param functorp points to the caller functor.
- * @param datap points to the shared data variable.
- * @param contextp points to the caller context.
- * @return a value.
+ * @param sharedp points to the shared data variable.
+ * @param contextp points to the caller context, whatever that is.
+ * @return a pointer or DIMINUTO_ATOMIC_ERROR with errno if an error occurred.
  */
-extern void * diminuto_atomic_apply(pthread_mutex_t * mutexp, diminuto_atomic_functor_t * functorp, void * datap, void * contextp);
+extern void * diminuto_atomic_apply(pthread_mutex_t * mutexp, diminuto_atomic_functor_t * functorp, void * sharedp, void * contextp);
 
 #endif
