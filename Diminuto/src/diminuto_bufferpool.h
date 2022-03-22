@@ -1,10 +1,10 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
-#ifndef _H_COM_DIAG_DIMINUTO_BUFFER_POOL_PRIVATE_
-#define _H_COM_DIAG_DIMINUTO_BUFFER_POOL_PRIVATE_
+#ifndef _H_COM_DIAG_DIMINUTO_BUFFERPOOL_PRIVATE_
+#define _H_COM_DIAG_DIMINUTO_BUFFERPOOL_PRIVATE_
 
 /**
  * @file
- * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This describes the Buffer Pool private API.
  * @author Chip Overclock <mailto:coverclock@diag.com>

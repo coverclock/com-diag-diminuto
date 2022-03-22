@@ -19,7 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
-#include "../src/diminuto_buffer_pool.h"
+#include "../src/diminuto_bufferpool.h"
 
 /*******************************************************************************
  * OPTIONS

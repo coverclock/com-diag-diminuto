@@ -64,7 +64,7 @@
  */
 
 #include <stddef.h>
-#include "com/diag/diminuto/diminuto_buffer_pool.h"
+#include "com/diag/diminuto/diminuto_bufferpool.h"
 
 /*******************************************************************************
  * <stdlib.h>-LIKE FUNCTIONS

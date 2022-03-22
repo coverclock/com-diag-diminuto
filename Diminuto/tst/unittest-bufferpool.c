@@ -16,7 +16,7 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_countof.h"
-#include "com/diag/diminuto/diminuto_buffer_pool.h"
+#include "com/diag/diminuto/diminuto_bufferpool.h"
 
 int main(void)
 {
