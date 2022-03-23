@@ -408,7 +408,9 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     }
 
-    if (Layer2 == '4') {
+    if (diminuto_ipc4_is_unspecified(&address4) && diminuto_ipc6_is_unspecified(&address6)) {
+        /* Do nothing. */
+    } else if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address4=%s\n",  diminuto_ipc4_address2string(address4, string, sizeof(string)));
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address6=%s\n",  diminuto_ipc6_address2string(address6, string, sizeof(string)));
@@ -429,7 +431,9 @@ int main(int argc, char * argv[])
         }
     }
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port46==%d\n", port46);
+    if (port46 != 0) {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port46==%d\n", port46);
+    }
 
     if (Server == (const char *)0) {
         /* Do nothing. */
@@ -443,7 +447,9 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     }
 
-    if (Layer2 == '4') {
+    if (diminuto_ipc4_is_unspecified(&server4) && diminuto_ipc6_is_unspecified(&server6)) {
+        /* Do nothing. */
+    } else if (Layer2 == '4') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server4=%s\n", diminuto_ipc4_address2string(server4, string, sizeof(string)));
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server6=%s\n", diminuto_ipc6_address2string(server6, string, sizeof(string)));
@@ -458,7 +464,9 @@ int main(int argc, char * argv[])
         rendezvous46 = diminuto_ipc_port(Rendezvous, "tcp");
     }
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "rendezvous46=%d\n", rendezvous46);
+    if (rendezvous46 != 0) {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "rendezvous46=%d\n", rendezvous46);
+    }
 
     if (Interface == (const char *)0) {
         /* Do nothing. */
