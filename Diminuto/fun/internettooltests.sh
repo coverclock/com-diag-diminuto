@@ -205,10 +205,20 @@ internettool -x -A google.com || exit 1
 internettool -x -A google.com -4 || exit 1
 internettool -x -A google.com -6 || exit 1
 
-internettool -x -A google.com -P 80  || exit 1
+internettool -x -A google.com -P 80 || exit 1
 internettool -x -A google.com -P 8888 || exit 1
 internettool -x -A google.com -P 8888 -t || exit 1
 internettool -x -A google.com -P 8888 -u || exit 1
+
+internettool -x -A google.com -P 80 -4 || exit 1
+internettool -x -A google.com -P 8888 -4 || exit 1
+internettool -x -A google.com -P 8888 -4 -t || exit 1
+internettool -x -A google.com -P 8888 -4 -u || exit 1
+
+internettool -x -A google.com -P 80 -6 || exit 1
+internettool -x -A google.com -P 8888 -6 || exit 1
+internettool -x -A google.com -P 8888 -6 -t || exit 1
+internettool -x -A google.com -P 8888 -6 -u || exit 1
 
 internettool -x -A google.com -P http || exit 1
 internettool -x -A google.com -P http -t || exit 1
@@ -216,6 +226,20 @@ internettool -x -A google.com -P tftp -u || exit 1
 internettool -x -A google.com -P time || exit 1
 internettool -x -A google.com -P time -t || exit 1
 internettool -x -A google.com -P time -u || exit 1
+
+internettool -x -A google.com -P http -4 || exit 1
+internettool -x -A google.com -P http -4 -t || exit 1
+internettool -x -A google.com -P tftp -4 -u || exit 1
+internettool -x -A google.com -P time -4 || exit 1
+internettool -x -A google.com -P time -4 -t || exit 1
+internettool -x -A google.com -P time -4 -u || exit 1
+
+internettool -x -A google.com -P http -6 || exit 1
+internettool -x -A google.com -P http -6 -t || exit 1
+internettool -x -A google.com -P tftp -6 -u || exit 1
+internettool -x -A google.com -P time -6 || exit 1
+internettool -x -A google.com -P time -6 -t || exit 1
+internettool -x -A google.com -P time -6 -u || exit 1
 
 internettool -x -A prairiethorn.org || exit 1
 internettool -x -A prairiethorn.org -4 || exit 1
