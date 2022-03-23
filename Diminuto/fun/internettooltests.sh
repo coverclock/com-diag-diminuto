@@ -13,6 +13,8 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
+set -x
+
 internettool -?
 
 internettool -x -E 80 || exit 1
@@ -35,6 +37,7 @@ internettool -x -p 80 || exit 1
 internettool -x -p 8888 || exit 1
 internettool -x -p 8888 -t || exit 1
 internettool -x -p 8888 -u || exit 1
+
 internettool -x -p http || exit 1
 internettool -x -p http -t || exit 1
 internettool -x -p http -u || exit 1
@@ -55,6 +58,7 @@ internettool -x -E 206.178.189.131:tftp || exit 1
 internettool -x -E 206.178.189.131:time || exit 1
 internettool -x -E 206.178.189.131:time -t || exit 1
 internettool -x -E 206.178.189.131:time -u || exit 1
+
 internettool -x -E "[2607:f8b0:400f:805::200e]" || exit 1
 internettool -x -E "[2607:f8b0:400f:805::200e]:80" || exit 1
 internettool -x -E "[2607:f8b0:400f:805::200e]:8888" -t || exit 1
@@ -67,6 +71,7 @@ internettool -x -E "[2607:f8b0:400f:805::200e]:tftp" || exit 1
 internettool -x -E "[2607:f8b0:400f:805::200e]:time" || exit 1
 internettool -x -E "[2607:f8b0:400f:805::200e]:time" -t || exit 1
 internettool -x -E "[2607:f8b0:400f:805::200e]:time" -u || exit 1
+
 internettool -x -E "[::ffff:209.17.116.163]" || exit 1
 internettool -x -E "[::ffff:209.17.116.163]:80" || exit 1
 internettool -x -E "[::ffff:209.17.116.163]:8888" || exit 1
@@ -79,6 +84,7 @@ internettool -x -E "[::ffff:209.17.116.163]:tftp" || exit 1
 internettool -x -E "[::ffff:209.17.116.163]:time" || exit 1
 internettool -x -E "[::ffff:209.17.116.163]:time" -t || exit 1
 internettool -x -E "[::ffff:209.17.116.163]:time" -u || exit 1
+
 internettool -x -E diag.com || exit 1
 internettool -x -E diag.com -4 || exit 1
 internettool -x -E diag.com -6 || exit 1
@@ -91,6 +97,9 @@ internettool -x -E diag.com:http -t || exit 1
 internettool -x -E diag.com:http -u || exit 1
 internettool -x -E diag.com:tftp || exit 1
 internettool -x -E diag.com:time || exit 1
+internettool -x -E diag.com:time -t || exit 1
+internettool -x -E diag.com:time -u || exit 1
+
 internettool -x -E google.com || exit 1
 internettool -x -E google.com -4 || exit 1
 internettool -x -E google.com -6 || exit 1
@@ -103,6 +112,9 @@ internettool -x -E google.com:http -t || exit 1
 internettool -x -E google.com:http -u || exit 1
 internettool -x -E google.com:tftp || exit 1
 internettool -x -E google.com:time || exit 1
+internettool -x -E google.com:time -t || exit 1
+internettool -x -E google.com:time -u || exit 1
+
 internettool -x -E prairiethorn.org || exit 1
 internettool -x -E prairiethorn.org -4 || exit 1
 internettool -x -E prairiethorn.org -6 || exit 1
@@ -115,6 +127,8 @@ internettool -x -E prairiethorn.org:http -t || exit 1
 internettool -x -E prairiethorn.org:http -u || exit 1
 internettool -x -E prairiethorn.org:tftp || exit 1
 internettool -x -E prairiethorn.org:time || exit 1
+internettool -x -E prairiethorn.org:time -t || exit 1
+internettool -x -E prairiethorn.org:time -u || exit 1
 
 internettool -x -A 206.178.189.131 || exit 1
 internettool -x -A 206.178.189.131 -P 80 || exit 1
@@ -128,6 +142,7 @@ internettool -x -A 206.178.189.131 -P tftp || exit 1
 internettool -x -A 206.178.189.131 -P time || exit 1
 internettool -x -A 206.178.189.131 -P time -t || exit 1
 internettool -x -A 206.178.189.131 -P time -u || exit 1
+
 internettool -x -A "[2607:f8b0:400f:805::200e]" || exit 1
 internettool -x -A "[2607:f8b0:400f:805::200e]" -P 80 || exit 1
 internettool -x -A "[2607:f8b0:400f:805::200e]" -P 8888 -t || exit 1
@@ -140,6 +155,7 @@ internettool -x -A "[2607:f8b0:400f:805::200e]" -P tftp || exit 1
 internettool -x -A "[2607:f8b0:400f:805::200e]" -P time || exit 1
 internettool -x -A "[2607:f8b0:400f:805::200e]" -P time -t || exit 1
 internettool -x -A "[2607:f8b0:400f:805::200e]" -P time -u || exit 1
+
 internettool -x -A "[::ffff:209.17.116.163]" || exit 1
 internettool -x -A "[::ffff:209.17.116.163]" -P 80 || exit 1
 internettool -x -A "[::ffff:209.17.116.163]" -P 8888 || exit 1
@@ -152,6 +168,7 @@ internettool -x -A "[::ffff:209.17.116.163]" -P tftp || exit 1
 internettool -x -A "[::ffff:209.17.116.163]" -P time || exit 1
 internettool -x -A "[::ffff:209.17.116.163]" -P time -t || exit 1
 internettool -x -A "[::ffff:209.17.116.163]" -P time -u || exit 1
+
 internettool -x -A diag.com || exit 1
 internettool -x -A diag.com -4 || exit 1
 internettool -x -A diag.com -6 || exit 1
@@ -164,6 +181,9 @@ internettool -x -A diag.com -P http -t || exit 1
 internettool -x -A diag.com -P http -u || exit 1
 internettool -x -A diag.com -P tftp || exit 1
 internettool -x -A diag.com -P time || exit 1
+internettool -x -A diag.com -P time -t || exit 1
+internettool -x -A diag.com -P time -u || exit 1
+
 internettool -x -A google.com || exit 1
 internettool -x -A google.com -4 || exit 1
 internettool -x -A google.com -6 || exit 1
@@ -176,6 +196,9 @@ internettool -x -A google.com -P http -t || exit 1
 internettool -x -A google.com -P http -u || exit 1
 internettool -x -A google.com -P tftp || exit 1
 internettool -x -A google.com -P time || exit 1
+internettool -x -A google.com -P time -t || exit 1
+internettool -x -A google.com -P time -u || exit 1
+
 internettool -x -A prairiethorn.org || exit 1
 internettool -x -A prairiethorn.org -4 || exit 1
 internettool -x -A prairiethorn.org -6 || exit 1
@@ -188,6 +211,8 @@ internettool -x -A prairiethorn.org -P http -t || exit 1
 internettool -x -A prairiethorn.org -P http -u || exit 1
 internettool -x -A prairiethorn.org -P tftp || exit 1
 internettool -x -A prairiethorn.org -P time || exit 1
+internettool -x -A prairiethorn.org -P time -t || exit 1
+internettool -x -A prairiethorn.org -P time -u || exit 1
 
 echo "Success."
 exit 0
