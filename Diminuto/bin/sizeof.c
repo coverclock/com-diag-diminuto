@@ -16,8 +16,13 @@
  * void or function pointer). It's good to know these things.
  */
 
-#define PROBLEMATIC
+#define PROBLEMATIC (1)
 
+#include "com/diag/diminuto/diminuto_assert.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_offsetof.h"
+#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_widthof.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -31,34 +36,51 @@
 #include <linux/un.h>        /* UNIX_PATH_MAX */
 #include <sys/param.h>       /* MAXPATHLEN */
 #include <limits.h>          /* _POSIX_PATH_MAX */
-#include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_assert.h"
-#include "com/diag/diminuto/diminuto_offsetof.h"
 
-#define printsizeof(_TYPE_) printf("sizeof(%s)=%zu sizeof(%s*)=%zu\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*))
+#define printsizeofnoninteger(_TYPE_) \
+    do { \
+        printf("sizeof(%s)=%zu", #_TYPE_, sizeof(_TYPE_)); \
+        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
+        printf(" widthof(%s)=%zu", #_TYPE_,  widthof(_TYPE_)); \
+        putchar('\n'); \
+    } while (0)
 
-#define issigned(_TYPE_) (((_TYPE_)(~(_TYPE_)0)) < 0)
+#define printsizeof(_TYPE_) \
+    do { \
+        printf("sizeof(%s)=%zu", #_TYPE_, sizeof(_TYPE_)); \
+        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
+        printf(" widthof(%s)=%zu", #_TYPE_,  widthof(_TYPE_)); \
+        printf(" issigned(%s)=%d", #_TYPE_, issigned(_TYPE_)); \
+        if (issigned(_TYPE_)) { \
+            printf(" minimumof(%s)=0x%llx=%lld", #_TYPE_, (long long unsigned)minimumof(_TYPE_), (long long signed)minimumof(_TYPE_)); \
+            printf(" maximummof(%s)=0x%llx=%lld", #_TYPE_,  (long long unsigned)maximumof(_TYPE_), (long long signed)maximumof(_TYPE_)); \
+        } else { \
+            printf(" minimumof(%s)=0x%llx=%llu", #_TYPE_, (long long unsigned)minimumof(_TYPE_), (long long unsigned)minimumof(_TYPE_)); \
+            printf(" maximummof(%s)=0x%llx=%llu", #_TYPE_, (long long unsigned)maximumof(_TYPE_), (long long unsigned)maximumof(_TYPE_)); \
+        } \
+        putchar('\n'); \
+    } while (0)
 
-#define printsignof(_TYPE_) printf("sizeof(%s)=%zu sizeof(%s*)=%zu issigned(%s)=%d\n", #_TYPE_, sizeof(_TYPE_), #_TYPE_, sizeof(_TYPE_*), #_TYPE_, issigned(_TYPE_))
+#define printissigned(_TYPE_) do { printsizeof(_TYPE_); diminuto_expect(issigned(_TYPE_)); } while (0)
 
-#define printissigned(_TYPE_) do { printsignof(_TYPE_); diminuto_expect(issigned(_TYPE_)); } while (0)
-
-#define printisunsigned(_TYPE_) do { printsignof(_TYPE_); diminuto_expect(!issigned(_TYPE_)); } while (0)
+#define printisunsigned(_TYPE_) do { printsizeof(_TYPE_); diminuto_expect(!issigned(_TYPE_)); } while (0)
 
 #define printvalueof(_SYMBOL_) do { uint8_t array_##_SYMBOL_[_SYMBOL_]; printf("sizeof([%s])=%zu\n", #_SYMBOL_, sizeof(array_##_SYMBOL_)); } while (0) 
 
 typedef enum Enum { ENUM = 0 } enum_t;
 
-typedef struct BitField { int bit1 : 1; char bit2 : 8; } bitfield_t;
+typedef struct BitfieldInt { int bit : 1; } bitfield_int_t;
+typedef struct BitfieldChar { char bit : 1; } bitfield_char_t;
+typedef struct Bitfield { int bit1 : 1; char bit2 : 1; } bitfield_t;
 
-#if defined(PROBLEMATIC)
+#if PROBLEMATIC
 typedef void (function_t)(void);
 
-struct Zero {
+typedef struct StructZero {
     uint8_t field[0];
-};
+} struct_zero_t;
 
-typedef uint8_t (Array)[0];
+typedef uint8_t (array_zero_t)[0];
 #endif
 
 static int8_t array_PATH_MAX[PATH_MAX];
@@ -68,7 +90,7 @@ static int8_t array_POSIX_PATH_MAX[_POSIX_PATH_MAX];
 
 int main(void)
 {
-    printsignof(char);
+    printsizeof(char);
     printissigned(signed char);
     printisunsigned(unsigned char);
     printf("sizeof('%c')=%zu\n", '?', sizeof('?'));
@@ -85,16 +107,18 @@ int main(void)
     printissigned(long long);
     printissigned(signed long long);
     printisunsigned(unsigned long long);
-    printsizeof(float);
-    printsizeof(double);
-#if defined(PROBLEMATIC)
-    printsizeof(void);
+    printsizeofnoninteger(float);
+    printsizeofnoninteger(double);
+#if PROBLEMATIC
+    printsizeofnoninteger(void);
 #endif
     printsizeof(bool);
-    printsignof(enum_t);
-    printsizeof(bitfield_t);
-#if defined(PROBLEMATIC)
-    printsizeof(function_t);
+    printsizeof(enum_t);
+    printsizeofnoninteger(bitfield_int_t);
+    printsizeofnoninteger(bitfield_char_t);
+    printsizeofnoninteger(bitfield_t); /* UNEXPECTED! */
+#if PROBLEMATIC
+    printsizeofnoninteger(function_t);
 #endif
     printissigned(int8_t);
     printisunsigned(uint8_t);
@@ -106,44 +130,45 @@ int main(void)
     printisunsigned(uint64_t);
     printissigned(intptr_t);
     printisunsigned(uintptr_t);
-    printsignof(ptrdiff_t);
-    printsignof(wchar_t);
-    printsignof(wint_t);
+    printsizeof(ptrdiff_t);
+    printsizeof(wchar_t);
+    printsizeof(wint_t);
     printisunsigned(size_t);
     printissigned(ssize_t);
-    printsignof(pid_t);
-    printsignof(time_t);
+    printsizeof(pid_t);
+    printsizeof(time_t);
 #if defined(_TIME_BITS)
     printvalueof(_TIME_BITS)
 #endif
-    printsignof(dev_t);
-    printsignof(ino_t);
-    printsignof(mode_t);
-    printsignof(nlink_t);
-    printsignof(uid_t);
-    printsignof(gid_t);
-    printsignof(off_t);
-    printsignof(blksize_t);
-    printsignof(blkcnt_t);
+    printsizeof(dev_t);
+    printsizeof(ino_t);
+    printsizeof(mode_t);
+    printsizeof(nlink_t);
+    printsizeof(uid_t);
+    printsizeof(gid_t);
+    printsizeof(off_t);
+    printsizeof(blksize_t);
+    printsizeof(blkcnt_t);
     printsizeof(pthread_t);
-    printsizeof(pthread_mutex_t);
-    printsizeof(pthread_cond_t);
+    printsizeofnoninteger(pthread_mutex_t);
+    printsizeofnoninteger(pthread_cond_t);
     printisunsigned(diminuto_ticks_t);
     printissigned(diminuto_sticks_t);
     printsizeof(diminuto_ipv4_t);
-    printsizeof(diminuto_ipv4_buffer_t);
-    printsizeof(diminuto_ipv6_t);
-    printsizeof(diminuto_ipv6_buffer_t);
-    printsignof(diminuto_port_t);
-    printsizeof(diminuto_local_t);
+    printsizeofnoninteger(diminuto_ipv4_buffer_t);
+    printsizeofnoninteger(diminuto_ipv6_t);
+    printsizeofnoninteger(diminuto_ipv6_buffer_t);
+    printsizeof(diminuto_port_t);
+    printsizeofnoninteger(diminuto_port_buffer_t);
+    printsizeofnoninteger(diminuto_local_t);
     printisunsigned(diminuto_unsigned_t);
     printissigned(diminuto_signed_t);
-    printsizeof(diminuto_path_t);
+    printsizeofnoninteger(diminuto_path_t);
     printissigned(diminuto_lld_t);
     printisunsigned(diminuto_llu_t);
-#if defined(PROBLEMATIC)
-    printsizeof(struct Zero);
-    printsizeof(Array);
+#if PROBLEMATIC
+    printsizeofnoninteger(struct_zero_t);
+    printsizeofnoninteger(array_zero_t);
 #endif
     printvalueof(PATH_MAX);
     printvalueof(UNIX_PATH_MAX);

@@ -13,25 +13,27 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
+(
+
 set -x
 
 internettool -?
 
-internettool -x -E 80 || exit 1
-internettool -x -E 8888 || exit 1
-internettool -x -E 8888 -t || exit 1
-internettool -x -E 8888 -u || exit 1
+internettool -x -e 80 || exit 1
+internettool -x -e 8888 || exit 1
+internettool -x -e 8888 -t || exit 1
+internettool -x -e 8888 -u || exit 1
 
-internettool -x -E :80 || exit 1
-internettool -x -E :8888 || exit 1
-internettool -x -E :8888 -t || exit 1
-internettool -x -E :8888 -u || exit 1
+internettool -x -e :80 || exit 1
+internettool -x -e :8888 || exit 1
+internettool -x -e :8888 -t || exit 1
+internettool -x -e :8888 -u || exit 1
 
-internettool -x -E :http || exit 1
-internettool -x -E :tftp || exit 1
-internettool -x -E :time || exit 1
-internettool -x -E :time -t || exit 1
-internettool -x -E :time -u || exit 1
+internettool -x -e :http || exit 1
+internettool -x -e :tftp || exit 1
+internettool -x -e :time || exit 1
+internettool -x -e :time -t || exit 1
+internettool -x -e :time -u || exit 1
 
 internettool -x -p 80 || exit 1
 internettool -x -p 8888 || exit 1
@@ -44,6 +46,42 @@ internettool -x -p tftp -u || exit 1
 internettool -x -p time || exit 1
 internettool -x -p time -t || exit 1
 internettool -x -p time -u || exit 1
+
+internettool -x -a localhost -p 80 || exit 1
+internettool -x -a localhost -p 8888 || exit 1
+internettool -x -a localhost -p 8888 -t || exit 1
+internettool -x -a localhost -p 8888 -u || exit 1
+
+internettool -x -a localhost -p http || exit 1
+internettool -x -a localhost -p http -t || exit 1
+internettool -x -a localhost -p tftp -u || exit 1
+internettool -x -a localhost -p time || exit 1
+internettool -x -a localhost -p time -t || exit 1
+internettool -x -a localhost -p time -u || exit 1
+
+internettool -x -a localhost -4 -p 80 || exit 1
+internettool -x -a localhost -4 -p 8888 || exit 1
+internettool -x -a localhost -4 -p 8888 -t || exit 1
+internettool -x -a localhost -4 -p 8888 -u || exit 1
+
+internettool -x -a localhost -4 -p http || exit 1
+internettool -x -a localhost -4 -p http -t || exit 1
+internettool -x -a localhost -4 -p tftp -u || exit 1
+internettool -x -a localhost -4 -p time || exit 1
+internettool -x -a localhost -4 -p time -t || exit 1
+internettool -x -a localhost -4 -p time -u || exit 1
+
+internettool -x -a localhost -6 -p 80 || exit 1
+internettool -x -a localhost -6 -p 8888 || exit 1
+internettool -x -a localhost -6 -p 8888 -t || exit 1
+internettool -x -a localhost -6 -p 8888 -u || exit 1
+
+internettool -x -a localhost -6 -p http || exit 1
+internettool -x -a localhost -6 -p http -t || exit 1
+internettool -x -a localhost -6 -p tftp -u || exit 1
+internettool -x -a localhost -6 -p time || exit 1
+internettool -x -a localhost -6 -p time -t || exit 1
+internettool -x -a localhost -6 -p time -u || exit 1
 
 internettool -x -E 206.178.189.131 || exit 1
 
@@ -58,31 +96,31 @@ internettool -x -E 206.178.189.131:time || exit 1
 internettool -x -E 206.178.189.131:time -t || exit 1
 internettool -x -E 206.178.189.131:time -u || exit 1
 
-internettool -x -E "[2607:f8b0:400f:805::200e]" || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e] || exit 1
 
-internettool -x -E "[2607:f8b0:400f:805::200e]:80" || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:8888" -t || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:8888" -u || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:8888" || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:80 || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:8888 -t || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:8888 -u || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:8888 || exit 1
 
-internettool -x -E "[2607:f8b0:400f:805::200e]:http" || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:tftp" || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:time" || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:time" -t || exit 1
-internettool -x -E "[2607:f8b0:400f:805::200e]:time" -u || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:http || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:tftp || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:time || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:time -t || exit 1
+internettool -x -E [2607:f8b0:400f:805::200e]:time -u || exit 1
 
-internettool -x -E "[::ffff:209.17.116.163]" || exit 1
+internettool -x -E [::ffff:209.17.116.163] || exit 1
 
-internettool -x -E "[::ffff:209.17.116.163]:80" || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:8888" || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:8888" -t || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:8888" -u || exit 1
+internettool -x -E [::ffff:209.17.116.163]:80 || exit 1
+internettool -x -E [::ffff:209.17.116.163]:8888 || exit 1
+internettool -x -E [::ffff:209.17.116.163]:8888 -t || exit 1
+internettool -x -E [::ffff:209.17.116.163]:8888 -u || exit 1
 
-internettool -x -E "[::ffff:209.17.116.163]:http" || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:tftp" || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:time" || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:time" -t || exit 1
-internettool -x -E "[::ffff:209.17.116.163]:time" -u || exit 1
+internettool -x -E [::ffff:209.17.116.163]:http || exit 1
+internettool -x -E [::ffff:209.17.116.163]:tftp || exit 1
+internettool -x -E [::ffff:209.17.116.163]:time || exit 1
+internettool -x -E [::ffff:209.17.116.163]:time -t || exit 1
+internettool -x -E [::ffff:209.17.116.163]:time -u || exit 1
 
 internettool -x -E diag.com || exit 1
 internettool -x -E diag.com -4 || exit 1
@@ -157,33 +195,33 @@ internettool -x -A 206.178.189.131 -4 -P time || exit 1
 internettool -x -A 206.178.189.131 -4 -P time -t || exit 1
 internettool -x -A 206.178.189.131 -4 -P time -u || exit 1
 
-internettool -x -A "2607:f8b0:400f:805::200e" -6 || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 || exit 1
 
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P 80 || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P 8888 -t || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P 8888 -u || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P 8888 || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 80 || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -t || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -u || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 || exit 1
 
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P http || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P http -t || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P tftp -u || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P time || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P time -t || exit 1
-internettool -x -A "2607:f8b0:400f:805::200e" -6 -P time -u || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P http || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P http -t || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P tftp -u || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -t || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -u || exit 1
 
-internettool -x -A "::ffff:209.17.116.163" -6 || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 || exit 1
 
-internettool -x -A "::ffff:209.17.116.163" -6 -P 80 || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P 8888 || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P 8888 -t || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P 8888 -u || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 80 || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -t || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -u || exit 1
 
-internettool -x -A "::ffff:209.17.116.163" -6 -P http || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P http -t || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P tftp -u || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P time || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P time -t || exit 1
-internettool -x -A "::ffff:209.17.116.163" -6 -P time -u || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P http || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P http -t || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P tftp -u || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time -t || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time -u || exit 1
 
 internettool -x -A diag.com || exit 1
 internettool -x -A diag.com -4 || exit 1
@@ -257,5 +295,7 @@ internettool -x -A prairiethorn.org -P time || exit 1
 internettool -x -A prairiethorn.org -P time -t || exit 1
 internettool -x -A prairiethorn.org -P time -u || exit 1
 
-echo "Success."
+)
+
+echo "Success." 1>&2
 exit 0

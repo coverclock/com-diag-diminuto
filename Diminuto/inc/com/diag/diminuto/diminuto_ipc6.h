@@ -291,6 +291,7 @@ static inline diminuto_port_t diminuto_ipc6_port(const char * service, const cha
  * @param address is the IPv6 address.
  * @param buffer points to the buffer into to whcih the string is stored.
  * @param length is the length of the buffer in bytes.
+ * @return a pointer to the buffer.
  */
 extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length);
 
@@ -300,6 +301,7 @@ extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * 
  * @param address is the IPv6 address.
  * @param buffer points to the buffer into to whcih the string is stored.
  * @param length is the length of the buffer in bytes.
+ * @return a pointer to the buffer.
  */
 static inline const char * diminuto_ipc6_address2string(diminuto_ipv6_t address, char * buffer, size_t length) {
     return diminuto_ipc6_colonnotation(address, buffer, length);

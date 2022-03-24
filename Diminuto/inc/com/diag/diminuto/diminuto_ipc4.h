@@ -167,6 +167,7 @@ static inline diminuto_port_t diminuto_ipc4_port(const char * service, const cha
  * @param address is the IPv4 address in host byte order.
  * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
+ * @return a pointer to the buffer.
  */
 extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length);
 
@@ -176,6 +177,7 @@ extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * bu
  * @param address is the IPv4 address in host byte order.
  * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.
+ * @return a pointer to the buffer.
  */
 static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address, char * buffer, size_t length) {
     return diminuto_ipc4_dotnotation(address, buffer, length);

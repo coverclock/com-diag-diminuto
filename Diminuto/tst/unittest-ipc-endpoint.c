@@ -55,17 +55,19 @@ static const char * type2string(diminuto_ipc_type_t type)
     char * endpoint = (char *)0; \
     diminuto_ipv4_buffer_t ipv4buffer = { '\0', }; \
     diminuto_ipv6_buffer_t ipv6buffer = { '\0', }; \
+    diminuto_port_buffer_t tcpbuffer = { '\0', }; \
+    diminuto_port_buffer_t udpbuffer = { '\0', }; \
     diminuto_ipc_endpoint_t parse = { DIMINUTO_IPC_TYPE_UNSPECIFIED, }; \
     int rc = -1 \
 
 #define DISPLAY \
-        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d local=\"%s\" rc=%d\n", \
+        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%s udp=%s local=\"%s\" rc=%d\n", \
             endpoint, \
             type2string(parse.type), \
             diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), \
             diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), \
-            parse.tcp, \
-            parse.udp, \
+            diminuto_ipc_port2string(parse.tcp, tcpbuffer, sizeof(tcpbuffer)), \
+            diminuto_ipc_port2string(parse.udp, udpbuffer, sizeof(udpbuffer)), \
             parse.local, \
             rc)
 

@@ -56,6 +56,7 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include <stdio.h> /* For snprintf(3). */
 #include <sys/socket.h> /* For AF_UNSPEC, AF_UNIX, AF_INET, struct msghdr. */
 #include <netinet/in.h> /* IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IPV6. */
 #include <netinet/tcp.h> /* for TCP_NODELAY, TCP_QUICKACK. */
@@ -483,6 +484,24 @@ static inline ssize_t diminuto_ipc_message_send(int fd, const struct msghdr * me
  * @return a list of available network interfaces or NULL if an error occurred.
  */
 extern char ** diminuto_ipc_interfaces(void);
+
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
+
+/**
+ * Convert a port number in host byte order into a printable port number
+ * string.
+ * @param port is the port number in host byte order.
+ * @param buffer points to the buffer into to which the string is stored.
+ * @param length is the length of the buffer in bytes.
+ * @return a pointer to the buffer.
+ */
+static inline const char * diminuto_ipc_port2string(diminuto_port_t port, char * buffer, size_t length) {
+    (void)snprintf(buffer, length, "%u", port);
+    buffer[length - 1] = '\0';
+    return buffer;
+}
 
 /*******************************************************************************
  * ENDPOINTS

@@ -144,15 +144,22 @@ typedef char (diminuto_local_t)[DIMINUTO_LOCAL_SIZE];
 
 /**
  * This defines a type of character array that can contain an IPv4 address
- * as a printable string.
+ * as a printable string including the terminating NUL.
  */
 typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_SIZE];
 
 /**
  * This defines a type of character array that can contain an IPv6 address
- * as a printable string.
+ * as a printable string including the terminating NUL.
  */
 typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
+
+/**
+ * This defines a type of character array that can contain a port number
+ * as a printable string including the terminating NUL. It estimates the
+ * size of the printable string based on the sizeof() the port type.
+ */
+typedef char (diminuto_port_buffer_t)[3 * sizeof(diminuto_port_t)];
 
 /**
  * This defines a type of character array that can contain a file
