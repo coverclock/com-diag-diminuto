@@ -35,6 +35,28 @@ internettool -x -e :time || exit 1
 internettool -x -e :time -t || exit 1
 internettool -x -e :time -u || exit 1
 
+internettool -x -e localhost:80 || exit 1
+internettool -x -e localhost:8888 || exit 1
+internettool -x -e localhost:8888 -t || exit 1
+internettool -x -e localhost:8888 -u || exit 1
+
+internettool -x -e localhost:http || exit 1
+internettool -x -e localhost:tftp || exit 1
+internettool -x -e localhost:time || exit 1
+internettool -x -e localhost:time -t || exit 1
+internettool -x -e localhost:time -u || exit 1
+
+internettool -x -e google.com:80 || exit 1
+internettool -x -e google.com:8888 || exit 1
+internettool -x -e google.com:8888 -t || exit 1
+internettool -x -e google.com:8888 -u || exit 1
+
+internettool -x -e google.com:http || exit 1
+internettool -x -e google.com:tftp || exit 1
+internettool -x -e google.com:time || exit 1
+internettool -x -e google.com:time -t || exit 1
+internettool -x -e google.com:time -u || exit 1
+
 internettool -x -p 80 || exit 1
 internettool -x -p 8888 || exit 1
 internettool -x -p 8888 -t || exit 1
@@ -82,6 +104,42 @@ internettool -x -a localhost -6 -p tftp -u || exit 1
 internettool -x -a localhost -6 -p time || exit 1
 internettool -x -a localhost -6 -p time -t || exit 1
 internettool -x -a localhost -6 -p time -u || exit 1
+
+internettool -x -a google.com -p 80 || exit 1
+internettool -x -a google.com -p 8888 || exit 1
+internettool -x -a google.com -p 8888 -t || exit 1
+internettool -x -a google.com -p 8888 -u || exit 1
+
+internettool -x -a google.com -p http || exit 1
+internettool -x -a google.com -p http -t || exit 1
+internettool -x -a google.com -p tftp -u || exit 1
+internettool -x -a google.com -p time || exit 1
+internettool -x -a google.com -p time -t || exit 1
+internettool -x -a google.com -p time -u || exit 1
+
+internettool -x -a google.com -4 -p 80 || exit 1
+internettool -x -a google.com -4 -p 8888 || exit 1
+internettool -x -a google.com -4 -p 8888 -t || exit 1
+internettool -x -a google.com -4 -p 8888 -u || exit 1
+
+internettool -x -a google.com -4 -p http || exit 1
+internettool -x -a google.com -4 -p http -t || exit 1
+internettool -x -a google.com -4 -p tftp -u || exit 1
+internettool -x -a google.com -4 -p time || exit 1
+internettool -x -a google.com -4 -p time -t || exit 1
+internettool -x -a google.com -4 -p time -u || exit 1
+
+internettool -x -a google.com -6 -p 80 || exit 1
+internettool -x -a google.com -6 -p 8888 || exit 1
+internettool -x -a google.com -6 -p 8888 -t || exit 1
+internettool -x -a google.com -6 -p 8888 -u || exit 1
+
+internettool -x -a google.com -6 -p http || exit 1
+internettool -x -a google.com -6 -p http -t || exit 1
+internettool -x -a google.com -6 -p tftp -u || exit 1
+internettool -x -a google.com -6 -p time || exit 1
+internettool -x -a google.com -6 -p time -t || exit 1
+internettool -x -a google.com -6 -p time -u || exit 1
 
 internettool -x -E 206.178.189.131 || exit 1
 

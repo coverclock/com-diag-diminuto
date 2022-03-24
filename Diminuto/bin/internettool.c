@@ -502,14 +502,12 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     }
 
-    if (diminuto_ipc4_is_unspecified(&address4) && diminuto_ipc6_is_unspecified(&address6)) {
-        /* Do nothing. */
-    } else if (Layer2 == '4') {
+    if (!diminuto_ipc4_is_unspecified(&address4)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address4=%s\n",  diminuto_ipc4_address2string(address4, address4buffer, sizeof(address4buffer)));
-    } else if (Layer2 == '6') {
+    }
+
+    if (!diminuto_ipc6_is_unspecified(&address6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "address6=%s\n",  diminuto_ipc6_address2string(address6, address6buffer, sizeof(address6buffer)));
-    } else {
-        diminuto_assert(0);
     }
 
     if (Port == (const char *)0) {
@@ -543,14 +541,12 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     }
 
-    if (diminuto_ipc4_is_unspecified(&server4) && diminuto_ipc6_is_unspecified(&server6)) {
-        /* Do nothing. */
-    } else if (Layer2 == '4') {
+    if (!diminuto_ipc4_is_unspecified(&server4)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server4=%s\n", diminuto_ipc4_address2string(server4, server4buffer, sizeof(server4buffer)));
-    } else if (Layer2 == '6') {
+    }
+
+    if (!diminuto_ipc6_is_unspecified(&server6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "server6=%s\n", diminuto_ipc6_address2string(server6, server6buffer, sizeof(server6buffer)));
-    } else {
-        diminuto_assert(0);
     }
 
     if (Rendezvous == (const char *)0) {
@@ -633,7 +629,7 @@ int main(int argc, char * argv[])
          diminuto_assert(sock >= 0);
          rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
          diminuto_assert(rc >= 0);
-         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -647,7 +643,7 @@ int main(int argc, char * argv[])
          diminuto_assert(sock >= 0);
          rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
          diminuto_assert(rc >= 0);
-         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -661,7 +657,7 @@ int main(int argc, char * argv[])
          diminuto_assert(sock >= 0);
          rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
          diminuto_assert(rc >= 0);
-         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -675,7 +671,7 @@ int main(int argc, char * argv[])
          diminuto_assert(sock >= 0);
          rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
          diminuto_assert(rc >= 0);
-         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -689,10 +685,10 @@ int main(int argc, char * argv[])
         diminuto_assert(sock >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
         rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -706,7 +702,7 @@ int main(int argc, char * argv[])
         diminuto_assert(sock >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -720,10 +716,10 @@ int main(int argc, char * argv[])
         diminuto_assert(sock >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
         rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -737,7 +733,7 @@ int main(int argc, char * argv[])
         diminuto_assert(sock >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -755,7 +751,7 @@ int main(int argc, char * argv[])
         diminuto_assert(rc >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum4=%s datum46=%d\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -773,7 +769,7 @@ int main(int argc, char * argv[])
         diminuto_assert(rc >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum6=%s datum46=%d\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -814,7 +810,7 @@ int main(int argc, char * argv[])
                     diminuto_assert(fd >= 0);
                     diminuto_assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
                     diminuto_assert(datum46 != 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%d\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%s\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                     rc = diminuto_mux_register_read(&mux, fd);
                     diminuto_assert(rc >= 0);
                 }
@@ -877,7 +873,7 @@ int main(int argc, char * argv[])
                     diminuto_assert(fd >= 0);
                     diminuto_assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
                     diminuto_assert(datum46 != 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%d\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%s\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                     rc = diminuto_mux_register_read(&mux, fd);
                     diminuto_assert(rc >= 0);
                 }
