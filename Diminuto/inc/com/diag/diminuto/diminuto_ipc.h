@@ -491,7 +491,8 @@ extern char ** diminuto_ipc_interfaces(void);
 
 /**
  * Convert a port number in host byte order into a printable port number
- * string.
+ * string. (It's perfectly okay to just use a printf(3)-style function
+ * to print port numbers. This is provided just for the sake of completeness.)
  * @param port is the port number in host byte order.
  * @param buffer points to the buffer into to which the string is stored.
  * @param length is the length of the buffer in bytes.

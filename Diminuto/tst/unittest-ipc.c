@@ -285,5 +285,47 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        diminuto_port_t port;
+        diminuto_port_buffer_t buffer;
+        const char * pointer;
+        unsigned long number;
+        char * end;
+
+        TEST();
+
+        port = diminuto_minimumof(diminuto_port_t);
+        EXPECT(port == 0);
+        pointer = diminuto_ipc_port2string(port, buffer, sizeof(buffer));
+        EXPECT(pointer == &(buffer[0]));
+        number = strtoul(buffer, &end, 10);
+        EXPECT(end != (const char *)0);
+        EXPECT(*end == '\0');
+        EXPECT(number == port);
+
+        STATUS();
+    }
+
+    {
+        diminuto_port_t port;
+        diminuto_port_buffer_t buffer;
+        const char * pointer;
+        unsigned long number;
+        char * end;
+
+        TEST();
+
+        port = diminuto_maximumof(diminuto_port_t);
+        EXPECT(port > 0);
+        pointer = diminuto_ipc_port2string(port, buffer, sizeof(buffer));
+        EXPECT(pointer == &(buffer[0]));
+        number = strtoul(buffer, &end, 10);
+        EXPECT(end != (const char *)0);
+        EXPECT(*end == '\0');
+        EXPECT(number == port);
+
+        STATUS();
+    }
+
     EXIT();
 }
