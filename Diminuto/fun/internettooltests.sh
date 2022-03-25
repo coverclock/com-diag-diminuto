@@ -7,8 +7,21 @@
 # ABSTRACT
 #
 # Run a bunch of examples of internettest without setting up a
-# connection and see if any of them take an assert failure.
-# This is just a sanity test.
+# connection.
+#
+# The results of the examples that use actual FQDNs are not tested since
+# the resulting IPv4 and IPv6 addresses for those domains are not necessarily
+# fixed. Those examples are still useful to show how internettool can be used,
+# and to assure the tool doesn't take an assert failure during parsing.
+#
+# There are occasionally short delays in the DNS resolutions, so don't be
+# surprised if the display pauses for a few seconds in the examples that
+# have FQDNs.
+#
+# Useful debugging output can be had by increasing the logging level to
+# DEBUG, e.g.
+#
+# COM_DIAG_DIMINUTO_LOG_MASK=0xff internettooltests 2>&1 | tee LOG
 #
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
@@ -19,339 +32,331 @@ set -x
 
 internettool -?
 
-internettool -x -e 80 || exit 1
-internettool -x -e 8888 || exit 1
-internettool -x -e 8888 -t || exit 1
-internettool -x -e 8888 -u || exit 1
+internettool -x -e 80                                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -e 8888                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -e 8888 -t                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -e 8888 -u                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
 
-internettool -x -e :80 || exit 1
-internettool -x -e :8888 || exit 1
-internettool -x -e :8888 -t || exit 1
-internettool -x -e :8888 -u || exit 1
+internettool -x -e :80                                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -e :8888                                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -e :8888 -t                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -e :8888 -u                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
 
-internettool -x -e :http || exit 1
-internettool -x -e :tftp || exit 1
-internettool -x -e :time || exit 1
-internettool -x -e :time -t || exit 1
-internettool -x -e :time -u || exit 1
+internettool -x -e :http                                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -e :tftp                                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 69"                               || exit 1
+internettool -x -e :time                                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
+internettool -x -e :time -t                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
+internettool -x -e :time -u                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
 
-internettool -x -e localhost:80 || exit 1
-internettool -x -e localhost:8888 || exit 1
-internettool -x -e localhost:8888 -t || exit 1
-internettool -x -e localhost:8888 -u || exit 1
+internettool -x -e localhost:80                             | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 80"                            || exit 1
+internettool -x -e localhost:8888                           | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 8888"                          || exit 1
+internettool -x -e localhost:8888 -t                        | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 8888"                          || exit 1
+internettool -x -e localhost:8888 -u                        | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 8888"                          || exit 1
+internettool -x -e localhost:http                           | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 80"                            || exit 1
+internettool -x -e localhost:tftp                           | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 69"                            || exit 1
+internettool -x -e localhost:time                           | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 37"                            || exit 1
+internettool -x -e localhost:time -t                        | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 37"                            || exit 1
+internettool -x -e localhost:time -u                        | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 ::1 37"                            || exit 1
 
-internettool -x -e localhost:http || exit 1
-internettool -x -e localhost:tftp || exit 1
-internettool -x -e localhost:time || exit 1
-internettool -x -e localhost:time -t || exit 1
-internettool -x -e localhost:time -u || exit 1
+internettool -x -e google.com:80                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 80"   || exit 0
+internettool -x -e google.com:8888                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 8888" || exit 0
+internettool -x -e google.com:8888 -t                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 8888" || exit 0
+internettool -x -e google.com:8888 -u                       | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 8888" || exit 0
+internettool -x -e google.com:http                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 80"   || exit 0
+internettool -x -e google.com:tftp                          | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 69"   || exit 0
+internettool -x -e google.com:time                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 37"   || exit 0
+internettool -x -e google.com:time -t                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 37"   || exit 0
+internettool -x -e google.com:time -u                       | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 2607:f8b0:400f:804::200e 37"   || exit 0
 
-internettool -x -e google.com:80 || exit 1
-internettool -x -e google.com:8888 || exit 1
-internettool -x -e google.com:8888 -t || exit 1
-internettool -x -e google.com:8888 -u || exit 1
+internettool -x -p 80                                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -p 8888                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -p 8888 -t                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
+internettool -x -p 8888 -u                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                             || exit 1
 
-internettool -x -e google.com:http || exit 1
-internettool -x -e google.com:tftp || exit 1
-internettool -x -e google.com:time || exit 1
-internettool -x -e google.com:time -t || exit 1
-internettool -x -e google.com:time -u || exit 1
+internettool -x -p http                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -p http -t                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                               || exit 1
+internettool -x -p tftp -u                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 69"                               || exit 1
+internettool -x -p time                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
+internettool -x -p time -t                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
+internettool -x -p time -u                                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 37"                               || exit 1
 
-internettool -x -p 80 || exit 1
-internettool -x -p 8888 || exit 1
-internettool -x -p 8888 -t || exit 1
-internettool -x -p 8888 -u || exit 1
+internettool -x -a localhost -p 80                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -p 8888                        | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
+internettool -x -a localhost -p 8888 -t                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
+internettool -x -a localhost -p 8888 -u                     | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
 
-internettool -x -p http || exit 1
-internettool -x -p http -t || exit 1
-internettool -x -p tftp -u || exit 1
-internettool -x -p time || exit 1
-internettool -x -p time -t || exit 1
-internettool -x -p time -u || exit 1
+internettool -x -a localhost -p http                        | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -p http -t                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -p tftp -u                     | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 69"                             || exit 1
+internettool -x -a localhost -p time                        | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
+internettool -x -a localhost -p time -t                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
+internettool -x -a localhost -p time -u                     | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
 
-internettool -x -a localhost -p 80 || exit 1
-internettool -x -a localhost -p 8888 || exit 1
-internettool -x -a localhost -p 8888 -t || exit 1
-internettool -x -a localhost -p 8888 -u || exit 1
+internettool -x -a localhost -4 -p 80                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -4 -p 8888                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
+internettool -x -a localhost -4 -p 8888 -t                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
+internettool -x -a localhost -4 -p 8888 -u                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 8888"                           || exit 1
 
-internettool -x -a localhost -p http || exit 1
-internettool -x -a localhost -p http -t || exit 1
-internettool -x -a localhost -p tftp -u || exit 1
-internettool -x -a localhost -p time || exit 1
-internettool -x -a localhost -p time -t || exit 1
-internettool -x -a localhost -p time -u || exit 1
+internettool -x -a localhost -4 -p http                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -4 -p http -t                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 80"                             || exit 1
+internettool -x -a localhost -4 -p tftp -u                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 69"                             || exit 1
+internettool -x -a localhost -4 -p time                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
+internettool -x -a localhost -4 -p time -t                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
+internettool -x -a localhost -4 -p time -u                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 127.0.0.1 :: 37"                             || exit 1
 
-internettool -x -a localhost -4 -p 80 || exit 1
-internettool -x -a localhost -4 -p 8888 || exit 1
-internettool -x -a localhost -4 -p 8888 -t || exit 1
-internettool -x -a localhost -4 -p 8888 -u || exit 1
+internettool -x -a localhost -6 -p 80                       | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 80"                              || exit 1
+internettool -x -a localhost -6 -p 8888                     | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 8888"                            || exit 1
+internettool -x -a localhost -6 -p 8888 -t                  | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 8888"                            || exit 1
+internettool -x -a localhost -6 -p 8888 -u                  | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 8888"                            || exit 1
 
-internettool -x -a localhost -4 -p http || exit 1
-internettool -x -a localhost -4 -p http -t || exit 1
-internettool -x -a localhost -4 -p tftp -u || exit 1
-internettool -x -a localhost -4 -p time || exit 1
-internettool -x -a localhost -4 -p time -t || exit 1
-internettool -x -a localhost -4 -p time -u || exit 1
+internettool -x -a localhost -6 -p http                     | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 80"                              || exit 1
+internettool -x -a localhost -6 -p http -t                  | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 80"                              || exit 1
+internettool -x -a localhost -6 -p tftp -u                  | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 69"                              || exit 1
+internettool -x -a localhost -6 -p time                     | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 37"                              || exit 1
+internettool -x -a localhost -6 -p time -t                  | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 37"                              || exit 1
+internettool -x -a localhost -6 -p time -u                  | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 ::1 37"                              || exit 1
 
-internettool -x -a localhost -6 -p 80 || exit 1
-internettool -x -a localhost -6 -p 8888 || exit 1
-internettool -x -a localhost -6 -p 8888 -t || exit 1
-internettool -x -a localhost -6 -p 8888 -u || exit 1
+internettool -x -a google.com -p 80                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -p 8888                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
+internettool -x -a google.com -p 8888 -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
+internettool -x -a google.com -p 8888 -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
 
-internettool -x -a localhost -6 -p http || exit 1
-internettool -x -a localhost -6 -p http -t || exit 1
-internettool -x -a localhost -6 -p tftp -u || exit 1
-internettool -x -a localhost -6 -p time || exit 1
-internettool -x -a localhost -6 -p time -t || exit 1
-internettool -x -a localhost -6 -p time -u || exit 1
+internettool -x -a google.com -p http                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -p http -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -p tftp -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 69"                         || exit 0
+internettool -x -a google.com -p time                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
+internettool -x -a google.com -p time -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
+internettool -x -a google.com -p time -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
 
-internettool -x -a google.com -p 80 || exit 1
-internettool -x -a google.com -p 8888 || exit 1
-internettool -x -a google.com -p 8888 -t || exit 1
-internettool -x -a google.com -p 8888 -u || exit 1
+internettool -x -a google.com -4 -p 80                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -4 -p 8888                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
+internettool -x -a google.com -4 -p 8888 -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
+internettool -x -a google.com -4 -p 8888 -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 8888"                       || exit 0
 
-internettool -x -a google.com -p http || exit 1
-internettool -x -a google.com -p http -t || exit 1
-internettool -x -a google.com -p tftp -u || exit 1
-internettool -x -a google.com -p time || exit 1
-internettool -x -a google.com -p time -t || exit 1
-internettool -x -a google.com -p time -u || exit 1
+internettool -x -a google.com -4 -p http                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -4 -p http -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 80"                         || exit 0
+internettool -x -a google.com -4 -p tftp -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 69"                         || exit 0
+internettool -x -a google.com -4 -p time                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
+internettool -x -a google.com -4 -p time -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
+internettool -x -a google.com -4 -p time -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 127.0.0.1 ::1 0 NE 142.250.72.78 :: 37"                         || exit 0
 
-internettool -x -a google.com -4 -p 80 || exit 1
-internettool -x -a google.com -4 -p 8888 || exit 1
-internettool -x -a google.com -4 -p 8888 -t || exit 1
-internettool -x -a google.com -4 -p 8888 -u || exit 1
+internettool -x -a google.com -6 -p 80                      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 80"         || exit 0
+internettool -x -a google.com -6 -p 8888                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 8888"       || exit 0
+internettool -x -a google.com -6 -p 8888 -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 8888"       || exit 0
+internettool -x -a google.com -6 -p 8888 -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 8888"       || exit 0
 
-internettool -x -a google.com -4 -p http || exit 1
-internettool -x -a google.com -4 -p http -t || exit 1
-internettool -x -a google.com -4 -p tftp -u || exit 1
-internettool -x -a google.com -4 -p time || exit 1
-internettool -x -a google.com -4 -p time -t || exit 1
-internettool -x -a google.com -4 -p time -u || exit 1
+internettool -x -a google.com -6 -p http                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 80"         || exit 0
+internettool -x -a google.com -6 -p http -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 80"         || exit 0
+internettool -x -a google.com -6 -p tftp -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 69"         || exit 0
+internettool -x -a google.com -6 -p time                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 37"         || exit 0
+internettool -x -a google.com -6 -p time -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 37"         || exit 0
+internettool -x -a google.com -6 -p time -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 127.0.0.1 ::1 0 NE 0.0.0.0 2607:f8b0:400f:804::200e 37"         || exit 0
 
-internettool -x -a google.com -6 -p 80 || exit 1
-internettool -x -a google.com -6 -p 8888 || exit 1
-internettool -x -a google.com -6 -p 8888 -t || exit 1
-internettool -x -a google.com -6 -p 8888 -u || exit 1
+internettool -x -E 206.178.189.131                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
 
-internettool -x -a google.com -6 -p http || exit 1
-internettool -x -a google.com -6 -p http -t || exit 1
-internettool -x -a google.com -6 -p tftp -u || exit 1
-internettool -x -a google.com -6 -p time || exit 1
-internettool -x -a google.com -6 -p time -t || exit 1
-internettool -x -a google.com -6 -p time -u || exit 1
+internettool -x -E 206.178.189.131:80                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -E 206.178.189.131:8888                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -E 206.178.189.131:8888 -t                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -E 206.178.189.131:8888 -u                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
 
-internettool -x -E 206.178.189.131 || exit 1
+internettool -x -E 206.178.189.131:http                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -E 206.178.189.131:tftp                     | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 69 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -E 206.178.189.131:time                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -E 206.178.189.131:time -t                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -E 206.178.189.131:time -u                  | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
 
-internettool -x -E 206.178.189.131:80 || exit 1
-internettool -x -E 206.178.189.131:8888 || exit 1
-internettool -x -E 206.178.189.131:8888 -t || exit 1
-internettool -x -E 206.178.189.131:8888 -u || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]'             | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 0 NE 0.0.0.0 :: 0"             || exit 1
 
-internettool -x -E 206.178.189.131:http || exit 1
-internettool -x -E 206.178.189.131:tftp || exit 1
-internettool -x -E 206.178.189.131:time || exit 1
-internettool -x -E 206.178.189.131:time -t || exit 1
-internettool -x -E 206.178.189.131:time -u || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:80'          | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 80 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888' -t     | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888' -u     | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888'        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
 
-internettool -x -E [2607:f8b0:400f:805::200e] || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:http'        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 80 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:tftp'        | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 69 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:time'        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:time' -t     | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -E '[2607:f8b0:400f:805::200e]:time' -u     | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
 
-internettool -x -E [2607:f8b0:400f:805::200e]:80 || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:8888 -t || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:8888 -u || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:8888 || exit 1
+internettool -x -E '[::ffff:209.17.116.163]'                | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"                || exit 1
 
-internettool -x -E [2607:f8b0:400f:805::200e]:http || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:tftp || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:time || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:time -t || exit 1
-internettool -x -E [2607:f8b0:400f:805::200e]:time -u || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:80'             | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:8888'           | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:8888' -t        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:8888' -u        | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
 
-internettool -x -E [::ffff:209.17.116.163] || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:http'           | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:tftp'           | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 69 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:time'           | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:time' -t        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -E '[::ffff:209.17.116.163]:time' -u        | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
 
-internettool -x -E [::ffff:209.17.116.163]:80 || exit 1
-internettool -x -E [::ffff:209.17.116.163]:8888 || exit 1
-internettool -x -E [::ffff:209.17.116.163]:8888 -t || exit 1
-internettool -x -E [::ffff:209.17.116.163]:8888 -u || exit 1
+internettool -x -E diag.com                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"         || exit 0
+internettool -x -E diag.com -4                              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"         || exit 0
+internettool -x -E diag.com -6                              | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"         || exit 0
 
-internettool -x -E [::ffff:209.17.116.163]:http || exit 1
-internettool -x -E [::ffff:209.17.116.163]:tftp || exit 1
-internettool -x -E [::ffff:209.17.116.163]:time || exit 1
-internettool -x -E [::ffff:209.17.116.163]:time -t || exit 1
-internettool -x -E [::ffff:209.17.116.163]:time -u || exit 1
+internettool -x -E diag.com:80                              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"        || exit 0
+internettool -x -E diag.com:8888                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E diag.com:8888 -t                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E diag.com:8888 -u                         | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"      || exit 0
 
-internettool -x -E diag.com || exit 1
-internettool -x -E diag.com -4 || exit 1
-internettool -x -E diag.com -6 || exit 1
+internettool -x -E diag.com:http                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"        || exit 0
+internettool -x -E diag.com:tftp                            | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 ::ffff:209.17.116.163 69 NE 0.0.0.0 :: 0"        || exit 0
+internettool -x -E diag.com:time                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"        || exit 0
+internettool -x -E diag.com:time -t                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"        || exit 0
+internettool -x -E diag.com:time -u                         | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"        || exit 0
 
-internettool -x -E diag.com:80 || exit 1
-internettool -x -E diag.com:8888 || exit 1
-internettool -x -E diag.com:8888 -t || exit 1
-internettool -x -E diag.com:8888 -u || exit 1
+internettool -x -E google.com                               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 0 NE 0.0.0.0 :: 0"       || exit 0
+internettool -x -E google.com -4                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 0 NE 0.0.0.0 :: 0"       || exit 0
+internettool -x -E google.com -6                            | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 0 NE 0.0.0.0 :: 0"       || exit 0
 
-internettool -x -E diag.com:http || exit 1
-internettool -x -E diag.com:tftp || exit 1
-internettool -x -E diag.com:time || exit 1
-internettool -x -E diag.com:time -t || exit 1
-internettool -x -E diag.com:time -u || exit 1
+internettool -x -E google.com:80                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 80 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E google.com:8888                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"    || exit 0
+internettool -x -E google.com:8888 -t                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"    || exit 0
+internettool -x -E google.com:8888 -u                       | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"    || exit 0
 
-internettool -x -E google.com || exit 1
-internettool -x -E google.com -4 || exit 1
-internettool -x -E google.com -6 || exit 1
+internettool -x -E google.com:http                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 80 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E google.com:tftp                          | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 2607:f8b0:400f:804::200e 69 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E google.com:time                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E google.com:time -t                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"      || exit 0
+internettool -x -E google.com:time -u                       | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"      || exit 0
 
-internettool -x -E google.com:80  || exit 1
-internettool -x -E google.com:8888 || exit 1
-internettool -x -E google.com:8888 -t || exit 1
-internettool -x -E google.com:8888 -u || exit 1
+internettool -x -E prairiethorn.org                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 0 NE 0.0.0.0 :: 0"       || exit 1
+internettool -x -E prairiethorn.org -4                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 0 NE 0.0.0.0 :: 0"       || exit 1
+internettool -x -E prairiethorn.org -6                      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 0 NE 0.0.0.0 :: 0"       || exit 1
 
-internettool -x -E google.com:http || exit 1
-internettool -x -E google.com:tftp || exit 1
-internettool -x -E google.com:time || exit 1
-internettool -x -E google.com:time -t || exit 1
-internettool -x -E google.com:time -u || exit 1
+internettool -x -E prairiethorn.org:80                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 80 NE 0.0.0.0 :: 0"      || exit 1
+internettool -x -E prairiethorn.org:8888                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 8888 NE 0.0.0.0 :: 0"    || exit 1
+internettool -x -E prairiethorn.org:8888 -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 8888 NE 0.0.0.0 :: 0"    || exit 1
+internettool -x -E prairiethorn.org:8888 -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 ::ffff:205.178.189.131 8888 NE 0.0.0.0 :: 0"    || exit 1
 
-internettool -x -E prairiethorn.org || exit 1
-internettool -x -E prairiethorn.org -4 || exit 1
-internettool -x -E prairiethorn.org -6 || exit 1
+internettool -x -E prairiethorn.org:http                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 80 NE 0.0.0.0 :: 0"      || exit 1
+internettool -x -E prairiethorn.org:tftp                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 ::ffff:205.178.189.131 69 NE 0.0.0.0 :: 0"      || exit 1
+internettool -x -E prairiethorn.org:time                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 37 NE 0.0.0.0 :: 0"      || exit 1
+internettool -x -E prairiethorn.org:time -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 ::ffff:205.178.189.131 37 NE 0.0.0.0 :: 0"      || exit 1
+internettool -x -E prairiethorn.org:time -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 ::ffff:205.178.189.131 37 NE 0.0.0.0 :: 0"      || exit 1
 
-internettool -x -E prairiethorn.org:80 || exit 1
-internettool -x -E prairiethorn.org:8888 || exit 1
-internettool -x -E prairiethorn.org:8888 -t || exit 1
-internettool -x -E prairiethorn.org:8888 -u || exit 1
+internettool -x -A 206.178.189.131                          | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
 
-internettool -x -E prairiethorn.org:http || exit 1
-internettool -x -E prairiethorn.org:tftp || exit 1
-internettool -x -E prairiethorn.org:time || exit 1
-internettool -x -E prairiethorn.org:time -t || exit 1
-internettool -x -E prairiethorn.org:time -u || exit 1
+internettool -x -A 206.178.189.131 -P 80                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -P 8888                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A 206.178.189.131 -P 8888 -t               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A 206.178.189.131 -P 8888 -u               | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A 206.178.189.131 -P http                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -P http -t               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -P tftp -u               | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
+internettool -x -A 206.178.189.131 -P time                  | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -P time -t               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -P time -u               | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
 
-internettool -x -A 206.178.189.131 || exit 1
+internettool -x -A 206.178.189.131 -4                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
 
-internettool -x -A 206.178.189.131 -P 80 || exit 1
-internettool -x -A 206.178.189.131 -P 8888 || exit 1
-internettool -x -A 206.178.189.131 -P 8888 -t || exit 1
-internettool -x -A 206.178.189.131 -P 8888 -u || exit 1
+internettool -x -A 206.178.189.131 -4 -P 80                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -4 -P 8888               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A 206.178.189.131 -4 -P 8888 -t            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A 206.178.189.131 -4 -P 8888 -u            | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
 
-internettool -x -A 206.178.189.131 -P http || exit 1
-internettool -x -A 206.178.189.131 -P http -t || exit 1
-internettool -x -A 206.178.189.131 -P tftp -u || exit 1
-internettool -x -A 206.178.189.131 -P time || exit 1
-internettool -x -A 206.178.189.131 -P time -t || exit 1
-internettool -x -A 206.178.189.131 -P time -u || exit 1
+internettool -x -A 206.178.189.131 -4 -P http               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -4 -P http -t            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -4 -P tftp -u            | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
+internettool -x -A 206.178.189.131 -4 -P time               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -4 -P time -t            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A 206.178.189.131 -4 -P time -u            | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 206.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
 
-internettool -x -A 206.178.189.131 -4 || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6              | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 0 NE 0.0.0.0 :: 0"             || exit 1
 
-internettool -x -A 206.178.189.131 -4 -P 80 || exit 1
-internettool -x -A 206.178.189.131 -4 -P 8888 || exit 1
-internettool -x -A 206.178.189.131 -4 -P 8888 -t || exit 1
-internettool -x -A 206.178.189.131 -4 -P 8888 -u || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 80        | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 80 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -t   | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -u   | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 8888 NE 0.0.0.0 :: 0"          || exit 1
 
-internettool -x -A 206.178.189.131 -4 -P http || exit 1
-internettool -x -A 206.178.189.131 -4 -P http -t || exit 1
-internettool -x -A 206.178.189.131 -4 -P tftp -u || exit 1
-internettool -x -A 206.178.189.131 -4 -P time || exit 1
-internettool -x -A 206.178.189.131 -4 -P time -t || exit 1
-internettool -x -A 206.178.189.131 -4 -P time -u || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P http      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 80 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P http -t   | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 80 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P tftp -u   | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 0 NE 0.0.0.0 :: 0"             || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -t   | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
+internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -u   | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:805::200e 37 NE 0.0.0.0 :: 0"            || exit 1
 
-internettool -x -A 2607:f8b0:400f:805::200e -6 || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"                || exit 1
 
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P 80 || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -t || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 -u || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P 8888 || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 80           | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888         | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -t      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -u      | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 8888 NE 0.0.0.0 :: 0"             || exit 1
 
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P http || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P http -t || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P tftp -u || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P time || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -t || exit 1
-internettool -x -A 2607:f8b0:400f:805::200e -6 -P time -u || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P http         | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P http -t      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 80 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P tftp -u      | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"                || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time         | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time -t      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
+internettool -x -A ::ffff:209.17.116.163 -6 -P time -u      | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 ::ffff:209.17.116.163 37 NE 0.0.0.0 :: 0"               || exit 1
 
-internettool -x -A ::ffff:209.17.116.163 -6 || exit 1
+internettool -x -A diag.com                                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 0 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A diag.com -4                              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 0 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A diag.com -6                              | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:209.17.116.163 0 NE 0.0.0.0 :: 0"                || exit 0
 
-internettool -x -A ::ffff:209.17.116.163 -6 -P 80 || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -t || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P 8888 -u || exit 1
+internettool -x -A diag.com -P 80                           | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 80 NE 0.0.0.0 :: 0"                           || exit 0
+internettool -x -A diag.com -P 8888                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 8888 NE 0.0.0.0 :: 0"                         || exit 0
+internettool -x -A diag.com -P 8888 -t                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 8888 NE 0.0.0.0 :: 0"                         || exit 0
+internettool -x -A diag.com -P 8888 -u                      | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 :: 8888 NE 0.0.0.0 :: 0"                         || exit 0
 
-internettool -x -A ::ffff:209.17.116.163 -6 -P http || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P http -t || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P tftp -u || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P time || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P time -t || exit 1
-internettool -x -A ::ffff:209.17.116.163 -6 -P time -u || exit 1
+internettool -x -A diag.com -P http                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 80 NE 0.0.0.0 :: 0"                           || exit 0
+internettool -x -A diag.com -P http -t                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 80 NE 0.0.0.0 :: 0"                           || exit 0
+internettool -x -A diag.com -P tftp -u                      | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 :: 0 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A diag.com -P time                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 37 NE 0.0.0.0 :: 0"                           || exit 0
+internettool -x -A diag.com -P time -t                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 209.17.116.163 :: 37 NE 0.0.0.0 :: 0"                           || exit 0
+internettool -x -A diag.com -P time -u                      | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 209.17.116.163 :: 37 NE 0.0.0.0 :: 0"                           || exit 0
 
-internettool -x -A diag.com || exit 1
-internettool -x -A diag.com -4 || exit 1
-internettool -x -A diag.com -6 || exit 1
+internettool -x -A google.com                               | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 0 NE 0.0.0.0 :: 0"                             || exit 0
+internettool -x -A google.com -4                            | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 0 NE 0.0.0.0 :: 0"                             || exit 0
+internettool -x -A google.com -6                            | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 0 NE 0.0.0.0 :: 0"             || exit 0
 
-internettool -x -A diag.com -P 80 || exit 1
-internettool -x -A diag.com -P 8888 || exit 1
-internettool -x -A diag.com -P 8888 -t || exit 1
-internettool -x -A diag.com -P 8888 -u || exit 1
+internettool -x -A google.com -P 80                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P 8888                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 8888 -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 8888 -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 80 -4                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P 8888 -4                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 8888 -4 -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 8888 -4 -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 8888 NE 0.0.0.0 :: 0"                          || exit 0
+internettool -x -A google.com -P 80 -6                      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 80 NE 0.0.0.0 :: 0"            || exit 0
+internettool -x -A google.com -P 8888 -6                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"          || exit 0
+internettool -x -A google.com -P 8888 -6 -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"          || exit 0
+internettool -x -A google.com -P 8888 -6 -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:804::200e 8888 NE 0.0.0.0 :: 0"          || exit 0
 
-internettool -x -A diag.com -P http || exit 1
-internettool -x -A diag.com -P http -t || exit 1
-internettool -x -A diag.com -P tftp -u || exit 1
-internettool -x -A diag.com -P time || exit 1
-internettool -x -A diag.com -P time -t || exit 1
-internettool -x -A diag.com -P time -u || exit 1
+internettool -x -A google.com -P http                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P http -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P tftp -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 0 NE 0.0.0.0 :: 0"                             || exit 0
+internettool -x -A google.com -P time                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P time -t                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P time -u                    | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P http -4                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P http -4 -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 80 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P tftp -4 -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 0 NE 0.0.0.0 :: 0"                             || exit 0
+internettool -x -A google.com -P time -4                    | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P time -4 -t                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P time -4 -u                 | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 142.250.72.78 :: 37 NE 0.0.0.0 :: 0"                            || exit 0
+internettool -x -A google.com -P http -6                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 80 NE 0.0.0.0 :: 0"            || exit 0
+internettool -x -A google.com -P http -6 -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 80 NE 0.0.0.0 :: 0"            || exit 0
+internettool -x -A google.com -P tftp -6 -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:804::200e 0 NE 0.0.0.0 :: 0"             || exit 0
+internettool -x -A google.com -P time -6                    | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"            || exit 0
+internettool -x -A google.com -P time -6 -t                 | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"            || exit 0
+internettool -x -A google.com -P time -6 -u                 | tee /dev/stderr | grep -q "internettool L2 6 L3 u FE 0.0.0.0 2607:f8b0:400f:804::200e 37 NE 0.0.0.0 :: 0"            || exit 0
 
-internettool -x -A google.com || exit 1
-internettool -x -A google.com -4 || exit 1
-internettool -x -A google.com -6 || exit 1
+internettool -x -A prairiethorn.org                         | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
+internettool -x -A prairiethorn.org -4                      | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
+internettool -x -A prairiethorn.org -6                      | tee /dev/stderr | grep -q "internettool L2 6 L3 t FE 0.0.0.0 ::ffff:205.178.189.131 0 NE 0.0.0.0 :: 0"               || exit 1
 
-internettool -x -A google.com -P 80 || exit 1
-internettool -x -A google.com -P 8888 || exit 1
-internettool -x -A google.com -P 8888 -t || exit 1
-internettool -x -A google.com -P 8888 -u || exit 1
-
-internettool -x -A google.com -P 80 -4 || exit 1
-internettool -x -A google.com -P 8888 -4 || exit 1
-internettool -x -A google.com -P 8888 -4 -t || exit 1
-internettool -x -A google.com -P 8888 -4 -u || exit 1
-
-internettool -x -A google.com -P 80 -6 || exit 1
-internettool -x -A google.com -P 8888 -6 || exit 1
-internettool -x -A google.com -P 8888 -6 -t || exit 1
-internettool -x -A google.com -P 8888 -6 -u || exit 1
-
-internettool -x -A google.com -P http || exit 1
-internettool -x -A google.com -P http -t || exit 1
-internettool -x -A google.com -P tftp -u || exit 1
-internettool -x -A google.com -P time || exit 1
-internettool -x -A google.com -P time -t || exit 1
-internettool -x -A google.com -P time -u || exit 1
-
-internettool -x -A google.com -P http -4 || exit 1
-internettool -x -A google.com -P http -4 -t || exit 1
-internettool -x -A google.com -P tftp -4 -u || exit 1
-internettool -x -A google.com -P time -4 || exit 1
-internettool -x -A google.com -P time -4 -t || exit 1
-internettool -x -A google.com -P time -4 -u || exit 1
-
-internettool -x -A google.com -P http -6 || exit 1
-internettool -x -A google.com -P http -6 -t || exit 1
-internettool -x -A google.com -P tftp -6 -u || exit 1
-internettool -x -A google.com -P time -6 || exit 1
-internettool -x -A google.com -P time -6 -t || exit 1
-internettool -x -A google.com -P time -6 -u || exit 1
-
-internettool -x -A prairiethorn.org || exit 1
-internettool -x -A prairiethorn.org -4 || exit 1
-internettool -x -A prairiethorn.org -6 || exit 1
-
-internettool -x -A prairiethorn.org -P 80 || exit 1
-internettool -x -A prairiethorn.org -P 8888 || exit 1
-internettool -x -A prairiethorn.org -P 8888 -t || exit 1
-internettool -x -A prairiethorn.org -P 8888 -u || exit 1
-
-internettool -x -A prairiethorn.org -P http || exit 1
-internettool -x -A prairiethorn.org -P http -t || exit 1
-internettool -x -A prairiethorn.org -P tftp -u || exit 1
-internettool -x -A prairiethorn.org -P time || exit 1
-internettool -x -A prairiethorn.org -P time -t || exit 1
-internettool -x -A prairiethorn.org -P time -u || exit 1
+internettool -x -A prairiethorn.org -P 80                   | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A prairiethorn.org -P 8888                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A prairiethorn.org -P 8888 -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A prairiethorn.org -P 8888 -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 :: 8888 NE 0.0.0.0 :: 0"                        || exit 1
+internettool -x -A prairiethorn.org -P http                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A prairiethorn.org -P http -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 80 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A prairiethorn.org -P tftp -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 :: 0 NE 0.0.0.0 :: 0"                           || exit 1
+internettool -x -A prairiethorn.org -P time                 | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A prairiethorn.org -P time -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 205.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
+internettool -x -A prairiethorn.org -P time -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE 205.178.189.131 :: 37 NE 0.0.0.0 :: 0"                          || exit 1
 
 )
 
