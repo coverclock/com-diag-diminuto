@@ -642,18 +642,20 @@ used, check out the following.
 * The Diminuto IPC Ancillary unit test uses a lot of Diminuto features
 and is a good example of a non-trivial application that is multi-process
 and multi-threaded. The source code also has a useful implementation of Thread
-Pools.
+Pools. It illustrates how to pass open file descriptors between processes.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-ancillary.c>
 * The Diminuto IPC Scatter/Gather unit test similarly uses a lot of
 Diminuto features and is also multi-process. It has a useful
 implementation of Diminuto List pools, and support for Records, Segments, and
 I/O vectors, used to implement scatter/gather I/O. (It was eventually
 mainstreamed into the Diminuto library as the Scatter/Gather feature.)
+<https://coverclock.blogspot.com/2020/12/scattergather.html>
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-scattergather.c>
 * The Diminuto Reader/Writer feature and its unit test is a reasonably complex
 example of using Diminuto features with POSIX thread capabilities for mutual
 exclusion and synchronization.
 <https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
+<https://coverclock.blogspot.com/2022/02/revisiting-first-come-first-served.html>
 * The Diminuto internettool command line utility and its functional test
 internettooltests uses the Diminuto IPC feature in just about every way
 possible: IPv4 or IPv6, and TCP or UDP or even ICMP. For best results, enable
@@ -661,7 +663,6 @@ DEBUG logging in the environment before running. internettool must be run as
 root to use the ICMP capability.
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/bin/internettool.c>
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/fun/internettooltests.sh>
-<https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
 * The gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
 and relies on Diminuto for much of its infrastructure.
