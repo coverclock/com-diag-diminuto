@@ -34,11 +34,15 @@
  * internettool -A tumbleweed -u -P tumbleweed
  * internettool -E tumbleweed:tumbleweed
  *
+ * IPv6, UDP:
+ *
  * internettool -6 -u -E :5555 & # Loopback Server
- * timesource | internettool -u -6 -e ip6-localhost:5555 | timesink # Client
+ * timesource | internettool -u -e ip6-localhost:5555 | timesink # Client
+ *
+ * IPv4, TCP:
  *
  * internettool -4 -t -E :5555 & # Loopback Server
- * timesource | internettool -u -4 -e localhost:5555 | timesink # Client
+ * timesource | internettool -u -e localhost:5555 | timesink # Client
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -149,6 +153,7 @@ int main(int argc, char * argv[])
     ssize_t total = 0;
     int sock = -2;
     int fd = -3;
+    int ready = -3;
     int rc = 0;
     int fds = 0;
     int eof = 0;
@@ -619,6 +624,7 @@ int main(int argc, char * argv[])
             diminuto_ipc4_address2string(address4, address4buffer, sizeof(address4buffer)),
             diminuto_ipc6_address2string(address6, address6buffer, sizeof(address6buffer)),
             diminuto_ipc_port2string(port46, port46buffer, sizeof(port46buffer)));
+        fflush(stdout);
         exit(0);
     }
 
@@ -802,24 +808,22 @@ int main(int argc, char * argv[])
             fds = diminuto_mux_wait(&mux, -1);
             diminuto_assert(fds > 0);
             while (!0) {
-                fd = diminuto_mux_ready_accept(&mux);
-                if (fd < 0) {
+                ready = diminuto_mux_ready_accept(&mux);
+                if (ready < 0) {
                     break;
                 }
-                while (!0) {
-                    datum4 = DIMINUTO_IPC4_UNSPECIFIED;
-                    datum46 = 0;
-                    fd = diminuto_ipc4_stream_accept_generic(fd, &datum4, &datum46);
-                    if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
-                        break;
-                    }
-                    diminuto_assert(fd >= 0);
-                    diminuto_assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
-                    diminuto_assert(datum46 != 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum4=%s datum46=%s\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
-                    rc = diminuto_mux_register_read(&mux, fd);
-                    diminuto_assert(rc >= 0);
+                datum4 = DIMINUTO_IPC4_UNSPECIFIED;
+                datum46 = 0;
+                fd = diminuto_ipc4_stream_accept_generic(ready, &datum4, &datum46);
+                if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
+                    break;
                 }
+                diminuto_assert(fd >= 0);
+                diminuto_assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
+                diminuto_assert(datum46 != 0);
+                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum4=%s datum46=%s\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
+                rc = diminuto_mux_register_read(&mux, fd);
+                diminuto_assert(rc >= 0);
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
@@ -833,7 +837,7 @@ int main(int argc, char * argv[])
                     diminuto_assert(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     diminuto_assert(rc >= 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     diminuto_assert(output == input);
@@ -865,24 +869,22 @@ int main(int argc, char * argv[])
             fds = diminuto_mux_wait(&mux, -1);
             diminuto_assert(fds > 0);
             while (!0) {
-                fd = diminuto_mux_ready_accept(&mux);
-                if (fd < 0) {
+                ready = diminuto_mux_ready_accept(&mux);
+                if (ready < 0) {
                     break;
                 }
-                while (!0) {
-                    datum6 = DIMINUTO_IPC6_UNSPECIFIED;
-                    datum46 = 0;
-                    fd = diminuto_ipc6_stream_accept_generic(fd, &datum6, &datum46);
-                    if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
-                        break;
-                    }
-                    diminuto_assert(fd >= 0);
-                    diminuto_assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
-                    diminuto_assert(datum46 != 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d datum6=%s datum46=%s\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
-                    rc = diminuto_mux_register_read(&mux, fd);
-                    diminuto_assert(rc >= 0);
+                datum6 = DIMINUTO_IPC6_UNSPECIFIED;
+                datum46 = 0;
+                fd = diminuto_ipc6_stream_accept_generic(ready, &datum6, &datum46);
+                if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
+                    break;
                 }
+                diminuto_assert(fd >= 0);
+                diminuto_assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
+                diminuto_assert(datum46 != 0);
+                DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum6=%s datum46=%s\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
+                rc = diminuto_mux_register_read(&mux, fd);
+                diminuto_assert(rc >= 0);
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
@@ -896,7 +898,7 @@ int main(int argc, char * argv[])
                     diminuto_assert(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
                     diminuto_assert(rc >= 0);
-                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream fd=%d input=%zd\n", fd, input);
+                    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
                     diminuto_assert(output == input);
@@ -994,7 +996,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     diminuto_assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=stream fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=stream sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         diminuto_assert(rc >= 0);
                         eof = !0;
@@ -1050,7 +1052,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     diminuto_assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         diminuto_assert(rc >= 0);
                         eof = !0;
@@ -1109,7 +1111,7 @@ int main(int argc, char * argv[])
                     input = diminuto_fd_read(source, buffer, blocksize);
                     diminuto_assert(input >= 0);
                     if (input == 0) {
-                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram fd=%d input=%zd\n", fd, input);
+                        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
                         diminuto_assert(rc >= 0);
                         eof = !0;
