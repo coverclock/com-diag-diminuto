@@ -104,14 +104,14 @@ static void emit(FILE * fp, const void * buffer, size_t length)
 int main(int argc, char * argv[])
 {
     const char * Program = (const char *)0;
-    const char * Address = (const char *)0;
     const char * Interface = (const char *)0;
+    const char * Nearendpoint = (const char *)0;
+    const char * Address = (const char *)0;
     const char * Port = (const char *)0;
+    const char * Farendpoint = (const char *)0;
     const char * Server =  (const char *)0;
     const char * Rendezvous = (const char *)0;
     const char * Blocksize = (const char *)0;
-    const char * Farendpoint = (const char *)0;
-    const char * Nearendpoint = (const char *)0;
     char Layer2 = '4';
     char Layer3 = 't';
     char Debug = '\0';
@@ -351,72 +351,6 @@ int main(int argc, char * argv[])
  * PARAMETERS
  ******************************************************************************/
 
-    if (Farendpoint == (const char *)0) {
-        /* Do nothing. */
-    } else if (diminuto_ipc_endpoint(Farendpoint, &farendpoint) < 0) {
-        diminuto_assert(0);
-    } else if (diminuto_ipc4_is_unspecified(&farendpoint.ipv4) && diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint46=\"%s\"\n", Farendpoint);
-        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
-            if (Layer3 == 't') {
-                port46 = farendpoint.tcp;
-            } else if (Layer3 == 'u') {
-                port46 = farendpoint.udp;
-            } else {
-                /* Do nothing. */
-            }
-        } else if (farendpoint.tcp != 0) {
-            Layer3 = 't';
-            port46 = farendpoint.tcp;
-        } else if (farendpoint.udp != 0) {
-            Layer3 = 'u';
-            port46 = farendpoint.udp;
-        } else {
-            /* Do nothing. */
-        }
-    } else {
-        if ((!diminuto_ipc4_is_unspecified(&farendpoint.ipv4)) && (!diminuto_ipc6_is_unspecified(&farendpoint.ipv6))) {
-            address4 = farendpoint.ipv4;
-            address6 = farendpoint.ipv6;
-            if (Layer2 == '4') {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint4=\"%s\"\n", Farendpoint);
-            } else if (Layer2 == '6') {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint6=\"%s\"\n", Farendpoint);
-            } else {
-                /* Do nothing. */
-            }
-        } else if (!diminuto_ipc4_is_unspecified(&farendpoint.ipv4)) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint4=\"%s\"\n", Farendpoint);
-            Layer2 = '4';
-            address4 = farendpoint.ipv4;
-            address6 = DIMINUTO_IPC6_UNSPECIFIED;
-        } else if (!diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
-            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint6=\"%s\"\n", Farendpoint);
-            Layer2 = '6';
-            address4 = DIMINUTO_IPC4_UNSPECIFIED;
-            address6 = farendpoint.ipv6;
-        } else {
-            /* Do nothing. */
-        }
-        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
-            if (Layer3 == 't') {
-                port46 = farendpoint.tcp;
-            } else if (Layer3 == 'u') {
-                port46 = farendpoint.udp;
-            } else {
-                /* Do nothing. */
-            }
-        } else if (farendpoint.tcp != 0) {
-            Layer3 = 't';
-            port46 = farendpoint.tcp;
-        } else if (farendpoint.udp != 0) {
-            Layer3 = 'u';
-            port46 = farendpoint.udp;
-        } else {
-            /* Do nothing. */
-        }
-    }
-
     if (Nearendpoint == (const char *)0) {
         /* Do nothing. */
     } else if (diminuto_ipc_endpoint(Nearendpoint, &nearendpoint) < 0) {
@@ -425,25 +359,25 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint46=\"%s\"\n", Nearendpoint);
         if ((nearendpoint.tcp != 0) && (nearendpoint.udp != 0)) {
             if (Layer3 == 't') {
-                rendezvous46 = nearendpoint.tcp;
+                port46 = nearendpoint.tcp;
             } else if (Layer3 == 'u') {
-                rendezvous46 = nearendpoint.udp;
+                port46 = nearendpoint.udp;
             } else {
                 /* Do nothing. */
             }
         } else if (nearendpoint.tcp != 0) {
             Layer3 = 't';
-            rendezvous46 = nearendpoint.tcp;
+            port46 = nearendpoint.tcp;
         } else if (nearendpoint.udp != 0) {
             Layer3 = 'u';
-            rendezvous46 = nearendpoint.udp;
+            port46 = nearendpoint.udp;
         } else {
             /* Do nothing. */
         }
     } else {
         if ((!diminuto_ipc4_is_unspecified(&nearendpoint.ipv4)) && (!diminuto_ipc6_is_unspecified(&nearendpoint.ipv6))) {
-            server4 = nearendpoint.ipv4;
-            server6 = nearendpoint.ipv6;
+            address4 = nearendpoint.ipv4;
+            address6 = nearendpoint.ipv6;
             if (Layer2 == '4') {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint4=\"%s\"\n", Nearendpoint);
             } else if (Layer2 == '6') {
@@ -454,30 +388,96 @@ int main(int argc, char * argv[])
         } else if (!diminuto_ipc4_is_unspecified(&nearendpoint.ipv4)) {
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint4=\"%s\"\n", Nearendpoint);
             Layer2 = '4';
-            server4 = nearendpoint.ipv4;
-            server6 = DIMINUTO_IPC6_UNSPECIFIED;
+            address4 = nearendpoint.ipv4;
+            address6 = DIMINUTO_IPC6_UNSPECIFIED;
         } else if (!diminuto_ipc6_is_unspecified(&nearendpoint.ipv6)) {
             DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint6=\"%s\"\n", Nearendpoint);
             Layer2 = '6';
-            server4 = DIMINUTO_IPC4_UNSPECIFIED;
-            server6 = nearendpoint.ipv6;
+            address4 = DIMINUTO_IPC4_UNSPECIFIED;
+            address6 = nearendpoint.ipv6;
         } else {
             /* Do nothing. */
         }
         if ((nearendpoint.tcp != 0) && (nearendpoint.udp != 0)) {
             if (Layer3 == 't') {
-                rendezvous46 = nearendpoint.tcp;
+                port46 = nearendpoint.tcp;
             } else if (Layer3 == 'u') {
-                rendezvous46 = nearendpoint.udp;
+                port46 = nearendpoint.udp;
             } else {
                 /* Do nothing. */
             }
         } else if (nearendpoint.tcp != 0) {
             Layer3 = 't';
-            rendezvous46 = nearendpoint.tcp;
+            port46 = nearendpoint.tcp;
         } else if (nearendpoint.udp != 0) {
             Layer3 = 'u';
-            rendezvous46 = nearendpoint.udp;
+            port46 = nearendpoint.udp;
+        } else {
+            /* Do nothing. */
+        }
+    }
+
+    if (Farendpoint == (const char *)0) {
+        /* Do nothing. */
+    } else if (diminuto_ipc_endpoint(Farendpoint, &farendpoint) < 0) {
+        diminuto_assert(0);
+    } else if (diminuto_ipc4_is_unspecified(&farendpoint.ipv4) && diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint46=\"%s\"\n", Farendpoint);
+        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
+            if (Layer3 == 't') {
+                rendezvous46 = farendpoint.tcp;
+            } else if (Layer3 == 'u') {
+                rendezvous46 = farendpoint.udp;
+            } else {
+                /* Do nothing. */
+            }
+        } else if (farendpoint.tcp != 0) {
+            Layer3 = 't';
+            rendezvous46 = farendpoint.tcp;
+        } else if (farendpoint.udp != 0) {
+            Layer3 = 'u';
+            rendezvous46 = farendpoint.udp;
+        } else {
+            /* Do nothing. */
+        }
+    } else {
+        if ((!diminuto_ipc4_is_unspecified(&farendpoint.ipv4)) && (!diminuto_ipc6_is_unspecified(&farendpoint.ipv6))) {
+            server4 = farendpoint.ipv4;
+            server6 = farendpoint.ipv6;
+            if (Layer2 == '4') {
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint4=\"%s\"\n", Farendpoint);
+            } else if (Layer2 == '6') {
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint6=\"%s\"\n", Farendpoint);
+            } else {
+                /* Do nothing. */
+            }
+        } else if (!diminuto_ipc4_is_unspecified(&farendpoint.ipv4)) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint4=\"%s\"\n", Farendpoint);
+            Layer2 = '4';
+            server4 = farendpoint.ipv4;
+            server6 = DIMINUTO_IPC6_UNSPECIFIED;
+        } else if (!diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
+            DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint6=\"%s\"\n", Farendpoint);
+            Layer2 = '6';
+            server4 = DIMINUTO_IPC4_UNSPECIFIED;
+            server6 = farendpoint.ipv6;
+        } else {
+            /* Do nothing. */
+        }
+        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
+            if (Layer3 == 't') {
+                rendezvous46 = farendpoint.tcp;
+            } else if (Layer3 == 'u') {
+                rendezvous46 = farendpoint.udp;
+            } else {
+                /* Do nothing. */
+            }
+        } else if (farendpoint.tcp != 0) {
+            Layer3 = 't';
+            rendezvous46 = farendpoint.tcp;
+        } else if (farendpoint.udp != 0) {
+            Layer3 = 'u';
+            rendezvous46 = farendpoint.udp;
         } else {
             /* Do nothing. */
         }
@@ -614,6 +614,7 @@ int main(int argc, char * argv[])
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "blocksize=%zu\n", blocksize);
 
     if (Exit) {
+        fflush(stderr);
         printf("%s L2 %c L3 %c FE %s %s %s NE %s %s %s\n",
             Program,
             Layer2,

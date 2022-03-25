@@ -25,11 +25,11 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-(
-
 set -x
 
 internettool -?
+
+internettool -I
 
 internettool -x -e 80                                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                      || exit 1
 internettool -x -e 8888                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                    || exit 1
@@ -357,7 +357,5 @@ internettool -x -A prairiethorn.org -P time                 | tee /dev/stderr | 
 internettool -x -A prairiethorn.org -P time -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 internettool -x -A prairiethorn.org -P time -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 
-)
-
-echo "Success." 1>&2
+echo "Success."
 exit 0
