@@ -34,15 +34,35 @@
  * internettool -A tumbleweed -u -P tumbleweed
  * internettool -E tumbleweed:tumbleweed
  *
- * IPv6, UDP:
- *
- * internettool -6 -u -E :5555 & # Loopback Server
- * timesource | internettool -u -e ip6-localhost:5555 | timesink # Client
- *
  * IPv4, TCP:
  *
- * internettool -4 -t -E :5555 & # Loopback Server
- * timesource | internettool -u -e localhost:5555 | timesink # Client
+ * internettool -4 -t -e :5555 & # Loopback Server
+ * timesource | internettool -t -E localhost:5555 | timesink # Client
+ *
+ * IPv4, UDP:
+ *
+ * internettool -4 -u -e :5555 & # Loopback Server
+ * timesource | internettool -u -E localhost:5555 | timesink # Client
+ *
+ * IPv6, TCP:
+ *
+ * internettool -6 -t -e :5555 & # Loopback Server
+ * timesource | internettool -t -E ip6-localhost:5555 | timesink # Client
+ *
+ * IPv6, UDP:
+ *
+ * internettool -6 -u -e :5555 & # Loopback Server
+ * timesource | internettool -u -E ip6-localhost:5555 | timesink # Client
+ *
+ * IPv4, ICMP:
+ *
+ * internettool -I # Select Interface
+ * sudo internettool -g -e ip6-localhost -i lo # Ping
+ *
+ * IPv6, ICMP:
+ *
+ * internettool -I # Select Interface
+ * sudo internettool -g -e localhost -i lo # Ping
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -764,7 +784,7 @@ int main(int argc, char * argv[])
         diminuto_assert(rc >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d interface=%s datum4=%s datum46=%s\n", sock, interface, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
@@ -782,7 +802,7 @@ int main(int argc, char * argv[])
         diminuto_assert(rc >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
         diminuto_assert(rc >= 0);
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d interface=%s datum6=%s datum46=%s\n", sock, interface, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
 
