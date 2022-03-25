@@ -324,7 +324,7 @@ header file.
 * frequency - display Diminuto base tick frequency in hertz.
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexidecimal.
-* internettool - verify internet connectivity.
+* internettool - test internet connectivity.
 * ipcalc - calculate IPv4 addresses and masks.
 * iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
 * juliet - display the local time in ISO 8601 format.
@@ -633,6 +633,8 @@ stuff in the future but didn't want to start at the low level to do so.
 If you happen upon this repo and find it useful, that's great. If you
 don't, that's great too.
 
+# Examples
+
 If you'd like to see a non-trivial application that makes use
 of many Diminuto features in exactly the way I envisioned them being
 used, check out the following.
@@ -648,6 +650,18 @@ implementation of Diminuto List pools, and support for Records, Segments, and
 I/O vectors, used to implement scatter/gather I/O. (It was eventually
 mainstreamed into the Diminuto library as the Scatter/Gather feature.)
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/tst/unittest-ipc-scattergather.c>
+* The Diminuto Reader/Writer feature and its unit test is a reasonably complex
+example of using Diminuto features with POSIX thread capabilities for mutual
+exclusion and synchronization.
+<https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
+* The Diminuto internettool command line utility and its functional test
+internettooltests uses the Diminuto IPC feature in just about every way
+possible: IPv4 or IPv6, and TCP or UDP or even ICMP. For best results, enable
+DEBUG logging in the environment before running. internettool must be run as
+root to use the ICMP capability.
+<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/bin/internettool.c>
+<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/fun/internettooltests.sh>
+<https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
 * The gpstool application in the Hazer project (repo URL below) is the
 Swiss Army knife of Hazer, a library that parses output from GPS devices,
 and relies on Diminuto for much of its infrastructure.
@@ -658,14 +672,6 @@ FS file system walker and are a good example of how a need in another
 project leads to a virtuous cycle of organic growth in Diminuto.
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/survey.c>
 <https://github.com/coverclock/com-diag-placer/blob/master/Placer/fun/census.c>
-* The Diminuto Scatter/Gather feature is probably the best example of
-leveraging the functional programming paradigm in the library. This is best
-illustrated in its header file that defines the API.
-<https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/inc/com/diag/diminuto/diminuto_scattergather.h>
-* The Diminuto Reader/Writer feature and its unit test is a reasonably complex
-example of using Diminuto features with POSIX thread capabilities for mutual
-exclusion and synchronization.
-<https://coverclock.blogspot.com/2020/12/first-come-first-served-readers-and.html>
 
 # Issues
 
