@@ -327,5 +327,23 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        diminuto_port_t port;
+        int count;
+
+        TEST();
+
+        port = 0;
+        EXPECT(diminuto_ipc_port_isephemeral(port));
+        count = 0;
+        for (port = 1; port < diminuto_maximumof(diminuto_port_t); ++port) {
+            EXPECT(!diminuto_ipc_port_isephemeral(port));
+            count += 1;
+        }
+        EXPECT(count > 0);
+
+        STATUS();
+    }
+
     EXIT();
 }

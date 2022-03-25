@@ -87,6 +87,21 @@ typedef int (diminuto_ipc_injector_t)(int fd, void *);
 extern diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol);
 
 /*******************************************************************************
+ * CLASSIFIERS
+ ******************************************************************************/
+
+/**
+ * Return true if the specified port when bound to a socket will cause an
+ * ephemeral port to be allocated and used instead, false otherwise.
+ * @param port is the port number.
+ * @return true if the port number selects an ephemeral port, false otherwise.
+ */
+static inline int diminuto_ipc_port_isephemeral(diminuto_port_t port)
+{
+    return (port == 0);
+}
+
+/*******************************************************************************
  * OPTIONS
  ******************************************************************************/
 
