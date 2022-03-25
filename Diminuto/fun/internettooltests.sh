@@ -357,5 +357,35 @@ internettool -x -A prairiethorn.org -P time                 | tee /dev/stderr | 
 internettool -x -A prairiethorn.org -P time -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 internettool -x -A prairiethorn.org -P time -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 
+# IPv4, TCP:
+#
+# internettool -4 -t -e :5555 & # Loopback Server
+# timesource | internettool -t -E localhost:5555 | timesink # Client
+#
+# IPv4, UDP:
+#
+# internettool -4 -u -e :5555 & # Loopback Server
+# timesource | internettool -u -E localhost:5555 | timesink # Client
+#
+# IPv6, TCP:
+#
+# internettool -6 -t -e :5555 & # Loopback Server
+# timesource | internettool -t -E ip6-localhost:5555 | timesink # Client
+#
+# IPv6, UDP:
+#
+# internettool -6 -u -e :5555 & # Loopback Server
+# timesource | internettool -u -E ip6-localhost:5555 | timesink # Client
+#
+# IPv4, ICMP:
+#
+# internettool -I # Select Interface
+# sudo internettool -g -e ip6-localhost -i lo # Ping
+#
+# IPv6, ICMP:
+#
+# internettool -I # Select Interface
+# sudo internettool -g -e localhost -i lo # Ping
+
 echo "Success."
 exit 0
