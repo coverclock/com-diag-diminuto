@@ -280,19 +280,20 @@ int main(int argc, char * argv[])
     }
 
 /*******************************************************************************
- * IMMEDIATES
+ * INTERFACES
  ******************************************************************************/
 
     if (Interfaces) {
-        char ** ifvp;
-        char ** ifp;
-        diminuto_ipv4_t * v4vp;
-        diminuto_ipv4_t * v4p;
-        diminuto_ipv6_t * v6vp;
-        diminuto_ipv6_t * v6p;
+        char ** ifvp = (char **)0;
+        char ** ifp = (char **)0;
+        diminuto_ipv4_t * v4vp = (diminuto_ipv4_t *)0;
+        diminuto_ipv4_t * v4p = (diminuto_ipv4_t *)0;
+        diminuto_ipv6_t * v6vp = (diminuto_ipv6_t *)0;
+        diminuto_ipv6_t * v6p = (diminuto_ipv6_t *)0;
         diminuto_ipv4_buffer_t v4pbuffer = { '\0', };
         diminuto_ipv6_buffer_t v6pbuffer = { '\0', };
-        const char * type;
+        const char * type = (const char *)0;
+        bool bound = false;
 
         diminuto_assert((ifvp = diminuto_ipc_interfaces()) != (char **)0);
 
@@ -301,14 +302,7 @@ int main(int argc, char * argv[])
             diminuto_assert((v4vp = diminuto_ipc4_interface(*ifp)) != (diminuto_ipv4_t *)0);
             diminuto_assert((v6vp = diminuto_ipc6_interface(*ifp)) != (diminuto_ipv6_t *)0);
 
-            if (!diminuto_ipc4_is_unspecified(v4vp)) {
-                /* Do nothing. */
-            } else if (!diminuto_ipc6_is_unspecified(v6vp)) {
-                /* Do nothing. */
-            } else {
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s\n", *ifp);
-                continue;
-            }
+            bound = false;
 
             for (v4p = v4vp; !diminuto_ipc4_is_unspecified(v4p); ++v4p) {
                 if (diminuto_ipc4_is_limitedbroadcast(v4p)) {
@@ -322,7 +316,8 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v4 %s %s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s interface4=%s type=%s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
+                bound = true;
             }
 
             for (v6p = v6vp; !diminuto_ipc6_is_unspecified(v6p); ++v6p) {
@@ -351,7 +346,12 @@ int main(int argc, char * argv[])
                 } else {
                     type = "other";
                 }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v6 %s %s\n", *ifp, diminuto_ipc6_address2string(*v6p, v6pbuffer, sizeof(v6pbuffer)), type);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s interface6=%s type=%s\n", *ifp, diminuto_ipc6_address2string(*v6p, v6pbuffer, sizeof(v6pbuffer)), type);
+                bound = true;
+            }
+
+            if (!bound) {
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s\n", *ifp);
             }
 
             free(v4vp);
