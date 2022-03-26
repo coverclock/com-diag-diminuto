@@ -64,6 +64,20 @@
 #include <linux/sockios.h> /* For SIOCINQ, SIOCOUTQ. */
 #include <asm/ioctls.h> /* For FIONREAD, TIOCOUTQ. */
 
+
+/*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+/**
+ * This is the Diminuto binary port number that will cause an ephemeral port
+ * to be allocated. Helpfully, the this port number is the same value whether
+ * in network or host byte order. (It is perfectly okay if you want to just
+ * use the constant 0; this value is not going to change. But using this
+ * constant makes it easier to search for uses in the source code.)
+ */
+static const diminuto_port_t DIMINUTO_IPC_EPHEMERAL = 0;
+
 /*******************************************************************************
  * TYPES
  ******************************************************************************/
@@ -79,7 +93,10 @@ typedef int (diminuto_ipc_injector_t)(int fd, void *);
 
 /**
  * Convert a service name or a port number string into a port in host byte
- * order.
+ * order. Note that legitimate port numbers are unsigned and must be >0, so
+ * the value returned for an error is 0, not -1. This happens to also be the
+ * value used to indicate that an ephemeral port should be allocated, which
+ * could be a useful coincidence.
  * @param service points to the service name or port number string.
  * @param protocol points to the protocol name (e.g. "udp" or "tcp").
  * @return the port number or 0 if no such service exists for the protocol.
@@ -92,13 +109,16 @@ extern diminuto_port_t diminuto_ipc_port(const char * service, const char * prot
 
 /**
  * Return true if the specified port when bound to a socket will cause an
- * ephemeral port to be allocated and used instead, false otherwise.
+ * ephemeral port to be allocated and used instead, false otherwise. Note
+ * that allocated emphemeral ports WILL have non-zero values; this just
+ * indicates that the specified port will cause an ephemeral port to be
+ * allocated.
  * @param port is the port number.
  * @return true if the port number selects an ephemeral port, false otherwise.
  */
-static inline int diminuto_ipc_port_isephemeral(diminuto_port_t port)
+static inline int diminuto_ipc_is_ephemeral(diminuto_port_t port)
 {
-    return (port == 0);
+    return (port == DIMINUTO_IPC_EPHEMERAL);
 }
 
 /*******************************************************************************

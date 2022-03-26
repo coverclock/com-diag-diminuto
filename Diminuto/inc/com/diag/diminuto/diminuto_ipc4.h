@@ -22,26 +22,27 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /*******************************************************************************
- * GLOBALS
+ * CONSTANTS
  ******************************************************************************/
 
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "0.0.0.0",
- * the IPv4 address of all zeros.
+ * the IPv4 address of all zeros. Helpfully, the unspecified IPv4 address is
+ * the same in either host or network byte order.
  */
-extern const diminuto_ipv4_t DIMINUTO_IPC4_UNSPECIFIED;
+static const diminuto_ipv4_t DIMINUTO_IPC4_UNSPECIFIED = 0x00000000UL;
 
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.1",
  * the IPv4 loopback address.
  */
-extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK;
+static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK = 0x7f000001UL;
 
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.2",
  * the second IPv4 loopback address used in some circumstances.
  */
-extern const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2;
+static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2 = 0x7f000002UL;
 
 /*******************************************************************************
  * COMPARATORS

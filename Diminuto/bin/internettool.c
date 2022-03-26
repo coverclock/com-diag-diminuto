@@ -146,9 +146,9 @@ int main(int argc, char * argv[])
     diminuto_ipv6_t datum6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_ipv4_t * addresses4 = (diminuto_ipv4_t *)0;
     diminuto_ipv6_t * addresses6 = (diminuto_ipv6_t *)0;
-    diminuto_port_t port46 = 0;
-    diminuto_port_t rendezvous46 = 0;
-    diminuto_port_t datum46 = 0;
+    diminuto_port_t port46 = DIMINUTO_IPC_EPHEMERAL;
+    diminuto_port_t rendezvous46 = DIMINUTO_IPC_EPHEMERAL;
+    diminuto_port_t datum46 = DIMINUTO_IPC_EPHEMERAL;
     diminuto_ipc_endpoint_t farendpoint = { 0, };
     diminuto_ipc_endpoint_t nearendpoint = { 0, };
     diminuto_ipv4_buffer_t address4buffer = { '\0', };
@@ -301,19 +301,17 @@ int main(int argc, char * argv[])
             diminuto_assert((v4vp = diminuto_ipc4_interface(*ifp)) != (diminuto_ipv4_t *)0);
             diminuto_assert((v6vp = diminuto_ipc6_interface(*ifp)) != (diminuto_ipv6_t *)0);
 
-            if (*v4vp != DIMINUTO_IPC4_UNSPECIFIED) {
+            if (!diminuto_ipc4_is_unspecified(v4vp)) {
                 /* Do nothing. */
-            } else if (diminuto_ipc6_compare(v6vp, &DIMINUTO_IPC6_UNSPECIFIED) != 0) {
+            } else if (!diminuto_ipc6_is_unspecified(v6vp)) {
                 /* Do nothing. */
             } else {
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s\n", *ifp);
                 continue;
             }
 
-            for (v4p = v4vp; *v4p != DIMINUTO_IPC4_UNSPECIFIED; ++v4p) {
-                if (diminuto_ipc4_is_unspecified(v4p)) {
-                    type = "unspecified"; /* IMpossible. */
-                } else if (diminuto_ipc4_is_limitedbroadcast(v4p)) {
+            for (v4p = v4vp; !diminuto_ipc4_is_unspecified(v4p); ++v4p) {
+                if (diminuto_ipc4_is_limitedbroadcast(v4p)) {
                     type = "limited-broadcast";
                 } else if (diminuto_ipc4_is_loopback(v4p)) {
                     type = "loopback";
@@ -327,10 +325,8 @@ int main(int argc, char * argv[])
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "%s v4 %s %s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
             }
 
-            for (v6p = v6vp; diminuto_ipc6_compare(v6p, &DIMINUTO_IPC6_UNSPECIFIED) != 0; ++v6p) {
-                if (diminuto_ipc6_is_unspecified(v6p)) {
-                    type = "unspecified"; /* Impossible. */
-                } else if (diminuto_ipc6_is_loopback(v6p)) {
+            for (v6p = v6vp; !diminuto_ipc6_is_unspecified(v6p); ++v6p) {
+                if (diminuto_ipc6_is_loopback(v6p)) {
                     type = "loopback";
                 } else if (diminuto_ipc6_is_unicastglobal(v6p)) {
                     type = "global-unicast";
@@ -377,7 +373,7 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     } else if (diminuto_ipc4_is_unspecified(&nearendpoint.ipv4) && diminuto_ipc6_is_unspecified(&nearendpoint.ipv6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint46=\"%s\"\n", Nearendpoint);
-        if ((nearendpoint.tcp != 0) && (nearendpoint.udp != 0)) {
+        if ((!diminuto_ipc_is_ephemeral(nearendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(nearendpoint.udp))) {
             if (Layer3 == 't') {
                 port46 = nearendpoint.tcp;
             } else if (Layer3 == 'u') {
@@ -385,10 +381,10 @@ int main(int argc, char * argv[])
             } else {
                 /* Do nothing. */
             }
-        } else if (nearendpoint.tcp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(nearendpoint.tcp)) {
             Layer3 = 't';
             port46 = nearendpoint.tcp;
-        } else if (nearendpoint.udp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(nearendpoint.udp)) {
             Layer3 = 'u';
             port46 = nearendpoint.udp;
         } else {
@@ -418,7 +414,7 @@ int main(int argc, char * argv[])
         } else {
             /* Do nothing. */
         }
-        if ((nearendpoint.tcp != 0) && (nearendpoint.udp != 0)) {
+        if ((!diminuto_ipc_is_ephemeral(nearendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(nearendpoint.udp))) {
             if (Layer3 == 't') {
                 port46 = nearendpoint.tcp;
             } else if (Layer3 == 'u') {
@@ -426,10 +422,10 @@ int main(int argc, char * argv[])
             } else {
                 /* Do nothing. */
             }
-        } else if (nearendpoint.tcp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(nearendpoint.tcp)) {
             Layer3 = 't';
             port46 = nearendpoint.tcp;
-        } else if (nearendpoint.udp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(nearendpoint.udp)) {
             Layer3 = 'u';
             port46 = nearendpoint.udp;
         } else {
@@ -443,7 +439,7 @@ int main(int argc, char * argv[])
         diminuto_assert(0);
     } else if (diminuto_ipc4_is_unspecified(&farendpoint.ipv4) && diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint46=\"%s\"\n", Farendpoint);
-        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
+        if ((!diminuto_ipc_is_ephemeral(farendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(farendpoint.udp))) {
             if (Layer3 == 't') {
                 rendezvous46 = farendpoint.tcp;
             } else if (Layer3 == 'u') {
@@ -451,10 +447,10 @@ int main(int argc, char * argv[])
             } else {
                 /* Do nothing. */
             }
-        } else if (farendpoint.tcp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(farendpoint.tcp)) {
             Layer3 = 't';
             rendezvous46 = farendpoint.tcp;
-        } else if (farendpoint.udp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(farendpoint.udp)) {
             Layer3 = 'u';
             rendezvous46 = farendpoint.udp;
         } else {
@@ -484,7 +480,7 @@ int main(int argc, char * argv[])
         } else {
             /* Do nothing. */
         }
-        if ((farendpoint.tcp != 0) && (farendpoint.udp != 0)) {
+        if ((!diminuto_ipc_is_ephemeral(farendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(farendpoint.udp))) {
             if (Layer3 == 't') {
                 rendezvous46 = farendpoint.tcp;
             } else if (Layer3 == 'u') {
@@ -492,10 +488,10 @@ int main(int argc, char * argv[])
             } else {
                 /* Do nothing. */
             }
-        } else if (farendpoint.tcp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(farendpoint.tcp)) {
             Layer3 = 't';
             rendezvous46 = farendpoint.tcp;
-        } else if (farendpoint.udp != 0) {
+        } else if (!diminuto_ipc_is_ephemeral(farendpoint.udp)) {
             Layer3 = 'u';
             rendezvous46 = farendpoint.udp;
         } else {
@@ -554,7 +550,7 @@ int main(int argc, char * argv[])
         }
     }
 
-    if (!diminuto_ipc_port_isephemeral(port46)) {
+    if (!diminuto_ipc_is_ephemeral(port46)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "port46=%s\n", diminuto_ipc_port2string(port46, port46buffer, sizeof(port46buffer)));
     }
 
@@ -587,7 +583,7 @@ int main(int argc, char * argv[])
         rendezvous46 = diminuto_ipc_port(Rendezvous, "tcp");
     }
 
-    if (!diminuto_ipc_port_isephemeral(rendezvous46)) {
+    if (!diminuto_ipc_is_ephemeral(rendezvous46)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "rendezvous46=%s\n", diminuto_ipc_port2string(rendezvous46, rendezvous46buffer, sizeof(rendezvous46buffer)));
     }
 
@@ -607,13 +603,13 @@ int main(int argc, char * argv[])
         if (Layer2 == '4') {
             addresses4 = diminuto_ipc4_interface(interface);
             diminuto_assert(addresses4 != (diminuto_ipv4_t *)0);
-            for (; *addresses4 != DIMINUTO_IPC4_UNSPECIFIED; ++addresses4) {
+            for (; !diminuto_ipc4_is_unspecified(addresses4); ++addresses4) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface4=%s\n", diminuto_ipc4_address2string(*addresses4, addresses4buffer, sizeof(addresses4buffer)));
             }
         } else if (Layer2 == '6') {
             addresses6 = diminuto_ipc6_interface(interface);
             diminuto_assert(addresses6 != (diminuto_ipv6_t *)0);
-            for (; memcmp(addresses6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(*addresses6)) != 0; ++addresses6) {
+            for (; !diminuto_ipc6_is_unspecified(addresses6); ++addresses6) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface6=%s\n", diminuto_ipc6_address2string(*addresses6, addresses6buffer, sizeof(addresses6buffer)));
             }
         } else {
@@ -656,7 +652,7 @@ int main(int argc, char * argv[])
  * SERVICE PROVIDER - IPv4 - TCP
  ******************************************************************************/
 
-    if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 't')) {
+    if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 't')) {
 
          sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
          diminuto_assert(sock >= 0);
@@ -670,7 +666,7 @@ int main(int argc, char * argv[])
  * SERVICE PROVIDER - IPv4 - UDP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 'u')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 'u')) {
 
          sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
          diminuto_assert(sock >= 0);
@@ -684,7 +680,7 @@ int main(int argc, char * argv[])
  * SERVICE PROVIDER - IPv6 - TCP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 't')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 't')) {
 
          sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
          diminuto_assert(sock >= 0);
@@ -698,7 +694,7 @@ int main(int argc, char * argv[])
  * SERVICE PROVIDER - IPv6 - UDP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 'u')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 'u')) {
 
          sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
          diminuto_assert(sock >= 0);
@@ -712,7 +708,7 @@ int main(int argc, char * argv[])
  * SERVICE CONSUMER - IPv4 - TCP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 't')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 't')) {
 
         sock = diminuto_ipc4_stream_consumer_generic(server4, rendezvous46, address4, port46, Interface);
         diminuto_assert(sock >= 0);
@@ -729,7 +725,7 @@ int main(int argc, char * argv[])
  * SERVICE CONSUMER - IPv4 - UDP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 'u')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 'u')) {
 
         sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
         diminuto_assert(sock >= 0);
@@ -743,7 +739,7 @@ int main(int argc, char * argv[])
  * SERVICE CONSUMER - IPv6 - TCP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 't')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 't')) {
 
         sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
         diminuto_assert(sock >= 0);
@@ -760,7 +756,7 @@ int main(int argc, char * argv[])
  * SERVICE CONSUMER - IPv6 - UDP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 'u')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 'u')) {
 
         sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
         diminuto_assert(sock >= 0);
@@ -820,7 +816,7 @@ int main(int argc, char * argv[])
  * PROVIDE SERVICE - IPv4 - TCP
  ******************************************************************************/
 
-    if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 't')) {
+    if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 't')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
@@ -834,14 +830,14 @@ int main(int argc, char * argv[])
                     break;
                 }
                 datum4 = DIMINUTO_IPC4_UNSPECIFIED;
-                datum46 = 0;
+                datum46 = DIMINUTO_IPC_EPHEMERAL;
                 fd = diminuto_ipc4_stream_accept_generic(ready, &datum4, &datum46);
                 if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
                     break;
                 }
                 diminuto_assert(fd >= 0);
-                diminuto_assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
-                diminuto_assert(datum46 != 0);
+                diminuto_assert(!diminuto_ipc4_is_unspecified(&datum4));
+                diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
                 DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum4=%s datum46=%s\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                 rc = diminuto_mux_register_read(&mux, fd);
                 diminuto_assert(rc >= 0);
@@ -881,7 +877,7 @@ int main(int argc, char * argv[])
  * PROVIDE SERVICE - IPv6 - TCP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 't')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 't')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
@@ -895,14 +891,14 @@ int main(int argc, char * argv[])
                     break;
                 }
                 datum6 = DIMINUTO_IPC6_UNSPECIFIED;
-                datum46 = 0;
+                datum46 = DIMINUTO_IPC_EPHEMERAL;
                 fd = diminuto_ipc6_stream_accept_generic(ready, &datum6, &datum46);
                 if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
                     break;
                 }
                 diminuto_assert(fd >= 0);
-                diminuto_assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
-                diminuto_assert(datum46 != 0);
+                diminuto_assert(!diminuto_ipc6_is_unspecified(&datum6));
+                diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
                 DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum6=%s datum46=%s\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                 rc = diminuto_mux_register_read(&mux, fd);
                 diminuto_assert(rc >= 0);
@@ -942,15 +938,15 @@ int main(int argc, char * argv[])
  * PROVIDE SERVICE - IPv4 - UDP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 'u')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 'u')) {
 
         while (!0) {
             datum4 = DIMINUTO_IPC4_UNSPECIFIED;
-            datum46 = 0;
+            datum46 = DIMINUTO_IPC_EPHEMERAL;
             input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
             diminuto_assert(input > 0);
-            diminuto_assert(datum4 != DIMINUTO_IPC4_UNSPECIFIED);
-            diminuto_assert(datum46 != 0);
+            diminuto_assert(!diminuto_ipc4_is_unspecified(&datum4));
+            diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
             diminuto_assert(output == input);
             if (Verbose) { stamp(tee); fprintf(tee, "%s:%d \"", diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
@@ -966,15 +962,15 @@ int main(int argc, char * argv[])
  * PROVIDE SERVICE - IPv6 - UDP
  ******************************************************************************/
 
-    else if (diminuto_ipc_port_isephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 'u')) {
+    else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 'u')) {
 
         while (!0) {
             datum6 = DIMINUTO_IPC6_UNSPECIFIED;
-            datum46 = 0;
+            datum46 = DIMINUTO_IPC_EPHEMERAL;
             input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
             diminuto_assert(input > 0);
-            diminuto_assert(memcmp(&datum6, &DIMINUTO_IPC6_UNSPECIFIED, sizeof(datum6)) != 0);
-            diminuto_assert(datum46 != 0);
+            diminuto_assert(!diminuto_ipc6_is_unspecified(&datum6));
+            diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
             diminuto_assert(output == input);
             if (Verbose) { stamp(tee); fprintf(tee, "[%s]:%d \"", diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
@@ -990,7 +986,7 @@ int main(int argc, char * argv[])
  * CONSUME SERVICE - IPv4 or IPv6 - TCP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && ((Layer2 == '4') || (Layer2 == '6')) && (Layer3 == 't')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && ((Layer2 == '4') || (Layer2 == '6')) && (Layer3 == 't')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
@@ -1040,7 +1036,7 @@ int main(int argc, char * argv[])
  * CONSUME SERVICE - IPv4 - UDP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 'u')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 'u')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
@@ -1057,11 +1053,11 @@ int main(int argc, char * argv[])
                 }
                 if (fd == sock) {
                     datum4 = DIMINUTO_IPC4_UNSPECIFIED;
-                    datum46 = 0;
+                    datum46 = DIMINUTO_IPC_EPHEMERAL;
                     input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
                     diminuto_assert(input > 0);
 #if 0
-                    diminuto_assert(datum4 == server4);
+                    diminuto_assert(diminuto_ipc4_compare(&datum4, &server4) == 0);
 #endif
                     diminuto_assert(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
@@ -1099,7 +1095,7 @@ int main(int argc, char * argv[])
  * CONSUME SERVICE - IPv6 - UDP
  ******************************************************************************/
 
-    else if ((!diminuto_ipc_port_isephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 'u')) {
+    else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 'u')) {
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
@@ -1116,11 +1112,11 @@ int main(int argc, char * argv[])
                 }
                 if (fd == sock) {
                     datum6 = DIMINUTO_IPC6_UNSPECIFIED;
-                    datum46 = 0;
+                    datum46 = DIMINUTO_IPC_EPHEMERAL;
                     input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
                     diminuto_assert(input > 0);
 #if 0
-                    diminuto_assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+                    diminuto_assert(diminuto_ipc6_compare(&datum6, &server6) == 0);
 #endif
                     diminuto_assert(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
@@ -1174,7 +1170,7 @@ int main(int argc, char * argv[])
             } while (input == 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)));
 #if 0
-            diminuto_assert(datum4 == server4);
+            diminuto_assert(diminuto_ipc4_compare(&datum4, &server4) == 0);
 #endif
             diminuto_assert(id == ii);
             diminuto_assert(sn == ss);
@@ -1204,7 +1200,7 @@ int main(int argc, char * argv[])
             } while (input == 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)));
 #if 0
-            diminuto_assert(memcmp(&datum6, &server6, sizeof(datum6)) == 0);
+            diminuto_assert(diminuto_ipc6_compare(&datum6, &server6) == 0);
 #endif
             diminuto_assert(id == ii);
             diminuto_assert(sn == ss);

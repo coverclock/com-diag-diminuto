@@ -51,27 +51,28 @@
 #include <string.h>
 
 /*******************************************************************************
- * GLOBALS
+ * CONSTANTS
  ******************************************************************************/
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for "::", the
- * IPv6 address of all zeros.
+ * IPv6 address of all zeros. Helpfully, the unspecified IPv6 address is
+ * the same in either host or network byte order.
  */
-extern const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED;
+static const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for "::1", the
  * IPv6 loopback address.
  */
-extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK;
+static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK = { 0, 0, 0, 0, 0, 0, 0, 1 };
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for
  * "::ffff:127.0.0.1", which is the IPv4 loopback address encapsulated in an
  * IPv6 address.
  */
-extern const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4;
+static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1) };
 
 /*******************************************************************************
  * COMPARATORS

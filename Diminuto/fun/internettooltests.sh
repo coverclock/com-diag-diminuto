@@ -394,48 +394,56 @@ internettool -x -A prairiethorn.org -P time -u              | tee /dev/stderr | 
 # CONNECTIVITY TESTS
 
 internettool -4 -t -e :${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -t -E localhost:${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -4 -t -p ${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -t -A localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -4 -u -e :${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -u -E localhost:${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -4 -u -p ${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -u -A localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -6 -t -e :${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -t -E ip6-localhost:${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -6 -t -p ${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -t -A ip6-localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -6 -u -e :${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -u -E ip6-localhost:${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
 internettool -6 -u -p ${PORT} & SERVERPID=$!
+sleep ${WAIT}
 timesource | internettool -u -A ip6-localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
 kill -9 ${SERVERPID}
 sleep ${WAIT}
