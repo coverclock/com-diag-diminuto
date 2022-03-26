@@ -4,32 +4,66 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 #
+# USAGE
+#
+# internettooltests [ PORTNUMBER [ LOOPCOUNT [ SECONDS [ "root" ] ] ] ]
+#
 # ABSTRACT
 #
-# Run a bunch of examples of internettest without setting up a
-# connection.
+# Run a bunch of examples of internettest, first just test the argument
+# parsing capability without setting up a connection, then actually set
+# up connections and pass data on the local host.
 #
-# The results of the examples that use actual FQDNs are not completely checked
-# since the resulting IPv4 and IPv6 addresses for those domains are not
-# necessarily fixed.
+# The results of the parsing tests that use actual FQDNs are not completely
+# checked since the resolved IPv4 and IPv6 addresses for those domains are
+# not necessarily fixed.
 #
 # There are occasionally short delays in the DNS resolutions, so don't be
 # surprised if the display pauses for a few seconds in the examples that
 # have FQDNs.
 #
-# Useful debugging output can be had by increasing the logging level to
-# DEBUG, e.g.
+# It can take a remarkable amount of time for the Linux kernel to recycle the
+# port number so that it can be reused in a subsequent connection test.
 #
-# COM_DIAG_DIMINUTO_LOG_MASK=0xff internettooltests 2>&1 | tee LOG
+# Because of the significant buffering in the multiple pipes, it may take
+# a while for the head(1) command to terminate the pipeline.
+#
+# Specifying "root" as the fourth argument causes the script to run the
+# tool with the ICMP (ping) option. This must be run as root. If the
+# idea of a shell script bring run as root doing kill -9 commands
+# doesn't concern you, you aren't thinking clearly.
+#
+# EXAMPLES
+#
+# internettooltests
+#
+# internettooltests 5555 5 2
+#
+# sudo su
+# . out/host/bin/setup
+# internettooltests 5555 5 2 root
 #
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
+PORT=${1:-5555}
+LOOP=${2:-5}
+WAIT=${3:-2}
+ROOT=${4}
+
+SERVERPID=0
+
+export COM_DIAG_DIMINUTO_LOG_MASK=0xff
+
 set -x
+
+# PRELIMINARIES
 
 internettool -?
 
 internettool -I
+
+# PARSING TESTS
 
 internettool -x -e 80                                       | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 80"                      || exit 1
 internettool -x -e 8888                                     | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE 127.0.0.1 ::1 0 NE 0.0.0.0 :: 8888"                    || exit 1
@@ -357,29 +391,65 @@ internettool -x -A prairiethorn.org -P time                 | tee /dev/stderr | 
 internettool -x -A prairiethorn.org -P time -t              | tee /dev/stderr | grep -q "internettool L2 4 L3 t FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 internettool -x -A prairiethorn.org -P time -u              | tee /dev/stderr | grep -q "internettool L2 4 L3 u FE .* :: 37 NE 0.0.0.0 :: 0"                              || exit 1
 
-internettool -4 -t -e :5555 & SERVERPID=$!
-timesource | internettool -t -E localhost:5555 | timesink | head -5
-kill ${SERVERPID}
-sleep 1
+# CONNECTIVITY TESTS
 
-internettool -4 -u -e :5555 & SERVERPID=$!
-timesource | internettool -u -E localhost:5555 | timesink | head -5
-kill ${SERVERPID}
-sleep 1
+internettool -4 -t -e :${PORT} & SERVERPID=$!
+timesource | internettool -t -E localhost:${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
 
-internettool -6 -t -e :5555 & SERVERPID=$!
-timesource | internettool -t -E ip6-localhost:5555 | timesink | head -5
-kill ${SERVERPID}
-sleep 1
+internettool -4 -t -p ${PORT} & SERVERPID=$!
+timesource | internettool -t -A localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
 
-internettool -6 -u -e :5555 & SERVERPID=$!
-timesource | internettool -u -E ip6-localhost:5555 | timesink | head -5
-kill ${SERVERPID}
-sleep 1
+internettool -4 -u -e :${PORT} & SERVERPID=$!
+timesource | internettool -u -E localhost:${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
 
-# sudo internettool -g -e localhost -i lo
+internettool -4 -u -p ${PORT} & SERVERPID=$!
+timesource | internettool -u -A localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
 
-# sudo internettool -g -e ip6-localhost -i lo
+internettool -6 -t -e :${PORT} & SERVERPID=$!
+timesource | internettool -t -E ip6-localhost:${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
+
+internettool -6 -t -p ${PORT} & SERVERPID=$!
+timesource | internettool -t -A ip6-localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
+
+internettool -6 -u -e :${PORT} & SERVERPID=$!
+timesource | internettool -u -E ip6-localhost:${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
+
+internettool -6 -u -p ${PORT} & SERVERPID=$!
+timesource | internettool -u -A ip6-localhost -P ${PORT} | timesink | head -${LOOP} || exit 2
+kill -9 ${SERVERPID}
+sleep ${WAIT}
+PORT=$((${PORT} + 1))
+
+if [[ "${ROOT}" == "root" ]]; then
+
+	internettool -g -e localhost -i lo 2>&1 | tee /dev/stderr | grep " role=ping action=reply " | head -${LOOP} || exit 3
+	sleep ${WAIT}
+
+	internettool -g -e ip6-localhost -i lo 2>&1 | tee /dev/stderr | grep " role=ping action=reply " | head -${LOOP} || exit 3
+	sleep ${WAIT}
+
+fi
 
 echo "Success."
 exit 0

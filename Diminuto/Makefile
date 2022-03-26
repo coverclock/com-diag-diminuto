@@ -1089,6 +1089,7 @@ privileged6:
 
 privileged:	privileged4 privileged6
 	unittest-map# 78.0.0 worked on x86_64 but not on arm64.
+	internettooltests 5555 5 2 root && echo "SUCCESS." || echo "FAILED!"
 
 extended:
 	unittest-alarm
@@ -1236,6 +1237,7 @@ sockets6:
 	unittest-scattergather6
 
 sockets:	sockets0 socketsl sockets4 sockets6
+	internettooltests && echo "SUCCESS." || echo "FAILED!"
 
 realtime:
 	unittest-throttle
