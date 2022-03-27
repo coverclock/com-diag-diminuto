@@ -259,6 +259,39 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
     return buffer;
 }
 
+const char * diminuto_ipc6_address2type(diminuto_ipv6_t address)
+{
+    const char * result = (const char *)0;
+
+    if (diminuto_ipc6_is_loopback(&address)) {
+        result = "loopback";
+    } else if (diminuto_ipc6_is_unicastglobal(&address)) {
+        result = "global-unicast";
+    } else if (diminuto_ipc6_is_uniquelocal(&address)) {
+        result = "unique-local";
+    } else if (diminuto_ipc6_is_linklocal(&address)) {
+        result = "link-local";
+    } else if (diminuto_ipc6_is_multicast(&address)) {
+        result = "multicast";
+    } else if (diminuto_ipc6_is_nat64wkp(&address)) {
+        result = "nat64-wkp";
+    } else if (diminuto_ipc6_is_isatap(&address)) {
+        result = "atap";
+    } else if (diminuto_ipc6_is_6to4(&address)) {
+        result = "6to4";
+    } else if (diminuto_ipc6_is_loopback4(&address)) {
+        result = "v4-loopback";
+    } else if (diminuto_ipc6_is_v4mapped(&address)) {
+        result = "v4-mapped";
+    } else if (diminuto_ipc6_is_v4compatible(&address)) {
+        result = "v4-compatible";
+    } else {
+        result = "public";
+    }
+
+    return result;
+}
+
 /*******************************************************************************
  * INTERROGATORS
  ******************************************************************************/

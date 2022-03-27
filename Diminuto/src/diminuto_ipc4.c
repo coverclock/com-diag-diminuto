@@ -139,6 +139,25 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, s
     return buffer;
 }
 
+const char * diminuto_ipc4_address2type(diminuto_ipv4_t address)
+{
+    const char * result = (const char *)0;
+
+    if (diminuto_ipc4_is_limitedbroadcast(&address)) {
+        result = "limited-broadcast";
+    } else if (diminuto_ipc4_is_loopback(&address)) {
+        result = "loopback";
+    } else if (diminuto_ipc4_is_private(&address)) {
+        result = "private";
+    } else if (diminuto_ipc4_is_multicast(&address)) {
+        result = "multicast";
+    } else {
+        result = "public";
+    }
+
+    return result;
+}
+
 /*******************************************************************************
  * INTERROGATORS
  ******************************************************************************/

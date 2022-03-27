@@ -308,6 +308,14 @@ static inline const char * diminuto_ipc6_address2string(diminuto_ipv6_t address,
     return diminuto_ipc6_colonnotation(address, buffer, length);
 }
 
+/**
+ * Given an IPv6 address in host byte order, return a string describing the
+ * type of address it is.
+ * @param address is the IPv6 address in host byte order.
+ * @return a pointer to a string describing what type of address it is.
+ */
+extern const char * diminuto_ipc6_address2type(const diminuto_ipv6_t address);
+
 /*******************************************************************************
  * INTERROGATORS
  ******************************************************************************/
