@@ -12,13 +12,14 @@
  * protocols like Transmission Control Protocol or TCP (-t), or User Datagram
  * Protocol or UDP (-u), although it can also use Internet Control Message
  * Protocol or ICMP (-g) like ping(1). internettool can use IPv4 (-4) or IPv6
- * (-6). It can be used in server mode (-p) or client mode (-A, -P). In server
- * mode, it receives packets from one or more clients, and sends them back to
- * the sender unaltered. In client mode, it reads standard input and sends
- * the data to the server, and receives from the server and writes the data
- * to standard output. It can bind its socket to a specific interface (-i) or
- * address (-a). internettool is not intended to replace socat(1), but provides
- * a way to functionally test the Diminuto IPC feature in a variety of contexts.
+ * (-6). It can be used in server mode (-p or -e) or client mode (-A, -P, or
+ * -E). In server mode, it receives packets from one or more clients, and
+ * sends them back to the sender unaltered. In client mode, it reads standard
+ * input and sends the data to the server, and receives from the server and
+ * writes the data to standard output. It can bind its socket to a specific
+ * interface (-i) or address (-a). internettool is not intended to replace
+ * socat(1), but provides a way to functionally test the Diminuto IPC feature
+ * in a variety of contexts.
  *
  * EXAMPLES
  *
