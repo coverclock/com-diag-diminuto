@@ -566,7 +566,7 @@ int main(int argc, char * argv[])
         diminuto_assert(interfaci != (char **)0);
         for (interfaces = interfaci; *interfaces != (char *)0; ++interfaces) {
             if (strcmp(Interface, *interfaces) == 0) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", *interfaces);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=%s\n", *interfaces);
                 interface = *interfaces;
             }
         }
