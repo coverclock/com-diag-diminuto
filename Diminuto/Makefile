@@ -1088,8 +1088,8 @@ privileged6:
 	unittest-ping6# Requires native IPv6 routing.
 
 privileged:	privileged4 privileged6
-	unittest-map# 78.0.0 worked on x86_64 but not on arm64.
-	internettooltests 5555 5 2 root && echo "SUCCESS." || echo "FAILED!"
+	# unittest-map 78.0.0 worked on x86_64 but not on arm64.
+	internettooltests && echo "SUCCESS." || echo "FAILED!"
 
 extended:
 	unittest-alarm

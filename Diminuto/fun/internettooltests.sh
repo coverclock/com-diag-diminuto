@@ -6,7 +6,7 @@
 #
 # USAGE
 #
-# internettooltests [ PORTNUMBER [ LOOPCOUNT [ SECONDS [ "root" ] ] ] ]
+# internettooltests [ PORTNUMBER [ LOOPCOUNT [ SECONDS ] ] ]
 #
 # ABSTRACT
 #
@@ -28,10 +28,10 @@
 # Because of the significant buffering in the multiple pipes, it may take
 # a while for the head(1) command to terminate the pipeline.
 #
-# Specifying "root" as the fourth argument causes the script to run the
-# tool with the ICMP (ping) option. This must be run as root. If the
-# idea of a shell script bring run as root doing kill -9 commands
-# doesn't concern you, you aren't thinking clearly.
+# If the script is run under UID 0 ("root"), the ICMP ping tests, which
+# require root privileges, are also run. (If the idea of a shell script
+# being run as root doing kill -9 commands doesn't concern you, you aren't
+# thinking clearly.)
 #
 # EXAMPLES
 #
@@ -41,7 +41,7 @@
 #
 # sudo su
 # . out/host/bin/setup
-# internettooltests 5555 5 2 root
+# internettooltests 5555 5 2
 #
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
@@ -449,7 +449,7 @@ kill -9 ${SERVERPID}
 sleep ${WAIT}
 PORT=$((${PORT} + 1))
 
-if [[ "${ROOT}" == "root" ]]; then
+if [[ ${EUID} == 0 ]]; then
 
 	internettool -g -e localhost -i lo 2>&1 | tee /dev/stderr | grep " role=ping action=reply " | head -${LOOP} || exit 4
 	sleep ${WAIT}
