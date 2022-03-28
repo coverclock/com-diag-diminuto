@@ -700,6 +700,13 @@ is the case at compile time.
 
     src/diminuto_renameat2.c:40:5: warning: #warning renameat2(2) not available on this platform so using SYS_renameat2 instead! [-Wcpp]
 
+If you define the C preprocessor symbol ```COM_DIAG_DIMINUTO_DEPRECATED```,
+deprecated code segments (that is, code that you can expect to be removed
+in the near future) will be defined and built. Compiling these segments
+will generate a warning.
+
+    inc/com/diag/diminuto/diminuto_error.h:56:5: warning: #warning This code is deprecated! [-Wcpp]
+
 ## Failures
 
 Some of the socket unit tests make use of ephemeral ports that are
