@@ -133,7 +133,7 @@ extern diminuto_cue_edge_t diminuto_cue_edge(const diminuto_cue_state_t * statep
  * @param statep points to the cue state structure.
  * @return true if the raw undebounced input is rising.
  */
-static inline int diminuto_cue_is_rising(const diminuto_cue_state_t * statep)
+static inline int diminuto_cue_isrising(const diminuto_cue_state_t * statep)
 {
     return ((statep->a != 0) && (statep->b == 0));
 }
@@ -144,7 +144,7 @@ static inline int diminuto_cue_is_rising(const diminuto_cue_state_t * statep)
  * @param statep points to the cue state structure.
  * @return true if the raw undebounced input is falling.
  */
-static inline int diminuto_cue_is_falling(const diminuto_cue_state_t * statep)
+static inline int diminuto_cue_isfalling(const diminuto_cue_state_t * statep)
 {
     return ((statep->a == 0) && (statep->b != 0));
 }

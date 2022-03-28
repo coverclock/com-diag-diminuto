@@ -481,10 +481,8 @@ ncurses library.
 
     sudo apt-get install libncurses5-dev libncursesw5-dev
 
-I have found that cscope 15.9 on Ubuntu 21.10 "impish" on the Raspberry Pi 4B
-core dumps with a double free exception under some circumstances. Even so, I
-find it useful for some large scale editing changes, which it seems to do
-successfully just before crashing.
+Warning: I have found that cscope 15.9 on Ubuntu core dumps with a double
+free exception under some circumstances on both Intel and Arm platforms.
 
 ## inotifywait
 
