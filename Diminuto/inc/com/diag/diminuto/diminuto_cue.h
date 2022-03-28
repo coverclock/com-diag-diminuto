@@ -149,4 +149,9 @@ static inline int diminuto_cue_isfalling(const diminuto_cue_state_t * statep)
     return ((statep->a == 0) && (statep->b != 0));
 }
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
+#   define diminuto_cue_is_rising diminuto_cue_isrising
+#   define diminuto_cue_is_falling diminuto_cue_isfalling
+#endif
+
 #endif
