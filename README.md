@@ -77,22 +77,6 @@ of the library that are especially useful in shell scripts.
 
 See the Features section below for a more complete list.
 
-# Manual Pages and Reference Manual
-
-These PDFs of
-[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
-and associated
-[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
-were built from Diminuto's embedded Doxygen comments on
-2022-03-01
-using tag
-79.0.5
-.
-
-The unit tests (```Diminuto/tst```), functional tests (```Diminuto/fun```), and command line
-uilities (```Diminuto/bin```) contain useful and non-trivial examples of how to use the
-Diminuto library.
-
 # Details
 
 Diminuto isn't intended to be portable. It is specifically designed to
@@ -323,8 +307,8 @@ header file.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
-* hex - display an argument number in hexidecimal.
-* internettool - test internet connectivity.
+* hex - display an argument number in hexadecimal.
+* internettool - test internet connectivity using the Diminuto IPC features.
 * ipcalc - calculate IPv4 addresses and masks.
 * iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
 * juliet - display the local time in ISO 8601 format.
@@ -356,14 +340,15 @@ header file.
 * adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
 * dcdtest - DCD support on serial port (Serial).
-* lbktest - Loopback on serial port (Serial).
+* internettooltests - use internettool in many configurations (IPC4, IPC6).
+* lbktest - loopback on serial port (Serial).
 * luxcontroller - LED and lux sensor PID loop (Pin, Modulator, I2C, Controller).
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
-* pinchange - Multiplexing of GPIO pins (Pin).
-* pincleanup - Clean up pins exported to hardware test fixture (Pin).
-* pintest - Setting and getting GPIO pins (Pin).
-* timestuff - Tries out the underlying glibc time functions.
-* walker - Walk the file system tree starting at a specified root (FS).
+* pinchange - multiplexing of GPIO pins (Pin).
+* pincleanup - clean up pins exported to hardware test fixture (Pin).
+* pintest - setting and getting GPIO pins (Pin).
+* timestuff - tries out the underlying glibc time functions.
+* walker - walk the file system tree starting at a specified root (FS).
 
 (Some of these functional tests depend upon hardware test fixtures I
 fabricated specifically for this purpose. Depending on the platform,
@@ -496,10 +481,8 @@ ncurses library.
 
     sudo apt-get install libncurses5-dev libncursesw5-dev
 
-I have found that cscope 15.9 on Ubuntu 21.10 "impish" on the Raspberry Pi 4B
-core dumps with a double free exception under some circumstances. Even so, I
-find it useful for some large scale editing changes, which it seems to do
-successfully just before crashing.
+Warning: I have found that cscope 15.9 on Ubuntu core dumps with a double
+free exception under some circumstances on both Intel and Arm platforms.
 
 ## inotifywait
 
@@ -592,8 +575,19 @@ then look it up in the generated HTML, man, or PDF documentation.
 header or .h files. Their source or .c files may have some documentation
 regarding any private API they might have.)
 
-The unit tests (./tst)  and functional tests (./fun) also have a wealth
-of examples of how to use the public APIs.
+These PDFs of
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
+and associated
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
+were built from Diminuto's embedded Doxygen comments on
+2022-03-01
+using tag
+```79.0.5```
+. They will not reflect changes made to the library since then.
+
+The unit tests (```Diminuto/tst```),  functional tests
+(```Diminuto/fun```), and command line utilities (```Diminuto/bin```)
+have a wealth of non-trivial examples of how to use the public APIs.
 
 # Remarks
 
@@ -669,7 +663,9 @@ exclusion and synchronization.
 internettooltests uses the Diminuto IPC feature in just about every way
 possible: IPv4 or IPv6, and TCP or UDP or even ICMP. For best results, enable
 DEBUG logging in the environment before running. internettool must be run as
-root to use the ICMP capability.
+root to use the ICMP capability. The ICMP options of internettool require the
+tool be run with root privileges; the internettooltests functional test script
+will test the ICMP options automatically when the script is run as root.
 
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/bin/internettool.c>    
 <https://github.com/coverclock/com-diag-diminuto/blob/master/Diminuto/fun/internettooltests.sh>    
@@ -703,6 +699,13 @@ Diminuto generates its own API to renameat2(2), but warns you that this
 is the case at compile time.
 
     src/diminuto_renameat2.c:40:5: warning: #warning renameat2(2) not available on this platform so using SYS_renameat2 instead! [-Wcpp]
+
+If you define the C preprocessor symbol ```COM_DIAG_DIMINUTO_DEPRECATED```,
+deprecated code segments (that is, code that you can expect to be removed
+in the near future) will be defined and built. Compiling these segments
+will generate a warning.
+
+    inc/com/diag/diminuto/diminuto_error.h:56:5: warning: #warning This code is deprecated! [-Wcpp]
 
 ## Failures
 

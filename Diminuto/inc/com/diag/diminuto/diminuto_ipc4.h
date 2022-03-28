@@ -184,6 +184,14 @@ static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address,
     return diminuto_ipc4_dotnotation(address, buffer, length);
 }
 
+/**
+ * Given an IPv4 address in host byte order, return a string describing the
+ * type of address it is.
+ * @param address is the IPv4 address in host byte order.
+ * @return a pointer to a string describing what type of address it is.
+ */
+extern const char * diminuto_ipc4_address2type(diminuto_ipv4_t address);
+
 /*******************************************************************************
  * INTERROGATORS
  ******************************************************************************/

@@ -52,4 +52,10 @@ extern void diminuto_log_perror(const char * f, int l, const char * s);
  */
 #define diminuto_perror(_STRING_) diminuto_log_perror(__FILE__, __LINE__, _STRING_)
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
+#   warning This code is deprecated!
+#   define diminuto_serror_f diminuto_log_serror
+#   define diminuto_perror_f diminuto_log_perror
+#endif
+
 #endif

@@ -12,13 +12,14 @@
  * protocols like Transmission Control Protocol or TCP (-t), or User Datagram
  * Protocol or UDP (-u), although it can also use Internet Control Message
  * Protocol or ICMP (-g) like ping(1). internettool can use IPv4 (-4) or IPv6
- * (-6). It can be used in server mode (-p) or client mode (-A, -P). In server
- * mode, it receives packets from one or more clients, and sends them back to
- * the sender unaltered. In client mode, it reads standard input and sends
- * the data to the server, and receives from the server and writes the data
- * to standard output. It can bind its socket to a specific interface (-i) or
- * address (-a). internettool is not intended to replace socat(1), but provides
- * a way to functionally test the Diminuto IPC feature in a variety of contexts.
+ * (-6). It can be used in server mode (-p or -e) or client mode (-A, -P, or
+ * -E). In server mode, it receives packets from one or more clients, and
+ * sends them back to the sender unaltered. In client mode, it reads standard
+ * input and sends the data to the server, and receives from the server and
+ * writes the data to standard output. It can bind its socket to a specific
+ * interface (-i) or address (-a). internettool is not intended to replace
+ * socat(1), but provides a way to functionally test the Diminuto IPC feature
+ * in a variety of contexts.
  *
  * EXAMPLES
  *
@@ -293,69 +294,39 @@ int main(int argc, char * argv[])
         diminuto_ipv4_buffer_t v4pbuffer = { '\0', };
         diminuto_ipv6_buffer_t v6pbuffer = { '\0', };
         const char * type = (const char *)0;
-        bool bound = false;
 
-        diminuto_assert((ifvp = diminuto_ipc_interfaces()) != (char **)0);
+        ifvp = diminuto_ipc_interfaces();
+        diminuto_assert(ifvp != (char **)0);
+
+        /*
+         * We have a array of zero or more network interfaces, each
+         * of which is bound to a array of zero or more IPv4 address
+         * and zero or more IPv6 addresses.
+         */
 
         for (ifp = ifvp; *ifp != (char *)0; ++ifp) {
 
-            diminuto_assert((v4vp = diminuto_ipc4_interface(*ifp)) != (diminuto_ipv4_t *)0);
-            diminuto_assert((v6vp = diminuto_ipc6_interface(*ifp)) != (diminuto_ipv6_t *)0);
+            type = (const char *)0;
 
-            bound = false;
-
+            v4vp = diminuto_ipc4_interface(*ifp);
+            diminuto_assert(v4vp != (diminuto_ipv4_t *)0);
             for (v4p = v4vp; !diminuto_ipc4_is_unspecified(v4p); ++v4p) {
-                if (diminuto_ipc4_is_limitedbroadcast(v4p)) {
-                    type = "limited-broadcast";
-                } else if (diminuto_ipc4_is_loopback(v4p)) {
-                    type = "loopback";
-                } else if (diminuto_ipc4_is_private(v4p)) {
-                    type = "private";
-                } else if (diminuto_ipc4_is_multicast(v4p)) {
-                    type = "multicast";
-                } else {
-                    type = "other";
-                }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s interface4=%s type=%s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
-                bound = true;
+                type = diminuto_ipc4_address2type(*v4p);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s binding4=%s type4=%s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
             }
+            free(v4vp);
 
+            v6vp = diminuto_ipc6_interface(*ifp);
+            diminuto_assert(v6vp != (diminuto_ipv6_t *)0);
             for (v6p = v6vp; !diminuto_ipc6_is_unspecified(v6p); ++v6p) {
-                if (diminuto_ipc6_is_loopback(v6p)) {
-                    type = "loopback";
-                } else if (diminuto_ipc6_is_unicastglobal(v6p)) {
-                    type = "global-unicast";
-                } else if (diminuto_ipc6_is_uniquelocal(v6p)) {
-                    type = "unique-local";
-                } else if (diminuto_ipc6_is_linklocal(v6p)) {
-                    type = "link-local";
-                } else if (diminuto_ipc6_is_multicast(v6p)) {
-                    type = "multicast";
-                } else if (diminuto_ipc6_is_nat64wkp(v6p)) {
-                    type = "nat64-wkp";
-                } else if (diminuto_ipc6_is_isatap(v6p)) {
-                    type = "atap";
-                } else if (diminuto_ipc6_is_6to4(v6p)) {
-                    type = "6to4";
-                } else if (diminuto_ipc6_is_loopback4(v6p)) {
-                    type = "v4-loopback";
-                } else if (diminuto_ipc6_is_v4mapped(v6p)) {
-                    type = "v4-mapped";
-                } else if (diminuto_ipc6_is_v4compatible(v6p)) {
-                    type = "v4-compatible";
-                } else {
-                    type = "other";
-                }
-                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s interface6=%s type=%s\n", *ifp, diminuto_ipc6_address2string(*v6p, v6pbuffer, sizeof(v6pbuffer)), type);
-                bound = true;
+                type = diminuto_ipc6_address2type(*v6p);
+                DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s binding6=%s type6=%s\n", *ifp, diminuto_ipc6_address2string(*v6p, v6pbuffer, sizeof(v6pbuffer)), type);
             }
+            free(v6vp);
 
-            if (!bound) {
+            if (type == (const char *)0) {
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s\n", *ifp);
             }
-
-            free(v4vp);
-            free(v6vp);
         }
 
         free(ifvp);
@@ -591,11 +562,11 @@ int main(int argc, char * argv[])
         /* Do nothing. */
     } else {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Interface=\"%s\"\n", Interface);
-        interfaci = interfaces = diminuto_ipc_interfaces();
-        diminuto_assert(interfaces != (char **)0);
-        for (; *interfaces != (char *)0; ++interfaces) {
+        interfaci = diminuto_ipc_interfaces();
+        diminuto_assert(interfaci != (char **)0);
+        for (interfaces = interfaci; *interfaces != (char *)0; ++interfaces) {
             if (strcmp(Interface, *interfaces) == 0) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=\"%s\"\n", *interfaces);
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=%s\n", *interfaces);
                 interface = *interfaces;
             }
         }
@@ -604,13 +575,13 @@ int main(int argc, char * argv[])
             addresses4 = diminuto_ipc4_interface(interface);
             diminuto_assert(addresses4 != (diminuto_ipv4_t *)0);
             for (; !diminuto_ipc4_is_unspecified(addresses4); ++addresses4) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface4=%s\n", diminuto_ipc4_address2string(*addresses4, addresses4buffer, sizeof(addresses4buffer)));
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "binding4=%s\n", diminuto_ipc4_address2string(*addresses4, addresses4buffer, sizeof(addresses4buffer)));
             }
         } else if (Layer2 == '6') {
             addresses6 = diminuto_ipc6_interface(interface);
             diminuto_assert(addresses6 != (diminuto_ipv6_t *)0);
             for (; !diminuto_ipc6_is_unspecified(addresses6); ++addresses6) {
-                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface6=%s\n", diminuto_ipc6_address2string(*addresses6, addresses6buffer, sizeof(addresses6buffer)));
+                DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "binding6=%s\n", diminuto_ipc6_address2string(*addresses6, addresses6buffer, sizeof(addresses6buffer)));
             }
         } else {
             diminuto_assert(0);

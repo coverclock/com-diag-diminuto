@@ -29,7 +29,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	85# API changes that may require that applications be modified.
+MAJOR				:=	86# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
 BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
@@ -1088,8 +1088,8 @@ privileged6:
 	unittest-ping6# Requires native IPv6 routing.
 
 privileged:	privileged4 privileged6
-	unittest-map# 78.0.0 worked on x86_64 but not on arm64.
-	internettooltests 5555 5 2 root && echo "SUCCESS." || echo "FAILED!"
+	# unittest-map 78.0.0 worked on x86_64 but not on arm64.
+	internettooltests && echo "SUCCESS." || echo "FAILED!"
 
 extended:
 	unittest-alarm
