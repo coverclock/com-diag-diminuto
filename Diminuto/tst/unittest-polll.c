@@ -33,8 +33,10 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 
-#if defined(__arm__)
-static const size_t TOTAL = 1024 * 1024 * 100;
+#if (!0)
+static const size_t TOTAL = 1024 * 1024 * 1024;
+#elif defined(__arm__)
+static const size_t TOTAL = 1024 * 1024 * 128;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif

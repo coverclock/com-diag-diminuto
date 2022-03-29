@@ -39,8 +39,10 @@ static const int MIN_UNINIT = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive
 static const int MAX_UNINIT = (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer. Produces -pedantic warning. */
 static const int NXT_UNINIT = -1;
 
-#if defined(__arm__)
-static const size_t TOTAL = 1024 * 1024 * 100;
+#if (!0)
+static const size_t TOTAL = 1024 * 1024 * 1024;
+#elif defined(__arm__)
+static const size_t TOTAL = 1024 * 1024 * 128;
 #else
 static const size_t TOTAL = 1024 * 1024 * 1024;
 #endif
