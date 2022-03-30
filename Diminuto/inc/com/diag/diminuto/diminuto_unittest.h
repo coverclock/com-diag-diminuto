@@ -349,7 +349,7 @@ extern void diminuto_unittest_flush(void);
  * Emit a notice message with the current translation unit file and line nunber.
  */
 #define NOTIFY(...) \
-    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "NOTIFICATION: " __VA_ARGS__); \
+    DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "NOTIFY: " __VA_ARGS__); \
 
 /**
  * @def CHECKPOINT

@@ -37,6 +37,7 @@ int main(int argc, char ** argv)
     {
         TEST();
 
+        NOTIFY();
         CHECKPOINT();
         COMMENT();
         ASSERT(!0);
