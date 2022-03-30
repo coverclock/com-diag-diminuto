@@ -154,7 +154,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -c              Log at the CRITICAL level.\n");
             fprintf(stderr, "       -e              Log at the ERROR level.\n");
             fprintf(stderr, "       -w              Log at the WARNING level.\n");
-            fprintf(stderr, "       -n              Log at the NOTIVE level.\n");
+            fprintf(stderr, "       -n              Log at the NOTICE level.\n");
             fprintf(stderr, "       -i              Log at the INFORMATION level.\n");
             fprintf(stderr, "       -d              Log at the DEBUG level.\n");
             return 1;
