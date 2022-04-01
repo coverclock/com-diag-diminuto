@@ -70,7 +70,7 @@ int main(int argc, char ** argv)
     
         condition = 0;
         errno = EAGAIN;
-        diminuto_assert(condition);
+        assert(condition);
 
         STATUS();
     }
@@ -130,7 +130,7 @@ int main(int argc, char ** argv)
     
         condition = 0;
         errno = EAGAIN;
-        diminuto_assert(condition);
+        assert(condition);
 
         STATUS();
     }
@@ -178,20 +178,14 @@ int main(int argc, char ** argv)
         diminuto_expect(condition++);
         EXPECT(condition == 1);
    
-        /* 
-        condition = 0;
-        errno = EINVAL;
-        diminuto_assert(condition++);
-        EXPECT(condition == 1);
-        */
-    
-        condition = 1;
+        condition = !0;
         errno = E2BIG;
         diminuto_assert(condition);
-    
+
         condition = 0;
         errno = EAGAIN;
-        diminuto_assert(condition);
+        NOTIFY("Deliberate EAGAIN abort(3) imminent!");
+        assert(condition);
 
         STATUS();
     }

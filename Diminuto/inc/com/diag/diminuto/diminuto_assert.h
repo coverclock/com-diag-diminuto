@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements assert and expect that use the Diminuto log mechanism.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -58,6 +58,14 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
 
 #if defined(diminuto_expect)
 #   undef diminuto_expect
+#endif
+
+#if defined(NDEBUG)
+    /*
+     * @def COM_DIAG_DIMINUTO_ASSERT_DEBUG
+     * Support for legacy assert(3) behavior by using NDEBUG.
+     */
+#   define COM_DIAG_DIMINUTO_ASSERT_NDEBUG NDEBUG
 #endif
 
 /*
@@ -124,4 +132,12 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
      */
 #   define diminuto_expect(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, 0) : ((void)0))
 
+#endif
+
+#if !defined(assert)
+    /*
+     * @def assert
+     * Support for legacy assert(3) behavior by defining assert.
+     */
+#   define assert diminuto_assert
 #endif
