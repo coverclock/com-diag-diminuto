@@ -128,6 +128,8 @@ int main(void)
     printisunsigned(uint32_t);
     printissigned(int64_t);
     printisunsigned(uint64_t);
+    printissigned(intmax_t);
+    printisunsigned(uintmax_t);
     printissigned(intptr_t);
     printisunsigned(uintptr_t);
     printsizeof(ptrdiff_t);
