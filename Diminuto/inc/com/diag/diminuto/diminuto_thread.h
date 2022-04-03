@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a framework to use POSIX threads.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -96,14 +96,14 @@ typedef enum DiminutoThreadState {
  * This is the Diminuto thread object.
  */
 typedef struct DiminutoThread {
-    diminuto_condition_t condition;         /* Diminuto condition object */
-    pthread_t thread;                       /* POSIX Thread thread object */
-    diminuto_thread_function_t * function;  /* pointer to thread function */
-    void * context;                         /* pointer to thread context */
-    void * value;                           /* final thread function value */
-    diminuto_thread_state_t state;          /* Diminuto thread state */
-    int notify;                             /* kill for notification or 0 */
-    int notifications;                      /* notifications received */
+    diminuto_thread_function_t * function;  /**< Pointer to thread function. */
+    void * context;                         /**< Pointer to thread context. */
+    void * value;                           /**< Final thread function value. */
+    diminuto_condition_t condition;         /**< Diminuto condition object. */
+    pthread_t thread;                       /**< POSIX Thread thread object. */
+    diminuto_thread_state_t state;          /**< Diminuto thread state. */
+    diminuto_sig_t notify;                  /**< Notification signal or 0. */
+    int32_t notifications;                  /**< Notifications received. */
 } diminuto_thread_t;
 
 /**
@@ -112,11 +112,11 @@ typedef struct DiminutoThread {
  */
 #define DIMINUTO_THREAD_INITIALIZER(_FP_) \
     { \
-        DIMINUTO_CONDITION_INITIALIZER, \
-        0, \
         (_FP_), \
         (void *)0, \
         (void *)(~0), \
+        DIMINUTO_CONDITION_INITIALIZER, \
+        0, \
         DIMINUTO_THREAD_STATE_INITIALIZED, \
         DIMINUTO_THREAD_NOTIFY, \
         0, \

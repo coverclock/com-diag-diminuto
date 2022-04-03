@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a model for doing multiplexing using poll(2).
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -27,6 +27,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_mux.h"
+#include <stdbool.h>
 #include <poll.h>
 
 /**
@@ -55,12 +56,12 @@ static inline diminuto_sticks_t diminuto_poll_frequency(void) {
  * This is the poller state.
  */
 typedef struct DiminutoPoll {
-    diminuto_mux_t mux;
     struct pollfd * pollfd;
+    diminuto_mux_t mux;
     nfds_t nfds;
-    int min;
-    int max;
-    int refresh;
+    diminuto_fd_t min;
+    diminuto_fd_t max;
+    bool refresh;
 } diminuto_poll_t;
 
 /**

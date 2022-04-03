@@ -150,16 +150,17 @@ extern ssize_t diminuto_fd_maximum(void);
 
 /**
  * This is a table that can be used to map file descriptors to a void pointer
- * by using the fd as an index.
+ * by using the fd as an index. May produce -pedantic warnings since I
+ * dimension the void pointer array as [0].
  */
 typedef struct DiminutoFdMap {
-    size_t count;
-    void * data[0]; /* Will produce -pedantic warnings wherever used. */
+    size_t count;       /**< Number of slots in the array of void pointers. */
+    void * data[0];     /**< Beginning of array of [count] void pointers. */
 } diminuto_fd_map_t;
 
 /**
  * Allocate and initialize a table that maps file descriptors to a void pointer
- * (as, to a structure or a function). Although any number of file descriptors
+ * (e.g. to a structure or a function). Although any number of file descriptors
  * can be supported, applications will typically pass the maximum possible
  * number of unique open file descriptor values. This table is dynamically
  * allocated and must be freed by the application. The void pointers in the

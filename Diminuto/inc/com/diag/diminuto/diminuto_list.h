@@ -99,10 +99,10 @@
  * of this structure was deliberately designed to fit in a typical cache line.
  */
 typedef struct DiminutoList {
-    struct DiminutoList * next;    /* Points to the next node on the list. */
-    struct DiminutoList * prev;    /* Points to the previous node on the list. */
-    struct DiminutoList * root;    /* Points to the root node of the list. */
-    void                * data;    /* Points to the payload of the node. */
+    struct DiminutoList * next;    /**< Points to next node. */
+    struct DiminutoList * prev;    /**< Points to previous node. */
+    struct DiminutoList * root;    /**< Points to the root node. */
+    void                * data;    /**< Application payload. */
 } diminuto_list_t;
 
 /**

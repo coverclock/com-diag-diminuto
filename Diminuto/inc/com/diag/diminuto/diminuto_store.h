@@ -36,9 +36,9 @@
  * application (or of yet another derived class) as it sees fit.
  */
 typedef struct DiminutoStore {
-    diminuto_tree_t tree;
-    void *          key;
-    void *          value;
+    diminuto_tree_t tree;       /**< Diminuto tree node. */
+    void *          key;        /**< Pointer to application tuple key. */
+    void *          value;      /**< Pointer to application tuple value. */
 } diminuto_store_t;
 
 /**

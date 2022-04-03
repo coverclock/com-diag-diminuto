@@ -21,7 +21,7 @@
 #   include <linux/limits.h>
 #   include <linux/un.h>
 #   if 0
-       typedef unsigned long uintptr_t; /* Some kernels define this, some don't. */
+       typedef unsigned long uintptr_t;
 #   endif
 #else
 #   include <stddef.h>          /* size_t, ssize_t, wint_t, etc. */
@@ -29,13 +29,11 @@
 #   include <stdbool.h>         /* bool */
 #   include <wchar.h>           /* wchar_t, wint_t */
 #   include <sys/types.h>       /* pid_t */
-#   include <linux/limits.h>    /* PATH_MAX (includes terminating NUL) */
-#   include <linux/un.h>        /* UNIX_PATH_MAX */
+#   include <linux/limits.h>    /* PATH_MAX (includes terminating NUL): 4096 */
+#   include <linux/un.h>        /* UNIX_PATH_MAX: 108 */
 #   if 0
-#       include <linux/limits.h>    /* PATH_MAX: 4096 */
-#       include <linux/un.h>        /* UNIX_PATH_MAX: 108 */
-#       include <sys/param.h>       /* MAXPATHLEN: PATH_MAX */
-#       include <limits.h>          /* _POSIX_PATH_MAX: 256 */
+#       include <sys/param.h>   /* MAXPATHLEN: PATH_MAX */
+#       include <limits.h>      /* _POSIX_PATH_MAX: 256 */
 #   endif
 #endif
 
@@ -211,5 +209,29 @@ typedef long long signed int diminuto_lld_t;
  * This is the type you need when you want to use a "%llu" printf format.
  */
 typedef long long unsigned int diminuto_llu_t;
+
+/**
+ * This is the type used to hold a file descriptor (including a socket).
+ * The Linux/GNU/Posix APIs use int for this, but having a specific type
+ * helps with documenting object structures, which is about the only place
+ * this type is used.
+ */
+typedef int diminuto_fd_t;
+
+/**
+ * This is the type used to hold a signal number.
+ * The Linux/GNU/Posix APIs use int for this, but having a specific type
+ * helps with documenting object structures, which is about the only place
+ * this type is used.
+ */
+typedef int diminuto_sig_t;
+
+/**
+ * This is the type used to hold an error number.
+ * The Linux/GNU/Posix APIs use int for this, but having a specific type
+ * helps with documenting object structures, which is about the only place
+ * this type is used.
+ */
+typedef int diminuto_errno_t;
 
 #endif

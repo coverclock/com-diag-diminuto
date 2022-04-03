@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Timer feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -101,7 +101,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
     do {
 
         tp->ticks = 0;
-        tp->periodic = periodic;
+        tp->periodic = !!periodic;
         tp->state = DIMINUTO_TIMER_STATE_IDLE;
         tp->function = (diminuto_timer_function_t *)0;
         tp->context = (void *)0;

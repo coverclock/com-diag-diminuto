@@ -28,9 +28,9 @@
  * buffer format. An empty linked list head must be initialized to null.
  */
 typedef struct DiminutoBufferPool {
-    size_t count; /**< Number of entries in each array. */
-    const size_t * sizes; /**< Array of sizes of each buffer quanta in bytes. */
-    void ** pool; /**< Array of null void pointers as linked list heads. */
+    size_t count;           /**< Number of entries in each array. */
+    const size_t * sizes;   /**< Array of sizes of each quanta in bytes. */
+    void ** pool;           /**< Array of null void pointers. */
 } diminuto_buffer_pool_t;
 
 /**

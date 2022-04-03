@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Print on stdout the sizeof various useful things.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -70,8 +70,14 @@
 typedef enum Enum { ENUM = 0 } enum_t;
 
 typedef struct BitfieldInt { int bit : 1; } bitfield_int_t;
-typedef struct BitfieldChar { char bit : 1; } bitfield_char_t;
-typedef struct Bitfield { int bit1 : 1; char bit2 : 1; } bitfield_t;
+typedef struct BitfieldInt8 { int8_t bit : 1; } bitfield_int8_t;
+typedef struct BitfieldInt16 { int16_t bit : 1; } bitfield_int16_t;
+typedef struct BitfieldInt32 { int32_t bit : 1; } bitfield_int32_t;
+typedef struct BitfieldInt64 { int64_t bit : 1; } bitfield_int64_t;
+typedef struct BitfieldChar { char bit1 : 1; char bit2 : 1; } bitfield_char_t;
+typedef struct BitfieldIntChar { int bit1 : 1; char bit2 : 1; } bitfield_intchar_t;
+typedef struct BitfieldCharInt { char bit1 : 1; int bit2 : 1; } bitfield_charint_t;
+typedef struct BitfieldIntInt { int bit1 : 1; int bit2 : 1; } bitfield_intint_t;
 
 #if PROBLEMATIC
 typedef void (function_t)(void);
@@ -115,8 +121,14 @@ int main(void)
     printsizeof(bool);
     printsizeof(enum_t);
     printsizeofnoninteger(bitfield_int_t);
+    printsizeofnoninteger(bitfield_int8_t);
+    printsizeofnoninteger(bitfield_int16_t);
+    printsizeofnoninteger(bitfield_int32_t);
+    printsizeofnoninteger(bitfield_int64_t);
     printsizeofnoninteger(bitfield_char_t);
-    printsizeofnoninteger(bitfield_t); /* UNEXPECTED! */
+    printsizeofnoninteger(bitfield_intchar_t);
+    printsizeofnoninteger(bitfield_charint_t);
+    printsizeofnoninteger(bitfield_intint_t);
 #if PROBLEMATIC
     printsizeofnoninteger(function_t);
 #endif
@@ -168,6 +180,7 @@ int main(void)
     printsizeofnoninteger(diminuto_path_t);
     printissigned(diminuto_lld_t);
     printisunsigned(diminuto_llu_t);
+    printissigned(diminuto_fd_t);
 #if PROBLEMATIC
     printsizeofnoninteger(struct_zero_t);
     printsizeofnoninteger(array_zero_t);

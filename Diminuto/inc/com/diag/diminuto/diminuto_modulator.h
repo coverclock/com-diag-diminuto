@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a PWM generator.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -79,20 +79,20 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 255;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
+    FILE * fp;
     diminuto_timer_t timer;
     diminuto_condition_t condition;
-    FILE * fp;
-    int pin;
-    int error;
-    bool state;
+    int32_t pin;
+    int32_t error;
     diminuto_modulator_cycle_t duty;
     diminuto_modulator_cycle_t on;
     diminuto_modulator_cycle_t off;
     diminuto_modulator_cycle_t cycle;
     diminuto_modulator_cycle_t period;
-    bool set;
     diminuto_modulator_cycle_t ton;
     diminuto_modulator_cycle_t toff;
+    bool state;
+    bool set;
 } diminuto_modulator_t;
 
 /**

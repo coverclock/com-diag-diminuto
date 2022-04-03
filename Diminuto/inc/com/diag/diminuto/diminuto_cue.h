@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a digital signal debouncer and edge detector.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -39,6 +39,8 @@
  * http://www.eng.utah.edu/~cs5780/debouncing.pdf
  */
 
+#include <stdint.h>
+
 /**
  * This structure holds the state for the debouncer and edge detector.
  * The debounce algorithm keeps three successive samples a, b, and c, the most
@@ -48,11 +50,11 @@
  * on more samples, e.g. four or five or even more.
  */
 typedef struct DiminutoCueState {
-    unsigned int a : 1;
-    unsigned int b : 1;
-    unsigned int c : 1;
-    unsigned int r : 1;
-    unsigned int p : 1;
+    uint8_t a : 1;  /**< Newest sample. */
+    uint8_t b : 1;  /**< Middle sample. */
+    uint8_t c : 1;  /**< Oldest sample. */
+    uint8_t r : 1;  /**< Newest result. */
+    uint8_t p : 1;  /**< Oldest result. */
 } diminuto_cue_state_t;
 
 /**

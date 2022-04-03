@@ -116,22 +116,28 @@ int main(void)
     }
 
     {
-
+#if 0
         {
             DIMINUTO_FD_TYPE(STDIN_FILENO, -1);
             DIMINUTO_FD_TYPE(STDOUT_FILENO, -1);
             DIMINUTO_FD_TYPE(STDERR_FILENO, -1);
         }
+#endif
+#if 0
         {
             DIMINUTO_FD_TYPE(fileno(stdin), -1);
             DIMINUTO_FD_TYPE(fileno(stdout), -1);
             DIMINUTO_FD_TYPE(fileno(stderr), -1);
         }
+#endif
         {
             int tty;
-            ASSERT((tty = open("/dev/tty", O_RDONLY)) >= 0);
-            DIMINUTO_FD_TYPE(tty, DIMINUTO_FS_TYPE_TTY);
-            ASSERT(close(tty) == 0);
+            tty = open("/dev/tty", O_RDONLY);
+            ADVISE(tty >= 0);
+            if (tty >= 0) {
+                DIMINUTO_FD_TYPE(tty, DIMINUTO_FS_TYPE_TTY);
+                ASSERT(close(tty) == 0);
+            }
         }
         {
             int sock;

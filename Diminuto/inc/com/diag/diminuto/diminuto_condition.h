@@ -67,8 +67,8 @@ static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = COM_DIAG_DIMINUTO_CO
  * This is the Diminuto condition object.
  */
 typedef struct DiminutoCondition {
-    diminuto_mutex_t mutex;             /* Diminuto mutual exclusion object */
-    pthread_cond_t condition;           /* POSIX Thread condition object */
+    diminuto_mutex_t mutex;     /**< Diminuto mutual exclusion object. */
+    pthread_cond_t condition;   /**< POSIX condition object. */
 } diminuto_condition_t;
 
 /**

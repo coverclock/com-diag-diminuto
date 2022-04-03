@@ -52,9 +52,9 @@ typedef uint32_t diminuto_fibonacci_value_t;
  * for this purpose.
  */
 typedef struct DiminutoFibonacci {
-    diminuto_fibonacci_value_t x1;
-    diminuto_fibonacci_value_t x0;
-    diminuto_fibonacci_value_t xm;
+    diminuto_fibonacci_value_t x1;  /**< Previous value. */
+    diminuto_fibonacci_value_t x0;  /**< Next value. */
+    diminuto_fibonacci_value_t xm;  /**< Maximum value. */
 } diminuto_fibonacci_state_t;
 
 /**

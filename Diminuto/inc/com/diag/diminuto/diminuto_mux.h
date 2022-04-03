@@ -67,11 +67,11 @@ static inline diminuto_sticks_t diminuto_mux_frequency(void) {
  * This is the multiplexer set state.
  */
 typedef struct DiminutoMuxSet {
-    int min;
-    int max;
-    int next;
     fd_set active;
     fd_set ready;
+    diminuto_fd_t min;
+    diminuto_fd_t max;
+    diminuto_fd_t next;
 } diminuto_mux_set_t;
 
 /**

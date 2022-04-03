@@ -36,11 +36,11 @@ typedef diminuto_list_t diminuto_pool_t;
  * the pool from whence it came is kept in the data field of the link field of
  * the pool object so that the object can be freed without the caller knowing
  * the object's originating pool. Hence this field cannot be used for any other
- * purpose.
+ * purpose. May produce -pendantic warnings because of the dimension [0].
  */
 typedef struct DiminutoPoolObject {
-    diminuto_list_t link;
-    uint64_t payload[0]; /* Will produce -pedantic warnings whereever used. */
+    diminuto_list_t link;   /**< Linked list node. */
+    uint64_t payload[0];    /**< Beginning of application payload memory. */
 } diminuto_pool_object_t;
 
 /**

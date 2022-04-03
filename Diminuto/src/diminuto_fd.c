@@ -221,7 +221,7 @@ diminuto_fd_map_t * diminuto_fd_map_alloc(size_t count)
 
 void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd)
 {
-    return ((0 <= fd) && (fd < mapp->count)) ? &mapp->data[fd] : (void **)0;
+    return ((0 <= fd) && (fd < mapp->count)) ? &(mapp->data[fd]) : (void **)0;
 }
 
 void * diminuto_fd_direct_alloc(size_t size)

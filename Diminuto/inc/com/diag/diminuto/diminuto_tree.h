@@ -43,6 +43,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 
 /*******************************************************************************
  * TYPES
@@ -74,13 +75,13 @@ typedef enum DiminutoTreeColor {
  * space efficient.
  */
 typedef struct DiminutoTree {
-    struct DiminutoTree *  parent;
-    struct DiminutoTree *  left;
-    struct DiminutoTree *  right;
-    struct DiminutoTree ** root;
-    void *                 data;
-    unsigned int           color : 1;
-    unsigned int           error : 1;
+    struct DiminutoTree *  parent;      /**< Points up to parent. */
+    struct DiminutoTree *  left;        /**< Points down to left child. */
+    struct DiminutoTree *  right;       /**< Points down to right child. */
+    struct DiminutoTree ** root;        /**< Points to pointer to root. */
+    void *                 data;        /**< Application payload. */
+    uint8_t                color : 1;   /**< Color: RED==0, BLACK==1. */
+    uint8_t                error : 1;   /**< If true, audit failed here. */
 } diminuto_tree_t;
 
 /**
@@ -137,7 +138,7 @@ typedef int (diminuto_tree_comparator_t)(const diminuto_tree_t *, const diminuto
  * Generate a storage initializer for a node and its data pointer
  * @a _DATAP_.
  */
-#define DIMINUTO_TREE_DATAINIT(_DATAP_) { DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), DIMINUTO_TREE_COLOR_RED, !!0, }
+#define DIMINUTO_TREE_DATAINIT(_DATAP_) { DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_NULL, DIMINUTO_TREE_ORPHAN, (_DATAP_), DIMINUTO_TREE_COLOR_RED, 0, }
 
 /**
  * @def DIMINUTO_TREE_NULLINIT

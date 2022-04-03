@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -25,6 +25,7 @@
  ******************************************************************************/
 
 #include <sys/types.h>
+#include <stdint.h>
 
 /*******************************************************************************
  * TYPES
@@ -34,10 +35,10 @@
  * This defines the metadata used to manage a ring buffer.
  */
 typedef struct DiminutoRing {
-    unsigned int capacity;  /**< The capacity of the ring in abstract slots. */
-    unsigned int measure;   /**< The number of slots in the ring. */
-    unsigned int producer;  /**< Index of next free slot in the ring. */
-    unsigned int consumer;  /**< Index of the next used slot in the ring. */
+    uint32_t capacity;  /**< The capacity of the ring in abstract slots. */
+    uint32_t measure;   /**< The number of slots in the ring. */
+    uint32_t producer;  /**< Index of next free slot in the ring. */
+    uint32_t consumer;  /**< Index of the next used slot in the ring. */
 } diminuto_ring_t;
 
 /*******************************************************************************

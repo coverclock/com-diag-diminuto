@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements monotonic one-shot and periodic timers using POSIX timers.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -70,6 +70,9 @@ typedef enum DiminutoTimerState {
  * be a one-shot or periodic.
  */
 typedef struct DiminutoTimer {
+    diminuto_timer_function_t * function;
+    void * context;
+    void * value;
     diminuto_ticks_t ticks;
     diminuto_condition_t condition;
     struct sigevent event;
@@ -78,12 +81,9 @@ typedef struct DiminutoTimer {
     struct itimerspec current;
     struct itimerspec remaining;
     timer_t timer;
-    diminuto_timer_function_t * function;
-    void * context;
-    void * value;
-    int periodic;
+    diminuto_errno_t error;
     diminuto_timer_state_t state;
-    int error;
+    bool periodic;
 } diminuto_timer_t;
 
 /**
