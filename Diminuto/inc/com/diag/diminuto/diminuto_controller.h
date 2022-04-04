@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a PID controller.
  * @author Chip Overclock <mailto:coverclock@diag.com>

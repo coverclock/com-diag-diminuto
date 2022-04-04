@@ -111,14 +111,14 @@ enum DiminutoReaderWriterError {
  */
 typedef struct DiminutoReaderWriter {
     pthread_mutex_t mutex;      /**< Mutex semaphore. */
-    pthread_cond_t reader;      /**< Waiting readers. */
-    pthread_cond_t writer;      /**< Waiting writers. */
+    pthread_cond_t  reader;     /**< Waiting readers. */
+    pthread_cond_t  writer;     /**< Waiting writers. */
     diminuto_list_t list;       /**< FIFO of waiting threads. */
-    int32_t waiting;            /**< Waiting (>=0) threads. */
-    int32_t maximum;            /**< Maximum waiting. */
-    int32_t reading;            /**< Active (>=0) readers. */
-    int8_t writing;             /**< Active {0,1} writers. */
-    bool debugging;             /**< Debug flag. */
+    int32_t         waiting;    /**< Waiting (>=0) threads. */
+    int32_t         maximum;    /**< Maximum waiting. */
+    int32_t         reading;    /**< Active (>=0) readers. */
+    int8_t          writing;    /**< Active {0,1} writers. */
+    bool            debugging;  /**< Debug flag. */
 } diminuto_readerwriter_t;
 
 /**

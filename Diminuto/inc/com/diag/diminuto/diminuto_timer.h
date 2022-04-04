@@ -70,20 +70,20 @@ typedef enum DiminutoTimerState {
  * be a one-shot or periodic.
  */
 typedef struct DiminutoTimer {
-    diminuto_timer_function_t * function;
-    void * context;
-    void * value;
-    diminuto_ticks_t ticks;
-    diminuto_condition_t condition;
-    struct sigevent event;
-    struct sched_param param;
-    pthread_attr_t attributes;
-    struct itimerspec current;
-    struct itimerspec remaining;
-    timer_t timer;
-    diminuto_errno_t error;
-    diminuto_timer_state_t state;
-    bool periodic;
+    diminuto_timer_function_t * function;   /**< Pointer to timer function. */
+    void *                      context;    /**< Function context. */
+    void *                      value;      /**< Function value. */
+    diminuto_ticks_t            ticks;      /**< Timer interval in ticks. */
+    diminuto_condition_t        condition;  /**< Diminuto condition object. */
+    struct sigevent             event;      /**< Event: thread or signal? */
+    struct sched_param          param;      /**< Scheduling parameters. */
+    pthread_attr_t              attributes; /**< POSIX timer attributes. */
+    struct itimerspec           current;    /**< Current time interval. */
+    struct itimerspec           remaining;  /**< Remaining time interval. */
+    timer_t                     timer;      /**< POSIX timer object. */
+    diminuto_errno_t            error;      /**< Latest error number */
+    diminuto_timer_state_t      state;      /**< Diminuto timer state. */
+    bool                        periodic;   /**< Periodic or one-shot? */
 } diminuto_timer_t;
 
 /**

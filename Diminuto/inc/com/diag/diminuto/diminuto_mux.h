@@ -67,25 +67,25 @@ static inline diminuto_sticks_t diminuto_mux_frequency(void) {
  * This is the multiplexer set state.
  */
 typedef struct DiminutoMuxSet {
-    fd_set active;
-    fd_set ready;
-    diminuto_fd_t min;
-    diminuto_fd_t max;
-    diminuto_fd_t next;
+    fd_set          active; /**< FDs to multiplex. */
+    fd_set          ready;  /**< FDs that are ready. */
+    diminuto_fd_t   min;    /**< Minimum FD in active set. */
+    diminuto_fd_t   max;    /**< Maximum FD in active set. */
+    diminuto_fd_t   next;   /**< Next FD in try in active set. */
 } diminuto_mux_set_t;
 
 /**
  * This is the multiplexer state.
  */
 typedef struct DiminutoMux {
-    fd_set read_or_accept;
-    fd_set urgent_or_interrupt;
-    diminuto_mux_set_t read;
-    diminuto_mux_set_t write;
-    diminuto_mux_set_t accept;
-    diminuto_mux_set_t urgent;
-    diminuto_mux_set_t interrupt;
-    sigset_t mask;
+    fd_set              read_or_accept;         /**< FDs to read/accept. */
+    fd_set              urgent_or_interrupt;    /**< FDs to urgent/interrupt. */
+    diminuto_mux_set_t  read;                   /**< FDs for reading. */
+    diminuto_mux_set_t  write;                  /**< FDs for writing. */
+    diminuto_mux_set_t  accept;                 /**< FDs for accepting. */
+    diminuto_mux_set_t  urgent;                 /**< FDs for urgent. */
+    diminuto_mux_set_t  interrupt;              /**< FDs for interrupt. */
+    sigset_t            mask;                   /**< Signals being managed. */
 } diminuto_mux_t;
 
 /**

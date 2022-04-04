@@ -31,12 +31,12 @@
  * maximum burst size.
  */
 typedef struct DiminutoMeter {
-    diminuto_ticks_t start;     /**< Monotonic time of start of meassurement. */
-    diminuto_ticks_t last;      /**< Monotonic time of most recent event. */
-    double peak;                /**< Highest instananeous rate. */
-    size_t events;              /**< Total number of events. */
-    size_t burst;               /**< Largest burst size of events. */
-    size_t count;               /**< Number of measurements taken. */
+    diminuto_ticks_t    start;  /**< Monotonic time of start of meassurement. */
+    diminuto_ticks_t    last;   /**< Monotonic time of most recent event. */
+    double              peak;   /**< Highest instananeous rate. */
+    size_t              events; /**< Total number of events. */
+    size_t              burst;  /**< Largest burst size of events. */
+    size_t              count;  /**< Number of measurements taken. */
 } diminuto_meter_t;
 
 /**

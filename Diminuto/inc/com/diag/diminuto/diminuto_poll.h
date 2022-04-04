@@ -56,12 +56,12 @@ static inline diminuto_sticks_t diminuto_poll_frequency(void) {
  * This is the poller state.
  */
 typedef struct DiminutoPoll {
-    struct pollfd * pollfd;
-    diminuto_mux_t mux;
-    nfds_t nfds;
-    diminuto_fd_t min;
-    diminuto_fd_t max;
-    bool refresh;
+    struct pollfd * pollfd;     /**< Pointer to array of FDs being managed. */
+    diminuto_mux_t  mux;        /**< Diminuto multiplexor object. */
+    nfds_t          nfds;       /**< Number of FDs in array. */
+    diminuto_fd_t   min;        /**< Minimum FD being polled. */
+    diminuto_fd_t   max;        /**< Maximum FD being polled. */
+    bool            refresh;    /**< If true object must be refreshed. */
 } diminuto_poll_t;
 
 /**

@@ -577,12 +577,12 @@ typedef enum DiminutoIpcType {
  * and all path meta-characters resolved and removed.
  */
 typedef struct DiminutoIpcEndpoint {
-    diminuto_ipc_type_t type;       /**< Socket address family. */
-    diminuto_ipv4_t ipv4;           /**< IPv4 address in host byte order. */
-    diminuto_ipv6_t ipv6;           /**< IPv6 address in host byte order. */
-    diminuto_port_t tcp;            /**< TCP port in host byte order. */
-    diminuto_port_t udp;            /**< UDP port in host byte order. */
-    diminuto_local_t local;         /**< Fully resolved absolute path. */
+    diminuto_ipc_type_t type;   /**< Socket address family. */
+    diminuto_ipv4_t     ipv4;   /**< IPv4 address in host byte order. */
+    diminuto_ipv6_t     ipv6;   /**< IPv6 address in host byte order. */
+    diminuto_port_t     tcp;    /**< TCP port in host byte order. */
+    diminuto_port_t     udp;    /**< UDP port in host byte order. */
+    diminuto_local_t    local;  /**< Fully resolved absolute path. */
 } diminuto_ipc_endpoint_t;
 
 /**

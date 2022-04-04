@@ -118,7 +118,7 @@ int diminuto_poll_wait_generic(diminuto_poll_t * pollp, diminuto_sticks_t ticks,
 
     if (nfds <= 0) {
         /* Do nothing. */
-    } else if (!pollp->refresh) {
+    } else if (!(pollp->refresh)) {
         /* Do nothing. */
     } else {
         for (fd = 0; fd < pollp->nfds; ++fd) {

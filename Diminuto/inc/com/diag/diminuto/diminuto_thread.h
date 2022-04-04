@@ -96,14 +96,14 @@ typedef enum DiminutoThreadState {
  * This is the Diminuto thread object.
  */
 typedef struct DiminutoThread {
-    diminuto_thread_function_t * function;  /**< Pointer to thread function. */
-    void * context;                         /**< Pointer to thread context. */
-    void * value;                           /**< Final thread function value. */
-    diminuto_condition_t condition;         /**< Diminuto condition object. */
-    pthread_t thread;                       /**< POSIX Thread thread object. */
-    diminuto_thread_state_t state;          /**< Diminuto thread state. */
-    diminuto_sig_t notify;                  /**< Notification signal or 0. */
-    int32_t notifications;                  /**< Notifications received. */
+    diminuto_thread_function_t *    function;       /**< Pointer to function. */
+    void *                          context;        /**< Function context. */
+    void *                          value;          /**< Function value. */
+    diminuto_condition_t            condition;      /**< Diminuto condition object. */
+    pthread_t                       thread;         /**< POSIX Thread thread object. */
+    diminuto_thread_state_t         state;          /**< Diminuto thread state. */
+    diminuto_sig_t                  notify;         /**< Notification signal or 0. */
+    int32_t                         notifications;  /**< Notifications received. */
 } diminuto_thread_t;
 
 /**

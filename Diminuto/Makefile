@@ -1291,13 +1291,14 @@ brackets:
 	unittest-serializedsection
 	unittest-uninterruptiblesection
 
+# Some unit tests get run more than once, perhaps with different options.
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
 
 tagging:	reassuring geologic
 
 ########## Valgrind (not available on all platforms)
 
-.PHONY:	log readerwriter valgrind
+.PHONY:	log readerwriter valgrind valground
 
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM)
@@ -1307,6 +1308,8 @@ readerwriter:
 
 log:
 	make valgrind PROGRAM=unittest-log
+
+valground:	readerwriter log
 
 ##########  Repeat
 

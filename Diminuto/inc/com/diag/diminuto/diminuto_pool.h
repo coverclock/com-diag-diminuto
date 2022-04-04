@@ -39,8 +39,8 @@ typedef diminuto_list_t diminuto_pool_t;
  * purpose. May produce -pendantic warnings because of the dimension [0].
  */
 typedef struct DiminutoPoolObject {
-    diminuto_list_t link;   /**< Linked list node. */
-    uint64_t payload[0];    /**< Beginning of application payload memory. */
+    diminuto_list_t link;       /**< Linked list node. */
+    uint64_t        payload[0]; /**< Beginning of application payload memory. */
 } diminuto_pool_object_t;
 
 /**

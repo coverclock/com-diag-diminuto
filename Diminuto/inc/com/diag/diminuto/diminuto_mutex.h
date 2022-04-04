@@ -44,7 +44,7 @@ enum DiminutoMutexErrno {
  * This is the Diminuto mutex object.
  */
 typedef struct DiminutoMutex {
-    pthread_mutex_t mutex;          /**< POSIX mutual exclusion object. */
+    pthread_mutex_t     mutex;      /**< POSIX mutual exclusion object. */
     pthread_mutexattr_t attribute;  /**< POSIX mutual exclusion attribute. */
 } diminuto_mutex_t;
 

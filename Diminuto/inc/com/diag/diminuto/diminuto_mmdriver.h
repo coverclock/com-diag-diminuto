@@ -60,10 +60,10 @@
  * the application in user-space to the Memory Mapped Driver in kernel-space.
  */
 typedef struct DiminutoMmDriverOp {
-    uintptr_t offset;               /**< Beginning of driver space offset. */
-    diminuto_datum_width_t width;   /**< Datum width. */
-    diminuto_datum_value_t datum;   /**< Datum value. */
-    diminuto_datum_value_t mask;    /**< Mask value. */
+    uintptr_t               offset; /**< Driver space offset. */
+    diminuto_datum_width_t  width;  /**< Datum width. */
+    diminuto_datum_value_t  datum;  /**< Datum value. */
+    diminuto_datum_value_t  mask;   /**< Mask value. */
 } diminuto_mmdriver_op_t;
 
 /*******************************************************************************

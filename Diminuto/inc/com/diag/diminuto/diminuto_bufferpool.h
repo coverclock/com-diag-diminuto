@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a generic buffer pool feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -28,9 +28,9 @@
  * buffer format. An empty linked list head must be initialized to null.
  */
 typedef struct DiminutoBufferPool {
-    size_t count;           /**< Number of entries in each array. */
+    size_t         count;   /**< Number of entries in each array. */
     const size_t * sizes;   /**< Array of sizes of each quanta in bytes. */
-    void ** pool;           /**< Array of null void pointers. */
+    void **        pool;    /**< Array of null void pointers. */
 } diminuto_buffer_pool_t;
 
 /**

@@ -131,7 +131,12 @@ enum DiminutoScatterGatherConstants {
  * of bytes of data payload, not the entire length of the payload field.
  */
 typedef struct DiminutoScatterGatherBuffer {
+
+    /**
+     * This field memory aligns the scatter gather buffer.
+     */
     diminuto_align8_t align;        /* Header is eight-byte aligned. */
+
     /**
      * This is the length of the data in the payload field, not the
      * length of the payload field.
@@ -141,6 +146,7 @@ typedef struct DiminutoScatterGatherBuffer {
      * But as Bob Dobbs reminds us, we all need slack.
      */
     size_t length;                  /* Data length not buffer length. */
+
     /**
      * This is the beginning of the payload field.
      * Insure that the payload portion of the buffer is 8-byte aligned.
@@ -148,6 +154,7 @@ typedef struct DiminutoScatterGatherBuffer {
      * store anything requiring 8-byte alignment or less.
      */
     diminuto_align8_t payload;      /* Payload is eight-byte aligned. */
+
 } diminuto_scattergather_buffer_t;
 
 /*

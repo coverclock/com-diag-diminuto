@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a framework to use POSIX threads condition variables.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -67,8 +67,8 @@ static const diminuto_ticks_t DIMINUTO_CONDITION_INFINITY = COM_DIAG_DIMINUTO_CO
  * This is the Diminuto condition object.
  */
 typedef struct DiminutoCondition {
-    diminuto_mutex_t mutex;     /**< Diminuto mutual exclusion object. */
-    pthread_cond_t condition;   /**< POSIX condition object. */
+    diminuto_mutex_t    mutex;      /**< Diminuto mutual exclusion object. */
+    pthread_cond_t      condition;  /**< POSIX condition object. */
 } diminuto_condition_t;
 
 /**

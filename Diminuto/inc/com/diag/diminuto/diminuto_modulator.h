@@ -79,20 +79,20 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 255;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-    FILE * fp;
-    diminuto_timer_t timer;
-    diminuto_condition_t condition;
-    int32_t pin;
-    int32_t error;
-    diminuto_modulator_cycle_t duty;
-    diminuto_modulator_cycle_t on;
-    diminuto_modulator_cycle_t off;
-    diminuto_modulator_cycle_t cycle;
-    diminuto_modulator_cycle_t period;
-    diminuto_modulator_cycle_t ton;
-    diminuto_modulator_cycle_t toff;
-    bool state;
-    bool set;
+    FILE *                      fp;         /**< GPIO /sys file pointer. */
+    diminuto_timer_t            timer;      /**< Diminuto timer. */
+    diminuto_condition_t        condition;  /**< Diminuto condition variable. */
+    int32_t                     pin;        /**< GPIO /sys pin number. */
+    int32_t                     error;      /**< Most recent error number. */
+    diminuto_modulator_cycle_t  duty;       /**< Duty cycle [0..255]. */
+    diminuto_modulator_cycle_t  on;         /**< Current on period [0..255]. */
+    diminuto_modulator_cycle_t  off;        /**< Current off period [0..255]. */
+    diminuto_modulator_cycle_t  cycle;      /**< Cycle countdown [0..255]. */
+    diminuto_modulator_cycle_t  period;     /**< Period countdown [0..255]. */
+    diminuto_modulator_cycle_t  ton;        /**< On period [0..255]. */
+    diminuto_modulator_cycle_t  toff;       /**< Off period [0..255]. */
+    bool                        state;      /**< Output state: on or off. */
+    bool                        set;        /**< Condition ready? */
 } diminuto_modulator_t;
 
 /**
