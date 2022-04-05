@@ -62,14 +62,14 @@ typedef struct DiminutoThrottle {
     diminuto_ticks_t    limit;          /**< GCRA limit a.k.a. l. */
     diminuto_ticks_t    expected;       /**< GCRA expected IAT a.k.a. x. */
     diminuto_ticks_t    actual;         /**< GCRA actual IAT a.k.a x1. */
-    uint8_t             full0 : 1;      /**< The leaky bucket will fill. */
-    uint8_t             full1 : 1;      /**< The leaky bucket is filling. */
-    uint8_t             full2 : 1;      /**< The leaky bucket was filled. */
-    uint8_t             empty0 : 1;     /**< The leaky bucket will empty. */
-    uint8_t             empty1 : 1;     /**< The leaky bucket is emptying. */
-    uint8_t             empty2 : 1;     /**< The leaky bucket was emptied. */
-    uint8_t             alarmed1 : 1;   /**< The throttle is alarmed. */
-    uint8_t             alarmed2 : 1;   /**< The throttle was alarmed. */
+    uintptr_t           full0 : 1;      /**< The leaky bucket will fill. */
+    uintptr_t           full1 : 1;      /**< The leaky bucket is filling. */
+    uintptr_t           full2 : 1;      /**< The leaky bucket was filled. */
+    uintptr_t           empty0 : 1;     /**< The leaky bucket will empty. */
+    uintptr_t           empty1 : 1;     /**< The leaky bucket is emptying. */
+    uintptr_t           empty2 : 1;     /**< The leaky bucket was emptied. */
+    uintptr_t           alarmed1 : 1;   /**< The throttle is alarmed. */
+    uintptr_t           alarmed2 : 1;   /**< The throttle was alarmed. */
 } diminuto_throttle_t;
 
 /*******************************************************************************

@@ -42,7 +42,6 @@
  * include/bits/stl_tree.h
  */
 
-#include <stdio.h>
 #include <stdint.h>
 
 /*******************************************************************************
@@ -80,8 +79,8 @@ typedef struct DiminutoTree {
     struct DiminutoTree *  right;       /**< Points down to right child. */
     struct DiminutoTree ** root;        /**< Points to pointer to root. */
     void *                 data;        /**< Application payload. */
-    uint8_t                color : 1;   /**< Color: RED==0, BLACK==1. */
-    uint8_t                error : 1;   /**< If true, audit failed here. */
+    uintptr_t              color : 1;   /**< Color: RED==0, BLACK==1. */
+    uintptr_t              error : 1;   /**< If true, audit failed here. */
 } diminuto_tree_t;
 
 /**

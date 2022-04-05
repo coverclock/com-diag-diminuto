@@ -108,7 +108,8 @@ typedef struct DiminutoThread {
 
 /**
  * @def DIMINUTO_THREAD_INITIALIZER
- * This is a static initializer for the Diminuto thread object.
+ * This is a static initializer for the Diminuto thread object, where @a _FP_
+ * is a pointer to the thread function.
  */
 #define DIMINUTO_THREAD_INITIALIZER(_FP_) \
     { \

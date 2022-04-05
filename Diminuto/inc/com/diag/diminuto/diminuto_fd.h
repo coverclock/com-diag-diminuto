@@ -154,8 +154,8 @@ extern ssize_t diminuto_fd_maximum(void);
  * dimension the void pointer array as [0].
  */
 typedef struct DiminutoFdMap {
-    size_t count;       /**< Number of slots in the array of void pointers. */
-    void * data[0];     /**< Beginning of array of [count] void pointers. */
+    size_t  count;      /**< Number of slots in the array of void pointers. */
+    void *  data[0];    /**< Beginning of array of [count] void pointers. */
 } diminuto_fd_map_t;
 
 /**

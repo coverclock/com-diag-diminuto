@@ -31,9 +31,11 @@
  ******************************************************************************/
 
 /**
- * This structure describes a node in the store. The tree is the exclusive
- * domain of this implementation; the key and value are for the use of the
- * application (or of yet another derived class) as it sees fit.
+ * This structure describes a node in the store. The tree node is the
+ * domain of this implementation. The key and value are for the use of the
+ * application. A pointer to this object is stored in the data (payload)
+ * field of the tree node; this is to allow the use of other tree-based
+ * algorithms that do not assume that the tree node is part of the object.
  */
 typedef struct DiminutoStore {
     diminuto_tree_t tree;       /**< Diminuto tree node. */
@@ -77,7 +79,8 @@ typedef diminuto_tree_comparator_t diminuto_store_comparator_t;
 /**
  * Cast a pointer to a root store pointer to a pointer to the tree store
  * pointer. N.B. This casts away const to return a pointer to a mutable
- * object. (This is part of the private API.)
+ * object. (This is part of the private API, but since it is inlined it is
+ * visible.)
  * @param pointer is a pointer to a root store pointer.
  * @return a poiinter to a root tree pointer.
  */
@@ -117,7 +120,7 @@ static inline int diminuto_store_isempty(const diminuto_store_root_t * rootp)
 /**
  * Upcast a store node pointer to a tree node pointer. N.B. This casts away
  * const to return a pointer to a mutable object. (This is part of the
- * private API).
+ * private API, but since it is inlined it is visible.)
  * @param pointer is a pointer to a store node.
  * @return a pointer to a tree node.
  */
@@ -129,7 +132,7 @@ static inline diminuto_tree_t * diminuto_store_upcast(const diminuto_store_t * p
 /**
  * Downcast a tree node pointer to a store node pointer. N.B. This casts away
  * consts to return a pointer to a mutable object. (This is part of the
- * private API).
+ * private API, but since it is inlined it is visible.)
  * @param pointer is a pointer to a tree node.
  * @return a pointer to a store node.
  */
@@ -165,7 +168,9 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
 /**
  * @def DIMINUTO_STORE_KEYVALUEINIT
  * Generate a storage initializer for a node, including its key pointer,
- * @a _KEYP_, and its value pointer, @a _VALUEP_.
+ * @a _KEYP_, and its value pointer, @a _VALUEP_. N.B. This initializer
+ * does NOT initialize the tree node data (payload) pointer. This implementation
+ * does not use this field, but other tree-based algorithms may.
  */
 #define DIMINUTO_STORE_KEYVALUEINIT(_KEYP_, _VALUEP_) \
     { DIMINUTO_TREE_NULLINIT, (void *)(_KEYP_), (void *)(_VALUEP_), }
@@ -173,7 +178,9 @@ static inline int diminuto_store_compare_strings(const diminuto_tree_t * thisp, 
 /**
  * @def DIMINUTO_STORE_NULLINIT
  * Generate a storage initializer for a node using null for both the key and
- * value pointers.
+ * value pointers. This initializer does NOT initialize the tree node data
+ * (payload) pointer. This implementation does not use this field, but other
+ * tree-based algorithms may.
  */
 #define DIMINUTO_STORE_NULLINIT \
     DIMINUTO_STORE_KEYVALUEINIT((void *)0, (void*)0)

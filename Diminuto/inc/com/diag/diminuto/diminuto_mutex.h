@@ -59,7 +59,8 @@ typedef struct DiminutoMutex {
  * N.B. if the non-portable GNU-specific initializer for recursive
  * mutexn is available, it is used; otherwise the mutex is not
  * recursive. If this is not desirable, the initialization function
- * should be used instead.
+ * should be used instead. (Note that there doesn't appear to be a
+ * static attribute initializer.)
  */
 #define DIMINUTO_MUTEX_INITIALIZER \
     { \
