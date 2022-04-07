@@ -11,16 +11,9 @@
 # the project is built, and the on which the project is actually run. See the
 # platforms listed in the Diminuto README for additional examples.
 #
-# EXAMPLE
-#
-# $ platform
-# Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz    
-# x86_64 x4    
-# Ubuntu 20.04.3 LTS (Focal Fossa)    
-# Linux 5.13.0-28-generic    
-# gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0    
-# ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31    
-# GNU Make 4.2.1    
+# Long long ago in a galaxy far far away, former colleagues may remember
+# with some amusement a script like this being somewhat controversially
+# named "wtf".
 #
 
 PROCESSORS=1
@@ -43,6 +36,7 @@ KERNELRELEASE=$(uname -r)
 
 GCCVERSION=$(gcc --version | head -1)
 LIBCVERSION=$(ldd --version | head -1)
+BINUTILSVERSION=$(ld --version 2>&1 | head -1)
 MAKEVERSION=$(make --version | head -1)
 
 TARGET="${MODEL}"
@@ -56,12 +50,18 @@ if [[ -n "${REVISION}" ]]; then
 	TARGET="${TARGET} ${REVISION}"
 fi
 
+ABI=$(basename $(readlink -e $(which gcc)))
+TRIPLET=$(gcc -dumpmachine)
+
 echo ${TARGET} "    "
 echo ${PROCESSORTYPE} x${PROCESSORS} "    "
 echo ${OPERATINGSYSTEM} "    "
 echo ${KERNELNAME} ${KERNELRELEASE} "    "
 echo ${GCCVERSION} "    "
 echo ${LIBCVERSION} "    "
+echo ${BINUTILSVERSION} "    "
 echo ${MAKEVERSION} "    "
+echo ${ABI} "    "
+echo ${TRIPLET} "    "
 
 exit 0
