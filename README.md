@@ -580,7 +580,7 @@ These PDFs of
 and associated
 [reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
 were built from Diminuto's embedded Doxygen comments on
-2022-03-01
+2022-04-05
 using tag
 ```87.0.0```
 . They will not reflect changes made to the library since then.
