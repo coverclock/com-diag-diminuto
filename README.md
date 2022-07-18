@@ -495,6 +495,40 @@ these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
 
+# Branching
+
+Diminuto is big and complex enough that I sometimes move to a "master" and
+"develop" dual branch model of development. I make and test major changes
+in the "develop" branch, and when I think I have a stable release, I merge
+"develop" into the "master" branch. I still make what I consider to be minor
+changes in the master branch.
+
+# Versioning
+
+I tag major releases with a three-number tuple that is defined in the
+build Makefile for each project. Release numbers, e.g. 22.2.1, consist of a
+major number (22), a minor number (2), and a build number (1). The major
+number changes when I've made a change significant enough that I think
+applications using the library will likely need to be changed, even though
+they may compile. The minor number changes when I've added new features or
+functionality, but existing features and functionality haven't changed. The
+build number changes when I've fixed a bug so that existing features or
+functionality works as described (even though this may break workarounds in
+applications).
+
+The major and minor numbers are incorporated into the name of the shared
+object (dynamic link library) produced by the build.
+
+The vintage is the date and time of the most recent build in UTC and expressed
+in ISO8601 format.
+
+The revision is the Git commit number.
+
+The release, revision, vintage, and a bunch of other stuff, are embedded as
+modules in the Diminuto library. Those modules can be linked into
+an application. The project has a binary executable named vintage that
+displays this information.
+
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
