@@ -524,15 +524,43 @@ int diminuto_time_duration(diminuto_sticks_t ticks, int * dayp, int * hourp, int
     return rc;
 }
 
+static pthread_mutex_t diminuto_time_logical_mutex = PTHREAD_MUTEX_INITIALIZER;
+static uint64_t diminuto_time_logical_counter = 0;
+static int diminuto_time_logical_errno = 0;
+
 uint64_t diminuto_time_logical(void)
 {
-    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-    static uint64_t counter = 0;
     uint64_t result = 0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        result = counter++;
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_time_logical_mutex);
+        result = diminuto_time_logical_counter;
+        if ((errno = diminuto_time_logical_errno) != 0) {
+            diminuto_perror("diminuto_time_logical");
+        } else if (diminuto_time_logical_counter == DIMINUTO_TIME_LOGICAL_MAXIMUM) {
+            diminuto_time_logical_errno = EOVERFLOW;
+        } else {
+            diminuto_time_logical_counter += 1;
+        }
     DIMINUTO_CRITICAL_SECTION_END;
 
     return result;
+}
+
+void diminuto_time_logical_reset(void)
+{
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_time_logical_mutex);
+        diminuto_time_logical_counter = 0;
+        diminuto_time_logical_errno = 0;
+    DIMINUTO_CRITICAL_SECTION_END;
+}
+
+/*
+ * For unit testing only.
+ */
+void diminuto_time_logical_set(uint64_t value)
+{
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_time_logical_mutex);
+        diminuto_time_logical_counter = value;
+        diminuto_time_logical_errno = 0;
+    DIMINUTO_CRITICAL_SECTION_END;
 }

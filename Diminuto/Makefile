@@ -29,9 +29,9 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	87# API changes that may require that applications be modified.
+MAJOR				:=	88# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -977,7 +977,7 @@ install-include:
 
 ########## Suites
 
-.PHONY: brackets criticalsection criticalsections cxxcapi extended geologic gnuish logger logging multiplexors multiplexors4 multiplexors6 multiplexorsl privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+.PHONY: brackets criticalsection criticalsections cxxcapi extended geologic gnuish logger logging longer multiplexors multiplexors4 multiplexors6 multiplexorsl privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(BIN_DIR)/platform $(OUT)/$(BIN_DIR)/sizeof
 	vintage
@@ -1057,7 +1057,6 @@ sanity:	criticalsection
 	unittest-pool
 	unittest-proxy
 	unittest-reaper
-	unittest-readerwriter
 	unittest-renameat2
 	unittest-ring
 	unittest-scattergather4
@@ -1074,6 +1073,7 @@ sanity:	criticalsection
 	unittest-thread
 	unittest-throttle
 	unittest-timer
+	unittest-time-logical
 	unittest-time-zone
 	unittest-tree
 	unittest-types
@@ -1081,17 +1081,10 @@ sanity:	criticalsection
 	unittest-well
 	unittest-widthof
 
-privileged4:
-	unittest-ping4
+longer:	sanity
+	unittest-readerwriter
 
-privileged6:
-	unittest-ping6# Requires native IPv6 routing.
-
-privileged:	privileged4 privileged6
-	# unittest-map 78.0.0 worked on x86_64 but not on arm64.
-	internettooltests && echo "SUCCESS." || echo "FAILED!"
-
-extended:
+extended:	longer
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
@@ -1112,8 +1105,18 @@ extended:
 	unittest-time
 	unittest-time-cost
 
-geologic:
+geologic:	extended
 	unittest-epoch geologic
+
+privileged4:
+	unittest-ping4
+
+privileged6:
+	unittest-ping6# Requires native IPv6 routing.
+
+privileged:	privileged4 privileged6
+	# unittest-map 78.0.0 worked on x86_64 but not on arm64.
+	internettooltests && echo "SUCCESS." || echo "FAILED!"
 
 signals:
 	unittest-uninterruptiblesection

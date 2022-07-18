@@ -23,6 +23,11 @@
  * Nor does it do GPS time, which accounts for the leap seconds that were
  * present with GPS was inaugurated, but not for those that happened
  * subsequently. Also: daylight saving time is just an abomination.
+ *
+ * REFERENCES
+ *
+ * L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed
+ * System", CACM, 21.7, 1978-07, pp. 558-565
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -132,13 +137,31 @@ extern diminuto_sticks_t diminuto_time_process(void);
 extern diminuto_sticks_t diminuto_time_thread(void);
 
 /**
+ * @def COM_DIAG_DIMINUTO_TIME_LOGICAL_MAXIMUM
+ * This symbol defines the largest possible logical clock value.
+ */
+#define COM_DIAG_DIMINUTO_TIME_LOGICAL_MAXIMUM diminuto_maximumof(uint64_t)
+
+/**
+ * This constant is the largest possible logical clock value.
+ */
+static const uint64_t DIMINUTO_TIME_LOGICAL_MAXIMUM = COM_DIAG_DIMINUTO_TIME_LOGICAL_MAXIMUM;
+
+/**
  * Return the logical clock, which is a simple incrementing sixty-four bit
  * unsigned counter value that is guaranteed to be unique for any thread in
- * the same process until the counter reaches its maximum possible value of
- * ~(uint64_t)0, after which it wraps around back to zero.
- * @return a unique logical clock value.
+ * the same process, until the counter reaches its maximum possible value of
+ * DIMINUTO_TIME_LOGICAL_MAXIMUM, after which errno is subsequently set to a
+ * non-zero value. Note that the logical clock is unique to each process.
+ * @return a unique logical clock value, or with errno set if an error occurred.
  */
 extern uint64_t diminuto_time_logical(void);
+
+/**
+ * Reset the logical clock such that the next value it returns will be zero
+ * with errno unset (zero).
+ */
+extern void diminuto_time_logical_reset(void);
 
 /**
  * Return the number of ticks the local time zone is offset from Coordinated

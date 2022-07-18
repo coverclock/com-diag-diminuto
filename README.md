@@ -357,14 +357,18 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 # Unit Test Make Targets
 
-* extended - these unit tests take a lunch time to run.
-* geologic - these unit test take over night or more to run.
+* sanity - these unit tests take just a few moments to run.
+* longer - these unit tests take a coffee break to run.
+* extended - these unit tests take a lunch break or more to run.
+* geologic - these unit test take the better part of a day or more to run.
+
+# More Unit Test Make Targets
+
 * gnuish - these unit tests are for features that require GNU.
 * logging - these unit tests exercise the logging feature.
 * mostest - these unit tests require "make most; make mostest" to run.
 * nohup - these unit tests require "nohup make nohup" to run.
 * privileged - these unit tests require "sudo make privileged" to run.
-* sanity - these unit tests take a coffee break to run.
 * signals - these unit tests exercise the kill signal handlers.
 * sockets - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
 * threads - these unit tests exercise the POSIX thread-based features.
@@ -852,7 +856,7 @@ G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339, IETF,
 
 K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation", 2019-08-19, <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>
 
-L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", CACM, 21.7, 1978-07
+L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", CACM, 21.7, 1978-07, pp. 558-565
 
 B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa", CACM, 23.2, 1980-02
 
