@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "../src/diminuto_time.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -57,7 +58,6 @@ int main(int argc, char ** argv)
     {
         uint64_t logical;
         uint64_t logicalprime;
-        extern void diminuto_time_logical_set(uint64_t);
 
         TEST();
 
