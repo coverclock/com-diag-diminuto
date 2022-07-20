@@ -47,7 +47,7 @@ extern int diminuto_time_zulu_logging(diminuto_sticks_t ticks, int * yearp, int 
 
 /**
  * Set the process logical clock to the specified value and clear the
- * error indication. This value will be the next logical clock value
+ * error state. This value will be the next logical clock value
  * that is returned. FOR UNIT TESTING ONLY.
  * @param value is assigned to the logical clock counter.
  */

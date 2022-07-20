@@ -62,41 +62,36 @@ int main(int argc, char ** argv)
         TEST();
 
         logical = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
 
         logicalprime = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
         ASSERT(logicalprime > logical);
 
         diminuto_time_logical_set(DIMINUTO_TIME_LOGICAL_MAXIMUM - 1);
 
         logical = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
 
         logicalprime = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(errno == 0);
         ASSERT(logicalprime > logical);
 
         logicalprime = diminuto_time_logical();
-        ASSERT(errno == EOVERFLOW);
         ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(errno == EOVERFLOW);
 
         logicalprime = diminuto_time_logical();
-        ASSERT(errno == EOVERFLOW);
         ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(errno == EOVERFLOW);
 
         diminuto_time_logical_reset();
 
         logical = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
 
         logicalprime = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
         ASSERT(logicalprime > logical);
 
