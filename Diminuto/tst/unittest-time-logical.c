@@ -39,16 +39,13 @@ int main(int argc, char ** argv)
         TEST();
 
         logical0 = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logical0 < DIMINUTO_TIME_LOGICAL_MAXIMUM);
 
         logical1 = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logical1 < DIMINUTO_TIME_LOGICAL_MAXIMUM);
         ASSERT(logical1 > logical0);
 
         logical2 = diminuto_time_logical();
-        ASSERT(errno == 0);
         ASSERT(logical2 < DIMINUTO_TIME_LOGICAL_MAXIMUM);
         ASSERT(logical2 > logical1);
 
@@ -61,17 +58,23 @@ int main(int argc, char ** argv)
 
         TEST();
 
+        errno = 0xdeadbeef;
         logical = diminuto_time_logical();
         ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(errno = 0xdeadbeef);
 
+        errno = 0xc0edbabe;
         logicalprime = diminuto_time_logical();
         ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
         ASSERT(logicalprime > logical);
+        ASSERT(errno = 0xc0edbabe);
 
         diminuto_time_logical_set(DIMINUTO_TIME_LOGICAL_MAXIMUM - 1);
 
+        errno = 0xdeadbeef;
         logical = diminuto_time_logical();
         ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(errno = 0xdeadbeef);
 
         logicalprime = diminuto_time_logical();
         ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
