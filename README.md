@@ -150,6 +150,14 @@ Linux 4.19.66-v7+
 gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516    
 ldd (Debian GLIBC 2.24-11+deb9u4) 2.24    
 GNU Make 4.1    
+    
+sifive,u74-mc rv64imafdc sv39     
+riscv64 x2     
+Fedora 33 (Rawhide)     
+Linux 5.15.10+     
+gcc (GCC) 10.3.1 20210422 (Red Hat 10.3.1-1)     
+ldd (GNU libc) 2.32     
+GNU Make 4.3     
 
 # Library
 

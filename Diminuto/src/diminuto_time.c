@@ -534,9 +534,11 @@ uint64_t diminuto_time_logical(void)
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_time_logical_mutex);
         result = diminuto_time_logical_counter;
-        if ((errno = diminuto_time_logical_errno) != 0) {
+        if (diminuto_time_logical_errno != 0) {
+            errno = diminuto_time_logical_errno;
             diminuto_perror("diminuto_time_logical");
         } else if (diminuto_time_logical_counter == DIMINUTO_TIME_LOGICAL_MAXIMUM) {
+            errno = 0;
             diminuto_time_logical_errno = EOVERFLOW;
         } else {
             diminuto_time_logical_counter += 1;

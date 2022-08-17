@@ -45,4 +45,12 @@ extern diminuto_sticks_t diminuto_time_clock_logging(void);
  */
 extern int diminuto_time_zulu_logging(diminuto_sticks_t ticks, int * yearp, int * monthp, int * dayp, int * hourp, int * minutep, int * secondp, diminuto_ticks_t * tickp);
 
+/**
+ * Set the process logical clock to the specified value and clear the
+ * error state. This value will be the next logical clock value
+ * that is returned. FOR UNIT TESTING ONLY.
+ * @param value is assigned to the logical clock counter.
+ */
+extern void diminuto_time_logical_set(uint64_t value);
+
 #endif

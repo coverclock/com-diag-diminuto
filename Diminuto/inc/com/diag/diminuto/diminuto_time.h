@@ -150,16 +150,18 @@ static const uint64_t DIMINUTO_TIME_LOGICAL_MAXIMUM = COM_DIAG_DIMINUTO_TIME_LOG
 /**
  * Return the logical clock, which is a simple incrementing sixty-four bit
  * unsigned counter value that is guaranteed to be unique for any thread in
- * the same process, until the counter reaches its maximum possible value of
- * DIMINUTO_TIME_LOGICAL_MAXIMUM, after which errno is subsequently set to a
- * non-zero value. Note that the logical clock is unique to each process.
+ * the same process, until the counter returns its maximum possible value of
+ * DIMINUTO_TIME_LOGICAL_MAXIMUM, at which errno is set to zero, and after
+ * which errno is subsequently set to a non-zero value. errno is only set,
+ * either to zero or to an error number, if the maximum possible value is
+ * returned. Note that the logical clock is unique to each process.
  * @return a unique logical clock value, or with errno set if an error occurred.
  */
 extern uint64_t diminuto_time_logical(void);
 
 /**
  * Reset the logical clock such that the next value it returns will be zero
- * with errno unset (zero).
+ * with any error state cleared.
  */
 extern void diminuto_time_logical_reset(void);
 

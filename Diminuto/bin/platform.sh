@@ -23,6 +23,12 @@ if [[ -r /proc/cpuinfo ]]; then
 	HARDWARE=$(grep '^Hardware[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Hardware[	]*: //')
 	REVISION=$(grep '^Revision[	]*: ' /proc/cpuinfo | head -1 | sed 's/^Revision[	]*: //')
 	PROCESSORS=$(grep '^processor[	]*: ' /proc/cpuinfo | wc -l)
+	if [[ -z "${MODEL}" ]]; then
+		MODEL=$(grep '^uarch[	]*: ' /proc/cpuinfo | head -1 | sed 's/^uarch[	]*: //')
+	fi
+	if [[ -z "${HARDWARE}" ]]; then
+		HARDWARE="$(grep '^isa[	]*: ' /proc/cpuinfo | head -1 | sed 's/^isa[	]*: //') $(grep '^mmu[	]*: ' /proc/cpuinfo | head -1 | sed 's/^mmu[	]*: //')"
+	fi
 fi
 
 if [[ -r /etc/os-release ]]; then
