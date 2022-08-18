@@ -365,13 +365,21 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 # Unit Test Make Targets
 
+Important safety tip: on some (most?) platforms, if you run a unit test
+in the background, perhaps using the nohup command, having redirected
+its stdout and stderr to files for examination later, and then logoff,
+the Diminuto log feature will detect this in real-time and redirect
+the log output from that point forward to the system log. This will
+look mysterious later when you log back in to check the progress of
+the unit test and find your output file(s) strangely truncated. This
+is a feature, not a bug. Also note, on systemd platforms like Fedora,
+the system log is saved in a database format, not in a flat text file;
+see "man journalctl" on how to access it.
+
 * sanity - these unit tests take just a few moments to run.
 * longer - these unit tests take a coffee break to run.
 * extended - these unit tests take a lunch break or more to run.
 * geologic - these unit test take the better part of a day or more to run.
-
-# More Unit Test Make Targets
-
 * gnuish - these unit tests are for features that require GNU.
 * logging - these unit tests exercise the logging feature.
 * mostest - these unit tests require "make most; make mostest" to run.
