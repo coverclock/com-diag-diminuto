@@ -249,7 +249,11 @@ int main(int argc, char * argv[])
         effective6 = "ip6-localhost"; /* Ubuntu. */
         address6 = diminuto_ipc6_address(effective6);
         if (diminuto_ipc6_is_unspecified(&address6)) {
-            effective6 = "ipv6-localhost"; /* CBL-Mariner */
+            effective6 = "ipv6-localhost"; /* CBL-Mariner. */
+            address6 = diminuto_ipc6_address(effective6);
+        }
+        if (diminuto_ipc6_is_unspecified(&address6)) {
+            effective6 = "localhost6"; /* Fedora. */
             address6 = diminuto_ipc6_address(effective6);
         }
         CHECKPOINT("\"%s\" %4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x:%4.4x\n", effective6, address6.u16[0], address6.u16[1], address6.u16[2], address6.u16[3], address6.u16[4], address6.u16[5], address6.u16[6], address6.u16[7]);
