@@ -11,8 +11,9 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <errno.h>
@@ -428,6 +429,8 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = !0;
         } else if (diminuto_log_cached) {
             tolog = !0;
+        } else if (!diminuto_serial_valid(diminuto_log_descriptor)) {
+            tolog = 0;
         } else if ((diminuto_log_cached = (getpid() == getsid(0)))) {
             tolog = !0;
         } else if ((diminuto_log_cached = (getppid() == 1))) {

@@ -29,9 +29,9 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	88# API changes that may require that applications be modified.
+MAJOR				:=	89# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -62,11 +62,17 @@ TARGET				:=	host# Build for the current host.
 # both. Example: GNU Make 4.2.1 running under GNU bash 5.0.17 on Debian-based
 # systems like Ubuntu and Raspbian require two slashes; the very same version
 # of make running under GNU bash 4.4.18 on Microsoft's Fedora-like distro
-# Common Base Linux (CBL) Mariner 1.0 requires one backslash. This can be
-# overridden in the host file or on the make command line.
+# Common Base Linux (CBL) Mariner 1.0 requires one backslash, as does the
+# Fedora-based Linux on the StarFive VisionFive board. This parameter can be
+# overridden in the host file, or on the make command line, as well as here.
 
 BACKSLASHES			:= 2
-#BACKSLASHES		:= 1
+#BACKSLASHES			:= 1
+
+.PHONY:	backslashes
+
+backslashes:
+	echo "BACKSLASHES="${BACKSLASHES}
 
 # This is where I store collateral associated with projects that I have
 # downloaded off the web and use without alteration. Examples: Linux kernel
