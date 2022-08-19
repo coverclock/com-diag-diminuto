@@ -429,8 +429,17 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = !0;
         } else if (diminuto_log_cached) {
             tolog = !0;
+#if 0
         } else if (!diminuto_serial_valid(diminuto_log_descriptor)) {
+            /*
+             * The purpose of this check is to allow stderr of scripts
+             * to be directed to a file even if they are detached from
+             * their controlling terminal. A side effect of this is that
+             * directing stderr to /dev/null also passes this test. But
+             * maybe that's okay.
+             */
             tolog = 0;
+#endif
         } else if ((diminuto_log_cached = (getpid() == getsid(0)))) {
             tolog = !0;
         } else if ((diminuto_log_cached = (getppid() == 1))) {
