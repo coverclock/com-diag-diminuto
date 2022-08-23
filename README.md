@@ -426,6 +426,11 @@ see "man journalctl" on how to access it.
 
 # Dependencies
 
+Most of my Intel and ARM development systems are Ubuntu-based, so the
+command line examples I show below use the ```apt```  package manager. A
+few, like my RISC-V development system, are Fedora-based, so on those
+I use the ```dnf``` package manager.
+
 ## Libraries
 
 The Diminuto Makefile references the following libraries. They may
@@ -510,6 +515,14 @@ The observe script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
+
+## Scripts
+
+I have a lot of bash scripts that I find useful, but which are not
+Diminuto-specific. These can be found in the separate repository
+<https://github.com/coverclock/com-diag-bin>. However, they are not
+necessary to build, install, and use the Diminuto library or its command
+line utilities.
 
 # Branching
 
