@@ -107,9 +107,10 @@ Android platforms.
 
 # Platforms
 
-This code was tested against following hardware targets and software
-platforms. (It has been built and used for specific projects on a much
-wider variety of targets and platforms.)
+This code was tested against one or more of the following hardware
+targets and software platforms.
+(It has been built and used for specific projects on a much wider
+variety of targets and platforms.)
 
 Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz    
 x86_64 x4    
@@ -117,15 +118,7 @@ Ubuntu 20.04.3 LTS (Focal Fossa)
 Linux 5.13.0-28-generic    
 gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0    
 ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31    
-GNU Make 4.2.1    
-
-Intel(R) Core(TM) i7-5557U CPU @ 3.10GHz    
-x86_64 x4    
-Ubuntu 20.04.3 LTS (Focal Fossa)    
-Linux 5.4.0-97-generic    
-gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0    
-ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31    
-GNU Make 4.2.1    
+GNU Make 4.2.1     
 
 Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114    
 aarch64 x4    
@@ -137,19 +130,11 @@ GNU Make 4.3
 
 Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111    
 aarch64 x4    
-Debian GNU/Linux 11 (bullseye)    
+Raspbian GNU/Linux 11 (bullseye)    
 Linux 5.10.103-v8+    
 gcc (Debian 10.2.1-6) 10.2.1 20210110    
 ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u2) 2.31    
 GNU Make 4.3    
-
-ARMv7 Processor rev 4 (v7l) BCM2835 a020d3    
-armv7l x4    
-Raspbian GNU/Linux 9 (stretch)    
-Linux 4.19.66-v7+    
-gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516    
-ldd (Debian GLIBC 2.24-11+deb9u4) 2.24    
-GNU Make 4.1    
     
 sifive,u74-mc rv64imafdc sv39     
 riscv64 x2     
