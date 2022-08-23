@@ -46,20 +46,24 @@
  * releasing the integer lock variable specified at the beginning of the block.
  */
 #           define DIMINUTO_SERIALIZED_SECTION_END \
-                } while (0); \
-                __sync_lock_release(diminuto_serialized_section_spinlock_p); \
-            } while (0)
+                    } while (0); \
+                    __sync_lock_release(diminuto_serialized_section_spinlock_p); \
+                } while (0)
 
 #       endif
 #   endif
 #endif
 
-#if !defined(DIMINUTO_SERIALIZED_SECTION_BEGIN) || !defined(DIMINUTO_SERIALIZED_SECTION_END)
+#if defined(DIMINUTO_SERIALIZED_SECTION_BEGIN) && defined(DIMINUTO_SERIALIZED_SECTION_END)
+#   define COM_DIAG_DIMINUTO_SERIALIZED_SECTION (!0)
+#else
+#   undef COM_DIAG_DIMINUTO_SERIALIZED_SECTION
 #   warning DIMINUTO_SERIALISED_SECTION_BEGIN and DIMINUTO_SERIALIZED_SECTION_END are no-ops!
-#   undef DIMINUTO_SERIALIZED_SECTION_BEGIN
-#   defined DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) do { ((void)0)
-#   undef DIMINUTO_SERIALIZED_SECTION_END
-#   defined DIMINUTO_SERIALIZED_SECTION_END } while (0)
+#   define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
+    do { \
+        ((void)0)
+#   define DIMINUTO_SERIALIZED_SECTION_END \
+    } while (0)
 #endif
 
 #endif

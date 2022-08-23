@@ -54,6 +54,13 @@ static void * body(void * arg)
 int main(void)
 {
     {
+        TEST();
+#if !defined(COM_DIAG_DIMINUTO_SERIALIZED_SECTION)
+        FAILURE();
+#endif
+        STATUS();
+    }
+    {
         volatile diminuto_spinlock_t lock1 = 0;
         volatile diminuto_spinlock_t lock2 = 0;
         int zero = 0;

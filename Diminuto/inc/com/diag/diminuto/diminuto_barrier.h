@@ -30,10 +30,17 @@ typedef int diminuto_spinlock_t;
 #   endif
 #endif
 
-#if !defined(diminuto_barrier)
+#if defined(diminuto_barrier)
+#   define COM_DIAG_DIMINUTO_BARRIER (!0)
+#else
+#   undef COM_DIAG_DIMINUTO_BARRIER
 #   define diminuto_barrier() ((void)0)
 #   warning diminuto_barrier() is a no-op!
 #endif
+
+static void diminuto_barrier_f(void) {
+    diminuto_barrier();
+}
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
@@ -48,10 +55,17 @@ typedef int diminuto_spinlock_t;
 #   endif
 #endif
 
-#if !defined(diminuto_acquire)
+#if defined(diminuto_acquire)
+#   define COM_DIAG_DIMINUTO_ACQUIRE (!0)
+#else
+#   undef COM_DIAG_DIMINUTO_ACQUIRE
 #   define diminuto_acquire() diminuto_barrier()
 #   warning diminuto_acquire() is a synonym for diminuto_barrier()!
 #endif
+
+static void diminuto_acquire_f(void) {
+    diminuto_acquire();
+}
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
@@ -66,9 +80,16 @@ typedef int diminuto_spinlock_t;
 #   endif
 #endif
 
-#if !defined(diminuto_release)
+#if defined(diminuto_release)
+#   define COM_DIAG_DIMINUTO_RELEASE (!0)
+#else
+#   undef COM_DIAG_DIMINUTO_RELEASE
 #   define diminuto_release() diminuto_barrier()
 #   warning diminuto_release() is a synonym for diminuto_barrier()!
 #endif
+
+static void diminuto_release_f(void) {
+    diminuto_release();
+}
 
 #endif
