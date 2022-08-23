@@ -477,7 +477,7 @@ For my own workflow, I installed the following tools.
 
 I found valgrind not to work on my ARM Raspbian (a.k.a. Raspberry Pi OS)
 platforms, so my valgrind testing has been on Ubuntu on either x86_64
-platforms, or the ARM64 version that runs under Ubuntu on the Raspberry Pi.
+platforms, or the ARM64 version that runs on the Raspberry Pi.
 On those platforms, I found the following command especially useful. There
 are some special unit test targets in the Makefile that uses this form of
 the command.
