@@ -96,6 +96,7 @@ int main(void)
 
         STATUS();
     }
+
     {
         int rc;
         diminuto_thread_t odd;
@@ -133,6 +134,32 @@ int main(void)
         ASSERT(tp == (diminuto_thread_t *)0);
         tp = diminuto_thread_fini(&even);
         ASSERT(tp == (diminuto_thread_t *)0);
+
+        STATUS();
+    }
+
+    {
+        volatile diminuto_spinlock_t lock = 0;
+        int state = 0;
+
+        TEST();
+
+        ASSERT(state == 0);
+        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            state = 1;
+        DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(state == 1);
+        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            state = 2;
+            DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+                state = 3;
+            DIMINUTO_CONDITIONAL_SECTION_END;
+        DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(state == 2);
+        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            state = 4;
+        DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(state == 4);
 
         STATUS();
     }

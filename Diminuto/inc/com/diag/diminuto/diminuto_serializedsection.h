@@ -11,32 +11,37 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
- * The Serialized Section feature uses the Barrier feature with bracketing
- * macros to implement a code section serialized between multiple processors.
+ * The Serialized Section feature uses the GNU test-and-set built-in with
+ * bracketing macros to implement a code section serialized between multiple
+ * processors.
  * EXPERIMENTAL.
  */
-
-#include "com/diag/diminuto/diminuto_barrier.h"
 
 #if defined(__GNUC__)
 #   if defined(__GNUC_MINOR__)
 #       if ((((__GNUC__)*1000)+(__GNUC_MINOR__))>=4001)
 
+#           include "com/diag/diminuto/diminuto_barrier.h" /* For diminuto_spinlock_t. */
+
+/*
+ * UNCONDITIONAL
+ */
+
 /**
  * @def DIMINUTO_SERIALIZED_SECTION_BEGIN
- * Start a code block that is serialized using a spin lock and busy waiting by
- * blocking on an integer lock variable specified by the caller as a pointer to
- * a volatile variable of type int but be provided as the argument @a _INTP_.
- * Note that the while loop iterates as long as the builtin returns !0 (true,
- * or already locked by someone else), and exits once the builtin returns
- * 0 (false, or unlocked), indicating that the lock has transitioned to !0
- * (true, or locked on the caller's behalf).
+ * Start a code block that is unconditionally serialized using a spin lock
+ * and busy waiting by blocking on an integer lock variable specified by the
+ * caller as a pointer to a volatile variable of type int but be provided as
+ * the argument @a _INTP_. Note that the while loop iterates as long as the
+ * builtin returns !0 (true, or already locked by someone else), and exits
+ * once the builtin returns 0 (false, or unlocked), indicating that the lock
+ * has transitioned to 1 (true, or locked on the caller's behalf).
  */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                    volatile diminuto_spinlock_t * diminuto_serialized_section_spinlock_p; \
-                    diminuto_serialized_section_spinlock_p = (_INTP_); \
-                    while (__sync_lock_test_and_set(diminuto_serialized_section_spinlock_p, !0)); \
+                    volatile diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p; \
+                    _diminuto_serialized_section_spinlock_p = (_INTP_); \
+                    while (__sync_lock_test_and_set(_diminuto_serialized_section_spinlock_p, 1)); \
                     do { \
                         ((void)0)
 
@@ -47,7 +52,38 @@
  */
 #           define DIMINUTO_SERIALIZED_SECTION_END \
                     } while (0); \
-                    __sync_lock_release(diminuto_serialized_section_spinlock_p); \
+                    __sync_lock_release(_diminuto_serialized_section_spinlock_p); \
+                } while (0)
+
+/*
+ * CONDITIONAL
+ */
+
+/**
+ * @def DIMINUTO_CONDITIONAL_SECTION_BEGIN
+ * Start a code block that is conditionally serialized using a spin lock and
+ * testing on an integer lock variable specified by the caller as a pointer
+ * to a volatile variable of type int but be provided as the argument
+ * @a _INTP_. Note that there is no busy waiting; the conditional section is
+ * entered and executed only if the the builtin returns 0 (false, or unlocked).
+ */
+#           define DIMINUTO_CONDITIONAL_SECTION_BEGIN(_INTP_) \
+                do { \
+                    volatile diminuto_spinlock_t * _diminuto_conditional_section_spinlock_p; \
+                    _diminuto_conditional_section_spinlock_p = (_INTP_); \
+                    if (!__sync_lock_test_and_set(_diminuto_conditional_section_spinlock_p, 1)) { \
+                        do { \
+                            ((void)0)
+
+/**
+ * @def DIMINUTO_CONDITIONAL_SECTION_END
+ * End a code block that was conditional by releasing the integer lock
+ * variable specified at the beginning of the block.
+ */
+#           define DIMINUTO_CONDITIONAL_SECTION_END \
+                        } while (0); \
+                        __sync_lock_release(_diminuto_conditional_section_spinlock_p); \
+                    } \
                 } while (0)
 
 #       endif
@@ -58,11 +94,23 @@
 #   define COM_DIAG_DIMINUTO_SERIALIZED_SECTION (!0)
 #else
 #   undef COM_DIAG_DIMINUTO_SERIALIZED_SECTION
-#   warning DIMINUTO_SERIALISED_SECTION_BEGIN and DIMINUTO_SERIALIZED_SECTION_END are no-ops!
+#   warning DIMINUTO_SERIALIZED_SECTION_BEGIN and DIMINUTO_SERIALIZED_SECTION_END are no-ops!
 #   define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
     do { \
         ((void)0)
 #   define DIMINUTO_SERIALIZED_SECTION_END \
+    } while (0)
+#endif
+
+#if defined(DIMINUTO_CONDITIONAL_SECTION_BEGIN) && defined(DIMINUTO_CONDITIONAL_SECTION_END)
+#   define COM_DIAG_DIMINUTO_CONDITIONAL_SECTION (!0)
+#else
+#   undef COM_DIAG_DIMINUTO_CONDITIONAL_SECTION
+#   warning DIMINUTO_CONDITIONAL_SECTION_BEGIN and DIMINUTO_CONDITIONAL_SECTION_END are no-ops!
+#   define DIMINUTO_CONDITIONAL_SECTION_BEGIN(_INTP_) \
+    do { \
+        ((void)0)
+#   define DIMINUTO_CONDITIONAL_SECTION_END \
     } while (0)
 #endif
 
