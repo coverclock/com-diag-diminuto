@@ -275,8 +275,12 @@ int main(int argc, char * argv[])
         ASSERT(porttcp == 8888);
         ASSERT(portudp == 8888);
         ASSERT(tcptcp == 80);
-        ASSERT(tcpudp == 80);
-        ASSERT(udptcp == 69);
+#if 0
+        ASSERT(tcpudp == 80); /* Depends on distro. */
+#endif
+#if 0
+        ASSERT(udptcp == 69); /* Depends on distro. */
+#endif
         ASSERT(udpudp == 69);
         ASSERT(eithertcp == 37);
         ASSERT(eitherudp == 37);
