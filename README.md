@@ -108,19 +108,22 @@ Android platforms.
 # Platforms
 
 This code was tested against one or more of the following hardware
-targets and software platforms.
+targets and software platforms; generated using the Diminuto platform
+script.
 (It has been built and used for specific projects on a much wider
 variety of targets and platforms.)
 
-Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz    
-x86_64 x4    
-Ubuntu 20.04.3 LTS (Focal Fossa)    
-Linux 5.13.0-28-generic    
-gcc (Ubuntu 9.4.0-1ubuntu1~20.04) 9.4.0    
-ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31    
+Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz     
+x86_64 x4     
+Ubuntu 20.04.4 LTS (Focal Fossa)     
+Linux 5.15.0-41-generic     
+gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0     
+ldd (Ubuntu GLIBC 2.31-0ubuntu9.9) 2.31     
+GNU ld (GNU Binutils for Ubuntu) 2.34     
 GNU Make 4.2.1     
+x86_64-linux-gnu-gcc-9     
+x86_64-linux-gnu     
 
-Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114    
 aarch64 x4    
 Ubuntu 21.10 (Impish Indri)    
 Linux 5.13.0-1017-raspi    

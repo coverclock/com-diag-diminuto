@@ -44,14 +44,18 @@ int diminuto_ipc_debug = 0;
 diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
 {
     diminuto_port_t port = 0;
-    struct servent * portp;
-    size_t length;
-    diminuto_unsigned_t temp;
-    const char * end;
+    const char * sp = (const char *)0;
+    struct servent * portp = (struct servent *)0;
+    size_t length = 0;
+    diminuto_unsigned_t temp = 0;
+    const char * end = (const char *)0;
 
-    if ((portp = getservbyname(service, protocol)) != (struct servent *)0) {
+    /* Maintain compatibility with endpoint syntax. */
+    if (*(sp = service) == ':') { sp += 1; }
+
+    if ((portp = getservbyname(sp, protocol)) != (struct servent *)0) {
         port = ntohs(portp->s_port);
-    } else if (*(end = diminuto_number_unsigned(service, &temp)) != '\0') {
+    } else if (*(end = diminuto_number_unsigned(sp, &temp)) != '\0') {
         /* Do nothing: might be an unknown service. */
     } else if (temp > (diminuto_port_t)~0) {
         errno = EINVAL;
@@ -113,7 +117,7 @@ int diminuto_ipc_type(int fd)
 
 int diminuto_ipc_set_status(int fd, int enable, long mask)
 {
-    long flags;
+    long flags = 0;
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
@@ -282,13 +286,13 @@ char ** diminuto_ipc_interfaces(void)
 {
     char ** rp = (char **)0;
     struct ifaddrs * ifa = (struct ifaddrs *)0;
-    struct ifaddrs * ip;
-    char ** vp;
-    char * np;
+    struct ifaddrs * ip = (struct ifaddrs *)0;
+    char ** vp = (char **)0;
+    char * np = (char *)0;
     size_t vs = sizeof(char *);
     size_t ns = 0;
-    size_t rs;
-    char ** cp;
+    size_t rs = 0;
+    char ** cp = (char **)0;
 
     do {
 

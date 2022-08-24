@@ -33,9 +33,13 @@
 #define IPV4 "205.178.189.131"
 #define IPV6 "2607:f8b0:400f:805::200e"
 #define PORT "8888"
+#define COLONPORT ":8888"
 #define TCP "http"
+#define COLONTCP ":http"
 #define UDP "tftp"
+#define COLONUDP ":tftp"
 #define EITHER "time"
+#define COLONEITHER ":time"
 #define LOCAL "unix-domain.sock"
 
 static const char * type2string(diminuto_ipc_type_t type)
@@ -190,9 +194,13 @@ int main(int argc, char * argv[])
     COMMENT("IPV4=\"%s\"\n", IPV4);
     COMMENT("IPV6=\"%s\"\n", IPV6);
     COMMENT("PORT=\"%s\"\n", PORT);
+    COMMENT("COLONPORT=\"%s\"\n", COLONPORT);
     COMMENT("TCP=\"%s\"\n", TCP);
+    COMMENT("COLONTCP=\"%s\"\n", COLONTCP);
     COMMENT("UDP=\"%s\"\n", UDP);
+    COMMENT("COLONUDP=\"%s\"\n", COLONUDP);
     COMMENT("EITHER=\"%s\"\n", EITHER);
+    COMMENT("COLONEITHER=\"%s\"\n", COLONEITHER);
     COMMENT("LOCAL=\"%s\"\n", LOCAL);
 
     unspecified4 = DIMINUTO_IPC4_UNSPECIFIED;
