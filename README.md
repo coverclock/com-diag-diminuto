@@ -124,12 +124,16 @@ GNU Make 4.2.1
 x86_64-linux-gnu-gcc-9     
 x86_64-linux-gnu     
 
-aarch64 x4    
-Ubuntu 21.10 (Impish Indri)    
-Linux 5.13.0-1017-raspi    
-gcc (Ubuntu 11.2.0-7ubuntu2) 11.2.0    
-ldd (Ubuntu GLIBC 2.34-0ubuntu3.2) 2.34    
-GNU Make 4.3    
+Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114     
+aarch64 x4     
+Ubuntu 22.04 LTS (Jammy Jellyfish)     
+Linux 5.15.0-1011-raspi     
+gcc (Ubuntu 11.2.0-19ubuntu1) 11.2.0     
+ldd (Ubuntu GLIBC 2.35-0ubuntu3) 2.35     
+GNU ld (GNU Binutils for Ubuntu) 2.38     
+GNU Make 4.3     
+aarch64-linux-gnu-gcc-11     
+aarch64-linux-gnu     
 
 Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111    
 aarch64 x4    
