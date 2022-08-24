@@ -40,6 +40,8 @@
 #define COLONUDP ":tftp"
 #define EITHER "time"
 #define COLONEITHER ":time"
+#define UNDEFINED "undefinedthing"
+#define COLONUNDEFINED ":undefinedthing"
 #define LOCAL "unix-domain.sock"
 
 static const char * type2string(diminuto_ipc_type_t type)
@@ -181,6 +183,8 @@ int main(int argc, char * argv[])
     diminuto_port_t udpudp;
     diminuto_port_t eithertcp;
     diminuto_port_t eitherudp;
+    diminuto_port_t undefinedtcp;
+    diminuto_port_t undefinedudp;
     diminuto_port_t colonporttcp;
     diminuto_port_t colonportudp;
     diminuto_port_t colontcptcp;
@@ -189,6 +193,8 @@ int main(int argc, char * argv[])
     diminuto_port_t colonudpudp;
     diminuto_port_t coloneithertcp;
     diminuto_port_t coloneitherudp;
+    diminuto_port_t colonundefinedtcp;
+    diminuto_port_t colonundefinedudp;
 
     SETLOGMASK();
 
@@ -209,6 +215,8 @@ int main(int argc, char * argv[])
     COMMENT("COLONUDP=\"%s\"\n", COLONUDP);
     COMMENT("EITHER=\"%s\"\n", EITHER);
     COMMENT("COLONEITHER=\"%s\"\n", COLONEITHER);
+    COMMENT("UNDEFINED=\"%s\"\n", UNDEFINED);
+    COMMENT("COLONUNDEFINED=\"%s\"\n", COLONUNDEFINED);
     COMMENT("LOCAL=\"%s\"\n", LOCAL);
 
     unspecified4 = DIMINUTO_IPC4_UNSPECIFIED;
@@ -229,6 +237,8 @@ int main(int argc, char * argv[])
     udpudp = diminuto_ipc_port(UDP, "udp");
     eithertcp = diminuto_ipc_port(EITHER, "tcp");
     eitherudp = diminuto_ipc_port(EITHER, "udp");
+    undefinedtcp = diminuto_ipc_port(UNDEFINED, "tcp");
+    undefinedudp = diminuto_ipc_port(UNDEFINED, "udp");
     colonporttcp = diminuto_ipc_port(COLONPORT, "tcp");
     colonportudp = diminuto_ipc_port(COLONPORT, "udp");
     colontcptcp = diminuto_ipc_port(COLONTCP, "tcp");
@@ -237,6 +247,8 @@ int main(int argc, char * argv[])
     colonudpudp = diminuto_ipc_port(COLONUDP, "udp");
     coloneithertcp = diminuto_ipc_port(COLONEITHER, "tcp");
     coloneitherudp = diminuto_ipc_port(COLONEITHER, "udp");
+    colonundefinedtcp = diminuto_ipc_port(COLONUNDEFINED, "tcp");
+    colonundefinedudp = diminuto_ipc_port(COLONUNDEFINED, "udp");
 
     {
         diminuto_ipv4_buffer_t ipv4buffer;
@@ -259,6 +271,8 @@ int main(int argc, char * argv[])
         COMMENT("tftp udp=%d\n", udpudp);
         COMMENT("time tcp=%d\n", eithertcp);
         COMMENT("time udp=%d\n", eitherudp);
+        COMMENT("undefined tcp=%d\n", undefinedtcp);
+        COMMENT("undefined udp=%d\n", undefinedudp);
         COMMENT("port colon tcp=%d\n", colonporttcp);
         COMMENT("port colon udp=%d\n", colonportudp);
         COMMENT("http colon tcp=%d\n", colontcptcp);
@@ -267,6 +281,8 @@ int main(int argc, char * argv[])
         COMMENT("tftp colon udp=%d\n", colonudpudp);
         COMMENT("time colon tcp=%d\n", coloneithertcp);
         COMMENT("time colon udp=%d\n", coloneitherudp);
+        COMMENT("undefined colon udp=%d\n", colonundefinedudp);
+        COMMENT("undefined colon tcp=%d\n", colonundefinedtcp);
     }
 
     {
@@ -275,15 +291,13 @@ int main(int argc, char * argv[])
         ASSERT(porttcp == 8888);
         ASSERT(portudp == 8888);
         ASSERT(tcptcp == 80);
-#if 0
-        ASSERT(tcpudp == 80); /* Depends on distro. */
-#endif
-#if 0
-        ASSERT(udptcp == 69); /* Depends on distro. */
-#endif
+        ASSERT((tcpudp == 80) || (tcpudp == 0));    /* Depends on distro. */
+        ASSERT((udptcp == 69) || (udptcp == 0));    /* Depends on distro. */
         ASSERT(udpudp == 69);
         ASSERT(eithertcp == 37);
         ASSERT(eitherudp == 37);
+        ASSERT(undefinedtcp == 0);
+        ASSERT(undefinedudp == 0);
         STATUS();
     }
 
@@ -297,6 +311,8 @@ int main(int argc, char * argv[])
         ASSERT(udpudp == colonudpudp);
         ASSERT(eithertcp == coloneithertcp);
         ASSERT(eitherudp == coloneitherudp);
+        ASSERT(undefinedtcp == colonundefinedtcp);
+        ASSERT(undefinedudp == colonundefinedudp);
         STATUS();
     }
 
