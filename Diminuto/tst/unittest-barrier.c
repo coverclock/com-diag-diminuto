@@ -17,19 +17,31 @@
 int main(void)
 {
     volatile int reg;
+
     {
         TEST();
 #if !defined(COM_DIAG_DIMINUTO_BARRIER)
         FAILURE();
 #endif
+        STATUS();
+    }
+
+    {
+        TEST();
 #if !defined(COM_DIAG_DIMINUTO_ACQUIRE)
         FAILURE();
 #endif
+        STATUS();
+    }
+
+    {
+        TEST();
 #if !defined(COM_DIAG_DIMINUTO_RELEASE)
         FAILURE();
 #endif
         STATUS();
     }
+
     {
         TEST();
         diminuto_barrier();
@@ -40,6 +52,7 @@ int main(void)
         reg = 0;
         STATUS();
     }
+
     {
         TEST();
         diminuto_acquire();
@@ -47,6 +60,7 @@ int main(void)
         diminuto_release();
         STATUS();
     }
+
     {
         TEST();
         diminuto_barrier_f();
@@ -57,6 +71,7 @@ int main(void)
         reg = 0;
         STATUS();
     }
+
     {
         TEST();
         diminuto_acquire_f();

@@ -60,6 +60,15 @@ int main(void)
 #endif
         STATUS();
     }
+
+    {
+        TEST();
+#if !defined(COM_DIAG_DIMINUTO_CONDITIONAL_SECTION)
+        FAILURE();
+#endif
+        STATUS();
+    }
+
     {
         volatile diminuto_spinlock_t lock1 = 0;
         volatile diminuto_spinlock_t lock2 = 0;
@@ -144,21 +153,29 @@ int main(void)
 
         TEST();
 
+        ASSERT(lock == 0);
         ASSERT(state == 0);
         DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            ASSERT(lock != 0);
             state = 1;
         DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(lock == 0);
         ASSERT(state == 1);
         DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            ASSERT(lock != 0);
             state = 2;
             DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
                 state = 3;
             DIMINUTO_CONDITIONAL_SECTION_END;
+            ASSERT(lock != 0);
         DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(lock == 0);
         ASSERT(state == 2);
         DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            ASSERT(lock != 0);
             state = 4;
         DIMINUTO_CONDITIONAL_SECTION_END;
+        ASSERT(lock == 0);
         ASSERT(state == 4);
 
         STATUS();
