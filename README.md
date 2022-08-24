@@ -145,21 +145,24 @@ GNU ld (GNU Binutils for Debian) 2.35.2
 GNU Make 4.3     
 aarch64-linux-gnu-gcc-10     
 aarch64-linux-gnu     
-    
+
 sifive,u74-mc rv64imafdc sv39     
 riscv64 x2     
 Fedora 33 (Rawhide)     
 Linux 5.15.10+     
 gcc (GCC) 10.3.1 20210422 (Red Hat 10.3.1-1)     
 ldd (GNU libc) 2.32     
+GNU ld version 2.35-18.fc33     
 GNU Make 4.3     
+ccache     
+riscv64-redhat-linux     
 
 # Library
 
-A header file associated with each of the feature names below can be found in the
-```inc/com/diag/diminuto``` directory. For example, the public API for the
-"assert" feature is defined by the ```inc/com/diag/diminuto/diminuto_assert.h```
-header file.
+A header file associated with each of the feature names below
+can be found in the ```inc/com/diag/diminuto``` directory. For
+example, the public API for the "assert" feature is defined by the
+```inc/com/diag/diminuto/diminuto_assert.h``` header file.
 
 ## Basics
 
