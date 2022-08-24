@@ -135,13 +135,16 @@ GNU Make 4.3
 aarch64-linux-gnu-gcc-11     
 aarch64-linux-gnu     
 
-Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111    
-aarch64 x4    
-Raspbian GNU/Linux 11 (bullseye)    
-Linux 5.10.103-v8+    
-gcc (Debian 10.2.1-6) 10.2.1 20210110    
-ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u2) 2.31    
-GNU Make 4.3    
+Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111     
+aarch64 x4     
+Debian GNU/Linux 11 (bullseye)     
+Linux 5.15.32-v8+     
+gcc (Debian 10.2.1-6) 10.2.1 20210110     
+ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u2) 2.31     
+GNU ld (GNU Binutils for Debian) 2.35.2     
+GNU Make 4.3     
+aarch64-linux-gnu-gcc-10     
+aarch64-linux-gnu     
     
 sifive,u74-mc rv64imafdc sv39     
 riscv64 x2     
