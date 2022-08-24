@@ -181,6 +181,14 @@ int main(int argc, char * argv[])
     diminuto_port_t udpudp;
     diminuto_port_t eithertcp;
     diminuto_port_t eitherudp;
+    diminuto_port_t colonporttcp;
+    diminuto_port_t colonportudp;
+    diminuto_port_t colontcptcp;
+    diminuto_port_t colontcpudp;
+    diminuto_port_t colonudptcp;
+    diminuto_port_t colonudpudp;
+    diminuto_port_t coloneithertcp;
+    diminuto_port_t coloneitherudp;
 
     SETLOGMASK();
 
@@ -213,14 +221,22 @@ int main(int argc, char * argv[])
     address46 = diminuto_ipc6_address("::ffff:" IPV4);
     address6 = diminuto_ipc6_address(IPV6);
     ephemeral = 0;
-    porttcp = atoi(PORT);
-    portudp = atoi(PORT);
+    porttcp = diminuto_ipc_port(PORT, "tcp");
+    portudp = diminuto_ipc_port(PORT, "udp");
     tcptcp = diminuto_ipc_port(TCP, "tcp");
     tcpudp = diminuto_ipc_port(TCP, "udp");
     udptcp = diminuto_ipc_port(UDP, "tcp");
     udpudp = diminuto_ipc_port(UDP, "udp");
     eithertcp = diminuto_ipc_port(EITHER, "tcp");
     eitherudp = diminuto_ipc_port(EITHER, "udp");
+    colonporttcp = diminuto_ipc_port(COLONPORT, "tcp");
+    colonportudp = diminuto_ipc_port(COLONPORT, "udp");
+    colontcptcp = diminuto_ipc_port(COLONTCP, "tcp");
+    colontcpudp = diminuto_ipc_port(COLONTCP, "udp");
+    colonudptcp = diminuto_ipc_port(COLONUDP, "tcp");
+    colonudpudp = diminuto_ipc_port(COLONUDP, "udp");
+    coloneithertcp = diminuto_ipc_port(COLONEITHER, "tcp");
+    coloneitherudp = diminuto_ipc_port(COLONEITHER, "udp");
 
     {
         diminuto_ipv4_buffer_t ipv4buffer;
@@ -243,6 +259,41 @@ int main(int argc, char * argv[])
         COMMENT("tftp udp=%d\n", udpudp);
         COMMENT("time tcp=%d\n", eithertcp);
         COMMENT("time udp=%d\n", eitherudp);
+        COMMENT("port colon tcp=%d\n", colonporttcp);
+        COMMENT("port colon udp=%d\n", colonportudp);
+        COMMENT("http colon tcp=%d\n", colontcptcp);
+        COMMENT("http colon udp=%d\n", colontcpudp);
+        COMMENT("tftp colon tcp=%d\n", colonudptcp);
+        COMMENT("tftp colon udp=%d\n", colonudpudp);
+        COMMENT("time colon tcp=%d\n", coloneithertcp);
+        COMMENT("time colon udp=%d\n", coloneitherudp);
+    }
+
+    {
+        TEST();
+        ASSERT(ephemeral == 0);
+        ASSERT(porttcp == 8888);
+        ASSERT(portudp == 8888);
+        ASSERT(tcptcp == 80);
+        ASSERT(tcpudp == 80);
+        ASSERT(udptcp == 69);
+        ASSERT(udpudp == 69);
+        ASSERT(eithertcp == 37);
+        ASSERT(eitherudp == 37);
+        STATUS();
+    }
+
+    {
+        TEST();
+        ASSERT(porttcp == colonporttcp);
+        ASSERT(portudp == colonportudp);
+        ASSERT(tcptcp == colontcptcp);
+        ASSERT(tcpudp == colontcpudp);
+        ASSERT(udptcp == colonudptcp);
+        ASSERT(udpudp == colonudpudp);
+        ASSERT(eithertcp == coloneithertcp);
+        ASSERT(eitherudp == coloneitherudp);
+        STATUS();
     }
 
     {
