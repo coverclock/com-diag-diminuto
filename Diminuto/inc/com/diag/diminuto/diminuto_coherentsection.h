@@ -13,7 +13,8 @@
  *
  * The Coherent Section feature uses the Barrier feature to
  * provide consistent memory acquire/release semantics using
- * bracketing macros. It is experimental.
+ * bracketing macros.
+ * EXPERIMENTAL
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"
