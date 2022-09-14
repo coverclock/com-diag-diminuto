@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	89# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -875,21 +875,29 @@ patch:	$(OLD) $(NEW)
 
 ########## Rules
 
-$(OUT)/$(OBX_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
-	D=`dirname $@`; mkdir -p $$D
-	$(CXX) -E $(CPPFLAGS) -c $< > $@
-
-$(OUT)/$(OBX_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
-	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
-
 $(OUT)/$(OBC_DIR)/%.txt:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
+$(OUT)/$(OBX_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) -E $(CPPFLAGS) -c $< > $@
+
+$(OUT)/$(OBC_DIR)/%.s:	%.c $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CC) -S $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+$(OUT)/$(OBX_DIR)/%.s:	%.cpp $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) -S $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
+
 $(OUT)/$(OBC_DIR)/%.o:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+$(OUT)/$(OBX_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 $(OUT)/%:	%.sh
 	D=`dirname $@`; mkdir -p $$D

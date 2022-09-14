@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Timer feature with One Shot conditions.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -17,6 +17,7 @@
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_condition.h"
+#include "../src/diminuto_timer.h"
 #include <errno.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -49,6 +50,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t now;
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
+    diminuto_ticks_t delayed;
     diminuto_ticks_t actual;
     diminuto_ticks_t claimed;
     diminuto_sticks_t difference;
@@ -71,6 +73,7 @@ int main(int argc, char ** argv)
     int msecond;
     diminuto_ticks_t mtick;
     double delta;
+    int rc;
 
     SETLOGMASK();
 
@@ -94,7 +97,12 @@ int main(int argc, char ** argv)
         DIMINUTO_CONDITION_BEGIN(&condition);
             ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT(diminuto_timer_start(&timer, requested, (void *)0) != (diminuto_sticks_t)-1);
-            ASSERT(diminuto_condition_wait_until(&condition, diminuto_condition_clock() + (requested * 2)) == 0);
+	        delayed = diminuto_timer_window(requested);
+            if ((rc = diminuto_condition_wait_until(&condition, diminuto_condition_clock() + delayed)) == DIMINUTO_CONDITION_TIMEDOUT) {
+	    	errno = rc;
+		    diminuto_perror("diminuto_condition_wait_until");
+	        }
+	        ASSERT(rc == 0);
             ASSERT(diminuto_timer_error(&timer) == 0);
             ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
             ASSERT(diminuto_timer_error(&timer) == 0);

@@ -88,6 +88,8 @@ int main(int argc, char ** argv)
     EXPECT(systemf("touch %s/class/gpio/gpio%u/edge", root, 99) == 0);
     EXPECT(systemf("touch %s/class/gpio/gpio%u/active_low", root, 99) == 0);
 
+    CHECKPOINT("INIT");
+
     for (duty = 255; duty >= 0; --duty) {
         ASSERT(diminuto_modulator_init(&modulator, 99, duty) == &modulator);
         flicker = diminuto_modulator_flicker(&modulator);
@@ -107,9 +109,13 @@ int main(int argc, char ** argv)
         }
     }
 
+    CHECKPOINT("START");
+
     ASSERT(diminuto_modulator_error(&modulator) == 0);
     ASSERT(diminuto_modulator_start(&modulator) >= 0);
     diminuto_delay(diminuto_frequency(), 0);
+
+    CHECKPOINT("SET");
 
     for (duty = 0; duty <= 255; ++duty) {
         ASSERT(diminuto_modulator_set(&modulator, duty) == 0);
@@ -126,6 +132,8 @@ int main(int argc, char ** argv)
         ASSERT((255 % (modulator.ton + modulator.toff)) == 0);
         diminuto_delay(diminuto_frequency(), 0);
     }
+
+    CHECKPOINT("STOP");
 
     ASSERT(diminuto_modulator_stop(&modulator) >= 0);
     ASSERT(diminuto_modulator_error(&modulator) == 0);

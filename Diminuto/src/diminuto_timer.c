@@ -28,6 +28,7 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_coherentsection.h"
+#include "diminuto_timer.h"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -36,44 +37,38 @@
 static void proxy(union sigval sv)
 {
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
+    diminuto_timer_function_t * function = (diminuto_timer_function_t *)0;
+    void * context = (void *)0;
+    void * value = (void *)0;
     int rc = 0;
 
-    tp = (diminuto_timer_t *)sv.sival_ptr;
-    if (tp == (diminuto_timer_t *)0) {
-        /* Do nothing. */
-    } else if (tp->state == DIMINUTO_TIMER_STATE_IDLE) {
-        /* Do nothing. */
-    } else {
+    if ((tp = (diminuto_timer_t *)sv.sival_ptr) != (diminuto_timer_t *)0) {
+
+        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+
+            if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
+                function = tp->function;
+                context = tp->context;
+            }
     
+        DIMINUTO_CONDITION_END;
+
         /*
-         * We call the timer function first to keep the
-         * user-specified behavior as close to the beginning
-         * of the timer firing event as possible, to reduce
-         * the phase shift and possible variation thereof
-         * in the later code. This also allows us to
-         * combine what would otherwise be two different
-         * critical sections.
+         * The user-specified timer function may call the
+         * timer stop function, which will re-enter the
+         * critical section.
          */
 
-        DIMINUTO_COHERENT_SECTION_BEGIN;
-    
-            if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
-                tp->value = (*(tp->function))(tp->context);
+        if (function != (diminuto_timer_function_t *)0) {
+            value = (*function)(context);
+        }
+
+        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+
+            if (tp->function != (diminuto_timer_function_t *)0) {
+                tp->value = value;
             }
 
-        DIMINUTO_COHERENT_SECTION_END;
-    
-        /*
-         * Mutex locking is relatively fast providing we don't
-         * block. The only time we will block is when the application
-         * is trying to stop the timer, in which case some delay
-         * here is moot. If we are a one-shot timer, then we might
-         * as well stop ourselves, which will prevent the need
-         * for the application to wait when they do stop the timer.
-         */
-    
-        DIMINUTO_CONDITION_BEGIN(&(tp->condition));
-    
             if (tp->periodic) {
                 if (tp->state == DIMINUTO_TIMER_STATE_DISARM) {
                     tp->state = DIMINUTO_TIMER_STATE_IDLE;
@@ -230,12 +225,12 @@ diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
         DIMINUTO_CONDITION_BEGIN(&(tp->condition));
 
             if (tp->state == DIMINUTO_TIMER_STATE_ARM) {
-                later = diminuto_condition_clock() + (tp->ticks * 3); /* Clock time, not duration. */
+                later = diminuto_condition_clock() + diminuto_timer_window(tp->ticks); /* Clock time, not duration. */
                 tp->state = DIMINUTO_TIMER_STATE_DISARM;
                 do {
                     if ((rc = diminuto_condition_wait_until(&(tp->condition), later)) == DIMINUTO_CONDITION_TIMEDOUT) {
                         errno = rc;
-                        diminuto_perror("diminuto_timer_stop");
+                        diminuto_perror("diminuto_timer_stop: diminuto_condition_wait_until");
                         break;
                     }
                 } while (tp->state != DIMINUTO_TIMER_STATE_IDLE);

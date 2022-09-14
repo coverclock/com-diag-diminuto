@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Timer feature using One Shot callbacks.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -17,6 +17,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "../src/diminuto_timer.h"
 #include <errno.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -50,6 +51,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t now;
     diminuto_ticks_t measured;
     diminuto_ticks_t requested;
+    diminuto_ticks_t delayed;
     diminuto_ticks_t remaining;
     diminuto_ticks_t claimed;
     diminuto_sticks_t difference;
@@ -95,12 +97,8 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) != (diminuto_sticks_t)-1);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
-        /*
-         * Why times two? This is *not* the delay we are measuring.
-         * This is the waiting period for the one-shot timer above
-         * to fire and interrupt this period.
-         */
-        remaining = diminuto_delay(requested * 2, !0);
+	    delayed = diminuto_timer_window(requested);
+        remaining = diminuto_delay(delayed, !0);
         EXPECT(remaining >= 0);
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
@@ -108,9 +106,7 @@ int main(int argc, char ** argv)
         ASSERT(now >= then);
         ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
         ASSERT(diminuto_timer_error(&timer) == 0);
-        EXPECT(diminuto_alarm_check());
-        EXPECT(!diminuto_alarm_check());
-        claimed = (requested * 2) - remaining;
+        claimed = delayed - remaining;
         measured = now - then;
         difference = measured - requested;
         delta = (100.0 * difference) / requested;
@@ -123,6 +119,8 @@ int main(int argc, char ** argv)
             , ms, mday, mhour, mminute, msecond, (long long unsigned int)mtick
             , delta
         );
+        EXPECT(diminuto_alarm_check());
+        EXPECT(!diminuto_alarm_check());
     }
 
     ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);

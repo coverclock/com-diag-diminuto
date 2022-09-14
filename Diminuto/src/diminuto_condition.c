@@ -72,7 +72,6 @@ int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t cl
 {
     int rc = DIMINUTO_CONDITION_ERROR;
     struct timespec later = { 0, };
-    static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
     if (clocktime == DIMINUTO_CONDITION_INFINITY) {
         if ((rc = pthread_cond_wait(&(cp->condition), &(cp->mutex.mutex))) != 0) {
@@ -81,7 +80,7 @@ int diminuto_condition_wait_until(diminuto_condition_t * cp, diminuto_ticks_t cl
         }
     } else {
         later.tv_sec = diminuto_frequency_ticks2wholeseconds(clocktime);
-        later.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, NANOSECONDS);
+        later.tv_nsec = diminuto_frequency_ticks2fractionalseconds(clocktime, 1000000000LL);
         if ((rc = pthread_cond_timedwait(&(cp->condition), &(cp->mutex.mutex), &later)) == 0) {
             /* Do nothing. */
         } else if (rc == DIMINUTO_CONDITION_TIMEDOUT) {

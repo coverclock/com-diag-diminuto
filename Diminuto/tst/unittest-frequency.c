@@ -13,15 +13,16 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_condition.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_meter.h"
+#include "com/diag/diminuto/diminuto_modulator.h"
+#include "com/diag/diminuto/diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_poll.h"
+#include "com/diag/diminuto/diminuto_shaper.h"
+#include "com/diag/diminuto/diminuto_throttle.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
-#include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_modulator.h"
-#include "com/diag/diminuto/diminuto_poll.h"
-#include "com/diag/diminuto/diminuto_throttle.h"
-#include "com/diag/diminuto/diminuto_shaper.h"
-#include "com/diag/diminuto/diminuto_meter.h"
 #include <stdio.h>
 #include <errno.h>
 
@@ -44,6 +45,7 @@ int main(int argc, char ** argv)
     {
         TEST();
         EXPECT(diminuto_frequency() == COM_DIAG_DIMINUTO_FREQUENCY);
+        EXPECT(diminuto_condition_frequency() == COM_DIAG_DIMINUTO_CONDITION_FREQUENCY);
         EXPECT(diminuto_delay_frequency() == COM_DIAG_DIMINUTO_DELAY_FREQUENCY);
         EXPECT(diminuto_meter_frequency() == COM_DIAG_DIMINUTO_METER_FREQUENCY);
         EXPECT(diminuto_modulator_frequency() == COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY);
@@ -59,6 +61,7 @@ int main(int argc, char ** argv)
     {
         TEST();
         EXPECT(diminuto_frequency() <= diminuto_frequency());
+        EXPECT(diminuto_condition_frequency() <= diminuto_frequency());
         EXPECT(diminuto_delay_frequency() <= diminuto_frequency());
         EXPECT(diminuto_meter_frequency() <= diminuto_frequency());
         EXPECT(diminuto_modulator_frequency() <= diminuto_frequency());
@@ -75,6 +78,7 @@ int main(int argc, char ** argv)
     {
         TEST();
         CHECKPOINT("f(frequency)=%lldHz p(frequency)=%lldticks\n", (long long int)diminuto_frequency(), (long long int)(diminuto_frequency() / diminuto_frequency()));
+        CHECKPOINT("f(condition)=%lldHz p(condition)=%lldticks\n", (long long int)diminuto_condition_frequency(), (long long int)(diminuto_frequency() / diminuto_condition_frequency()));
         CHECKPOINT("f(delay)=%lldHz p(delay)=%lldticks\n", (long long int)diminuto_delay_frequency(), (long long int)(diminuto_frequency() / diminuto_delay_frequency()));
         CHECKPOINT("f(meter)=%lldHz p(meter)=%lldticks\n", (long long int)diminuto_meter_frequency(), (long long int)(diminuto_frequency() / diminuto_meter_frequency()));
         CHECKPOINT("f(modulator)=%lldHz p(modulator)=%lldticks\n", (long long int)diminuto_modulator_frequency(), (long long int)(diminuto_frequency() / diminuto_modulator_frequency()));

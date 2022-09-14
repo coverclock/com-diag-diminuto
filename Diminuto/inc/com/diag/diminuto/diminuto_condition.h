@@ -28,6 +28,33 @@
 #include "com/diag/diminuto/diminuto_mutex.h"
 
 /***********************************************************************
+ * PARAMETERS
+ **********************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_CONDITION_FREQUENCY
+ * This manifest constant is the frequency in Hertz at which this feature
+ * operates. The inverse of this value is the smallest unit of time in fractions
+ * of a second that this feature can express or use. This constant is provided
+ * for use in those cases where it is useful to have the value at compile time.
+ * However, you should always prefer to use the inline function when possible.
+ */
+#define COM_DIAG_DIMINUTO_CONDITION_FREQUENCY (1000000000LL)
+
+/**
+ * Return the resolution of the Diminuto condition units in ticks per second
+ * (Hertz). Timer intervals smaller than the equivalent period in ticks will
+ * not yield the expected results. In fact, there is no guarantee that the
+ * underlying software platform or hardware target can support condition
+ * durations with even this resolution.
+ * @return the resolution in ticks per second.
+ */
+static inline diminuto_sticks_t diminuto_condition_frequency(void)
+{
+    return COM_DIAG_DIMINUTO_CONDITION_FREQUENCY;
+}
+
+/***********************************************************************
  * GENERATORS
  **********************************************************************/
 

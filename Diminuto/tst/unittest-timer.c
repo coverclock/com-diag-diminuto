@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Timer feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -12,6 +12,8 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "../src/diminuto_timer.h"
 #include <signal.h>
 
 static void * callback(void * vp) { return (void *)0; }
@@ -19,6 +21,15 @@ static void * callback(void * vp) { return (void *)0; }
 int main(int argc, char ** argv)
 {
 	SETLOGMASK();
+    {
+        TEST();
+        ASSERT(diminuto_timer_window(0) == diminuto_frequency());
+        ASSERT(diminuto_timer_window(1) == diminuto_frequency());
+        ASSERT(diminuto_timer_window(2) == diminuto_frequency());
+        ASSERT(diminuto_timer_window(diminuto_frequency()) == (2 * (diminuto_frequency())));
+        ASSERT(diminuto_timer_window(diminuto_frequency() + 1) == (2 * (diminuto_frequency() + 1)));
+        STATUS();
+    }
     {
         diminuto_timer_t timer;
         TEST();

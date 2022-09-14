@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Timer feature with Periodic setitimer.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "../src/diminuto_timer.h"
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -30,6 +31,7 @@ int main(int argc, char ** argv)
     diminuto_ticks_t then;
     diminuto_ticks_t now;
     diminuto_sticks_t measured;
+    diminuto_ticks_t delayed;
     diminuto_ticks_t remaining;
     diminuto_sticks_t claimed;
     diminuto_sticks_t requested;
@@ -76,13 +78,12 @@ int main(int argc, char ** argv)
         then = result;
         for (ii = 0; ii < 5; ++ii) {
             EXPECT(!diminuto_alarm_check());
-            remaining = diminuto_delay(requested * 2, !0);
+	        delayed = diminuto_timer_window(requested);
+            remaining = diminuto_delay(delayed, !0);
             EXPECT(remaining >= 0);
-            EXPECT(diminuto_alarm_check());
-            EXPECT(!diminuto_alarm_check());
             ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
             now = result;
-            claimed = (requested * 2) - remaining;
+            claimed = delayed - remaining;
             measured = now - then;
             ASSERT(measured > 0);
             difference = measured - requested;
@@ -97,6 +98,8 @@ int main(int argc, char ** argv)
                 , delta
             );
             then = now;
+            EXPECT(diminuto_alarm_check());
+            EXPECT(!diminuto_alarm_check());
         }
         ASSERT(diminuto_timer_periodic(0) != (diminuto_sticks_t)-1);
     }
