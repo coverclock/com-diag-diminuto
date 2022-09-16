@@ -194,7 +194,7 @@ static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
 
     while (((np = diminuto_list_head(&(rwp->list))) != (diminuto_list_t *)0) && ((role_t)diminuto_list_data(np) == FAILED)) {
         dequeue(rwp, np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Failed %p REMOVED %dreading %dwriting %dwaiting", np, rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Failed %p REMOVED %dreading %dwriting %dwaiting", rwp, np, rwp->reading, rwp->writing, rwp->waiting);
     }
 
     return np;
@@ -443,7 +443,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     bp = &(buffer[0]);
     size = sizeof(buffer) - 1;
 
-    length = snprintf(bp, size, "%s audit@%p[%zu]", label, rwp, sizeof(*rwp));
+    length = snprintf(bp, size, "diminuto_readerwriter@%p: %s audit", rwp, label);
     if ((0 < length) && (length < size)) { bp += length; size -= length; }
 
     /*
@@ -675,7 +675,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
     diminuto_list_dataset(np, (void *)waiting);
     enqueue(rwp, np, priority);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s WAITING %s %s %dreading %dwriting %dwaiting", label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: %s WAITING %s %s %dreading %dwriting %dwaiting", rwp, label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
 
     /*
      * Wait until this thread is signaled and activated. Note that POSIX
@@ -710,7 +710,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
 
     diminuto_list_dataset(np, (void *)RUNNING);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: %s %s %dreading %dwriting %dwaiting", label, (rc == 0) ? "ACTIVATED" : "TIMEDOUT", rwp->reading, rwp->writing, rwp->waiting);
+    DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: %s %s %dreading %dwriting %dwaiting", rwp, label, (rc == 0) ? "ACTIVATED" : "TIMEDOUT", rwp->reading, rwp->writing, rwp->waiting);
 
     return rc;
 }
@@ -796,7 +796,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             cp = &(rwp->reader);
             result = role;
             required = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader ACTIVATED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader ACTIVATED %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
             continue;
 
         } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
@@ -811,7 +811,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             rwp->writing += 1; /* WRITING COUNTER INCREMENT */
             cp = &(rwp->writer);
             result = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer ACTIVATED %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+            DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer ACTIVATED %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
             break;
 
         } else {
@@ -861,7 +861,7 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader BEGIN enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
@@ -918,10 +918,10 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->debugging) {
-            audit(rwp, "diminuto_readerwriter: Reader BEGIN");
+            audit(rwp, "Reader BEGIN");
         }
 
         diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || (result < 0));
@@ -938,7 +938,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
 
@@ -1003,10 +1003,10 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Reader END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader END exit %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->debugging) {
-            audit(rwp, "diminuto_readerwriter: Reader END");
+            audit(rwp, "Reader END");
         }
 
         diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
@@ -1028,7 +1028,7 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer BEGIN enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer BEGIN enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
@@ -1085,10 +1085,10 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp->reading, rwp->writing, rwp->waiting, result);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->debugging) {
-            audit(rwp, "diminuto_readerwriter: Writer BEGIN");
+            audit(rwp, "Writer BEGIN");
         }
 
         diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || (result < 0));
@@ -1105,7 +1105,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer END enter %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
 
@@ -1159,10 +1159,10 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Writer END exit %dreading %dwriting %dwaiting", rwp->reading, rwp->writing, rwp->waiting);
+        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer END exit %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->debugging) {
-            audit(rwp, "diminuto_readerwriter: Writer END");
+            audit(rwp, "Writer END");
         }
 
         diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));

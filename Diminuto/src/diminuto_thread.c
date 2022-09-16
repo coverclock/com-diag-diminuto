@@ -56,7 +56,7 @@ void proxy_cleanup(void * vp)
     } else {
         pthread_cleanup_push(thread_cleanup, (void *)tp);
             tp->state = DIMINUTO_THREAD_STATE_EXITING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: EXITING %p", tp);
+            DIMINUTO_LOG_DEBUG("diminuto_thread@%p: EXITING", tp);
             (void)diminuto_thread_signal(tp);
         pthread_cleanup_pop(!0);
     }
@@ -99,7 +99,7 @@ static void * proxy(void * vp)
     } else {
         pthread_cleanup_push(thread_cleanup, (void *)tp);
             tp->state = DIMINUTO_THREAD_STATE_RUNNING;
-            DIMINUTO_LOG_DEBUG("diminuto_thread:proxy: RUNNING %p", tp);
+            DIMINUTO_LOG_DEBUG("diminuto_thread@%p: RUNNING", tp);
             (void)diminuto_thread_signal(tp);
         pthread_cleanup_pop(!0);
         /*
@@ -144,35 +144,27 @@ static void setup()
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     static diminuto_thread_t thread = DIMINUTO_THREAD_INITIALIZER((diminuto_thread_function_t *)0);
 
-    /*
-     * Do the double check locking pattern, and hope it works. The
-     * coherent section might or might not expand into read and write
-     * memory barriers.
-     */
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
 
-    DIMINUTO_COHERENT_SECTION_BEGIN;
-        if (!setupped) {
-            DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-                if (setupped) {
-                    /* Do nothing. */
-                } else if ((rc = pthread_key_create(&key, 0)) != 0) {
-                    errno = rc;
-                    diminuto_perror("diminuto_thread:setup: pthread_key_create");
-                } else if ((rc = pthread_setspecific(key, &thread)) != 0) {
-                    errno = rc;
-                    diminuto_perror("diminuto_thread:setup: pthread_setspecific");
-                } else {
-                    thread.thread = pthread_self();
-                    thread.function = (diminuto_thread_function_t *)main;
-                    thread.notify = 0; /* Main doesn't get a kill signal. */
-                    thread.notifications = 0;
-                    thread.state = DIMINUTO_THREAD_STATE_RUNNING;
-                    setupped = !0;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread:setup: SETUP %p", &thread);
-                }
-            DIMINUTO_CRITICAL_SECTION_END;
+        if (setupped) {
+            /* Do nothing. */
+        } else if ((rc = pthread_key_create(&key, 0)) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_thread:setup: pthread_key_create");
+        } else if ((rc = pthread_setspecific(key, &thread)) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_thread:setup: pthread_setspecific");
+        } else {
+            thread.thread = pthread_self();
+            thread.function = (diminuto_thread_function_t *)main;
+            thread.notify = 0; /* Main doesn't get a kill signal. */
+            thread.notifications = 0;
+            thread.state = DIMINUTO_THREAD_STATE_RUNNING;
+            setupped = !0;
+            DIMINUTO_LOG_DEBUG("diminuto_thread@%p: SETUP", &thread);
         }
-    DIMINUTO_COHERENT_SECTION_END;
+
+    DIMINUTO_CRITICAL_SECTION_END;
 }
 
 /***********************************************************************
@@ -243,7 +235,9 @@ diminuto_thread_state_t diminuto_thread_state(const diminuto_thread_t * tp)
      */
 
     DIMINUTO_COHERENT_SECTION_BEGIN;
+
         state = tp->state;
+
     DIMINUTO_COHERENT_SECTION_END;
 
     return state;
@@ -316,7 +310,7 @@ unsigned int diminuto_thread_notifications()
                 notifications = tp->notifications;
                 tp->notifications = 0;
                 if (notifications > 0) {
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_notifications: NOTIFICATIONS %p [%u]", tp, notifications);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: NOTIFICATIONS [%u]", tp, notifications);
                 }
                 (void)diminuto_thread_signal(tp);
             pthread_cleanup_pop(!0);
@@ -376,11 +370,11 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
                     errno = rc;
                     diminuto_perror("diminuto_thread_start: pthread_create");
                     tp->state = DIMINUTO_THREAD_STATE_FAILED;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_start: FAILED %p", tp);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: START FAILED", tp);
                     (void)diminuto_thread_signal(tp);
                 } else {
                     tp->state = DIMINUTO_THREAD_STATE_STARTED;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_start: STARTED %p {%llx}", tp, (unsigned long long int)tp->thread);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: START {%llx}", tp, (unsigned long long int)tp->thread);
                     (void)diminuto_thread_signal(tp);
                 }
                 break;
@@ -408,10 +402,10 @@ int diminuto_thread_notify(diminuto_thread_t * tp)
                  * to all the other notification stuff.
                  */
                 if (tp->notifications == (~((unsigned int)0))) {
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_notify: NOTIFIED %p [*]", tp);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: NOTIFIED [*]", tp);
                 } else {
                     ++tp->notifications;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_notify: NOTIFIED %p [%u]", tp, tp->notifications);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: NOTIFIED [%u]", tp, tp->notifications);
                 }
                 /*
                  * Signal any waiting threads that a notification has
@@ -521,7 +515,7 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
                 pthread_cleanup_push(thread_cleanup, (void *)tp);
                     tp->value = value;
                     tp->state = DIMINUTO_THREAD_STATE_JOINED;
-                    DIMINUTO_LOG_DEBUG("diminuto_thread_join_until: JOINED %p", tp);
+                    DIMINUTO_LOG_DEBUG("diminuto_thread@%p: JOINED", tp);
                     (void)diminuto_thread_signal(tp);
                 pthread_cleanup_pop(!0);
             }

@@ -1,13 +1,21 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Pin feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is the implementation of the Pin feature.
+ *
+ * DEPRECATED
+ *
+ * The Pin feature, which makes it easy to manipulate General Purpose
+ * Input/Output (GPIO) pins, uses the deprecated /sysfs ABI. I'm looking
+ * at the new ABIs. While the new ABIs offer a higher level interface, my
+ * initial impression is that they don't easily support the kinds of weird
+ * GPIO doings with special devices that I am often called upon to do.
  *
  * REFERENCES
  *

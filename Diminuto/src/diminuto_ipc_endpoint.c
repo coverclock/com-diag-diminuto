@@ -133,7 +133,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         do {
 
             if (debug) {
-                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: ch='%.1s' st=%c\n", pc(here), state);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint%p: ch='%.1s' st=%c\n", endpoint,  pc(here), state);
             }
 
             switch (state) {
@@ -372,7 +372,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         } while (state != S_STOP);
 
-        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\"\n", string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path));
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: endpoint=\"%s\" name=\"%s\" fqdn=\"%s\" ipv4=\"%s\" ipv6=\"%s\" service=\"%s\" port=\"%s\" path=\"%s\"\n", endpoint, string, ps(name), ps(fqdn), ps(ipv4), ps(ipv6), ps(service), ps(port), ps(path));
 
         /*
          * If (rc < 0) at this point, our simple little parser
@@ -404,7 +404,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
                 is_ipv4 = true;
             } else {
-                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: fqdn=\"%s\" invalid!\n", fqdn);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: fqdn=\"%s\" invalid!\n", endpoint, fqdn);
                 rc = -2;
             }
         } else if (ipv6 != (char *)0) {
@@ -452,7 +452,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
                 } else if (endpoint->udp != 0) {
                     /* Do nothing. */
                 } else {
-                    DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: name=\"%s\" invalid!\n", name);
+                    DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: name=\"%s\" invalid!\n", endpoint, name);
                     rc = -3;
                 }
             }
@@ -473,7 +473,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if  (endpoint->udp != 0) {
                 /* Do nothing. */
             } else {
-                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: service=\"%s\" invalid!\n", service);
+                DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: service=\"%s\" invalid!\n", endpoint, service);
                 rc = -4;
             }
         } else if (port != (char *)0) {
@@ -507,7 +507,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (diminuto_ipcl_path(path, endpoint->local, sizeof(endpoint->local)) != (char *)0) {
             is_ipcl = true;
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: path=\"%s\" invalid!\n", path);
+            DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: path=\"%s\" invalid!\n", endpoint, path);
             rc = -5;
         }
 
@@ -576,7 +576,8 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             /* Do nothing. */
         }
 
-        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint: endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d local=\"%s\"\n",
+        DIMINUTO_LOG_DEBUG("diminuto_ipc_endpoint@%p: endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%d udp=%d local=\"%s\"\n",
+            endpoint,
             string,
             (endpoint->type == DIMINUTO_IPC_TYPE_IPV4) ? "IPv4" :
                 (endpoint->type == DIMINUTO_IPC_TYPE_IPV6) ? "IPv6" :

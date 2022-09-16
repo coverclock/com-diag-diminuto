@@ -151,7 +151,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
             rc = 0;
         }
 
-        DIMINUTO_LOG_DEBUG("%s[%d]@%p: set pin=%d error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d period=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", __FILE__, __LINE__, mp, mp->pin, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->period, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
+        DIMINUTO_LOG_DEBUG("diminuto_modulator@%p: set pin=%d error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", mp, mp->pin, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
 
     DIMINUTO_CONDITION_END;
 
@@ -171,10 +171,36 @@ static void * callback(void * vp)
          * Complete the current on or off cycle.
          */
 
-        if ((mp->cycle > 0) && (mp->period > 0)) {
+        if (mp->cycle > 0) {
             mp->cycle -= 1;
-            mp->period -= 1;
             break;
+        }
+
+        /*
+         * We update the duty cycle only at the beginning of
+         * the next on/off cycle. This code may occasionally
+         * block, but it will do so only after updating the
+         * output state for the prior settings, which
+         * occurs as close to the beginning of the timer
+         * firing as we can get it.
+         */
+
+        if (!mp->state) {
+
+            DIMINUTO_CONDITION_BEGIN(&(mp->condition));
+
+                if (mp->set) {
+                    mp->on = mp->ton;
+                    mp->off = mp->toff;
+                    mp->set = 0;
+                    rc = diminuto_condition_signal(&(mp->condition));
+                    if (rc != 0) {
+                        mp->error = rc;
+                    }
+                }
+
+            DIMINUTO_CONDITION_END;
+
         }
 
         /*
@@ -208,39 +234,6 @@ static void * callback(void * vp)
             }
         }
 
-        /*
-         * Complete the current 100% period.
-         */
-
-        if (mp->period > 0) {
-            break;
-        }
-
-        /*
-         * We update the duty cycle only at the end of
-         * a complete period. This code may occasionally
-         * block, but it will do so after updating the
-         * output state for the prior settings, which
-         * occurs as close to the beginning of the timer
-         * firing as we can get it.
-         */
-
-        DIMINUTO_CONDITION_BEGIN(&(mp->condition));
-
-            if (mp->set) {
-                mp->on = mp->ton;
-                mp->off = mp->toff;
-                mp->set = 0;
-                rc = diminuto_condition_signal(&(mp->condition));
-                if (rc != 0) {
-                    mp->error = rc;
-                }
-            }
-
-        DIMINUTO_CONDITION_END;
-
-        mp->period = mp->on + mp->off;
-
     } while (0);
 
     return (void *)(uintptr_t)(mp->cycle);
@@ -268,7 +261,6 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->on = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->off = DIMINUTO_MODULATOR_DUTY_MAX;
         mp->cycle = 0;
-        mp->period = 0;
         mp->set = 0;
         mp->ton = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;

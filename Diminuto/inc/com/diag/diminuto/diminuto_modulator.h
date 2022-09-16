@@ -100,7 +100,6 @@ typedef struct DiminutoModulator {
     diminuto_modulator_cycle_t  on;         /**< Current on period [0..255]. */
     diminuto_modulator_cycle_t  off;        /**< Current off period [0..255]. */
     diminuto_modulator_cycle_t  cycle;      /**< Cycle countdown [0..255]. */
-    diminuto_modulator_cycle_t  period;     /**< Period countdown [0..255]. */
     diminuto_modulator_cycle_t  ton;        /**< On period [0..255]. */
     diminuto_modulator_cycle_t  toff;       /**< Off period [0..255]. */
     bool                        state;      /**< Output state: on or off. */
