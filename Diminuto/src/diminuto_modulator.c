@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Modulator feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -21,15 +21,77 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+unsigned int diminuto_modulator_flicker(diminuto_modulator_cycle_t on, diminuto_modulator_cycle_t off)
+{
+    double score;
+
+    if (off == 0) {
+        score = 0.0;
+    } else if (on == 0) {
+        score = 0.0;
+    } else {
+
+        double accum;
+
+        accum = abs(off - on);
+        accum /= 255.0;
+        score = accum;
+        accum = abs(off + on);
+        accum /= 255.0;
+        score += accum;
+        score /= 2.0;
+        score *= 100.0;
+
+    }
+
+    return (unsigned int)score;
+}
+
+int diminuto_modulator_factor(diminuto_modulator_cycle_t * onp, diminuto_modulator_cycle_t * offp) {
+    static const diminuto_modulator_cycle_t PRIME[] = { 2, 3, 5, 7, 11, 13, };
+    int rc = 0;
+    int ii = 0;
+
+    /*
+     * This would be a lot faster if it were table-driven.
+     */
+
+    for (ii = 0; ii < countof(PRIME); ++ii) {
+        if (PRIME[ii] > *onp) {
+            break;
+        } else if (PRIME[ii] > *offp) {
+            break;
+        } else if ((*onp % PRIME[ii]) > 0) {
+            continue;
+        } else if ((*offp % PRIME[ii]) > 0) {
+            continue;
+        } else {
+            *onp /= PRIME[ii];
+            *offp /= PRIME[ii];
+            rc = !0;
+        }
+    }
+
+    return rc;
+}
+
+diminuto_modulator_state_t diminuto_modulator_state(diminuto_modulator_t * mp) {
+    diminuto_modulator_state_t result = DIMINUTO_MODULATOR_STATE_UNKNOWN;
+
+    DIMINUTO_CONDITION_BEGIN(&(mp->condition));
+        result = (diminuto_modulator_state_t)diminuto_timer_state(&(mp->timer));
+    DIMINUTO_CONDITION_END;
+
+    return result;
+}
+
 int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t duty)
 {
     int rc = -1;
-    diminuto_modulator_cycle_t on = 0;
-    diminuto_modulator_cycle_t off = 0;
-    diminuto_modulator_cycle_t prime = 0;
     diminuto_modulator_cycle_t on0 = 0;
     diminuto_modulator_cycle_t off0 = 0;
-    static const diminuto_modulator_cycle_t PRIMES[] = { 17,  13,  11,   7,   5,   3,   2, };
+    diminuto_modulator_cycle_t on1 = 0;
+    diminuto_modulator_cycle_t off1 = 0;
     int ii = 0;
 
     /*
@@ -45,75 +107,55 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
      * on + off == 100%
      */
 
-    on = duty;
-    off = DIMINUTO_MODULATOR_DUTY_MAX - duty;
+    on0 = duty;
+    off0 = DIMINUTO_MODULATOR_DUTY_MAX - duty;
 
     /*
      * Remove the common prime factors from the on and off cycles.
      * This smooths out the on versus off cycles and reduces visible flicker.
+     * N.B. sqrt(255) < 16, and 13 is the largest prime < 16.
      */
 
-    if (on == 0) {
-        /* Fully off. */
-    } else if (off == 0) {
-        /* Fully on. */
+    on1 = on0;
+    off1 = off0;
+
+    if (on1 == 0) {
+        /* Do nothing: fully off. */
+    } else if (off1 == 0) {
+        /* Do nothing: fully on. */
     } else {
-        for (ii = 0; ii < countof(PRIMES); ++ii) {
-            prime = PRIMES[ii];
-            while (((on0 = (on / prime)) > 0) && ((on % prime) == 0) && ((off0 = (off / prime)) > 0) && ((off % prime) == 0)) {
-                on = on0;
-                off = off0;
-            }
-        }
+        (void)diminuto_modulator_factor(&on1, &off1);
     }
 
     /*
      * Update the duty cycle in the fields shared with the callback.
-     * If the callback hasn't used the prior duty cycle, return an
-     * error.
+     * (We use the timer state instead of the modulator state because
+     * we are already inside a critical section.)
      */
 
     DIMINUTO_CONDITION_BEGIN(&(mp->condition));
 
         mp->duty = duty;
-        mp->ton = on;
-        mp->toff = off;
-        if (!(mp->set)) { 
-            mp->set = !0;
-            do {
+        mp->ton = on1;
+        mp->toff = off1;
+        mp->set = !0;
+
+        if (diminuto_timer_state(&(mp->timer)) == DIMINUTO_TIMER_STATE_ARM) {
+            while (mp->set) {
                 if ((rc = diminuto_condition_wait(&(mp->condition))) != 0) {
                     errno = rc;
                     break;
                 }
-            } while (mp->set);
+            }
         } else {
             rc = 0;
         }
 
+        DIMINUTO_LOG_DEBUG("%s[%d]@%p: set pin=%d error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d period=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", __FILE__, __LINE__, mp, mp->pin, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->period, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
+
     DIMINUTO_CONDITION_END;
 
     return rc;
-}
-
-unsigned int diminuto_modulator_flicker(const diminuto_modulator_t * mp)
-{
-    double score;
-    if (mp->toff == 0) {
-        score = 0.0;
-    } else if (mp->ton == 0) {
-        score = 0.0;
-    } else {
-        double accum;
-        accum = abs(mp->toff - mp->ton);
-        accum /= 255.0;
-        score = accum;
-        accum = abs(mp->toff + mp->ton);
-        accum /= 255.0;
-        score += accum;
-        score /= 2.0;
-        score *= 100.0;
-    }
-    return (unsigned int)score;
 }
 
 static void * callback(void * vp)
@@ -129,8 +171,9 @@ static void * callback(void * vp)
          * Complete the current on or off cycle.
          */
 
-        if (mp->cycle > 0) {
+        if ((mp->cycle > 0) && (mp->period > 0)) {
             mp->cycle -= 1;
+            mp->period -= 1;
             break;
         }
 
@@ -144,7 +187,9 @@ static void * callback(void * vp)
         if (mp->state) {
             if (mp->off > 0) {
                 rc = diminuto_pin_clear(mp->fp);
-                if (rc < 0) { mp->error = errno; }
+                if (rc < 0) {
+                    mp->error = errno;
+                }
                 mp->cycle = mp->off;
                 mp->state = 0;
             } else {
@@ -153,7 +198,9 @@ static void * callback(void * vp)
         } else {
             if (mp->on > 0) {
                 rc = diminuto_pin_set(mp->fp);
-                if (rc < 0) { mp->error = errno; }
+                if (rc < 0) {
+                    mp->error = errno;
+                }
                 mp->cycle = mp->on;
                 mp->state = !0;
             } else {
@@ -162,16 +209,12 @@ static void * callback(void * vp)
         }
 
         /*
-         * Complete the current 100% period, after which
-         * the output will be in the off state.
+         * Complete the current 100% period.
          */
 
         if (mp->period > 0) {
-            mp->period -= 1;
             break;
         }
-
-        mp->period = DIMINUTO_MODULATOR_DUTY_MAX;
 
         /*
          * We update the duty cycle only at the end of
@@ -189,10 +232,14 @@ static void * callback(void * vp)
                 mp->off = mp->toff;
                 mp->set = 0;
                 rc = diminuto_condition_signal(&(mp->condition));
-                if (rc != 0) { mp->error = rc; }
+                if (rc != 0) {
+                    mp->error = rc;
+                }
             }
 
         DIMINUTO_CONDITION_END;
+
+        mp->period = mp->on + mp->off;
 
     } while (0);
 
@@ -222,7 +269,7 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->off = DIMINUTO_MODULATOR_DUTY_MAX;
         mp->cycle = 0;
         mp->period = 0;
-        mp->set = !0;
+        mp->set = 0;
         mp->ton = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
@@ -250,10 +297,6 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         if (rc < 0) {
             break;
         }
-
-#if 0
-        DIMINUTO_LOG_DEBUG("%s[%d]: pin=%d state=%d duty=%d on=%d off=%d cycle=%d period=%d set=%d ton=%d toff=%d\n", __FILE__, __LINE__, mp->pin, mp->state, mp->duty, mp->on, mp->off, mp->cycle, mp->period, mp->set, mp->ton, mp->toff);
-#endif
 
         result = mp;
 

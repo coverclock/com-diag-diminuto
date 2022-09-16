@@ -88,6 +88,35 @@ static void proxy(union sigval sv)
     }
 }
 
+int diminuto_timer_error(diminuto_timer_t * tp)
+{
+    int result = -1;
+
+    DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+        result = tp->error;
+    DIMINUTO_CONDITION_END;
+
+    return result;
+}
+
+/**
+ * Return the current timer state: IDLE (not running), DISARMed (told to
+ * stop but still running), or ARMed (running). An UNKNOWN state is also
+ * possible if pthreads fails.
+ * @param tp points to the timer object.
+ * @return the current timer state.
+ */
+diminuto_timer_state_t diminuto_timer_state(diminuto_timer_t * tp)
+{
+    diminuto_timer_state_t result = DIMINUTO_TIMER_STATE_UNKNOWN;
+
+    DIMINUTO_CONDITION_BEGIN(&(tp->condition));
+        result = tp->state;
+    DIMINUTO_CONDITION_END;
+
+    return result;
+}
+
 diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
 {
     diminuto_timer_t * result = (diminuto_timer_t *)0;
@@ -194,7 +223,7 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     tp->error = 0;
 
     tp->current.it_value.tv_sec = diminuto_frequency_ticks2wholeseconds(ticks);
-    tp->current.it_value.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, diminuto_timer_frequency());
+    tp->current.it_value.tv_nsec = diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL);
 
     if (tp->periodic) {
         tp->current.it_interval = tp->current.it_value;
@@ -208,7 +237,7 @@ diminuto_sticks_t diminuto_timer_start(diminuto_timer_t * tp, diminuto_ticks_t t
     if (timer_settime(tp->timer, 0, &(tp->current), &(tp->remaining)) < 0) {
         diminuto_perror("diminuto_timer_start: timer_settime");
     } else {
-        sticks = diminuto_frequency_seconds2ticks(tp->remaining.it_value.tv_sec, tp->remaining.it_value.tv_nsec, diminuto_timer_frequency());
+        sticks = diminuto_frequency_seconds2ticks(tp->remaining.it_value.tv_sec, tp->remaining.it_value.tv_nsec, 1000000000LL);
     }
 
     return sticks;
@@ -248,7 +277,7 @@ diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp)
     } else if (rc != 0) {
         /* Do nothing. */
     } else {
-        sticks = diminuto_frequency_seconds2ticks(tp->remaining.it_value.tv_sec, tp->remaining.it_value.tv_nsec, diminuto_timer_frequency());
+        sticks = diminuto_frequency_seconds2ticks(tp->remaining.it_value.tv_sec, tp->remaining.it_value.tv_nsec, 1000000000LL);
     }
 
     return sticks;

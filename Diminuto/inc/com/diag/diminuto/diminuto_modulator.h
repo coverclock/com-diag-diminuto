@@ -28,6 +28,7 @@
  * where accurate PWM control was necessary, I would use a microcontroller with
  * a hardware PWM generator. I've successfully used eight-bit Atmel AVR and
  * Microchip PIC parts in this capacity, but there are lots of other choices.
+ * But this is useful for LED control on an embedded Linux-based system.
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
@@ -66,6 +67,17 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
 typedef uint8_t diminuto_modulator_cycle_t;
 
 /**
+ * This the type of the modulator state (ARM, DISARM, IDLE), which
+ * is the same as the underlying timer state.
+ */
+typedef enum DiminutoModulatorState {
+    DIMINUTO_MODULATOR_STATE_IDLE       = DIMINUTO_TIMER_STATE_IDLE,
+    DIMINUTO_MODULATOR_STATE_ARM        = DIMINUTO_TIMER_STATE_ARM,
+    DIMINUTO_MODULATOR_STATE_DISARM     = DIMINUTO_TIMER_STATE_DISARM,
+    DIMINUTO_MODULATOR_STATE_UNKNOWN    = DIMINUTO_TIMER_STATE_UNKNOWN,
+} diminuto_modulator_state_t;
+
+/**
  * This is the smallest duty cycle value.
  */
 static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = 0;
@@ -92,8 +104,24 @@ typedef struct DiminutoModulator {
     diminuto_modulator_cycle_t  ton;        /**< On period [0..255]. */
     diminuto_modulator_cycle_t  toff;       /**< Off period [0..255]. */
     bool                        state;      /**< Output state: on or off. */
-    bool                        set;        /**< Condition ready? */
+    bool                        set;        /**< Condition ready? (SHARED) */
 } diminuto_modulator_t;
+
+/**
+ * Return the state of the modulator (ARM, DISARM, IDLE), which is the same
+ * as the underlying timer state.
+ */
+extern diminuto_modulator_state_t diminuto_modulator_state(diminuto_modulator_t * mp);
+
+/**
+ * Remove the common prime factors from both the on and off cycles. This is
+ * done in-place. This is called automatically by the set() function, but is
+ * exposed for unit testing and other application uses.
+ * @param onp points to the on cycle value.
+ * @param offp points to the off cycle value.
+ * @return 0 if not changed, !0 if changed.
+ */
+extern int diminuto_modulator_factor(diminuto_modulator_cycle_t * onp, diminuto_modulator_cycle_t * offp);
 
 /**
  * Initializes a modulator structure with the default function, a pin number,
@@ -125,10 +153,11 @@ extern int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_
  * It is better for the on and off cycles to be close in value.
  * It is better for the on and off cycles to be small in value.
  * 100% on or 100% off are special cases with perfect scores.
- * @param mp points to the modulator structure.
+ * @param on is the on cycle value;
+ * @param off is the off cycle value;
  * @return a flicker score between 0 (best) and 100 (worst).
  */
-extern unsigned int diminuto_modulator_flicker(const diminuto_modulator_t * mp);
+extern unsigned int diminuto_modulator_flicker(diminuto_modulator_cycle_t on, diminuto_modulator_cycle_t off);
 
 /**
  * Starts a modulator.

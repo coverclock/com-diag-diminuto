@@ -63,6 +63,7 @@ typedef enum DiminutoTimerState {
     DIMINUTO_TIMER_STATE_IDLE       = 'I',
     DIMINUTO_TIMER_STATE_ARM        = 'A',
     DIMINUTO_TIMER_STATE_DISARM     = 'D',
+    DIMINUTO_TIMER_STATE_UNKNOWN    = '?',
 } diminuto_timer_state_t;
 
 /**
@@ -175,10 +176,15 @@ extern diminuto_sticks_t diminuto_timer_stop(diminuto_timer_t * tp);
  * @param tp points to the timer object.
  * @return an error code or zero if none.
  */
-static inline int diminuto_timer_error(const diminuto_timer_t * tp)
-{
-    return tp->error;
-}
+int diminuto_timer_error(diminuto_timer_t * tp);
+
+/**
+ * Return the current timer state: IDLE (not running), DISARMed (told to
+ * stop but still running), or ARMed (running).
+ * @param tp points to the timer object.
+ * @return the current timer state.
+ */
+extern diminuto_timer_state_t diminuto_timer_state(diminuto_timer_t * tp);
 
 /*******************************************************************************
  * The API below emulates an older Diminuto implementation that found its
@@ -188,7 +194,6 @@ static inline int diminuto_timer_error(const diminuto_timer_t * tp)
  * example, NTP adjustments. Most of the unit tests were originally written
  * using this older API.
  ******************************************************************************/
-
 
 /**
  * Start a singleton timer for the specified number of ticks. When the

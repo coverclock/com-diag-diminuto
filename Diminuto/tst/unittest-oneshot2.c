@@ -80,6 +80,7 @@ int main(int argc, char ** argv)
     TEST();
 
     ASSERT(diminuto_timer_init_oneshot(&timer, callback) == &timer);
+    ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
 
     diminuto_core_enable();
     diminuto_alarm_install(0);
@@ -95,6 +96,7 @@ int main(int argc, char ** argv)
         EXPECT(!diminuto_alarm_check());
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) != (diminuto_sticks_t)-1);
+        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_ARM);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
 	    delayed = diminuto_timer_window(requested);
@@ -105,6 +107,7 @@ int main(int argc, char ** argv)
         now = result;
         ASSERT(now >= then);
         ASSERT(diminuto_timer_stop(&timer) != (diminuto_sticks_t)-1);
+        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
         claimed = delayed - remaining;
         measured = now - then;

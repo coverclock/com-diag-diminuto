@@ -90,10 +90,12 @@ int main(int argc, char ** argv)
     CHECKPOINT("%21s %21s %21s %11s\n", "requested", "claimed", "measured", "error");
 
     ASSERT(diminuto_timer_init_periodic(&timer, callback) == &timer);
+    ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
 
     for (requested = hertz / 8; requested < (16 * hertz); requested *= 2) {
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_start(&timer, requested, (void *)SIGALRM) >= 0);
+        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_ARM);
         ASSERT((result = diminuto_time_elapsed()) != (diminuto_sticks_t)-1);
         then = result;
         for (ii = 0; ii < 5; ++ii) {
@@ -123,6 +125,7 @@ int main(int argc, char ** argv)
             EXPECT(!diminuto_alarm_check());
         }
         ASSERT(diminuto_timer_stop(&timer) >= 0);
+        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
     }
 
