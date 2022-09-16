@@ -102,8 +102,8 @@ int main(int argc, char ** argv)
             ASSERT(fon <= on);
             ASSERT(foff <= off);
             ASSERT(((on > off) && (fon > foff)) || ((on < off) && (fon < foff)));
-            ASSERT((on % fon) == 0);
-            ASSERT((off % foff) == 0);
+            ASSERT((fon == 0) || ((on % fon) == 0));
+            ASSERT((foff == 0) || ((off % foff) == 0));
             ASSERT((0 <= flicker) && (flicker <= 100));
             ASSERT((0 <= fflicker) && (fflicker <= 100));
             ASSERT(fflicker <= flicker);
