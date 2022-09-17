@@ -108,10 +108,9 @@ Android platforms.
 # Platforms
 
 This code was tested against one or more of the following hardware
-targets and software platforms; generated using the Diminuto platform
-script.
-(It has been built and used for specific projects on a much wider
-variety of targets and platforms.)
+targets and software platforms. These were generated using the Diminuto
+platform script.  (Diminuto has been built and used in the dim past and
+for specific projects on a much wider variety of targets and platforms.)
 
 Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz     
 x86_64 x4     
@@ -157,16 +156,16 @@ GNU Make 4.3
 ccache     
 riscv64-redhat-linux     
 
-sifive,u74-mc rv64imafdc sv39
-riscv64 x2
-Ubuntu 22.04.1 LTS (Jammy Jellyfish)
-Linux 5.17.0-1005-starfive
-gcc (Ubuntu 11.2.0-19ubuntu1) 11.2.0
-ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35
-GNU ld (GNU Binutils for Ubuntu) 2.38
-GNU Make 4.3
-riscv64-linux-gnu-gcc-11
-riscv64-linux-gnu
+sifive,u74-mc rv64imafdc sv39    
+riscv64 x2    
+Ubuntu 22.04.1 LTS (Jammy Jellyfish)    
+Linux 5.17.0-1005-starfive    
+gcc (Ubuntu 11.2.0-19ubuntu1) 11.2.0    
+ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35    
+GNU ld (GNU Binutils for Ubuntu) 2.38    
+GNU Make 4.3    
+riscv64-linux-gnu-gcc-11    
+riscv64-linux-gnu    
 
 # Library
 
@@ -535,11 +534,11 @@ line utilities.
 
 # Branching
 
-Diminuto is big and complex enough that I sometimes move to a "master" and
-"develop" dual branch model of development. I make and test major changes
-in the "develop" branch, and when I think I have a stable release, I merge
-"develop" into the "master" branch. I still make what I consider to be minor
-changes in the master branch.
+Diminuto is big and complex enough that I sometimes move to a "master"
+(or "main") and "develop" dual branch model of development. I make and
+test major changes in the "develop" branch, and when I think I have a
+stable release, I merge "develop" into the "master" ("main") branch. I
+still make what I consider to be minor changes in the master branch.
 
 # Versioning
 
