@@ -769,7 +769,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 ## Deprecations
 
-### Pin and GPIO
+### Pin Feature and GPIO
 
 The Pin feature, which makes it easy to manipulate General Purpose Input/Output
 (GPIO) pins, uses the deprecated /sysfs ABI. I'm looking at the new ABIs. While
@@ -777,7 +777,7 @@ the new ABIs offer a higher level interface, my initial impression is that
 they don't easily support the kinds of weird GPIO doings with special devices
 that I am often called upon to do.
 
-## Warnings
+## Build Warnings
 
 I try hard to resolve all warnings, even in the Doxygen comments.
 However, Diminuto may intentionally generate some itself.
@@ -796,7 +796,9 @@ will generate a warning.
 
     inc/com/diag/diminuto/diminuto_error.h:56:5: warning: #warning This code is deprecated! [-Wcpp]
 
-## Failures
+## Unit Test Failures
+
+### Ephemeral Ports
 
 Some of the socket unit tests make use of ephemeral ports that are
 allocated and discarded quickly. Some careful collection and editing
@@ -821,7 +823,40 @@ in the server thread, simulating some workload. (Diminuto does
 support the REUSE PORT socket option, but this isn't quite it's
 intended purpose.)
 
-## Memory
+### Endpoints
+
+I have had unittest-ipc-endpoint fail because I had misconfigured the
+DNS resolver on the test system to search "diag.com", and my web server
+configured to respond go "http.diag.com" in addition to "www.diag.com".
+This caused diminuto_ipc_endpoint() to resolve "http" (without the colon)
+to the IP address of my web server instead of the HTTP port number (80),
+because it searched for "http.diag.com" instead of "http".
+
+It is true that the use of a service name without the leading colon
+can be ambiguous, but this is intentional on my part in the sense
+that in this case the feature is "working as designed".
+
+When I tried to fix the configuration of the resolver on the test
+system using resolvectl, I discovered a bug in resolvectl in
+that the command
+
+     resolvectl domain eth0 ""
+
+did not work as documented on the man page: it did nothing, instead
+of removing "diag.com" as a search domain. Furthermore, using the
+command
+
+     resolvectl domain eth0 "invalid"
+
+appeared to override the old configuration (at the expense of
+configuring a non-working search domain), but this configuration
+change did not persist across reboots.
+
+I finally (I think) fixed this by removing the soft link to
+/etc/resolv.conf and hand coding /etc/resolv.conf, removing the
+line "search diag.com". This is not the preferred fix.
+
+## Build Running Out Of Memory
 
 On a recent Raspberry Pi I have run out of memory compiling the unit
 tests. I admit I was completely taken by surprise by this. This was on
