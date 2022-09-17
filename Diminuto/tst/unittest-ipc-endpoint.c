@@ -24,7 +24,7 @@
  * define to respond go "http.diag.com" in addition to "www.diag.com".
  * This caused diminuto_ipc_endpoint() to resolve "http" (without the colon)
  * to the IP address of my web server instead of the HTTP port number (80).
- * It is true that the use of a server name without the leading colon
+ * It is true that the use of a service name without the leading colon
  * can be ambiguous, but this is intentional on my part in the sense that
  * that case the feature is "working as designed". When I tried to fix the
  * configuration of the resolver on the test system using "resolvectl" and
@@ -35,7 +35,7 @@
  * did not work as documented on the man page: it did nothing, instead of
  * removing "diag.com" as a search domain. Furthermore, using the command
  *
- *      resolve domain eth0 "invalid"
+ *      resolvectl domain eth0 "invalid"
  *
  * appeared to override the old configuration (at the expense of using a
  * non-working search domain), but this configuration change did not persist
