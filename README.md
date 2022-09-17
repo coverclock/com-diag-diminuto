@@ -544,14 +544,18 @@ still make what I consider to be minor changes in the master branch.
 
 I tag major releases with a three-number tuple that is defined in the
 build Makefile for each project. Release numbers, e.g. 22.2.1, consist of a
-major number (22), a minor number (2), and a build number (1). The major
-number changes when I've made a change significant enough that I think
-applications using the library will likely need to be changed, even though
-they may compile. The minor number changes when I've added new features or
-functionality, but existing features and functionality haven't changed. The
-build number changes when I've fixed a bug so that existing features or
-functionality works as described (even though this may break workarounds in
-applications).
+major number (22), a minor number (2), and a build number (1).
+
+The major number changes when I've made a change significant enough that
+I think applications using the library will likely need to be changed,
+even though they may compile.
+
+The minor number changes when I've added new features or functionality,
+but existing features and functionality haven't changed.
+
+The build number changes when I've fixed a bug so that existing
+features or functionality works as described (even though this may break
+workarounds in applications).
 
 The major and minor numbers are incorporated into the name of the shared
 object (dynamic link library) produced by the build.
