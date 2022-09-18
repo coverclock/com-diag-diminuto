@@ -99,13 +99,6 @@ int diminuto_timer_error(diminuto_timer_t * tp)
     return result;
 }
 
-/**
- * Return the current timer state: IDLE (not running), DISARMed (told to
- * stop but still running), or ARMed (running). An UNKNOWN state is also
- * possible if pthreads fails.
- * @param tp points to the timer object.
- * @return the current timer state.
- */
 diminuto_timer_state_t diminuto_timer_state(diminuto_timer_t * tp)
 {
     diminuto_timer_state_t result = DIMINUTO_TIMER_STATE_UNKNOWN;
