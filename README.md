@@ -903,6 +903,13 @@ to build everything except the unit tests, and
 to just build the unit tests, just in case this happens again in the future,
 to make this easier to troubleshoot.
 
+## IPv6
+
+There are a variety of unit tests that exercise features specific to
+IPv6. Typically these have "6" (instead of "4") in their names. Some
+platforms (e.g. Raspbian a.k.a. Raspberry Pi OS) do not come with IPv6
+enabled by default. I mention this above in the "Dependencies" section.
+
 # Repository
 
 <https://github.com/coverclock/com-diag-diminuto>
