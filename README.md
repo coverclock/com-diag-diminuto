@@ -826,11 +826,12 @@ intended purpose.)
 ### Endpoints
 
 I have had unittest-ipc-endpoint fail because I had misconfigured the
-DNS resolver on the test system to search "diag.com", and my web server
-configured to respond go "http.diag.com" in addition to "www.diag.com".
-This caused diminuto_ipc_endpoint() to resolve "http" (without the colon)
-to the IP address of my web server instead of the HTTP port number (80),
-because it searched for "http.diag.com" instead of "http".
+DNS resolver on an Uubutu-based test system to search "diag.com", and
+my web server configured to respond go "http.diag.com" in addition to
+"www.diag.com". This caused diminuto_ipc_endpoint() to resolve "http"
+(without the colon) to the IP address of my web server instead of the
+HTTP port number (80), because it searched for "http.diag.com" instead
+of "http".
 
 It is true that the use of a service name without the leading colon
 can be ambiguous, but this is intentional on my part in the sense
@@ -852,9 +853,15 @@ appeared to override the old configuration (at the expense of
 configuring a non-working search domain), but this configuration
 change did not persist across reboots.
 
-I finally (I think) fixed this by removing the soft link to
+I initially fixed this by removing the soft link to
 /etc/resolv.conf and hand coding /etc/resolv.conf, removing the
-line "search diag.com". This is not the preferred fix.
+line "search diag.com". This was not the preferred fix.
+
+Eventually (almost by accident) I re-discovered the configuration
+file I had added, a YAML file in /etc/netplan, and removed the
+"search" line from it. After rebooting, this permanently (and
+correctly) fixed the problem. (I also restored the original soft
+link from /etc/resolv.conf.)
 
 ## Build Running Out Of Memory
 
