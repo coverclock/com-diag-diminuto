@@ -171,7 +171,7 @@ riscv64-linux-gnu
 
 A header file associated with each of the feature names below
 can be found in the ```inc/com/diag/diminuto``` directory. For
-example, the public API for the "assert" feature is defined by the
+example, the public API for the Assert feature is defined by the
 ```inc/com/diag/diminuto/diminuto_assert.h``` header file, and its
 implemention will be in ```src/diminuto_assert.c```.
 
