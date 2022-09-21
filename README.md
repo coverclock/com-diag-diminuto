@@ -863,8 +863,8 @@ removing the line "search diag.com". This was not the preferred fix.
 Eventually (almost by accident) I re-discovered the configuration
 file I had added, a YAML file in ```/etc/netplan```, and removed the
 "search" line from it. After rebooting, this permanently (and
-correctly) fixed the problem. (I also restored the original soft
-link from ```/etc/resolv.conf```.)
+correctly) fixed the problem. I also restored the original soft
+link from ```/etc/resolv.conf``` to ```/run/systemd/resolve/stub-resolv.conf```.
 
 ## Build Running Out Of Memory
 
