@@ -583,11 +583,24 @@ is just my own convention.
     cd src
     git clone https://github.com/coverclock/com-diag-diminuto
     cd com-diag-diminuto/Diminuto
-    make pristine
-    make depend
-    make all
+    make scratch
     . out/host/bin/setup
     make sanity
+
+The ```scratch``` target is a combination of ```pristine``` which recursively
+removes the output directory,```depend``` which generates the header file
+dependencies file used by the build, and ```all``` which builds everything
+that needs to be built. These targets can be use separately as well.
+
+The build process builds some shell scripts. On Debian-based Linux distos
+like Ubuntu and Raspbian, escaping special characters in the Makefile
+requires two successive backslashes. But typically (and mysteriously)
+on Fedora-based distros, only one successive backslash is necessary,
+and two will cause an error. Since I mostly develop under Debian-based
+distros, two backslashes is the default. But one backslash can be selected
+by specifying a parameter on the command line.
+
+    make scratch BACKSLASHES=1
 
 Run more extended tests that may take a lunch break to complete.
 

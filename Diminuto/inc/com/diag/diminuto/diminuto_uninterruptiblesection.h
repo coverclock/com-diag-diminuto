@@ -43,10 +43,10 @@ extern void diminuto_uninterruptiblesection_cleanup(void * vp);
  */
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_BEGIN(...) \
     do { \
-        const int diminuto_uninterruptiblesection_signals[] = { __VA_ARGS__ }; \
-        sigset_t diminuto_uninterruptiblesection_set; \
-        if (diminuto_uninterruptiblesection_block(diminuto_uninterruptiblesection_signals, diminuto_countof(diminuto_uninterruptiblesection_signals), &diminuto_uninterruptiblesection_set) == 0) { \
-            pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &diminuto_uninterruptiblesection_set); \
+        const int _diminuto_uninterrutiblesection_signals[] = { __VA_ARGS__ }; \
+        sigset_t _diminuto_uninterruptiblesection_set; \
+        if (diminuto_uninterruptiblesection_block(_diminuto_uninterrutiblesection_signals, diminuto_countof(_diminuto_uninterrutiblesection_signals), &_diminuto_uninterruptiblesection_set) == 0) { \
+            pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &_diminuto_uninterruptiblesection_set); \
             do { \
                 ((void)0)
 

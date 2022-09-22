@@ -41,9 +41,9 @@
              */
 #           define DIMINUTO_SERIALIZED_SECTION_BEGIN(_INTP_) \
                 do { \
-                    volatile diminuto_spinlock_t * _diminuto_serialized_section_spinlock_p; \
-                    _diminuto_serialized_section_spinlock_p = (_INTP_); \
-                    while (__sync_lock_test_and_set(_diminuto_serialized_section_spinlock_p, 1)); \
+                    volatile diminuto_spinlock_t * _diminuto_serializedsection_sp; \
+                    _diminuto_serializedsection_sp = (_INTP_); \
+                    while (__sync_lock_test_and_set(_diminuto_serializedsection_sp, 1)); \
                     do { \
                         ((void)0)
 
@@ -55,7 +55,7 @@
              */
 #           define DIMINUTO_SERIALIZED_SECTION_END \
                     } while (0); \
-                    __sync_lock_release(_diminuto_serialized_section_spinlock_p); \
+                    __sync_lock_release(_diminuto_serializedsection_sp); \
                 } while (0)
 
             /*

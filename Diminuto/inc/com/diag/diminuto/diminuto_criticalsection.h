@@ -47,10 +47,10 @@ extern void diminuto_criticalsection_cleanup(void * vp);
  */
 #define DIMINUTO_CRITICAL_SECTION_BEGIN(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mp; \
-        diminuto_criticalsection_mp = (_MP_); \
-        if (diminuto_criticalsection_lock(diminuto_criticalsection_mp) == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
+        pthread_mutex_t * _diminuto_criticalsection_mp; \
+        _diminuto_criticalsection_mp = (_MP_); \
+        if (diminuto_criticalsection_lock(_diminuto_criticalsection_mp) == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mp); \
             do { \
                 ((void)0)
 
@@ -62,10 +62,10 @@ extern void diminuto_criticalsection_cleanup(void * vp);
  */
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MP_) \
     do { \
-        pthread_mutex_t * diminuto_criticalsection_mp; \
-        diminuto_criticalsection_mp = (_MP_); \
-        if (diminuto_criticalsection_trylock(diminuto_criticalsection_mp) == 0) { \
-            pthread_cleanup_push(diminuto_criticalsection_cleanup, diminuto_criticalsection_mp); \
+        pthread_mutex_t * _diminuto_criticalsection_mp; \
+        _diminuto_criticalsection_mp = (_MP_); \
+        if (diminuto_criticalsection_trylock(_diminuto_criticalsection_mp) == 0) { \
+            pthread_cleanup_push(diminuto_criticalsection_cleanup, _diminuto_criticalsection_mp); \
             do { \
                 ((void)0)
 
