@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	90# API changes that may require that applications be modified.
 MINOR				:=	0# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -875,11 +875,11 @@ patch:	$(OLD) $(NEW)
 
 ########## Rules
 
-$(OUT)/$(OBC_DIR)/%.txt:	%.c $(TARGETSYNTHESIZED)
+$(OUT)/$(OBC_DIR)/%.c:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) -E $(CPPFLAGS) -c $< > $@
 
-$(OUT)/$(OBX_DIR)/%.txt:	%.cpp $(TARGETSYNTHESIZED)
+$(OUT)/$(OBX_DIR)/%.cpp:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) -E $(CPPFLAGS) -c $< > $@
 
