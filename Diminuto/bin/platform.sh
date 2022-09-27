@@ -59,6 +59,9 @@ fi
 ABI=$(basename $(readlink -e $(which gcc)))
 TRIPLET=$(gcc -dumpmachine)
 
+BIGLITTLE=$(endianess)
+ENDIANESS="${BIGLITTLE}-endian"
+
 echo ${TARGET} "    "
 echo ${PROCESSORTYPE} x${PROCESSORS} "    "
 echo ${OPERATINGSYSTEM} "    "
@@ -69,5 +72,6 @@ echo ${BINUTILSVERSION} "    "
 echo ${MAKEVERSION} "    "
 echo ${ABI} "    "
 echo ${TRIPLET} "    "
+echo ${ENDIANESS} "    "
 
 exit 0
