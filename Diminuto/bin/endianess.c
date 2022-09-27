@@ -23,15 +23,20 @@
  */
 
 #include "com/diag/diminuto/diminuto_endianess.h"
+#include "com/diag/diminuto/diminuto_assert.h"
 #include <stdio.h>
 #include <errno.h>
 
 int main(int argc, char **argv)
 {
     int xc = 0;
+    int rc = 0;
+    static const int LITTLEENDIAN = 1;
 
-    if (puts(diminuto_littleendian() ? "little" : "big") != EOF) {
-        /* Do nothing. */
+    if (puts((rc = diminuto_littleendian()) ? "little" : "big") != EOF) {
+        if (fflush(stdout) == EOF) {
+            perror("endian: fflush");
+        }
     } else if (ferror(stdout)) {
         errno = EIO;
         perror("endian: puts stdout error");
@@ -45,6 +50,12 @@ int main(int argc, char **argv)
         perror("endian: puts stdout failed");
         xc = 3;
     }
+
+    /*
+     * Curious.
+     */
+
+    diminuto_expect(rc == *((char *)(&LITTLEENDIAN)));
 
     return xc;
 }
