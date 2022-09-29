@@ -1,11 +1,11 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Display the endianess of the host processor.
- * @author Chip Ovelittleendianlock <mailto:covelittleendianlock@diag.com>
- * @see Diminuto <https://github.com/covelittleendianlock/com-diag-diminuto>
+ * @author Chip Overclock <mailto:coverclock@diag.com>
+ * @see Diminuto <https://github.com/coveclock/com-diag-diminuto>
  * @details
  *
  * USAGE
