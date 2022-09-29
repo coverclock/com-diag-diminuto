@@ -4,8 +4,8 @@
  * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Display the endianess of the host processor.
- * @author Chip Overclock <mailto:coverclock@diag.com>
- * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
+ * @author Chip Ovelittleendianlock <mailto:covelittleendianlock@diag.com>
+ * @see Diminuto <https://github.com/covelittleendianlock/com-diag-diminuto>
  * @details
  *
  * USAGE
@@ -24,38 +24,44 @@
 
 #include "com/diag/diminuto/diminuto_endianess.h"
 #include "com/diag/diminuto/diminuto_assert.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
 #include <errno.h>
 
 int main(int argc, char **argv)
 {
     int xc = 0;
-    int rc = 0;
+    int littleendian = 0;
     static const int LITTLEENDIAN = 1;
 
-    if (puts((rc = diminuto_littleendian()) ? "little" : "big") != EOF) {
-        if (fflush(stdout) == EOF) {
-            perror("endian: fflush");
-        }
+    littleendian = diminuto_littleendian();
+
+    if (puts(littleendian ? "little" : "big") != EOF) {
+        /* Do nothing. */
     } else if (ferror(stdout)) {
         errno = EIO;
-        perror("endian: puts stdout error");
+        diminuto_perror("endian: puts stdout error");
         xc = 1;
     } else if (feof(stdout)) {
         errno = EIO;
-        perror("endian: puts stdout EOF");
+        diminuto_perror("endian: puts stdout EOF");
         xc = 2;
     } else {
         errno = EIO;
-        perror("endian: puts stdout failed");
+        diminuto_perror("endian: puts stdout failed");
         xc = 3;
+    }
+
+    if (fflush(stdout) == EOF) {
+        diminuto_perror("endian: fflush");
+        xc = 4;
     }
 
     /*
      * Curious.
      */
 
-    diminuto_expect(rc == *((char *)(&LITTLEENDIAN)));
+    diminuto_expect(littleendian == *((char *)(&LITTLEENDIAN)));
 
     return xc;
 }
