@@ -26,6 +26,7 @@
 #include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <errno.h>
 
 int main(int argc, char **argv)
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
      * Curious.
      */
 
-    diminuto_expect(littleendian == *((char *)(&LITTLEENDIAN)));
+    diminuto_expect(littleendian == *((int8_t *)(&LITTLEENDIAN)));
 
     return xc;
 }
