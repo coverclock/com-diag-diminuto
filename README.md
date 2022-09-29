@@ -639,13 +639,13 @@ There are some make targets that are useful when you have dig into the
 code in a lot more detail.
 
 If you want to look at the preprocessor output without further compiling it,
-you can use a ```.c``` target to the output directory (replacing ```host``
+you can use a ```.c``` target to the output directory (replacing ```host```
 if necessary). This invokes the C compiler with the ```-E``` option.
 
     make out/host/obc/tst/unittest-barrier.c
 
 If you want to look at the assembler output without further assembling it,
-you can use a ```.s``` target to the output directory (replacing ```host``
+you can use a ```.s``` target to the output directory (replacing ```host```
 if necessary). This invokes the C compiler with the ```-S``` option.
 
     make out/host/obc/tst/unittest-barrier.s
