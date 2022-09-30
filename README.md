@@ -169,7 +169,7 @@ riscv64-linux-gnu
 
 # Library
 
-Given a feature I call Foo,
+Given a feature I call Foo (or foo),
 * its public API will be defined in
 ```inc/com/diag/diminuto/diminuto_foo.h```;
 * its private (internal) API, if one exists, will be defined in
