@@ -167,7 +167,7 @@ GNU Make 4.3
 riscv64-linux-gnu-gcc-11    
 riscv64-linux-gnu    
 
-# Library
+# Features
 
 Given a feature I call Foo (or foo),
 * its public API will be defined in
