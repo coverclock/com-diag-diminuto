@@ -341,6 +341,7 @@ in the event that different projects each have an unrelated feature named Foo.
 * dump - display a file in a formatted hexidecimal dump.
 * elapsedsleep - sleep for monotonic duration to specified resolution.
 * elapsedtime - display monotonic elapsed time to specified resolution.
+* endianess - display the little or big endianess of the target.
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * frequency - display Diminuto base tick frequency in hertz.
