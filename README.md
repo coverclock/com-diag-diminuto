@@ -551,9 +551,9 @@ these by default (e.g. Raspbian).
 
 I have a lot of bash scripts that I find useful, but which are not
 Diminuto-specific. These can be found in the separate repository
-<https://github.com/coverclock/com-diag-bin>. However, they are not
-necessary to build, install, and use the Diminuto library or its command
-line utilities.
+<https://github.com/coverclock/com-diag-bin>. These scripts do not
+require that you build, install, and use the Diminuto library or
+its command line utilities.
 
 # Branching
 
