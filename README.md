@@ -303,6 +303,7 @@ in the event that different projects each have an unrelated feature named Foo.
 
 ## Hardware
 
+* coherentsection - macros to implement scoped code blocks with acquire/release memory barriers.
 * controller - proportional/integral/derivative (PID) controller.
 * cue - logic level debouncer and edge detector.
 * i2c - simplified thread-safe API around Linux I2C API.
