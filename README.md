@@ -169,11 +169,28 @@ riscv64-linux-gnu
 
 # Library
 
-A header file associated with each of the feature names below
-can be found in the ```inc/com/diag/diminuto``` directory. For
-example, the public API for the Assert feature is defined by the
-```inc/com/diag/diminuto/diminuto_assert.h``` header file, and its
-implemention will be in ```src/diminuto_assert.c```.
+Given a feature I call Foo,
+* its public API will be defined in
+```inc/com/diag/diminuto/diminuto_foo.h```;
+* its private (internal) API, if one exists, will be defined in
+```src/diminuto_foo.h```;
+* its implemention will be in
+```src/diminuto_foo.c``` (very occasionally there will be
+multiple implementation files, with minor variations on this name);
+* and its unit test will be in
+```tst/unittest-foo.c``` (there may be more than one, with
+minor variations on this name).
+
+The long qualified path name for the header file directory facilitates
+combining multiple Digital Aggregates projects into one application, e.g.
+```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and ```inc/com/diag/hazer```,
+with no danger of header file ambiguity. C/C++ include statements will look like
+
+    #include "com/diag/diminuto/diminuto_foo.h"
+    #include "com/diag/codex/codex_foo.h"
+    #include "com/diag/hazer/hazer_foo.h"
+
+in the event that different projects each have an unrelated feature named Foo.
 
 ## Basics
 
