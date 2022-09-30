@@ -184,7 +184,9 @@ minor variations on this name).
 The long qualified path name for the header file directory facilitates
 combining multiple Digital Aggregates projects into one application, e.g.
 ```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and ```inc/com/diag/hazer```,
-with no danger of header file ambiguity. C/C++ include statements will look like
+with no danger of header file ambiguity even if the file name doesn't have a
+prefix unique to the project (my C++ projects don't).
+C/C++ include statements will look like
 
     #include "com/diag/diminuto/diminuto_foo.h"
     #include "com/diag/codex/codex_foo.h"
