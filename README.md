@@ -680,15 +680,8 @@ if necessary). This invokes the C compiler with the ```-S``` option.
 # Logging
 
 The Diminuto features, unit tests, and functional tests make heavy use
-of the Diminuto Log feature. Most users of the Log feature import the
-log mask from the environment. A good default log level (and is what I
-use myself for development) is to enable all log levels other than DEBUG.
-
-    export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
-
-To see more detail, also enable DEBUG.
-
-    export COM_DIAG_DIMINUTO_LOG_MASK=0xff
+of the Diminuto Log feature. Most Diminuto code using the Log feature
+import the log mask from the environment.
 
 The log mask bits, as defined in the feature's header file, are these,
 patterned after the syslog(3) log levels.
@@ -701,6 +694,22 @@ patterned after the syslog(3) log levels.
     DIMINUTO_LOG_MASK_NOTICE        = (1 << (7 - 5))
     DIMINUTO_LOG_MASK_INFORMATION   = (1 << (7 - 6))
     DIMINUTO_LOG_MASK_DEBUG         = (1 << (7 - 7))
+
+The log levels enabled by default are NOTICE, WARNING, ERROR, CRITICAL,
+ALERT, and EMERGENCY, equivalent to the log mask environmental variable
+below.
+
+    export COM_DIAG_DIMINUTO_LOG_MASK=0xfc
+
+A good starting point (and what I use myself for development) is to
+enable all log levels other than DEBUG.
+
+    export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
+
+To see more detail, also enable DEBUG, although this can produce a fire
+hose of output.
+
+    export COM_DIAG_DIMINUTO_LOG_MASK=0xff
 
 For every log output line, the Diminuto Log features determines whether
 the issuing process is being run interactively or not, or is a daemon,
