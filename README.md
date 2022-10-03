@@ -179,7 +179,7 @@ Given a feature I call Foo (or foo),
 ```inc/com/diag/diminuto/diminuto_foo.h```;
 * its private (internal) API, if one exists, will be defined in
 ```src/diminuto_foo.h```;
-* its implemention will be in
+* its implemention (if it's not purely in the header file) will be in
 ```src/diminuto_foo.c``` (very occasionally there will be
 multiple implementation files, with minor variations on this name);
 * and its unit test will be in
