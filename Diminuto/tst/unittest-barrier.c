@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the memory Barrier feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -13,6 +13,21 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_barrier.h"
+
+/**
+ * Example function whose inlines expand into GNU built-ins.
+ * Use the special make targets to see what the assembler looks
+ * like:
+ *
+ * make out/host/obc/tst/unittest-barrier.c
+ * make out/host/obc/tst/unittest-barrier.s
+ */
+static void example()
+{
+        diminuto_barrier();
+        diminuto_acquire();
+        diminuto_release();
+}
 
 int main(void)
 {
@@ -39,6 +54,13 @@ int main(void)
 #if !defined(COM_DIAG_DIMINUTO_RELEASE)
         FAILURE();
 #endif
+        STATUS();
+    }
+
+    {
+        TEST();
+        printf("&example=%p\n", &example);
+        example();
         STATUS();
     }
 
