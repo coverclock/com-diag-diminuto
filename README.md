@@ -133,6 +133,7 @@ GNU ld (GNU Binutils for Ubuntu) 2.38
 GNU Make 4.3     
 aarch64-linux-gnu-gcc-11     
 aarch64-linux-gnu     
+little-endian    
 
 Raspberry Pi 4 Model B Rev 1.1 BCM2835 c03111     
 aarch64 x4     
@@ -144,6 +145,7 @@ GNU ld (GNU Binutils for Debian) 2.35.2
 GNU Make 4.3     
 aarch64-linux-gnu-gcc-10     
 aarch64-linux-gnu     
+little-endian    
 
 sifive,u74-mc rv64imafdc sv39     
 riscv64 x2     
@@ -155,6 +157,7 @@ GNU ld version 2.35-18.fc33
 GNU Make 4.3     
 ccache     
 riscv64-redhat-linux     
+little-endian    
 
 sifive,u74-mc rv64imafdc sv39    
 riscv64 x2    
@@ -166,6 +169,7 @@ GNU ld (GNU Binutils for Ubuntu) 2.38
 GNU Make 4.3    
 riscv64-linux-gnu-gcc-11    
 riscv64-linux-gnu    
+little-endian    
 
 # Features
 
