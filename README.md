@@ -690,6 +690,23 @@ To see more detail, also enable DEBUG.
 
     export COM_DIAG_DIMINUTO_LOG_MASK=0xff
 
+The log mask bits, as defined in the feature's header file, are these,
+patterned after the syslog(3) log levels.
+
+    DIMINUTO_LOG_MASK_EMERGENCY     = (1 << (7 - 0))
+    DIMINUTO_LOG_MASK_ALERT         = (1 << (7 - 1))
+    DIMINUTO_LOG_MASK_CRITICAL      = (1 << (7 - 2))
+    DIMINUTO_LOG_MASK_ERROR         = (1 << (7 - 3))
+    DIMINUTO_LOG_MASK_WARNING       = (1 << (7 - 4))
+    DIMINUTO_LOG_MASK_NOTICE        = (1 << (7 - 5))
+    DIMINUTO_LOG_MASK_INFORMATION   = (1 << (7 - 6))
+    DIMINUTO_LOG_MASK_DEBUG         = (1 << (7 - 7))
+
+For every log output line, the Diminuto Log features determines whether
+the issuing process is being run interactively or not, or is a daemon,
+and directs the output appropriately to either standard error or to the
+system log.
+
 # Documentation
 
 All of the Diminuto code has embedded within it Doxygen comments. You can
