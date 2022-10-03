@@ -122,6 +122,7 @@ GNU ld (GNU Binutils for Ubuntu) 2.34
 GNU Make 4.2.1     
 x86_64-linux-gnu-gcc-9     
 x86_64-linux-gnu     
+little-endian    
 
 Raspberry Pi 4 Model B Rev 1.4 BCM2835 d03114     
 aarch64 x4     
