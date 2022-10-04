@@ -26,7 +26,7 @@
  */
 #define DIMINUTO_COHERENT_SECTION_BEGIN \
     do { \
-        diminuto_acquire_f(); \
+        diminuto_acquire(); \
         do { \
             ((void)0)
 
@@ -37,7 +37,7 @@
  */
 #define DIMINUTO_COHERENT_SECTION_END \
         } while (0); \
-        diminuto_release_f(); \
+        diminuto_release(); \
     } while (0)
 
 #endif
