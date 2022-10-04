@@ -308,7 +308,7 @@ in the event that different projects each have an unrelated feature named Foo.
 
 ## Hardware
 
-* barrier - macros to implement memory barriers using GNU macros.
+* barrier - macros and inlines to implement memory barriers using GNU built-ins.
 * coherentsection - macros to implement scoped code blocks with acquire/release memory barriers.
 * controller - proportional/integral/derivative (PID) controller.
 * cue - logic level debouncer and edge detector.
