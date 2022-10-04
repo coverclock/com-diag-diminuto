@@ -1044,6 +1044,8 @@ A. Arcangeli et al., U-Boot, include/linux/rbtree.h and lib/rbtree.c
 
 K. Astrom, T. Hagglund, "PID Controllers: Theory, Design, and Tuning", 2nd ed., Instrumentation, Systems and Automation Society, 1995-01-01
 
+ATM Forum, Traffic Management Specification Version 4.1, af-tm-0121.000, 1999-03
+
 B. Beauregard, "Improving the Beginner's PID", Project Blog, 2011-04
 
 T. Berners-Lee, R. Fielding, L. Masinter, "Uniform Resource Identifier (URI) Syntax", RFC 3986, 2005-01
@@ -1064,8 +1066,6 @@ E. Davies, S. Krishnan, P. Sovola, "IPv6 Transition/Coexistence Security Conside
 
 J. Fletcher, "An Arithmetic Checksum for Serial Transmissions", IEEE Transactions on Communication, COM-30, No. 1, pp. 247-252, January 1982
 
-ATM Forum, Traffic Management Specification Version 4.1, af-tm-0121.000, 1999-03
-
 J. Ganssle, "A Guide to Debouncing - Part 2, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing-pt2.htm>
 
 J. Ganssle, "A Guide to Debouncing, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing.htm>
@@ -1073,6 +1073,8 @@ J. Ganssle, "A Guide to Debouncing, or How To Debounce a Contact in Two Easy Pag
 J. Ganssle, "My Favorite Software Debouncers", 2004-06-16, <http://www.embedded.com/electronics-blogs/break-points/4024981/My-favorite-software-debouncers>
 
 R. Gilligan, S. Thomson, J. Bound, J. McCann, W. Stevens, "Basic Socket Interface Extentions for IPv6", RFC 3493, 2003-02
+
+GNU, "Built-in functions for atomic memory access", 5.44, <https://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/Atomic-Builtins.html>
 
 R. Graziani, IPV6 FUNDAMENTALS, Cisco Press, 2013
 

@@ -11,8 +11,11 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * 
- * Provides memory barriers with acquire and release semantics.
- * EXPERIMENTAL
+ * Provides memory barriers with acquire and release semantics. EXPERIMENTAL
+ *
+ * REFERENCES
+ *
+ * <https://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/Atomic-Builtins.html>
  */
 
 typedef int diminuto_spinlock_t;
