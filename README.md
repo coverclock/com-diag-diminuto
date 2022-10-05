@@ -873,9 +873,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 # Issues
 
-## Deprecations
-
-### Pin Feature and GPIO
+## Feature Deprecations
 
 The Pin feature, which makes it easy to manipulate General Purpose Input/Output
 (GPIO) pins, uses the deprecated sysfs ABI. I'm looking at the new ABIs. While
