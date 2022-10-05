@@ -650,7 +650,7 @@ If you want to look at the preprocessor output without further compiling it,
 you can use a ```.c``` target to the output directory (replacing ```host```
 if necessary). This invokes the C compiler with the ```-E``` option.
 
-    make out/host/obc/tst/unittest-barrier.c
+    make out/host/obc/tst/unittest-barrier.i
 
 If you want to look at the assembler output without further assembling it,
 you can use a ```.s``` target to the output directory (replacing ```host```
