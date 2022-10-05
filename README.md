@@ -69,8 +69,9 @@ Diminuto provides:
 * vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
 * macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
+* support for integrating C into a C++ code base (```diminuto_cxxcapi``` pronounced "sexy API"),
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
-* an architecture and design that simplifies using Diminuto in an existing code base, include support for integrating C into a C++ code base (```diminuto_cxxcapi```, pronounced "sexy API").
+* an architecture and design that simplifies using Diminuto in an existing code base, and for using multiple Digital Aggregates repositories in the same project.
 
 Diminuto also provides many command-line utilities using the features
 of the library that are especially useful in shell scripts.
@@ -196,6 +197,7 @@ C/C++ include statements will look like
     #include "com/diag/diminuto/diminuto_foo.h"
     #include "com/diag/codex/codex_foo.h"
     #include "com/diag/hazer/hazer_foo.h"
+    #include "com/diag/grandote/Foo.h"
 
 in the event that different projects each have an unrelated feature named Foo.
 
@@ -871,9 +873,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 # Issues
 
-## Deprecations
-
-### Pin Feature and GPIO
+## Feature Deprecations
 
 The Pin feature, which makes it easy to manipulate General Purpose Input/Output
 (GPIO) pins, uses the deprecated sysfs ABI. I'm looking at the new ABIs. While
