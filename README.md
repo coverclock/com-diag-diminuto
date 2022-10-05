@@ -658,6 +658,11 @@ if necessary). This invokes the C compiler with the ```-S``` option.
 
     make out/host/obc/tst/unittest-barrier.s
 
+The ```.l``` target causes the assembler to produce a listing that includes
+useful stuff like the machine code and offsets.
+
+    make out/host/obc/tst/unittest-barrier.l
+
 ## Unit Testing
 
 Run the basic sanity tests that complete in just a few minutes.

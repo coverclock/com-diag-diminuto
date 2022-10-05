@@ -901,11 +901,11 @@ $(OUT)/$(OBX_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
 
 $(OUT)/$(OBC_DIR)/%.l:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $<))) -c $< -Wa,-a=$@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $<))) -Wa,-ahgls=$@ -c $<
 
 $(OUT)/$(OBX_DIR)/%.l:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(addprefix $(OUT)/$(OBX_DIR)/,$(addsuffix .o,$(basename $<))) -c $< -Wa,-a=$@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(addprefix $(OUT)/$(OBX_DIR)/,$(addsuffix .o,$(basename $<))) -Wa,-ahgls=$@ -c $<
 
 $(OUT)/%:	%.sh
 	D=`dirname $@`; mkdir -p $$D
