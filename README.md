@@ -647,7 +647,7 @@ There are some make targets that are useful when you have dig into the
 code in a lot more detail.
 
 If you want to look at the preprocessor output without further compiling it,
-you can use a ```.c``` target to the output directory (replacing ```host```
+you can use a ```.i``` target to the output directory (replacing ```host```
 if necessary). This invokes the C compiler with the ```-E``` option.
 
     make out/host/obc/tst/unittest-barrier.i
