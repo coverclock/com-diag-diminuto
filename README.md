@@ -197,6 +197,7 @@ C/C++ include statements will look like
     #include "com/diag/diminuto/diminuto_foo.h"
     #include "com/diag/codex/codex_foo.h"
     #include "com/diag/hazer/hazer_foo.h"
+    #include "com/diag/grandote/Foo.h"
 
 in the event that different projects each have an unrelated feature named Foo.
 
