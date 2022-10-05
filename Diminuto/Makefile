@@ -891,6 +891,14 @@ $(OUT)/$(OBX_DIR)/%.s:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) -S $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
+$(OUT)/$(OBC_DIR)/%.l:	%.c $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fverbose-asm -Wa,-ahgls=$@ -o $(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $<))) -c $<
+
+$(OUT)/$(OBX_DIR)/%.l:	%.cpp $(TARGETSYNTHESIZED)
+	D=`dirname $@`; mkdir -p $$D
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fverbose-asm -Wa,-ahgls=$@ -o $(addprefix $(OUT)/$(OBX_DIR)/,$(addsuffix .o,$(basename $<))) -c $<
+
 $(OUT)/$(OBC_DIR)/%.o:	%.c $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
@@ -898,14 +906,6 @@ $(OUT)/$(OBC_DIR)/%.o:	%.c $(TARGETSYNTHESIZED)
 $(OUT)/$(OBX_DIR)/%.o:	%.cpp $(TARGETSYNTHESIZED)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
-
-$(OUT)/$(OBC_DIR)/%.l:	%.c $(TARGETSYNTHESIZED)
-	D=`dirname $@`; mkdir -p $$D
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $(addprefix $(OUT)/$(OBC_DIR)/,$(addsuffix .o,$(basename $<))) -Wa,-ahgls=$@ -c $<
-
-$(OUT)/$(OBX_DIR)/%.l:	%.cpp $(TARGETSYNTHESIZED)
-	D=`dirname $@`; mkdir -p $$D
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $(addprefix $(OUT)/$(OBX_DIR)/,$(addsuffix .o,$(basename $<))) -Wa,-ahgls=$@ -c $<
 
 $(OUT)/%:	%.sh
 	D=`dirname $@`; mkdir -p $$D
