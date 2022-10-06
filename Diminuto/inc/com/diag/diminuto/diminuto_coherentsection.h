@@ -14,6 +14,7 @@
  * The Coherent Section feature uses the Barrier feature to
  * provide consistent memory acquire/release semantics using
  * bracketing macros.
+ *
  * EXPERIMENTAL
  */
 

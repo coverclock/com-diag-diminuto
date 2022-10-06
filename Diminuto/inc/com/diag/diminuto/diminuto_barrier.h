@@ -13,6 +13,14 @@
  * 
  * Provides memory barriers with acquire and release semantics. EXPERIMENTAL
  *
+ * The read (acquire) and write (release) barriers are achieved as side effects
+ * of using gcc built-in atomic primitives that in this case otherwise do
+ * nothing.
+ *
+ * If you want bracketing macros for this, see the Coherent Section feature.
+ *
+ * If you want actual spinlocks, see the Serialized Section feature.
+ *
  * REFERENCES
  *
  * <https://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/Atomic-Builtins.html>
