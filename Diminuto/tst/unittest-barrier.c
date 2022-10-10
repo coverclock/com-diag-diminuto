@@ -60,6 +60,11 @@ void do_functions()
     diminuto_release();
 }
 
+void do_value()
+{
+    value = 0xdeadbeef;
+}
+
 int main(void)
 {
     volatile int reg;
@@ -110,6 +115,9 @@ int main(void)
 
         printf("&do_functions=%p\n", &do_functions);
         do_functions();
+
+        printf("&do_value=%p\n", &do_value);
+        do_value();
 
         STATUS();
     }
