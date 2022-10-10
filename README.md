@@ -192,7 +192,7 @@ combining multiple Digital Aggregates projects into one application, e.g.
 ```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and ```inc/com/diag/hazer```,
 with no danger of header file ambiguity even if the file name doesn't have a
 prefix unique to the project (my C++ projects, like Grandote, don't follow that
-pattern, since they depend upon C++ namespaces). C/C++ include statements will
+pattern, and they depend upon C++ namespaces). C/C++ include statements will
 look like this
 
     #include "com/diag/diminuto/diminuto_foo.h"
