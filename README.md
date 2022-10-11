@@ -205,6 +205,13 @@ include statements will look like this
 
 in the event that different projects have an unrelated feature named Foo.
 
+Preprocessor symbols that are not strictly speaking part of the public API being
+defined may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
+to prevent symbol conflicts.
+
+Similarly, environmental variables have qualified names like
+```COM_DIAG_DIMINUTO_LOG_MASK``` to prevent name conflicts in the environment.
+
 ## Basics
 
 * assert - similar to assert(3) but with more output.
