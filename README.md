@@ -355,7 +355,7 @@ Similarly, environmental variables have qualified names like
 * datesink - consume verbose timestamp stream.
 * datesource - produce verbose timestamp stream.
 * dec - display an argument number in decimal.
-* dhhmmss - calculate D/HH:MM:SS from seconds.
+* dhhmmss - calculate D/HH:MM:SS from elapsed seconds.
 * dump - display a file in a formatted hexidecimal dump.
 * elapsedsleep - sleep for monotonic duration to specified resolution.
 * elapsedtime - display monotonic elapsed time to specified resolution.
