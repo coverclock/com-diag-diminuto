@@ -84,9 +84,9 @@ Diminuto isn't intended to be portable. It is specifically designed to
 support the kind of systems programming efforts in the Linux/GNU environment
 that I am routinely called upon to do. It depends on specific features of
 the Linux kernel, the GNU libraries, and even the GNU compiler. In addition,
-it assumes a char is one octet so that sizeof() returns a size_t in octets,
+it assumes a ```char``` is one octet so that ```sizeof()``` returns a ```size_t``` in octets,
 and that integer operations are performed using two's complement arithmetic;
-neither of these is a given in C.
+none of these is a given in C.
 
 For some projects over the years, I have ported Diminuto (as it existed
 at that time) to uClibc (a stripped down C library used by Buildroot),
