@@ -30,8 +30,8 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	90# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1174,11 +1174,21 @@ gnuish:
 
 logging:	$(OUT)/$(SYM_DIR)/logging
 	logging
+	echo "logging: default" 1>&2
 	unittest-log
+	echo "logging: automatic" 1>&2
+	unittest-log automatic
+	echo "logging: daemon" 1>&2
 	unittest-log daemon
-	unittest-log syslog
+	echo "logging: stderr" 1>&2
 	unittest-log stderr
+	echo "logging: suppress" 1>&2
+	unittest-log suppress
+	echo "logging: syslog" 1>&2
+	unittest-log syslog
+	echo "logging: nohup" 1>&2
 	nohup unittest-log stderr < /dev/null > /dev/null 2> /dev/null
+	echo "logging: done" 1>&2
 	log -N DBUG -I -d "Testing debug."
 	log -N INFO -I -i "Testing information."
 	log -N NOTE -I -n "Testing notice."

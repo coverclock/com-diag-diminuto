@@ -33,7 +33,6 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
-#include "../src/diminuto_log.h"
 #include "unittest-log.h"
 
 int main(int argc, char ** argv)
@@ -569,6 +568,9 @@ int main(int argc, char ** argv)
             diminuto_perror("diminuto_daemon");
             exit(1);
         }
+    } else if (strcmp(argv[1], "suppress") == 0) {
+        fprintf(stderr, DIMINUTO_LOG_HERE "SUPPRESSED\n");
+        diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_SUPPRESS;
     } else if (strcmp(argv[1], "automatic") == 0) {
         fprintf(stderr, DIMINUTO_LOG_HERE "AUTOMATIC\n");
         diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
@@ -579,7 +581,7 @@ int main(int argc, char ** argv)
         fprintf(stderr, DIMINUTO_LOG_HERE "SYSLOG\n");
         diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_SYSLOG;
     } else {
-        fprintf(stderr, "usage: %s [ automatic | daemon | stderr | syslog ]\n", argv[0]);
+        fprintf(stderr, "usage: %s [ automatic | daemon | stderr | suppress | syslog ]\n", argv[0]);
         exit(1);
     }
 

@@ -14,11 +14,12 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_platform.h"
 #include <stdio.h>
+#include "../src/diminuto_log.h"
 
 static void maybe(void)
 {
-    fprintf(stderr, "TEST maybe:\n");
-    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d]: maybe?\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST maybe: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_DEBUG, "%s[%d](%c){0x%x} maybe?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }
 
 #define DIMINUTO_LOG_DISABLE
@@ -26,8 +27,8 @@ static void maybe(void)
 
 static void no(void)
 {
-    fprintf(stderr, "TEST no:\n");
-    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d]: no!\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST no: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_ERROR, "%s[%d](%c){0x%x} no!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }
 
 #undef DIMINUTO_LOG_DISABLE
@@ -35,21 +36,21 @@ static void no(void)
 
 static void yes(void)
 {
-    fprintf(stderr, "TEST yes:\n");
-    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d]: yes.\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST yes: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG(DIMINUTO_LOG_PRIORITY_INFORMATION, "%s[%d](%c){0x%x} yes.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }
 
 static void all(void)
 {
-    fprintf(stderr, "TEST all:\n");
-    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ALERT("%s[%d]: Alert.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ERROR("%s[%d]: Error.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_WARNING("%s[%d]: Warning.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_NOTICE("%s[%d]: Notice.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_INFORMATION("%s[%d]: Information.\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_DEBUG("%s[%d]: Debug.\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST all: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_EMERGENCY("%s[%d](%c){0x%x} Emergency.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ALERT("%s[%d](%c){0x%x} Alert.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_CRITICAL("%s[%d](%c){0x%x} Critical.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ERROR("%s[%d](%c){0x%x} Error.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_WARNING("%s[%d](%c){0x%x} Warning.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_NOTICE("%s[%d](%c){0x%x} Notice.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_INFORMATION("%s[%d](%c){0x%x} Information.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_DEBUG("%s[%d](%c){0x%x} Debug.\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }
 
 #define DIMINUTO_LOG_EMERGENCY_DISABLE
@@ -64,15 +65,15 @@ static void all(void)
 
 static void none(void)
 {
-    fprintf(stderr, "TEST none:\n");
-    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ALERT("%s[%d]: Alert!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ERROR("%s[%d]: Error!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_WARNING("%s[%d]: Warning!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_NOTICE("%s[%d]: Notice!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_INFORMATION("%s[%d]: Information!\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_DEBUG("%s[%d]: Debug!\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST none: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_EMERGENCY("%s[%d](%c){0x%x} Emergency!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ALERT("%s[%d](%c){0x%x} Alert!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_CRITICAL("%s[%d](%c){0x%x} Critical!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ERROR("%s[%d](%c){0x%x} Error!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_WARNING("%s[%d](%c){0x%x} Warning!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_NOTICE("%s[%d](%c){0x%x} Notice!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_INFORMATION("%s[%d](%c){0x%x} Information!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_DEBUG("%s[%d](%c){0x%x} Debug!\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }
 
 static diminuto_log_mask_t diminuto_log_subsystem[] = { DIMINUTO_LOG_MASK_NONE };
@@ -94,13 +95,13 @@ EXPORT_SYMBOL(diminuto_log_subsystem);
 
 static void mine(void)
 {
-    fprintf(stderr, "TEST mine:\n");
-    DIMINUTO_LOG_EMERGENCY("%s[%d]: Emergency?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ALERT("%s[%d]: Alert?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_CRITICAL("%s[%d]: Critical?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_ERROR("%s[%d]: Error?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_WARNING("%s[%d]: Warning?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_NOTICE("%s[%d]: Notice?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_INFORMATION("%s[%d]: Information?\n", __FILE__, __LINE__);
-    DIMINUTO_LOG_DEBUG("%s[%d]: Debug?\n", __FILE__, __LINE__);
+    fprintf(stderr, "TEST mine: (%c){0x%x}\n", diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_EMERGENCY("%s[%d](%c){0x%x} Emergency?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ALERT("%s[%d](%c){0x%x} Alert?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_CRITICAL("%s[%d](%c){0x%x} Critical?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_ERROR("%s[%d](%c){0x%x} Error?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_WARNING("%s[%d](%c){0x%x} Warning?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_NOTICE("%s[%d](%c){0x%x} Notice?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_INFORMATION("%s[%d](%c){0x%x} Information?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
+    DIMINUTO_LOG_DEBUG("%s[%d](%c){0x%x} Debug?\n", __FILE__, __LINE__, diminuto_log_strategy, diminuto_log_mask);
 }

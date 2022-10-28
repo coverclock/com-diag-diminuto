@@ -406,7 +406,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
-    int tolog = -1;
+    int tolog = 0; /* <0==SUPPRESS, 0==STDERR, >0==SYSLOG */
 
     DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
 
@@ -423,12 +423,16 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
          * the caller is a daemon).
          */
 
-        if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_STDERR) {
+        if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_SUPPRESS) {
+            tolog = -1;
+        } else if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_STDERR) {
             tolog = 0;
         } else if (diminuto_log_strategy == DIMINUTO_LOG_STRATEGY_SYSLOG) {
-            tolog = !0;
+            tolog = 1;
+        } else if (diminuto_log_strategy != DIMINUTO_LOG_STRATEGY_AUTOMATIC) {
+            tolog = 1;
         } else if (diminuto_log_cached) {
-            tolog = !0;
+            tolog = 1;
 #if 0
         } else if (!diminuto_serial_valid(diminuto_log_descriptor)) {
             /*
@@ -436,21 +440,23 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
              * to be directed to a file even if they are detached from
              * their controlling terminal. A side effect of this is that
              * directing stderr to /dev/null also passes this test. But
-             * maybe that's okay.
+             * maybe that's okay. (But probably not.)
              */
             tolog = 0;
 #endif
         } else if ((diminuto_log_cached = (getpid() == getsid(0)))) {
-            tolog = !0;
+            tolog = 1;
         } else if ((diminuto_log_cached = (getppid() == 1))) {
-            tolog = !0;
+            tolog = 1;
         } else {
             tolog = 0;
         }
 
     DIMINUTO_CRITICAL_SECTION_END;
 
-    if (tolog) {
+    if (tolog < 0) {
+        /* Do nothing. */
+    } else if (tolog > 0) {
         diminuto_log_vsyslog(priority, format, ap);
     } else {
         diminuto_log_vwrite(diminuto_log_descriptor, priority, format, ap);
