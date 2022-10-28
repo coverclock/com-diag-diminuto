@@ -74,7 +74,7 @@ extern const char * diminuto_log_mask_name;
 /**
  * This variable determines how log messages are routed: to standard
  * error, to the system log, or automatically based on the characteristics
- * of the caller.
+ * of the caller. 
  */
 extern diminuto_log_strategy_t diminuto_log_strategy;
 

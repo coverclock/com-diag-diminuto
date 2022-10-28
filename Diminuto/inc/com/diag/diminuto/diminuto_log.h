@@ -315,10 +315,11 @@ enum DiminutoLogConstants {
  ******************************************************************************/
 
 /**
- * THese are the strategies the log feature may use to determine to where
+ * These are the strategies the log feature may use to determine to where
  * to send logging output. The AUTOMATIC option makes the choice depending
  * on whether the caller has a controlling terminal, and is the default.
  * The SUPPRESS option suppress all log output regardless of its destination.
+ * The log strategy variable is part of the log private API.
  */
 typedef enum DiminutoLogStrategy {
     DIMINUTO_LOG_STRATEGY_AUTOMATIC = 'A',
