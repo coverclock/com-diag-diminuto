@@ -77,6 +77,8 @@ diminuto_log_priority_t diminuto_log_priority = DIMINUTO_LOG_PRIORITY_DEFAULT;
 
 diminuto_log_priority_t diminuto_log_error = DIMINUTO_LOG_PRIORITY_PERROR;
 
+bool diminuto_log_error_suppress = false;
+
 size_t diminuto_log_lost = 0;
 
 /*******************************************************************************
@@ -469,9 +471,10 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
 
 void diminuto_log_syslog(int priority, const char * format, ...)
 {
-    int save = errno;
+    int save = 0;
     va_list ap;
 
+    save = errno;
     va_start(ap, format);
     diminuto_log_vsyslog(priority, format, ap);
     va_end(ap);
@@ -480,9 +483,10 @@ void diminuto_log_syslog(int priority, const char * format, ...)
 
 void diminuto_log_write(int fd, int priority, const char * format, ...)
 {
-    int save = errno;
+    int save = 0;
     va_list ap;
 
+    save = errno;
     va_start(ap, format);
     diminuto_log_vwrite(fd, priority, format, ap);
     va_end(ap);
@@ -491,9 +495,10 @@ void diminuto_log_write(int fd, int priority, const char * format, ...)
 
 void diminuto_log_log(int priority, const char * format, ...)
 {
-    int save = errno;
+    int save = 0;
     va_list ap;
 
+    save = errno;
     va_start(ap, format);
     diminuto_log_vlog(priority, format, ap);
     va_end(ap);
@@ -502,9 +507,10 @@ void diminuto_log_log(int priority, const char * format, ...)
 
 void diminuto_log_emit(const char * format, ...)
 {
-    int save = errno;
+    int save = 0;
     va_list ap;
 
+    save = errno;
     va_start(ap, format);
     diminuto_log_vlog(diminuto_log_priority, format, ap);
     va_end(ap);
@@ -515,26 +521,32 @@ void diminuto_log_emit(const char * format, ...)
  * ERROR NUMBER FUNCTIONS
  *****************************************************************************/
 
-void diminuto_log_serror(const char * f, int l, const char * s)
+void diminuto_log_serror(const char * file, int line, const char * string)
 {
-    int save = errno;
-    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    int save = 0;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
     char * ep = (char *)0;
 
-    ep = strerror_r(save, buffer, sizeof(buffer));
-    buffer[sizeof(buffer) - 1] = '\0';
-    diminuto_log_syslog(diminuto_log_error, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, ep, save);
-    errno = save;
+    if (!diminuto_log_error_suppress) {
+        save = errno;
+        ep = strerror_r(save, buffer, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+        diminuto_log_syslog(diminuto_log_error, "%s@%d: %s: \"%s\" (%d)\n", file, line, string, ep, save);
+        errno = save;
+    }
 }
 
-void diminuto_log_perror(const char * f, int l, const char * s)
+void diminuto_log_perror(const char * file, int line, const char * string)
 {
-    int save = errno;
-    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
+    int save = 0;
+    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
     char * ep = (char *)0;
 
-    ep = strerror_r(save, buffer, sizeof(buffer));
-    buffer[sizeof(buffer) - 1] = '\0';
-    diminuto_log_log(diminuto_log_error, "%s@%d: %s: \"%s\" (%d)\n", f, l, s, ep, save);
-    errno = save;
+    if (!diminuto_log_error_suppress) {
+        save = errno;
+        ep = strerror_r(save, buffer, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+        diminuto_log_log(diminuto_log_error, "%s@%d: %s: \"%s\" (%d)\n", file, line, string, ep, save);
+        errno = save;
+    }
 }

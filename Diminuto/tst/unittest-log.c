@@ -711,21 +711,71 @@ int main(int argc, char ** argv)
 
     {
         const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
-        char buffer[sizeof("ERRNO[XXXXXXXXXX]")];
+        char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
         int ii;
 
-        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR\n");
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR default\n");
 
         for (ii = 0; ii < countof(ERRNO); ++ii) {
-            snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (default)", ERRNO[ii]);
             errno = ERRNO[ii];
             diminuto_perror(buffer);
         }
 
-        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO SERROR\n");
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO SERROR default\n");
 
         for (ii = 0; ii < countof(ERRNO); ++ii) {
-            snprintf(buffer, sizeof(buffer), "ERRNO[%d]", ERRNO[ii]);
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (default)", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_serror(buffer);
+        }
+
+    }
+
+    {
+        const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
+        char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
+        int ii;
+
+        diminuto_log_error_suppress = true;
+
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR suppressed\n");
+
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (suppressed)", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_perror(buffer);
+        }
+
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO SERROR suppressed\n");
+
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (suppressed)", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_serror(buffer);
+        }
+
+    }
+
+    {
+        const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
+        char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
+        int ii;
+
+        diminuto_log_error_suppress = false;
+
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR enabled\n");
+
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (enabled)", ERRNO[ii]);
+            errno = ERRNO[ii];
+            diminuto_perror(buffer);
+        }
+
+        fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO SERROR enabled\n");
+
+        for (ii = 0; ii < countof(ERRNO); ++ii) {
+            snprintf(buffer, sizeof(buffer), "ERRNO[%d] (enabled)", ERRNO[ii]);
             errno = ERRNO[ii];
             diminuto_serror(buffer);
         }

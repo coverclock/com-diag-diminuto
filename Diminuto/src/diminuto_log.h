@@ -106,6 +106,13 @@ extern diminuto_log_priority_t diminuto_log_priority;
 extern diminuto_log_priority_t diminuto_log_error;
 
 /**
+ * If true, error messages using the diminuto_log_perror() or
+ * diminuto_log_serror() functions are suppressed. Any error return from
+ * the calling function is not affected. The initial value is false.
+ */
+extern bool diminuto_log_error_suppress;
+
+/**
  * This counter is incremented every time a log message is believed to
  * have been lost.
  */
