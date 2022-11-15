@@ -289,6 +289,9 @@ int main(int argc, char * argv[])
 #if 0
     /* Debugging expect(1) issue. */
     fd = openat(AT_FDCWD, device, O_RDWR|O_CREAT|O_TRUNC, 0666);
+#elif !0
+    /* Debugging expect(1) issue with respect to socat(1). */
+    fd = open(device, O_RDWR|O_NONBLOCK);
 #else
     fd = open(device, O_RDWR);
 #endif
