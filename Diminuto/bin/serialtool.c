@@ -263,8 +263,8 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
-            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i).");
-            fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).");
+            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i).\n");
+            fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
