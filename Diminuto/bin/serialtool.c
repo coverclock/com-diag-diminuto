@@ -124,13 +124,14 @@ int main(int argc, char * argv[])
     int ready = -1;
     int noinput = 0;
     int rawterminal = 0;
+    int nonblocking = 0;
     size_t modulo = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:b:cdehilmnoprst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:Ob:cdehilmnoprst:v")) >= 0) {
 
         switch (opt) {
 
@@ -182,6 +183,10 @@ int main(int argc, char * argv[])
             backward = 0;
             forward = 0;
             noinput = 0;
+            break;
+
+        case 'O':
+            nonblocking = !0;
             break;
 
         case 'b':
@@ -246,7 +251,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -O ] [ -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -258,7 +263,8 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
-            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i)");
+            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i).");
+            fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
@@ -291,17 +297,21 @@ int main(int argc, char * argv[])
     diminuto_assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     diminuto_assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %useconds %zubytes %zumodulo\n", forward ? "implement-loopback" : backward ? "test-loopback" : "interactive", device, bitspersecond, databits, "NOE"[paritybit], stopbits, modemcontrol ? "modem" : "local", carrierdetect ? "dcd" : "nodcd", xonxoff ? "xonxoff" : "noswflow", rtscts ? "rtscts" : "nohwflow", printable ? "printable" : "all", noinput ? "noinput" : "input", seconds, maximum, modulo);
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
+        forward ? "implement-loopback" : backward ? "test-loopback" : "interactive",
+        device, bitspersecond, databits, "NOE"[paritybit], stopbits,
+        nonblocking ? "nonblocking" : "blocking",
+        noinput ? "noinput" : "input",
+        modemcontrol ? "modem" : "local",
+        carrierdetect ? "dcd" : "nodcd",
+        xonxoff ? "xonxoff" : "noswflow",
+        rtscts ? "rtscts" : "nohwflow",
+        printable ? "printable" : "all",
+        seconds,
+        maximum,
+        modulo);
 
-#if 0
-    /* Debugging expect(1) issue. */
-    fd = openat(AT_FDCWD, device, O_RDWR|O_CREAT|O_TRUNC, 0666);
-#elif !0
-    /* Debugging expect(1) issue with respect to socat(1). */
-    fd = open(device, O_RDWR|O_NONBLOCK);
-#else
-    fd = open(device, O_RDWR);
-#endif
+    fd = open(device, nonblocking ? (O_RDWR|O_NONBLOCK) : O_RDWR);
     diminuto_assert(fd >= 0);
     diminuto_assert(fd != STDIN_FILENO);
     diminuto_assert(fd != STDOUT_FILENO);
