@@ -130,7 +130,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:M:b:cdehilmnoprst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:b:cdehilmnoprst:v")) >= 0) {
 
         switch (opt) {
 
@@ -176,6 +176,12 @@ int main(int argc, char * argv[])
 
         case 'M':
             modulo = strtoul(optarg, (char **)0, 0);
+            break;
+
+        case 'N':
+            backward = 0;
+            forward = 0;
+            noinput = 0;
             break;
 
         case 'b':
@@ -240,7 +246,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -249,9 +255,10 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -8          Eight data bits.\n");
             fprintf(stderr, "       -B          Test loop back (send then receive).\n");
             fprintf(stderr, "       -F          Implement loop back (receive then send).\n");
-            fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
+            fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
+            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i)");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
@@ -296,6 +303,8 @@ int main(int argc, char * argv[])
     fd = open(device, O_RDWR);
 #endif
     diminuto_assert(fd >= 0);
+    diminuto_assert(fd != STDIN_FILENO);
+    diminuto_assert(fd != STDOUT_FILENO);
 
     rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
     diminuto_assert(rc == 0);
@@ -494,6 +503,7 @@ int main(int argc, char * argv[])
                     break;
                 } else if (ready == fd) {
                     reads = diminuto_fd_read(fd, buffer, maximum);
+                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", fd, reads);
                     diminuto_assert(reads >= 0);
                     diminuto_assert(reads <= maximum);
                     if (reads == 0) {
@@ -501,6 +511,7 @@ int main(int argc, char * argv[])
                         break;
                     }
                     writes = diminuto_fd_write(STDOUT_FILENO, buffer, reads);
+                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", STDOUT_FILENO, writes);
                     diminuto_assert(writes == reads);
                     if (debug) {
                         char * bb;
@@ -510,6 +521,7 @@ int main(int argc, char * argv[])
                     }
                 } else if (ready == STDIN_FILENO) {
                     reads = diminuto_fd_read(STDIN_FILENO, buffer, maximum);
+                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", STDIN_FILENO, reads);
                     diminuto_assert(reads >= 0);
                     diminuto_assert(reads <= maximum);
                     if (reads == 0) {
@@ -518,6 +530,13 @@ int main(int argc, char * argv[])
                     }
                     writes = diminuto_fd_write(fd, buffer, reads);
                     diminuto_assert(writes == reads);
+                    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", fd, writes);
+                    if (debug) {
+                        char * bb;
+                        for (bb = (char *)buffer; reads > 0; --reads) {
+                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
+                        }
+                    }
                 } else {
                     diminuto_assert(0);
                 }
