@@ -112,7 +112,7 @@ int main(int argc, char * argv[])
     int backward = 0;
     struct sigaction action = { 0 };
     int printable = 0;
-    unsigned int seconds = 1;
+    unsigned int seconds = 10; /* Same as expect(1). */
     int debug = 0;
     int verbose = 0;
     size_t maximum = 512;
@@ -520,15 +520,16 @@ int main(int argc, char * argv[])
                         done = !0;
                         break;
                     }
+                    if (debug) {
+                        char * bb;
+                        for (bb = (char *)buffer, count = reads; count > 0; --count) {
+                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
+                        }
+                        fputs("\n", stderr);
+                    }
                     writes = diminuto_fd_write(STDOUT_FILENO, buffer, reads);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", STDOUT_FILENO, writes);
                     diminuto_assert(writes == reads);
-                    if (debug) {
-                        char * bb;
-                        for (bb = (char *)buffer; reads > 0; --reads) {
-                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
-                        }
-                    }
                 } else if (ready == STDIN_FILENO) {
                     reads = diminuto_fd_read(STDIN_FILENO, buffer, maximum);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", STDIN_FILENO, reads);
@@ -538,15 +539,16 @@ int main(int argc, char * argv[])
                         done = !0;
                         break;
                     }
+                    if (debug) {
+                        char * bb;
+                        for (bb = (char *)buffer, count = reads; count > 0; --count) {
+                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
+                        }
+                        fputs("\n", stderr);
+                    }
                     writes = diminuto_fd_write(fd, buffer, reads);
                     diminuto_assert(writes == reads);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", fd, writes);
-                    if (debug) {
-                        char * bb;
-                        for (bb = (char *)buffer; reads > 0; --reads) {
-                            diminuto_phex_emit(stderr, *(bb++), 72, 0, 0, 0, &current, &end, 0);
-                        }
-                    }
                 } else {
                     diminuto_assert(0);
                 }
