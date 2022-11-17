@@ -34,24 +34,26 @@
  * access serial ports.
  */
 
+#include "com/diag/diminuto/diminuto_assert.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_mux.h"
+#include "com/diag/diminuto/diminuto_phex.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_phex.h"
-#include "com/diag/diminuto/diminuto_fd.h"
-#include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_assert.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
 
 static int done = 0;
 static int curious = 0;
@@ -183,6 +185,7 @@ int main(int argc, char * argv[])
             backward = 0;
             forward = 0;
             noinput = 0;
+            nonblocking = !0;
             break;
 
         case 'O':
@@ -263,7 +266,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -D DEVICE   Use DEVICE.\n");
             fprintf(stderr, "       -I BYTES    Set interactive buffer size to BYTES.\n");
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
-            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i).\n");
+            fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i; implies -O).\n");
             fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
@@ -311,10 +314,19 @@ int main(int argc, char * argv[])
         maximum,
         modulo);
 
-    fd = open(device, nonblocking ? (O_RDWR|O_NONBLOCK) : O_RDWR);
+    fd = open(device, (O_RDWR | O_NOCTTY | (nonblocking ? O_NONBLOCK : 0)));
     diminuto_assert(fd >= 0);
     diminuto_assert(fd != STDIN_FILENO);
     diminuto_assert(fd != STDOUT_FILENO);
+
+    rc = ioctl(fd, TIOCEXCL);
+    diminuto_assert(rc == 0);
+
+    rc = fcntl(fd, F_SETFL, (O_RDONLY | (nonblocking ? O_NONBLOCK : 0))); /* Because screen(1) does it. */
+    diminuto_assert(rc == 0);
+
+    rc = ioctl(fd, TCFLSH, TCIOFLUSH);
+    diminuto_assert(rc == 0);
 
     rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
     diminuto_assert(rc == 0);
