@@ -95,8 +95,6 @@ int main(void)
         TEST();
 
         /*
-         * This should worry you.
-         *
          * REFERENCE
          *
          * Fe'lix Cloutier (fay59), "Quirks of C",
@@ -107,10 +105,22 @@ int main(void)
             char a;
             long b: 16;
             char c;
-        };
+        } bar;
 
         NOTIFY("_Alignof(struct foo)=%zu\n", _Alignof(struct foo));
         NOTIFY("__builtin_offsetof(struct foo, c)=%zu\n", __builtin_offsetof(struct foo, c));
+
+        NOTIFY("offsetof(struct foo, a)=%zu\n", offsetof(struct foo, a));
+        /* Cannot take sizeof() bitfield. */
+        NOTIFY("offsetof(struct foo, c)=%zu\n", offsetof(struct foo, c));
+
+        NOTIFY("sizeof(bar)=%zu\n", sizeof(bar));
+
+        /*
+         * This should worry you.
+         */
+
+        ADVISE(offsetof(struct foo, c) > 3);
 
         STATUS();
     }
