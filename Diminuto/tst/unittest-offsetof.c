@@ -48,8 +48,10 @@ struct Gamma {
 int main(void)
 {
     SETLOGMASK();
+
     {
         TEST();
+
         ASSERT(diminuto_offsetof(struct Alpha, eight) == 0);
         ASSERT(diminuto_offsetof(struct Alpha, four) == 8);
         ASSERT(diminuto_offsetof(struct Alpha, two) == 12);
@@ -57,10 +59,13 @@ int main(void)
         ASSERT(diminuto_offsetof(struct Alpha, eightyone) == 15);
         ASSERT(diminuto_offsetof(struct Alpha, final) == 96);
         ASSERT(sizeof(struct Alpha) == 96); /* Simplest strategy. */
+
         STATUS();
     }
+
     {
         TEST();
+
         EXPECT(diminuto_offsetof(struct Beta, one) == 0);
         EXPECT(diminuto_offsetof(struct Beta, two) == 2);
         EXPECT(diminuto_offsetof(struct Beta, four) == 4);
@@ -71,8 +76,10 @@ int main(void)
 
         STATUS();
     }
+
     {
         TEST();
+
         EXPECT(diminuto_offsetof(struct Gamma, eightyone) == 0);
         EXPECT(diminuto_offsetof(struct Gamma, one) == 81);
         EXPECT(diminuto_offsetof(struct Gamma, two) == 82);
@@ -80,7 +87,33 @@ int main(void)
         EXPECT(diminuto_offsetof(struct Gamma, eight) == 88);
         EXPECT(diminuto_offsetof(struct Gamma, final) == 96);
         ASSERT(sizeof(struct Gamma) == 96); /* Counter-intuitive? */
+
         STATUS();
     }
+
+    {
+        TEST();
+
+        /*
+         * This should worry you.
+         *
+         * REFERENCE
+         *
+         * Fe'lix Cloutier (fay59), "Quirks of C",
+         * https://gist.github.com/fay59/5ccbe684e6e56a7df8815c3486568f01
+         */
+        
+        struct foo {
+            char a;
+            long b: 16;
+            char c;
+        };
+
+        NOTIFY("_Alignof(struct foo)=%zu\n", _Alignof(struct foo));
+        NOTIFY("__builtin_offsetof(struct foo, c)=%zu\n", __builtin_offsetof(struct foo, c));
+
+        STATUS();
+    }
+
     EXIT();
 }
