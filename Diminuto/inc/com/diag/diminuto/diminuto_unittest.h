@@ -126,7 +126,10 @@ extern void diminuto_unittest_flush(void);
  * is unbuffered, and enabling core dumps.
  */
 #define SETLOGMASK() \
-    diminuto_unittest_setlogmask()
+    do { \
+        diminuto_unittest_setlogmask(); \
+        DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "SETLOGMASK: logmask=0x%x\n", diminuto_log_mask); \
+    } while (false)
 
 /**
  * @def STACKTRACE
