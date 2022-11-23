@@ -22,6 +22,9 @@
  * works for any size literal integer, including longs and long longs.
  * See the associated unit test for lots of examples.
  *
+ * At the time of this writing, the default dialect of C implemented
+ * by gcc 11.3.0 is the GNU dialect of ISO C17.
+ *
  * REFERENCE
  *
  * Fe'lix Cloutier (fay59), "Quirks of C",
