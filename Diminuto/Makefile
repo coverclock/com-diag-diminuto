@@ -1057,6 +1057,7 @@ sanity:	criticalsection
 	unittest-ipc
 	unittest-ipc-endpoint
 	unittest-ipcl
+	unittest-isaconstant
 	unittest-list
 	unittest-list2
 	unittest-lock
