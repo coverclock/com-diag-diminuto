@@ -12,7 +12,15 @@
  * @details
  *
  * The Is A Constant feature determines if its argument is an
- * integer constant or an integer variable.
+ * literal integer constant or something else. This freaks me out
+ * a little. I haven't quite figured out yet why this works,
+ * but I assume it has to do with C's implicit conversion rules
+ * and implicit literal constant types. The core of the expression
+ * has to do with a cast to a (void *) pointer (which doesn't compile
+ * for floats and doubles, either literals or variables), then asking
+ * what the sizeof() the dereferenced pointer is. Remarkably, this
+ * works for any size literal integer, including longs and long longs.
+ * See the associated unit test for lots of examples.
  *
  * REFERENCE
  *
@@ -28,7 +36,7 @@
 #define diminuto_isaconstant(_ARGUMENT_) (sizeof(int) == sizeof(*(1 ? ((void *)((_ARGUMENT_) * 0l)) : (int *)1)))
 
 /*
- * (sizeof(int) == sizeof(*(1 ? ((void *)((4) * 0l)) : (int*)1)))
+ * (sizeof(int) == sizeof(*(1 ? ((void *)((4)   * 0l)) : (int*)1)))
  * (sizeof(int) == sizeof(*(1 ? ((void *)((foo) * 0l)) : (int*)1)))
  */
 
@@ -41,4 +49,3 @@
 #endif
 
 #endif
-
