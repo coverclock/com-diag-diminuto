@@ -25,11 +25,14 @@
  * At the time of this writing, the default dialect of C implemented
  * by gcc 11.3.0 is the GNU dialect of ISO C17.
  *
- * REFERENCE
+ * REFERENCES
  *
  * Fe'lix Cloutier (fay59), "Quirks of C",
  * https://gist.github.com/fay59/5ccbe684e6e56a7df8815c3486568f01
  * (from Martin Uecker via the Linux Kernel mailing list)
+ *
+ * ISO/IEC 9899, "Information technology - Programming languages - C",
+ * 4th ed., ISO/IEC 9899:2018(E), `2018-07
  */
 
 /**

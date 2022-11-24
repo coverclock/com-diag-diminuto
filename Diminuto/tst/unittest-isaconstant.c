@@ -9,11 +9,14 @@
  * @details
  * This is a unit test of the Is A Constant feature.
  *
- * REFERENCE
+ * REFERENCES
  *
  * Fe'lix Cloutier (fay59), "Quirks of C",
  * https://gist.github.com/fay59/5ccbe684e6e56a7df8815c3486568f01
  * (from Martin Uecker via the Linux Kernel mailing list)
+ *
+ * ISO/IEC 9899, "Information technology - Programming languages - C",
+ * 4th ed., ISO/IEC 9899:2018(E), `2018-07
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
