@@ -40,16 +40,18 @@
 #define printsizeofnoninteger(_TYPE_) \
     do { \
         printf("sizeof(%s)=%zu", #_TYPE_, sizeof(_TYPE_)); \
-        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
+        printf(" _Alignof(%s)=%zu", #_TYPE_, _Alignof(_TYPE_)); \
         printf(" widthof(%s)=%zu", #_TYPE_,  widthof(_TYPE_)); \
+        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
         putchar('\n'); \
     } while (0)
 
 #define printsizeof(_TYPE_) \
     do { \
         printf("sizeof(%s)=%zu", #_TYPE_, sizeof(_TYPE_)); \
-        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
+        printf(" _Alignof(%s)=%zu", #_TYPE_, _Alignof(_TYPE_)); \
         printf(" widthof(%s)=%zu", #_TYPE_,  widthof(_TYPE_)); \
+        printf(" sizeof(%s*)=%zu", #_TYPE_, sizeof(_TYPE_*)); \
         printf(" issigned(%s)=%d", #_TYPE_, issigned(_TYPE_)); \
         if (issigned(_TYPE_)) { \
             printf(" minimumof(%s)=0x%llx=%lld", #_TYPE_, (long long unsigned)minimumof(_TYPE_), (long long signed)minimumof(_TYPE_)); \
@@ -96,6 +98,7 @@ static int8_t array_POSIX_PATH_MAX[_POSIX_PATH_MAX];
 
 int main(void)
 {
+    printsizeofnoninteger(void);
     printsizeof(char);
     printissigned(signed char);
     printisunsigned(unsigned char);

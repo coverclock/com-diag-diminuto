@@ -12,14 +12,8 @@
  * @details
  *
  * The Is A Constant feature determines if its argument is an
- * literal integer constant or something else. This freaks me out
- * a little. I haven't quite figured out yet why this works,
- * but I assume it has to do with C's implicit conversion rules
- * and implicit literal constant types. The core of the expression
- * has to do with a cast to a (void *) pointer (which doesn't compile
- * for floats and doubles, either literals or variables), then asking
- * what the sizeof() the dereferenced pointer is. Remarkably, this
- * works for any size literal integer, including longs and long longs.
+ * literal integer constant or something else.
+ *
  * See the associated unit test for lots of examples.
  *
  * At the time of this writing, the default dialect of C implemented
@@ -33,6 +27,18 @@
  *
  * ISO/IEC 9899, "Information technology - Programming languages - C",
  * 4th ed., ISO/IEC 9899:2018(E), `2018-07
+ *
+ * "sizeof", ISO/IEC 9899:2018(E), 6.5.3.4, pp. 64-65
+ *
+ * ":?", ISO/IEC 9899:2018(E), 6.5.15, pp. 71-72, "...if one operand
+ * is a null pointer constant, the other has the type of the other
+ * operand;"
+ *
+ * "constant expression", ISO/IEC 9899:2018(E), 6.6, pp. 76-77
+ *
+ * ((void *)((4) * 0l)) is a null pointer *constant*.
+ *
+ * ((void *)((foo) * 0l)) is _not_ a null pointer *constant*.
  */
 
 /**
@@ -40,11 +46,6 @@
  * Return true of @a _ARGUMENT_ is an integer constant, false otherwise.
  */
 #define diminuto_isaconstant(_ARGUMENT_) (sizeof(int) == sizeof(*(1 ? ((void *)((_ARGUMENT_) * 0l)) : (int *)1)))
-
-/*
- * (sizeof(int) == sizeof(*(1 ? ((void *)((4)   * 0l)) : (int*)1)))
- * (sizeof(int) == sizeof(*(1 ? ((void *)((foo) * 0l)) : (int*)1)))
- */
 
 #ifndef isaconstant
     /**

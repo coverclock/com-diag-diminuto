@@ -40,6 +40,7 @@ int main(void)
         TEST();
 
         CHECKPOINT("sizeof(int)=%zu\n", sizeof(int));
+        CHECKPOINT("sizeof(void)=%zu\n", sizeof(void));
         CHECKPOINT("sizeof(variable)=%zu\n", sizeof(variable));
         CHECKPOINT("expression(variable)=%zu\n", expression(variable));
         CHECKPOINT("sizeof(fixed)=%zu\n", sizeof(fixed));
