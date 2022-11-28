@@ -36,6 +36,8 @@
  *
  * "constant expression", ISO/IEC 9899:2018(E), 6.6, pp. 76-77
  *
+ * NOTES
+ *
  * ((void *)((4) * 0l)) is a null pointer *constant*.
  *
  * ((void *)((foo) * 0l)) is _not_ a null pointer *constant*.
