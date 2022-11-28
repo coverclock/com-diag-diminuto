@@ -31,7 +31,7 @@
  * "sizeof", ISO/IEC 9899:2018(E), 6.5.3.4, pp. 64-65
  *
  * ":?", ISO/IEC 9899:2018(E), 6.5.15, pp. 71-72, "...if one operand
- * is a null pointer constant, the other has the type of the other
+ * is a null pointer constant, the result has the type of the other
  * operand;"
  *
  * "constant expression", ISO/IEC 9899:2018(E), 6.6, pp. 76-77
