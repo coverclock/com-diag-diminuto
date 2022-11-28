@@ -26,7 +26,7 @@
  * (from Martin Uecker via the Linux Kernel mailing list)
  *
  * ISO/IEC 9899, "Information technology - Programming languages - C",
- * 4th ed., ISO/IEC 9899:2018(E), `2018-07
+ * 4th ed., ISO/IEC 9899:2018(E), 2018-07
  *
  * "sizeof", ISO/IEC 9899:2018(E), 6.5.3.4, pp. 64-65
  *
