@@ -182,10 +182,6 @@ static void test3(diminuto_sticks_t now, int line)
     diminuto_sticks_t juliet;
     diminuto_sticks_t timezone;
     diminuto_sticks_t daylightsaving;
-    int zh;
-    int zm;
-    int dh;
-    int dm;
     int rc;
     time_t offset;
 

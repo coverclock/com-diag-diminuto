@@ -194,7 +194,7 @@ int diminuto_serial_set(int fd, int bitspersecond, int databits, int paritybit, 
         tios.c_cflag |= CREAD;
         tios.c_cflag |= data;
         tios.c_cflag |= parity;
-        tios.c_cflag |= stopbits;
+        tios.c_cflag |= stop;
         tios.c_cflag |= clocal;
         tios.c_cflag |= hupcl;
         tios.c_cflag |= crtscts;

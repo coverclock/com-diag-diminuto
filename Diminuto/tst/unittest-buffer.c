@@ -44,6 +44,8 @@ int main(int argc, char * argv[])
         volatile uint8_t unused;
         diminuto_buffer_t overhead;
 
+        unused = 0;
+        ASSERT(unused == 0);
         ASSERT(sizeof(overhead) == 8);
         ASSERT(sizeof(overhead.align) == 0);
         ASSERT(sizeof(overhead.payload) == 0);
@@ -306,8 +308,6 @@ int main(int argc, char * argv[])
     }
 
     {
-        void * pointer;
-
         TEST();
 
         ASSERT(!diminuto_buffer_debug(!0));

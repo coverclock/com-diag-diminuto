@@ -34,7 +34,6 @@ int main(void)
     size_t ii;
     size_t jj;
     int kk;
-    unsigned long value;
 
     ASSERT(sizeof(object_t) == (sizeof(int) * 3));
 

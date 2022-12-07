@@ -274,7 +274,6 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
     char * pointer = buffer;
     size_t space = sizeof(buffer);
     size_t total = 0;
-    char * bufferp = buffer;
     static char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM] = { '\0', };
 
     /*

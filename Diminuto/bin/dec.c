@@ -52,7 +52,6 @@ typedef enum Commands {
 int main(int argc, char * argv[])
 {
     const char * name;
-    const char * end;
     char buffer[64];
     const char * string;
     const char * next;

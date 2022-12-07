@@ -61,7 +61,7 @@ diminuto_shaper_t * diminuto_shaper_reset(diminuto_shaper_t * shaperp, diminuto_
         result = shaperp;
     }
 
-    return shaperp;
+    return result;
 }
 
 diminuto_ticks_t diminuto_shaper_request(diminuto_shaper_t * shaperp, diminuto_ticks_t now)

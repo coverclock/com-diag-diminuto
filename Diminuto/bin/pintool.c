@@ -105,7 +105,6 @@ int main(int argc, char * argv[])
     int prior = 0;
     int act = 0;
     FILE * fp = (FILE *)0;
-    const char * path = "/sys";
     const char * command = (const char *)0;
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
@@ -155,7 +154,7 @@ int main(int argc, char * argv[])
 
         case 'D':
             if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
-            path = diminuto_pin_debug(optarg);
+            (void)diminuto_pin_debug(optarg);
             break;
 
         case 'F':

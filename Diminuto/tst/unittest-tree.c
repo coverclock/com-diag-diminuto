@@ -390,13 +390,11 @@ int main(void)
 
     {
         diminuto_tree_t * root = DIMINUTO_TREE_EMPTY;
-        diminuto_tree_t * spare = DIMINUTO_TREE_EMPTY;
         /*
          * Using ((void*)0) as a data value yields "(nil)" for the %p format
          * which confuses me.
          */
         diminuto_tree_t node[3] = { DIMINUTO_TREE_DATAINIT((void *)1),  DIMINUTO_TREE_DATAINIT((void *)2),  DIMINUTO_TREE_DATAINIT((void *)3), };
-        diminuto_tree_t dummy =  DIMINUTO_TREE_DATAINIT((void *)4);
 
         TEST();
 
@@ -795,7 +793,6 @@ int main(void)
         diminuto_tree_t * nextp;
         diminuto_tree_t * gonep;
         ssize_t ii;
-        int rc;
 
         TEST();
 

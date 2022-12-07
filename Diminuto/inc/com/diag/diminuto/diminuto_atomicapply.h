@@ -20,6 +20,9 @@
 #include <stdint.h>
 #include <pthread.h>
 
+/**
+ * Error return result.
+ */
 static const void * DIMINUTO_ATOMIC_ERROR = (void *)(intptr_t)-1;
 
 /**

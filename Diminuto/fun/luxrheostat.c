@@ -58,7 +58,6 @@ int main(int argc, char ** argv) {
     const char * program = (const char *)0;
     int fd = -1;
     int rc = -1;
-    uint8_t datum = 0;
     int led = LED;
     int duty = DUTY;
     int bus = BUS;

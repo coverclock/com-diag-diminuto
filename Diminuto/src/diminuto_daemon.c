@@ -215,7 +215,6 @@ void diminuto_daemon_sanitize(const char * name, const char * path)
 {
     long fds = 0;
     int fd = -1;
-    FILE * file = (FILE *)0;
 
     /* Orphan ourselves from our original terminal session. */
 

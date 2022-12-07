@@ -29,7 +29,6 @@ static diminuto_list_t * stack[64];
 
 static void dump(const char * prefix, diminuto_list_t * nodep) {
     diminuto_list_t * nextp = nodep;
-    int ii = 0;
     do {
         diminuto_list_log(nextp);
         nextp = nextp->next;
@@ -39,7 +38,6 @@ static void dump(const char * prefix, diminuto_list_t * nodep) {
 static void audit(const char * file, int line, diminuto_list_t * rootp, ...)
 {
     int ii;
-    int jj;
     diminuto_list_t * expected;
     diminuto_list_t * actual;
     va_list ap;

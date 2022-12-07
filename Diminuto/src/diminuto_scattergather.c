@@ -297,9 +297,6 @@ ssize_t diminuto_scattergather_record_ipc_stream_send(int fd, const diminuto_sca
 
 ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv4_t address, diminuto_port_t port)
 {
-    ssize_t total = 0;
-    struct iovec * vp = (struct iovec *)0;
-    struct msghdr message = { 0, };
     struct sockaddr_in sa = { 0, };
     struct sockaddr * sap = (struct sockaddr *)0;
     socklen_t length = 0;
@@ -317,9 +314,6 @@ ssize_t diminuto_scattergather_record_ipc4_datagram_send(int fd, const diminuto_
 
 ssize_t diminuto_scattergather_record_ipc6_datagram_send(int fd, const diminuto_scattergather_record_t * rp, diminuto_ipv6_t address, diminuto_port_t port)
 {
-    ssize_t total = 0;
-    struct iovec * vp = (struct iovec *)0;
-    struct msghdr message = { 0, };
     struct sockaddr_in6 sa = { 0, };
     struct sockaddr * sap = (struct sockaddr *)0;
     socklen_t length = 0;

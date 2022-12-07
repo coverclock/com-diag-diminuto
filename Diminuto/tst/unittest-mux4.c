@@ -1061,8 +1061,6 @@ int main(int argc, char ** argv)
 
             /* CONSUMER */
 
-            diminuto_ipv4_t address;
-            diminuto_port_t port;
             diminuto_mux_t mux;
             int consumer;
             uint8_t buffer[64];

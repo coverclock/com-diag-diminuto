@@ -104,7 +104,6 @@ int main(int argc, char ** argv)
         char * temp = (char *)0;
         FILE * fp = (FILE *)0;
         uint64_t expected = 0;
-        uint64_t actual = 0;
         int rc = -1;
         struct stat status = { 0, };
         size_t count = 0;

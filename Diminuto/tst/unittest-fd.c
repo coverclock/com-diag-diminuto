@@ -40,19 +40,22 @@ static const char * type2name(diminuto_fs_type_t type)
 {
     const char * name = (const char *)0;
 
-    switch (type) {
-    case -1:                            name = "N/A";       break;
-    case DIMINUTO_FS_TYPE_NONE:         name = "NONE";      break;
-    case DIMINUTO_FS_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
-    case DIMINUTO_FS_TYPE_TTY:          name = "TTY";       break;
-    case DIMINUTO_FS_TYPE_SOCKET:       name = "SOCK";      break;
-    case DIMINUTO_FS_TYPE_SYMLINK:      name = "SYMLINK";   break;
-    case DIMINUTO_FS_TYPE_FILE:         name = "FILE";      break;
-    case DIMINUTO_FS_TYPE_BLOCKDEV:     name = "BLOCKDEV";  break;
-    case DIMINUTO_FS_TYPE_DIRECTORY:    name = "DIR";       break;
-    case DIMINUTO_FS_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
-    case DIMINUTO_FS_TYPE_FIFO:         name = "FIFO";      break;
-    default:                            name = "ERROR";     break;
+    if ((int)type == -1) {
+        name = "N/A";
+    } else {
+        switch (type) {
+        case DIMINUTO_FS_TYPE_NONE:         name = "NONE";      break;
+        case DIMINUTO_FS_TYPE_UNKNOWN:      name = "UNKNOWN";	break;
+        case DIMINUTO_FS_TYPE_TTY:          name = "TTY";       break;
+        case DIMINUTO_FS_TYPE_SOCKET:       name = "SOCK";      break;
+        case DIMINUTO_FS_TYPE_SYMLINK:      name = "SYMLINK";   break;
+        case DIMINUTO_FS_TYPE_FILE:         name = "FILE";      break;
+        case DIMINUTO_FS_TYPE_BLOCKDEV:     name = "BLOCKDEV";  break;
+        case DIMINUTO_FS_TYPE_DIRECTORY:    name = "DIR";       break;
+        case DIMINUTO_FS_TYPE_CHARACTERDEV: name = "CHARDEV";   break;
+        case DIMINUTO_FS_TYPE_FIFO:         name = "FIFO";      break;
+        default:                            name = "ERROR";     break;
+        }
     }
 
     return name;

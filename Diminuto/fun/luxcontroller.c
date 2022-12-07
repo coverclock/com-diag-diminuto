@@ -141,7 +141,6 @@ int main(int argc, char ** argv) {
     FILE * fp = (FILE *)0;
     double lux = 0.0;
     diminuto_mux_t mux;
-    diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
     diminuto_sticks_t now = 0;
     diminuto_sticks_t was = 0;
@@ -151,7 +150,6 @@ int main(int argc, char ** argv) {
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     diminuto_controller_parameters_t parameters = { 0 };
     diminuto_controller_state_t state = { 0 };
-    int increment = 1;
     diminuto_controller_input_t target = 0;
     diminuto_controller_input_t input = 0;
     diminuto_controller_output_t output = 0;
@@ -274,10 +272,10 @@ int main(int argc, char ** argv) {
     parameters.kp.numerator = PID_KP_NUMERATOR;
     parameters.kp.denominator = PID_KP_DENOMINATOR;
     parameters.ki.numerator = PID_KI_NUMERATOR;
-    parameters.ki.numerator = PID_KI_NUMERATOR;
+    parameters.ki.denominator = PID_KI_DENOMINATOR;
     parameters.kd.numerator = PID_KD_NUMERATOR;
     parameters.kd.denominator = PID_KD_DENOMINATOR;
-    parameters.kc.denominator = PID_KC_DENOMINATOR;
+    parameters.kc.numerator = PID_KC_NUMERATOR;
     parameters.kc.denominator = PID_KC_DENOMINATOR;
     parameters.filter = PID_FILTER;
 

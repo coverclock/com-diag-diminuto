@@ -44,9 +44,7 @@ int diminuto_reaper_signal(pid_t pid)
 
 static void diminuto_reaper_handler(int signum)
 {
-    int rc = 0;
     int mysignaled = -1;
-    int status = 0;
     static const int MAXIMUM = ~(((int)1) << ((sizeof(signaled) * 8) - 1));
 
     if (signum == SIGCHLD) {

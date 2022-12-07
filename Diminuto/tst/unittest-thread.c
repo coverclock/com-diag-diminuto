@@ -140,7 +140,6 @@ static void * body4(void * arg)
 {
     static diminuto_mutex_t mutex = DIMINUTO_MUTEX_INITIALIZER;
     int done = 0;
-    int rc = -1;
     int successful = 0;
     int busy = 0;
 
@@ -204,7 +203,6 @@ static void * body5(void * arg)
 static void * body6(void * arg)
 {
     diminuto_thread_t * tp;
-    diminuto_ticks_t now;
     uintptr_t limit;
     uintptr_t total;
     uintptr_t index;
@@ -230,10 +228,8 @@ static void * body6(void * arg)
 static void * body7(void * arg)
 {
     diminuto_thread_t * tp;
-    diminuto_ticks_t now;
     diminuto_mux_t mux;
     int rc;
-    int error;
     tp = diminuto_thread_instance();
     ASSERT(diminuto_thread_state(tp) == DIMINUTO_THREAD_STATE_RUNNING);
     diminuto_mux_init(&mux);
@@ -301,8 +297,8 @@ int main(void)
 
         ASSERT(DIMINUTO_THREAD_NOTIFY == SIGUSR1);
         ASSERT(DIMINUTO_THREAD_INFINITY == DIMINUTO_CONDITION_INFINITY);
-        ASSERT(DIMINUTO_THREAD_ERROR ==  DIMINUTO_CONDITION_ERROR);
-        ASSERT(DIMINUTO_THREAD_TIMEDOUT == DIMINUTO_CONDITION_TIMEDOUT);
+        ASSERT((int)DIMINUTO_THREAD_ERROR ==  (int)DIMINUTO_CONDITION_ERROR);
+        ASSERT((int)DIMINUTO_THREAD_TIMEDOUT == (int)DIMINUTO_CONDITION_TIMEDOUT);
 
         STATUS();
     }

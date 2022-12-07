@@ -167,7 +167,7 @@ static inline uint16_t ti_ads1115_htod(uint16_t datum)
  * @param fp points to an open FILE stream.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int ti_ads1115_print(int fd, int device, FILE * fp)
+static inline int ti_ads1115_print(int fd, int device, FILE * fp)
 {
     int rc = -1;
     int ii = 0;
@@ -300,7 +300,7 @@ static int ti_ads1115_rawtovolts(uint16_t config, int16_t raw, double * voltsp)
  * @param bufferp is the buffer into which the conversion is placed.
  * @return 0 if successful, <0 if an error occurred.
  */ 
-static int ti_ads1115_sense(int fd, int device, double * bufferp)
+static inline int ti_ads1115_sense(int fd, int device, double * bufferp)
 {
     int rc = -1;
     uint16_t config = 0x0000;

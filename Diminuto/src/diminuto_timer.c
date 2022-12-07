@@ -286,7 +286,6 @@ diminuto_sticks_t diminuto_timer_setitimer(diminuto_ticks_t ticks, int periodic)
 {
     diminuto_sticks_t sticks = -1;
     static int initialized = 0;
-    static int running = 0;
     static diminuto_timer_t singleton;
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 

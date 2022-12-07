@@ -117,7 +117,6 @@ static void * body4(void * arg)
 {
     static diminuto_mutex_t mutex = DIMINUTO_MUTEX_INITIALIZER;
     int done = 0;
-    int rc = -1;
     int successful = 0;
     int busy = 0;
 

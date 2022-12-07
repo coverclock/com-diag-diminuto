@@ -77,7 +77,6 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
     struct dirent * ep = (struct dirent *)0;
     struct stat status = { 0 };
     int rc = 0;
-    size_t dd = 0;
     size_t prior = 0;
     size_t length = 0;
 
@@ -255,7 +254,6 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
 
 int diminuto_fs_walk(const char * root, diminuto_fs_walker_t * walkerp, void * statep)
 {
-    int rc = 0;
     diminuto_path_t real = { '\0', };
     diminuto_path_t path = { '\0', };
 

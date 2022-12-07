@@ -30,7 +30,6 @@
 int main(int argc, char * argv[])
 {
     int xc = 0;
-    int rc = -1;
     int exchange = 0;
     const char * program = "renametool";
     const char * fromfile = (const char *)0;

@@ -39,9 +39,9 @@ enum {
     TEST_WORD = 0xDEADC0DE,
 };
 
-#define TEST_INIT { 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD }
+#define TEST_INIT { { 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, 0xDEAD, } }
 
-static const diminuto_ipv6_t SERVER64 = { 0, 0, 0, 0, 0, 0xffff, ((192 << 8) + 168), ((1 << 8) + 222) };
+static const diminuto_ipv6_t SERVER64 = { { 0, 0, 0, 0, 0, 0xffff, ((192 << 8) + 168), ((1 << 8) + 222), } };
 static const diminuto_ipv4_t SERVER4 = ((((((192 << 8) + 168) << 8) + 1) << 8) + 222);
 static const diminuto_ipv4_t LOCALHOST4 = ((((((127 << 8) + 0) << 8) + 0) << 8) + 1);
 static const diminuto_ipv6_t TEST6 = TEST_INIT;
@@ -70,9 +70,6 @@ static int ipv6only(int fd, void * vp)
 int main(int argc, char * argv[])
 {
     diminuto_ticks_t hertz;
-    const char * Address = (const char *)0;
-    const char * Interface = (const char *)0;
-    const char * Port = (const char *)0;
     const char * Host = (const char *)0;
     extern char * optarg;
     extern int optind;
@@ -82,23 +79,11 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
-    while ((opt = getopt(argc, argv, "a:h:i:p:")) >= 0) {
+    while ((opt = getopt(argc, argv, "h:")) >= 0) {
         switch (opt) {
-        case 'a':
-            /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
-            Address = optarg;
-            break;
         case 'h':
             /* e.g. "www.diag.com" */
             Host = optarg;
-            break;
-        case 'i':
-            /* e.g. "eth0" */
-            Interface = optarg;
-            break;
-        case 'p':
-            /* e.g. "5555" */
-            Port = optarg;
             break;
         default:
             break;
@@ -128,7 +113,6 @@ int main(int argc, char * argv[])
     {
         diminuto_ipv6_t address6 = TEST_INIT;
         diminuto_ipv4_t address4 = TEST_WORD;
-        char buffer[sizeof("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX")];
 
         TEST();
 
@@ -299,11 +283,10 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char ADDRESS[] = "2607:f8b0:4000:80c::200e";
         static const char HOSTNAME[] = "google.com";
         struct addrinfo hints = { 0 };
         struct addrinfo * infop = (struct addrinfo *)0;
-        diminuto_ipv6_t address = { 0x2607, 0xf8b0, 0x400f, 0x0803, 0x0000, 0x0000, 0x0000, 0x200e };
+        diminuto_ipv6_t address = { { 0x2607, 0xf8b0, 0x400f, 0x0803, 0x0000, 0x0000, 0x0000, 0x200e, } };
         diminuto_ipv6_t host;
         diminuto_ipv6_t network;
         diminuto_ipv6_t prime;
@@ -1108,8 +1091,6 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_ipv6_t address;
-        diminuto_port_t port;
         diminuto_port_t rendezvous = TEST_PORT;
         int service;
         pid_t pid;

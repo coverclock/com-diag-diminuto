@@ -47,7 +47,7 @@ static inline diminuto_mux_set_t * diminuto_mux_set_fini(diminuto_mux_set_t * se
  * the maximum and minimum file descriptor numbers.
  * @param setp points to the multiplexer set.
  */
-static void diminuto_mux_set_bound(diminuto_mux_set_t * setp);
+extern void diminuto_mux_set_bound(diminuto_mux_set_t * setp);
 
 /**
  * Renormalize the current file descriptor in a multiplexer set. This is
@@ -55,7 +55,7 @@ static void diminuto_mux_set_bound(diminuto_mux_set_t * setp);
  * current file descriptor indicating a descriptor that is no longer used.
  * @param setp points to the multiplexer set.
  */
-static void diminuto_mux_set_normalize(diminuto_mux_set_t * setp);
+extern void diminuto_mux_set_normalize(diminuto_mux_set_t * setp);
 
 /**
  * Determine if the current number of file descriptors includes all of those
@@ -90,7 +90,7 @@ static inline void diminuto_mux_set_reset(diminuto_mux_set_t * setp)
  * @param setp points to the multiplexer set.
  * @return a ready file descriptor or -1 if none.
  */
-static int diminuto_mux_set_ready(diminuto_mux_set_t * setp);
+extern int diminuto_mux_set_ready(diminuto_mux_set_t * setp);
 
 /**
  * Register a file descriptor into a multiplexer set in a multiplexer.
@@ -99,7 +99,7 @@ static int diminuto_mux_set_ready(diminuto_mux_set_t * setp);
  * @param fd is the file descriptor to be registered.
  * @return 0 for success or <0 for failure (e.g. the fd is already registered).
  */
-static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd);
+extern int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd);
 
 /**
  * Unregister a file descriptor from a multiplexer set in a multiplexer.
@@ -109,7 +109,7 @@ static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * set
  * @param silent if true suppresses the error message if the fd is not registered.
  * @return 0 for success or <0 for failure (e.g. the fd was not registered).
  */
-static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent);
+extern int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent);
 
 /**
  * Return the name of a multiplexer set.
@@ -117,7 +117,7 @@ static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * s
  * @param setp points to a set structure in the same multiplexer structure.
  * @return the canonical name of the set.
  */
-const char * diminuto_mux_set_name(const diminuto_mux_t * muxp, const diminuto_mux_set_t * setp);
+extern const char * diminuto_mux_set_name(const diminuto_mux_t * muxp, const diminuto_mux_set_t * setp);
 
 /**
  * Dump the signals in a signal set.

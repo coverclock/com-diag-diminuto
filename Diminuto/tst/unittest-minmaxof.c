@@ -114,15 +114,6 @@ int main(void)
     }
 
     {
-        int64_t int64;
-        uint64_t uint64;
-        int32_t int32;
-        uint32_t uint32;
-        int16_t int16;
-        uint16_t uint16;
-        int8_t int8;
-        uint8_t uint8;
-
         TEST();
 
         EXPECT(maximumof(typeof(int64_t))  == (int64_t)0x7fffffffffffffffLL);
@@ -182,12 +173,18 @@ int main(void)
         COMMENT("maximummof(" #_TYPE_ ")=0x%llx\n", (long long unsigned)maximumof(_TYPE_)); \
     }
 
+#define CHARACTERIZENONINTEGER(_TYPE_) \
+    { \
+        COMMENT("sizeof(" #_TYPE_ ")=%zu\n", sizeof(_TYPE_)); \
+        COMMENT("widthof(" #_TYPE_ ")=%zu\n", widthof(_TYPE_)); \
+    }
+
     {
         TEST();
 
         CHARACTERIZE(blkcnt_t);
         CHARACTERIZE(blksize_t);
-        CHARACTERIZE(bool);
+        CHARACTERIZENONINTEGER(bool);
         CHARACTERIZE(char);
         CHARACTERIZE(dev_t);
         CHARACTERIZE(diminuto_port_t);

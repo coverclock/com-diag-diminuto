@@ -1502,7 +1502,6 @@ int main(int argc, char * argv[])
         void * aggressivereads[diminuto_countof(aggressivereaders)];
         void * aggressivewrites[diminuto_countof(aggressivewriters)];
         static const int MAXIMUM = countof(readers);
-        static const int TOTAL = countof(readers) + countof(writers) + countof(impatientreaders) + countof(impatientwriters) + countof(aggressivereaders) + countof(aggressivewriters);
         size_t successfulimpatientreaders = 0;
         size_t successfulimpatientwriters = 0;
         static const int LIMIT = maximumof(int);

@@ -35,9 +35,6 @@ static const size_t TOTAL = 1024 * 1024 * 100;
 int main(int argc, char * argv[])
 {
     diminuto_ticks_t hertz;
-    const char * Address = (const char *)0;
-    const char * Interface = (const char *)0;
-    const char * Port = (const char *)0;
     const char * Host = (const char *)0;
     extern char * optarg;
     extern int optind;
@@ -47,23 +44,11 @@ int main(int argc, char * argv[])
 
     SETLOGMASK();
 
-    while ((opt = getopt(argc, argv, "a:h:i:p:")) >= 0) {
+    while ((opt = getopt(argc, argv, "h:")) >= 0) {
         switch (opt) {
-        case 'a':
-            /* e.g. "2001:470:4b:4e2:e79:7f1e:21f5:9355" */
-            Address = optarg;
-            break;
         case 'h':
             /* e.g. "www.diag.com" */
             Host = optarg;
-            break;
-        case 'i':
-            /* e.g. "eth0" */
-            Interface = optarg;
-            break;
-        case 'p':
-            /* e.g. "5555" */
-            Port = optarg;
             break;
         default:
             break;
@@ -589,7 +574,6 @@ int main(int argc, char * argv[])
         struct iovec vector;
         union { struct cmsghdr header; char data[CMSG_SPACE(sizeof(struct timeval))]; } control;
         struct cmsghdr * cp = (struct cmsghdr *)0;
-        ssize_t length = -1;
         struct timeval timestamp;
         diminuto_sticks_t now = 0;
         diminuto_sticks_t timestamp1 = 0;

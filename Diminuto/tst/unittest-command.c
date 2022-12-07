@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
         "out/host/tmp/wheatstone.pid",
         (const char *)0,
     };
-    unsigned char buffer[256];
+    char buffer[256];
     ssize_t total;
 
     diminuto_log_setmask();
@@ -69,7 +69,7 @@ int main(int argc, char ** argv)
         buffer[0] = 0xa5;
         total = diminuto_command_line(countof(ARGV) - 1, ARGV, buffer, 0);
         ASSERT(total == 0);
-        ASSERT(buffer[0] == 0xa5);
+        ASSERT(buffer[0] == (char)0xa5);
     }
 
     {

@@ -96,8 +96,6 @@ int diminuto_poll_wait_generic(diminuto_poll_t * pollp, diminuto_sticks_t ticks,
     struct timespec timeout;
     nfds_t nfds = 0;
     int fd;
-    int min;
-    int max;
     struct pollfd * pollfdp;
 
     pollp->min = DIMINUTO_MUX_MOSTPOSITIVE;

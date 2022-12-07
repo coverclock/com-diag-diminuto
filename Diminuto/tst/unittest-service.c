@@ -31,12 +31,6 @@ int main(int argc, char ** argv)
     pid_t pid2;
     pid_t ppid;
     pid_t spid;
-    int fds;
-    int fd;
-    char ch;
-    ssize_t ss;
-    size_t us;
-    char * path;
     int test;
 
     diminuto_core_enable();

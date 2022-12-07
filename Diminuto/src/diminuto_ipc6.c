@@ -479,7 +479,6 @@ int diminuto_ipc6_stream_consumer_base(diminuto_ipv6_t address, diminuto_port_t 
     int rc = -1;
     int fd = -1;
     struct sockaddr_in6 sa = { 0, };
-    struct ifreq intf = { 0, };
     socklen_t length = sizeof(sa);
 
      sa.sin6_family = AF_INET6;

@@ -42,7 +42,7 @@ diminuto_mux_t * diminuto_mux_init(diminuto_mux_t * muxp)
     return result;
 }
 
-static int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
+int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
 {
     int rc = -1;
 
@@ -92,7 +92,7 @@ int diminuto_mux_register_interrupt(diminuto_mux_t * muxp, int fd)
     return diminuto_mux_register(muxp, &muxp->interrupt, fd);
 }
 
-static void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
+void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
 {
     int min = 0;
     int max = 0;
@@ -110,7 +110,7 @@ static void diminuto_mux_set_bound(diminuto_mux_set_t * setp)
     setp->max = max;
 }
 
-static void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
+void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
 {
     if (setp->next < 0) {
         /* Do nothing. */
@@ -125,7 +125,7 @@ static void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
     }
 }
 
-static int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent)
+int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent)
 {
     int rc = -1;
 
@@ -236,7 +236,6 @@ int diminuto_mux_wait_generic(diminuto_mux_t * muxp, diminuto_sticks_t ticks, co
     int nfds = 0;
     fd_set read_or_accept;
     fd_set urgent_or_interrupt;
-    int fd = -1;
 
     diminuto_mux_set_census(&muxp->read, &nfds);
     diminuto_mux_set_census(&muxp->write, &nfds);
@@ -310,7 +309,7 @@ int diminuto_mux_wait_generic(diminuto_mux_t * muxp, diminuto_sticks_t ticks, co
     return rc;
 }
 
-static int diminuto_mux_set_ready(diminuto_mux_set_t * setp)
+int diminuto_mux_set_ready(diminuto_mux_set_t * setp)
 {
     int fd = -1;
     int wrapped = 0;

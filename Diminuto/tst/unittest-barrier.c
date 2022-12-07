@@ -126,10 +126,13 @@ int main(void)
         TEST();
         diminuto_barrier();
         reg = 0;
+        ASSERT(reg == 0);
         diminuto_barrier();
         reg = 1;
+        ASSERT(reg == 1);
         diminuto_barrier();
         reg = 0;
+        ASSERT(reg == 0);
         STATUS();
     }
 
@@ -137,6 +140,7 @@ int main(void)
         TEST();
         diminuto_acquire();
         reg = 1;
+        ASSERT(reg == 1);
         diminuto_release();
         STATUS();
     }
@@ -145,10 +149,13 @@ int main(void)
         TEST();
         diminuto_barrier_f();
         reg = 0;
+        ASSERT(reg == 0);
         diminuto_barrier_f();
         reg = 1;
+        ASSERT(reg == 1);
         diminuto_barrier_f();
         reg = 0;
+        ASSERT(reg == 0);
         STATUS();
     }
 
@@ -156,6 +163,7 @@ int main(void)
         TEST();
         diminuto_acquire_f();
         reg = 1;
+        ASSERT(reg == 1);
         diminuto_release_f();
         STATUS();
     }

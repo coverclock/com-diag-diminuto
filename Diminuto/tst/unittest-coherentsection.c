@@ -54,27 +54,44 @@ int main(void)
 {
 
     {
+        int temp;
+
         TEST();
 
-        DIMINUTO_COHERENT_SECTION_BEGIN;
-
-            int temp = 0;
-
-        DIMINUTO_COHERENT_SECTION_END;
+        temp = 0;
 
         DIMINUTO_COHERENT_SECTION_BEGIN;
 
-            int temp = 1;
-
-            DIMINUTO_COHERENT_SECTION_BEGIN;
-
-                int temp = 2;
-
-            DIMINUTO_COHERENT_SECTION_END;
+            int temp;
+            temp = 1;
 
             ASSERT(temp == 1);
 
         DIMINUTO_COHERENT_SECTION_END;
+
+        ASSERT(temp == 0);
+
+        DIMINUTO_COHERENT_SECTION_BEGIN;
+
+            int temp;
+            temp = 2;
+
+            ASSERT(temp == 2);
+
+            DIMINUTO_COHERENT_SECTION_BEGIN;
+
+                int temp;
+                temp = 3;
+
+                ASSERT(temp == 3);
+
+            DIMINUTO_COHERENT_SECTION_END;
+
+            ASSERT(temp == 2);
+
+        DIMINUTO_COHERENT_SECTION_END;
+
+        ASSERT(temp == 0);
 
         STATUS();
     }

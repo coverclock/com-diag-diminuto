@@ -76,7 +76,6 @@ void proxy_cleanup(void * vp)
 static void * proxy(void * vp)
 {
     diminuto_thread_t * tp = (diminuto_thread_t *)vp;
-    void * value = (void *)0;
     int previous = -1;
     int rc = DIMINUTO_THREAD_ERROR;
 
@@ -438,9 +437,6 @@ int diminuto_thread_join_until(diminuto_thread_t * tp, void ** vpp, diminuto_tic
     int rc = DIMINUTO_THREAD_ERROR;
     int done = 0;
     void * value = (void *)0;
-    struct timespec now = { 0, };
-    static const diminuto_ticks_t SECONDS = 1;
-    static const diminuto_ticks_t NANOSECONDS = 1000000000;
 
     /*
      * Wait for the thread to reach its completing state.

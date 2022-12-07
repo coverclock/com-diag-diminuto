@@ -45,6 +45,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_ipc4.h"
@@ -88,12 +89,16 @@ static const char * type2string(diminuto_ipc_type_t type)
 
 #define PREFACE \
     char * endpoint = (char *)0; \
-    diminuto_ipv4_buffer_t ipv4buffer = { '\0', }; \
-    diminuto_ipv6_buffer_t ipv6buffer = { '\0', }; \
-    diminuto_port_buffer_t tcpbuffer = { '\0', }; \
-    diminuto_port_buffer_t udpbuffer = { '\0', }; \
+    diminuto_ipv4_buffer_t ipv4buffer; \
+    diminuto_ipv6_buffer_t ipv6buffer; \
+    diminuto_port_buffer_t tcpbuffer; \
+    diminuto_port_buffer_t udpbuffer; \
     diminuto_ipc_endpoint_t parse = { DIMINUTO_IPC_TYPE_UNSPECIFIED, }; \
-    int rc = -1 \
+    int rc = -1; \
+    memset(&ipv4buffer, 0, sizeof(ipv4buffer)); \
+    memset(&ipv6buffer, 0, sizeof(ipv6buffer)); \
+    memset(&tcpbuffer, 0, sizeof(tcpbuffer)); \
+    memset(&udpbuffer, 0, sizeof(udpbuffer));
 
 #define DISPLAY() \
         COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%s udp=%s local=\"%s\" rc=%d\n", \
@@ -178,7 +183,6 @@ static const char * type2string(diminuto_ipc_type_t type)
 
 #define VERIFYFAIL(_POINTER_) \
     do { \
-        const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
         EXPECT(rc < 0); \
         EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED); \
     } while (0); \
@@ -248,7 +252,7 @@ int main(int argc, char * argv[])
     localhost4 = diminuto_ipc4_address("localhost");
     localhost6 = diminuto_ipc6_address("localhost");
     fqdn44 = diminuto_ipc4_address(fqdn4);
-    fqdn46 = diminuto_ipc6_address(fqdn4);
+    fqdn46 = diminuto_ipc6_address(fqdn6);
     address4 = diminuto_ipc4_address(IPV4);
     address46 = diminuto_ipc6_address("::ffff:" IPV4);
     address6 = diminuto_ipc6_address(IPV6);

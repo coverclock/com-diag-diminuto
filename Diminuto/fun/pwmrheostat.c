@@ -44,8 +44,6 @@ int main(int argc, char * argv[])
     int rc = 0;
     diminuto_modulator_t modulator[4] = { { 0 } };
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
-    diminuto_sticks_t frequency = 0;
-    diminuto_sticks_t ticks = 0;
     unsigned int seconds = 0;
     int reverse = 0;
     int ii = 0;

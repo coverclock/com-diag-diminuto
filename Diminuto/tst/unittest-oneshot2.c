@@ -43,7 +43,6 @@ static void * callback(void * cp)
 int main(int argc, char ** argv)
 {
     diminuto_timer_t timer;
-    diminuto_sticks_t value;
     diminuto_sticks_t result;
     diminuto_ticks_t hertz;
     diminuto_ticks_t frequency;

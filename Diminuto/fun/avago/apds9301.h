@@ -133,7 +133,7 @@ enum AvagoApds9301Id {
  * @param device is the device address.
  * @return 0 if as expected, <0 otherwise.
  */
-static int avago_apds9301_reset(int fd, int device)
+static inline int avago_apds9301_reset(int fd, int device)
 {
     int rc = -1;
     uint8_t datum = 0x00;
@@ -171,7 +171,7 @@ static int avago_apds9301_reset(int fd, int device)
  * @param fp points to an open FILE stream.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int avago_apds9301_print(int fd, int device, FILE * fp)
+static inline int avago_apds9301_print(int fd, int device, FILE * fp)
 {
     int rc = -1;
     int ii = 0;
@@ -300,7 +300,7 @@ static const double AVAGO_APDS9301_LUX_MAXIMUM = 2000.0;
  * @param bufferp points to the buffer into which the value is stored.
  * @return 0 if successful, <0 if an error occurred.
  */ 
-static int avago_apds9301_sense(int fd, int device, double * bufferp)
+static inline int avago_apds9301_sense(int fd, int device, double * bufferp)
 {
     int rc = -1;
     uint8_t datum = 0x00;

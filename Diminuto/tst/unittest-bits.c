@@ -189,8 +189,6 @@ int main(void)
     }
 
     {
-        int ii;
-
         TEST();
 
         ASSERT(DIMINUTO_BITS_MASK(uint8_t) == (uint8_t)0xff);

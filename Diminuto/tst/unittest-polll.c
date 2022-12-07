@@ -280,7 +280,6 @@ int main(int argc, char ** argv)
             int ready;
             int fd;
             int done;
-            int proceed;
             ssize_t readable;
             double percentage;
 

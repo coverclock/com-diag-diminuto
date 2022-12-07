@@ -28,7 +28,6 @@ int main(int argc, char ** argv)
     pid_t pid;
     int status;
     int ii;
-    int kk;
 
     SETLOGMASK();
 

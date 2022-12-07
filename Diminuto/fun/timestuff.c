@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-void main(void) {
+int main(void) {
     struct tm data = { 0, };
     struct tm * pointer = (struct tm *)0;
     time_t seconds = (time_t)0;

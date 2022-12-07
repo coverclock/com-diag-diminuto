@@ -64,7 +64,6 @@ int main(int argc, char ** argv)
     {
         static const char * LOCKFILE = "/tmp/unittest-lock-2.pid";
         int rc;
-        FILE * fp;
         pid_t pid1;
         pid_t pid2;
         pid_t pid3;

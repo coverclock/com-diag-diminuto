@@ -92,7 +92,6 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
     diminuto_modulator_cycle_t off0 = 0;
     diminuto_modulator_cycle_t on1 = 0;
     diminuto_modulator_cycle_t off1 = 0;
-    int ii = 0;
 
     /*
      * We don't have to check for the range of the duty cycle, since the

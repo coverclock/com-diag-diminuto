@@ -158,7 +158,7 @@ extern int diminuto_meter_events(diminuto_meter_t * meterp, diminuto_ticks_t now
  * @param now is the time at which the event occurred.
  * @return 0 for success or <0 with errno set if an error occurred.
  */
-static int diminuto_meter_event(diminuto_meter_t * meterp, diminuto_ticks_t now)
+static inline int diminuto_meter_event(diminuto_meter_t * meterp, diminuto_ticks_t now)
 {
     return diminuto_meter_events(meterp, now, 1);
 }

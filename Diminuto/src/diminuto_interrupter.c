@@ -46,7 +46,6 @@ int diminuto_interrupter_signal(pid_t pid)
 
 static void diminuto_interrupter_handler(int signum)
 {
-    int rc = 0;
     int mysignaled = -1;
     static const int MAXIMUM = ~(((int)1) << ((sizeof(signaled) * 8) - 1));
 

@@ -615,7 +615,6 @@ int datagrampeer6(int datagramsocket)
     size_t maximum;
     diminuto_scattergather_record_t * rp;
     diminuto_scattergather_segment_t * sp;
-    int ii;
 
     do {
 
@@ -878,7 +877,7 @@ int main(void)
     int datagramsocket;
     pid_t streampid;
     pid_t datagrampid;
-    static const char DATA[] = "Now is the time for all good men to come to the aid of their country.";
+    static const char EXAMPLE[] = "Now is the time for all good men to come to the aid of their country.";
 
     SETLOGMASK();
 
@@ -1093,7 +1092,7 @@ int main(void)
 
     {
         diminuto_scattergather_segment_t * sp;
-        uint8_t * bp;
+        char * bp;
         size_t ll;
 
         /* Payload */
@@ -1102,9 +1101,9 @@ int main(void)
 
         ASSERT((sp = diminuto_scattergather_segment_allocate(&pool, MAXIMUM)) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == MAXIMUM);
-        ASSERT((bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp)) != (uint8_t *)0);
-        ASSERT((ll = (strlen(DATA) + 1 /* Including NUL. */)) > 0);
-        strncpy(bp, DATA, ll);
+        ASSERT((bp = (char *)diminuto_scattergather_segment_payload_get(sp)) != (char *)0);
+        ASSERT((ll = (strlen(EXAMPLE) + 1 /* Including NUL. */)) > 0);
+        strncpy(bp, EXAMPLE, ll);
         ASSERT(diminuto_scattergather_segment_length_set(sp, ll) == ll);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == ll);
         ASSERT(diminuto_scattergather_record_segment_append(rp, sp) == sp);
@@ -1240,7 +1239,6 @@ int main(void)
         uint8_t * bp;
         diminuto_scattergather_segment_t * sp;
         diminuto_scattergather_segment_t * tp;
-        ssize_t length;
 
         /* Address StreamPort Length Payload Checksum */
 
@@ -1310,12 +1308,9 @@ int main(void)
     }
 
     {
-        uint8_t * bp;
+        char * bp;
         diminuto_scattergather_segment_t * sp;
         diminuto_scattergather_segment_t * tp;
-        diminuto_ipv6_t address;
-        diminuto_port_t port;
-        ssize_t length;
 
         /* Address DatagramPort Length Payload Checksum */
 
@@ -1323,7 +1318,7 @@ int main(void)
 
         ASSERT((sp = diminuto_scattergather_segment_allocate(&pool, sizeof(datagramport))) != (diminuto_scattergather_segment_t *)0);
         ASSERT(diminuto_scattergather_segment_length_get(sp) == sizeof(datagramport));
-        ASSERT((bp = (uint8_t *)diminuto_scattergather_segment_payload_get(sp)) != (uint8_t *)0);
+        ASSERT((bp = (char *)diminuto_scattergather_segment_payload_get(sp)) != (char *)0);
         memcpy(bp, &datagramport, sizeof(streamport));
         ASSERT((tp = diminuto_scattergather_record_segment_head(rp)) != (diminuto_scattergather_segment_t *)0);
         ASSERT((tp = diminuto_scattergather_record_segment_next(tp)) != (diminuto_scattergather_segment_t *)0);
@@ -1378,8 +1373,6 @@ int main(void)
     }
 
     {
-        diminuto_scattergather_segment_t * sp;
-
         TEST();
 
         diminuto_scattergather_record_free(&pool, rp);

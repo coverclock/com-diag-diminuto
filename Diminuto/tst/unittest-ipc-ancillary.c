@@ -520,7 +520,6 @@ done:
  */
 static void workload(void)
 {
-    int ii = 0;
     thread_node_t * np = (thread_node_t *)0;
     void * result = (void *)0;
     int interrupted = 0;
@@ -596,7 +595,6 @@ static void * server(void * arg /* streamsocket */)
     diminuto_ipv4_t farendaddress = 0;
     diminuto_port_t farendport = 0;
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
-    int ready = -1;
     struct iovec vector[1];
     ssize_t length = -1;
     datum_t datum = 0;
@@ -685,7 +683,6 @@ static void * server(void * arg /* streamsocket */)
 static void * dispatcher(void * arg /* listensocket */)
 {
     int listensocket = -1;
-    int ii = -1;
     diminuto_mux_t mux;
     int ready = -1;
     thread_node_t * np = (thread_node_t *)0;
@@ -693,7 +690,6 @@ static void * dispatcher(void * arg /* listensocket */)
     int streamsocket = -1;
     void * result = 0;
     int notifications = 0;
-    int fd = -1;
 
     CHECKPOINT("dispatcher: starting\n");
 
@@ -924,7 +920,7 @@ static void instance(void)
  * MAIN PROGRAM
  ******************************************************************************/
 
-int main(int argc, char argv[])
+int main(int argc, char * argv[])
 {
     int listensocket = -1;
     diminuto_ipv4_buffer_t nearendbuffer = { '\0', };

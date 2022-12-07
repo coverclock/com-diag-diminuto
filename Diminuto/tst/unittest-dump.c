@@ -19,7 +19,6 @@ int main(void)
 {
     uint8_t data[256];
     int ch;
-    const char * address;
     size_t offset;
 
     for (ch = 0; ch < 256; ++ch) { data[ch] = ch; }

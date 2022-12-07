@@ -210,7 +210,6 @@ int diminuto_pin_port_generic(const char * format, int pin, int ignore)
 
 int diminuto_pin_edge(int pin, diminuto_pin_edge_t edge)
 {
-    int rc = 0;
     const char * string = (const char *)0;
 
     switch (edge) {
@@ -363,7 +362,6 @@ int diminuto_pin_get(FILE * fp)
 {
     int value = -1;
     int rc = -1;
-    ssize_t size = 0;
 
     do {
 

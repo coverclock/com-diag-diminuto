@@ -682,7 +682,6 @@ int main(int argc, char ** argv)
         diminuto_ticks_t duration = 0;
         diminuto_ticks_t frequency;
         diminuto_ticks_t increment;
-        diminuto_ticks_t limit;
         double sustained;
         double rate;
         double peak = 0;
@@ -692,7 +691,6 @@ int main(int argc, char ** argv)
         frequency = diminuto_frequency();
         /**/
         increment = diminuto_throttle_interarrivaltime(BANDWIDTH * 3, 3, frequency);
-        limit = diminuto_throttle_jittertolerance(increment, BLOCKSIZE);
         /**/
         srand(diminuto_time_clock());
         tp = diminuto_throttle_init(&throttle, increment, 0 /* limit */, now);

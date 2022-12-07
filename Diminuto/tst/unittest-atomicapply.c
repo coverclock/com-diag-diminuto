@@ -29,7 +29,10 @@ static int library_database = 0;
 static inline int library_settor(diminuto_atomic_functor_t * fp, int value) {
     extern pthread_mutex_t library_mutex;
     extern int library_database;
-    return (int)(intptr_t)diminuto_atomic_apply(&library_mutex, fp, &library_database, (void *)(intptr_t)value);
+    void * result;
+    result = diminuto_atomic_apply(&library_mutex, fp, &library_database, (void *)(intptr_t)value);
+    ASSERT(result != DIMINUTO_ATOMIC_ERROR);
+    return (int)(intptr_t)result;
 }
 
 /*
@@ -44,7 +47,7 @@ static void * application_functor(void * dp, void * cp) {
     return rp;
 }
 
-void main(void)
+int main(void)
 {
     SETLOGMASK();
 

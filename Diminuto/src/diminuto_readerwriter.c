@@ -852,7 +852,6 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 {
     int result = -1;
     diminuto_list_t * np = (diminuto_list_t *)0;
-    role_t role = NONE;
     int rc = 0;
 
     if ((np = acquire()) == (diminuto_list_t *)0) {

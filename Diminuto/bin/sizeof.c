@@ -91,11 +91,6 @@ typedef struct StructZero {
 typedef uint8_t (array_zero_t)[0];
 #endif
 
-static int8_t array_PATH_MAX[PATH_MAX];
-static int8_t array_UNIX_PATH_MAX[UNIX_PATH_MAX];
-static int8_t array_MAXPATHLEN[MAXPATHLEN];
-static int8_t array_POSIX_PATH_MAX[_POSIX_PATH_MAX];
-
 int main(void)
 {
     printsizeofnoninteger(void);
@@ -121,8 +116,8 @@ int main(void)
 #if PROBLEMATIC
     printsizeofnoninteger(void);
 #endif
-    printsizeof(bool);
     printsizeof(enum_t);
+    printsizeofnoninteger(bool);
     printsizeofnoninteger(bitfield_int_t);
     printsizeofnoninteger(bitfield_int8_t);
     printsizeofnoninteger(bitfield_int16_t);

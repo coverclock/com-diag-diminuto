@@ -88,7 +88,6 @@
 
 static void stamp(FILE *fp)
 {
-    diminuto_sticks_t frequency = 0;
     diminuto_sticks_t now = 0;
     int year = 0;
     int month = 0;

@@ -46,7 +46,6 @@ diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
     diminuto_port_t port = 0;
     const char * sp = (const char *)0;
     struct servent * portp = (struct servent *)0;
-    size_t length = 0;
     diminuto_unsigned_t temp = 0;
     const char * end = (const char *)0;
 
