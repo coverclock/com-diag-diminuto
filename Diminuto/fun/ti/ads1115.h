@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2018 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Support the TI ADS-1115 in the functional test fixture.
  * @author Chip Overclock <mailto:coverclock@diag.com>
