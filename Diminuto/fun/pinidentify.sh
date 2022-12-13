@@ -3,6 +3,7 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+# Identifies LEDs on the hardware test fixture.
 
 PROGRAM=$(basename $0)
 USEC=${1:-5000000}
