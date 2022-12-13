@@ -412,12 +412,6 @@ fabricated specifically for this purpose. Depending on the platform,
 some or all of these functional tests  may need to be run as root,
 or as a user - e.g. pi - that is in the gpio group.)
 
-(Update 2022-12-13: my tiny Avago ADPS9301 light sensor board has stopped
-working, and SparkFun no longer lists the part on their web site. Bad
-news. I currently have no way to test the PID controller feature using
-the feedback loop of a PWM modulated LED and a lux sensor. I'll have to
-adapt another similar part to my hardware test fixture.)
-
 # Unit Test Make Targets
 
 Important safety tip: on some (most?) platforms, if you run a unit test
