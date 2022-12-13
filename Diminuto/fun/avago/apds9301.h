@@ -205,7 +205,7 @@ static inline int avago_apds9301_print(int fd, int device, FILE * fp)
  * @param interrupt is the desired value of the interrupt register.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int avago_apds9301_configure(int fd, int device, uint8_t timing, uint8_t interrupt)
+static inline int avago_apds9301_configure(int fd, int device, uint8_t timing, uint8_t interrupt)
 {
     int rc = -1;
 
@@ -242,7 +242,7 @@ static inline int avago_apds9301_configure_default(int fd, int device)
  * @param luxp points to where the result is stored.
  * @return 0 if successful, <0 otherwise.
  */
-static int avago_apds9301_rawtolux(uint16_t raw0, uint16_t raw1, double * luxp)
+static inline int avago_apds9301_rawtolux(uint16_t raw0, uint16_t raw1, double * luxp)
 {
     double lux = 0.0;
     double chan0 = 0.0;

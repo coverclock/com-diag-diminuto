@@ -199,7 +199,7 @@ static inline int ti_ads1115_print(int fd, int device, FILE * fp)
  * @param config is the desired value of the config register.
  * @return 0 if successful, <0 if an error occurred.
  */
-static int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t hithresh, uint16_t config)
+static inline int ti_ads1115_configure(int fd, int device, uint16_t lothresh, uint16_t hithresh, uint16_t config)
 {
     int rc = -1;
     uint8_t buffer[sizeof(uint8_t) + sizeof(uint16_t)];
@@ -243,7 +243,7 @@ static inline int ti_ads1115_configure_default(int fd, int device)
     return ti_ads1115_configure(fd, device, TI_ADS1115_LOTHRESH_RDY, TI_ADS1115_HITHRESH_RDY, TI_ADS1115_CONFIG_OS_NOP | TI_ADS1115_CONFIG_MUX_AIN0_GND | TI_ADS1115_CONFIG_PGA_6_144V | TI_ADS1115_CONFIG_MODE_CONTINUOUS | TI_ADS1115_CONFIG_DR_8SPS | TI_ADS1115_CONFIG_COMP_MODE_WINDOW | TI_ADS1115_CONFIG_COMP_POL_HIGH | TI_ADS1115_CONFIG_COMP_LAT_ON | TI_ADS1115_CONFIG_COMP_QUE_1);
 }
 
-static int ti_ads1115_rawtovolts(uint16_t config, int16_t raw, double * voltsp)
+static inline int ti_ads1115_rawtovolts(uint16_t config, int16_t raw, double * voltsp)
 {
     int rc = -1;
     double pga = 0.0;
