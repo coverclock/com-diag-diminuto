@@ -15,7 +15,7 @@
  * to implement a feedback loop. The parameters work for the hardware
  * text fixture I use to exercise a number of Diminuto functional tests.
  *
- * The PWM modulator duty cycle ranges from 0 (off) to 100 (on).
+ * The PWM modulator duty cycle ranges from 0 (fully off) to 255 (fully on).
  *
  * The light sensor output ranges from 0 to about 1992 lux.
  *
