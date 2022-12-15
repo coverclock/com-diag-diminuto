@@ -65,6 +65,7 @@ i2cset -y ${BUS} ${DEV} ${ADR}
 DAT=0x03
 i2cset -y ${BUS} ${DEV} ${DAT}
 echo ${PGM}: ${BUS} ${DEV} ${ADR} ${DAT}
+
 VAL=$(i2cget -y ${BUS} ${DEV})
 [[ "${DAT}" = "${VAL}" ]] && MSG="OKAY" || MSG="FAIL"
 echo ${PGM}: ${BUS} ${DEV} ${ADR} "...." ${VAL} ${MSG}
