@@ -66,7 +66,6 @@ int main(int argc, char ** argv) {
     FILE * fp = (FILE *)0;
     double lux = 0.0;
     diminuto_mux_t mux;
-    diminuto_sticks_t ticks = 0;
     diminuto_ticks_t delay = 0;
     diminuto_sticks_t now = 0;
     diminuto_sticks_t was = 0;
@@ -155,7 +154,7 @@ int main(int argc, char ** argv) {
 
     while (!0) {
 
-        rc = diminuto_mux_wait(&mux, -1);
+        rc = diminuto_mux_wait(&mux, delay);
 
         if (diminuto_terminator_check()) {
             fprintf(stderr, "%s: terminated\n", program);
@@ -166,8 +165,6 @@ int main(int argc, char ** argv) {
         } else if (rc < 0) {
             break;
         } else if (rc == 0) {
-            ticks = diminuto_delay(delay, !0);
-            assert(ticks >= 0);
             continue;
         } else {
             /* Do nothing. */

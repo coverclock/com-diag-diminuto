@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_timer.h"
+#include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "../src/diminuto_timer.h"
 #include <signal.h>
@@ -21,32 +22,57 @@ static void * callback(void * vp) { return (void *)0; }
 int main(int argc, char ** argv)
 {
 	SETLOGMASK();
+
     {
         TEST();
+
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_IDLE == (int)DIMINUTO_TIMER_STATE_IDLE);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_ARM == (int)DIMINUTO_TIMER_STATE_ARM);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_DISARM == (int)DIMINUTO_TIMER_STATE_DISARM);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_UNKNOWN == (int)DIMINUTO_TIMER_STATE_UNKNOWN);
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
         ASSERT(diminuto_timer_window(0) == diminuto_frequency());
         ASSERT(diminuto_timer_window(1) == diminuto_frequency());
         ASSERT(diminuto_timer_window(2) == diminuto_frequency());
         ASSERT(diminuto_timer_window(diminuto_frequency()) == (2 * (diminuto_frequency())));
         ASSERT(diminuto_timer_window(diminuto_frequency() + 1) == (2 * (diminuto_frequency() + 1)));
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, 0) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_error(&timer) == 0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, SIGALRM) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_error(&timer) == 0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
@@ -55,11 +81,15 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, 0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
@@ -68,26 +98,38 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, 0) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_error(&timer) == 0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, !0, callback, SIGALRM) == (diminuto_timer_t *)0);
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, !0, callback, 0) == &timer);
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
@@ -96,11 +138,15 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
         STATUS();
     }
+
     {
         diminuto_timer_t timer;
+
         TEST();
+
         ASSERT(diminuto_timer_init_generic(&timer, !0, (diminuto_timer_function_t *)0, SIGALRM) == &timer);
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
@@ -109,7 +155,9 @@ int main(int argc, char ** argv)
         ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
         ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
         STATUS();
     }
+
     EXIT();
 }

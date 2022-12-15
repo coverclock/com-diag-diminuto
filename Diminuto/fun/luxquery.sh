@@ -32,7 +32,7 @@ PIN=${3:-${HARDWARE_TEST_FIXTURE_PIN_INT_LUX}}
 TMP=${TMPDIR:="/tmp"}
 FIL=$(mktemp ${TMP}/${PGM}-XXXXXXXXXX)
 
-trap "pintool -p ${PIN} -n 2> /dev/null; rm -f ${FIL}; echo ${PGM}: exit; exit 0" 1 2 3 15
+trap "pintool -p ${PIN} -n 2> /dev/null; rm -f ${FIL}; echo ${PGM}: exit" 0 1 2 3 15
 
 # Setup GPIO.
 
@@ -45,12 +45,18 @@ NAM="i2c-${BUS}"
 i2cdetect -l | tee ${FIL} | grep -q "^${NAM}[ 	]" && MSG="OKAY" || MSG="FAIL"
 echo ${PGM}: ${BUS} ${NAM} ${MSG}
 cat ${FIL}
+if [[ "${MSG}" != "OKAY" ]]; then
+    exit 2
+fi
 
 NUM=${DEV:2:2}
 i2cdetect -y ${BUS} | tee ${FIL} | grep -q " ${NUM} " && MSG="OKAY" || MSG="FAIL"
 echo ${PGM}: ${BUS} ${DEV} ${NUM} ${MSG}
 cat ${FIL}
 echo
+if [[ "${MSG}" != "OKAY" ]]; then
+    exit 3
+fi
 
 # Power cycle and verify.
 
@@ -69,6 +75,9 @@ echo ${PGM}: ${BUS} ${DEV} ${ADR} ${DAT}
 VAL=$(i2cget -y ${BUS} ${DEV})
 [[ "${DAT}" = "${VAL}" ]] && MSG="OKAY" || MSG="FAIL"
 echo ${PGM}: ${BUS} ${DEV} ${ADR} "...." ${VAL} ${MSG}
+if [[ "${MSG}" != "OKAY" ]]; then
+    exit 4
+fi
 
 # Configure.
 

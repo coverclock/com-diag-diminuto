@@ -55,6 +55,17 @@ int main(int argc, char ** argv)
     SETLOGMASK();
 
     {
+        TEST();
+
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_IDLE == (int)DIMINUTO_TIMER_STATE_IDLE);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_ARM == (int)DIMINUTO_TIMER_STATE_ARM);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_DISARM == (int)DIMINUTO_TIMER_STATE_DISARM);
+        ASSERT((int)DIMINUTO_MODULATOR_STATE_UNKNOWN == (int)DIMINUTO_TIMER_STATE_UNKNOWN);
+
+        STATUS();
+    }
+
+    {
         diminuto_ticks_t system;
         diminuto_ticks_t modulator;
         diminuto_ticks_t period;
@@ -181,10 +192,10 @@ int main(int argc, char ** argv)
 
         COMMENT("START");
 
-        ASSERT((int)diminuto_modulator_state(&modulator) == (int)DIMINUTO_TIMER_STATE_IDLE);
+        ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_IDLE);
         ASSERT(diminuto_modulator_error(&modulator) == 0);
         ASSERT(diminuto_modulator_start(&modulator) >= 0);
-        ASSERT((int)diminuto_modulator_state(&modulator) == (int)DIMINUTO_TIMER_STATE_ARM);
+        ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_ARM);
         diminuto_delay(diminuto_frequency(), 0);
 
         STATUS();

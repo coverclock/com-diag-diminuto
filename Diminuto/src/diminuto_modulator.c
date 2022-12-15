@@ -79,7 +79,9 @@ diminuto_modulator_state_t diminuto_modulator_state(diminuto_modulator_t * mp) {
     diminuto_modulator_state_t result = DIMINUTO_MODULATOR_STATE_UNKNOWN;
 
     DIMINUTO_CONDITION_BEGIN(&(mp->condition));
+
         result = (diminuto_modulator_state_t)diminuto_timer_state(&(mp->timer));
+
     DIMINUTO_CONDITION_END;
 
     return result;
@@ -139,6 +141,8 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
         mp->toff = off1;
         mp->set = !0;
 
+        rc = 0;
+
         if (diminuto_timer_state(&(mp->timer)) == DIMINUTO_TIMER_STATE_ARM) {
             while (mp->set) {
                 if ((rc = diminuto_condition_wait(&(mp->condition))) != 0) {
@@ -146,8 +150,6 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
                     break;
                 }
             }
-        } else {
-            rc = 0;
         }
 
         DIMINUTO_LOG_DEBUG("diminuto_modulator@%p: set pin=%d error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", mp, mp->pin, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
@@ -184,23 +186,19 @@ static void * callback(void * vp)
          * firing as we can get it.
          */
 
-        if (!mp->state) {
+        DIMINUTO_CONDITION_BEGIN(&(mp->condition));
 
-            DIMINUTO_CONDITION_BEGIN(&(mp->condition));
-
-                if (mp->set) {
-                    mp->on = mp->ton;
-                    mp->off = mp->toff;
-                    mp->set = 0;
-                    rc = diminuto_condition_signal(&(mp->condition));
-                    if (rc != 0) {
-                        mp->error = rc;
-                    }
+            if (mp->set) {
+                mp->on = mp->ton;
+                mp->off = mp->toff;
+                mp->set = 0;
+                rc = diminuto_condition_signal(&(mp->condition));
+                if (rc != 0) {
+                    mp->error = rc;
                 }
+            }
 
-            DIMINUTO_CONDITION_END;
-
-        }
+        DIMINUTO_CONDITION_END;
 
         /*
          * We change the pin state only at the end
