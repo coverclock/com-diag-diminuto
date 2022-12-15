@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018 Digital Aggregates Corporation, Colorado, USA
+# Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
@@ -24,23 +24,33 @@
 
 . $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
 
-PGM=$(basename $0 .sh)
+PGM=$(basename ${0} .sh)
 BUS=${1:-${HARDWARE_TEST_FIXTURE_BUS_I2C}}
 DEV=${2:-${HARDWARE_TEST_FIXTURE_DEV_I2C_LUX}}
 PIN=${3:-${HARDWARE_TEST_FIXTURE_PIN_INT_LUX}}
+
+TMP=${TMPDIR:="/tmp"}
+FIL=$(mktemp ${TMP}/${PGM}-XXXXXXXXXX)
+
+trap "pintool -p ${PIN} -n 2> /dev/null; rm -f ${FIL}; echo ${PGM}: exit; exit 0" 1 2 3 15
 
 # Setup GPIO.
 
 pintool -p ${PIN} -n 2> /dev/null
 pintool -p ${PIN} -x -u 1000000 -i -L -R
-trap "pintool -p ${PIN} -n 2> /dev/null; echo ${PGM}: exit;  exit 0" 1 2 3 15
 
 # Scan.
 
+NAM="i2c-${BUS}"
+i2cdetect -l | tee ${FIL} | grep -q "^${NAM}[ 	]" && MSG="OKAY" || MSG="FAIL"
+echo ${PGM}: ${BUS} ${NAM} ${MSG}
+cat ${FIL}
+
 NUM=${DEV:2:2}
-i2cdetect -y ${BUS}
-i2cdetect -y ${BUS} | grep -q " ${NUM} " && MSG="OKAY" || MSG="FAIL"
+i2cdetect -y ${BUS} | tee ${FIL} | grep -q " ${NUM} " && MSG="OKAY" || MSG="FAIL"
 echo ${PGM}: ${BUS} ${DEV} ${NUM} ${MSG}
+cat ${FIL}
+echo
 
 # Power cycle and verify.
 
@@ -114,7 +124,8 @@ pintool -p ${PIN} -M | while read BIT; do
 		N1V="0x${N1H}${N1L}"
 		# Compute.
 		LUX=$(luxcompute ${N0V} ${N1V})
-		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${ADR} .... ${N0V} ${N1V} ${TMD} ms ${LUX} lx
+		echo ${PGM}: ${PIN} ${BIT} ${BUS} ${DEV} ${V0L} ${V0H} ${V1L} ${V1H} .... ${N0V} ${N1V} ${TMD} ms ${LUX} lx
+
 	fi
 done
 
