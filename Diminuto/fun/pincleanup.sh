@@ -21,12 +21,12 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_ADC} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_INT_LUX} -e
-pintool -p ${HARDWARE_TEST_FIXTURE_PIN_INT_ADC} -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -x -o -c -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -x -o -c -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_LED_3} -x -o -c -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -x -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -x -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_LED} -x -o -c -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_PWM_ADC} -x -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_INT_LUX} -x -e
+pintool -p ${HARDWARE_TEST_FIXTURE_PIN_INT_ADC} -x -e

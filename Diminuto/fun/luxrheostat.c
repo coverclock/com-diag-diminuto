@@ -202,7 +202,7 @@ int main(int argc, char ** argv) {
 
             sustain = SUSTAIN;
 
-            printf("%s: PWM %3d %% on %3u off %3u Lux %7.2f lx Period %3lld ms\n", program, duty, modulator.on, modulator.off, lux, (long long int)elapsed);
+            printf("%s: PWM %6.2lf %% on %3u off %3u Lux %7.2f lx Period %3lld ms\n", program, 100.0 * (double)duty / (double)DIMINUTO_MODULATOR_DUTY_MAX, modulator.on, modulator.off, lux, (long long int)elapsed);
 
             duty += increment;
             if (duty > 255) {
@@ -231,6 +231,21 @@ int main(int argc, char ** argv) {
 
     rc = diminuto_modulator_stop(&modulator);
     assert(rc >= 0);
+
+    /*
+     * There's a race condition (which I'd like to fix) in which the stop()
+     * above sees that the timer callback isn't running, but then the timer
+     * callback is started asynchronously by the C library timer feature as
+     * we destroy the pthread mutexes below in the fini(). The modulator and
+     * timer callbacks try to enter their critical sections to check the state
+     * and find that their mutxen have been deallocated. This results in a
+     * couple of "invalid argument" log messages form the Diminuto mutex lock
+     * function. Why don't the timer and modulator callbacks check their
+     * states to see if they are DISARMed? Because they have to do that inside
+     * a critical section.
+     */
+
+    diminuto_delay(diminuto_frequency(), 0);
 
     mp = diminuto_modulator_fini(&modulator);
     assert(mp == (diminuto_modulator_t *)0);

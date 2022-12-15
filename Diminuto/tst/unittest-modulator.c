@@ -194,9 +194,11 @@ int main(int argc, char ** argv)
 
         ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_IDLE);
         ASSERT(diminuto_modulator_error(&modulator) == 0);
+        ASSERT(diminuto_modulator_set(&modulator, 0) == 0);
         ASSERT(diminuto_modulator_start(&modulator) >= 0);
         ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_ARM);
         diminuto_delay(diminuto_frequency(), 0);
+
 
         STATUS();
     }
@@ -229,6 +231,7 @@ int main(int argc, char ** argv)
         COMMENT("STOP");
 
         ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_ARM);
+        ASSERT(diminuto_modulator_set(&modulator, 255) == 0);
         ASSERT(diminuto_modulator_stop(&modulator) >= 0);
         ASSERT(diminuto_modulator_state(&modulator) == DIMINUTO_MODULATOR_STATE_IDLE);
         ASSERT(diminuto_modulator_error(&modulator) == 0);

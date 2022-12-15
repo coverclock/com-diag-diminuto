@@ -17,6 +17,7 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -129,6 +130,23 @@ int main(int argc, char * argv[])
 
     rc = diminuto_modulator_stop(&modulator);
     assert(rc == 0);
+
+    /*
+     * There's a race condition (which I'd like to fix) in which the stop()
+     * above sees that the timer callback isn't running, but then the timer
+     * callback is started asynchronously by the C library timer feature as
+     * we destroy the pthread mutexes below in the fini(). The modulator and
+     * timer callbacks try to enter their critical sections to check the state
+     * and find that their mutxen have been deallocated. This results in a
+     * couple of "invalid argument" log messages form the Diminuto mutex lock
+     * function. Why don't the timer and modulator callbacks check their
+     * states to see if they are DISARMed? Because they have to do that inside
+     * a critical section.
+     */
+
+    fprintf(stderr, "%s: quiescing\n", program);
+
+    diminuto_delay(diminuto_frequency(), 0);
 
     /*
      * Tear down the modulator.

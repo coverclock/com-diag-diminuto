@@ -26,16 +26,16 @@ PGM=$(basename $0)
 PIN=${1:-${HARDWARE_TEST_FIXTURE_PIN_PWM_LED}}
 SEC=${2:-3}
 DUTY=0;
-PCT=100;
+MAX=255;
 DIR="tmp"
 
 mkdir -p ${DIR}
 
-while [[ ${DUTY} -le ${PCT} ]]; do
+while [[ ${DUTY} -le ${MAX} ]]; do
 	pwmthread ${PIN} ${DUTY} &
 	PID=$!
 	trap "kill ${PID}; exit" 1 2 3 15
-	echo ${PGM}: ${PIN} ${SEC} ${DUTY} ${PID} 1>&2
+	echo ${PGM}: pin ${PIN} sec ${SEC} dty ${DUTY} pid ${PID} 1>&2
 	sleep ${SEC}
 	kill -15 ${PID}
 	#wait ${PID}

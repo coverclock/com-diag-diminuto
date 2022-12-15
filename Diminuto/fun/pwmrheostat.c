@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -23,13 +24,14 @@
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_types.h"
-
+#include "../fun/hardware_test_fixture.h"
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -39,12 +41,21 @@ static const char * program = (const char *)0;
 int main(int argc, char * argv[])
 {
     int xc = 0;
-    int pin[4] = { -1, -1, -1, -1 };
+    int pin[4] = {
+        /*
+         * In order for left to right as they are on the
+         * hardware test fixture.
+         */
+        HARDWARE_TEST_FIXTURE_PIN_PWM_LED,
+        HARDWARE_TEST_FIXTURE_PIN_LED_3,
+        HARDWARE_TEST_FIXTURE_PIN_LED_2,
+        HARDWARE_TEST_FIXTURE_PIN_LED_1,
+    };
     int duty[4] = { 0 };
     int rc = 0;
     diminuto_modulator_t modulator[4] = { { 0 } };
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
-    unsigned int seconds = 0;
+    unsigned int seconds = 1;
     int reverse = 0;
     int ii = 0;
 
@@ -55,16 +66,20 @@ int main(int argc, char * argv[])
     program = argv[0];
     assert(program != (const char *)0);
 
-    if (argc < 3) {
-        fprintf(stderr, "usage: %s SECONDS PIN1 [ PIN2 [ PIN3 [ PIN4 ] ] ]\n", program);
+    if ((argc >= 2) && (strcmp(argv[1], "-?") == 0)) {
+        fprintf(stderr, "usage: %s [ SECONDS [ PIN1 [ PIN2 [ PIN3 [ PIN4 ] ] ] ] ]\n", program);
         exit(1);
     }
 
-    seconds = atoi(argv[1]);
-    assert(seconds > 0);
+    if (argc >= 2) {
+        seconds = atoi(argv[1]);
+        assert(seconds > 0);
+    }
 
-    pin[0] = atoi(argv[2]);
-    assert(pin[0] >= 0);
+    if (argc >= 3) {
+        pin[0] = atoi(argv[2]);
+        assert(pin[0] >= 0);
+    }
 
     if (argc >= 4) {
         pin[1] = atoi(argv[3]);
@@ -185,6 +200,21 @@ int main(int argc, char * argv[])
             assert(rc == 0);
         }
     }
+
+    /*
+     * There's a race condition (which I'd like to fix) in which the stop()
+     * above sees that the timer callback isn't running, but then the timer
+     * callback is started asynchronously by the C library timer feature as
+     * we destroy the pthread mutexes below in the fini(). The modulator and
+     * timer callbacks try to enter their critical sections to check the state
+     * and find that their mutxen have been deallocated. This results in a
+     * couple of "invalid argument" log messages form the Diminuto mutex lock
+     * function. Why don't the timer and modulator callbacks check their
+     * states to see if they are DISARMed? Because they have to do that inside
+     * a critical section.
+     */
+
+    diminuto_delay(diminuto_frequency(), 0);
 
     /*
      * Tear down the modulator.
