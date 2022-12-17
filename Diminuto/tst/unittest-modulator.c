@@ -67,6 +67,7 @@ int main(int argc, char ** argv)
 
     {
         diminuto_ticks_t system;
+        diminuto_ticks_t timer;
         diminuto_ticks_t modulator;
         diminuto_ticks_t period;
         diminuto_ticks_t nanoseconds;
@@ -74,11 +75,20 @@ int main(int argc, char ** argv)
         TEST();
 
         system = diminuto_frequency();
+        timer = diminuto_timer_frequency();
         modulator = diminuto_modulator_frequency();
         period = system / modulator;
         nanoseconds = diminuto_frequency_ticks2units(period, 1000000000LLU);
 
-        COMMENT("system=%lluticks modulator=%lluticks period=%lluticks=%lluns\n", (diminuto_llu_t)system, (diminuto_llu_t)modulator, (diminuto_llu_t)period, (diminuto_llu_t)nanoseconds);
+        COMMENT("system=%lluhertz\n", (diminuto_llu_t)system);
+        COMMENT("timer=%lluhertz\n", (diminuto_llu_t)timer);
+        COMMENT("modulator=%lluhertz\n", (diminuto_llu_t)modulator);
+        COMMENT("period=%lluticks=%lluns\n", (diminuto_llu_t)period, (diminuto_llu_t)nanoseconds);
+
+        ASSERT(system > 0);
+        ASSERT(timer > 0);
+        ASSERT(modulator > 0);
+        ASSERT(period > 0);
 
         STATUS();
     }
@@ -96,6 +106,9 @@ int main(int argc, char ** argv)
 
         TEST();
 
+        ASSERT(diminuto_modulator_flicker(0, 255) == 0);
+        ASSERT(diminuto_modulator_flicker(255, 0) == 0);
+
         for (duty = 0; duty < 256; ++duty) {
             on = fon = duty;
             percent = on;
@@ -105,7 +118,7 @@ int main(int argc, char ** argv)
             rc = diminuto_modulator_factor(&fon, &foff);
             flicker = diminuto_modulator_flicker(on, off);
             fflicker = diminuto_modulator_flicker(fon, foff);
-            COMMENT("duty=%u percent=%.1f%% on=%u off=%u rc=%d fon=%u foff=%u flicker=%u/%u\n", duty, percent, on, off, rc, fon, foff, flicker, fflicker);
+            COMMENT("duty=%u percent=%.1f%% on=%u off=%u rc=%d fon=%u foff=%u flicker=%u:%u\n", duty, percent, on, off, rc, fon, foff, flicker, fflicker);
             ASSERT(((!rc) && (fon == on) && (foff == off)) || (rc && (fon != on) && (foff != off)));
             ASSERT(fon < 256);
             ASSERT(foff < 256);

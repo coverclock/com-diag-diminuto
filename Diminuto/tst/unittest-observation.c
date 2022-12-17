@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
-        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        COMMENT("mode=0%o size=%llu\n", status.st_mode, (diminuto_llu_t)status.st_size);
         ASSERT(status.st_size == sizeof(expected));
 
         fp = fopen(PATH, "r");
@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
+        COMMENT("expected=%llu actual=%llu\n", (diminuto_llu_t)expected, (diminuto_llu_t)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -196,7 +196,7 @@ int main(int argc, char ** argv)
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
-        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        COMMENT("mode=0%o size=%llu\n", status.st_mode, (diminuto_llu_t)status.st_size);
         ASSERT(status.st_size == sizeof(expected));
 
         fp = fopen(PATH, "r");
@@ -204,7 +204,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
+        COMMENT("expected=%llu actual=%llu\n", (diminuto_llu_t)expected, (diminuto_llu_t)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -244,7 +244,7 @@ int main(int argc, char ** argv)
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
-        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        COMMENT("mode=0%o size=%llu\n", status.st_mode, (diminuto_llu_t)status.st_size);
         ASSERT(status.st_size == sizeof(expected));
 
         fp = fopen(PATH, "r");
@@ -252,7 +252,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
+        COMMENT("expected=%llu actual=%llu\n", (diminuto_llu_t)expected, (diminuto_llu_t)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -321,7 +321,7 @@ int main(int argc, char ** argv)
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
-        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        COMMENT("mode=0%o size=%lluu\n", status.st_mode, (diminuto_llu_t)status.st_size);
         ASSERT(status.st_size == sizeof(expected));
 
         fp = fopen(PATH, "r");
@@ -329,7 +329,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
+        COMMENT("expected=%llu actual=%llu\n", (diminuto_llu_t)expected, (diminuto_llu_t)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);
@@ -373,7 +373,7 @@ int main(int argc, char ** argv)
 
         rc = stat(PATH, &status);
         ASSERT(rc >= 0);
-        COMMENT("mode=0%o size=%zu\n", status.st_mode, status.st_size);
+        COMMENT("mode=0%o size=%llu\n", status.st_mode, (diminuto_llu_t)status.st_size);
         ASSERT(status.st_size == sizeof(expected));
 
         fp = fopen(PATH, "r");
@@ -381,7 +381,7 @@ int main(int argc, char ** argv)
 
         count = fread(&actual, sizeof(actual), 1, fp);
         ASSERT(count == 1);
-        COMMENT("expected=%llu actual=%llu\n", (long long unsigned int)expected, (long long unsigned int)actual);
+        COMMENT("expected=%llu actual=%llu\n", (diminuto_llu_t)expected, (diminuto_llu_t)actual);
         ASSERT(actual == expected);
 
         rc = fclose(fp);

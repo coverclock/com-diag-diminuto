@@ -23,12 +23,12 @@
 
 unsigned int diminuto_modulator_flicker(diminuto_modulator_cycle_t on, diminuto_modulator_cycle_t off)
 {
-    double score;
+    double score = 0.0;
 
     if (off == 0) {
-        score = 0.0;
+        /* Do nothing. */
     } else if (on == 0) {
-        score = 0.0;
+        /* Do nothing. */
     } else {
 
         double accum;

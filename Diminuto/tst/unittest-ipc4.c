@@ -652,7 +652,7 @@ int main(int argc, char * argv[])
         EXPECT(strcmp(buffer, MSG1) == 0);
 
         for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
-            CHECKPOINT("control2 level=%d type=%d len=%lu\n", cp->cmsg_level, cp->cmsg_type, cp->cmsg_len);
+            CHECKPOINT("control2 level=%d type=%d len=%llu\n", cp->cmsg_level, cp->cmsg_type, (diminuto_llu_t)cp->cmsg_len);
             if (cp->cmsg_level != SOL_SOCKET) { continue; }
             if (cp->cmsg_type != SO_TIMESTAMP) { continue; }
             if (cp->cmsg_len != CMSG_LEN(sizeof(timestamp))) { continue; }
@@ -715,7 +715,7 @@ int main(int argc, char * argv[])
         EXPECT(strcmp(buffer, MSG2) == 0);
 
         for (cp = CMSG_FIRSTHDR(&message); cp != (struct cmsghdr *)0; cp = CMSG_NXTHDR(&message, cp)) {
-            CHECKPOINT("control1 level=%d type=%d len=%lu\n", cp->cmsg_level, cp->cmsg_type, cp->cmsg_len);
+            CHECKPOINT("control1 level=%d type=%d len=%zu\n", cp->cmsg_level, cp->cmsg_type, cp->cmsg_len);
             if (cp->cmsg_level != SOL_SOCKET) { continue; }
             if (cp->cmsg_type != SO_TIMESTAMP) { continue; }
             if (cp->cmsg_len != CMSG_LEN(sizeof(timestamp))) { continue; }

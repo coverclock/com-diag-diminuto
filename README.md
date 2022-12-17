@@ -1108,6 +1108,9 @@ A. Kalvans, "Using select(2)", 2017-04-06, <http://aivarsk.github.io/2017/04/06/
 
 D. Kegel, "The C10K Problem", 2014-02-05, <http://www.kegel.com/c10k.html>
 
+The Kernel Development Community, "Linux Timers Documentation",
+<http://blog.foool.net/wp-content/uploads/linuxdocs/timers.pdf>
+
 G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339, IETF, 2002-07
 
 K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation", 2019-08-19, <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>

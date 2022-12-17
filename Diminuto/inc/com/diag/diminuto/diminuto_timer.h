@@ -15,6 +15,14 @@
  * timer_settime(2) facilites to mimic the setitimer(2) semantics, but
  * with a monotonic clock. The resulting one-shot or periodic timer is,
  * like setitimer(2), a singleton.
+ *
+ * REFERENCES
+ *
+ * "Linux Timers Documentation", <http://blog.foool.net/wp-content/uploads/linuxdocs/timers.pdf>
+ *
+ * SEE ALSO
+ *
+ * cat /proc/timer_list
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
