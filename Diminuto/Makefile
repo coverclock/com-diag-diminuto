@@ -539,8 +539,6 @@ $(OUT)/$(GEN_DIR)/vintage.c:	Makefile
 	echo '    assert(vintage_value != (const char *)0);' >> $@
 	echo '    assert(revision_keyword != (const char *)0);' >> $@
 	echo '    assert(revision_value != (const char *)0);' >> $@
-	echo '    assert(release_keyword != (const char *)0);' >> $@
-	echo '    assert(release_value != (const char *)0);' >> $@
 	echo '    assert(platform_keyword != (const char *)0);' >> $@
 	echo '    assert(platform_value != (const char *)0);' >> $@
 	echo '    return 0;' >> $@
