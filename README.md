@@ -5,7 +5,7 @@ A Linux/GNU systems programming library in C.
 
 # Copyright
 
-Copyright 2008-2022 by the Digital Aggregates Corporation, Colorado, USA.
+Copyright 2008-2023 by the Digital Aggregates Corporation, Colorado, USA.
 
 Except where noted, this software is an original work of its author.
 
@@ -38,10 +38,10 @@ drivers, daemons, and systems applications for the Linux operating
 system with the GNU C library and compilers. It has found its way
 into a number of commercial products of the Corporation's clients, so
 don't be surprised if you find this code being used legitimately elsewhere
-in your travels. Diminuto includes a suite of unit tests that are used
+in your travels. Diminuto includes a suite of unit tests which are used
 to validate features when they change, and a suite of functional tests
-that require a purpose-built hardware test fixture used to validate
-features that depend on hardware (like GPIO).
+some of which require a purpose-built hardware test fixture used to validate
+features that depend on hardware facilities like GPIO.
 
 Here are just a few examples of the capabilities, or "features", that
 Diminuto provides:
