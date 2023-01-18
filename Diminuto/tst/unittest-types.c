@@ -106,5 +106,21 @@ int main() {
         STATUS();
     }
 
+    {
+        TEST();
+
+        ASSERT(DIMINUTO_IPV4_SIZE >= sizeof("999.999.999.999"));
+        ASSERT(DIMINUTO_IPV6_SIZE >= sizeof("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"));
+        ASSERT((size_t)DIMINUTO_IP_SIZE >= (size_t)DIMINUTO_IPV4_SIZE);
+        ASSERT((size_t)DIMINUTO_IP_SIZE >= (size_t)DIMINUTO_IPV6_SIZE);
+        ASSERT(sizeof(diminuto_ipv4_buffer_t) >= DIMINUTO_IPV4_SIZE);
+        ASSERT(sizeof(diminuto_ipv6_buffer_t) >= DIMINUTO_IPV6_SIZE);
+        ASSERT(sizeof(diminuto_ip_buffer_t) >= DIMINUTO_IP_SIZE);
+        ASSERT(sizeof(diminuto_ip_buffer_t) >= sizeof(diminuto_ipv4_buffer_t));
+        ASSERT(sizeof(diminuto_ip_buffer_t) >= sizeof(diminuto_ipv6_buffer_t));
+
+        STATUS();
+    }
+
     EXIT();
 }

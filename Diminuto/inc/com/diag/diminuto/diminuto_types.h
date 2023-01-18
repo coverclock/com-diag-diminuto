@@ -80,6 +80,14 @@ enum DiminutoIpv6Size {
 };
 
 /**
+ * This defines the buffer size, including the terminating NUL, needed to
+ * express either an IPv4 or an IPv6 address string.
+ */
+enum DiminutoIpSize {
+    DIMINUTO_IP_SIZE = DIMINUTO_IPV6_SIZE,
+};
+
+/**
  * This defines the buffer size, including the terminating NUL, needed
  * to express a Local (UNIX domain socket path) string.
  * UNIX domain socket names have a smaller size limit than full
@@ -151,6 +159,12 @@ typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_SIZE];
  * as a printable string including the terminating NUL.
  */
 typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
+
+/**
+ * This defines a type of character array that can contain either an
+ * IPv4 or IPv6 address as a printable string including the terminating NUL.
+ */
+typedef char (diminuto_ip_buffer_t)[DIMINUTO_IP_SIZE];
 
 /**
  * This defines a type of character array that can contain a port number
