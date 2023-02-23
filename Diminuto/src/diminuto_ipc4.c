@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -27,6 +28,7 @@
 #include <ifaddrs.h>
 #include <linux/limits.h>
 #include <net/if.h>
+#include <pthread.h>
 #include "../src/diminuto_ipc4.h"
 
 /*******************************************************************************
@@ -124,19 +126,26 @@ diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
  * STRINGIFIERS
  ******************************************************************************/
 
-const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, char * buffer, size_t length)
+const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, size_t length)
 {
-    struct in_addr inaddr = { 0, };
-    char * dot = (char *)0;
+    char * string = (char *)0;
+    static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+    string = (char *)buffer;
+    string[0] = '\0';
     if (length > 0) {
+        struct in_addr inaddr = { 0, };
+        char * dot = (char *)0;
+
         inaddr.s_addr = htonl(address);
-        dot = inet_ntoa(inaddr);
-        strncpy(buffer, dot, length);
-        buffer[length - 1] = '\0';
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            dot = inet_ntoa(inaddr); /* NOT THREAD SAFE! */
+            strncpy(string, dot, length);
+        DIMINUTO_CRITICAL_SECTION_END;
+        string[length - 1] = '\0';
     }
 
-    return buffer;
+    return string;
 }
 
 const char * diminuto_ipc4_address2type(diminuto_ipv4_t address)

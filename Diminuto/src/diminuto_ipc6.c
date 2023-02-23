@@ -242,8 +242,12 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
  * STRINGIFIERS
  ******************************************************************************/
 
-const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length)
+const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, void * buffer, size_t length)
 {
+    char * string = (char *)0;
+
+    string = (char *)buffer;
+    string[0] = '\0';
     if (length > 0) {
         struct in6_addr in6 = { 0, };
         char temporary[INET6_ADDRSTRLEN] = { '\0', };
@@ -251,12 +255,11 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer,
         diminuto_ipc6_hton6(&address);
         memcpy(in6.s6_addr, address.u16, sizeof(in6.s6_addr));
         inet_ntop(AF_INET6, &in6, temporary, sizeof(temporary));
-
-        strncpy(buffer, temporary, length);
-        buffer[length - 1] = '\0';
+        strncpy(string, temporary, length);
+        string[length - 1] = '\0';
     }
 
-    return buffer;
+    return string;
 }
 
 const char * diminuto_ipc6_address2type(diminuto_ipv6_t address)

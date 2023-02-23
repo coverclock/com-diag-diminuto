@@ -294,7 +294,7 @@ static inline diminuto_port_t diminuto_ipc6_port(const char * service, const cha
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * buffer, size_t length);
+extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, void * buffer, size_t length);
 
 /**
  * Convert an IPV6 address in host byte order into a printable IP address
@@ -304,7 +304,7 @@ extern const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, char * 
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-static inline const char * diminuto_ipc6_address2string(diminuto_ipv6_t address, char * buffer, size_t length) {
+static inline const char * diminuto_ipc6_address2string(diminuto_ipv6_t address, void * buffer, size_t length) {
     return diminuto_ipc6_colonnotation(address, buffer, length);
 }
 
