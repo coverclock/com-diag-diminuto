@@ -30,7 +30,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	91# API changes that may require that applications be modified.
-MINOR				:=	2# Only functionality or features added with no legacy API changes.
+MINOR				:=	3# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",

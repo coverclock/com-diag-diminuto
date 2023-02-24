@@ -93,23 +93,26 @@ static const char * type2string(diminuto_ipc_type_t type)
     diminuto_ipv6_buffer_t ipv6buffer; \
     diminuto_port_buffer_t tcpbuffer; \
     diminuto_port_buffer_t udpbuffer; \
+    diminuto_endpoint_buffer_t endpointbuffer; \
     diminuto_ipc_endpoint_t parse = { DIMINUTO_IPC_TYPE_UNSPECIFIED, }; \
     int rc = -1; \
     memset(&ipv4buffer, 0, sizeof(ipv4buffer)); \
     memset(&ipv6buffer, 0, sizeof(ipv6buffer)); \
     memset(&tcpbuffer, 0, sizeof(tcpbuffer)); \
-    memset(&udpbuffer, 0, sizeof(udpbuffer));
+    memset(&udpbuffer, 0, sizeof(udpbuffer)); \
+    memset(&endpointbuffer, 0, sizeof(endpointbuffer));
 
 #define DISPLAY() \
-        COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%s udp=%s local=\"%s\" rc=%d\n", \
-            endpoint, \
-            type2string(parse.type), \
-            diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), \
-            diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), \
-            diminuto_ipc_port2string(parse.tcp, tcpbuffer, sizeof(tcpbuffer)), \
-            diminuto_ipc_port2string(parse.udp, udpbuffer, sizeof(udpbuffer)), \
-            parse.local, \
-            rc)
+    COMMENT("endpoint=\"%s\" type=%s ipv4=%s ipv6=%s tcp=%s udp=%s local=\"%s\" rc=%d string=\"%s\"", \
+        endpoint, \
+        type2string(parse.type), \
+        diminuto_ipc4_address2string(parse.ipv4, ipv4buffer, sizeof(ipv4buffer)), \
+        diminuto_ipc6_address2string(parse.ipv6, ipv6buffer, sizeof(ipv6buffer)), \
+        diminuto_ipc_port2string(parse.tcp, tcpbuffer, sizeof(tcpbuffer)), \
+        diminuto_ipc_port2string(parse.udp, udpbuffer, sizeof(udpbuffer)), \
+        parse.local, \
+        rc, \
+        diminuto_ipc_endpoint2string(&parse, endpointbuffer, sizeof(endpointbuffer)))
 
 #define VERIFYINET4(_POINTER_, _IPV4_, _IPV6_, _TCP_, _UDP_) \
     do { \

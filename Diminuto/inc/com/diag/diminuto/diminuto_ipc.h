@@ -533,11 +533,7 @@ extern char ** diminuto_ipc_interfaces(void);
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-static inline const char * diminuto_ipc_port2string(diminuto_port_t port, char * buffer, size_t length) {
-    (void)snprintf(buffer, length, "%u", port);
-    buffer[length - 1] = '\0';
-    return buffer;
-}
+extern const char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size_t length);
 
 /*******************************************************************************
  * ENDPOINTS
@@ -621,5 +617,14 @@ typedef struct DiminutoIpcEndpoint {
  * @return 0 if both syntactically and semantically successful, <0 otherwise.
  */
 extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
+
+/**
+ * Convert an endpoint object into a NUL-terminated printable string.
+ * @param endpoint points to the populated endpoint object.
+ * @param buffer points to the buffer into which the string is stored.
+ * @param length is the length of the buffer in bytes.
+ * @return a pointer ot the buffer.
+ */
+extern const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length);
 
 #endif

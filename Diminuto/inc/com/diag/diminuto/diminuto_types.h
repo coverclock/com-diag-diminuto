@@ -28,13 +28,11 @@
 #   include <stdint.h>          /* intptr_t, int64_t, etc. */
 #   include <stdbool.h>         /* bool */
 #   include <wchar.h>           /* wchar_t, wint_t */
+#   include <limits.h>          /* _POSIX_PATH_MAX: 256 */
 #   include <sys/types.h>       /* pid_t */
+#   include <sys/param.h>       /* MAXPATHLEN: PATH_MAX */
 #   include <linux/limits.h>    /* PATH_MAX (includes terminating NUL): 4096 */
 #   include <linux/un.h>        /* UNIX_PATH_MAX: 108 */
-#   if 0
-#       include <sys/param.h>   /* MAXPATHLEN: PATH_MAX */
-#       include <limits.h>      /* _POSIX_PATH_MAX: 256 */
-#   endif
 #endif
 
 /**
@@ -64,47 +62,15 @@ typedef uint64_t diminuto_unsigned_t;
 typedef int64_t diminuto_signed_t;
 
 /**
- * This defines the buffer size, including the terminating NUL, needed to
- * express an IPv4 address string.
+ * Enumerates the various buffer sizes defined in this translation unit.
  */
-enum DiminutoIpv4Size {
-    DIMINUTO_IPV4_SIZE = sizeof("255.255.255.255"),
-};
-
-/**
- * This defines the buffer size, including the terminating NUL, needed to
- * express an IPv6 address string.
- */
-enum DiminutoIpv6Size {
-    DIMINUTO_IPV6_SIZE = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
-};
-
-/**
- * This defines the buffer size, including the terminating NUL, needed to
- * express either an IPv4 or an IPv6 address string.
- */
-enum DiminutoIpSize {
-    DIMINUTO_IP_SIZE = DIMINUTO_IPV6_SIZE,
-};
-
-/**
- * This defines the buffer size, including the terminating NUL, needed
- * to express a Local (UNIX domain socket path) string.
- * UNIX domain socket names have a smaller size limit than full
- * blown file system names; a full path may be reduced to a smaller
- * length once soft links etc. are resolved.
- */
-enum DiminutoLocalSize {
-    DIMINUTO_LOCAL_SIZE = UNIX_PATH_MAX,
-};
-
-/**
- * This defines the buffer size, including the terminating NUL, needed
- * to express a full file system path. This can be quite large,
- * typically 4096 bytes (4KB).
- */
-enum DiminutoPathSize {
-    DIMINUTO_PATH_SIZE = PATH_MAX,
+enum DiminutoTypesBufferSize {
+    DIMINUTO_TYPES_IPV4_BUFFER_SIZE     = sizeof("255.255.255.255"),
+    DIMINUTO_TYPES_IPV6_BUFFER_SIZE     = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+    DIMINUTO_TYPES_IP_BUFFER_SIZE       = DIMINUTO_TYPES_IPV6_BUFFER_SIZE,
+    DIMINUTO_TYPES_LOCAL_BUFFER_SIZE    = _POSIX_PATH_MAX + 1, /* 256 + 1 */
+    DIMINUTO_TYPES_PATH_BUFFER_SIZE     = PATH_MAX, /* 4096 */
+    DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE = DIMINUTO_TYPES_LOCAL_BUFFER_SIZE,
 };
 
 /**
@@ -146,25 +112,31 @@ typedef uint16_t diminuto_port_t;
  * (UNIX domain) socket path. This is NOT large enough to
  * hold any arbitary file system path.
  */
-typedef char (diminuto_local_t)[DIMINUTO_LOCAL_SIZE];
+typedef char (diminuto_local_t)[DIMINUTO_TYPES_LOCAL_BUFFER_SIZE];
 
 /**
  * This defines a type of character array that can contain an IPv4 address
  * as a printable string including the terminating NUL.
  */
-typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_IPV4_SIZE];
+typedef char (diminuto_ipv4_buffer_t)[DIMINUTO_TYPES_IPV4_BUFFER_SIZE];
 
 /**
  * This defines a type of character array that can contain an IPv6 address
  * as a printable string including the terminating NUL.
  */
-typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_IPV6_SIZE];
+typedef char (diminuto_ipv6_buffer_t)[DIMINUTO_TYPES_IPV6_BUFFER_SIZE];
 
 /**
  * This defines a type of character array that can contain either an
  * IPv4 or IPv6 address as a printable string including the terminating NUL.
  */
-typedef char (diminuto_ip_buffer_t)[DIMINUTO_IP_SIZE];
+typedef char (diminuto_ip_buffer_t)[DIMINUTO_TYPES_IP_BUFFER_SIZE];
+
+/**
+ * This defines the type of character array that can contain an endpoint
+ * as a printable string including a terminating NUL.
+ */
+typedef char (diminuto_endpoint_buffer_t)[DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE];
 
 /**
  * This defines a type of character array that can contain a port number
@@ -179,7 +151,7 @@ typedef char (diminuto_port_buffer_t)[3 * sizeof(diminuto_port_t)];
  * large: 4096 on Linux systems. It allows the maximum Linux path
  * size, and is a lot larger than the POSIX path limit: 256 bytes.
  */
-typedef char (diminuto_path_t)[DIMINUTO_PATH_SIZE];
+typedef char (diminuto_path_t)[DIMINUTO_TYPES_PATH_BUFFER_SIZE];
 
 #if !defined(__GNUC__)
 #   warning Required byte alignment is implicitly assumed.

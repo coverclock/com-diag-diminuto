@@ -591,3 +591,41 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
     return 0;
 }
+
+const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length)
+{
+    char * string = (char *)buffer;
+    diminuto_port_t port = 0;
+    diminuto_ip_buffer_t addressbuffer = { '\0', };
+    diminuto_port_buffer_t portbuffer = { '\0', };
+
+    if (length > 0) {
+
+        if (endpoint->tcp != 0) {
+            port = endpoint->tcp;
+        } else if (endpoint->udp != 0) {
+            port = endpoint->udp;
+        } else {
+            /* Do nothing. */
+        }
+
+        string[0] = '\0';
+        switch (endpoint->type) {
+        case DIMINUTO_IPC_TYPE_LOCAL:
+            (void)strncpy(string, endpoint->local, length);
+            break;
+        case DIMINUTO_IPC_TYPE_IPV6:
+            (void)snprintf(string, length, "[%s]%s%s", diminuto_ipc6_address2string(endpoint->ipv6, addressbuffer, sizeof(addressbuffer)), (port != 0) ? ":" : "", (port != 0) ? diminuto_ipc_port2string(port, portbuffer, sizeof(portbuffer)) : "");
+            break;
+        case DIMINUTO_IPC_TYPE_IPV4:
+            (void)snprintf(string, length, "%s%s%s", diminuto_ipc4_address2string(endpoint->ipv4, addressbuffer, sizeof(addressbuffer)), (port != 0) ? ":" : "", (port != 0) ? diminuto_ipc_port2string(port, portbuffer, sizeof(portbuffer)) : "");
+            break;
+        default:
+            break;
+        }
+        string[length - 1] = '\0';
+
+    }
+
+    return string;
+}

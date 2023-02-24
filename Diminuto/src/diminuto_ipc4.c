@@ -132,11 +132,11 @@ const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, s
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
     string = (char *)buffer;
-    string[0] = '\0';
     if (length > 0) {
         struct in_addr inaddr = { 0, };
         char * dot = (char *)0;
 
+        string[0] = '\0';
         inaddr.s_addr = htonl(address);
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
             dot = inet_ntoa(inaddr); /* NOT THREAD SAFE! */

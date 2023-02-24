@@ -247,11 +247,11 @@ const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, void * buffer,
     char * string = (char *)0;
 
     string = (char *)buffer;
-    string[0] = '\0';
     if (length > 0) {
         struct in6_addr in6 = { 0, };
         char temporary[INET6_ADDRSTRLEN] = { '\0', };
 
+        string[0] = '\0';
         diminuto_ipc6_hton6(&address);
         memcpy(in6.s6_addr, address.u16, sizeof(in6.s6_addr));
         inet_ntop(AF_INET6, &in6, temporary, sizeof(temporary));
