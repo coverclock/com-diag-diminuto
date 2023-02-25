@@ -105,10 +105,11 @@ int main(int argc, char * argv[])
         const char * printable; \
         size_t minimum = 0; \
         size_t actual = 0; \
+        diminuto_local_t buffer = { '\0', }; \
         minimum = strlen(file); \
         result = diminuto_ipcl_path(relative, absolute, sizeof(absolute)); \
         actual = strlen(absolute); \
-        printable = diminuto_ipcl_path2string(result); \
+        printable = diminuto_ipcl_path2string(result, buffer, sizeof(buffer)); \
         EXPECT(printable != (const char *)0); \
         COMMENT("relative=\"%s\" absolute=\"%s\" %s", relative, printable, (result == (char *)0) ? "INVALID" : diminuto_ipcl_is_unnamed(result) ? "UNNAMED" : "PATH"); \
         EXPECT(\

@@ -30,6 +30,43 @@
 const char DIMINUTO_IPCL_UNNAMED[1] = { '\0' };
 
 /*******************************************************************************
+ * COMPARATORS
+ ******************************************************************************/
+
+int diminuto_ipcl_compare(const char * path1p, const char * path2p)
+{
+    return (path1p == (const char *)0)
+        ? (((int)1) << ((sizeof(int) * 8) - 1))
+        : (path2p == (const char *)0) 
+            ? (~(((int)1) << ((sizeof(int) * 8) - 1)))
+            : strncmp(path1p, path2p, sizeof(diminuto_path_t));
+}
+
+/*******************************************************************************
+ * STRINGIFIERS
+ ******************************************************************************/
+
+const char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length)
+{
+    char * string = (char *)buffer;
+
+    if (length == 0) {
+        /* Do nothing. */
+    } else if (length == 1) {
+        string[0] = '\0';
+    } else if (path == (char *)0) {
+        string[0] = '*';    /* Not a valid path, where as an empty string is */
+        string[1] = '\0';   /* a valid unnamed UNIX domain (local) socket. */
+    } else {
+        string[0] = '\0';
+        (void)strncpy(string, path, length);
+        string[length - 1] = '\0';
+    }
+
+    return string;
+}
+
+/*******************************************************************************
  * EXTRACTORS
  ******************************************************************************/
 

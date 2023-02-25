@@ -114,6 +114,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     bool is_ipcl = false;
     diminuto_ipv4_buffer_t buffer4 = { '\0', };
     diminuto_ipv6_buffer_t buffer6 = { '\0', };
+    diminuto_local_buffer_t bufferl = { '\0', };
 
     endpoint->type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
     endpoint->ipv4 = DIMINUTO_IPC4_UNSPECIFIED;
@@ -585,7 +586,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             diminuto_ipc6_address2string(endpoint->ipv6, buffer6, sizeof(buffer6)),
             endpoint->tcp,
             endpoint->udp,
-            diminuto_ipcl_path2string(endpoint->local));
+            diminuto_ipcl_path2string(endpoint->local, bufferl, sizeof(bufferl)));
 
     } while (0);
 

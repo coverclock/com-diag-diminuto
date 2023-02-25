@@ -58,14 +58,7 @@ extern const char DIMINUTO_IPCL_UNNAMED[];
  * @param path2p points to the second Local path.
  * @return 0 if equal, >0 if greater than, or <0 if less than.
  */
-static inline int diminuto_ipcl_compare(const char * path1p, const char * path2p)
-{
-    return (path1p == (const char *)0)
-        ? (((int)1) << ((sizeof(int) * 8) - 1))
-        : (path2p == (const char *)0) 
-            ? (~(((int)1) << ((sizeof(int) * 8) - 1)))
-            : strncmp(path1p, path2p, sizeof(diminuto_path_t));
-}
+extern int diminuto_ipcl_compare(const char * path1p, const char * path2p);
 
 /*******************************************************************************
  * CLASSIFIERS
@@ -101,19 +94,15 @@ extern char * diminuto_ipcl_path(const char * path, char * buffer, size_t size);
 
 /**
  * Convert an Local path into a printable Local path string. This does little
- * but return a pointer to the Local path. For best results the path should
- * be canonicalized. Includes a NULL pointer check so that the canonicalize
- * function (which can return NULL) can be used directly as an argument; a
- * NULL pointer prints as an asterisk, which is not a valid character in a
- * canonical path, and which distinguishes it from the empty string, which is
- * also a valid path that indicates an unnamed Local socket.
+ * but copy the path into the buffer. For best results the path should
+ * be canonicalized. Note that an empty string is a valid path that indicates
+ * an unnamed local (UNIX domain) socket.
  * @param path is the Local path.
+ * @param buffer points to the buffer into to which the string is stored.
+ * @param length is the length of the buffer in bytes.
  * @return a pointer to the output buffer.
  */
-static inline const char * diminuto_ipcl_path2string(const char * path)
-{
-    return (path == (const char *)0) ? "*" : path;
-}
+extern const char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length);
 
 /*******************************************************************************
  * INTERROGATORS

@@ -139,6 +139,13 @@ typedef char (diminuto_ip_buffer_t)[DIMINUTO_TYPES_IP_BUFFER_SIZE];
 typedef char (diminuto_endpoint_buffer_t)[DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE];
 
 /**
+ * This defines the type of character array that can contain a printable
+ * local socket path, which is in fact the same thing as a local socket
+ * path.
+ */
+typedef diminuto_local_t diminuto_local_buffer_t;
+
+/**
  * This defines a type of character array that can contain a port number
  * as a printable string including the terminating NUL. It estimates the
  * size of the printable string based on the sizeof() the port type.

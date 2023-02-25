@@ -793,6 +793,8 @@ static void instance(void)
     diminuto_ipv4_buffer_t farendbuffer = { '\0', };
     void * result = (void *)0;
     int ready = -1;
+    diminuto_local_buffer_t nearendstring = { '\0', };
+    diminuto_local_buffer_t farendstring = { '\0', };
 
     CHECKPOINT("instance: starting\n");
 
@@ -811,7 +813,7 @@ static void instance(void)
      */
     ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
     ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
-    CHECKPOINT("instance: local %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+    CHECKPOINT("instance: local %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath, nearendstring, sizeof(nearendstring)), diminuto_ipcl_path2string(farendpath, farendstring, sizeof(farendstring)));
 
     /*
      * Send the main our PID.
@@ -944,6 +946,8 @@ int main(int argc, char * argv[])
     int ii = -1;
     int instances = 0;
     int reapable = -1;
+    diminuto_local_buffer_t nearendstring = { '\0', };
+    diminuto_local_buffer_t farendstring = { '\0', };
 
     CHECKPOINT("main: starting\n");
 
@@ -970,7 +974,7 @@ int main(int argc, char * argv[])
      * MUST CLOSE localsocket.
      */
     ASSERT(diminuto_ipcl_nearend(localsocket, nearendpath, sizeof(nearendpath)) >= 0);
-    CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string((const char *)0));
+    CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", localsocket, diminuto_ipcl_path2string(nearendpath, nearendstring, sizeof(nearendstring)), diminuto_ipcl_path2string((const char *)0, farendstring, sizeof(farendstring)));
 
     ASSERT(diminuto_mux_register_accept(&mux, localsocket) >= 0);
 
@@ -1050,7 +1054,7 @@ int main(int argc, char * argv[])
          */
         ASSERT(diminuto_ipcl_nearend(activationsocket, nearendpath, sizeof(nearendpath)) >= 0);
         ASSERT(diminuto_ipcl_farend(activationsocket, farendpath, sizeof(farendpath)) >= 0);
-        CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath), diminuto_ipcl_path2string(farendpath));
+        CHECKPOINT("main: local %d nearend \"%s\" farend \"%s\"\n", activationsocket, diminuto_ipcl_path2string(nearendpath, nearendstring, sizeof(nearendstring)), diminuto_ipcl_path2string(farendpath, farendstring, sizeof(farendstring)));
 
         /*
          * Receive the Process Identifier (PID) from the instance we're
