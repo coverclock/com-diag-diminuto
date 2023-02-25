@@ -105,7 +105,7 @@ int main(int argc, char * argv[])
         const char * printable; \
         size_t minimum = 0; \
         size_t actual = 0; \
-        diminuto_local_t buffer = { '\0', }; \
+        diminuto_local_buffer_t buffer = { '\0', }; \
         minimum = strlen(file); \
         result = diminuto_ipcl_path(relative, absolute, sizeof(absolute)); \
         actual = strlen(absolute); \
@@ -154,6 +154,76 @@ int main(int argc, char * argv[])
         CANONICALIZE("./unix.sock", "/unix.sock", !0); 
         CANONICALIZE("../unix.sock", "/unix.sock", !0); 
         CANONICALIZE("", "", !0); 
+
+        STATUS();
+    }
+
+    {
+        char * path;
+        diminuto_local_buffer_t buffer;
+
+        TEST();
+
+        /*
+         * Special cases.
+         */
+
+        path = (char *)0;
+        COMMENT("NULL before=NULL after=\"%s\"\n", diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer, "*") == 0);
+
+        path = "";
+        COMMENT("EMPTY before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer, "") == 0);
+
+        path = ".";
+        COMMENT("DOT before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path), path) == 0);
+
+        path = "..";
+        COMMENT("DOTDOT before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path), path) == 0);
+
+        path = "~";
+        COMMENT("TILDE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path), path) == 0);
+
+        path = "/";
+        COMMENT("SLASH before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer, "*") == 0);
+
+        buffer[0] = 0xa5;
+        path = "/";
+        COMMENT("ZERO before=\"%s\" after=0x%x\n", path, (uint8_t)*diminuto_ipcl_path2string(path, buffer, 0));
+        EXPECT((uint8_t)buffer[0] == 0xa5U);
+
+        path = "/";
+        COMMENT("ONE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, 1));
+        EXPECT(strcmp(buffer, "") == 0);
+
+        path = "/";
+        COMMENT("TWO before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, 2));
+        EXPECT(strcmp(buffer, "*") == 0);
+
+        path = "/";
+        COMMENT("THREE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, 3));
+        EXPECT(strcmp(buffer, "*") == 0);
+
+        path = ".gitignore";
+        COMMENT("DOTFILE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path), path) == 0);
+
+        path = "./Makefile";
+        COMMENT("DOTSLASHFILE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path) + sizeof("./") - 1, path + sizeof("./") - 1) == 0);
+
+        path = "../Makefile";
+        COMMENT("DOTDOTSLASHFILE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer + strlen(buffer) - strlen(path) + sizeof("../") - 1, path + sizeof("../") - 1) == 0);
+
+        path = "~/.profile";
+        COMMENT("TILDESLASHFILE before=\"%s\" after=\"%s\"\n", path, diminuto_ipcl_path2string(path, buffer, sizeof(buffer)));
+        EXPECT(strcmp(buffer, "*") == 0);
 
         STATUS();
     }
