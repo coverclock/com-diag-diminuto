@@ -613,7 +613,7 @@ const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoi
         string[0] = '\0';
         switch (endpoint->type) {
         case DIMINUTO_IPC_TYPE_LOCAL:
-            (void)strncpy(string, endpoint->local, length);
+            (void)diminuto_ipcl_path2string(endpoint->local, string, length);
             break;
         case DIMINUTO_IPC_TYPE_IPV6:
             (void)snprintf(string, length, "[%s]%s%s", diminuto_ipc6_address2string(endpoint->ipv6, addressbuffer, sizeof(addressbuffer)), (port != 0) ? ":" : "", (port != 0) ? diminuto_ipc_port2string(port, portbuffer, sizeof(portbuffer)) : "");

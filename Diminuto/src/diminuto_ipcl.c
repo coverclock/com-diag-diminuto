@@ -57,10 +57,11 @@ const char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t 
     } else if (path == (char *)0) {
         string[0] = '*';    /* Not a valid path, where as an empty string is */
         string[1] = '\0';   /* a valid unnamed UNIX domain (local) socket. */
+    } else if (diminuto_ipcl_path(path, string, length) == (char *)0) {
+        string[0] = '*';    /* Not a valid path, where as an empty string is */
+        string[1] = '\0';   /* a valid unnamed UNIX domain (local) socket. */
     } else {
-        string[0] = '\0';
-        (void)strncpy(string, path, length);
-        string[length - 1] = '\0';
+        /* Do nothing. */
     }
 
     return string;
@@ -79,7 +80,8 @@ int diminuto_ipcl_identify(struct sockaddr * sap, char * pathp, size_t size)
     } else if (pathp == (char *)0) {
         /* Do nothing. */
     } else {
-        strncpy(pathp, ((struct sockaddr_un *)sap)->sun_path, size);
+        pathp[0] = '\0';
+        (void)strncpy(pathp, ((struct sockaddr_un *)sap)->sun_path, size);
         pathp[size - 1] = '\0';
     }
 
@@ -119,7 +121,8 @@ char * diminuto_ipcl_path(const char * path, char * buffer, size_t size)
         errno = ENAMETOOLONG;
         diminuto_perror(path);
     } else {
-        strncpy(buffer, canonical, size);
+        buffer[0] = '\0';
+        (void)strncpy(buffer, canonical, size);
         buffer[size - 1] = '\0';
         result = buffer;
     }
@@ -193,7 +196,7 @@ int diminuto_ipcl_source(int fd, const char * path)
     } else {
 
         sa.sun_family = AF_UNIX;
-        strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+        (void)strncpy(sa.sun_path, path, sizeof(sa.sun_path));
 
         if ((rc = bind(fd, (struct sockaddr *)&sa, length)) < 0) {
             diminuto_perror("diminuto_ipcl_source: bind");
@@ -293,7 +296,7 @@ int diminuto_ipcl_stream_consumer_base(const char * path, const char * path0, di
     socklen_t length = sizeof(sa);
 
     sa.sun_family = AF_UNIX;
-    strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+    (void)strncpy(sa.sun_path, path, sizeof(sa.sun_path));
 
     if ((rc = fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_stream_consumer_base: socket");
@@ -370,7 +373,7 @@ ssize_t diminuto_ipcl_datagram_send_generic(int fd, const void * buffer, size_t 
     if (path != (const char *)0) {
         length = sizeof(sa);
         sa.sun_family = AF_UNIX;
-        strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+        (void)strncpy(sa.sun_path, path, sizeof(sa.sun_path));
         sap = (struct sockaddr *)&sa;
     }
 
@@ -433,7 +436,7 @@ int diminuto_ipcl_packet_consumer_base(const char * path, const char * path0, di
     socklen_t length = sizeof(sa);
 
     sa.sun_family = AF_UNIX;
-    strncpy(sa.sun_path, path, sizeof(sa.sun_path));
+    (void)strncpy(sa.sun_path, path, sizeof(sa.sun_path));
 
     if ((rc = fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) < 0) {
         diminuto_perror("diminuto_ipcl_packet_consumer_base: socket");
