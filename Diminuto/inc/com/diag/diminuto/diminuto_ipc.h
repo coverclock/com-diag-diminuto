@@ -620,7 +620,7 @@ extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * 
 
 /**
  * Convert an endpoint object into a NUL-terminated printable string. The
- * resulting string, which is only indended for display, can be quite long
+ * resulting string, which is only intended for display, can be quite long
  * if both IPv4 and IPv6 addresses are defined, and if both TCP and UDP
  * ports are defined, which is quite possible with fully qualified domain
  * names and service names; in this case, the TCP port will be displayed
