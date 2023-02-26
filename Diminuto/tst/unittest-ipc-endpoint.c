@@ -1038,6 +1038,7 @@ int main(int argc, char * argv[])
         diminuto_ipc_endpoint_t endpoint;
         diminuto_endpoint_buffer_t buffer; 
         char * result;
+        int rc;
 
         TEST();
 
@@ -1045,7 +1046,14 @@ int main(int argc, char * argv[])
         endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("PORTLESS \"%s\"\n", result);
+        COMMENT("EMPTY4 \"%s\"\n", result);
+        EXPECT(strcmp(result, "") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("EMPTY6 \"%s\"\n", result);
         EXPECT(strcmp(result, "") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
@@ -1053,7 +1061,15 @@ int main(int argc, char * argv[])
         endpoint.tcp = 1234;
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("TCP \"%s\"\n", result);
+        COMMENT("TCP4 \"%s\"\n", result);
+        EXPECT(strcmp(result, ":1234") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
+        endpoint.tcp = 1234;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("TCP6 \"%s\"\n", result);
         EXPECT(strcmp(result, ":1234") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
@@ -1061,7 +1077,15 @@ int main(int argc, char * argv[])
         endpoint.udp = 5678;
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("UDP \"%s\"\n", result);
+        COMMENT("UDP4 \"%s\"\n", result);
+        EXPECT(strcmp(result, ":5678") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
+        endpoint.udp = 5678;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("UDP6 \"%s\"\n", result);
         EXPECT(strcmp(result, ":5678") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
@@ -1070,8 +1094,81 @@ int main(int argc, char * argv[])
         endpoint.udp = 5678;
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("TCPUDP \"%s\"\n", result);
+        COMMENT("TCPUDP4 \"%s\"\n", result);
         EXPECT(strcmp(result, ":1234:5678") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
+        endpoint.tcp = 1234;
+        endpoint.udp = 5678;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("TCPUDP6 \"%s\"\n", result);
+        EXPECT(strcmp(result, ":1234:5678") == 0);
+
+        rc = diminuto_ipc_endpoint("0.0.0.0", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV4 \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV4);
+        EXPECT(strcmp(result, "") == 0);
+
+        rc = diminuto_ipc_endpoint("[::]", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV6 \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV6);
+        EXPECT(strcmp(result, "") == 0);
+
+        rc = diminuto_ipc_endpoint("0.0.0.0:1234", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV4PORT \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV4);
+        EXPECT(strcmp(result, ":1234") == 0);
+
+        rc = diminuto_ipc_endpoint("[::]:1234", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV6PORT \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV6);
+        EXPECT(strcmp(result, ":1234") == 0);
+
+        rc = diminuto_ipc_endpoint("127.0.0.1", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV4 \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV4);
+        EXPECT(strcmp(result, "127.0.0.1") == 0);
+
+        rc = diminuto_ipc_endpoint("[::1]", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV6 \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV6);
+        EXPECT(strcmp(result, "[::1]") == 0);
+
+        rc = diminuto_ipc_endpoint("127.0.0.1:1234", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV4PLUSPORT \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV4);
+        EXPECT(strcmp(result, "127.0.0.1:1234") == 0);
+
+        rc = diminuto_ipc_endpoint("[::1]:1234", &endpoint);
+        ASSERT(rc >= 0);
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("IPV6PLUSPORT \"%s\"\n", result);
+        EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV6);
+        EXPECT(strcmp(result, "[::1]:1234") == 0);
 
         STATUS();
     }
