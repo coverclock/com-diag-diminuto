@@ -1110,7 +1110,7 @@ int main(int argc, char * argv[])
         ASSERT(rc >= 0);
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("IPV4 \"%s\"\n", result);
+        COMMENT("IPV4UNSPECIFIED \"%s\"\n", result);
         EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV4);
         EXPECT(strcmp(result, "") == 0);
 
@@ -1118,7 +1118,7 @@ int main(int argc, char * argv[])
         ASSERT(rc >= 0);
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
-        COMMENT("IPV6 \"%s\"\n", result);
+        COMMENT("IPV6UNSPECIFIED \"%s\"\n", result);
         EXPECT(endpoint.type == DIMINUTO_IPC_TYPE_IPV6);
         EXPECT(strcmp(result, "") == 0);
 
