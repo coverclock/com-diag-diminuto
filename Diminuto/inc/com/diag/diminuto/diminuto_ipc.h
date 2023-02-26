@@ -619,7 +619,12 @@ typedef struct DiminutoIpcEndpoint {
 extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
 
 /**
- * Convert an endpoint object into a NUL-terminated printable string.
+ * Convert an endpoint object into a NUL-terminated printable string. The
+ * resulting string, which is only indended for display, can be quite long
+ * if both IPv4 and IPv6 addresses are defined, and if both TCP and UDP
+ * ports are defined, which is quite possible with fully qualified domain
+ * names and service names; in this case, the TCP port will be displayed
+ * first.
  * @param endpoint points to the populated endpoint object.
  * @param buffer points to the buffer into which the string is stored.
  * @param length is the length of the buffer in bytes.
