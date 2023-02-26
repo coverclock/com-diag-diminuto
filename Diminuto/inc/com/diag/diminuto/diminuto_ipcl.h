@@ -102,7 +102,7 @@ extern char * diminuto_ipcl_path(const char * path, char * buffer, size_t size);
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the output buffer.
  */
-extern const char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length);
+extern char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length);
 
 /*******************************************************************************
  * INTERROGATORS

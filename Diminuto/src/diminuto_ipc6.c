@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the IPC feature for IPv6.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -242,7 +242,7 @@ diminuto_ipv6_t diminuto_ipc6_address(const char * hostname)
  * STRINGIFIERS
  ******************************************************************************/
 
-const char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, void * buffer, size_t length)
+char * diminuto_ipc6_colonnotation(diminuto_ipv6_t address, void * buffer, size_t length)
 {
     char * string = (char *)0;
 

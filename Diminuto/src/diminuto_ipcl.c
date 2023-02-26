@@ -46,7 +46,7 @@ int diminuto_ipcl_compare(const char * path1p, const char * path2p)
  * STRINGIFIERS
  ******************************************************************************/
 
-const char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length)
+char * diminuto_ipcl_path2string(const char * path, void * buffer, size_t length)
 {
     char * string = (char *)buffer;
 

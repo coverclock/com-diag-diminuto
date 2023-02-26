@@ -170,7 +170,7 @@ static inline diminuto_port_t diminuto_ipc4_port(const char * service, const cha
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, size_t length);
+extern char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, size_t length);
 
 /**
  * Convert an IPv4 address in host byte order into a printable IP address
@@ -180,7 +180,7 @@ extern const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * bu
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-static inline const char * diminuto_ipc4_address2string(diminuto_ipv4_t address, void * buffer, size_t length) {
+static inline char * diminuto_ipc4_address2string(diminuto_ipv4_t address, void * buffer, size_t length) {
     return diminuto_ipc4_dotnotation(address, buffer, length);
 }
 

@@ -1032,5 +1032,49 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        /* Special cases. */
+
+        diminuto_ipc_endpoint_t endpoint;
+        diminuto_endpoint_buffer_t buffer; 
+        char * result;
+
+        TEST();
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("PORTLESS \"%s\"\n", result);
+        EXPECT(strcmp(result, "") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
+        endpoint.tcp = 1234;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("TCP \"%s\"\n", result);
+        EXPECT(strcmp(result, ":1234") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
+        endpoint.udp = 5678;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("UDP \"%s\"\n", result);
+        EXPECT(strcmp(result, ":5678") == 0);
+
+        memset(&endpoint, 0, sizeof(endpoint));
+        endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
+        endpoint.tcp = 1234;
+        endpoint.udp = 5678;
+        result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
+        ASSERT(result == buffer);
+        COMMENT("TCPUDP \"%s\"\n", result);
+        EXPECT(strcmp(result, ":1234:5678") == 0);
+
+        STATUS();
+    }
+
     EXIT();
 }

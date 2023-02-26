@@ -533,7 +533,7 @@ extern char ** diminuto_ipc_interfaces(void);
  * @param length is the length of the buffer in bytes.
  * @return a pointer to the buffer.
  */
-extern const char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size_t length);
+extern char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size_t length);
 
 /*******************************************************************************
  * ENDPOINTS
@@ -625,6 +625,6 @@ extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * 
  * @param length is the length of the buffer in bytes.
  * @return a pointer ot the buffer.
  */
-extern const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length);
+extern char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length);
 
 #endif

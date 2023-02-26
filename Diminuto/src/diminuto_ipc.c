@@ -67,7 +67,7 @@ diminuto_port_t diminuto_ipc_port(const char * service, const char * protocol)
     return port;
 }
 
-const char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size_t length) {
+char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size_t length) {
     char * string = (char *)buffer;
 
     if (length > 0) {

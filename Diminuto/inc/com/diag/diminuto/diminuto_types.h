@@ -62,18 +62,6 @@ typedef uint64_t diminuto_unsigned_t;
 typedef int64_t diminuto_signed_t;
 
 /**
- * Enumerates the various buffer sizes defined in this translation unit.
- */
-enum DiminutoTypesBufferSize {
-    DIMINUTO_TYPES_IPV4_BUFFER_SIZE     = sizeof("255.255.255.255"),
-    DIMINUTO_TYPES_IPV6_BUFFER_SIZE     = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
-    DIMINUTO_TYPES_IP_BUFFER_SIZE       = DIMINUTO_TYPES_IPV6_BUFFER_SIZE,
-    DIMINUTO_TYPES_LOCAL_BUFFER_SIZE    = _POSIX_PATH_MAX + 1, /* 256 + 1 */
-    DIMINUTO_TYPES_PATH_BUFFER_SIZE     = PATH_MAX, /* 4096 */
-    DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE = DIMINUTO_TYPES_LOCAL_BUFFER_SIZE,
-};
-
-/**
  * This type describes the integer declaration of a variable containing a
  * 32-bit binary IPv4 address. An IPv4 address is conventionally represented
  * in "dot" notation as four decimal digits each representing one byte of the
@@ -108,6 +96,19 @@ typedef struct { uint16_t u16[128 / 8 / sizeof(uint16_t)]; } diminuto_ipv6_t;
 typedef uint16_t diminuto_port_t;
 
 /**
+ * Enumerates the various buffer sizes needed for the various 2string functions.
+ */
+enum DiminutoTypesBufferSizes {
+    DIMINUTO_TYPES_IPV4_BUFFER_SIZE     = sizeof("255.255.255.255"),                            /* (4*3)+(3*1)+1=16 */
+    DIMINUTO_TYPES_IPV6_BUFFER_SIZE     = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),    /* (8*4)+(7*1)+1=40 */
+    DIMINUTO_TYPES_IP_BUFFER_SIZE       = DIMINUTO_TYPES_IPV6_BUFFER_SIZE,                      /* 40 */
+    DIMINUTO_TYPES_LOCAL_BUFFER_SIZE    = _POSIX_PATH_MAX + 1,                                  /* 256+1=257 */
+    DIMINUTO_TYPES_PATH_BUFFER_SIZE     = PATH_MAX,                                             /* 4096 */
+    DIMINUTO_TYPES_PORT_BUFFER_SIZE     = sizeof("65535"),                                      /* 6 */
+    DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE = DIMINUTO_TYPES_LOCAL_BUFFER_SIZE,                     /* (((1+40+1)+(1+6)+(1+6))+1+(16+(1+6)+(1+6))+1)<257 */
+};
+
+/**
  * This defines a type of character array that can contain a Local
  * (UNIX domain) socket path. This is NOT large enough to
  * hold any arbitary file system path.
@@ -139,18 +140,18 @@ typedef char (diminuto_ip_buffer_t)[DIMINUTO_TYPES_IP_BUFFER_SIZE];
 typedef char (diminuto_endpoint_buffer_t)[DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE];
 
 /**
+ * This defines a type of character array that can contain a port number
+ * as a printable string including the terminating NUL. It estimates the
+ * size of the printable string based on the sizeof() the port type.
+ */
+typedef char (diminuto_port_buffer_t)[DIMINUTO_TYPES_PORT_BUFFER_SIZE];
+
+/**
  * This defines the type of character array that can contain a printable
  * local socket path, which is in fact the same thing as a local socket
  * path.
  */
 typedef diminuto_local_t diminuto_local_buffer_t;
-
-/**
- * This defines a type of character array that can contain a port number
- * as a printable string including the terminating NUL. It estimates the
- * size of the printable string based on the sizeof() the port type.
- */
-typedef char (diminuto_port_buffer_t)[3 * sizeof(diminuto_port_t)];
 
 /**
  * This defines a type of character array that can contain a file

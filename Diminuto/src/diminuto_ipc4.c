@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the IPC feature for IPv4.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -126,7 +126,7 @@ diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
  * STRINGIFIERS
  ******************************************************************************/
 
-const char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, size_t length)
+char * diminuto_ipc4_dotnotation(diminuto_ipv4_t address, void * buffer, size_t length)
 {
     char * string = (char *)0;
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;

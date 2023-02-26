@@ -79,20 +79,20 @@ static inline const char * ps(const char * str)
  */
 
 typedef enum State {
-    S_START		= '<',
-    S_DIGIT		= 'N',
-    S_PERIOD	= '.',
-    S_LETTER	= 'A',
-    S_COLON		= ':',
-    S_IPV6		= '6',
-    S_IPV4		= '4',
-    S_PORT		= 'P',
-    S_FQDN		= 'D',
-    S_SERVICE	= 'S',
+    S_START     = '<',
+    S_DIGIT     = 'N',
+    S_PERIOD    = '.',
+    S_LETTER    = 'A',
+    S_COLON     = ':',
+    S_IPV6      = '6',
+    S_IPV4      = '4',
+    S_PORT      = 'P',
+    S_FQDN      = 'D',
+    S_SERVICE   = 'S',
     S_HYPHEN    = '-',
-    S_NEXT		= 'X',
+    S_NEXT      = 'X',
     S_PATH      = 'U',
-    S_STOP		= '>',
+    S_STOP      = '>',
 } state_t;
 
 int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint)
@@ -375,7 +375,7 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         /*
          * If (rc < 0) at this point, our simple little parser
-         * found a syntax error, even it recognized it. No
+         * found a syntax error so bad even it recognized it. No
          * point in continuing.
          */
 
@@ -593,22 +593,32 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
     return 0;
 }
 
-const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length)
+char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, void * buffer, size_t length)
 {
     char * string = (char *)buffer;
-    diminuto_port_t port = 0;
-    diminuto_ip_buffer_t addressbuffer = { '\0', };
-    diminuto_port_buffer_t portbuffer = { '\0', };
+    diminuto_ipv4_buffer_t ipv4buffer = { '\0', };
+    diminuto_ipv6_buffer_t ipv6buffer = { '\0', };
+    diminuto_port_buffer_t tcpbuffer = { '\0', };
+    diminuto_port_buffer_t udpbuffer = { '\0', };
+    bool tcp = false;
+    bool udp = false;
+    bool ipv4 = false;
+    bool ipv6 = false;
+    bool ipv4tcp = false;
+    bool ipv4udp = false;
+    bool ipv6tcp = false;
+    bool ipv6udp = false;
 
     if (length > 0) {
 
-        if (endpoint->tcp != 0) {
-            port = endpoint->tcp;
-        } else if (endpoint->udp != 0) {
-            port = endpoint->udp;
-        } else {
-            /* Do nothing. */
-        }
+        tcp = (endpoint->tcp != 0);
+        udp = (endpoint->udp != 0) && (endpoint->udp != endpoint->tcp);
+        ipv4 = !diminuto_ipc4_is_unspecified(&(endpoint->ipv4));
+        ipv6 = !diminuto_ipc6_is_unspecified(&(endpoint->ipv6));
+        ipv4tcp = (ipv4 && tcp);
+        ipv4udp = (ipv4 && udp);
+        ipv6tcp = (ipv6 && tcp);
+        ipv6udp = (ipv6 && udp);
 
         string[0] = '\0';
         switch (endpoint->type) {
@@ -616,10 +626,36 @@ const char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoi
             (void)diminuto_ipcl_path2string(endpoint->local, string, length);
             break;
         case DIMINUTO_IPC_TYPE_IPV6:
-            (void)snprintf(string, length, "[%s]%s%s", diminuto_ipc6_address2string(endpoint->ipv6, addressbuffer, sizeof(addressbuffer)), (port != 0) ? ":" : "", (port != 0) ? diminuto_ipc_port2string(port, portbuffer, sizeof(portbuffer)) : "");
+            (void)snprintf(string, length, "%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                ipv6 ? "[" : "",
+                ipv6 ? diminuto_ipc6_address2string(endpoint->ipv6, ipv6buffer, sizeof(ipv6buffer)) : "",
+                ipv6 ? "]" : "",
+                tcp ? ":" : "",
+                tcp ? diminuto_ipc_port2string(endpoint->tcp, tcpbuffer, sizeof(tcpbuffer)) : "",
+                udp ? ":" : "",
+                udp ? diminuto_ipc_port2string(endpoint->udp, udpbuffer, sizeof(udpbuffer)) : "",
+                ipv4 ? "," : "",
+                ipv4 ? diminuto_ipc4_address2string(endpoint->ipv4, ipv4buffer, sizeof(ipv4buffer)) : "",
+                ipv4tcp ? ":" : "",
+                ipv4tcp ? diminuto_ipc_port2string(endpoint->tcp, tcpbuffer, sizeof(tcpbuffer)) : "",
+                ipv4udp ? ":" : "",
+                ipv4udp ? diminuto_ipc_port2string(endpoint->udp, udpbuffer, sizeof(udpbuffer)) : "");
             break;
         case DIMINUTO_IPC_TYPE_IPV4:
-            (void)snprintf(string, length, "%s%s%s", diminuto_ipc4_address2string(endpoint->ipv4, addressbuffer, sizeof(addressbuffer)), (port != 0) ? ":" : "", (port != 0) ? diminuto_ipc_port2string(port, portbuffer, sizeof(portbuffer)) : "");
+            (void)snprintf(string, length, "%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                ipv4 ? diminuto_ipc4_address2string(endpoint->ipv4, ipv4buffer, sizeof(ipv4buffer)) : "",
+                tcp ? ":" : "",
+                tcp ? diminuto_ipc_port2string(endpoint->tcp, tcpbuffer, sizeof(tcpbuffer)) : "",
+                udp ? ":" : "",
+                udp ? diminuto_ipc_port2string(endpoint->udp, udpbuffer, sizeof(udpbuffer)) : "",
+                ipv6 ? "," : "",
+                ipv6 ? "[" : "",
+                ipv6 ? diminuto_ipc6_address2string(endpoint->ipv6, ipv6buffer, sizeof(ipv6buffer)) : "",
+                ipv6 ? "]" : "",
+                ipv6tcp ? ":" : "",
+                ipv6tcp ? diminuto_ipc_port2string(endpoint->tcp, tcpbuffer, sizeof(tcpbuffer)) : "",
+                ipv6udp ? ":" : "",
+                ipv6udp ? diminuto_ipc_port2string(endpoint->udp, udpbuffer, sizeof(udpbuffer)) : "");
             break;
         default:
             break;
