@@ -118,6 +118,7 @@ int main() {
         ASSERT(sizeof(diminuto_ip_buffer_t) >= DIMINUTO_TYPES_IP_BUFFER_SIZE);
         ASSERT(sizeof(diminuto_ip_buffer_t) >= sizeof(diminuto_ipv4_buffer_t));
         ASSERT(sizeof(diminuto_ip_buffer_t) >= sizeof(diminuto_ipv6_buffer_t));
+        ASSERT(sizeof(diminuto_endpoint_buffer_t) >= sizeof(diminuto_local_buffer_t));
 
         STATUS();
     }

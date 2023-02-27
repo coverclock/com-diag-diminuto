@@ -170,9 +170,12 @@ int main(void)
     printsizeofnoninteger(diminuto_ipv4_buffer_t);
     printsizeofnoninteger(diminuto_ipv6_t);
     printsizeofnoninteger(diminuto_ipv6_buffer_t);
+    printsizeofnoninteger(diminuto_ip_buffer_t);
     printsizeof(diminuto_port_t);
     printsizeofnoninteger(diminuto_port_buffer_t);
     printsizeofnoninteger(diminuto_local_t);
+    printsizeofnoninteger(diminuto_local_buffer_t);
+    printsizeofnoninteger(diminuto_endpoint_buffer_t);
     printisunsigned(diminuto_unsigned_t);
     printissigned(diminuto_signed_t);
     printsizeofnoninteger(diminuto_path_t);
