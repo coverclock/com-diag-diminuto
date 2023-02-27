@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Defines types consistently across all features.
  * @author Chip Overclock <mailto:coverclock@diag.com>
