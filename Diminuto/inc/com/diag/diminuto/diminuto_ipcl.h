@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a interface to stream, datagram, and packet Local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
