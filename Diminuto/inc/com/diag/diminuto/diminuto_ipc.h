@@ -12,8 +12,29 @@
  * @details
  *
  * The IPC feature provides socket and other interprocess/interprocessor
- * communication capabilities using IPv4, IPv6, and UNIX Domain (local)
- * sockets.
+ * communication capabilities. This particular header file defines portions
+ * of the API that are common across the more specific ipc* APIs. Here are some
+ * tables that decode some of the nomenclature used in the ipc* APIs.
+ *
+ * NETWORK LAYER
+ *
+ * ipc4         IPv4<br>
+ * ipc6         IPv6<br>
+ * ipcl         UNIX Domain (local)<br>
+ *
+ * TRANSPORT LAYER
+ *
+ * stream   SOCK_STREAM     TCP     ipc[46l]    stream read, write<br>
+ * datagram SOCK_DGRAM      UDP     ipc[46l]    datagram send, receive<br>
+ * packet   SOCK_SEQPACKET  SCTP    ipcl        packet send, receive<br>
+ *
+ * ACRONYMS
+ *
+ * IP   Internet Protcol<br>
+ * IPC  Inter-Process or Inter-Processor Communication<br>
+ * SCTP Stream Control Transmission Protocol<br>
+ * TCP  Transmission Control Protocol<br>
+ * UDP  User Datagram Protocol<br>
  *
  * REFERENCES
  *
