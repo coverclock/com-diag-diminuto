@@ -378,8 +378,31 @@ int main(int argc, char ** argv)
     }
 
     {
+        diminuto_log_mask_t prior;
 
-        diminuto_log_mask = -1;
+        diminuto_log_mask = 0xa5;
+
+        prior = diminuto_log_initmask(0);
+        assert(prior == 0xa5);
+        assert(diminuto_log_mask == 0);
+
+        prior = diminuto_log_initmask(0xfe);
+        assert(prior == 0);
+        assert(diminuto_log_mask == 0xfe);
+
+        prior = diminuto_log_initmask(DIMINUTO_LOG_MASK_ALL);
+        assert(prior == 0xfe);
+        assert(diminuto_log_mask == 0xff);
+
+        prior = diminuto_log_initmask(DIMINUTO_LOG_MASK_DEFAULT);
+        assert(prior == DIMINUTO_LOG_MASK_ALL);
+        assert(diminuto_log_mask == 0xfc);
+    }
+
+
+    {
+
+        diminuto_log_mask = 0xa5;
 
         assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();

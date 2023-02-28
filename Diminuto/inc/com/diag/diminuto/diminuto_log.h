@@ -400,11 +400,21 @@ static inline int diminuto_log_interactive()
 }
 
 /**
+ * Initialize (or reinitialize) the default log mask. The prior value
+ * of the log mask is returned. The assignment of the log mask is thread
+ * safe.
+ * @param after is the new log mask value.
+ * @return the old log mask value.
+ */
+extern diminuto_log_mask_t diminuto_log_initmask(diminuto_log_mask_t after);
+
+/**
  * Set the global default log mask from the environment. By default, the name
  * of the log mask environmental variable is "COM_DIAG_DIMINUTO_LOG_MASK" and
  * its value is a number string in decimal, octal, or hexadecimal format as
  * understood by strtoul(3), e.g. "255", "0x377", "0xff", "0xFF", etc. As an
- * extension, if the value is "~0", all eight log levels are enabled.
+ * extension, if the value is "~0", all eight log levels are enabled. The
+ * assignment of the log mask is thread safe.
  * @return the log mask value.
  */
 extern diminuto_log_mask_t diminuto_log_setmask(void);
@@ -415,7 +425,7 @@ extern diminuto_log_mask_t diminuto_log_setmask(void);
  * format, e.g. 0377, 255, of 0xff. If the path name is NULL,
  * the name ${HOME}/.com_diag_diminuto_log_mask will be used. If the file
  * does not exist, cannot be read, or has a syntax error, the unchanged log
- * mask will be returned.
+ * mask will be returned. The assignment of the log mask is thread safe.
  * @param is the path name or NULL.
  * @return the log mask value.
  */
