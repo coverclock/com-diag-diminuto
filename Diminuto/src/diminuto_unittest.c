@@ -24,7 +24,8 @@ int diminuto_unittest_errors = 0;
 void diminuto_unittest_setlogmask()
 {
     DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
-        diminuto_log_setmask();
+        diminuto_log_importmask((const char *)0); /* If exists. */
+        diminuto_log_setmask(); /* If defined. */
         setvbuf(stderr, (char *)0, _IONBF, 0);
         diminuto_core_enable();
     DIMINUTO_CRITICAL_SECTION_END;
