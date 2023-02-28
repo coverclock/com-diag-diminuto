@@ -69,6 +69,8 @@ FILE * diminuto_log_file = DIMINUTO_LOG_STREAM_DEFAULT;
 
 const char * diminuto_log_mask_name = DIMINUTO_LOG_MASK_NAME_DEFAULT;
 
+const char * diminuto_log_mask_path = DIMINUTO_LOG_MASK_PATH_DEFAULT;
+
 diminuto_log_strategy_t diminuto_log_strategy = DIMINUTO_LOG_STRATEGY_AUTOMATIC;
 
 bool diminuto_log_cached = false;
@@ -124,19 +126,72 @@ diminuto_log_mask_t diminuto_log_priority2mask(diminuto_log_priority_t priority)
 
 diminuto_log_mask_t diminuto_log_setmask(void)
 {
-    const char * mask = (const char *)0;
+    const char * string = (const char *)0;
+    char * end = (char *)0;
+    long value = -1;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
-
-        if ((mask = getenv(diminuto_log_mask_name)) == (const char *)0) {
-            /* Do nothing. */
-        } else if (strcmp(mask, ALL) == 0) {
+    if ((string = getenv(diminuto_log_mask_name)) == (const char *)0) {
+        errno = ENOENT;
+        diminuto_perror(diminuto_log_mask_name);
+    } else if (strcmp(string, ALL) == 0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
             DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
-        } else {
-            DIMINUTO_LOG_MASK = strtoul(mask, (char **)0, 0);
-        }
+        DIMINUTO_CRITICAL_SECTION_END;
+    } else if ((value = strtol(string, &end, 0)) < 0) {
+        errno = ERANGE;
+        diminuto_perror(string);
+    } else if ((end == (char *)0) || (*end != '\0')) {
+        errno = EINVAL;
+        diminuto_perror(string);
+    } else {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+            DIMINUTO_LOG_MASK = value;
+        DIMINUTO_CRITICAL_SECTION_END;
+    }
 
-    DIMINUTO_CRITICAL_SECTION_END;
+    return DIMINUTO_LOG_MASK;
+}
+
+diminuto_log_mask_t diminuto_log_importmask(const char * path)
+{
+    diminuto_path_t filename = { '\0', };
+    char buffer[64] = { '\0', };
+    FILE * fp = (FILE *)0;
+    long value = -1;
+    char * end = (char *)0;
+
+    if (path == (const char *)0) {
+        const char * home = (const char *)0;
+        if ((home = getenv("HOME")) == (const char *)0) {
+            home = "";
+        }
+        (void)snprintf(filename, sizeof(filename), "%s/%s", home, diminuto_log_mask_path);
+        path = filename;
+    }
+
+    if ((fp = fopen(path, "r")) == (FILE *)0) {
+        diminuto_perror(path);
+    } else if (fgets(buffer, sizeof(buffer), fp) == (char *)0) {
+        diminuto_perror(path);
+    } else if (strcmp(buffer, ALL) == 0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+            DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
+        DIMINUTO_CRITICAL_SECTION_END;
+    } else if ((value = strtol(buffer, &end, 0)) < 0) {
+        errno = ERANGE;
+        diminuto_perror(buffer);
+    } else if ((end == (char *)0) || ((*end != '\0') && (*end != '\n'))) {
+        errno = EINVAL;
+        diminuto_perror(buffer);
+    } else {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+            DIMINUTO_LOG_MASK = value;
+        DIMINUTO_CRITICAL_SECTION_END;
+    }
+
+    if (fp != (FILE *)0) {
+        (void)fclose(fp);
+    }
 
     return DIMINUTO_LOG_MASK;
 }

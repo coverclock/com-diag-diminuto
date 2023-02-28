@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a common logging API.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -304,6 +304,12 @@ enum DiminutoLogConstants {
 #define DIMINUTO_LOG_MASK_NAME_DEFAULT "COM_DIAG_DIMINUTO_LOG_MASK"
 
 /**
+ * @def DIMINUTO_LOG_PATH_NAME_DEFAULT
+ * This is the default value used for the log mask path in the home directory.
+ */
+#define DIMINUTO_LOG_MASK_PATH_DEFAULT ".com_diag_diminuto_log_mask"
+
+/**
  * @def DIMINUTO_LOG_MASK_VALUE_ALL
  * This is the default value ised for the value of the log mask in the
  * environment.
@@ -402,6 +408,18 @@ static inline int diminuto_log_interactive()
  * @return the log mask value.
  */
 extern diminuto_log_mask_t diminuto_log_setmask(void);
+
+/**
+ * Set the global default log mask from a file. The file must contain as its
+ * first line of text a number in octal, decimal, or hexadecimal, in C-style
+ * format, e.g. 0377, 255, of 0xff. If the path name is NULL,
+ * the name ${HOME}/.com_diag_diminuto_log_mask will be used. If the file
+ * does not exist, cannot be read, or has a syntax error, the unchanged log
+ * mask will be returned.
+ * @param is the path name or NULL.
+ * @return the log mask value.
+ */
+extern diminuto_log_mask_t diminuto_log_importmask(const char * path);
 
 /**
  * Open the underlying system log communication channel (whatever that is)

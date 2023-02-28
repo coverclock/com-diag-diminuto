@@ -72,6 +72,12 @@ extern FILE * diminuto_log_file;
 extern const char * diminuto_log_mask_name;
 
 /**
+ * This is the name of the path in the caller's HOME directory assumed to
+ * contain a number that is the log mask.
+ */
+extern const char * diminuto_log_mask_path;
+
+/**
  * This variable determines how log messages are routed: to standard
  * error, to the system log, or automatically based on the characteristics
  * of the caller. 

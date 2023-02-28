@@ -425,6 +425,28 @@ int main(int argc, char ** argv)
         }
 
         {
+            diminuto_log_mask_t mask;
+
+            diminuto_log_mask = 0xa5;
+            fprintf(stderr, "IMPORT HOME BEFORE 0x%x\n", diminuto_log_mask);
+            mask = diminuto_log_importmask(NULL);
+            fprintf(stderr, "IMPORT HOME RETURN 0x%x\n", mask);
+            fprintf(stderr, "IMPORT HOME AFTER 0x%x\n", diminuto_log_mask);
+
+            diminuto_log_mask = 0xa5;
+            fprintf(stderr, "IMPORT CWD BEFORE 0x%x\n", diminuto_log_mask);
+            mask = diminuto_log_importmask(diminuto_log_mask_path);
+            fprintf(stderr, "IMPORT CWD RETURN 0x%x\n", mask);
+            fprintf(stderr, "IMPORT CWD AFTER 0x%x\n", diminuto_log_mask);
+
+            diminuto_log_mask = 0xa5;
+            fprintf(stderr, "IMPORT NONE BEFORE 0x%x\n", diminuto_log_mask);
+            mask = diminuto_log_importmask("no_such_file");
+            fprintf(stderr, "IMPORT NONE RETURN 0x%x\n", mask);
+            fprintf(stderr, "IMPORT NONE AFTER 0x%x\n", diminuto_log_mask);
+        }
+
+        {
             char buffer[5];
             static const diminuto_log_priority_t PRIORITY[] = {
                 DIMINUTO_LOG_PRIORITY_EMERGENCY,
