@@ -708,9 +708,21 @@ cross-compiling for a different target.
 
 # Logging
 
-The Diminuto features, unit tests, and functional tests make heavy use
-of the Diminuto Log feature. Most Diminuto code using the Log feature
-import the log mask from the environment.
+The Diminuto features, unit tests, and functional tests make heavy use of
+the Diminuto Log feature. Eight different log levels (see below) can be
+selectively enabled or disabled using a process global log mask. Updates
+to the log mask are protected by a thread mutex.
+
+Most Diminuto utilities and tests using the Log feature
+import the log mask from the environment using the function
+```diminuto_log_setmask```. The default name of the environmental variable
+is ```COM_DIAG_DIMINUTO_LOG_MASK```. The log mask can also be imported
+from a text file using the function ```diminuto_log_importmask```. The
+default path of the file is ```${HOME}/.com_diag_diminuto_log_mask```. For
+either mechanism, the mask value is coded as an octal, decimal, or
+hexadecimal number in C-style format, e.g.  ```0377```, ```255```, or
+```0xff```. As a special case, the value ```~0``` generates a mask that
+enables all log levels.
 
 The log mask bits, as defined in the feature's header file, are these,
 patterned after the syslog(3) log levels.
@@ -743,7 +755,9 @@ hose of output.
 For every log output line, the Diminuto Log features determines whether
 the issuing process is being run interactively or not, or is a daemon,
 and directs the output appropriately to either standard error or to the
-system log.
+system log. The system log on various verisons of Linux may be stored
+in a file in the directory ```/var/log``` (Debian) or may be accessed
+using the ```journalctl``` system utility (Fedora).
 
 # Documentation
 
