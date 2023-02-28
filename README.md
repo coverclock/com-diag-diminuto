@@ -714,7 +714,7 @@ selectively enabled or disabled using a process global log mask. Updates
 to the log mask are protected by a thread mutex.
 
 Most Diminuto utilities and tests using the Log feature
-import the log mask from the environment using the function
+extract the log mask from the environment using the function
 ```diminuto_log_setmask```. The default name of the environmental variable
 is ```COM_DIAG_DIMINUTO_LOG_MASK```. The log mask can also be imported
 from a text file using the function ```diminuto_log_importmask```. The
