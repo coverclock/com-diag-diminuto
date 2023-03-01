@@ -67,12 +67,23 @@ typedef enum DiminutoFsType {
 } diminuto_fs_type_t;
 
 /**
- * Determine an enumeration that indiciates the type of object the
+ * Determine the enumeration value that indiciates the type of object the
  * specified mode returned by stat(2) or related system call represents.
+ * See also diminuto_fs_type().
  * @param mode is the mode value returned by stat(2) or related.
  * @return the type of object the mode represents.
  */
 extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
+
+/**
+ * Determine the enumeration value that indiciates the type of object the
+ * specified file system path references. This mostly intended to be used
+ * to check for a file's existence; the return of the type is a bonus.
+ * See also diminuto_fs_mode2type().
+ * @param path points to the file system path string.
+ * @return the type of object the path represents.
+ */
+extern diminuto_fs_type_t diminuto_fs_verify(const char * path);
 
 /**
  * This type defines the prototype of a callback function invoked

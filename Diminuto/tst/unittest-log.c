@@ -28,6 +28,7 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -448,15 +449,18 @@ int main(int argc, char ** argv)
         }
 
         {
+            static const char NO_SUCH_FILE[] = "no_such_file";
             diminuto_log_mask_t mask;
 
+            assert(diminuto_fs_verify(diminuto_log_mask_path) == DIMINUTO_FS_TYPE_FILE);
             diminuto_log_mask = 0xa5;
             mask = diminuto_log_importmask(diminuto_log_mask_path);
             assert(mask == 0xff);
             assert(diminuto_log_mask == mask);
 
+            assert(diminuto_fs_verify(NO_SUCH_FILE) == DIMINUTO_FS_TYPE_NONE);
             diminuto_log_mask = 0xa5;
-            mask = diminuto_log_importmask("no_such_file");
+            mask = diminuto_log_importmask(NO_SUCH_FILE);
             assert(mask == 0xa5);
             assert(diminuto_log_mask == mask);
 

@@ -75,7 +75,7 @@ int diminuto_fs_walker(const char * name, char * path, size_t total, size_t dept
     int xc = 0;
     DIR * dp = (DIR *)0;
     struct dirent * ep = (struct dirent *)0;
-    struct stat status = { 0 };
+    struct stat status = { 0, };
     int rc = 0;
     size_t prior = 0;
     size_t length = 0;
@@ -466,4 +466,18 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
     } while (0);
 
     return rc;
+}
+
+diminuto_fs_type_t diminuto_fs_verify(const char * path)
+{
+    struct stat status = { 0, };
+    diminuto_fs_type_t type = DIMINUTO_FS_TYPE_NONE;
+
+    if (stat(path, &status) < 0) {
+        /* Do nothing: deliberately fail silently. */
+    } else {
+        type = diminuto_fs_type(status.st_mode);
+    }
+
+    return type;
 }
