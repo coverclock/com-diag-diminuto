@@ -715,14 +715,16 @@ to the log mask are protected by a thread mutex.
 
 Most Diminuto utilities and tests using the Log feature
 extract the log mask from the environment using the function
-```diminuto_log_setmask```. The default name of the environmental variable
-is ```COM_DIAG_DIMINUTO_LOG_MASK```. The log mask can also be imported
-from a text file using the function ```diminuto_log_importmask```. The
-default path of the file is ```${HOME}/.com_diag_diminuto_log_mask```. For
-either mechanism, the mask value is coded as an octal, decimal, or
-hexadecimal number in C-style format, e.g.  ```0377```, ```255```, or
-```0xff```. As a special case, the value ```~0``` generates a mask that
-enables all log levels.
+```diminuto_log_setmask()```. The default name of the environmental
+variable is ```COM_DIAG_DIMINUTO_LOG_MASK```. The log mask can also be
+imported from a text file (which can be done dynamically at run-time)
+using the function ```diminuto_log_importmask()```. The default path
+of the file is ```${HOME}/.com_diag_diminuto_log_mask```. For either
+mechanism, the mask value is coded as an octal, decimal, or hexadecimal
+number in C-style format, e.g.  ```0377```, ```255```, or ```0xff```. As
+a special case, the value ```~0``` generates a mask that enables all
+log levels. A good example of setting and importing a log mask can be
+found in the ```stagecoach``` application found in the Codex repository.
 
 The log mask bits, as defined in the feature's header file, are these,
 patterned after the syslog(3) log levels.
@@ -892,7 +894,13 @@ and relies on Diminuto for much of its infrastructure.
 <https://coverclock.blogspot.com/2017/02/better-never-than-late.html>    
 <https://github.com/coverclock/com-diag-hazer/tree/master/Hazer/app/gpstool>    
 
-* The survey and census functional tests in the Placer project (ditto),
+* The stagecoach application in the Codex project (repo URL below),
+a library that uses Open Secure Socket Layer (OpenSSL), also relies on
+Diminuto for much of its infrastructure.
+
+<https://github.com/coverclock/com-diag-codex/tree/master/Codex/app/stagecoach>    
+
+* The survey and census functional tests in the Placer project,
 which uses the SQLite relational database system, use the Diminuto
 FS file system walker and are a good example of how a need in another
 project leads to a virtuous cycle of organic growth in Diminuto.
