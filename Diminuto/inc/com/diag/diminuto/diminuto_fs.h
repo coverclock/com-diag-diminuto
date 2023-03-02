@@ -38,16 +38,16 @@ extern int diminuto_fs_debug(int now);
  * impossible because the implied bit pattern matches a known type.
  */
 typedef enum DiminutoFsType {
-    DIMINUTO_FS_TYPE_NONE           = '\0',
-    DIMINUTO_FS_TYPE_UNKNOWN        = '?',  /* Should be impossible. */
-    DIMINUTO_FS_TYPE_TTY            = 't',  /* Special case of cdev. */
+    DIMINUTO_FS_TYPE_NONE           = '-',
+    DIMINUTO_FS_TYPE_UNKNOWN        = '?', /* Should be impossible. */
+    DIMINUTO_FS_TYPE_TTY            = 't', /* Special case of cdev. */
     DIMINUTO_FS_TYPE_SOCKET         = 's',
-    DIMINUTO_FS_TYPE_SYMLINK        = 'l',
-    DIMINUTO_FS_TYPE_FILE           = '-',
+    DIMINUTO_FS_TYPE_SYMLINK        = 'l', /* Hard links are just files. */
+    DIMINUTO_FS_TYPE_FILE           = 'f',
     DIMINUTO_FS_TYPE_BLOCKDEV       = 'b',
     DIMINUTO_FS_TYPE_DIRECTORY      = 'd',
     DIMINUTO_FS_TYPE_CHARACTERDEV   = 'c',
-    DIMINUTO_FS_TYPE_FIFO           = 'p',
+    DIMINUTO_FS_TYPE_FIFO           = 'p', /* Pipe. */
     DIMINUTO_FS_TYPE_0              = '0',
     DIMINUTO_FS_TYPE_1              = '1', /* Should be DIMINUTO_FS_TYPE_FIFO. */
     DIMINUTO_FS_TYPE_2              = '2', /* Should be DIMINTUO_FS_TYPE_CHARACTERDEV. */
