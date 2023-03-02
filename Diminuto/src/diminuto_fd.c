@@ -246,9 +246,9 @@ int diminuto_fd_direct_acquire(int fd, const char * device, int flags, mode_t mo
     return diminuto_fd_acquire(fd, device, flags | O_DIRECT | O_SYNC, mode);
 }
 
-diminuto_fs_type_t diminuto_fd_type(int fd)
+diminuto_fd_type_t diminuto_fd_type(int fd)
 {
-    diminuto_fs_type_t type = DIMINUTO_FS_TYPE_UNKNOWN;
+    diminuto_fd_type_t type = DIMINUTO_FS_TYPE_UNKNOWN;
     struct stat status = { 0 };
 
     if (isatty(fd)) {
@@ -256,7 +256,7 @@ diminuto_fs_type_t diminuto_fd_type(int fd)
     } else if (fstat(fd, &status) < 0) {
         diminuto_perror("diminuto_fd_type: fstat");
     } else {
-        type = diminuto_fs_type(status.st_mode);
+        type = diminuto_fs_mode2type(status.st_mode);
         if (type == DIMINUTO_FS_TYPE_UNKNOWN) {
             errno = EINVAL;
             diminuto_perror("diminuto_fd_type: stat.st_mode");

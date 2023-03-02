@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is part of the File Descriptor functional test.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -74,7 +74,7 @@ static int callback(void * statep, const char * name, const char * path, size_t 
     fprintf(files[1],
         "%lu '%c' 0%o (%u,%u) [%zu] %u:%u <%u,%u> [%zu] [%zu] [%zu] %ld.%09lu %ld.%09lu %ld.%09lu \"%s\"\n"
         , statp->st_ino
-        , diminuto_fs_type(statp->st_mode)
+        , diminuto_fs_mode2type(statp->st_mode)
         , (statp->st_mode & ~S_IFMT)
         , major(statp->st_dev), minor(statp->st_dev)
         , (size_t)statp->st_nlink

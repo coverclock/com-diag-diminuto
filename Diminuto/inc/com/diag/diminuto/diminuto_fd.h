@@ -18,6 +18,12 @@
 #include "com/diag/diminuto/diminuto_fs.h"
 
 /**
+ * This is an enumeration of the kinds of files to which file descriptors
+ * may refer.
+ */
+typedef diminuto_fs_type_t diminuto_fd_type_t;
+
+/**
  * Open the named device with the specified flags and mode if the provided
  * file descriptor is not already open. Return either the same open file
  * descriptor or a new file descriptor.
@@ -188,6 +194,6 @@ extern void ** diminuto_fd_map_ref(diminuto_fd_map_t * mapp, int fd);
  * @param fd is an open file descriptor.
  * @return the type of object the file descriptor represents.
  */
-extern diminuto_fs_type_t diminuto_fd_type(int fd);
+extern diminuto_fd_type_t diminuto_fd_type(int fd);
 
 #endif

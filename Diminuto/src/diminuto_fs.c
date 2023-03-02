@@ -38,7 +38,7 @@ int diminuto_fs_debug(int now)
     return was;
 }
 
-diminuto_fs_type_t diminuto_fs_type(mode_t mode)
+diminuto_fs_type_t diminuto_fs_mode2type(mode_t mode)
 {
     diminuto_fs_type_t type = DIMINUTO_FS_TYPE_NONE;
 
@@ -468,7 +468,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
     return rc;
 }
 
-diminuto_fs_type_t diminuto_fs_verify(const char * path)
+diminuto_fs_type_t diminuto_fs_type(const char * path)
 {
     struct stat status = { 0, };
     diminuto_fs_type_t type = DIMINUTO_FS_TYPE_NONE;
@@ -476,7 +476,7 @@ diminuto_fs_type_t diminuto_fs_verify(const char * path)
     if (stat(path, &status) < 0) {
         /* Do nothing: deliberately fail silently. */
     } else {
-        type = diminuto_fs_type(status.st_mode);
+        type = diminuto_fs_mode2type(status.st_mode);
     }
 
     return type;

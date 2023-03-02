@@ -452,13 +452,13 @@ int main(int argc, char ** argv)
             static const char NO_SUCH_FILE[] = "no_such_file";
             diminuto_log_mask_t mask;
 
-            assert(diminuto_fs_verify(diminuto_log_mask_path) == DIMINUTO_FS_TYPE_FILE);
+            assert(diminuto_fs_type(diminuto_log_mask_path) == DIMINUTO_FS_TYPE_FILE);
             diminuto_log_mask = 0xa5;
             mask = diminuto_log_importmask(diminuto_log_mask_path);
             assert(mask == 0xff);
             assert(diminuto_log_mask == mask);
 
-            assert(diminuto_fs_verify(NO_SUCH_FILE) == DIMINUTO_FS_TYPE_NONE);
+            assert(diminuto_fs_type(NO_SUCH_FILE) == DIMINUTO_FS_TYPE_NONE);
             diminuto_log_mask = 0xa5;
             mask = diminuto_log_importmask(NO_SUCH_FILE);
             assert(mask == 0xa5);

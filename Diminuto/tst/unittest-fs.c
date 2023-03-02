@@ -69,7 +69,7 @@ int main(int argc, char * argv[])
 
         for (ii = 0x0; ii <= 0xf; ++ii) {
             mode = ii << 12;
-            type = diminuto_fs_type(mode);
+            type = diminuto_fs_mode2type(mode);
             COMMENT("mode=0%06o type='%c'\n", ii << 12, type);
             EXPECT(type != DIMINUTO_FS_TYPE_NONE);
             EXPECT(type != DIMINUTO_FS_TYPE_UNKNOWN);
@@ -213,7 +213,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs", 0755, 0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_NONE);
         diminuto_fs_debug(debug);
 
@@ -230,7 +230,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs", 0755, !0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("unittest-fs");
         ASSERT(rc == 0);
@@ -249,7 +249,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("./unittest-fs", 0755, 0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("./unittest-fs");
+        type = diminuto_fs_type("./unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_NONE);
         diminuto_fs_debug(debug);
 
@@ -266,7 +266,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("./unittest-fs", 0755, !0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("./unittest-fs");
+        type = diminuto_fs_type("./unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("./unittest-fs");
         ASSERT(rc == 0);
@@ -285,7 +285,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("/tmp/unittest-fs", 0755, 0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("/tmp/unittest-fs");
+        type = diminuto_fs_type("/tmp/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_NONE);
         diminuto_fs_debug(debug);
 
@@ -302,7 +302,7 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("/tmp/unittest-fs", 0755, !0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("/tmp/unittest-fs");
+        type = diminuto_fs_type("/tmp/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("/tmp/unittest-fs");
         ASSERT(rc == 0);
@@ -321,11 +321,11 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs", 0755, 0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_NONE);
         rc = rmdir("unittest-fs/unittest-fs");
         ASSERT(rc == 0);
@@ -346,11 +346,11 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs", 0755, !0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(rc == 0);
@@ -373,11 +373,11 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs/", 0755, 0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(rc == 0);
@@ -400,11 +400,11 @@ int main(int argc, char * argv[])
         debug = diminuto_fs_debug(!0);
         rc = diminuto_fs_mkdir_p("unittest-fs/unittest-fs/unittest-fs/", 0755, !0);
         ASSERT(rc == 0);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs/unittest-fs");
+        type = diminuto_fs_type("unittest-fs/unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
-        type = diminuto_fs_verify("unittest-fs");
+        type = diminuto_fs_type("unittest-fs");
         ASSERT(type == DIMINUTO_FS_TYPE_DIRECTORY);
         rc = rmdir("unittest-fs/unittest-fs/unittest-fs");
         ASSERT(rc == 0);
