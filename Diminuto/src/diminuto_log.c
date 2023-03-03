@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Log feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -122,6 +122,17 @@ diminuto_log_mask_t diminuto_log_priority2mask(diminuto_log_priority_t priority)
     }
 
     return mask;
+}
+
+diminuto_log_mask_t diminuto_log_initmask(diminuto_log_mask_t after) {
+    diminuto_log_mask_t before = 0;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        before = DIMINUTO_LOG_MASK;
+        DIMINUTO_LOG_MASK = after;
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return before;
 }
 
 diminuto_log_mask_t diminuto_log_setmask(void)

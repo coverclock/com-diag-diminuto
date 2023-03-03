@@ -26,17 +26,17 @@
 
 #define DIMINUTO_FD_TYPE(_FD_, _EXPECTED_) \
     do { \
-        diminuto_fs_type_t type; \
+        diminuto_fd_type_t type; \
         const char * name; \
         const char * expected; \
         type = diminuto_fd_type(_FD_); \
         name = type2name(type); \
-        expected = type2name((diminuto_fs_type_t)_EXPECTED_); \
+        expected = type2name((diminuto_fd_type_t)_EXPECTED_); \
         CHECKPOINT("%s=%d type=%d=%s expected=%d=%s\n", #_FD_, _FD_, type, name, _EXPECTED_, expected); \
         if (_EXPECTED_ >= 0) { EXPECT(type == _EXPECTED_); } \
     } while (0)
 
-static const char * type2name(diminuto_fs_type_t type)
+static const char * type2name(diminuto_fd_type_t type)
 {
     const char * name = (const char *)0;
 
@@ -152,7 +152,7 @@ int main(void)
             struct stat status;
             diminuto_fs_type_t type;
             ASSERT(lstat("/dev/fd", &status) == 0);
-            type = diminuto_fs_type(status.st_mode);
+            type = diminuto_fs_mode2type(status.st_mode);
             CHECKPOINT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
             EXPECT(type == DIMINUTO_FS_TYPE_SYMLINK);
         }

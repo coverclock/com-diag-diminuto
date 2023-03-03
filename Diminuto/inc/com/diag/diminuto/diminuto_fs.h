@@ -38,16 +38,16 @@ extern int diminuto_fs_debug(int now);
  * impossible because the implied bit pattern matches a known type.
  */
 typedef enum DiminutoFsType {
-    DIMINUTO_FS_TYPE_NONE           = '\0',
-    DIMINUTO_FS_TYPE_UNKNOWN        = '?',  /* Should be impossible. */
-    DIMINUTO_FS_TYPE_TTY            = 't',  /* Special case of cdev. */
+    DIMINUTO_FS_TYPE_NONE           = '-',
+    DIMINUTO_FS_TYPE_UNKNOWN        = '?', /* Should be impossible. */
+    DIMINUTO_FS_TYPE_TTY            = 't', /* Special case of cdev. */
     DIMINUTO_FS_TYPE_SOCKET         = 's',
-    DIMINUTO_FS_TYPE_SYMLINK        = 'l',
-    DIMINUTO_FS_TYPE_FILE           = '-',
+    DIMINUTO_FS_TYPE_SYMLINK        = 'l', /* Hard links are just files. */
+    DIMINUTO_FS_TYPE_FILE           = 'f',
     DIMINUTO_FS_TYPE_BLOCKDEV       = 'b',
     DIMINUTO_FS_TYPE_DIRECTORY      = 'd',
     DIMINUTO_FS_TYPE_CHARACTERDEV   = 'c',
-    DIMINUTO_FS_TYPE_FIFO           = 'p',
+    DIMINUTO_FS_TYPE_FIFO           = 'p', /* Pipe. */
     DIMINUTO_FS_TYPE_0              = '0',
     DIMINUTO_FS_TYPE_1              = '1', /* Should be DIMINUTO_FS_TYPE_FIFO. */
     DIMINUTO_FS_TYPE_2              = '2', /* Should be DIMINTUO_FS_TYPE_CHARACTERDEV. */
@@ -67,12 +67,23 @@ typedef enum DiminutoFsType {
 } diminuto_fs_type_t;
 
 /**
- * Determine an enumeration that indiciates the type of object the
+ * Determine the enumeration value that indiciates the type of object the
  * specified mode returned by stat(2) or related system call represents.
+ * See also diminuto_fs_type().
  * @param mode is the mode value returned by stat(2) or related.
  * @return the type of object the mode represents.
  */
-extern diminuto_fs_type_t diminuto_fs_type(mode_t mode);
+extern diminuto_fs_type_t diminuto_fs_mode2type(mode_t mode);
+
+/**
+ * Determine the enumeration value that indiciates the type of object the
+ * specified file system path references. This mostly intended to be used
+ * to check for a file's existence; the return of the type is a bonus.
+ * See also diminuto_fs_mode2type().
+ * @param path points to the file system path string.
+ * @return the type of object the path represents.
+ */
+extern diminuto_fs_type_t diminuto_fs_type(const char * path);
 
 /**
  * This type defines the prototype of a callback function invoked
