@@ -240,7 +240,7 @@ Similarly, environmental variables have qualified names like
 * hangup - receive and check for a SIGHUP signal.
 * interrupter - receive and check for a SIGINT signal.
 * pipe - receive and check for a SIGPIPE signal.
-* reaper - receive and check for a SIGCLHD signal and reap child processes.
+* reaper - receive and check for a SIGCHLD signal and reap child processes.
 * terminator - receive and check for a SIGTERM signal.
 * uninterruptiblesection - macros to implement scoped blocked signals.
 
