@@ -10,11 +10,12 @@
  * This is the implementation of the Log feature.
  */
 
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -142,9 +143,8 @@ diminuto_log_mask_t diminuto_log_setmask(void)
     long value = -1;
 
     if ((string = getenv(diminuto_log_mask_name)) == (const char *)0) {
-        errno = ENOENT;
-        diminuto_perror(diminuto_log_mask_name);
-    } else if (strcmp(string, ALL) == 0) {
+        /* Do nothing: not an error. */
+    } else if (strncmp(string, ALL, sizeof(ALL)) == 0) {
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
             DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
         DIMINUTO_CRITICAL_SECTION_END;
@@ -166,7 +166,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 diminuto_log_mask_t diminuto_log_importmask(const char * path)
 {
     diminuto_path_t filename = { '\0', };
-    char buffer[64] = { '\0', };
+    char buffer[83] = { '\0', }; /* "0377\n", "255\n", "0xff\n", "~0\n" */
     FILE * fp = (FILE *)0;
     long value = -1;
     char * end = (char *)0;
@@ -174,24 +174,30 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
     if (path == (const char *)0) {
         const char * home = (const char *)0;
         if ((home = getenv("HOME")) == (const char *)0) {
-            home = "";
+            home = ""; /* Not an error (but unlikely). */
         }
         (void)snprintf(filename, sizeof(filename), "%s/%s", home, diminuto_log_mask_path);
         path = filename;
     }
 
-    if ((fp = fopen(path, "r")) == (FILE *)0) {
+    /*
+     * Note that fgets(3) includes the newline at the end of the data.
+     */
+
+    if (diminuto_fs_type(path) == DIMINUTO_FS_TYPE_NONE) {
+        /* Do nothing: not an error. */
+    } else if ((fp = fopen(path, "r")) == (FILE *)0) {
         diminuto_perror(path);
-    } else if (fgets(buffer, sizeof(buffer), fp) == (char *)0) {
+    } else if (fgets(buffer, sizeof(buffer) - 1, fp) == (char *)0) {
         diminuto_perror(path);
-    } else if (strcmp(buffer, ALL) == 0) {
+    } else if (strncmp(buffer, ALL, sizeof(ALL) - 1) == 0) {
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
             DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
         DIMINUTO_CRITICAL_SECTION_END;
     } else if ((value = strtol(buffer, &end, 0)) < 0) {
         errno = ERANGE;
         diminuto_perror(buffer);
-    } else if ((end == (char *)0) || ((*end != '\0') && (*end != '\n'))) {
+    } else if ((end == (char *)0) || ((*end != '\0') && (*end != '\n') && (*end != ' ') && (*end != '\t') && (*end != '#'))) {
         errno = EINVAL;
         diminuto_perror(buffer);
     } else {

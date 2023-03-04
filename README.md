@@ -251,6 +251,7 @@ Similarly, environmental variables have qualified names like
 * buffer_pool - buffer pool used with buffer feature.
 * coherentsection - macros to implement scoped acquire/release memory barriers.
 * heap - dependency injection mechanism for malloc/free alternatives.
+* new - new, delete, ctor, dtor macros for memory allocation and freeing.
 * pool - manage a pool of objects from which they can be allocated and freed.
 * well - like the pool feature but maintains requested alignment of objects.
 
