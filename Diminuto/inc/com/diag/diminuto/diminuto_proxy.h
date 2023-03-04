@@ -20,6 +20,8 @@
  * allocation and free functions.
  */
 
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+
 #define DIMINUTO_PROXY_POINTER_H(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
     typedef _RESULT_ (diminuto_##_PROXY_##_##_FUNCTION_##_func_t) _PARAMETERS_; \
     extern diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_func_p;
@@ -33,9 +35,12 @@
 #define DIMINUTO_PROXY_SETTOR_C(_PROXY_, _FUNCTION_, _RESULT_, _PARAMETERS_, _RETURN_, _ARGUMENTS_) \
     diminuto_##_PROXY_##_##_FUNCTION_##_func_t * diminuto_##_PROXY_##_##_FUNCTION_##_set(diminuto_##_PROXY_##_##_FUNCTION_##_func_t * now) \
     { \
+        static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; \
         diminuto_##_PROXY_##_##_FUNCTION_##_func_t * was; \
-        was = diminuto_##_PROXY_##_##_FUNCTION_##_func_p; \
-        diminuto_##_PROXY_##_##_FUNCTION_##_func_p = (now != (diminuto_##_PROXY_##_##_FUNCTION_##_func_t *)0) ? now : &_FUNCTION_; \
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex); \
+            was = diminuto_##_PROXY_##_##_FUNCTION_##_func_p; \
+            diminuto_##_PROXY_##_##_FUNCTION_##_func_p = (now != (diminuto_##_PROXY_##_##_FUNCTION_##_func_t *)0) ? now : &_FUNCTION_; \
+        DIMINUTO_CRITICAL_SECTION_END; \
         return was; \
     }
 
