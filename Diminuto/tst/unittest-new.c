@@ -43,6 +43,20 @@ static inline int * int_ctor(int * that) { return that; }
 
 static inline int * int_dtor(int * that) { return that; }
 
+typedef thing_t * thing2_t;
+
+static thing2_t * thing2_t_ctor(thing2_t * that)
+{
+    *that = diminuto_new(thing_t, 0xa5a5a5a5, 0.125, '*');
+    return that;
+}
+
+static thing2_t * thing2_t_dtor(thing2_t * that)
+{
+    diminuto_delete(thing_t, *that);
+    return that;
+}
+
 int main(int argc, char * argv[])
 {
     SETLOGMASK();
@@ -89,6 +103,31 @@ int main(int argc, char * argv[])
         ASSERT(integerp != (int *)0);
         ASSERT(*integerp == 0);
         diminuto_delete(int, integerp);
+    }
+
+    {
+        thing2_t thing2;
+        thing2_t * thing2p;
+
+        thing2p = diminuto_ctor(thing2_t, &thing2);
+        ASSERT(thing2p == &thing2);
+        ASSERT((*thing2p)->integer == 0xa5a5a5a5);
+        ASSERT((*thing2p)->floatingpoint == 0.125);
+        ASSERT((*thing2p)->character == '*');
+        ASSERT((*thing2p)->pointer != (void *)0);
+        diminuto_dtor(thing2_t, thing2p);
+    }
+
+    {
+        thing2_t * thing2p;
+
+        thing2p = diminuto_new(thing2_t);
+        ASSERT(thing2p != (thing2_t *)0);
+        ASSERT((*thing2p)->integer == 0xa5a5a5a5);
+        ASSERT((*thing2p)->floatingpoint == 0.125);
+        ASSERT((*thing2p)->character == '*');
+        ASSERT((*thing2p)->pointer != (void *)0);
+        diminuto_delete(thing2_t, thing2p);
     }
 
     EXIT();
