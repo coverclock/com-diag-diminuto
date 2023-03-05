@@ -489,9 +489,9 @@ see ```man journalctl``` on how to access it.
 
 # Dependencies
 
-Most of my Intel and ARM development systems are Debian-based, so the
+Most of my Intel, ARM, and RISC-V development systems are Debian-based, so the
 command line examples I show below use the ```apt```  package manager. A
-few, like my RISC-V development system, are Fedora-based, so on those
+few, like one of my RISC-V development systems, are Fedora-based, so on those
 I use the ```dnf``` package manager.
 
 ## Libraries
