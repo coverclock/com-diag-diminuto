@@ -46,8 +46,8 @@ features that depend on hardware facilities like GPIO.
 Here are just a few examples of the capabilities, or "features", that
 Diminuto provides:
 
-* smart logging that automatically determines whether to write to standard error or to the system log (```diminuto_log```);
-* simple unit test framework (```diminuto_unittest```) and programmatic enabling of core dumps (```diminuto_core```).
+* smart logging that automatically determines whether to write to standard error or to the system log, and to control log levels by extracting the log mask from the environment or from a file (```diminuto_log```);
+* simple unit test framework (```diminuto_unittest```) and programmatic enabling of core dumps (```diminuto_core```);
 * POSIX mutual exclusion semaphores (```diminuto_mutex```), condition variables (```diminuto_condition```), and threads (```diminuto_thread```);
 * POSIX timers (```diminuto_timer```);
 * socket interprocess communication (IPC) using IPv4 (```diminuto_ipc4```), IPv6 (```diminuto_ipc6```), or UNIX domain (local) paths (```diminuto_ipcl```), using streams, datagrams, or (for local sockets) packets (messages).
