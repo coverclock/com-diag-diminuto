@@ -65,6 +65,8 @@ int main(int argc, char * argv[])
         thing_t thing;
         thing_t * thingp;
 
+        TEST();
+
         thingp = diminuto_ctor(thing_t, &thing, 0xc0edbabe, 0.25, '?');
         ASSERT(thingp == &thing);
         ASSERT(thingp->integer == 0xc0edbabe);
@@ -72,10 +74,14 @@ int main(int argc, char * argv[])
         ASSERT(thingp->character == '?');
         ASSERT(thingp->pointer != (void *)0);
         diminuto_dtor(thing_t, thingp);
+
+        STATUS();
     }
 
     {
         thing_t * thingp;
+
+        TEST();
 
         thingp = diminuto_new(thing_t, 0xdeadbeef, 0.5, '!');
         ASSERT(thingp != (thing_t *)0);
@@ -84,30 +90,42 @@ int main(int argc, char * argv[])
         ASSERT(thingp->character == '!');
         ASSERT(thingp->pointer != (void *)0);
         diminuto_delete(thing_t, thingp);
+
+        STATUS();
     }
 
     {
         int integer = 0x5a5a5a5a;
         int * integerp;
 
+        TEST();
+
         integerp = diminuto_ctor(int, &integer);
         ASSERT(integerp == &integer);
         ASSERT(*integerp == 0x5a5a5a5a);
         diminuto_dtor(int, integerp);
+
+        STATUS();
     }
 
     {
         int * integerp;
 
+        TEST();
+
         integerp = diminuto_new(int);
         ASSERT(integerp != (int *)0);
         ASSERT(*integerp == 0);
         diminuto_delete(int, integerp);
+
+        STATUS();
     }
 
     {
         thing2_t thing2;
         thing2_t * thing2p;
+
+        TEST();
 
         thing2p = diminuto_ctor(thing2_t, &thing2);
         ASSERT(thing2p == &thing2);
@@ -116,10 +134,14 @@ int main(int argc, char * argv[])
         ASSERT((*thing2p)->character == '*');
         ASSERT((*thing2p)->pointer != (void *)0);
         diminuto_dtor(thing2_t, thing2p);
+
+        STATUS();
     }
 
     {
         thing2_t * thing2p;
+
+        TEST();
 
         thing2p = diminuto_new(thing2_t);
         ASSERT(thing2p != (thing2_t *)0);
@@ -128,6 +150,8 @@ int main(int argc, char * argv[])
         ASSERT((*thing2p)->character == '*');
         ASSERT((*thing2p)->pointer != (void *)0);
         diminuto_delete(thing2_t, thing2p);
+
+        STATUS();
     }
 
     EXIT();

@@ -173,6 +173,18 @@ riscv64-linux-gnu-gcc-11
 riscv64-linux-gnu    
 little-endian    
 
+sifive,u74-mc rv64imafdc sv39    
+riscv64 x4    
+Debian GNU/Linux    
+Linux 5.15.0-starfive    
+gcc (Debian 11.3.0-3) 11.3.0    
+ldd (Debian GLIBC 2.33-7) 2.33    
+GNU ld (GNU Binutils for Debian) 2.38.50.20220615    
+GNU Make 4.3    
+riscv64-linux-gnu-gcc-11    
+riscv64-linux-gnu    
+little-endian    
+
 # Features
 
 Given a feature I call Foo (or foo),
