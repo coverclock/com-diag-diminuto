@@ -735,7 +735,7 @@ imported from a text file (which can be done dynamically at run-time)
 using the function ```diminuto_log_importmask()```. The default path
 of the file is ```${HOME}/.com_diag_diminuto_log_mask```. For either
 mechanism, the mask value is coded as an octal, decimal, or hexadecimal
-number in C-style format, e.g.  ```0377```, ```255```, or ```0xff```. As
+numeric string in C-style format, e.g.  ```0377```, ```255```, or ```0xff```. As
 a special case, the value ```~0``` generates a mask that enables all
 log levels. A good example of setting and importing a log mask can be
 found in the ```stagecoach``` application found in the Codex repository.
