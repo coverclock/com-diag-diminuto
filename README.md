@@ -69,7 +69,7 @@ Diminuto provides:
 * vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
 * macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
-* macros to support typed object constructors and destructors, and to implement new and delete operations that call them;
+* macros to support typed object constructors and destructors and to implement the operations (```diminuto_new``` and ```diminuto_delete```) that call them;
 * support for integrating C into a C++ code base (```diminuto_cxxcapi``` pronounced "sexy API");
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
 * an architecture and design that simplifies using Diminuto in an existing code base, and for using multiple Digital Aggregates repositories in the same project.
