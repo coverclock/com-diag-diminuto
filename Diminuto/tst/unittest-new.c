@@ -43,18 +43,32 @@ static inline int * int_ctor(int * that) { return that; }
 
 static inline int * int_dtor(int * that) { return that; }
 
-typedef thing_t * thing2_t;
+typedef struct Thing2 {
+    thing_t * thing;
+} thing2_t;
 
 static thing2_t * thing2_t_ctor(thing2_t * that)
 {
-    *that = diminuto_new(thing_t, 0xa5a5a5a5, 0.125, '*');
+    that->thing = diminuto_new(thing_t, 0xa5a5a5a5, 0.125, '*');
     return that;
 }
 
 static thing2_t * thing2_t_dtor(thing2_t * that)
 {
-    diminuto_delete(thing_t, *that);
+    diminuto_delete(thing_t, that->thing);
     return that;
+}
+
+typedef thing_t thing3_t;
+
+static thing3_t * thing3_t_ctor(thing3_t * that)
+{
+    return (thing3_t *)diminuto_ctor(thing_t, (thing_t *)that, 0xa5a5a5a5, 0.125, '*');
+}
+
+static thing3_t * thing3_t_dtor(thing3_t * that)
+{
+    return diminuto_dtor(thing_t, (thing_t *)that);
 }
 
 int main(int argc, char * argv[])
@@ -129,10 +143,11 @@ int main(int argc, char * argv[])
 
         thing2p = diminuto_ctor(thing2_t, &thing2);
         ASSERT(thing2p == &thing2);
-        ASSERT((*thing2p)->integer == 0xa5a5a5a5);
-        ASSERT((*thing2p)->floatingpoint == 0.125);
-        ASSERT((*thing2p)->character == '*');
-        ASSERT((*thing2p)->pointer != (void *)0);
+        ASSERT(thing2p->thing != (thing_t *)0);
+        ASSERT(thing2p->thing->integer == 0xa5a5a5a5);
+        ASSERT(thing2p->thing->floatingpoint == 0.125);
+        ASSERT(thing2p->thing->character == '*');
+        ASSERT(thing2p->thing->pointer != (void *)0);
         diminuto_dtor(thing2_t, thing2p);
 
         STATUS();
@@ -145,11 +160,45 @@ int main(int argc, char * argv[])
 
         thing2p = diminuto_new(thing2_t);
         ASSERT(thing2p != (thing2_t *)0);
-        ASSERT((*thing2p)->integer == 0xa5a5a5a5);
-        ASSERT((*thing2p)->floatingpoint == 0.125);
-        ASSERT((*thing2p)->character == '*');
-        ASSERT((*thing2p)->pointer != (void *)0);
+        ASSERT(thing2p->thing != (thing_t *)0);
+        ASSERT(thing2p->thing->integer == 0xa5a5a5a5);
+        ASSERT(thing2p->thing->floatingpoint == 0.125);
+        ASSERT(thing2p->thing->character == '*');
+        ASSERT(thing2p->thing->pointer != (void *)0);
         diminuto_delete(thing2_t, thing2p);
+
+        STATUS();
+    }
+
+    {
+        thing3_t thing3;
+        thing3_t * thing3p;
+
+        TEST();
+
+        thing3p = diminuto_ctor(thing3_t, &thing3);
+        ASSERT(thing3p == &thing3);
+        ASSERT(thing3p->integer == 0xa5a5a5a5);
+        ASSERT(thing3p->floatingpoint == 0.125);
+        ASSERT(thing3p->character == '*');
+        ASSERT(thing3p->pointer != (void *)0);
+        diminuto_dtor(thing3_t, thing3p);
+
+        STATUS();
+    }
+
+    {
+        thing3_t * thing3p;
+
+        TEST();
+
+        thing3p = diminuto_new(thing3_t);
+        ASSERT(thing3p != (thing3_t *)0);
+        ASSERT(thing3p->integer == 0xa5a5a5a5);
+        ASSERT(thing3p->floatingpoint == 0.125);
+        ASSERT(thing3p->character == '*');
+        ASSERT(thing3p->pointer != (void *)0);
+        diminuto_delete(thing3_t, thing3p);
 
         STATUS();
     }
