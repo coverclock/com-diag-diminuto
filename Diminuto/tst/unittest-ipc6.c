@@ -521,6 +521,158 @@ int main(int argc, char * argv[])
     }
 
     {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+
+        value = !0;
+        rc = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_IPV6 IPV6_V6ONLY"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+
+        value = !0;
+        rc = setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_IP IPV6_V6ONLY"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+
+        value = AF_INET;
+        rc = setsockopt(sock, IPPROTO_TCP, IPV6_ADDRFORM, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_TCP IPV6_ADDRFORM"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+        int value;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+
+        value = AF_INET;
+        rc = setsockopt(sock, IPPROTO_UDP, IPV6_ADDRFORM, &value, sizeof(value));
+        if (rc < 0) { diminuto_perror("setsockopt: IPPROTO_UDP IPV6_ADDRFORM"); }
+        EXPECT(rc >= 0);
+
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, 0);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, 0);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_STREAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc6_stream_set_ipv6toipv4(sock);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+        int rc;
+
+        TEST();
+
+        sock = socket(AF_INET6, SOCK_DGRAM, 0);
+        ASSERT(sock >= 0);
+        rc = diminuto_ipc6_datagram_set_ipv6toipv4(sock);
+        EXPECT(rc >= 0);
+        rc = close(sock);
+        EXPECT(rc >= 0);
+
+        STATUS();
+    }
+
+    {
         int fd;
         diminuto_ipv6_t address6 = TEST_INIT;
         diminuto_port_t port = TEST_PORT;

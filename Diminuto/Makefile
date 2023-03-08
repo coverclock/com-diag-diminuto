@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	93# API changes that may require that applications be modified.
 MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1018,6 +1018,9 @@ unittest:	logger
 criticalsection:	unittest
 	unittest-criticalsection
 
+# Remarkably, unittest-ipc-endpoint works without the kernel's ipv6 module
+# even though it it tests IPv6 addresses; those tests apparently only depend
+# on the C library.
 sanity:	criticalsection
 	unittest-absolute
 	unittest-arraytype
@@ -1115,7 +1118,6 @@ extended:	longer
 	unittest-ipc-ancillary
 	unittest-modulator
 	unittest-muxl
-	unittest-mux-eventloop
 	unittest-oneshot1
 	unittest-oneshot2
 	unittest-oneshot3
@@ -1123,7 +1125,6 @@ extended:	longer
 	unittest-periodic2
 	unittest-periodic3
 	unittest-polll
-	unittest-poll-eventloop
 	unittest-readerwriter -d -f
 	unittest-time
 	unittest-time-cost
@@ -1169,7 +1170,6 @@ gnuish:
 	unittest-mutex
 	unittest-poll4
 	unittest-polll
-	unittest-poll-eventloop
 	unittest-renameat2
 	unittest-thread
 
@@ -1275,15 +1275,15 @@ sockets4:
 	unittest-ipc-ancillary
 	unittest-ipc-scattergather
 	unittest-mux4
-	unittest-mux-eventloop
 	unittest-poll4
-	unittest-poll-eventloop
 	unittest-scattergather4
 
 sockets6:
 	unittest-ipc6
 	unittest-mux6
+	unittest-mux-eventloop
 	unittest-poll6
+	unittest-poll-eventloop
 	unittest-scattergather6
 
 sockets:	sockets0 socketsl sockets4 sockets6
@@ -1329,6 +1329,9 @@ brackets:
 
 # Some unit tests get run more than once, perhaps with different options.
 reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
+
+# Same as reassuring but without tests that depend on the ipv6 kernel module.
+reassuring4:	sanity sockets4 threads signals gnuish logging timers renameat2 cxxcapi extended
 
 tagging:	reassuring geologic
 
