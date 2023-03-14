@@ -516,6 +516,31 @@ The command ```modprobe ipv6``` also worked albeit non-persistently.
     sudo su
     echo "ipv6" >> /etc/modules
 
+On the StarFive VisionFive 2 SBC, IPv6 isn't even built as a module.
+I had to build a new kernel.
+
+## SCTP
+
+Stream Control Transmission Protocol (SCTP) is a bit of an outlier in the
+pantheon of internet protocols build on top of IP. While I would expect
+all internet routers to support TCP and UDP, I wouldn't expect hardly
+any to support SCTP, a protocol built for Signaling System 7 (SS7), a
+protocol stack used in the Public Switched Telephone Network (PSTN).
+SCTP combines the fixed boundry size of UDP with the guaranteed delivery
+of TCP, making it ideal for many messaging applications.
+
+While SCTP can't be relied upon in the public internet, I find it useful
+when used with Unix domain (Local) sockets, and its use is supported by
+Diminuto. The protocol is enabled in the Linux kernel by default on the
+Raspberry Pi. But when I rebuilt the Vision 2 kernel to enable IPv6,
+I had to also enable SCTP, which, like IPv6, was not enabled by default.
+
+If it was built as a module, these commands might work.
+
+    sudo modprobe sctp
+    sudo su
+    echo "sctp" >> /etc/modules
+
 ## Tool Chain
 
 On some distros I had to install gcc, g++, and make.
