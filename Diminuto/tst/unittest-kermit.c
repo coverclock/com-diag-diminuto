@@ -14,6 +14,26 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <ctype.h>
+#include <string.h>
+
+static uint16_t dacruz(const void * buffer, size_t length)
+{
+    uint16_t crc = 0;
+    uint16_t qq;
+    uint8_t cc;
+    uint8_t * pp;
+
+    pp = (uint8_t *)buffer;
+    while (length--) {
+        cc = *(pp++);
+        qq = (crc ^ cc) & 15;
+        crc = (crc / 16) ^ (qq * 4225);
+        qq = (crc ^ (cc / 16)) & 15;
+        crc = (crc / 16) ^ (qq * 4225);
+    }
+
+    return crc;
+}
 
 int main(void)
 {
@@ -61,6 +81,106 @@ int main(void)
         STATUS();
     }
 
+    {
+        uint16_t crc;
+        uint16_t ref;
+
+        TEST();
+
+        crc = 0;
+        crc = diminuto_kermit_16((void *)0, 0, crc);
+        ref = dacruz((void *)0, 0);
+        CHECKPOINT("0: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+        EXPECT(crc == 0x0000);
+
+        STATUS();
+    }
+
+    {
+        uint16_t crc;
+        uint16_t ref;
+        const char data[] = { 'A', };
+
+        TEST();
+
+        crc = 0;
+        crc = diminuto_kermit_16(data, sizeof(data), crc);
+        ref = dacruz(data, sizeof(data));
+        CHECKPOINT("A: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+        EXPECT(crc == 0x538d);
+
+        STATUS();
+    }
+
+    {
+        uint16_t crc;
+        uint16_t ref;
+        const char data[] = "123456789";
+
+        TEST();
+
+        crc = 0;
+        crc = diminuto_kermit_16(data, strlen(data), crc);
+        ref = dacruz(data, strlen(data));
+        CHECKPOINT("123456789: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+        EXPECT(crc == 0x2189);
+
+        STATUS();
+    }
+
+    {
+        uint16_t crc;
+        uint16_t ref;
+        const char data[] = {
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        };
+
+        TEST();
+
+        ASSERT(sizeof(data) == 256);
+        crc = 0;
+        crc = diminuto_kermit_16(data, sizeof(data), crc);
+        ref = dacruz(data, sizeof(data));
+        CHECKPOINT("A*: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+        EXPECT(crc == 0xe7e2);
+
+        STATUS();
+    }
+
     EXIT();
 }
-

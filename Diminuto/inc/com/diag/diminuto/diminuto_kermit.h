@@ -6,7 +6,7 @@
  * @file
  * @copyright Copyright 2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Computes the 16-bit Kermit Cyclic Redundancy Check
+ * @brief Computes the 16-bit Kermit Cyclic Redundancy Check.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -14,8 +14,8 @@
  *
  * The Kermit feature computes the 16-bit CRC used in the original Kermit
  * file transfer utility and sometimes referred to as CRC-16 or CRC-CCITT.
- * Note that when used in HDLC-Lite, the CRC is computed across the
- * UNESCAPED data.
+ * or some combination of the two. Note that when used in HDLC-Lite, the
+ * CRC is computed across the UNESCAPED data.
  *
  * REFERENCES
  *
@@ -25,6 +25,10 @@
  * <https://chromium.googlesource.com/external/github.com/openthread/openthread/+/refs/tags/upstream/thread-reference-20180926/doc/spinel-protocol-src/spinel-framing.md>
  *
  * <https://www.etlcpp.com/doxygen/group__crc16__kermit.html>
+ *
+ * <https://crccalc.com>
+ *
+ * <http://sanity-free.org/147/standard_crc16_and_crc16_kermit_implementation_in_csharp.html>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
