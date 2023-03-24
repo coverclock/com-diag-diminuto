@@ -16,6 +16,9 @@
 #include <ctype.h>
 #include <string.h>
 
+/*
+ * da Cruz, p. 29, "6.3 Alternate Block Check Types"
+ */
 static uint16_t dacruz(const void * buffer, size_t length)
 {
     uint16_t crc = 0;
@@ -178,6 +181,47 @@ int main(void)
         CHECKPOINT("A*: CRC=0x%x REF=0x%x\n", crc, ref);
         EXPECT(crc == ref);
         EXPECT(crc == 0xe7e2);
+
+        STATUS();
+    }
+
+    {
+        uint16_t crc;
+        uint16_t ref;
+        uint8_t data[256];
+        uint8_t atad[256];
+        int ii;
+
+        TEST();
+
+        for (ii = 0; ii < sizeof(data); ++ii) {
+            data[ii] = ii;
+        }
+
+        crc = 0;
+        crc = diminuto_kermit_16(data, sizeof(data), crc);
+        ref = dacruz(data, sizeof(data));
+        CHECKPOINT("N: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+
+        crc = 0;
+        for (ii = 0; ii < sizeof(data); ++ii) {
+            crc = diminuto_kermit_16(&(data[ii]), 1, crc);
+        }
+        CHECKPOINT("N>: CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
+
+        for (ii = 0; ii < sizeof(atad); ++ii) {
+            atad[ii] = sizeof(atad) - ii - 1;
+        }
+
+        crc = 0;
+        for (ii = sizeof(data) - 1; ii >= 0; --ii) {
+            crc = diminuto_kermit_16(&(data[ii]), 1, crc);
+        }
+        ref = dacruz(atad, sizeof(atad));
+        CHECKPOINT("N< CRC=0x%x REF=0x%x\n", crc, ref);
+        EXPECT(crc == ref);
 
         STATUS();
     }
