@@ -49,9 +49,20 @@ static const uint16_t TABLE[] =  {
 
 void diminuto_kermit_crc2chars(uint16_t crc, unsigned char * ap, unsigned char * bp, unsigned char * cp)
 {
-    *ap = diminuto_kermit_tochar((crc >> 12) & 0x000f);
-    *bp = diminuto_kermit_tochar((crc >>  6) & 0x003f);
-    *cp = diminuto_kermit_tochar((crc >>  0) & 0x003f);
+    *ap = diminuto_kermit_tochar((crc >> 12) & 0x0f);
+    *bp = diminuto_kermit_tochar((crc >>  6) & 0x3f);
+    *cp = diminuto_kermit_tochar((crc >>  0) & 0x3f);
+}
+
+uint16_t diminuto_kermit_chars2crc(unsigned char aa, unsigned char bb, unsigned char cc)
+{
+    uint16_t crc = 0;
+
+    crc  = diminuto_kermit_unchar(aa) << 12;
+    crc |= diminuto_kermit_unchar(bb) <<  6;
+    crc |= diminuto_kermit_unchar(cc) <<  0;
+
+    return crc;
 }
 
 uint16_t diminuto_kermit_16(const void * buffer, size_t length, uint16_t crc)

@@ -43,16 +43,17 @@ int main(void)
     SETLOGMASK();
 
     {
-        uint8_t dd;
+        uint16_t dd;
+        uint16_t rr;
         unsigned char cc;
-        uint8_t rr;
 
         TEST();
 
         for (dd = 0; dd <= 94; ++dd) {
             cc = diminuto_kermit_tochar(dd);
-            ASSERT(cc == (dd + 32));
+            ASSERT(cc == (' ' + dd));
             ASSERT(isprint(cc));
+            ASSERT(diminuto_kermit_charisvalid(cc));
             rr = diminuto_kermit_unchar(cc);
             ASSERT(dd == rr);
         }
@@ -61,10 +62,39 @@ int main(void)
     }
 
     {
+        unsigned int ii;
+        unsigned char cc;
+
+        for (ii = '\0'; ii < ' '; ++ii) {
+            cc = ii;
+            ASSERT(!diminuto_kermit_charisvalid(cc));
+        }
+
+        for (ii = ' '; ii <= '~'; ++ii) {
+            cc = ii;
+            ASSERT(diminuto_kermit_charisvalid(cc));
+        }
+
+        for (ii = 127; ii <= 255; ++ii) {
+            cc = ii;
+            ASSERT(!diminuto_kermit_charisvalid(cc));
+        }
+    }
+
+    {
+        TEST();
+
+        ASSERT(diminuto_kermit_chars2crc(' ', ' ', ' ') == 0);
+
+        STATUS();
+    }
+
+    {
         uint16_t crc;
-        unsigned char a;
-        unsigned char b;
-        unsigned char c;
+        uint16_t rev;
+        unsigned char aa;
+        unsigned char bb;
+        unsigned char cc;
 
         TEST();
 
@@ -73,13 +103,115 @@ int main(void)
          */
 
         crc = 0154321;
-        a = '\0';
-        b = '\0';
-        c = '\0';
-        diminuto_kermit_crc2chars(crc, &a, &b, &c);
-        ASSERT(a == '-');
-        ASSERT(b == 'C');
-        ASSERT(c == '1');
+        aa = '\0';
+        bb = '\0';
+        cc = '\0';
+        diminuto_kermit_crc2chars(crc, &aa, &bb, &cc);
+        ASSERT(aa == '-');
+        ASSERT(bb == 'C');
+        ASSERT(cc == '1');
+        rev = diminuto_kermit_chars2crc(aa, bb, cc);
+        ASSERT(crc == rev);
+
+        STATUS();
+    }
+
+    {
+        unsigned int ii;
+        uint16_t crc;
+        uint16_t rev;
+        unsigned char aa;
+        unsigned char bb;
+        unsigned char cc;
+        unsigned char na = 0xff;
+        unsigned char nb = 0xff;
+        unsigned char nc = 0xff;
+        unsigned char xa = 0x00;
+        unsigned char xb = 0x00;
+        unsigned char xc = 0x00;
+
+        TEST();
+
+        for (ii = 0; ii <= 0xffff; ++ii) {
+            crc = ii;
+            aa = '\0';
+            bb = '\0';
+            cc = '\0';
+            diminuto_kermit_crc2chars(crc, &aa, &bb, &cc);
+            ASSERT(isprint(aa));
+            ASSERT(isprint(bb));
+            ASSERT(isprint(cc));
+            ASSERT(diminuto_kermit_charisvalid(aa));
+            ASSERT(diminuto_kermit_charisvalid(bb));
+            ASSERT(diminuto_kermit_charisvalid(cc));
+            if (aa < na) { na = aa; }
+            if (bb < nb) { nb = bb; }
+            if (cc < nc) { nc = cc; }
+            if (aa > xa) { xa = aa; }
+            if (bb > xb) { xb = bb; }
+            if (cc > xc) { xc = cc; }
+            rev = diminuto_kermit_chars2crc(aa, bb, cc);
+            ASSERT(crc == rev);
+        }
+
+        /*
+         * a: (0x00 + 0x20) == ' ' .. (0x0f + 0x20) == 0x2f == '/'
+         * b: (0x00 + 0x20) == ' ' .. (0x3f + 0x20) == 0x5f == '_'
+         * c: (0x00 + 0x20) == ' ' .. (0x3f + 0x20) == 0x5f == '_'
+         */
+
+        CHECKPOINT("a:[0x%x..0x%x] b:[0x%x..0x%x] c:[0x%x..0x%x]\n", na, xa, nb, xb, nc, xc);
+        ASSERT(na == ' ');
+        ASSERT(nb == ' ');
+        ASSERT(nc == ' ');
+        ASSERT(xa == '/');
+        ASSERT(xb == '_');
+        ASSERT(xc == '_');
+
+        STATUS();
+
+    }
+
+    {
+        unsigned char aa;
+        unsigned char bb;
+        unsigned char cc;
+        unsigned char dd;
+        unsigned char ee;
+        unsigned char ff;
+        uint16_t crc;
+        uint16_t rev;
+
+        TEST();
+
+        for (aa = ' '; aa <= '/'; ++aa) {
+            for (bb = ' '; bb <= '_'; ++bb) {
+                for (cc = ' '; cc <= '_'; ++cc) {
+                    ASSERT(isprint(aa));
+                    ASSERT(isprint(bb));
+                    ASSERT(isprint(cc));
+                    ASSERT(diminuto_kermit_charisvalid(aa));
+                    ASSERT(diminuto_kermit_charisvalid(bb));
+                    ASSERT(diminuto_kermit_charisvalid(cc));
+                    crc = diminuto_kermit_chars2crc(aa, bb, cc);
+                    dd = '\0';
+                    ee = '\0';
+                    ff = '\0';
+                    diminuto_kermit_crc2chars(crc, &dd, &ee, &ff);
+                    ASSERT(isprint(dd));
+                    ASSERT(isprint(ee));
+                    ASSERT(isprint(ff));
+                    ASSERT(diminuto_kermit_charisvalid(dd));
+                    ASSERT(diminuto_kermit_charisvalid(ee));
+                    ASSERT(diminuto_kermit_charisvalid(ff));
+                    ASSERT(aa == dd);
+                    ASSERT(bb == ee);
+                    ASSERT(cc == ff);
+                    rev = diminuto_kermit_chars2crc(dd, ee, ff);
+                    ASSERT(crc == rev);
+                }
+            }
+        }
 
         STATUS();
     }

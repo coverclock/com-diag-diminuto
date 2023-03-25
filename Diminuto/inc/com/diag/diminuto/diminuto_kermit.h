@@ -37,8 +37,8 @@
  * @param bb is the binary number.
  * @return a printable character.
  */
-static inline unsigned char diminuto_kermit_tochar(uint8_t bb) {
-    return (bb + (unsigned)' ');
+static inline unsigned char diminuto_kermit_tochar(uint16_t bb) {
+    return (bb + ' ');
 }
 
 /**
@@ -47,12 +47,21 @@ static inline unsigned char diminuto_kermit_tochar(uint8_t bb) {
  * @param pp is the printable character.
  * @return the binary number.
  */
-static inline uint8_t diminuto_kermit_unchar(unsigned char pp) {
-    return (pp - (unsigned)' ');
+static inline uint16_t diminuto_kermit_unchar(unsigned char pp) {
+    return (pp - ' ');
 }
 
 /**
- * Compute a sixteen-bit Kermit CRC into three printable characters to be
+ * Returns true if the CRC character is in the valid range.
+ * @param pp is the printable character.
+ * @return true if the character is valid, false otherwise.
+ */
+static inline bool diminuto_kermit_charisvalid(unsigned char pp) {
+    return ((' ' <= pp) && (pp <= '~'));
+}
+
+/**
+ * Convert a sixteen-bit Kermit CRC into three printable characters to be
  * appended to the outgoing data packet.
  * @param crc is the running sixteen-bit CRC.
  * @param ap points to the first character to be emitted.
@@ -60,6 +69,17 @@ static inline uint8_t diminuto_kermit_unchar(unsigned char pp) {
  * @param cp points to the third character to be emitted.
  */
 extern void diminuto_kermit_crc2chars(uint16_t crc, unsigned char * ap, unsigned char * bp, unsigned char * cp);
+
+/**
+ * Convert the three printable characters encoding the CRC of a incoming data
+ * packet into a sixteen-bit Kermit CRC. The three characters are assumed to be
+ * valid. If they are not, wackiness ensues.
+ * @param aa is the first (highest order) character.
+ * @param bb is the second (middle order) character.
+ * @param cc is the third (lowest order) character.
+ * @return a sixteen-bit Kermit CRC. 
+ */
+extern uint16_t diminuto_kermit_chars2crc(unsigned char aa, unsigned char bb, unsigned char cc);
 
 /**
  * Compute the running sixteen bit Kermit CRC. Requires a 16-bit integer
