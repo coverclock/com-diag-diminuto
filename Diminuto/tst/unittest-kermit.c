@@ -173,6 +173,38 @@ int main(void)
     }
 
     {
+        unsigned int ii;
+        uint16_t crc;
+        uint16_t rev;
+        unsigned char aa;
+        unsigned char bb;
+        unsigned char cc;
+
+        TEST();
+
+        for (ii = 0; ii <= 0xffff; ++ii) {
+            crc = ii;
+            aa = '\0';
+            bb = '\0';
+            cc = '\0';
+            diminuto_kermit_crc2chars(crc, &aa, &bb, &cc);
+            ASSERT(isprint(aa));
+            ASSERT(isprint(bb));
+            ASSERT(isprint(cc));
+            ASSERT(diminuto_kermit_charisvalid(aa));
+            ASSERT(diminuto_kermit_charisvalid(bb));
+            ASSERT(diminuto_kermit_charisvalid(cc));
+            ASSERT((' ' <= aa) && (aa <= '/'));
+            ASSERT((' ' <= bb) && (bb <= '_'));
+            ASSERT((' ' <= cc) && (cc <= '_'));
+            rev = diminuto_kermit_chars2crc(aa, bb, cc);
+            ASSERT(crc == rev);
+        }
+
+        STATUS();
+    }
+
+    {
         unsigned char aa;
         unsigned char bb;
         unsigned char cc;
