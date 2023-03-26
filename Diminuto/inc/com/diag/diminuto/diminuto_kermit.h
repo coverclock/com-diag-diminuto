@@ -12,8 +12,8 @@
  * @details
  * The Kermit feature computes the 16-bit CRC used in the original Kermit
  * file transfer utility and sometimes referred to as CRC-16 or CRC-CCITT.
- * or some combination of the two. Note that when used in HDLC-Lite, the
- * CRC is computed across the UNESCAPED data.
+ * or some combination of the two. Note that when used in the Framer featre,
+ * the CRC is computed across the UNESCAPED data.
  *
  * REFERENCES
  *
