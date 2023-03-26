@@ -15,6 +15,10 @@
  * packets on a serial port. The Framer uses an HDLC-like mechanism to do
  * this.
  *
+ * control-octet transparency
+ * byte stuffing
+ * octet stuffing
+ *
  * REFERENCES
  */
 
@@ -35,8 +39,18 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',
     DIMINUTO_FRAMER_STATE_FINAL             = 'F',
     DIMINUTO_FRAMER_STATE_ERROR             = 'E',
+    DIMINUTO_FRAMER_STATE_ABORT             = 'A',
     DIMINUTO_FRAMER_STATE_IDLE              = 'I',
 } diminuto_framer_state_t;
+
+typedef enum DiminutoFramerToken {
+    DIMINUTO_FRAMER_TOKEN_START             = '~',      /* 0x7e */
+    DIMINUTO_FRAMER_TOKEN_ESCAPE            = '}',      /* 0x7d */
+    DIMINUTO_FRAMER_TOKEN_XON               = '\x11',   /* 0x11 */
+    DIMINUTO_FRAMER_TOKEN_XOFF              = '\x13',   /* 0x13 */
+    DIMINUTO_FRAMER_TOKEN_RESERVED          = '\xf8',   /* 0xf8 */
+    DIMINUTO_FRAMER_TOKEN_XOR               = ' ',      /* 0x20 */
+} diminuto_framer_token_t;
 
 extern ssize_t diminuto_framer_writer(FILE * fp, const void * buffer, size_t length);
 
