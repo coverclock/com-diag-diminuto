@@ -18,6 +18,20 @@
  * Level Data Link Control protocol. (But it is in no way otherwise compatible
  * with HDLC.)
  *
+ * A Framer frame looks like this.
+ *
+ * FLAG LENGTH[4] FLETCHERA FLETCHERB PAYLOAD ... PAYLOAD CRC1 CRC2 CRC3
+ *
+ * FLAG: HDLC flag token.
+ *
+ * LENGTH: four-octet payload length field in network byte order.
+ *
+ * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets.
+ *
+ * PAYLOAD: payload.
+ *
+ * CRC1 CRC2 CRC3: Kermit-16 cyclic redundancy check octets.
+ *
  * REFERENCES
  *
  * <https://chromium.googlesource.com/external/github.com/openthread/openthread/+/refs/tags/upstream/thread-reference-20180926/doc/spinel-protocol-src/spinel-framing.md>
@@ -31,8 +45,8 @@
 typedef uint32_t diminuto_framer_length_t;
 
 typedef enum DiminutoFramerState {
-    DIMINUTO_FRAMER_STATE_INIT              = 'N',
-    DIMINUTO_FRAMER_STATE_FLAG              = 'S',
+    DIMINUTO_FRAMER_STATE_INIT              = 'I',
+    DIMINUTO_FRAMER_STATE_FLAG              = 'F',
     DIMINUTO_FRAMER_STATE_LENGTH1           = 'W',
     DIMINUTO_FRAMER_STATE_LENGTH1_ESCAPED   = 'w',
     DIMINUTO_FRAMER_STATE_LENGTH2           = 'X',
@@ -51,9 +65,9 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_CRC2              = '2',
     DIMINUTO_FRAMER_STATE_CRC3              = '3',
     DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',
-    DIMINUTO_FRAMER_STATE_FINAL             = 'F',
-    DIMINUTO_FRAMER_STATE_ABORT             = 'E',
-    DIMINUTO_FRAMER_STATE_IDLE              = 'I',
+    DIMINUTO_FRAMER_STATE_FINAL             = 'L',
+    DIMINUTO_FRAMER_STATE_ABORT             = 'T',
+    DIMINUTO_FRAMER_STATE_IDLE              = 'D',
 } diminuto_framer_state_t;
 
 typedef enum DiminutoFramerToken {
