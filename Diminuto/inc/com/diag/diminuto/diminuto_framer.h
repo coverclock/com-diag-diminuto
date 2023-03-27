@@ -45,7 +45,7 @@
 typedef uint32_t diminuto_framer_length_t;
 
 typedef enum DiminutoFramerState {
-    DIMINUTO_FRAMER_STATE_INIT              = 'I',
+    DIMINUTO_FRAMER_STATE_INITIALIZE        = '*',  /* Initialize. */
     DIMINUTO_FRAMER_STATE_FLAG              = 'F',
     DIMINUTO_FRAMER_STATE_LENGTH1           = 'W',
     DIMINUTO_FRAMER_STATE_LENGTH1_ESCAPED   = 'w',
@@ -64,10 +64,11 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_CRC1              = '1',
     DIMINUTO_FRAMER_STATE_CRC2              = '2',
     DIMINUTO_FRAMER_STATE_CRC3              = '3',
-    DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',
-    DIMINUTO_FRAMER_STATE_FINAL             = 'L',
-    DIMINUTO_FRAMER_STATE_ABORT             = 'T',
-    DIMINUTO_FRAMER_STATE_IDLE              = 'D',
+    DIMINUTO_FRAMER_STATE_COMPLETE          = '+',  /* Frame complete. */
+    DIMINUTO_FRAMER_STATE_FINAL             = '.',  /* End of file. */
+    DIMINUTO_FRAMER_STATE_ABORT             = '!',  /* Abort received. */
+    DIMINUTO_FRAMER_STATE_FAILED            = '?',  /* CS or CRC failed. */
+    DIMINUTO_FRAMER_STATE_IDLE              = '-',  /* Idle. */
 } diminuto_framer_state_t;
 
 typedef enum DiminutoFramerToken {

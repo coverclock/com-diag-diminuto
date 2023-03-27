@@ -29,7 +29,7 @@ int main(void)
     }
 
     {
-        diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_INIT;
+        diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_INITIALIZE;
 
         TEST();
 
@@ -39,7 +39,7 @@ int main(void)
          */
 
         switch (state) {
-        case DIMINUTO_FRAMER_STATE_INIT:                break;
+        case DIMINUTO_FRAMER_STATE_INITIALIZE:          break;
         case DIMINUTO_FRAMER_STATE_FLAG:                break;
         case DIMINUTO_FRAMER_STATE_LENGTH1:             break;
         case DIMINUTO_FRAMER_STATE_LENGTH1_ESCAPED:     break;
@@ -61,6 +61,7 @@ int main(void)
         case DIMINUTO_FRAMER_STATE_COMPLETE:            break;
         case DIMINUTO_FRAMER_STATE_FINAL:               break;
         case DIMINUTO_FRAMER_STATE_ABORT:               break;
+        case DIMINUTO_FRAMER_STATE_FAILED:              break;
         case DIMINUTO_FRAMER_STATE_IDLE:                break;
         }
 

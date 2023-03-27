@@ -54,7 +54,7 @@ diminuto_framer_state_t diminuto_framer_reader(FILE * fp, void * buffer, size_t 
 
         switch (state) {
     
-        case DIMINUTO_FRAMER_STATE_INIT:
+        case DIMINUTO_FRAMER_STATE_INITIALIZE:
             *herep = (uint8_t *)lengthp;
             *lengthp = 0;
             *crcp = 0;
@@ -194,6 +194,10 @@ hton32
             break;
     
         case DIMINUTO_FRAMER_STATE_ABORT:
+            action = DONE;
+            break;
+    
+        case DIMINUTO_FRAMER_STATE_FAILED:
             action = DONE;
             break;
     
