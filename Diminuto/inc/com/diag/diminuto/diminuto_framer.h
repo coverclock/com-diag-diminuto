@@ -24,13 +24,13 @@
  *
  * FLAG: HDLC flag token.
  *
- * LENGTH: four-octet payload length field in network byte order.
+ * LENGTH: four-octet payload length field in network byte order plus necessary escape characters.
  *
- * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets.
+ * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets plus necessary escape characters.
  *
- * PAYLOAD: payload.
+ * PAYLOAD[LENGTH]: payload (plus necessary escape characters).
  *
- * CRC1 CRC2 CRC3: Kermit-16 cyclic redundancy check octets.
+ * CRC[3]: Kermit-16 cyclic redundancy check octets.
  *
  * REFERENCES
  *
@@ -39,54 +39,70 @@
  * <https://en.wikipedia.org/wiki/High-Level_Data_Link_Control>
  */
 
-#include "com/diag/diminuto/diminuto_types.h"
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 typedef uint32_t diminuto_framer_length_t;
 
 typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_INITIALIZE        = '*',  /* Initialize. */
-    DIMINUTO_FRAMER_STATE_FLAG              = 'F',
-    DIMINUTO_FRAMER_STATE_LENGTH1           = 'W',
-    DIMINUTO_FRAMER_STATE_LENGTH1_ESCAPED   = 'w',
-    DIMINUTO_FRAMER_STATE_LENGTH2           = 'X',
-    DIMINUTO_FRAMER_STATE_LENGTH2_ESCAPED   = 'x',
-    DIMINUTO_FRAMER_STATE_LENGTH3           = 'Y',
-    DIMINUTO_FRAMER_STATE_LENGTH3_ESCAPED   = 'y',
-    DIMINUTO_FRAMER_STATE_LENGTH4           = 'Z',
-    DIMINUTO_FRAMER_STATE_LENGTH4_ESCAPED   = 'z',
-    DIMINUTO_FRAMER_STATE_FLETCHERA         = 'A',
-    DIMINUTO_FRAMER_STATE_FLETCHERA_ESCAPED = 'a',
-    DIMINUTO_FRAMER_STATE_FLETCHERB         = 'B',
-    DIMINUTO_FRAMER_STATE_FLETCHERB_ESCAPED = 'b',
-    DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',
-    DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',
-    DIMINUTO_FRAMER_STATE_CRC1              = '1',
-    DIMINUTO_FRAMER_STATE_CRC2              = '2',
-    DIMINUTO_FRAMER_STATE_CRC3              = '3',
+    DIMINUTO_FRAMER_STATE_FLAG              = '~',  /* Waiting for flag. */
+    DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
+    DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
+    DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
+    DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED  = 'f',  /* Escaped checksum[2]. */
+    DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
+    DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload. */
+    DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
     DIMINUTO_FRAMER_STATE_COMPLETE          = '+',  /* Frame complete. */
     DIMINUTO_FRAMER_STATE_FINAL             = '.',  /* End of file. */
     DIMINUTO_FRAMER_STATE_ABORT             = '!',  /* Abort received. */
     DIMINUTO_FRAMER_STATE_FAILED            = '?',  /* CS or CRC failed. */
+    DIMINUTO_FRAMER_STATE_OVERFLOW          = '>',  /* Buffer overflow. */
     DIMINUTO_FRAMER_STATE_IDLE              = '-',  /* Idle. */
 } diminuto_framer_state_t;
 
-typedef enum DiminutoFramerToken {
-    DIMINUTO_FRAMER_TOKEN_FLAG              = '~',      /* 0x7e */
-    DIMINUTO_FRAMER_TOKEN_ESCAPE            = '}',      /* 0x7d */
-    DIMINUTO_FRAMER_TOKEN_XON               = '\x11',   /* 0x11 */
-    DIMINUTO_FRAMER_TOKEN_XOFF              = '\x13',   /* 0x13 */
-    DIMINUTO_FRAMER_TOKEN_RESERVED          = '\xf8',   /* 0xf8 */
-} diminuto_framer_token_t;
+typedef struct DiminutoFramer {
+    FILE * stream;
+    void * buffer;
+    uint8_t * here;
+    size_t size;
+    size_t limit;
+    diminuto_framer_length_t length;
+    diminuto_framer_state_t state;
+    uint16_t crc;
+    uint8_t a;
+    uint8_t b;
+    char sum[2];
+    char check[3];
+} diminuto_framer_t;
 
-typedef enum DiminutoFramerConstant {
-    DIMINUTO_FRAMER_CONSTANT_XOR            = ' ',      /* 0x20 */
-} diminuto_framer_constant_t;
+static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, FILE * stream, void * buffer, size_t size) {
+    that->stream = stream;
+    that->buffer = buffer;
+    that->size = size;
+    that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+    return that;
+}
 
-extern ssize_t diminuto_framer_writer(FILE * fp, const void * data, size_t length);
+static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * that) {
+    that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+    return that;
+}
 
-extern ssize_t diminuto_framer_cancel(FILE * fp);
+static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that) {
+    return (diminuto_framer_t *)0;
+}
 
-extern diminuto_framer_state_t diminuto_framer_reader(FILE * fp, void * buffer, size_t size, diminuto_framer_state_t state, uint8_t ** herep, size_t * lengthp, uint16_t * crcp);
+static inline ssize_t diminuto_framer_length(diminuto_framer_t * that) {
+    return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->length : -1;
+}
+
+extern ssize_t diminuto_framer_writer(diminuto_framer_t * that, const void * data, size_t length);
+
+extern ssize_t diminuto_framer_cancel(diminuto_framer_t * that);
+
+extern diminuto_framer_state_t diminuto_framer_reader(diminuto_framer_t * that);
 
 #endif

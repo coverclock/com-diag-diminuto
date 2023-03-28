@@ -52,12 +52,30 @@ static inline uint16_t diminuto_kermit_unchar(unsigned char pp) {
 }
 
 /**
- * Returns true if the CRC character is in the valid range.
+ * Returns true if the 1st CRC character is in the valid range.
  * @param pp is the printable character.
  * @return true if the character is valid, false otherwise.
  */
-static inline bool diminuto_kermit_charisvalid(unsigned char pp) {
-    return ((' ' <= pp) && (pp <= '~'));
+static inline bool diminuto_kermit_firstisvalid(unsigned char pp) {
+    return ((' ' <= pp) && (pp <= '/'));
+}
+
+/**
+ * Returns true if the 2nd CRC character is in the valid range.
+ * @param pp is the printable character.
+ * @return true if the character is valid, false otherwise.
+ */
+static inline bool diminuto_kermit_secondisvalid(unsigned char pp) {
+    return ((' ' <= pp) && (pp <= '_'));
+}
+
+/**
+ * Returns true if the 3nd CRC character is in the valid range.
+ * @param pp is the printable character.
+ * @return true if the character is valid, false otherwise.
+ */
+static inline bool diminuto_kermit_thirdisvalid(unsigned char pp) {
+    return diminuto_kermit_secondisvalid(pp);
 }
 
 /**

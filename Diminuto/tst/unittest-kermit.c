@@ -49,11 +49,49 @@ int main(void)
 
         TEST();
 
-        for (dd = 0; dd <= 94; ++dd) {
+        for (dd = 0x00; dd <= 0x0f; ++dd) {
             cc = diminuto_kermit_tochar(dd);
             ASSERT(cc == (' ' + dd));
             ASSERT(isprint(cc));
-            ASSERT(diminuto_kermit_charisvalid(cc));
+            ASSERT(diminuto_kermit_firstisvalid(cc));
+            rr = diminuto_kermit_unchar(cc);
+            ASSERT(dd == rr);
+        }
+
+        STATUS();
+    }
+
+    {
+        uint16_t dd;
+        uint16_t rr;
+        unsigned char cc;
+
+        TEST();
+
+        for (dd = 0x00; dd <= 0x3f; ++dd) {
+            cc = diminuto_kermit_tochar(dd);
+            ASSERT(cc == (' ' + dd));
+            ASSERT(isprint(cc));
+            ASSERT(diminuto_kermit_secondisvalid(cc));
+            rr = diminuto_kermit_unchar(cc);
+            ASSERT(dd == rr);
+        }
+
+        STATUS();
+    }
+
+    {
+        uint16_t dd;
+        uint16_t rr;
+        unsigned char cc;
+
+        TEST();
+
+        for (dd = 0x00; dd <= 0x3f; ++dd) {
+            cc = diminuto_kermit_tochar(dd);
+            ASSERT(cc == (' ' + dd));
+            ASSERT(isprint(cc));
+            ASSERT(diminuto_kermit_thirdisvalid(cc));
             rr = diminuto_kermit_unchar(cc);
             ASSERT(dd == rr);
         }
@@ -67,17 +105,30 @@ int main(void)
 
         for (ii = '\0'; ii < ' '; ++ii) {
             cc = ii;
-            ASSERT(!diminuto_kermit_charisvalid(cc));
+            ASSERT(!diminuto_kermit_firstisvalid(cc));
+            ASSERT(!diminuto_kermit_secondisvalid(cc));
+            ASSERT(!diminuto_kermit_thirdisvalid(cc));
         }
 
-        for (ii = ' '; ii <= '~'; ++ii) {
+        for (ii = ' '; ii <= '/'; ++ii) {
             cc = ii;
-            ASSERT(diminuto_kermit_charisvalid(cc));
+            ASSERT(diminuto_kermit_firstisvalid(cc));
+            ASSERT(diminuto_kermit_secondisvalid(cc));
+            ASSERT(diminuto_kermit_thirdisvalid(cc));
         }
 
-        for (ii = 127; ii <= 255; ++ii) {
+        for (ii = '0'; ii <= '_'; ++ii) {
             cc = ii;
-            ASSERT(!diminuto_kermit_charisvalid(cc));
+            ASSERT(!diminuto_kermit_firstisvalid(cc));
+            ASSERT(diminuto_kermit_secondisvalid(cc));
+            ASSERT(diminuto_kermit_thirdisvalid(cc));
+        }
+
+        for (ii = '`'; ii <= 255; ++ii) {
+            cc = ii;
+            ASSERT(!diminuto_kermit_firstisvalid(cc));
+            ASSERT(!diminuto_kermit_secondisvalid(cc));
+            ASSERT(!diminuto_kermit_thirdisvalid(cc));
         }
     }
 
@@ -141,9 +192,9 @@ int main(void)
             ASSERT(isprint(aa));
             ASSERT(isprint(bb));
             ASSERT(isprint(cc));
-            ASSERT(diminuto_kermit_charisvalid(aa));
-            ASSERT(diminuto_kermit_charisvalid(bb));
-            ASSERT(diminuto_kermit_charisvalid(cc));
+            ASSERT(diminuto_kermit_firstisvalid(aa));
+            ASSERT(diminuto_kermit_secondisvalid(bb));
+            ASSERT(diminuto_kermit_thirdisvalid(cc));
             if (aa < na) { na = aa; }
             if (bb < nb) { nb = bb; }
             if (cc < nc) { nc = cc; }
@@ -191,9 +242,9 @@ int main(void)
             ASSERT(isprint(aa));
             ASSERT(isprint(bb));
             ASSERT(isprint(cc));
-            ASSERT(diminuto_kermit_charisvalid(aa));
-            ASSERT(diminuto_kermit_charisvalid(bb));
-            ASSERT(diminuto_kermit_charisvalid(cc));
+            ASSERT(diminuto_kermit_firstisvalid(aa));
+            ASSERT(diminuto_kermit_secondisvalid(bb));
+            ASSERT(diminuto_kermit_thirdisvalid(cc));
             ASSERT((' ' <= aa) && (aa <= '/'));
             ASSERT((' ' <= bb) && (bb <= '_'));
             ASSERT((' ' <= cc) && (cc <= '_'));
@@ -222,9 +273,9 @@ int main(void)
                     ASSERT(isprint(aa));
                     ASSERT(isprint(bb));
                     ASSERT(isprint(cc));
-                    ASSERT(diminuto_kermit_charisvalid(aa));
-                    ASSERT(diminuto_kermit_charisvalid(bb));
-                    ASSERT(diminuto_kermit_charisvalid(cc));
+                    ASSERT(diminuto_kermit_firstisvalid(aa));
+                    ASSERT(diminuto_kermit_secondisvalid(bb));
+                    ASSERT(diminuto_kermit_thirdisvalid(cc));
                     crc = diminuto_kermit_chars2crc(aa, bb, cc);
                     dd = '\0';
                     ee = '\0';
@@ -233,9 +284,9 @@ int main(void)
                     ASSERT(isprint(dd));
                     ASSERT(isprint(ee));
                     ASSERT(isprint(ff));
-                    ASSERT(diminuto_kermit_charisvalid(dd));
-                    ASSERT(diminuto_kermit_charisvalid(ee));
-                    ASSERT(diminuto_kermit_charisvalid(ff));
+                    ASSERT(diminuto_kermit_firstisvalid(dd));
+                    ASSERT(diminuto_kermit_secondisvalid(ee));
+                    ASSERT(diminuto_kermit_thirdisvalid(ff));
                     ASSERT(aa == dd);
                     ASSERT(bb == ee);
                     ASSERT(cc == ff);

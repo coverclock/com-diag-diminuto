@@ -23,7 +23,7 @@ int main(void)
     {
         TEST();
 
-        ASSERT(sizeof(diminuto_framer_length_t) == 4);
+        ASSERT(sizeof(diminuto_framer_length_t) == sizeof(uint32_t));
 
         STATUS();
     }
@@ -41,27 +41,18 @@ int main(void)
         switch (state) {
         case DIMINUTO_FRAMER_STATE_INITIALIZE:          break;
         case DIMINUTO_FRAMER_STATE_FLAG:                break;
-        case DIMINUTO_FRAMER_STATE_LENGTH1:             break;
-        case DIMINUTO_FRAMER_STATE_LENGTH1_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_LENGTH2:             break;
-        case DIMINUTO_FRAMER_STATE_LENGTH2_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_LENGTH3:             break;
-        case DIMINUTO_FRAMER_STATE_LENGTH3_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_LENGTH4:             break;
-        case DIMINUTO_FRAMER_STATE_LENGTH4_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_FLETCHERA:           break;
-        case DIMINUTO_FRAMER_STATE_FLETCHERA_ESCAPED:   break;
-        case DIMINUTO_FRAMER_STATE_FLETCHERB:           break;
-        case DIMINUTO_FRAMER_STATE_FLETCHERB_ESCAPED:   break;
+        case DIMINUTO_FRAMER_STATE_LENGTH:              break;
+        case DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED:      break;
+        case DIMINUTO_FRAMER_STATE_FLETCHER:            break;
+        case DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED:    break;
         case DIMINUTO_FRAMER_STATE_PAYLOAD:             break;
         case DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_CRC1:                break;
-        case DIMINUTO_FRAMER_STATE_CRC2:                break;
-        case DIMINUTO_FRAMER_STATE_CRC3:                break;
+        case DIMINUTO_FRAMER_STATE_KERMIT:              break;
         case DIMINUTO_FRAMER_STATE_COMPLETE:            break;
         case DIMINUTO_FRAMER_STATE_FINAL:               break;
         case DIMINUTO_FRAMER_STATE_ABORT:               break;
         case DIMINUTO_FRAMER_STATE_FAILED:              break;
+        case DIMINUTO_FRAMER_STATE_OVERFLOW:            break;
         case DIMINUTO_FRAMER_STATE_IDLE:                break;
         }
 
