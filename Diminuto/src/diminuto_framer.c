@@ -211,6 +211,7 @@ diminuto_framer_state_t diminuto_framer_reader(diminuto_framer_t * that)
         case LENGTH:
             *(that->here++) = ch;
             --(that->limit);
+            (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
             that->length = ntohl(that->length);
             that->here = (uint8_t *)&(that->sum);
             that->limit = sizeof(that->sum);
@@ -234,6 +235,7 @@ diminuto_framer_state_t diminuto_framer_reader(diminuto_framer_t * that)
         case PAYLOAD:
             *(that->here++) = ch;
             --(that->limit);
+            that->crc = diminuto_kermit_16(that->buffer, that->length, 0);
             that->here = (uint8_t *)&(that->check);
             that->limit = sizeof(that->check);
             break;
