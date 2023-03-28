@@ -39,9 +39,14 @@
  * <https://en.wikipedia.org/wiki/High-Level_Data_Link_Control>
  */
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
 
 typedef uint32_t diminuto_framer_length_t;
 
@@ -64,7 +69,6 @@ typedef enum DiminutoFramerState {
 } diminuto_framer_state_t;
 
 typedef struct DiminutoFramer {
-    FILE * stream;
     void * buffer;
     uint8_t * here;
     size_t size;
@@ -78,15 +82,13 @@ typedef struct DiminutoFramer {
     char check[3];
 } diminuto_framer_t;
 
-static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, FILE * stream, void * buffer, size_t size) {
-    that->stream = stream;
+/*******************************************************************************
+ * CTOR, DTOR, AND RETOR
+ ******************************************************************************/
+
+static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size) {
     that->buffer = buffer;
     that->size = size;
-    that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
-    return that;
-}
-
-static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * that) {
     that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
     return that;
 }
@@ -95,14 +97,46 @@ static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that)
     return (diminuto_framer_t *)0;
 }
 
+static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * that) {
+    that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+    return that;
+}
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+static inline bool diminuto_framer_done(diminuto_framer_t * that) {
+        switch (that->state) {
+        case DIMINUTO_FRAMER_STATE_COMPLETE:
+        case DIMINUTO_FRAMER_STATE_FINAL:
+        case DIMINUTO_FRAMER_STATE_ABORT:
+        case DIMINUTO_FRAMER_STATE_FAILED:
+        case DIMINUTO_FRAMER_STATE_OVERFLOW:
+            return true;
+        default:
+            return false;
+        }
+}
+
 static inline ssize_t diminuto_framer_length(diminuto_framer_t * that) {
     return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->length : -1;
 }
 
-extern ssize_t diminuto_framer_writer(diminuto_framer_t * that, const void * data, size_t length);
+/*******************************************************************************
+ * STATE MACHINE
+ ******************************************************************************/
 
-extern ssize_t diminuto_framer_cancel(diminuto_framer_t * that);
+extern diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token);
 
-extern diminuto_framer_state_t diminuto_framer_reader(diminuto_framer_t * that);
+/*******************************************************************************
+ * READERS AND WRITERS
+ ******************************************************************************/
+
+extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
+
+extern ssize_t diminuto_framer_cancel(FILE * stream);
+
+extern diminuto_framer_state_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
 
 #endif
