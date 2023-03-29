@@ -13,10 +13,12 @@
  * THIS IS A WORK IN PROGRESS
  * The Framer feature provies a mechanism for framing outgoing and incoming
  * packets on a serial port. The Framer uses an HDLC-like mechanism referred
- * to as control-octet transparenty (a.k.a. byte stuffing, or octet stuffing)
- * to do this. It also uses the same control octet characters as the High
- * Level Data Link Control protocol. (But it is in no way otherwise compatible
- * with HDLC.)
+ * to as control-octet transparency (a.k.a. byte stuffing, or octet stuffing)
+ * to do this. It uses the same control octet characters as the High Level
+ * Data Link Control protocol (but it is in no way otherwise compatible
+ * with HDLC).
+ *
+ * EXAMPLE
  *
  * A Framer frame looks like this.
  *
@@ -28,7 +30,7 @@
  *
  * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets plus necessary escape characters.
  *
- * PAYLOAD[LENGTH]: payload (plus necessary escape characters).
+ * PAYLOAD[LENGTH]: payload plus necessary escape characters.
  *
  * CRC[3]: Kermit-16 cyclic redundancy check octets.
  *
@@ -43,6 +45,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 /*******************************************************************************
  * TYPES
@@ -69,17 +72,17 @@ typedef enum DiminutoFramerState {
 } diminuto_framer_state_t;
 
 typedef struct DiminutoFramer {
-    void * buffer;
-    uint8_t * here;
-    size_t size;
-    size_t limit;
-    diminuto_framer_length_t length;
-    diminuto_framer_state_t state;
-    uint16_t crc;
-    uint8_t a;
-    uint8_t b;
-    char sum[2];
-    char check[3];
+    void * buffer;                      /* Pointer to application buffer. */
+    uint8_t * here;                     /* Pointer to next unused octet. */
+    size_t size;                        /* Size of application buffer. */
+    size_t limit;                       /* Remaining octets in current field. */
+    diminuto_framer_length_t length;    /* Received packet length. */
+    diminuto_framer_state_t state;      /* FSM state. */
+    uint16_t crc;                       /* Kermit cyclic redundancy check. */
+    uint8_t a;                          /* Fletcher checksum A. */
+    uint8_t b;                          /* Fletcher checksum B. */
+    char sum[2];                        /* Received checksum. */
+    char check[3];                      /* Received cyclic redundancy check. */
 } diminuto_framer_t;
 
 /*******************************************************************************
@@ -87,6 +90,7 @@ typedef struct DiminutoFramer {
  ******************************************************************************/
 
 static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size) {
+    memset(that, 0, sizeof(*that));
     that->buffer = buffer;
     that->size = size;
     that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
@@ -103,15 +107,19 @@ static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * tha
 }
 
 /*******************************************************************************
- * GETTORS
+ * HELPERS
  ******************************************************************************/
 
-static inline ssize_t diminuto_framer_length(diminuto_framer_t * that) {
-    return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->length : -1;
+static inline bool diminuto_framer_complete(const diminuto_framer_t * that) {
+    return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE);
 }
 
-static inline void * diminuto_framer_buffer(diminuto_framer_t * that) {
-    return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->buffer : (void *)0;
+static inline ssize_t diminuto_framer_length(const diminuto_framer_t * that) {
+    return diminuto_framer_complete(that) ? (ssize_t)(that->length) : (ssize_t)(-1);
+}
+
+static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
+    return diminuto_framer_complete(that) ? that->buffer : (void *)0;
 }
 
 /*******************************************************************************

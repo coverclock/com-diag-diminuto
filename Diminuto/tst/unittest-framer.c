@@ -21,9 +21,14 @@ int main(void)
     SETLOGMASK();
 
     {
+        diminuto_framer_t framer;
+
         TEST();
 
         ASSERT(sizeof(diminuto_framer_length_t) == sizeof(uint32_t));
+        ASSERT(sizeof(framer.length) == sizeof(uint32_t));
+        ASSERT(sizeof(framer.sum) == 2);
+        ASSERT(sizeof(framer.check) == 3);
 
         STATUS();
     }
@@ -63,6 +68,38 @@ int main(void)
         TEST();
 
         ASSERT(EOF == -1);
+
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer = { (void*)0, };
+        diminuto_framer_t * ff = (diminuto_framer_t *)0;
+        char buffer[64];
+
+        TEST();
+
+        ff = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        ASSERT(ff == &framer);
+        ASSERT(framer.buffer == buffer);
+        ASSERT(framer.size == sizeof(buffer));
+        ASSERT(framer.state == DIMINUTO_FRAMER_STATE_INITIALIZE);
+
+        framer.state = DIMINUTO_FRAMER_STATE_IDLE;
+        ff = diminuto_framer_reinit(&framer);
+        ASSERT(ff == &framer);
+        ASSERT(framer.buffer == buffer);
+        ASSERT(framer.size == sizeof(buffer));
+        ASSERT(framer.state == DIMINUTO_FRAMER_STATE_INITIALIZE);
+
+        ASSERT(framer.length == 0);
+        framer.length = sizeof(buffer) / 2;
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+fprintf(stderr, "%u %ld\n", framer.length, diminuto_framer_length(&framer));
+        ASSERT(diminuto_framer_length(&framer) == -1);
+        framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
+        ASSERT(diminuto_framer_buffer(&framer) == buffer);
+        ASSERT(diminuto_framer_length(&framer) == (sizeof(buffer) / 2));
 
         STATUS();
     }

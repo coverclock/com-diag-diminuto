@@ -140,11 +140,11 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case DIMINUTO_FRAMER_STATE_PAYLOAD:
         if (ch == ESCAPE) {
             that->state = DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED;
-        } else {
+        } else if (that->limit > 1) {
             action = STORE;
-            if (that->limit <= 1) {
-                that->state = DIMINUTO_FRAMER_STATE_KERMIT;
-            }
+        } else {
+            action = PAYLOAD;
+            that->state = DIMINUTO_FRAMER_STATE_KERMIT;
         }
         break;
 
@@ -153,8 +153,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
         } else {
             ch ^= MASK;
-            action = STORE;
-            if (that->limit <= 1) {
+            if (that->limit > 1) {
+                action = STORE;
+            } else {
+                action = PAYLOAD;
                 that->state = DIMINUTO_FRAMER_STATE_KERMIT;
             }
         }
