@@ -172,7 +172,12 @@ int main(void)
 
         TEST();
 
+        CHECKPOINT("sizeof(DATA)=%zu\n", sizeof(DATA));
         diminuto_dump(stderr, DATA, sizeof(DATA));
+
+        /*
+         * Now I'm going to blow your mind.
+         */
 
         rc = pipe(fd);
         ASSERT(rc == 0);

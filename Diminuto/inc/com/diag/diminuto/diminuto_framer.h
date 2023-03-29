@@ -10,13 +10,12 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * THIS IS A WORK IN PROGRESS
  * The Framer feature provies a mechanism for framing outgoing and incoming
  * packets on a serial port. The Framer uses an HDLC-like mechanism referred
  * to as control-octet transparency (a.k.a. byte stuffing, or octet stuffing)
  * to do this. It uses the same control octet characters as the High Level
- * Data Link Control protocol (but it is in no way otherwise compatible
- * with HDLC).
+ * Data Link Control protocol, but it is in no way otherwise compatible
+ * with HDLC.
  *
  * EXAMPLE
  *
@@ -26,13 +25,15 @@
  *
  * FLAG: HDLC flag token.
  *
- * LENGTH: four-octet payload length field in network byte order plus necessary escape characters.
+ * LENGTH: four-octet payload length field in network byte order plus
+ * necessary HDLC escape tokens.
  *
- * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets plus necessary escape characters.
+ * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets (across LENGTH
+ * in network byte order) plus necessary HDLC escape tokens.
  *
- * PAYLOAD[LENGTH]: payload plus necessary escape characters.
+ * PAYLOAD[LENGTH]: payload plus necessary HDLC escape tokens.
  *
- * CRC[3]: Kermit-16 cyclic redundancy check octets.
+ * CRC[3]: Kermit-16 cyclic redundancy check octets (across unescaped PAYLOAD).
  *
  * REFERENCES
  *
