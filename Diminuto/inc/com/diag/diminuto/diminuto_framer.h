@@ -56,13 +56,13 @@ typedef uint32_t diminuto_framer_length_t;
 typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_INITIALIZE        = '*',  /* Initialize. */
     DIMINUTO_FRAMER_STATE_FLAG              = '~',  /* Waiting for flag. */
-    DIMINUTO_FRAMER_STATE_FLAGS             = '_',  /* Waiting for flag. */
+    DIMINUTO_FRAMER_STATE_FLAGS             = '_',  /* May have more flags. */
     DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
     DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
     DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED  = 'f',  /* Escaped checksum[2]. */
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
-    DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload. */
+    DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload[...]. */
     DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
     DIMINUTO_FRAMER_STATE_COMPLETE          = '+',  /* Frame complete. */
     DIMINUTO_FRAMER_STATE_FINAL             = '.',  /* End of file. */

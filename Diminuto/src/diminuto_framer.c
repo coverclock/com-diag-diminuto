@@ -56,7 +56,7 @@ typedef enum Action {
 
 diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token)
 {
-    char ch = '\0';
+    uint8_t ch = '\0';
     action_t action = SKIP;
     uint16_t crc = 0;
     diminuto_framer_state_t prior = DIMINUTO_FRAMER_STATE_INITIALIZE;
@@ -196,8 +196,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case DIMINUTO_FRAMER_STATE_ABORT:
     case DIMINUTO_FRAMER_STATE_FAILED:
     case DIMINUTO_FRAMER_STATE_OVERFLOW:
-        break;
-
     case DIMINUTO_FRAMER_STATE_IDLE:
         break;
 
@@ -213,6 +211,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case LENGTH:
         *(that->here++) = ch;
         --(that->limit);
+        /*
+         * Must calculate checksum on network byte ordered field so all
+         * architectures see the same value.
+         */
         (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
         that->length = ntohl(that->length);
         that->here = (uint8_t *)&(that->sum);
@@ -396,6 +398,11 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
             break;
         }
         result += nn;
+
+        /*
+         * Must calculate checksum on network byte ordered field so all
+         * architectures see the same value.
+         */
 
         (void)diminuto_fletcher_16(&header, sizeof(header), &(ab[0]), &(ab[1]));
         nn = diminuto_framer_emit(stream, ab, sizeof(ab));

@@ -185,6 +185,7 @@ int main(void)
 
         count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
 
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
@@ -193,12 +194,14 @@ int main(void)
 
         do {
             count = diminuto_framer_reader(source, that);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", count);
         } while (count == 0);
         ASSERT(count > 0);
 
         ASSERT(diminuto_framer_buffer(that) == &buffer);
-        ASSERT(diminuto_framer_length(that) > 0);
-        diminuto_dump(stderr, diminuto_framer_buffer(that), diminuto_framer_length(that));
+        ASSERT((count = diminuto_framer_length(that)) > 0);
+        CHECKPOINT("diminuto_framer_length=%zd\n", count);
+        diminuto_dump(stderr, diminuto_framer_buffer(that), count);
         ASSERT(strcmp(DATA, buffer) == 0);
 
         rc = fclose(source);    
@@ -212,4 +215,3 @@ int main(void)
 
     EXIT();
 }
-

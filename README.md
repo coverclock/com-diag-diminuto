@@ -44,7 +44,7 @@ some of which require a purpose-built hardware test fixture used to validate
 features that depend on hardware facilities like GPIO.
 
 Here are just a few examples of the capabilities, or "features", that
-Diminuto provides:
+Diminuto provides, in no particular order:
 
 * smart logging that automatically determines whether to write to standard error or to the system log, and to control log levels by extracting the log mask from the environment or from a file (```diminuto_log```);
 * simple unit test framework (```diminuto_unittest```) and programmatic enabling of core dumps (```diminuto_core```);
@@ -67,6 +67,7 @@ Diminuto provides:
 * Pulse Width Modulation (PWM) (```diminuto_modulator```);
 * programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
 * vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
+* serial stream framing using HDLC-like byte stuffing (```diminuto_framer```);
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
 * macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
 * macros to support typed object constructors and destructors and to implement the operations (```diminuto_new``` and ```diminuto_delete```) that call them;
@@ -339,6 +340,7 @@ Similarly, environmental variables have qualified names like
 * coherentsection - macros to implement scoped code blocks with acquire/release memory barriers.
 * controller - proportional/integral/derivative (PID) controller.
 * cue - logic level debouncer and edge detector.
+* framer - HDLC-like framing of binary serial streams using byte stuffing.
 * i2c - simplified thread-safe API around Linux I2C API.
 * pin - get and set GPIO pins using the sysfs interface.
 * modulator - software pulse width modulation (PWM) generator.
