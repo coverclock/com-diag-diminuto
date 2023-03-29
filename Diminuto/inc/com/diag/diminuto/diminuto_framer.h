@@ -124,9 +124,11 @@ extern diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that,
  * READERS AND WRITERS
  ******************************************************************************/
 
+extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length);
+
 extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
 
-extern ssize_t diminuto_framer_cancel(FILE * stream);
+extern ssize_t diminuto_framer_abort(FILE * stream);
 
 extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
 

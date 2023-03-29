@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_fletcher.h"
 #include "com/diag/diminuto/diminuto_kermit.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include <errno.h>
 #include <arpa/inet.h>
@@ -24,11 +25,11 @@
  ******************************************************************************/
 
 enum Token {
-    FLAG        = '~',      /* 0x7e */
-    ESCAPE      = '}',      /* 0x7d */
-    XON         = '\x11',   /* 0x11 */
-    XOFF        = '\x13',   /* 0x13 */
-    RESERVED    = '\xf8',   /* 0xf8 */
+    FLAG        = '~',              /* 0x7e */
+    ESCAPE      = '}',              /* 0x7d */
+    XON         = '\x11',           /* 0x11 */
+    XOFF        = '\x13',           /* 0x13 */
+    RESERVED    = (uint8_t)'\xf8',  /* 0xf8 */
 };
 
 enum Mask {
@@ -295,12 +296,129 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
     return result;
 }
 
-ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
+ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
 {
-    return -1;
+    ssize_t result = 0;
+    uint8_t * pp = (uint8_t *)data;
+    uint8_t ch = '\0';
+    int rc = -1;
+
+    while ((length--) > 0) {
+
+        ch = *(pp++);
+
+        switch (ch) {
+        case FLAG:
+        case ESCAPE:
+        case XON:
+        case XOFF:
+        case RESERVED:
+            ch ^= MASK;
+            rc = fputc(ESCAPE, stream);
+            if (rc == EOF) {
+                return EOF;
+            }
+            ++result;
+            break;
+        default:
+            /* Do nothing. */
+            break;
+        }
+
+        rc = fputc(ch, stream);
+        if (rc == EOF) {
+            return EOF;
+        }
+        ++result;
+
+    }
+
+    return result;
 }
 
-ssize_t diminuto_framer_cancel(FILE * stream)
+ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
 {
-    return -1;
+    ssize_t result = 0;
+    diminuto_framer_length_t header = 0;
+    uint8_t ab[] = { 0, 0, };
+    unsigned char abc[] = { ' ', ' ', ' ', '\0', };
+    uint16_t crc = 0;
+    ssize_t nn = 0;
+    int rc = 0;
+
+    do {
+
+        if (length > diminuto_maximumof(diminuto_framer_length_t)) {
+            errno = E2BIG;
+            break;
+        }
+
+        rc = fputc(FLAG, stream);
+        if (rc == EOF) {
+            break;
+        }
+        ++result;
+
+        header = htonl(length);
+        nn = diminuto_framer_emit(stream, &header, sizeof(header));
+        if (nn == EOF) {
+            break;
+        }
+        result += nn;
+
+        (void)diminuto_fletcher_16(&header, sizeof(header), &(ab[0]), &(ab[1]));
+        nn = diminuto_framer_emit(stream, ab, sizeof(ab));
+        if (nn == EOF) {
+            break;
+        }
+        result += nn;
+
+        nn = diminuto_framer_emit(stream, data, length);
+        if (nn == EOF) {
+            break;
+        }
+        result += nn;
+
+        crc = diminuto_kermit_16(data, length, 0);
+        diminuto_kermit_crc2chars(crc, &(abc[0]), &(abc[1]), &(abc[2]));
+        rc = fputs((char *)abc, stream);
+        if (rc == EOF) {
+            break;
+        }
+        result += sizeof(abc) - 1;
+
+        rc = fflush(stream);
+        if (rc == EOF) {
+            break;
+        }
+
+        return result;
+
+    } while (false);
+
+    return EOF;
+}
+
+ssize_t diminuto_framer_abort(FILE * stream)
+{
+    static const uint8_t data[] = { ESCAPE, FLAG, };
+    size_t rc = 0;
+
+    do {
+
+        rc = fwrite(&data, sizeof(data), 1, stream);
+        if (rc != 1) {
+            break;
+        }
+
+        rc = fflush(stream);
+        if (rc == EOF) {
+            break;
+        }
+
+        return sizeof(data);
+
+    } while (false);
+
+    return EOF;
 }
