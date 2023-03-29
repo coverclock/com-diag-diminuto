@@ -103,24 +103,15 @@ static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * tha
 }
 
 /*******************************************************************************
- * HELPERS
+ * GETTORS
  ******************************************************************************/
-
-static inline bool diminuto_framer_done(diminuto_framer_t * that) {
-        switch (that->state) {
-        case DIMINUTO_FRAMER_STATE_COMPLETE:
-        case DIMINUTO_FRAMER_STATE_FINAL:
-        case DIMINUTO_FRAMER_STATE_ABORT:
-        case DIMINUTO_FRAMER_STATE_FAILED:
-        case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            return true;
-        default:
-            return false;
-        }
-}
 
 static inline ssize_t diminuto_framer_length(diminuto_framer_t * that) {
     return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->length : -1;
+}
+
+static inline void * diminuto_framer_buffer(diminuto_framer_t * that) {
+    return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE) ? that->buffer : (void *)0;
 }
 
 /*******************************************************************************
@@ -137,6 +128,6 @@ extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t l
 
 extern ssize_t diminuto_framer_cancel(FILE * stream);
 
-extern diminuto_framer_state_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
+extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
 
 #endif

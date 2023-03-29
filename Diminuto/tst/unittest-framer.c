@@ -59,5 +59,13 @@ int main(void)
         STATUS();
     }
 
+    {
+        TEST();
+
+        ASSERT(EOF == -1);
+
+        STATUS();
+    }
+
     EXIT();
 }

@@ -14,7 +14,9 @@
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
 #include "com/diag/diminuto/diminuto_kermit.h"
+#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_serial.h"
+#include <errno.h>
 #include <arpa/inet.h>
 
 /*******************************************************************************
@@ -38,7 +40,6 @@ enum Mask {
  ******************************************************************************/
 
 typedef enum Action {
-    DONE        = 'D',
     FLETCHER    = 'F',
     KERMIT      = 'K',
     LENGTH      = 'L',
@@ -96,7 +97,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED:
         if (ch == FLAG) {
-            action = DONE;
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
         } else {
             ch ^= MASK;
@@ -124,7 +124,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED:
         if (ch == FLAG) {
-            action = DONE;
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
         } else {
             ch ^= MASK;
@@ -150,7 +149,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED:
         if (ch == FLAG) {
-            action = DONE;
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
         } else {
             ch ^= MASK;
@@ -170,7 +168,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             action = KERMIT;
             that->state = DIMINUTO_FRAMER_STATE_COMPLETE;
         } else {
-            action = DONE;
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
         }
         break;
@@ -180,7 +177,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case DIMINUTO_FRAMER_STATE_ABORT:
     case DIMINUTO_FRAMER_STATE_FAILED:
     case DIMINUTO_FRAMER_STATE_OVERFLOW:
-        action = DONE;
         break;
 
     case DIMINUTO_FRAMER_STATE_IDLE:
@@ -209,10 +205,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-            action = DONE;
         } else if (that->length > that->size) {
             that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
-            action = DONE;
         } else {
             that->here = (uint8_t *)&(that->buffer);
             that->limit = that->size;
@@ -233,11 +227,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         crc = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
         if (crc != that->crc) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-            action = DONE;
         }
-        break;
-
-    case DONE:
         break;
 
     case SKIP:
@@ -252,16 +242,57 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
  * READERS AND WRITERS
  ******************************************************************************/
 
-diminuto_framer_state_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
+ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 {
+    ssize_t result = 0;
     diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_IDLE;
     int fd = -1;
 
-    do {
-        state = diminuto_framer_machine(that, getc(stream));
-    } while ((!diminuto_framer_done(that)) && ((diminuto_file_ready(stream) > 0) || (diminuto_serial_valid(fd = fileno(stream)) && (diminuto_serial_available(fd) > 0))));
+    fd = fileno(stream);
 
-    return state;
+    do {
+
+        state = diminuto_framer_machine(that, fgetc(stream));
+
+        switch (state) {
+
+        case DIMINUTO_FRAMER_STATE_COMPLETE:
+            result = that->length;
+            DIMINUTO_LOG_DEBUG("diminuto_framer@%p(%d): complete [%zd]\n", that, fd, result);
+            if (result == 0) {
+                that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            }
+            break;
+
+        case DIMINUTO_FRAMER_STATE_FINAL:
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p(%d): final\n", that, fd);
+            result = EOF;
+            break;
+
+        case DIMINUTO_FRAMER_STATE_ABORT:
+            DIMINUTO_LOG_NOTICE("diminuto_framer@%p(%d): abort\n", that, fd);
+            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            break;
+
+        case DIMINUTO_FRAMER_STATE_FAILED:
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p(%d): failed\n", that, fd);
+            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            break;
+
+        case DIMINUTO_FRAMER_STATE_OVERFLOW:
+            DIMINUTO_LOG_ERROR("diminuto_framer@%p(%d): overflow\n", that, fd);
+            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            break;
+
+        default:
+            /* Do nothing. */
+            break;
+
+        }
+
+    } while ((result == 0) && ((diminuto_file_ready(stream) > 0) || (diminuto_serial_valid(fd) && (diminuto_serial_available(fd) > 0))));
+
+    return result;
 }
 
 ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
