@@ -56,6 +56,7 @@ typedef uint32_t diminuto_framer_length_t;
 typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_INITIALIZE        = '*',  /* Initialize. */
     DIMINUTO_FRAMER_STATE_FLAG              = '~',  /* Waiting for flag. */
+    DIMINUTO_FRAMER_STATE_FLAGS             = '_',  /* Waiting for flag. */
     DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
     DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
     DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
@@ -98,6 +99,7 @@ static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that,
 }
 
 static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that) {
+    that->state = DIMINUTO_FRAMER_STATE_IDLE;
     return (diminuto_framer_t *)0;
 }
 

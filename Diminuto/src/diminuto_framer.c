@@ -44,8 +44,8 @@ typedef enum Action {
     FLETCHER    = 'F',
     KERMIT      = 'K',
     LENGTH      = 'L',
-    SKIP        = 'X',
     PAYLOAD     = 'P',
+    SKIP        = 'X',
     STORE       = 'S',
 } action_t;
 
@@ -79,14 +79,23 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_FLAG:
         if (ch == FLAG) {
+            that->state = DIMINUTO_FRAMER_STATE_FLAGS;
+        }
+        break;
+
+    case DIMINUTO_FRAMER_STATE_FLAGS:
+        if (ch == FLAG) {
+            /* Do nothing. */
+        } else if (ch == ESCAPE) {
+            that->state = DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED;
+        } else {
+            action = STORE;
             that->state = DIMINUTO_FRAMER_STATE_LENGTH;
         }
         break;
 
     case DIMINUTO_FRAMER_STATE_LENGTH:
-        if (ch == FLAG) {
-            /* Do nothing. */
-        } else if (ch == ESCAPE) {
+        if (ch == ESCAPE) {
             that->state = DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED;
         } else if (that->limit > 1) {
             action = STORE;
@@ -103,6 +112,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             ch ^= MASK;
             if (that->limit > 1) {
                 action = STORE;
+                that->state = DIMINUTO_FRAMER_STATE_LENGTH;
             } else {
                 action = LENGTH;
                 that->state = DIMINUTO_FRAMER_STATE_FLETCHER;
@@ -130,6 +140,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             ch ^= MASK;
             if (that->limit > 1) {
                 action = STORE;
+                that->state = DIMINUTO_FRAMER_STATE_FLETCHER;
             } else {
                 action = FLETCHER;
                 that->state = DIMINUTO_FRAMER_STATE_PAYLOAD;
@@ -155,6 +166,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             ch ^= MASK;
             if (that->limit > 1) {
                 action = STORE;
+                that->state = DIMINUTO_FRAMER_STATE_PAYLOAD;
             } else {
                 action = PAYLOAD;
                 that->state = DIMINUTO_FRAMER_STATE_KERMIT;
@@ -208,6 +220,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
+        } else if (that->length == 0) {
+            that->here = (uint8_t *)&(that->check);
+            that->limit = sizeof(that->check);
+            that->state = DIMINUTO_FRAMER_STATE_KERMIT;
         } else if (that->length > that->size) {
             that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
         } else {
