@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include <errno.h>
+#include <ctype.h>
 #include <arpa/inet.h>
 
 /*******************************************************************************
@@ -58,6 +59,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     char ch = '\0';
     action_t action = SKIP;
     uint16_t crc = 0;
+    diminuto_framer_state_t prior = DIMINUTO_FRAMER_STATE_INITIALIZE;
+
+    prior = that->state;
 
     if (token == EOF) {
         that->state = DIMINUTO_FRAMER_STATE_FINAL;
@@ -227,8 +231,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         } else if (that->length > that->size) {
             that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
         } else {
-            that->here = (uint8_t *)&(that->buffer);
-            that->limit = that->size;
+            that->here = (uint8_t *)(that->buffer);
+            that->limit = that->length;
         }
         break;
 
@@ -254,6 +258,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     }
 
+    if (!that->debug) {
+        /* Do nothing. */
+    } else if (isprint(token)) {
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'[%lu]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+    } else {
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'\\x%x'[%lu]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+    }
+
     return that->state;
 }
 
@@ -266,12 +278,13 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
     ssize_t result = 0;
     diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_IDLE;
     int fd = -1;
+    int ch = EOF;
 
     fd = fileno(stream);
 
     do {
 
-        state = diminuto_framer_machine(that, fgetc(stream));
+        state = diminuto_framer_machine(that, ch = fgetc(stream));
 
         switch (state) {
 
@@ -289,7 +302,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
-            DIMINUTO_LOG_NOTICE("diminuto_framer@%p(%d): abort\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p(%d): abort\n", that, fd);
             that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             break;
 
@@ -299,7 +312,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            DIMINUTO_LOG_ERROR("diminuto_framer@%p(%d): overflow\n", that, fd);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p(%d): overflow\n", that, fd);
             that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             break;
 

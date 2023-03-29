@@ -11,10 +11,12 @@
  */
 
 #include "com/diag/diminuto/diminuto_framer.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(void)
 {
@@ -124,6 +126,7 @@ int main(void)
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAGS);
         state = diminuto_framer_machine(ff, '~');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAGS);
+
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '}');
@@ -156,5 +159,57 @@ int main(void)
         ff = diminuto_framer_fini(&framer);
     }
 
+    {
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t count;
+        diminuto_framer_t framer;
+        diminuto_framer_t * that;
+        char buffer[sizeof(DATA) * 3];
+
+        TEST();
+
+        diminuto_dump(stderr, DATA, sizeof(DATA));
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        ASSERT(count > 0);
+
+        that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+        ASSERT(diminuto_framer_length(&framer) == -1);
+        diminuto_framer_debug(that, true);
+
+        do {
+            count = diminuto_framer_reader(source, that);
+        } while (count == 0);
+        ASSERT(count > 0);
+
+        ASSERT(diminuto_framer_buffer(that) == &buffer);
+        ASSERT(diminuto_framer_length(that) > 0);
+        diminuto_dump(stderr, diminuto_framer_buffer(that), diminuto_framer_length(that));
+        ASSERT(strcmp(DATA, buffer) == 0);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
     EXIT();
 }
+

@@ -84,7 +84,18 @@ typedef struct DiminutoFramer {
     uint8_t b;                          /* Fletcher checksum B. */
     char sum[2];                        /* Received checksum. */
     char check[3];                      /* Received cyclic redundancy check. */
+    bool debug;                         /* Debug on or off. */
 } diminuto_framer_t;
+
+/*******************************************************************************
+ * DEBUG
+ ******************************************************************************/
+
+bool diminuto_framer_debug(diminuto_framer_t * that, bool debug) {
+    bool prior = that->debug;
+    that->debug = debug;
+    return prior;
+}
 
 /*******************************************************************************
  * CTOR, DTOR, AND RETOR
