@@ -51,6 +51,18 @@ typedef enum Action {
 } action_t;
 
 /*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+void streamerror(FILE * stream, const char * label)
+{
+    if (ferror(stream)) {
+        errno = EIO;
+        diminuto_perror(label);
+    }
+}
+
+/*******************************************************************************
  * STATE MACHINE
  ******************************************************************************/
 
@@ -286,21 +298,28 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
     do {
 
-        state = diminuto_framer_machine(that, ch = fgetc(stream));
+        ch = fgetc(stream);
+        if (ch == EOF) {
+            streamerror(stream, "fgetc");
+        }
+
+        state = diminuto_framer_machine(that, ch);
 
         switch (state) {
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
             result = that->length;
-            DIMINUTO_LOG_DEBUG("framer@%p(%d): complete [%zd]\n", that, fd, result);
             if (result == 0) {
+                DIMINUTO_LOG_INFORMATION("framer@%p(%d): empty\n", that, fd);
                 that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            } else {
+                DIMINUTO_LOG_DEBUG("framer@%p(%d): complete [%zd]\n", that, fd, result);
             }
             break;
 
         case DIMINUTO_FRAMER_STATE_FINAL:
-            DIMINUTO_LOG_INFORMATION("framer@%p(%d): final\n", that, fd);
             result = EOF;
+            DIMINUTO_LOG_INFORMATION("framer@%p(%d): final\n", that, fd);
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
@@ -349,6 +368,7 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
             ch ^= MASK;
             rc = fputc(ESCAPE, stream);
             if (rc == EOF) {
+                streamerror(stream, "fputc");
                 return EOF;
             }
             ++result;
@@ -360,6 +380,7 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
 
         rc = fputc(ch, stream);
         if (rc == EOF) {
+            streamerror(stream, "fputc");
             return EOF;
         }
         ++result;
@@ -388,6 +409,7 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
 
         rc = fputc(FLAG, stream);
         if (rc == EOF) {
+            streamerror(stream, "fputc");
             break;
         }
         ++result;
@@ -421,12 +443,14 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
         diminuto_kermit_crc2chars(crc, &(abc[0]), &(abc[1]), &(abc[2]));
         rc = fputs((char *)abc, stream);
         if (rc == EOF) {
+            streamerror(stream, "fputs");
             break;
         }
         result += sizeof(abc) - 1;
 
         rc = fflush(stream);
         if (rc == EOF) {
+            diminuto_perror("fflush");
             break;
         }
 
@@ -451,6 +475,7 @@ ssize_t diminuto_framer_abort(FILE * stream)
 
         rc = fflush(stream);
         if (rc == EOF) {
+            diminuto_perror("fflush");
             break;
         }
 
@@ -473,9 +498,9 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: limit=%zu\n", that, that->limit);
     diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
     diminuto_log_emit("framer@%p: state='%c'\n", that, that->state);
-    diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
     diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
+    diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);
-    diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x]\n", that, that->check[0], that->check[1], that->check[2]);
+    diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x] valid=[%d,%d,%d] crc=0x%4.4x\n", that, that->check[0], that->check[1], that->check[2], diminuto_kermit_firstisvalid(that->check[0]), diminuto_kermit_secondisvalid(that->check[1]), diminuto_kermit_thirdisvalid(that->check[2]), diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]));
     diminuto_log_emit("framer@%p: debug=%d\n", that, that->debug);
 }

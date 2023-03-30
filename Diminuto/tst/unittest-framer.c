@@ -114,6 +114,95 @@ int main(void)
 
     {
         diminuto_framer_t framer;
+
+        TEST();
+
+        framer.state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FLAG;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FLAGS;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_LENGTH;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FLETCHER;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_PAYLOAD;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_KERMIT;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
+        ASSERT(diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FINAL;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_ABORT;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_FAILED;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_OVERFLOW;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_IDLE;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer;
         diminuto_framer_t * ff;
         diminuto_framer_state_t state;
 
@@ -180,6 +269,124 @@ int main(void)
         CHECKPOINT("sizeof(DATA)=%zu\n", sizeof(DATA));
         diminuto_dump(stderr, DATA, sizeof(DATA));
 
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+
+        that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        diminuto_framer_dump(that);
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+        ASSERT(diminuto_framer_length(&framer) == -1);
+        diminuto_framer_debug(that, true);
+
+        do {
+            count = diminuto_framer_reader(source, that);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", count);
+        } while (count == 0);
+        ASSERT(count > 0);
+
+        ASSERT(diminuto_framer_buffer(that) == &buffer);
+        ASSERT((count = diminuto_framer_length(that)) > 0);
+        CHECKPOINT("diminuto_framer_length=%zd\n", count);
+        diminuto_dump(stderr, diminuto_framer_buffer(that), count);
+        ASSERT(strcmp(DATA, buffer) == 0);
+        diminuto_framer_dump(that);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        uint8_t DATA[256];
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t count;
+        diminuto_framer_t framer;
+        diminuto_framer_t * that;
+        char buffer[sizeof(DATA) * 3];
+        int ii;
+
+        TEST();
+
+        for (ii = 0; ii <= sizeof(DATA); ++ii) {
+            DATA[ii] = ii;
+        }
+        CHECKPOINT("sizeof(DATA)=%zu\n", sizeof(DATA));
+        diminuto_dump(stderr, DATA, sizeof(DATA));
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+
+        that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        diminuto_framer_dump(that);
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+        ASSERT(diminuto_framer_length(&framer) == -1);
+        diminuto_framer_debug(that, true);
+
+        do {
+            count = diminuto_framer_reader(source, that);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", count);
+        } while (count == 0);
+        ASSERT(count > 0);
+
+        ASSERT(diminuto_framer_buffer(that) == &buffer);
+        ASSERT((count = diminuto_framer_length(that)) > 0);
+        CHECKPOINT("diminuto_framer_length=%zd\n", count);
+        diminuto_dump(stderr, diminuto_framer_buffer(that), count);
+        ASSERT(memcmp(DATA, buffer, sizeof(DATA)) == 0);
+        diminuto_framer_dump(that);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t count;
+        diminuto_framer_t framer;
+        diminuto_framer_t * that;
+        char buffer[sizeof(DATA) * 3];
+
+        TEST();
+
+        CHECKPOINT("sizeof(DATA)=%zu\n", sizeof(DATA));
+        diminuto_dump(stderr, DATA, sizeof(DATA));
+
         /*
          * Now I'm going to blow your mind.
          */
@@ -192,6 +399,27 @@ int main(void)
 
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
+
+        count = diminuto_framer_abort(sink);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_abort=%zd\n", count);
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        count = diminuto_framer_abort(sink);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_abort=%zd\n", count);
+
+        count = diminuto_framer_writer(sink, (void *)0, 0);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer(empty)=%zd\n", count);
 
         count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
