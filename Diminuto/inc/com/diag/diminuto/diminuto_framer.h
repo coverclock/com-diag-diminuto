@@ -286,7 +286,7 @@ extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t len
  * @param stream points to the output stream.
  * @param data points to the payload to be emitted.
  * @param length is the length of the payload in octets.
- * @param the total number of octets emitted or EOF if an error occurred.
+ * @return the total number of octets emitted or EOF if an error occurred.
  */
 extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
 

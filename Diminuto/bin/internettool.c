@@ -30,8 +30,6 @@
  * internettool -6 -A 2001:470:4b:4e2:8eae:4cff:fef4:40c -u -P 5555
  * internettool -4 -A 192.168.1.237 -u -P 5555
  * internettool -u -E 192.168.1.237:5555
- * internettool -6 -A ::ffff:192.168.1.237 -u -P 5555
- * internettool -u -E [::ffff:192.168.1.237]:5555
  * internettool -A tumbleweed -u -P tumbleweed
  * internettool -E tumbleweed:tumbleweed
  *
