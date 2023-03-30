@@ -373,6 +373,7 @@ int main(void)
 
     {
         static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        static const char TOOBIG[sizeof(DATA) + 1] = { '\0', };
         int fd[2];
         FILE * source;
         FILE * sink;
@@ -380,7 +381,8 @@ int main(void)
         ssize_t count;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
-        char buffer[sizeof(DATA) * 3];
+        char buffer[sizeof(DATA)];
+        int frames;
 
         TEST();
 
@@ -421,33 +423,44 @@ int main(void)
         ASSERT(count > 0);
         CHECKPOINT("diminuto_framer_writer(empty)=%zd\n", count);
 
+        count = diminuto_framer_writer(sink, TOOBIG, sizeof(TOOBIG));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer(toobig)=%zd\n", count);
+
         count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
         CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+
+        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
 
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
         ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
         ASSERT(diminuto_framer_length(&framer) == -1);
-        diminuto_framer_debug(that, true);
 
+        frames = 0;
         do {
             count = diminuto_framer_reader(source, that);
             CHECKPOINT("diminuto_framer_reader=%zd\n", count);
-        } while (count == 0);
-        ASSERT(count > 0);
-
-        ASSERT(diminuto_framer_buffer(that) == &buffer);
-        ASSERT((count = diminuto_framer_length(that)) > 0);
-        CHECKPOINT("diminuto_framer_length=%zd\n", count);
-        diminuto_dump(stderr, diminuto_framer_buffer(that), count);
-        ASSERT(strcmp(DATA, buffer) == 0);
-        diminuto_framer_dump(that);
+            if (count > 0) {
+                ASSERT(diminuto_framer_buffer(that) == &buffer);
+                ASSERT((count = diminuto_framer_length(that)) > 0);
+                CHECKPOINT("diminuto_framer_length=%zd\n", count);
+                diminuto_dump(stderr, diminuto_framer_buffer(that), count);
+                ASSERT(strcmp(DATA, buffer) == 0);
+                diminuto_framer_dump(that);
+                diminuto_framer_reinit(that);
+                ++frames;
+            }
+        } while (count >= 0);
+        ASSERT(frames == 2);
 
         rc = fclose(source);    
-        ASSERT(rc == 0);
-
-        rc = fclose(sink);    
         ASSERT(rc == 0);
 
         STATUS();
