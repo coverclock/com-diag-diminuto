@@ -121,7 +121,7 @@ static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * tha
 }
 
 /*******************************************************************************
- * HELPERS
+ * GETTORS
  ******************************************************************************/
 
 static inline bool diminuto_framer_complete(const diminuto_framer_t * that) {
@@ -153,5 +153,11 @@ extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t l
 extern ssize_t diminuto_framer_abort(FILE * stream);
 
 extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
+
+/*******************************************************************************
+ * DUMPER
+ ******************************************************************************/
+
+extern void diminuto_framer_dump(const diminuto_framer_t * that);
 
 #endif

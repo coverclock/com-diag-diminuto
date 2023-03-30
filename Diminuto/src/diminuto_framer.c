@@ -263,9 +263,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     if (!that->debug) {
         /* Do nothing. */
     } else if (isprint(token)) {
-        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'[%lu]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'[%u]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'\\x%x'[%lu]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'\\x%x'[%u]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
     }
 
     return that->state;
@@ -292,29 +292,29 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
             result = that->length;
-            DIMINUTO_LOG_DEBUG("diminuto_framer@%p(%d): complete [%zd]\n", that, fd, result);
+            DIMINUTO_LOG_DEBUG("framer@%p(%d): complete [%zd]\n", that, fd, result);
             if (result == 0) {
                 that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             }
             break;
 
         case DIMINUTO_FRAMER_STATE_FINAL:
-            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p(%d): final\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("framer@%p(%d): final\n", that, fd);
             result = EOF;
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
-            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p(%d): abort\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("framer@%p(%d): abort\n", that, fd);
             that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
-            DIMINUTO_LOG_WARNING("diminuto_framer@%p(%d): failed\n", that, fd);
+            DIMINUTO_LOG_WARNING("framer@%p(%d): failed\n", that, fd);
             that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            DIMINUTO_LOG_WARNING("diminuto_framer@%p(%d): overflow\n", that, fd);
+            DIMINUTO_LOG_WARNING("framer@%p(%d): overflow\n", that, fd);
             that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
             break;
 
@@ -459,4 +459,23 @@ ssize_t diminuto_framer_abort(FILE * stream)
     } while (false);
 
     return EOF;
+}
+
+/*******************************************************************************
+ * DUMPER
+ ******************************************************************************/
+
+void diminuto_framer_dump(const diminuto_framer_t * that)
+{
+    diminuto_log_emit("framer@%p: buffer=%p\n", that, that->buffer);
+    diminuto_log_emit("framer@%p: here=%p\n", that, that->here);
+    diminuto_log_emit("framer@%p: size=%zu\n", that, that->size);
+    diminuto_log_emit("framer@%p: limit=%zu\n", that, that->limit);
+    diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
+    diminuto_log_emit("framer@%p: state='%c'\n", that, that->state);
+    diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
+    diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
+    diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);
+    diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x]\n", that, that->check[0], that->check[1], that->check[2]);
+    diminuto_log_emit("framer@%p: debug=%d\n", that, that->debug);
 }

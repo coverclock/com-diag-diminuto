@@ -84,6 +84,7 @@ int main(void)
 
         ff = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         ASSERT(ff == &framer);
+        diminuto_framer_dump(ff);
         ASSERT(framer.buffer == buffer);
         ASSERT(framer.size == sizeof(buffer));
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_INITIALIZE);
@@ -91,6 +92,7 @@ int main(void)
         framer.state = DIMINUTO_FRAMER_STATE_IDLE;
         ff = diminuto_framer_reinit(&framer);
         ASSERT(ff == &framer);
+        diminuto_framer_dump(ff);
         ASSERT(framer.buffer == buffer);
         ASSERT(framer.size == sizeof(buffer));
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_INITIALIZE);
@@ -104,6 +106,7 @@ int main(void)
         ASSERT(diminuto_framer_length(&framer) == (sizeof(buffer) / 2));
 
         ff = diminuto_framer_fini(&framer);
+        ASSERT(ff == (diminuto_framer_t *)0);
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_IDLE);
 
         STATUS();
@@ -115,6 +118,7 @@ int main(void)
         diminuto_framer_state_t state;
 
         ff = diminuto_framer_init(&framer, (void *)0, 0);
+        diminuto_framer_dump(ff);
 
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
@@ -156,6 +160,7 @@ int main(void)
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
 
+        diminuto_framer_dump(ff);
         ff = diminuto_framer_fini(&framer);
     }
 
@@ -193,6 +198,7 @@ int main(void)
         CHECKPOINT("diminuto_framer_writer=%zd\n", count);
 
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        diminuto_framer_dump(that);
         ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
         ASSERT(diminuto_framer_length(&framer) == -1);
         diminuto_framer_debug(that, true);
@@ -208,6 +214,7 @@ int main(void)
         CHECKPOINT("diminuto_framer_length=%zd\n", count);
         diminuto_dump(stderr, diminuto_framer_buffer(that), count);
         ASSERT(strcmp(DATA, buffer) == 0);
+        diminuto_framer_dump(that);
 
         rc = fclose(source);    
         ASSERT(rc == 0);
