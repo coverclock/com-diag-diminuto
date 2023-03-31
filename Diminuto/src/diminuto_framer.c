@@ -209,6 +209,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case DIMINUTO_FRAMER_STATE_FAILED:
     case DIMINUTO_FRAMER_STATE_OVERFLOW:
     case DIMINUTO_FRAMER_STATE_IDLE:
+    default:
         break;
 
     }
@@ -268,6 +269,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case SKIP:
+    default:
         break;
 
     }
@@ -311,7 +313,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             result = that->length;
             if (result == 0) {
                 DIMINUTO_LOG_INFORMATION("framer@%p(%d): empty?\n", that, fd);
-                that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+                diminuto_framer_reinit(that);
             } else {
                 DIMINUTO_LOG_DEBUG("framer@%p(%d): complete. [%zd]\n", that, fd, result);
             }
@@ -324,17 +326,17 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_ABORT:
             DIMINUTO_LOG_NOTICE("framer@%p(%d): abort!\n", that, fd);
-            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            diminuto_framer_reinit(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
             DIMINUTO_LOG_WARNING("framer@%p(%d): failed!\n", that, fd);
-            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            diminuto_framer_reinit(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
             DIMINUTO_LOG_ERROR("framer@%p(%d): overflow!\n", that, fd);
-            that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
+            diminuto_framer_reinit(that);
             break;
 
         default:
@@ -392,7 +394,8 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
 
 ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
 {
-    ssize_t result = 0;
+    ssize_t result = EOF;
+    ssize_t total = 0;
     diminuto_framer_length_t header = 0;
     uint8_t ab[] = { 0, 0, };
     unsigned char abc[] = { ' ', ' ', ' ', '\0', };
@@ -412,14 +415,14 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
             streamerror(stream, "fputc");
             break;
         }
-        ++result;
+        total += 1;
 
         header = htonl(length);
         nn = diminuto_framer_emit(stream, &header, sizeof(header));
         if (nn == EOF) {
             break;
         }
-        result += nn;
+        total += nn;
 
         /*
          * Must calculate checksum on network byte ordered field so all
@@ -431,13 +434,13 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
         if (nn == EOF) {
             break;
         }
-        result += nn;
+        total += nn;
 
         nn = diminuto_framer_emit(stream, data, length);
         if (nn == EOF) {
             break;
         }
-        result += nn;
+        total += nn;
 
         crc = diminuto_kermit_16(data, length, 0);
         diminuto_kermit_crc2chars(crc, &(abc[0]), &(abc[1]), &(abc[2]));
@@ -446,7 +449,7 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
             streamerror(stream, "fputs");
             break;
         }
-        result += sizeof(abc) - 1;
+        total += sizeof(abc) - 1;
 
         rc = fflush(stream);
         if (rc == EOF) {
@@ -454,15 +457,16 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
             break;
         }
 
-        return result;
+        result = total;
 
     } while (false);
 
-    return EOF;
+    return result;
 }
 
 ssize_t diminuto_framer_abort(FILE * stream)
 {
+    ssize_t result = EOF;
     static const uint8_t data[] = { ESCAPE, FLAG, };
     size_t rc = 0;
 
@@ -479,11 +483,11 @@ ssize_t diminuto_framer_abort(FILE * stream)
             break;
         }
 
-        return sizeof(data);
+        result = sizeof(data);
 
     } while (false);
 
-    return EOF;
+    return result;
 }
 
 /*******************************************************************************

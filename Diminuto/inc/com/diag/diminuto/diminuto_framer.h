@@ -169,6 +169,7 @@ static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that,
  * @return a NULL.
  */
 static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that) {
+    memset(that, 0, sizeof(*that));
     that->state = DIMINUTO_FRAMER_STATE_IDLE;
     return (diminuto_framer_t *)0;
 }
@@ -283,6 +284,7 @@ extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t len
 /**
  * Emit a complete frame to the output stream, including a FLAG token, the
  * length, Fletcher checksum, payload, and Kermit cyclic redundancy check.
+ * After the complete frame is emitted, the output stream is flushed.
  * @param stream points to the output stream.
  * @param data points to the payload to be emitted.
  * @param length is the length of the payload in octets.
@@ -291,7 +293,8 @@ extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t len
 extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
 
 /**
- * Emit the ABORT sequence to the output stream.
+ * Emit the ABORT sequence to the output stream. After the ABORT sequence
+ * is emitted, the output stream is flushed.
  * @param stream points to the output stream.
  * @return the total number of octets emitted or EOF if an error occurred.
  */
