@@ -286,7 +286,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 }
 
 /*******************************************************************************
- * READERS AND WRITERS
+ * LOW LEVEL API
  ******************************************************************************/
 
 ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
@@ -392,7 +392,28 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
     return result;
 }
 
-ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
+/*******************************************************************************
+ * LOW LEVEL API
+ ******************************************************************************/
+
+ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
+{
+    ssize_t result = EOF;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t * that = (diminuto_framer_t *)0;
+   
+    that = diminuto_framer_init(&framer, buffer, size); 
+
+    do {
+        result = diminuto_framer_reader(stream, that);
+    } while (result == 0);
+
+    (void)diminuto_framer_fini(that);
+
+    return result;
+}
+
+ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length)
 {
     ssize_t result = EOF;
     ssize_t total = 0;

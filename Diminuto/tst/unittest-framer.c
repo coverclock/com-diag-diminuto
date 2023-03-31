@@ -254,7 +254,7 @@ int main(void)
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country\xf8.";
         int fd[2];
         FILE * source;
         FILE * sink;
@@ -278,9 +278,9 @@ int main(void)
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
@@ -341,9 +341,9 @@ int main(void)
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
@@ -376,7 +376,7 @@ int main(void)
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country\xf8.";
         static const char TOOBIG[sizeof(DATA) + 1] = { '\0', };
         int fd[2];
         FILE * source;
@@ -431,25 +431,25 @@ int main(void)
          * Empty frames are discarded.
          */
 
-        count = diminuto_framer_writer(sink, (void *)0, 0);
+        count = diminuto_framer_write(sink, (void *)0, 0);
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer(empty)=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write(empty)=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
         /*
          * Oversized frames are discarded albeit with log message.
          */
 
-        count = diminuto_framer_writer(sink, TOOBIG, sizeof(TOOBIG));
+        count = diminuto_framer_write(sink, TOOBIG, sizeof(TOOBIG));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer(toobig)=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write(toobig)=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
         rc = fclose(sink);    
         ASSERT(rc == 0);
@@ -486,7 +486,7 @@ int main(void)
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x1their\x13 country\xf8.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country\xf8.";
         static const char TOOBIG[sizeof(DATA) + 1] = { '\0', };
         int fd[2];
         FILE * source;
@@ -529,25 +529,25 @@ int main(void)
         ASSERT(count > 0);
         CHECKPOINT("diminuto_framer_abort=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, (void *)0, 0);
+        count = diminuto_framer_write(sink, (void *)0, 0);
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer(empty)=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write(empty)=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, TOOBIG, sizeof(TOOBIG));
+        count = diminuto_framer_write(sink, TOOBIG, sizeof(TOOBIG));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer(toobig)=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write(toobig)=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
-        count = diminuto_framer_writer(sink, DATA, sizeof(DATA));
+        count = diminuto_framer_write(sink, DATA, sizeof(DATA));
         ASSERT(count > 0);
-        CHECKPOINT("diminuto_framer_writer=%zd\n", count);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
 
         rc = fclose(sink);    
         ASSERT(rc == 0);
@@ -588,6 +588,111 @@ int main(void)
         } while (count == 0);
         ASSERT(iterations > 1);
         ASSERT(count == EOF);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        static const char DATA1[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country\xf8.";
+        static const char DATA2[] = "England {expects} that \x11~every\x13 man will do \xf8his ~duty.";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t count;
+        char buffer[256];
+        static const char TOOBIG[sizeof(buffer) + 1] = { '\0', };
+        int frames;
+
+        TEST();
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        count = diminuto_framer_abort(sink);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_abort=%zd\n", count);
+
+        /*
+         * Multiple FLAG frame starts are filtered out.
+         */
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        rc = fputc('~', sink);
+        ASSERT(rc != EOF);
+
+        /*
+         * ABORT abandons the current frame.
+         */
+
+        count = diminuto_framer_abort(sink);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_abort=%zd\n", count);
+
+        /*
+         * Empty frames are discarded.
+         */
+
+        count = diminuto_framer_write(sink, (void *)0, 0);
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_write(empty)=%zd\n", count);
+
+        CHECKPOINT("sizeof(DATA1)=%zu\n", sizeof(DATA1));
+        diminuto_dump(stderr, DATA1, sizeof(DATA1));
+
+        count = diminuto_framer_write(sink, DATA1, sizeof(DATA1));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
+
+        /*
+         * Oversized frames are discarded albeit with log message.
+         */
+
+        count = diminuto_framer_write(sink, TOOBIG, sizeof(TOOBIG));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_write(toobig)=%zd\n", count);
+
+        CHECKPOINT("sizeof(DATA1)=%zu\n", sizeof(DATA2));
+        diminuto_dump(stderr, DATA2, sizeof(DATA2));
+
+        count = diminuto_framer_write(sink, DATA2, sizeof(DATA2));
+        ASSERT(count > 0);
+        CHECKPOINT("diminuto_framer_write=%zd\n", count);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        frames = 0;
+        while (true) {
+            count = diminuto_framer_read(source, buffer, sizeof(buffer));
+            if (count == EOF) { break; }
+            CHECKPOINT("diminuto_framer_read=%zd\n", count);
+            diminuto_dump(stderr, buffer, count);
+            ++frames;
+            if (frames == 1) {
+                ASSERT(strcmp(DATA1, buffer) == 0);
+            } else if (frames == 2) {
+                ASSERT(strcmp(DATA2, buffer) == 0);
+            } else {
+                /* Do nothing. */
+            }
+            memset(buffer, 0, sizeof(buffer));
+        }
+        ASSERT(frames == 2);
 
         rc = fclose(source);    
         ASSERT(rc == 0);

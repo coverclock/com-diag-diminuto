@@ -111,6 +111,12 @@ typedef struct DiminutoFramer {
     bool debug;                         /* Debug on or off. */
 } diminuto_framer_t;
 
+/**
+ * @def DIMINUTO_FRAMER_INIT
+ * Generate code to statically initialize a Framer.
+ */
+#define DIMINUTO_FRAMER_INIT { (void *)0, }
+
 /*******************************************************************************
  * DEBUG
  ******************************************************************************/
@@ -268,37 +274,8 @@ static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
 extern diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token);
 
 /*******************************************************************************
- * READERS AND WRITERS
+ * LOW LEVEL API
  ******************************************************************************/
-
-/**
- * Emit data to an output stream, inserting ESCAPE tokens as necessary to
- * implement the Framer byte-stuffing algorithm.
- * @param stream points to the output stream.
- * @param data points to the data to be emitted.
- * @param length is the length of the data in octets.
- * @return the total number of octets emitted or EOF if an error occurred.
- */
-extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length);
-
-/**
- * Emit a complete frame to the output stream, including a FLAG token, the
- * length, Fletcher checksum, payload, and Kermit cyclic redundancy check.
- * After the complete frame is emitted, the output stream is flushed.
- * @param stream points to the output stream.
- * @param data points to the payload to be emitted.
- * @param length is the length of the payload in octets.
- * @return the total number of octets emitted or EOF if an error occurred.
- */
-extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
-
-/**
- * Emit the ABORT sequence to the output stream. After the ABORT sequence
- * is emitted, the output stream is flushed.
- * @param stream points to the output stream.
- * @return the total number of octets emitted or EOF if an error occurred.
- */
-extern ssize_t diminuto_framer_abort(FILE * stream);
 
 /**
  * Read an input stream and drive a Framer state machine by feeding it
@@ -322,6 +299,54 @@ extern ssize_t diminuto_framer_abort(FILE * stream);
  * @return 0 if a frame is being processed, >0 if complete, <0 if error.
  */
 extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
+
+/**
+ * Emit data to an output stream, inserting ESCAPE tokens as necessary to
+ * implement the Framer byte-stuffing algorithm.
+ * @param stream points to the output stream.
+ * @param data points to the data to be emitted.
+ * @param length is the length of the data in octets.
+ * @return the total number of octets emitted or EOF if an error occurred.
+ */
+extern ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length);
+
+/*******************************************************************************
+ * HIGH LEVEL API
+ ******************************************************************************/
+
+/**
+ * Read a complete correct frame from the input stream, stripping all of
+ * the control tokens, checksum, and CRC, and store the payload octets
+ * into the buffer provided by the caller. The caller is blocked until the
+ * a complete correct frame no larger than the buffer is processed. Frames
+ * that are invalid, aborted, empty, or too large, are discarded with a log
+ * message generated.
+ * @param stream points to the input stream.
+ * @param buffer is the buffer into which the payload is stored.
+ * @param size is the size of the buffer in octets.
+ * @return the total number of octets received or EOF if an error occurred.
+ */
+extern ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size);
+
+/**
+ * Write  a complete frame to the output stream, including a FLAG token, the
+ * length, Fletcher checksum, payload, and Kermit cyclic redundancy check.
+ * After the complete frame is emitted, the output stream is flushed.
+ * The caller is blocked until the complete frame is emitted.
+ * @param stream points to the output stream.
+ * @param data points to the payload to be emitted.
+ * @param length is the length of the payload in octets.
+ * @return the total number of octets emitted or EOF if an error occurred.
+ */
+extern ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length);
+
+/**
+ * Emit the ABORT sequence to the output stream. After the ABORT sequence
+ * is emitted, the output stream is flushed.
+ * @param stream points to the output stream.
+ * @return the total number of octets emitted or EOF if an error occurred.
+ */
+extern ssize_t diminuto_framer_abort(FILE * stream);
 
 /*******************************************************************************
  * DUMPER
