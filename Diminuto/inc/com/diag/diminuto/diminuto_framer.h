@@ -94,7 +94,7 @@ typedef enum DiminutoFramerState {
 } diminuto_framer_state_t;
 
 /**
- * THis defines the structure of the Framer object.
+ * This defines the structure of the Framer object.
  */
 typedef struct DiminutoFramer {
     void * buffer;                      /* Pointer to application buffer. */
