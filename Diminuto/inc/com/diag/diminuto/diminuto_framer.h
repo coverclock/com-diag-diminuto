@@ -26,14 +26,15 @@
  * FLAG: HDLC flag token.
  *
  * LENGTH[4]: four-octet payload length (not including escape tokens)
- * field in network byte order plus necessary HDLC escape tokens.
+ * field in network byte order, plus necessary HDLC ESCAPE tokens.
  *
  * FLETCHER[2]: Fletcher-16 checksum A and B octets across unescaped
- * LENGTH in network byte order, plus necessary HDLC escape tokens.
+ * LENGTH in network byte order, plus necessary HDLC EACAPE tokens.
  *
- * PAYLOAD[]: payload plus necessary HDLC escape tokens.
+ * PAYLOAD[]: payload, plus necessary HDLC ESCAPE tokens.
  *
- * CRC[3]: Kermit-16 cyclic redundancy check octets (across unescaped PAYLOAD).
+ * CRC[3]: Kermit-16 cyclic redundancy check octets across unescaped PAYLOAD,
+ * without HDLC ESCAPE tokens.
  *
  * REFERENCES
  *
