@@ -393,7 +393,7 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
 }
 
 /*******************************************************************************
- * LOW LEVEL API
+ * HIGH LEVEL API
  ******************************************************************************/
 
 ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
