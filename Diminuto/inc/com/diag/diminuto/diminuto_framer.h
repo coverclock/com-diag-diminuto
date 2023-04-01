@@ -111,6 +111,10 @@ typedef struct DiminutoFramer {
     bool debug;                         /* Debug on or off. */
 } diminuto_framer_t;
 
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
 /**
  * @def DIMINUTO_FRAMER_INIT
  * Generate code to statically initialize a Framer.
