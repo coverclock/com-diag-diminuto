@@ -30,7 +30,7 @@
  * tokens.
  *
  * FLETCHER[2]: Fletcher-16 checksum A and B octets across unescaped
- * LENGTH in network byte order, plus necessary HDLC EACAPE tokens.
+ * LENGTH in network byte order, plus necessary HDLC ESCAPE tokens.
  *
  * PAYLOAD[]: payload, plus necessary HDLC ESCAPE tokens.
  *
