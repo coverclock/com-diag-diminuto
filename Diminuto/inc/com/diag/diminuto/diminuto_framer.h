@@ -23,7 +23,7 @@
  *
  * FLAG LENGTH[4] FLETCHER[2] PAYLOAD ... PAYLOAD CRC[3]
  *
- * FLAG: HDLC flag token.
+ * FLAG: HDLC FLAG token.
  *
  * LENGTH[4]: four-octet payload length (not including escape tokens)
  * field in network byte order, plus necessary HDLC ESCAPE tokens.
