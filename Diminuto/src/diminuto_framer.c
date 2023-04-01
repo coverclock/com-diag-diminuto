@@ -17,25 +17,10 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_serial.h"
+#include "diminuto_framer.h"
 #include <errno.h>
 #include <ctype.h>
 #include <arpa/inet.h>
-
-/*******************************************************************************
- * CONSTANTS
- ******************************************************************************/
-
-enum Token {
-    FLAG        = '~',              /* 0x7e */
-    ESCAPE      = '}',              /* 0x7d */
-    XON         = '\x11',           /* 0x11 */
-    XOFF        = '\x13',           /* 0x13 */
-    RESERVED    = (uint8_t)'\xf8',  /* 0xf8 */
-};
-
-enum Mask {
-    MASK        = ' ',      /* 0x20 */
-};
 
 /*******************************************************************************
  * TYPES

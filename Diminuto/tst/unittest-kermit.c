@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_kermit.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "diminuto_framer.h"
 #include <ctype.h>
 #include <string.h>
 
@@ -24,11 +25,11 @@ static bool special(uint8_t token)
     bool result = false;
 
     switch (token) {
-    case '~':
-    case '}':
-    case '\x11':
-    case '\x13':
-    case (uint8_t)'\xf8':
+    case FLAG:
+    case ESCAPE:
+    case XON:
+    case XOFF:
+    case RESERVED:
         result = true;
         break;
     default:

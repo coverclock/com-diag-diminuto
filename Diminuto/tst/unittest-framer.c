@@ -14,6 +14,7 @@
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "diminuto_framer.h"
 #include <ctype.h>
 #include <string.h>
 #include <unistd.h>
@@ -21,6 +22,19 @@
 int main(void)
 {
     SETLOGMASK();
+
+    {
+        TEST();
+
+        ASSERT(FLAG == '~');
+        ASSERT(ESCAPE == '}');
+        ASSERT(XON == '\x11');
+        ASSERT(XOFF == '\x13');
+        ASSERT(RESERVED == (uint8_t)'\xf8');
+        ASSERT(MASK == ' ');
+
+        STATUS();
+    }
 
     {
         diminuto_framer_t framer;
