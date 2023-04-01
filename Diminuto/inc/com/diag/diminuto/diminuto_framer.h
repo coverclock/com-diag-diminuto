@@ -25,8 +25,8 @@
  *
  * FLAG: HDLC flag token.
  *
- * LENGTH[4]: four-octet payload length (not including escape tokens) field in network byte order plus
- * necessary HDLC escape tokens.
+ * LENGTH[4]: four-octet payload length (not including escape tokens)
+ * field in network byte order plus necessary HDLC escape tokens.
  *
  * FLETCHER[2]: Fletcher-16 checksum A and B octets (across LENGTH
  * in network byte order) plus necessary HDLC escape tokens.
