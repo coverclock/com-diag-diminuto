@@ -21,17 +21,17 @@
  *
  * A Framer frame looks like this.
  *
- * FLAG LENGTH[4] FLETCHERA FLETCHERB PAYLOAD ... PAYLOAD CRC[3]
+ * FLAG LENGTH[4] FLETCHER[2] PAYLOAD ... PAYLOAD CRC[3]
  *
  * FLAG: HDLC flag token.
  *
- * LENGTH: four-octet payload length field in network byte order plus
+ * LENGTH[4]: four-octet payload length (not including escape tokens) field in network byte order plus
  * necessary HDLC escape tokens.
  *
- * FLETCHERA FLETCHERB: Fletcher-16 checksum A and B octets (across LENGTH
+ * FLETCHER[2]: Fletcher-16 checksum A and B octets (across LENGTH
  * in network byte order) plus necessary HDLC escape tokens.
  *
- * PAYLOAD[LENGTH]: payload plus necessary HDLC escape tokens.
+ * PAYLOAD[]: payload plus necessary HDLC escape tokens.
  *
  * CRC[3]: Kermit-16 cyclic redundancy check octets (across unescaped PAYLOAD).
  *
