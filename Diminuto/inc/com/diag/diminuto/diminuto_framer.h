@@ -11,7 +11,7 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * The Framer feature provides a mechanism for framing outgoing and incoming
- * frame on a serial port. The Framer uses an HDLC-like mechanism referred
+ * frames on a serial port. The Framer uses an HDLC-like mechanism referred
  * to as control-octet transparency (a.k.a. byte stuffing, or octet stuffing)
  * to do this. It uses the same control octet characters as the High Level
  * Data Link Control protocol, but it is in no way otherwise compatible
