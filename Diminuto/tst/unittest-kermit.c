@@ -66,23 +66,30 @@ int main(void)
     SETLOGMASK();
 
     {
+        unsigned int ii;
+        uint8_t token;
+
+        /*
+         * Make sure our own test function works as expected.
+         */
+
         TEST();
 
-        ASSERT('}' == '\x7d');
-        ASSERT('~' == '\x7e');
-
-        STATUS();
-    }
-
-    {
-        TEST();
-
-        ASSERT(special('~'));
-        ASSERT(special('}'));
-        ASSERT(special('}'));
-        ASSERT(special('\x11'));
-        ASSERT(special('\x13'));
-        ASSERT(special('\xf8'));
+        for (ii = 0x00; ii <= 0xff; ++ii) {
+            token = ii;
+            switch (token) {
+            case '~':
+            case '}':
+            case '\x11':
+            case '\x13':
+            case (uint8_t)'\xf8':
+                ASSERT(special(token));
+                break;
+            default:
+                ASSERT(!special(token));
+                break;
+            }
+        }
 
         STATUS();
     }

@@ -27,7 +27,9 @@ int main(void)
         TEST();
 
         ASSERT(FLAG == '~');
+        ASSERT(FLAG == '\x7e');
         ASSERT(ESCAPE == '}');
+        ASSERT(ESCAPE == '\x7d');
         ASSERT(XON == '\x11');
         ASSERT(XOFF == '\x13');
         ASSERT(RESERVED == (uint8_t)'\xf8');
