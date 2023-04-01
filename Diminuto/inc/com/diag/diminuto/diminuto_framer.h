@@ -21,7 +21,7 @@
  *
  * A Framer frame looks like this.
  *
- * FLAG LENGTH[4] FLETCHERA FLETCHERB PAYLOAD ... PAYLOAD CRC1 CRC2 CRC3
+ * FLAG LENGTH[4] FLETCHERA FLETCHERB PAYLOAD ... PAYLOAD CRC[3]
  *
  * FLAG: HDLC flag token.
  *
