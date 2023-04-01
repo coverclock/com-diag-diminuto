@@ -17,6 +17,28 @@
 #include <string.h>
 
 /*
+ * Returns true if the octet is a Framer (HDLC) special token.
+ */
+static bool special(uint8_t token)
+{
+    bool result = false;
+
+    switch (token) {
+    case '~':
+    case '}':
+    case '\x11':
+    case '\x13':
+    case (uint8_t)'\xf8':
+        result = true;
+        break;
+    default:
+        break;
+    }
+
+    return result;
+}
+
+/*
  * da Cruz, p. 29, "6.3 Alternate Block Check Types"
  */
 static uint16_t dacruz(const void * buffer, size_t length)
@@ -43,6 +65,28 @@ int main(void)
     SETLOGMASK();
 
     {
+        TEST();
+
+        ASSERT('}' == '\x7d');
+        ASSERT('~' == '\x7e');
+
+        STATUS();
+    }
+
+    {
+        TEST();
+
+        ASSERT(special('~'));
+        ASSERT(special('}'));
+        ASSERT(special('}'));
+        ASSERT(special('\x11'));
+        ASSERT(special('\x13'));
+        ASSERT(special('\xf8'));
+
+        STATUS();
+    }
+
+    {
         uint16_t dd;
         uint16_t rr;
         unsigned char cc;
@@ -54,6 +98,7 @@ int main(void)
             ASSERT(cc == (' ' + dd));
             ASSERT(isprint(cc));
             ASSERT(diminuto_kermit_firstisvalid(cc));
+            ASSERT(!special(cc));
             rr = diminuto_kermit_unchar(cc);
             ASSERT(dd == rr);
         }
@@ -73,6 +118,7 @@ int main(void)
             ASSERT(cc == (' ' + dd));
             ASSERT(isprint(cc));
             ASSERT(diminuto_kermit_secondisvalid(cc));
+            ASSERT(!special(cc));
             rr = diminuto_kermit_unchar(cc);
             ASSERT(dd == rr);
         }
@@ -92,6 +138,7 @@ int main(void)
             ASSERT(cc == (' ' + dd));
             ASSERT(isprint(cc));
             ASSERT(diminuto_kermit_thirdisvalid(cc));
+            ASSERT(!special(cc));
             rr = diminuto_kermit_unchar(cc);
             ASSERT(dd == rr);
         }
@@ -115,6 +162,7 @@ int main(void)
             ASSERT(diminuto_kermit_firstisvalid(cc));
             ASSERT(diminuto_kermit_secondisvalid(cc));
             ASSERT(diminuto_kermit_thirdisvalid(cc));
+            ASSERT(!special(cc));
         }
 
         for (ii = '0'; ii <= '_'; ++ii) {
@@ -122,6 +170,7 @@ int main(void)
             ASSERT(!diminuto_kermit_firstisvalid(cc));
             ASSERT(diminuto_kermit_secondisvalid(cc));
             ASSERT(diminuto_kermit_thirdisvalid(cc));
+            ASSERT(!special(cc));
         }
 
         for (ii = '`'; ii <= 255; ++ii) {

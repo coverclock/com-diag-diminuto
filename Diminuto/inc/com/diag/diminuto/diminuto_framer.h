@@ -11,37 +11,43 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * The Framer feature provides a mechanism for framing outgoing and incoming
- * frames on a serial port. The Framer uses an HDLC-like mechanism referred
+ * frames in a serial stream. The Framer uses an HDLC-like mechanism referred
  * to as control-octet transparency (a.k.a. byte stuffing, or octet stuffing)
- * to do this. It uses the same control octet characters as the High Level
- * Data Link Control protocol, but it is in no way otherwise compatible
- * with HDLC.
+ * to do this. It uses the same control octet tokens or characters as the
+ * High Level Data Link Control (HDLC) protocol, but it is in no way otherwise
+ * compatible with HDLC.
  *
- * EXAMPLE
+ * A Framer frame looks like this
  *
- * A Framer frame looks like this.
+ * FLAG[1] LENGTH[4+] FLETCHER[2+] PAYLOAD[1] ... PAYLOAD[LENGTH+] CRC[3]
  *
- * FLAG LENGTH[4] FLETCHER[2] PAYLOAD ... PAYLOAD CRC[3]
+ * where
  *
- * FLAG: HDLC FLAG token.
+ * FLAG[1]: is an HDLC FLAG token;
  *
- * LENGTH[4]: four-octet payload length (not including HDLC ESCAPE
- * tokens) field in network byte order, plus necessary HDLC ESCAPE
- * tokens.
+ * LENGTH[4+]: is the four-octet field containing the length of the unescaped
+ * payload in network byte order plus any necessary HDLC ESCAPE tokens;
  *
- * FLETCHER[2]: Fletcher-16 checksum A and B octets across unescaped
- * LENGTH in network byte order, plus necessary HDLC ESCAPE tokens.
+ * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets across the
+ * unescaped LENGTH in network byte order, plus any necessary HDLC ESCAPE
+ * tokens;
  *
- * PAYLOAD[]: payload, plus necessary HDLC ESCAPE tokens.
+ * PAYLOAD[LENGTH+]: is the  payload, plus any necessary HDLC ESCAPE tokens;
  *
- * CRC[3]: Kermit-16 cyclic redundancy check octets across unescaped PAYLOAD,
- * without HDLC ESCAPE tokens.
+ * CRC[3]: is the Kermit-16 cyclic redundancy check octets across the unescaped
+ * PAYLOAD (the Kermit-16 CRC octets will never fall within a range requiring
+ * HDLC ESCAPE tokens - see the Kermit feature unit test).
+ *
+`* This feature was developed in direct support of the Conestoga and
+ * Fothergill sub-projects in the Hazer repository.
  *
  * REFERENCES
  *
  * <https://chromium.googlesource.com/external/github.com/openthread/openthread/+/refs/tags/upstream/thread-reference-20180926/doc/spinel-protocol-src/spinel-framing.md>
  *
  * <https://en.wikipedia.org/wiki/High-Level_Data_Link_Control>
+ * 
+ * <<https://github.com/coverclock/com-diag-hazer>
  */
 
 #include <stdbool.h>
