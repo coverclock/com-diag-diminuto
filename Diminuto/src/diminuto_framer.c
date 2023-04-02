@@ -17,7 +17,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_serial.h"
-#include "diminuto_framer.h"
+#include "../src/diminuto_framer.h"
 #include <errno.h>
 #include <ctype.h>
 #include <arpa/inet.h>

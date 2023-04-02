@@ -13,7 +13,7 @@
 #include "com/diag/diminuto/diminuto_kermit.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "diminuto_framer.h"
+#include "../src/diminuto_framer.h"
 #include <ctype.h>
 #include <string.h>
 
