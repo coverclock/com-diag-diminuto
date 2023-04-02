@@ -19,7 +19,7 @@
  *
  * A Framer frame looks like this
  *
- * FLAG[1] LENGTH[4+] FLETCHER[2+] PAYLOAD[1] ... PAYLOAD[LENGTH+] CRC[3]
+ * FLAG[1] LENGTH[4+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3]
  *
  * where
  *
@@ -32,7 +32,8 @@
  * unescaped LENGTH in network byte order, plus any necessary HDLC ESCAPE
  * tokens;
  *
- * PAYLOAD[LENGTH+]: is the  payload, plus any necessary HDLC ESCAPE tokens;
+ * PAYLOAD[LENGTH+]: is the  payload, of length of the unescaped LENGTH field
+ * in host byte order, plus any necessary HDLC ESCAPE tokens;
  *
  * CRC[3]: is the Kermit-16 cyclic redundancy check octets across the unescaped
  * PAYLOAD (the Kermit-16 CRC octets will never fall within a range requiring
