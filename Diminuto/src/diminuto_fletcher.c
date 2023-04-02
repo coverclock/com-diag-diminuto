@@ -14,9 +14,10 @@
 
 uint16_t diminuto_fletcher_16(const void * buffer, size_t length, uint8_t * ap, uint8_t * bp)
 {
-    const uint8_t * pp;
-    uint16_t a;
-    uint16_t b;
+    uint16_t result = 0;
+    const uint8_t * pp = (const uint8_t *)0;
+    uint16_t a = 0;
+    uint16_t b = 0;
 
     a = *ap;
     b = *bp;
@@ -29,5 +30,9 @@ uint16_t diminuto_fletcher_16(const void * buffer, size_t length, uint8_t * ap, 
     *ap = a;
     *bp = b;
 
-    return (*bp << 8) | *ap;
+    result = *bp;
+    result <<= 8;
+    result |= *ap;
+
+    return result;
 }
