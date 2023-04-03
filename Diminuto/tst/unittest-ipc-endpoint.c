@@ -313,7 +313,7 @@ int main(int argc, char * argv[])
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
         COMMENT("SANITY TCP4 \"%s\"\n", result);
-        EXPECT(strcmp(result, ":1234") == 0);
+        EXPECT(strcmp(result, ":1234:0") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
         endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
@@ -321,7 +321,7 @@ int main(int argc, char * argv[])
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
         COMMENT("SANITY TCP6 \"%s\"\n", result);
-        EXPECT(strcmp(result, ":1234") == 0);
+        EXPECT(strcmp(result, ":1234:0") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
         endpoint.type = DIMINUTO_IPC_TYPE_IPV4;
@@ -329,7 +329,7 @@ int main(int argc, char * argv[])
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
         COMMENT("SANITY UDP4 \"%s\"\n", result);
-        EXPECT(strcmp(result, ":5678") == 0);
+        EXPECT(strcmp(result, ":0:5678") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
         endpoint.type = DIMINUTO_IPC_TYPE_IPV6;
@@ -337,7 +337,7 @@ int main(int argc, char * argv[])
         result = diminuto_ipc_endpoint2string(&endpoint, buffer, sizeof(buffer));
         ASSERT(result == buffer);
         COMMENT("SANITY UDP6 \"%s\"\n", result);
-        EXPECT(strcmp(result, ":5678") == 0);
+        EXPECT(strcmp(result, ":0:5678") == 0);
 
         memset(&endpoint, 0, sizeof(endpoint));
         endpoint.type = DIMINUTO_IPC_TYPE_IPV4;

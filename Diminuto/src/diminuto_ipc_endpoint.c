@@ -611,8 +611,8 @@ char * diminuto_ipc_endpoint2string(const diminuto_ipc_endpoint_t * endpoint, vo
 
     if (length > 0) {
 
-        tcp = (endpoint->tcp != 0);
-        udp = (endpoint->udp != 0) && (endpoint->udp != endpoint->tcp);
+        tcp = (endpoint->tcp != 0) || (endpoint->udp != 0);
+        udp = ((endpoint->tcp != 0) || (endpoint->udp != 0)) && (endpoint->tcp != endpoint->udp);
         ipv4 = !diminuto_ipc4_is_unspecified(&(endpoint->ipv4));
         ipv6 = !diminuto_ipc6_is_unspecified(&(endpoint->ipv6));
         ipv4tcp = (ipv4 && tcp);

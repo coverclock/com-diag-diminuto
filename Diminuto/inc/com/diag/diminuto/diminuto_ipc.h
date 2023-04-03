@@ -642,10 +642,11 @@ extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * 
 /**
  * Convert an endpoint object into a NUL-terminated printable string. The
  * resulting string, which is only intended for display, can be quite long
- * if both IPv4 and IPv6 addresses are defined, and if both TCP and UDP
- * ports are defined, which is quite possible with fully qualified domain
- * names and service names; in this case, the TCP port will be displayed
- * first.
+ * if both IPv4 and IPv6 addresses are defined, and if either or both TCP
+ * and UDP ports are defined, which is quite possible with fully qualified
+ * domain names and service names. In the case where the TCP and UDP
+ * ports are different, the TCP port will be displayed first and the UDP
+ * port second, and a zero port number indicates that port type is unused.
  * @param endpoint points to the populated endpoint object.
  * @param buffer points to the buffer into which the string is stored.
  * @param length is the length of the buffer in bytes.
