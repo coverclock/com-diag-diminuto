@@ -106,7 +106,7 @@ int main(void)
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_INITIALIZE);
 
         framer.state = DIMINUTO_FRAMER_STATE_IDLE;
-        ff = diminuto_framer_reinit(&framer);
+        ff = diminuto_framer_reset(&framer);
         ASSERT(ff == &framer);
         diminuto_framer_dump(ff);
         ASSERT(framer.buffer == buffer);
@@ -487,7 +487,7 @@ int main(void)
                 ASSERT(strcmp(DATA, buffer) == 0);
                 diminuto_framer_dump(that);
                 ++frames;
-                diminuto_framer_reinit(that);
+                diminuto_framer_reset(that);
             }
         } while (count >= 0);
         ASSERT(count == EOF);

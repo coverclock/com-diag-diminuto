@@ -161,18 +161,18 @@ bool diminuto_framer_debug(diminuto_framer_t * that, bool debug) {
 }
 
 /*******************************************************************************
- * CTOR, DTOR, AND RETOR
+ * CTOR, DTOR, AND RESET
  ******************************************************************************/
 
 /**
  * Reinitialize a Framer object so that it is ready to process another frame
  * using the same buffer with which it was initialized. Depending on the
- * application, either reinit() or init() may be used to prepare to process
+ * application, either reset() or init() may be used to prepare to process
  * subsequent frames after the first one.
  * @param that points to the Framer object.
  * @return a pointer to the Framer object.
  */
-static inline diminuto_framer_t * diminuto_framer_reinit(diminuto_framer_t * that) {
+static inline diminuto_framer_t * diminuto_framer_reset(diminuto_framer_t * that) {
     that->state = DIMINUTO_FRAMER_STATE_INITIALIZE;
     return that;
 }
@@ -188,7 +188,7 @@ static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that,
     memset(that, 0, sizeof(*that));
     that->buffer = buffer;
     that->size = size;
-    return diminuto_framer_reinit(that);
+    return diminuto_framer_reset(that);
 }
 
 /**
@@ -222,7 +222,7 @@ static inline bool diminuto_framer_complete(const diminuto_framer_t * that) {
  * Return true if the Framer is in a terminal state, false otherwise.
  * Terminal states are COMPLETE, FINAL, ABORT, FAILED, OVERFLOW, and
  * IDLE. A Framer in a terminal state must be re-initialized or
- * reinitialized before it can deliver more frames.
+ * reset before it can deliver more frames.
  * @param that points to the Framer object.
  * @return true if terminal, false otherwise.
  */
@@ -244,7 +244,7 @@ static inline bool diminuto_framer_terminal(const diminuto_framer_t * that) {
  * Return true if the Framer is in an error state, false otherwise.
  * Error states are FINAL, ABORT, FAILED, OVERFLOW. Note that IDLE
  * is not an error state. A Framer in a terminal state must be
- * re-initialized using init(), or reinitialized using reinit(), before
+ * re-initialized using init(), or reset using reset(), before
  * it can deliver more frames.
  * @param that points to the Framer object.
  * @return true if error, false otherwise.
@@ -318,7 +318,7 @@ extern diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that,
  * keep calling the reader() until it returns >0 (a complete correct frame
  * received containing the returned number of octets), or <0 (an error
  * occurred). After reaching COMPLETE, the Framer must be re-initialized
- * with init() or reinitialized with reinit() to received subsequent frames.
+ * with init() or reset with reset() to received subsequent frames.
  * @param stream points to the input stream.
  * @param that points to the Framer object.
  * @return 0 if a frame is being processed, >0 if complete, <0 if error.

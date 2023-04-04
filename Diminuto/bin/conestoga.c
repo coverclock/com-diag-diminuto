@@ -62,20 +62,27 @@ int main(int argc, char * argv[])
     unsigned long milliseconds = 0;
     diminuto_ipc_endpoint_t endpoint = { 0, };
     int rc = -1;
-    int dev = -1;
+    int file = -1;
     int sock = -1;
     int fds = 0;
     int fd = -1;
-    FILE * stream = (FILE *)0;
+    FILE * input = (FILE *)0;
+    FILE * output = (FILE *)0;
     diminuto_mux_t multiplexor = { 0 };
-    diminuto_ipv4_t * service4p = (diminuto_ipv4_t *)0;
-    diminuto_ipv6_t * service6p = (diminuto_ipv6_t *)0;
+    diminuto_ipv4_t service4 = DIMINUTO_IPC4_UNSPECIFIED_INIT;
+    diminuto_ipv6_t service6 = DIMINUTO_IPC6_UNSPECIFIED_INIT;
     diminuto_port_t serviceport = 0;
     diminuto_ipv4_t sender4 = DIMINUTO_IPC4_UNSPECIFIED_INIT;
     diminuto_ipv6_t sender6 = DIMINUTO_IPC6_UNSPECIFIED_INIT;
     diminuto_port_t senderport = 0;
-    uint8_t * buffer = (uint8_t *)0;
     bool error = false;
+    bool done = false;
+    ssize_t sent = 0;
+    ssize_t received = 0;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    uint8_t * frame = (uint8_t *)0;
+    uint8_t * datagram = (uint8_t *)0;
+    diminuto_endpoint_buffer_t endpointstring = { '\0', };
 
     /*
      * SETUP
@@ -216,7 +223,6 @@ int main(int argc, char * argv[])
                 error = true;
             } else {
                 timeout = diminuto_frequency_units2ticks(milliseconds, 1000);
-                DIMINUTO_LOG_INFORMATION("%s: timeout=%lumilliseconds=%lluticks\n", program, milliseconds, (diminuto_llu_t)timeout);
             }
             break;
 
@@ -236,7 +242,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -D DEVICE            is the serial device name.\n");
             fprintf(stderr, "       -E HOST:PORT         sets the far end point for the proxy client.\n");
             fprintf(stderr, "       -E :PORT             sets the near end point for the proxy server.\n");
-            fprintf(stderr, "       -b BYTES             sets the buffer size to BYTES bytes.\n");
+            fprintf(stderr, "       -b BYTES             sets the buffer sizes to BYTES bytes.\n");
             fprintf(stderr, "       -c                   sets proxy client mode (must preceed -E).\n");
             fprintf(stderr, "       -d                   immediately daemonizes the process.\n");
             fprintf(stderr, "       -e                   sets DEVICE to even parity.\n");
@@ -256,6 +262,8 @@ int main(int argc, char * argv[])
     if (error) {
         exit(1);
     }
+
+    DIMINUTO_LOG_DEBUG("%s: role %c\n", program, role);
 
     /*
      * SIGNAL HANDLERS
@@ -279,13 +287,18 @@ int main(int argc, char * argv[])
      * DEVICE
      */
 
-    if ((dev = open(device, O_RDWR)) < 0) {
+    DIMINUTO_LOG_DEBUG("%s: device %s %d%c%d %d%d%d\n", program, device, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol, xonxoff, rtscts);
+
+    if (strcmp(device, "-") == 0) {
+        input = stdin;
+        output = stdout;
+    } else if ((fd = open(device, O_RDWR)) < 0) {
         error = true;
-    } else if ((stream = fdopen(dev, "a+")) == (FILE *)0) {
+    } else if ((input = output = fdopen(fd, "a+")) == (FILE *)0) {
         error = true;
-    } else if (!diminuto_serial_valid(dev)) {
+    } else if (!diminuto_serial_valid(fd)) {
         /* Do nothing. */
-    } else if (diminuto_serial_set(dev, baudrate, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts) < 0) {
+    } else if (diminuto_serial_set(fd, baudrate, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts) < 0) {
         error = true;
     } else if (diminuto_serial_raw(fd) < 0) {
         error = true;
@@ -298,20 +311,24 @@ int main(int argc, char * argv[])
         exit(2);
     }
 
+    file = fileno(input);
+
     /*
      * SOCKET
      */
+
+    DIMINUTO_LOG_DEBUG("%s: endpoint %s\n", program, diminuto_ipc_endpoint2string(&endpoint, &endpointstring, sizeof(endpointstring)));
 
     switch (role) {
     case CLIENT:
         switch (endpoint.type) {
         case DIMINUTO_IPC_TYPE_IPV4:
             sock = diminuto_ipc4_datagram_peer(0);
-            service4p = &(endpoint.ipv4);
+            service4 = endpoint.ipv4;
             break;
         case DIMINUTO_IPC_TYPE_IPV6:
             sock = diminuto_ipc6_datagram_peer(0);
-            service6p = &(endpoint.ipv6);
+            service6 = endpoint.ipv6;
             break;
         default:
             diminuto_assert(false);
@@ -341,9 +358,9 @@ int main(int argc, char * argv[])
      * MULTIPLEXER
      */
 
-    diminuto_mux_init(&multiplexor);
+    (void)diminuto_mux_init(&multiplexor);
 
-    rc = diminuto_mux_register_read(&multiplexor, dev);
+    rc = diminuto_mux_register_read(&multiplexor, file);
     if (rc < 0) {
         error = true;
     }
@@ -358,10 +375,32 @@ int main(int argc, char * argv[])
     }
 
     /*
+     * FRAMER
+     */
+
+    frame = (uint8_t *)malloc(bufsize);
+    if (frame == (uint8_t *)0) {
+        diminuto_perror("malloc");
+        error = true;
+    }
+
+    (void)diminuto_framer_init(&framer, frame, bufsize);
+
+    datagram = (uint8_t *)malloc(bufsize);
+    if (datagram == (uint8_t *)0) {
+        diminuto_perror("malloc");
+        error = true;
+    }
+
+    if (error) {
+        exit(5);
+    }
+
+    /*
      * WORK LOOP
      */
 
-    while (true) {
+    do {
 
         if (diminuto_hangup_check()) {
             DIMINUTO_LOG_NOTICE("%s: SIGHUP\n", program);
@@ -398,20 +437,81 @@ int main(int argc, char * argv[])
 
             if (fd == sock) {
 
-                ;
+                switch (endpoint.type) {
+                case DIMINUTO_IPC_TYPE_IPV4:
+                    received = diminuto_ipc4_datagram_receive_generic(sock, datagram, bufsize, &sender4, &senderport, 0);
+                    break;
+                case DIMINUTO_IPC_TYPE_IPV6:
+                    received = diminuto_ipc6_datagram_receive_generic(sock, datagram, bufsize, &sender6, &senderport, 0);
+                    break;
+                default:
+                    diminuto_assert(false);
+                    break;
+                }
+                if (received <= 0) {
+                    done = true;
+                    break;
+                } else {
+                    sent = diminuto_framer_write(output, datagram, received);
+                    if (sent <= 0) {
+                        done = true;
+                        break;
+                    }
+                }
 
-            } else if (fd == dev) {
+
+            } else if (fd == file) {
+
+                received = diminuto_framer_reader(input, &framer);
+                if (received == 0) {
+                    /* Do nothing. */
+                } else if (received < 0) {
+                    done = true;
+                    break;
+                } else {
+                    diminuto_framer_reset(&framer);
+                    switch (role) {
+                    case CLIENT:
+                        switch (endpoint.type) {
+                        case DIMINUTO_IPC_TYPE_IPV4:
+                            sent = diminuto_ipc4_datagram_send(sock, frame, received, service4, serviceport);
+                            break;
+                        case DIMINUTO_IPC_TYPE_IPV6:
+                            sent = diminuto_ipc6_datagram_send(sock, frame, received, service6, serviceport);
+                            break;
+                        default:
+                            diminuto_assert(false);
+                        }
+                    case SERVER:
+                        switch (endpoint.type) {
+                        case DIMINUTO_IPC_TYPE_IPV4:
+                            sent = diminuto_ipc4_datagram_send(sock, frame, received, sender4, senderport);
+                            break;
+                        case DIMINUTO_IPC_TYPE_IPV6:
+                            sent = diminuto_ipc6_datagram_send(sock, frame, received, sender6, senderport);
+                            break;
+                        default:
+                            diminuto_assert(false);
+                        }
+                        break;
+                    default:
+                        diminuto_assert(false);
+                        break;
+                    }
+                    if (sent <= 0) {
+                        done = true;
+                        break;
+                    }
+                }
 
             } else {
 
-                /* Do nothing. */
+                diminuto_yield();
 
             }
         }
 
-        diminuto_yield();
-
-    }
+    } while (!done);
 
     /*
      * FINALIZATING
@@ -419,13 +519,19 @@ int main(int argc, char * argv[])
 
     (void)diminuto_mux_unregister_read(&multiplexor, sock);
 
-    (void)diminuto_mux_unregister_read(&multiplexor, dev);
+    (void)diminuto_mux_unregister_read(&multiplexor, file);
 
     diminuto_mux_fini(&multiplexor);
 
     (void)diminuto_ipc_close(sock);
 
-    (void)fclose(stream);
+    (void)fclose(input);
+    if (input != output) {
+        (void)fclose(output);
+    }
+
+    free(frame);
+    free(datagram);
 
     exit(0);
 }

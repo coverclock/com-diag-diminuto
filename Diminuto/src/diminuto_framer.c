@@ -298,7 +298,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             result = that->length;
             if (result == 0) {
                 DIMINUTO_LOG_INFORMATION("framer@%p(%d): empty?\n", that, fd);
-                diminuto_framer_reinit(that);
+                diminuto_framer_reset(that);
             } else {
                 DIMINUTO_LOG_DEBUG("framer@%p(%d): complete. [%zd]\n", that, fd, result);
             }
@@ -311,17 +311,17 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_ABORT:
             DIMINUTO_LOG_NOTICE("framer@%p(%d): abort!\n", that, fd);
-            diminuto_framer_reinit(that);
+            diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
             DIMINUTO_LOG_WARNING("framer@%p(%d): failed!\n", that, fd);
-            diminuto_framer_reinit(that);
+            diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
             DIMINUTO_LOG_ERROR("framer@%p(%d): overflow!\n", that, fd);
-            diminuto_framer_reinit(that);
+            diminuto_framer_reset(that);
             break;
 
         default:
