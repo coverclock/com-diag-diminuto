@@ -103,7 +103,7 @@ int main(int argc, char * argv[])
      * PARSING
      */
 
-    while ((opt = getopt(argc, argv, "124678B:D:E:b:cdehmorst:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "124678B:D:E:b:cdehmnorst:x?")) >= 0) {
 
         switch (opt) {
 
@@ -203,6 +203,10 @@ int main(int argc, char * argv[])
             modemcontrol = !0;
             break;
 
+        case 'n':
+            paritybit = 0;
+            break;
+
         case 'o':
             paritybit = 1;
             break;
@@ -260,10 +264,10 @@ int main(int argc, char * argv[])
     }
 
     if (error) {
-        exit(1);
+        exit(2);
     }
 
-    DIMINUTO_LOG_DEBUG("%s: role %c\n", program, role);
+    DIMINUTO_LOG_INFORMATION("%s: role %c\n", program, role);
 
     /*
      * SIGNAL HANDLERS
@@ -280,14 +284,14 @@ int main(int argc, char * argv[])
     }
 
     if (error) {
-        exit(1);
+        exit(3);
     }
 
     /*
      * DEVICE
      */
 
-    DIMINUTO_LOG_DEBUG("%s: device %s %d%c%d %d%d%d\n", program, device, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol, xonxoff, rtscts);
+    DIMINUTO_LOG_INFORMATION("%s: device %s %d%c%d %s %s %s\n", program, device, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol ? "modemcontrol" : "local", xonxoff ? "xonxoff" : "", rtscts ? "rtscts" : "");
 
     if (strcmp(device, "-") == 0) {
         input = stdin;
@@ -308,7 +312,7 @@ int main(int argc, char * argv[])
 
     if (error) {
         diminuto_perror(device);
-        exit(2);
+        exit(4);
     }
 
     file = fileno(input);
@@ -317,7 +321,13 @@ int main(int argc, char * argv[])
      * SOCKET
      */
 
-    DIMINUTO_LOG_DEBUG("%s: endpoint %s\n", program, diminuto_ipc_endpoint2string(&endpoint, &endpointstring, sizeof(endpointstring)));
+    DIMINUTO_LOG_INFORMATION("%s: endpoint %s\n", program, diminuto_ipc_endpoint2string(&endpoint, &endpointstring, sizeof(endpointstring)));
+
+    if ((endpoint.type != DIMINUTO_IPC_TYPE_IPV4) && (endpoint.type != DIMINUTO_IPC_TYPE_IPV6)) {
+        errno = EINVAL;
+        diminuto_perror("-E");
+        exit(5);
+    }
 
     switch (role) {
     case CLIENT:
@@ -351,7 +361,7 @@ int main(int argc, char * argv[])
     }
 
     if (sock < 0) {
-        exit(3);
+        exit(6);
     }
 
     /*
@@ -371,7 +381,7 @@ int main(int argc, char * argv[])
     }
 
     if (error) {
-        exit(4);
+        exit(7);
     }
 
     /*
@@ -393,7 +403,7 @@ int main(int argc, char * argv[])
     }
 
     if (error) {
-        exit(5);
+        exit(8);
     }
 
     /*
