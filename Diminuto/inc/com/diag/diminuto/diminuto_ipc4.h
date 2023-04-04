@@ -22,6 +22,29 @@
 #include "com/diag/diminuto/diminuto_ipc.h"
 
 /*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def DIMINUTO_IPC4_UNSPECIFIED_INIT
+ * Generate the code for a static initializer for an IPv4 unspecified address.
+ */
+#define DIMINUTO_IPC4_UNSPECIFIED_INIT (0x00000000UL)
+
+/**
+ * @def DIMINUTO_IPC4_LOOPBACK_INIT
+ * Generate the code for a static initializer for an IPv4 loopback address.
+ */
+#define DIMINUTO_IPC4_LOOPBACK_INIT (0x7f000001UL)
+
+/**
+ * @def DIMINUTO_IPC4_LOOPBACK2_INIT
+ * Generate the code for a static initializer for a second IPv4 loopback
+ * address.
+ */
+#define DIMINUTO_IPC4_LOOPBACK2_INIT (0x7f000002UL)
+
+/*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
@@ -30,19 +53,19 @@
  * the IPv4 address of all zeros. Helpfully, the unspecified IPv4 address is
  * the same in either host or network byte order.
  */
-static const diminuto_ipv4_t DIMINUTO_IPC4_UNSPECIFIED = 0x00000000UL;
+static const diminuto_ipv4_t DIMINUTO_IPC4_UNSPECIFIED = DIMINUTO_IPC4_UNSPECIFIED_INIT;
 
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.1",
  * the IPv4 loopback address.
  */
-static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK = 0x7f000001UL;
+static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK = DIMINUTO_IPC4_LOOPBACK_INIT;
 
 /**
  * This is the Diminuto binary IPv4 address in host byte order for "127.0.0.2",
  * the second IPv4 loopback address used in some circumstances.
  */
-static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2 = 0x7f000002UL;
+static const diminuto_ipv4_t DIMINUTO_IPC4_LOOPBACK2 = DIMINUTO_IPC4_LOOPBACK2_INIT;
 
 /*******************************************************************************
  * COMPARATORS

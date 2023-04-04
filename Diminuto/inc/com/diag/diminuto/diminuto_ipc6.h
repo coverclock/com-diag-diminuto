@@ -51,6 +51,29 @@
 #include <string.h>
 
 /*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def DIMINUTO_IPC6_UNSPECIFIED_INIT
+ * Generate a static initializer for an IPv6 unspecified address.
+ */
+#define DIMINUTO_IPC6_UNSPECIFIED_INIT { { 0, 0, 0, 0, 0, 0, 0, 0, } }
+
+/**
+ * @def DIMINUTO_IPC6_LOOPBACK_INIT
+ * Generate a static initializer for an IPv6 loopback address.
+ */
+#define DIMINUTO_IPC6_LOOPBACK_INIT { { 0, 0, 0, 0, 0, 0, 0, 1, } }
+
+/**
+ * @def DIMINUTO_IPC6_LOOPBACK4_INIT
+ * Generate a static initializer for an IPv4 loopback address encapsulated in
+ * an IPv6 address.
+ */
+#define DIMINUTO_IPC6_LOOPBACK4_INIT { { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1), } }
+
+/*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
@@ -59,20 +82,20 @@
  * IPv6 address of all zeros. Helpfully, the unspecified IPv6 address is
  * the same in either host or network byte order.
  */
-static const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED = { { 0, 0, 0, 0, 0, 0, 0, 0, } };
+static const diminuto_ipv6_t DIMINUTO_IPC6_UNSPECIFIED = DIMINUTO_IPC6_UNSPECIFIED_INIT;
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for "::1", the
  * IPv6 loopback address.
  */
-static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK = { { 0, 0, 0, 0, 0, 0, 0, 1, } };
+static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK = DIMINUTO_IPC6_LOOPBACK_INIT;
 
 /**
  * This is the Diminuto binary IPv6 address in host byte order for
  * "::ffff:127.0.0.1", which is the IPv4 loopback address encapsulated in an
  * IPv6 address.
  */
-static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = { { 0, 0, 0, 0, 0, 0xffff, ((127 << 8) + 0), ((0 << 8) + 1), } };
+static const diminuto_ipv6_t DIMINUTO_IPC6_LOOPBACK4 = DIMINUTO_IPC6_LOOPBACK4_INIT;
 
 /*******************************************************************************
  * COMPARATORS
