@@ -14,6 +14,8 @@
  * addresses for each query, balancing the load across multiple
  * physical servers. Even the address "prairiethorn.org" may change
  * if the underlying server changes or reboots at the wrong time.
+ * You can see me trying to handle this in the difference between
+ * the VERIFY and VALIDATE macros below.
  *
  * More useful debugging output can be had by enabling more logging:
  *
@@ -156,8 +158,8 @@ static const char * type2string(diminuto_ipc_type_t type)
     do { \
         const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
         EXPECT(rc == 0); \
-        EXPECT(!diminuto_ipc4_is_unspecified(&(_pp_->ipv4)) == 0); \
-        EXPECT(!diminuto_ipc6_is_unspecified(&(_pp_->ipv6)) == 0); \
+        EXPECT(!diminuto_ipc4_is_unspecified(&(_pp_->ipv4))); \
+        EXPECT(!diminuto_ipc6_is_unspecified(&(_pp_->ipv6))); \
         ADVISE(diminuto_ipc4_compare(&(_pp_->ipv4), &(_IPV4_)) == 0); \
         ADVISE(diminuto_ipc6_compare(&(_pp_->ipv6), &(_IPV6_)) == 0); \
         EXPECT(_pp_->tcp == (_TCP_)); \
@@ -176,8 +178,8 @@ static const char * type2string(diminuto_ipc_type_t type)
     do { \
         const diminuto_ipc_endpoint_t * _pp_ = (_POINTER_); \
         EXPECT(rc == 0); \
-        EXPECT(diminuto_ipc4_compare(&(_pp_->ipv4), &DIMINUTO_IPC4_UNSPECIFIED) == 0); \
-        EXPECT(diminuto_ipc6_compare(&(_pp_->ipv6), &DIMINUTO_IPC6_UNSPECIFIED) == 0); \
+        EXPECT(diminuto_ipc4_is_unspecified(&(_pp_->ipv4))); \
+        EXPECT(diminuto_ipc6_is_unspecified(&(_pp_->ipv6))); \
         EXPECT(_pp_->tcp == 0); \
         EXPECT(_pp_->udp == 0); \
         EXPECT((((_PATH_)[0] == '\0') && (_pp_->local[0] == '\0')) || (_pp_->local[0] == '/')); \
@@ -192,8 +194,6 @@ static const char * type2string(diminuto_ipc_type_t type)
 
 int main(int argc, char * argv[])
 {
-    const char fqdn4[] = FQDN4;
-    const char fqdn6[] = FQDN46;
     diminuto_ipv4_t unspecified4;
     diminuto_ipv6_t unspecified6;
     diminuto_ipv4_t localhost4;
@@ -254,8 +254,10 @@ int main(int argc, char * argv[])
     unspecified6 = DIMINUTO_IPC6_UNSPECIFIED;
     localhost4 = diminuto_ipc4_address("localhost");
     localhost6 = diminuto_ipc6_address("localhost");
-    fqdn44 = diminuto_ipc4_address(fqdn4);
-    fqdn46 = diminuto_ipc6_address(fqdn6);
+    fqdn44 = diminuto_ipc4_address(FQDN4);
+    fqdn46 = diminuto_ipc6_address(FQDN4);
+    fqdn64 = diminuto_ipc4_address(FQDN46);
+    fqdn66 = diminuto_ipc6_address(FQDN46);
     address4 = diminuto_ipc4_address(IPV4);
     address46 = diminuto_ipc6_address("::ffff:" IPV4);
     address6 = diminuto_ipc6_address(IPV6);
@@ -433,6 +435,8 @@ int main(int argc, char * argv[])
         COMMENT("localhost6=%s\n", diminuto_ipc6_address2string(localhost6, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("fqdn44=%s\n", diminuto_ipc4_address2string(fqdn44, ipv4buffer, sizeof(ipv4buffer)));
         COMMENT("fqdn46=%s\n", diminuto_ipc6_address2string(fqdn46, ipv6buffer, sizeof(ipv6buffer)));
+        COMMENT("fqdn64=%s\n", diminuto_ipc4_address2string(fqdn64, ipv4buffer, sizeof(ipv4buffer)));
+        COMMENT("fqdn66=%s\n", diminuto_ipc6_address2string(fqdn66, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address4=%s\n", diminuto_ipc4_address2string(address4, ipv4buffer, sizeof(ipv4buffer)));
         COMMENT("address46=%s\n", diminuto_ipc6_address2string(address46, ipv6buffer, sizeof(ipv6buffer)));
         COMMENT("address6=%s\n", diminuto_ipc6_address2string(address6, ipv6buffer, sizeof(ipv6buffer)));
@@ -490,14 +494,6 @@ int main(int argc, char * argv[])
         ASSERT(eitherudp == coloneitherudp);
         ASSERT(undefinedtcp == colonundefinedtcp);
         ASSERT(undefinedudp == colonundefinedudp);
-
-        STATUS();
-    }
-
-    {
-        TEST();
-
-        ASSERT(!diminuto_ipc_endpoint_ipv6);
 
         STATUS();
     }
@@ -863,6 +859,42 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = IPV4 ":" EITHER, &parse);
         DISPLAY();
         VERIFYINET4(&parse, address4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint_prefer(endpoint = FQDN46, &parse, DIMINUTO_IPC_PREFERENCE_IPV4);
+        DISPLAY();
+        VALIDATEINET4(&parse, fqdn64, fqdn66, ephemeral, ephemeral);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint_prefer(endpoint = FQDN46, &parse, DIMINUTO_IPC_PREFERENCE_IPV6);
+        DISPLAY();
+        VALIDATEINET6(&parse, fqdn64, fqdn66, ephemeral, ephemeral);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint_prefer(endpoint = FQDN46, &parse, DIMINUTO_IPC_PREFERENCE_NONE);
+        DISPLAY();
+        VALIDATEINET4(&parse, fqdn64, fqdn66, ephemeral, ephemeral);
 
         STATUS();
     }

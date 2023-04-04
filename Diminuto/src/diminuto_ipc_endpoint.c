@@ -20,9 +20,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
-int diminuto_ipc_endpoint_ipv6 = 0;
-
 static int debug = 0;
+
+int diminuto_ipc_endpoint_ipv6 = 0;
 
 int diminuto_ipc_endpoint_debug(int now)
 {
@@ -95,7 +95,7 @@ typedef enum State {
     S_STOP      = '>',
 } state_t;
 
-int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint)
+int diminuto_ipc_endpoint_prefer(const char * string, diminuto_ipc_endpoint_t * endpoint, diminuto_ipc_preference_t preference)
 {
     int rc = -1;
     state_t state = S_START;
@@ -523,17 +523,9 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
 
         /*
          * If the endpoint included a FQDN, there may be both
-         * an IPv4 and an IPv6 address resolved for it; in that case
-         * the type is IPV6 (which reflects my own bias), except in
-         * those cases where the IPv6 address is merely an IPv4
-         * address mapped into IPv6 format, in which case we use
-         * IPv4 rather than using the IPv6 stack for IPv4 connections
-         * (which is entirely doable). The caller can always check the
-         * IPv4 and IPv6 address fields explicitly. If just an IPv4
-         * address resolved, the type is IPV4. In either case, there
-         * may be a service, and that service could have resolved to be
-         * either a TCP or UDP port or both. Ephemeral ports are a
-         * special case where everything is zero but the parser succeeded;
+         * an IPv4 and an IPv6 address resolved for it. We use the
+         * specified preference. Ephemeral ports are a special case
+         * where everything is zero but the parser succeeded;
          * examples: "[::]", "0.0.0.0", "0".
          */
 
@@ -544,6 +536,12 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
             } else if (diminuto_ipc6_is_v4mapped(&(endpoint->ipv6))) {
                 is_ipv6 = false;
                 is_ipv4 = true;
+            } else if (preference == DIMINUTO_IPC_PREFERENCE_IPV4) {
+                is_ipv6 = false;
+                is_ipv4 = true;
+            } else if (preference == DIMINUTO_IPC_PREFERENCE_IPV6) {
+                is_ipv6 = true;
+                is_ipv4 = false;
             } else {
                 is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
                 is_ipv4 = !diminuto_ipc_endpoint_ipv6;
@@ -551,11 +549,17 @@ int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoin
         } else if (!diminuto_ipc4_is_unspecified(&(endpoint->ipv4))) {
             is_ipv6 = false;
             is_ipv4 = true;
-        } else if (is_ipv4 == is_ipv6) {
+        } else if (is_ipv4 != is_ipv6) {
+            /* Do nothing: no ambiguity. */
+        } else if (preference == DIMINUTO_IPC_PREFERENCE_IPV4) {
+            is_ipv6 = false;
+            is_ipv4 = true;
+        } else if (preference == DIMINUTO_IPC_PREFERENCE_IPV6) {
+            is_ipv6 = true;
+            is_ipv4 = false;
+        } else {
             is_ipv6 = !!diminuto_ipc_endpoint_ipv6;
             is_ipv4 = !diminuto_ipc_endpoint_ipv6;
-        } else {
-            /* Do nothing: no ambiguity. */
         }
 
         /*

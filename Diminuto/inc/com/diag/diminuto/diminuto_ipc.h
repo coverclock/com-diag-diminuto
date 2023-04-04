@@ -568,11 +568,22 @@ extern char * diminuto_ipc_port2string(diminuto_port_t port, void * buffer, size
  * applied to the socket structure.
  */
 typedef enum DiminutoIpcType {
-    DIMINUTO_IPC_TYPE_UNSPECIFIED  = AF_UNSPEC,
-    DIMINUTO_IPC_TYPE_IPV4         = AF_INET,
-    DIMINUTO_IPC_TYPE_IPV6         = AF_INET6,
-    DIMINUTO_IPC_TYPE_LOCAL        = AF_UNIX,
+    DIMINUTO_IPC_TYPE_UNSPECIFIED   = AF_UNSPEC,
+    DIMINUTO_IPC_TYPE_IPV4          = AF_INET,
+    DIMINUTO_IPC_TYPE_IPV6          = AF_INET6,
+    DIMINUTO_IPC_TYPE_LOCAL         = AF_UNIX,
 } diminuto_ipc_type_t;
+
+/**
+ * When using IPv4 or IPv6, the application can specify a preference as to
+ * which one to use in the event that an FQDN resolves to both an IPv4 and
+ * an IPv6 address (which is quite common).
+ */
+typedef enum DiminutoIpcPreference {
+    DIMINUTO_IPC_PREFERENCE_IPV4    = DIMINUTO_IPC_TYPE_IPV4,
+    DIMINUTO_IPC_PREFERENCE_IPV6    = DIMINUTO_IPC_TYPE_IPV6,
+    DIMINUTO_IPC_PREFERENCE_NONE    = DIMINUTO_IPC_TYPE_UNSPECIFIED,
+} diminuto_ipc_preference_t;
 
 /**
  * This type defines the structure that is populated when an endpoint string
@@ -611,6 +622,23 @@ typedef struct DiminutoIpcEndpoint {
  * must exist.  Local paths must contain a slash ("/") somewhere in them to
  * discriminate between a path name and other possible interpretations. An
  * empty string is a valid endpoint, indicating an ephemeral port on the local
+ * host. In the event that an FQDN resolves to both an IPv4 and an IPv6 address,
+ * the preference indicates which one to which to set the type field.
+ * @param endpoint points to the structure in which the results are stored.
+ * @param preference specifies a preference to IPv4, IPv6, or no preference.
+ * @return 0 if both syntactically and semantically successful, <0 otherwise.
+ */
+extern int diminuto_ipc_endpoint_prefer(const char * string, diminuto_ipc_endpoint_t * endpoint, diminuto_ipc_preference_t preference);
+
+/**
+ * Try to parse an endpoint string that has some combination of host name, Fully
+ * Qualified Domain Name (FQDN), IPv4 address string, IPv6 address string, port
+ * number string or service name, or Local path (UNIX domain path), into a
+ * usable IPv4 or IPv6 binary address, binary TCP and/or UDP port numbers, or
+ * an absolute path in the file system of which all but the last path component
+ * must exist.  Local paths must contain a slash ("/") somewhere in them to
+ * discriminate between a path name and other possible interpretations. An
+ * empty string is a valid endpoint, indicating an ephemeral port on the local
  * host. Here are just a few examples of valid endpoints and their
  * interpretations:
  * "80" (port),
@@ -637,7 +665,9 @@ typedef struct DiminutoIpcEndpoint {
  * @param endpoint points to the structure in which the results are stored.
  * @return 0 if both syntactically and semantically successful, <0 otherwise.
  */
-extern int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint);
+static inline int diminuto_ipc_endpoint(const char * string, diminuto_ipc_endpoint_t * endpoint) {
+    return diminuto_ipc_endpoint_prefer(string, endpoint, DIMINUTO_IPC_PREFERENCE_NONE);
+}
 
 /**
  * Convert an endpoint object into a NUL-terminated printable string. The
