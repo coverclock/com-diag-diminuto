@@ -45,7 +45,7 @@
  * The mid-level API uses standard input/output streams but leaves the
  * management of the Framer object to the application.
  *
- * THe highilevel API provides more automation by managing a Framer object
+ * The high-level API provides more automation by managing a Framer object
  * internally, as a local variable reinitialized upon every call, at the
  * expense of abstracting out all of the details of what is going on with
  * the input stream.
