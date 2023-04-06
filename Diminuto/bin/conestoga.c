@@ -7,6 +7,13 @@
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  * THIS IS A WORK IN PROGRESS.
+ * Conestoga is a project to pass packets containing arbitary binary data
+ * in a UDP-like manner over an asynchronous serial connection. It will be
+ * used in conjunciton with the Fothergill project, which uses USB-powered
+ * paired LoRa radios which enumerate as serial ports on the USB bus.
+ * Conestoga uses the Diminuto Framer feature to do this. Framer implements
+ * a packet framing mechanism using byte stuffing in a manner similar to
+ * HDLC and PPP.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -26,11 +33,14 @@
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_types.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 static const size_t MAXDATAGRAM = diminuto_maximumof(uint16_t) - 8;
 
@@ -59,7 +69,7 @@ int main(int argc, char * argv[])
     role_t role = CLIENT;
     diminuto_ipc_preference_t preference = DIMINUTO_IPC_PREFERENCE_NONE;
     size_t bufsize = MAXDATAGRAM;
-    diminuto_ticks_t timeout = 0;
+    diminuto_ticks_t timeout = 1000000000;
     unsigned long milliseconds = 0;
     diminuto_ipc_endpoint_t endpoint = { 0, };
     int rc = -1;
@@ -81,6 +91,7 @@ int main(int argc, char * argv[])
     ssize_t sent = 0;
     ssize_t received = 0;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t * ff = (diminuto_framer_t *)0;
     uint8_t * frame = (uint8_t *)0;
     uint8_t * datagram = (uint8_t *)0;
     diminuto_endpoint_buffer_t endpointstring = { '\0', };
@@ -386,7 +397,7 @@ int main(int argc, char * argv[])
     }
 
     /*
-     * FRAMER
+     * BUFFERS
      */
 
     frame = (uint8_t *)malloc(bufsize);
@@ -394,8 +405,6 @@ int main(int argc, char * argv[])
         diminuto_perror("malloc");
         error = true;
     }
-
-    (void)diminuto_framer_init(&framer, frame, bufsize);
 
     datagram = (uint8_t *)malloc(bufsize);
     if (datagram == (uint8_t *)0) {
@@ -405,6 +414,19 @@ int main(int argc, char * argv[])
 
     if (error) {
         exit(8);
+    }
+
+    /*
+     * FRAMER
+     */
+
+    ff = diminuto_framer_init(&framer, frame, bufsize);
+    if (ff == (diminuto_framer_t *)0) {
+        error = true;
+    }
+
+    if (error) {
+        exit(9);
     }
 
     /*
