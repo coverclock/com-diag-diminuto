@@ -40,17 +40,20 @@
  * PAYLOAD (the Kermit-16 CRC octets will never fall within a range requiring
  * HDLC ESCAPE tokens - see the Kermit feature unit test).
  *
- * Examples of using the Framer can be found in its unit tests. The Framer
- * can be approached at its simplest level by just driving its state machine
- * by simulating it via whatever data source the application uses. A low level
- * application programming interface uses standard input/output streams but
- * leaves the management of the Framer object to the application. A high level
- * interface provides more automation by managing a Framer object internally,
- * at the expense of abstracting out all of the details of what is going on
- * with the input stream. Similarly, framing of output can be handled
- * by the application, using the Fletcher checksum and Kermit cyclic redundancy
- * check features itself, along with a function that simplifies inserting the
- * necessary ESCAPE tokens, or with increasing levels of automation.
+ * The Framer can be approached at via the low-level API by just driving its
+ * state machine by simulating it via whatever data source the application uses. *
+ * The mid-level API uses standard input/output streams but leaves the
+ * management of the Framer object to the application.
+ *
+ * THe highilevel API provides more automation by managing a Framer object
+ * internally, as a local variable reinitialized upon every call, at the
+ * expense of abstracting out all of the details of what is going on with
+ * the input stream.
+ * 
+ * Similarly, framing of output can be handled by the application, using the
+ * Fletcher checksum and Kermit cyclic redundancy check features itself, along
+ * with a function that simplifies inserting the necessary ESCAPE tokens. Or,
+ * it can be done with increasing levels of automation.
  *
 `* This feature was developed in direct support of the Conestoga and
  * Fothergill sub-projects. Fothergill uses the LoRa (Long-Range) radio
@@ -58,6 +61,8 @@
  * a serial channel. Specifically, the SparkFun LoRa Serial Kit provides
  * two paired LoRa radios with interfaces that enumerate over USB as serial
  * ports.
+ *
+ * Examples of all of these approaches can be found in its unit tests.
  *
  * REFERENCES
  *

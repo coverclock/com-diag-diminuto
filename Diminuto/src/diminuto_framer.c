@@ -65,7 +65,7 @@ void streamerror(FILE * stream, const char * label)
 }
 
 /*******************************************************************************
- * LOW LEVEL API
+ * LOW-LEVEL API
  ******************************************************************************/
 
 diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token)
@@ -528,7 +528,7 @@ ssize_t diminuto_framer_abort(FILE * stream)
 }
 
 /*******************************************************************************
- * MIDDLE LEVEL API
+ * MID-LEVEL API
  ******************************************************************************/
 
 ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
@@ -699,7 +699,7 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
 }
 
 /*******************************************************************************
- * HIGH LEVEL API
+ * HIGH-LEVEL API
  ******************************************************************************/
 
 ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
