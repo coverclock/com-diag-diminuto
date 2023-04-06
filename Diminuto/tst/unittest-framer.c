@@ -976,5 +976,82 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        uint8_t DATA[2];
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t sent;
+        ssize_t received;
+        char buffer[sizeof(DATA) * 3];
+        unsigned int ii;
+        unsigned int jj;
+        int iterations;
+        diminuto_framer_t writer;
+        diminuto_framer_t reader;
+
+        TEST();
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        diminuto_framer_init(&writer, (void *)0, 0);
+        diminuto_framer_init(&reader, buffer, sizeof(buffer));
+
+        iterations = 0;
+
+        for (ii = 0x00; ii <= 0xff; ++ii) {
+            for (jj = 0x00; jj <= 0xff; ++jj) {
+
+                DATA[0] = ii;
+                DATA[1] = jj;
+
+                sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+                COMMENT("diminuto_framer_writer=%zd\n", sent);
+                ASSERT(sent > sizeof(DATA));
+
+                do {
+                    received = diminuto_framer_reader(source, &reader);
+                } while (received == 0);
+                COMMENT("diminuto_framer_reader=%zd\n", received);
+                ASSERT(received > sizeof(DATA));
+
+                ASSERT(memcmp(DATA, buffer, reader.length) == 0);
+
+                diminuto_framer_reset(&reader);
+
+                ++iterations;
+
+            }
+        }
+
+        CHECKPOINT("iterations=%d\n", iterations);
+        ASSERT(iterations == (256 * 256));
+
+        CHECKPOINT("monotonic=%u sequence=%u expected=%u\n", writer.monotonic, reader.sequence, reader.expected);
+        --iterations;
+        ASSERT(writer.monotonic == iterations);
+        ASSERT(reader.sequence == iterations);
+        ASSERT(reader.expected == iterations);
+
+        diminuto_framer_fini(&writer);
+        diminuto_framer_fini(&reader);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
     EXIT();
 }

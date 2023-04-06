@@ -398,6 +398,7 @@ static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that,
     that->buffer = buffer;
     that->size = size;
     --that->sequence;
+    --that->monotonic;
     return diminuto_framer_reset(that);
 }
 

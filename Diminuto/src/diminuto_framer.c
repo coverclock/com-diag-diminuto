@@ -753,7 +753,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
          * SEQUENCE[2]
          */
 
-        sequence = htons(that->monotonic++);
+        sequence = htons(++that->monotonic);
         (void)diminuto_fletcher_16(&sequence, sizeof(sequence), &(fletcher[0]), &(fletcher[1]));
         emitted = diminuto_framer_emit(stream, &sequence, sizeof(sequence));
         if (emitted == EOF) {
