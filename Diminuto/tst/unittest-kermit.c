@@ -29,7 +29,6 @@ static bool special(uint8_t token)
     case ESCAPE:
     case XON:
     case XOFF:
-    case RESERVED:
         result = true;
         break;
     default:
@@ -82,7 +81,6 @@ int main(void)
             case '}':
             case '\x11':
             case '\x13':
-            case (uint8_t)'\xf8':
                 ASSERT(special(token));
                 break;
             default:

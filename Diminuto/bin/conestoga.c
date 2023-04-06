@@ -6,6 +6,7 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
+ * THIS IS A WORK IN PROGRESS.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"

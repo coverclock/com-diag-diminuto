@@ -18,11 +18,10 @@
  ******************************************************************************/
 
 enum DiminutoFramerToken {
-    FLAG        = '~',              /* 0x7e */
+    FLAG        = '~',              /* 0x7e == 0b01111110 */
     ESCAPE      = '}',              /* 0x7d */
     XON         = '\x11',           /* 0x11 */
     XOFF        = '\x13',           /* 0x13 */
-    RESERVED    = (uint8_t)'\xf8',  /* 0xf8 */
 };
 
 enum DiminutoFramerMask {
