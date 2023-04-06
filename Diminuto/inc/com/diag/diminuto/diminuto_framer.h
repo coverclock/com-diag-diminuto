@@ -19,26 +19,30 @@
  *
  * A Framer frame looks like this
  *
- * FLAG[1] LENGTH[4+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] FLAG[1]
+ * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] FLAG[1]
  *
  * where
  *
- * FLAG[1]: is an HDLC FLAG token (the last FLAG token may be the first
+ * FLAG[1]: is an FLAG token (the last FLAG token may be the first
  * at the beginning of the next frame);
  *
+ * SEQUENCE[2}]: is a simple two-octet monotonically increasing sequence
+ * number field (which has no effect on whether or not frames are accepted)
+ * in network byte order plus any necessary ESCAPE tokens;
+ *
  * LENGTH[4+]: is the four-octet field containing the length of the unescaped
- * payload in network byte order plus any necessary HDLC ESCAPE tokens;
+ * payload in network byte order plus any necessary ESCAPE tokens;
  *
  * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets across the
- * unescaped LENGTH in network byte order, plus any necessary HDLC ESCAPE
+ * unescaped LENGTH in network byte order, plus any necessary ESCAPE
  * tokens;
  *
  * PAYLOAD[LENGTH+]: is the  payload, of length of the unescaped LENGTH field
- * in host byte order, plus any necessary HDLC ESCAPE tokens;
+ * in host byte order, plus any necessary ESCAPE tokens;
  *
  * CRC[3]: is the Kermit-16 cyclic redundancy check octets across the unescaped
  * PAYLOAD (the Kermit-16 CRC octets will never fall within a range requiring
- * HDLC ESCAPE tokens - see the Kermit feature unit test).
+ * ESCAPE tokens - see the Kermit feature unit test).
  *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses. *
@@ -89,13 +93,6 @@
  ******************************************************************************/
 
 /**
- * This describes what the payload header looks like. The length of the
- * payload in octets is passed across the wire in network byte order, and
- * its checksum is computed on the network byte order field.
- */
-typedef uint32_t diminuto_framer_length_t;
-
-/**
  * This enumeration defines the states in which that the Framer input state
  * machine may be. RESET is the start state for every new received
  * frame. Terminal states are COMPLETE (a complete frame has been received
@@ -116,6 +113,8 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_FLAG              = '~',  /* One or more flags. */
     DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
     DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
+    DIMINUTO_FRAMER_STATE_SEQUENCE          = 'N',  /* Sequence[2]. */
+    DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED  = 'n',  /* Escaped Sequence[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED  = 'f',  /* Escaped checksum[2]. */
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
@@ -139,13 +138,16 @@ typedef struct DiminutoFramer {
     size_t size;                        /* Size of application buffer. */
     size_t limit;                       /* Remaining octets in current field. */
     size_t total;                       /* Total number of octets in frame. */
-    diminuto_framer_length_t length;    /* Received frame length. */
     diminuto_framer_state_t state;      /* FSM state. */
+    uint32_t length;                    /* Received frame length. */
+    uint16_t sequence;                  /* Actual input sequence number. */
+    uint16_t expected;                  /* Expected input sequence number. */
+    uint16_t monotonic;                 /* Output sequence number. */
     uint16_t crc;                       /* Kermit cyclic redundancy check. */
     uint8_t a;                          /* Fletcher checksum A. */
     uint8_t b;                          /* Fletcher checksum B. */
-    char sum[2];                        /* Received checksum. */
-    char check[3];                      /* Received cyclic redundancy check. */
+    uint8_t sum[2];                     /* Received checksum. */
+    uint8_t check[3];                   /* Received cyclic redundancy check. */
     bool debug;                         /* Debug on or off. */
 } diminuto_framer_t;
 
@@ -338,15 +340,16 @@ extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
 
 /**
  * Write a complete frame to the output stream, including a FLAG token, the
- * length, Fletcher checksum, payload, and Kermit cyclic redundancy check.
- * After the complete frame is emitted, the output stream is flushed.
+ * length, sequence, Fletcher checksum, payload, and Kermit cyclic redundancy
+ * check. After the complete frame is emitted, the output stream is flushed.
  * The caller is blocked until the complete frame is emitted.
  * @param stream points to the output stream.
+ * @param that points to the Framer object.
  * @param data points to the payload to be emitted.
  * @param length is the length of the payload in octets.
  * @return the TOTAL number of ALL octets written, EOF if error.
  */
-extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length);
+extern ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const void * data, size_t length);
 
 /*******************************************************************************
  * HIGH-LEVEL API
@@ -367,8 +370,9 @@ extern ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t l
 extern ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size);
 
 /**
- * Write a complete frame to the output stream, including a FLAG token, the
- * length, Fletcher checksum, payload, and Kermit cyclic redundancy check.
+ * Write a complete frame to the output stream, including a FLAG token,
+ * length (in network byte order), sequence (in network byte order), Fletcher
+ * checksum, payload, and Kermit cyclic redundancy check.
  * After the complete frame is emitted, the output stream is flushed.
  * The caller is blocked until the complete frame is emitted.
  * @param stream points to the output stream.
@@ -393,6 +397,7 @@ static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that,
     memset(that, 0, sizeof(*that));
     that->buffer = buffer;
     that->size = size;
+    --that->sequence;
     return diminuto_framer_reset(that);
 }
 

@@ -6,8 +6,11 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- * THIS IS A WORK IN PROGRESS.
- * HDLC and PPP.
+ * This is a simple tool to test the Framer against an actual
+ * serial port (in this case, the SparkFun LoRa serial kit).
+ * framertool only deals with newline-terminated printable strings.
+ * Important safety tip: the LoRa serial kit is REALLY slow and
+ * disconnects periodically.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -330,7 +333,7 @@ int main(int argc, char * argv[])
                 } else {
                     line[bufsize - 1] = '\0';
                     received = strlen(line);
-                    sent = diminuto_framer_write(stream, line, received);
+                    sent = diminuto_framer_writer(stream, &framer, line, received);
                     if (sent <= 0) {
                         done = true;
                         break;

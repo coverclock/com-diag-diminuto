@@ -485,7 +485,7 @@ int main(int argc, char * argv[])
                     done = true;
                     break;
                 } else {
-                    sent = diminuto_framer_write(output, datagram, received);
+                    sent = diminuto_framer_writer(output, &framer, datagram, received);
                     if (sent <= 0) {
                         done = true;
                         break;

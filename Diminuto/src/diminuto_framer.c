@@ -10,22 +10,6 @@
  * This implements the Framer feature.
  */
 
-/*
- * USEFUL ASCII CHARACTERS
- *
- * 0x11     DC1     XON
- * 0x13     DC2     XOFF
- * 0x20     ' '     Kermit Low
- * 0x2f     '/'     Kermit[0] High
- * 0x31     '1'     ESCAPEd XON
- * 0x33     '3'     ESCAPEd XOFF
- * 0x5d     ']'     ESCAPEd ESCAPE
- * 0x5e     '^'     ESCAPEd FLAG
- * 0x5f     '_'     Kermit[1..2] High
- * 0x7d     '}'     ESCAPE
- * 0x7e     '~'     FLAG
- */
-
 #include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
@@ -45,11 +29,12 @@
 typedef enum Action {
     FLETCHER    = 'F',      /* Process Fletcher-16 checksum. */
     KERMIT      = 'K',      /* Process Kermit-16 cyclic redundancy check. */
-    LENGTH      = 'L',      /* Compute Fletcher-16 checksum. */
+    LENGTH      = 'L',      /* Process length and Fletcher-16 checksum. */
     PAYLOAD     = 'P',      /* Compute Kermit-6 cyclic redundancy check. */
     RESET       = 'R',      /* Initialize Framer for next frame. */
     SKIP        = 'X',      /* Skip this octet. */
-    STORE       = 'S',      /* Store this octet. */
+    SEQUENCE    = 'N',      /* Process sequence and Fletcher-16 checksum. */
+    STORE       = 'S',      /* Process this octet and Kermit-16 CRC. */
 } action_t;
 
 /*******************************************************************************
@@ -68,6 +53,22 @@ void streamerror(FILE * stream, const char * label)
  * LOW-LEVEL API
  ******************************************************************************/
 
+/*
+ * USEFUL ASCII CHARACTERS TO KNOW
+ *
+ * 0x11     DC1     XON
+ * 0x13     DC2     XOFF
+ * 0x20     ' '     Kermit Low
+ * 0x2f     '/'     Kermit[0] High
+ * 0x31     '1'     ESCAPEd XON
+ * 0x33     '3'     ESCAPEd XOFF
+ * 0x5d     ']'     ESCAPEd ESCAPE
+ * 0x5e     '^'     ESCAPEd FLAG
+ * 0x5f     '_'     Kermit[1..2] High
+ * 0x7d     '}'     ESCAPE
+ * 0x7e     '~'     FLAG
+ */
+
 diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token)
 {
     uint8_t ch = '\0';
@@ -78,6 +79,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     prior = that->state;
 
     if (token == EOF) {
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: EOF\n", that);
         that->state = DIMINUTO_FRAMER_STATE_FINAL;
     } else {
         ch = token;
@@ -144,7 +146,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
                 action = STORE;
             } else {
                 action = LENGTH;
-                that->state = DIMINUTO_FRAMER_STATE_FLETCHER;
+                that->state = DIMINUTO_FRAMER_STATE_SEQUENCE;
             }
             break;
         }
@@ -157,7 +159,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * FLAG will never be valid here because XORing it with
              * MASK yields 0x5e a.k.a. '^', and the caret should
              * never have been ESCAPEd. An ESCAPE followed by a FLAG
-             * is the ABORT sequence.
+             * is an ABORT.
              */
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
@@ -182,6 +184,71 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
                 that->state = DIMINUTO_FRAMER_STATE_LENGTH;
             } else {
                 action = LENGTH;
+                that->state = DIMINUTO_FRAMER_STATE_SEQUENCE;
+            }
+            break;
+        }
+        break;
+
+    case DIMINUTO_FRAMER_STATE_SEQUENCE:
+        switch (ch) {
+        case FLAG:
+            action = RESET;
+            that->state = DIMINUTO_FRAMER_STATE_FLAG;
+            break;
+        case ESCAPE:
+            that->state = DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED;
+            break;
+        case XON:
+        case XOFF:
+            /*
+             * XON and XOFF should have been ESCAPEd.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        default:
+            if (that->limit > 1) {
+                action = STORE;
+            } else {
+                action = SEQUENCE;
+                that->state = DIMINUTO_FRAMER_STATE_FLETCHER;
+            }
+            break;
+        }
+        break;
+
+    case DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED:
+        switch (ch) {
+        case FLAG:
+            /*
+             * FLAG will never be valid here because XORing it with
+             * MASK yields 0x5e a.k.a. '^', and the caret should
+             * never have been ESCAPEd. An ESCAPE followed by a FLAG
+             * is an ABORTx .
+             */
+            that->state = DIMINUTO_FRAMER_STATE_ABORT;
+            break;
+        case ESCAPE:
+        case XON:
+        case XOFF:
+            /*
+             * ESCAPE will never be valid here because XORing it with
+             * MASK yields 0x5d a.k.a. ']', and the close bracket should
+             * never have been ESCAPEd. Similarly with XON and XOFF,
+             * which would be '1' and '3' respectively before ESCAPEing.
+             * XON and XOFF should only appear if the sending end of
+             * the serial connection is configured for software flow
+             * control and the receiving end is not.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        default:
+            ch ^= MASK;
+            if (that->limit > 1) {
+                action = STORE;
+                that->state = DIMINUTO_FRAMER_STATE_SEQUENCE;
+            } else {
+                action = SEQUENCE;
                 that->state = DIMINUTO_FRAMER_STATE_FLETCHER;
             }
             break;
@@ -222,7 +289,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * FLAG will never be valid here because XORing it with
              * MASK yields 0x5e a.k.a. '^', and the caret should
              * never have been ESCAPEd. An ESCAPE followed by a FLAG
-             * is the ABORT sequence.
+             * is an ABORT.
              */
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
@@ -287,7 +354,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * FLAG will never be valid here because XORing it with
              * MASK yields 0x5e a.k.a. '^', and the caret should
              * never have been ESCAPEd. An ESCAPE followed by a FLAG
-             * is the ABORT sequence.
+             * is an ABORT.
              */
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
@@ -375,6 +442,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         that->limit = sizeof(that->length);
         that->total = 0;
         that->length = 0;
+        /*
+         * Do not reset sequence, expected, or monotonic.
+         */
         that->crc = 0;
         that->a = 0;
         that->b = 0;
@@ -392,8 +462,23 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * Must calculate checksum on network byte ordered field so all
          * architectures see the same value.
          */
+        that->a = that->b = 0;
         (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
         that->length = ntohl(that->length);
+        that->expected = that->sequence + 1; /* Okay to rollover. */
+        that->here = (uint8_t *)&(that->sequence);
+        that->limit = sizeof(that->sequence);
+        break;
+
+    case SEQUENCE:
+        *(that->here++) = ch;
+        --(that->limit);
+        /*
+         * Must calculate checksum on network byte ordered field so all
+         * architectures see the same value.
+         */
+        (void)diminuto_fletcher_16(&(that->sequence), sizeof(that->sequence), &(that->a), &(that->b));
+        that->sequence = ntohs(that->sequence);
         that->here = (uint8_t *)&(that->sum);
         that->limit = sizeof(that->sum);
         break;
@@ -403,15 +488,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-        } else if (that->length == 0) {
-            that->here = (uint8_t *)&(that->check);
-            that->limit = sizeof(that->check);
-            that->state = DIMINUTO_FRAMER_STATE_KERMIT;
-        } else if (that->length > that->size) {
-            that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
+fprintf(stderr, "FLETCHER FAILED! 0x%2.2x%2.2x 0x%2.2x%2.2x\n", that->sum[0], that->sum[1], that->a, that->b);
         } else {
-            that->here = (uint8_t *)(that->buffer);
-            that->limit = that->length;
+             if (that->length == 0) {
+                that->here = (uint8_t *)&(that->check);
+                that->limit = sizeof(that->check);
+                that->state = DIMINUTO_FRAMER_STATE_KERMIT;
+            } else if (that->length > that->size) {
+                that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
+            } else {
+                that->here = (uint8_t *)(that->buffer);
+                that->limit = that->length;
+            }
         }
         break;
 
@@ -429,6 +517,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         crc = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
         if (crc != that->crc) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
+fprintf(stderr, "KERMIT FAILED! 0x%4.4x 0x%4.4x\n", that->crc, crc);
         }
         break;
 
@@ -510,6 +599,8 @@ ssize_t diminuto_framer_abort(FILE * stream)
 
         rc = fwrite(&data, sizeof(data), 1, stream);
         if (rc != 1) {
+            errno = EIO;
+            diminuto_perror("fwrite");
             break;
         }
 
@@ -534,8 +625,8 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 {
     ssize_t result = 0;
     diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_IDLE;
-    int fd = -1;
     int ch = EOF;
+    int fd = -1;
 
     fd = fileno(stream);
 
@@ -560,36 +651,36 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
             if (that->length == 0) {
-                DIMINUTO_LOG_INFORMATION("framer@%p(%d): empty?\n", that, fd);
+                DIMINUTO_LOG_INFORMATION("framer@%p: empty?\n", that);
                 diminuto_framer_reset(that);
             } else {
                 result = that->total;
-                DIMINUTO_LOG_DEBUG("framer@%p(%d): complete. [%zd]\n", that, fd, result);
+                DIMINUTO_LOG_DEBUG("framer@%p: complete. [%zd]\n", that, result);
             }
             break;
 
         case DIMINUTO_FRAMER_STATE_FINAL:
             result = EOF;
-            DIMINUTO_LOG_INFORMATION("framer@%p(%d): final!\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("framer@%p: final!\n", that);
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
-            DIMINUTO_LOG_NOTICE("framer@%p(%d): abort!\n", that, fd);
+            DIMINUTO_LOG_NOTICE("framer@%p: abort!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
-            DIMINUTO_LOG_INFORMATION("framer@%p(%d): failed!\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("framer@%p: failed!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            DIMINUTO_LOG_ERROR("framer@%p(%d): overflow!\n", that, fd);
+            DIMINUTO_LOG_ERROR("framer@%p: overflow!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_INVALID:
-            DIMINUTO_LOG_INFORMATION("framer@%p(%d): invalid!\n", that, fd);
+            DIMINUTO_LOG_INFORMATION("framer@%p: invalid!\n", that);
             diminuto_framer_reset(that);
             break;
 
@@ -610,23 +701,29 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
     return result;
 }
 
-ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
+ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const void * data, size_t length)
 {
     ssize_t result = EOF;
-    diminuto_framer_length_t header = 0;
-    uint8_t ab[] = { 0, 0, };
-    unsigned char abc[] = { ' ', ' ', ' ', '\0', };
+    uint32_t header = 0;
+    uint16_t sequence = 0;
+    uint8_t fletcher[2] = { 0, 0, };
+    unsigned char kermit[3] = { ' ', ' ', ' ' };
     uint16_t crc = 0;
     ssize_t emitted = 0;
     ssize_t total = 0;
+    size_t written = 0;
     int rc = 0;
 
     do {
 
-        if (length > diminuto_maximumof(diminuto_framer_length_t)) {
+        if (length > diminuto_maximumof(uint32_t)) {
             errno = E2BIG;
             break;
         }
+
+        /*
+         * FLAG[1]
+         */
 
         rc = fputc(FLAG, stream);
         if (rc == EOF) {
@@ -635,7 +732,17 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
         }
         total += 1;
 
+        /*
+         * Must calculate checksum on network byte ordered fields so both
+         * big endian and little endian architectures see the same value.
+         */
+
+        /*
+         * LENGTH[4]
+         */
+
         header = htonl(length);
+        (void)diminuto_fletcher_16(&header, sizeof(header), &(fletcher[0]), &(fletcher[1]));
         emitted = diminuto_framer_emit(stream, &header, sizeof(header));
         if (emitted == EOF) {
             break;
@@ -643,31 +750,50 @@ ssize_t diminuto_framer_writer(FILE * stream, const void * data, size_t length)
         total += emitted;
 
         /*
-         * Must calculate checksum on network byte ordered field so both
-         * big endian and little endian architectures see the same value.
+         * SEQUENCE[2]
          */
 
-        (void)diminuto_fletcher_16(&header, sizeof(header), &(ab[0]), &(ab[1]));
-        emitted = diminuto_framer_emit(stream, ab, sizeof(ab));
+        sequence = htons(that->monotonic++);
+        (void)diminuto_fletcher_16(&sequence, sizeof(sequence), &(fletcher[0]), &(fletcher[1]));
+        emitted = diminuto_framer_emit(stream, &sequence, sizeof(sequence));
         if (emitted == EOF) {
             break;
         }
         total += emitted;
 
+        /*
+         * FLETCHER[2]
+         */
+
+        emitted = diminuto_framer_emit(stream, fletcher, sizeof(fletcher));
+        if (emitted == EOF) {
+            break;
+        }
+        total += emitted;
+
+        /*
+         * PAYLOAD[LENGTH]
+         */
+
+        crc = diminuto_kermit_16(data, length, 0);
         emitted = diminuto_framer_emit(stream, data, length);
         if (emitted == EOF) {
             break;
         }
         total += emitted;
 
-        crc = diminuto_kermit_16(data, length, 0);
-        diminuto_kermit_crc2chars(crc, &(abc[0]), &(abc[1]), &(abc[2]));
-        rc = fputs((char *)abc, stream);
-        if (rc == EOF) {
-            streamerror(stream, "fputs");
+        /*
+         * KERMIT[3]
+         */
+
+        diminuto_kermit_crc2chars(crc, &(kermit[0]), &(kermit[1]), &(kermit[2]));
+        written = fwrite(kermit, sizeof(kermit), 1, stream);
+        if (written != 1) {
+            errno = EIO;
+            diminuto_perror("fwrite");
             break;
         }
-        total += sizeof(abc) - 1;
+        total += sizeof(kermit);
 
         /*
          * HDLC requires a FLAG at the end of every frame, but this FLAG
@@ -712,19 +838,18 @@ ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
     ssize_t result = EOF;
     ssize_t readen = EOF; /* Because past tense "read" is a system call. */
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
-    diminuto_framer_t * that = (diminuto_framer_t *)0;
    
-    that = diminuto_framer_init(&framer, buffer, size); 
+    (void)diminuto_framer_init(&framer, buffer, size); 
 
     do {
-        readen = diminuto_framer_reader(stream, that);
+        readen = diminuto_framer_reader(stream, &framer);
     } while (readen == 0);
 
     if (readen > 0) {
-        result = that->length;
+        result = framer.length;
     }
 
-    (void)diminuto_framer_fini(that);
+    (void)diminuto_framer_fini(&framer);
 
     return result;
 }
@@ -733,12 +858,17 @@ ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length)
 {
     ssize_t result = EOF;
     ssize_t written = EOF;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+   
+    (void)diminuto_framer_init(&framer, (void *)0, 0); 
 
-    written = diminuto_framer_writer(stream, data, length);
+    written = diminuto_framer_writer(stream, &framer, data, length);
 
     if (written > 0) {
         result = length;
     }
+
+    (void)diminuto_framer_fini(&framer);
 
     return result;
 }
@@ -746,7 +876,7 @@ ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length)
 /*******************************************************************************
  * DUMPER
  ******************************************************************************/
-
+ 
 void diminuto_framer_dump(const diminuto_framer_t * that)
 {
     diminuto_log_emit("framer@%p: buffer=%p\n", that, that->buffer);
@@ -754,10 +884,13 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: size=%zu\n", that, that->size);
     diminuto_log_emit("framer@%p: limit=%zu\n", that, that->limit);
     diminuto_log_emit("framer@%p: total=%zu\n", that, that->total);
-    diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
     diminuto_log_emit("framer@%p: state='%c'\n", that, that->state);
-    diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
+    diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
+    diminuto_log_emit("framer@%p: sequence=%u\n", that, that->sequence);
+    diminuto_log_emit("framer@%p: expected=%u\n", that, that->expected);
+    diminuto_log_emit("framer@%p: monotonic=%u\n", that, that->monotonic);
     diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
+    diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);
     diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x] valid=[%d,%d,%d] crc=0x%4.4x\n", that, that->check[0], that->check[1], that->check[2], diminuto_kermit_firstisvalid(that->check[0]), diminuto_kermit_secondisvalid(that->check[1]), diminuto_kermit_thirdisvalid(that->check[2]), diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]));
     diminuto_log_emit("framer@%p: debug=%d\n", that, that->debug);
