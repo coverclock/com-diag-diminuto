@@ -322,8 +322,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         switch (ch) {
         case FLAG:
             /*
-             * The FLAG falls outside of the Kermit encoding ranges, so we
-             * assume this is a RESET or an ABORT.
+             * FLAG falls outside of the Kermit encoding ranges.
              */
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
