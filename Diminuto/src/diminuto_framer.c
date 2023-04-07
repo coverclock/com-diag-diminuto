@@ -109,7 +109,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
             break;
         default:
-            /* Do nothing. */
+            /*
+             * Ignore everything but a FLAG.
+             */
             break;
         }
         break;
@@ -129,9 +131,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         case XON:
         case XOFF:
             /*
-             * XON and XOFF should have been ESCAPEd.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             action = STORE;
@@ -152,9 +153,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         case XON:
         case XOFF:
             /*
-             * XON and XOFF should have been ESCAPEd.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             if (that->limit > 1) {
@@ -179,18 +179,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
         case ESCAPE:
-        case XON:
-        case XOFF:
             /*
              * ESCAPE will never be valid here because XORing it with
              * MASK yields 0x5d a.k.a. ']', and the close bracket should
-             * never have been ESCAPEd. Similarly with XON and XOFF,
-             * which would be '1' and '3' respectively before ESCAPEing.
-             * XON and XOFF should only appear if the sending end of
-             * the serial connection is configured for software flow
-             * control and the receiving end is not.
+             * never have been ESCAPEd.
              */
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        case XON:
+        case XOFF:
+            /*
+             * Ignore software flow control.
+             */
             break;
         default:
             ch ^= MASK;
@@ -217,9 +217,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         case XON:
         case XOFF:
             /*
-             * XON and XOFF should have been ESCAPEd.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             if (that->limit > 1) {
@@ -244,18 +243,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
         case ESCAPE:
-        case XON:
-        case XOFF:
             /*
              * ESCAPE will never be valid here because XORing it with
              * MASK yields 0x5d a.k.a. ']', and the close bracket should
-             * never have been ESCAPEd. Similarly with XON and XOFF,
-             * which would be '1' and '3' respectively before ESCAPEing.
-             * XON and XOFF should only appear if the sending end of
-             * the serial connection is configured for software flow
-             * control and the receiving end is not.
+             * never have been ESCAPEd.
              */
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        case XON:
+        case XOFF:
+            /*
+             * Ignore software flow control.
+             */
             break;
         default:
             ch ^= MASK;
@@ -282,9 +281,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         case XON:
         case XOFF:
             /*
-             * XON and XOFF should have been ESCAPEd.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             if (that->limit > 1) {
@@ -309,18 +307,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
         case ESCAPE:
-        case XON:
-        case XOFF:
             /*
              * ESCAPE will never be valid here because XORing it with
              * MASK yields 0x5d a.k.a. ']', and the close bracket should
-             * never have been ESCAPEd. Similarly with XON and XOFF,
-             * which would be '1' and '3' respectively before ESCAPEing.
-             * XON and XOFF should only appear if the sending end of
-             * the serial connection is configured for software flow
-             * control and the receiving end is not.
+             * never have been ESCAPEd.
              */
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        case XON:
+        case XOFF:
+            /*
+             * Ignore software flow control.
+             */
             break;
         default:
             ch ^= MASK;
@@ -347,9 +345,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         case XON:
         case XOFF:
             /*
-             * XON and XOFF should have been ESCAPEd.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             if (that->limit > 1) {
@@ -374,18 +371,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_ABORT;
             break;
         case ESCAPE:
-        case XON:
-        case XOFF:
             /*
              * ESCAPE will never be valid here because XORing it with
              * MASK yields 0x5d a.k.a. ']', and the close bracket should
-             * never have been ESCAPEd. Similarly with XON and XOFF,
-             * which would be '1' and '3' respectively before ESCAPEing.
-             * XON and XOFF should only appear if the sending end of
-             * the serial connection is configured for software flow
-             * control and the receiving end is not.
+             * never have been ESCAPEd.
              */
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
+        case XON:
+        case XOFF:
+            /*
+             * Ignore software flow control.
+             */
             break;
         default:
             ch ^= MASK;
@@ -410,12 +407,16 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
             break;
         case ESCAPE:
+            /*
+             * ESCAPE falls outside of the Kermit encoding ranges.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case XON:
         case XOFF:
             /*
-             * ESCAPE, XON, and XOFF fall outside of the Kermit encoding ranges.
+             * Ignore software flow control.
              */
-            that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         default:
             /*

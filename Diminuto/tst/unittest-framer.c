@@ -127,14 +127,6 @@ int main(int argc, char * argv[])
     }
 
     {
-        TEST();
-
-        ASSERT(EOF == -1);
-
-        STATUS();
-    }
-
-    {
         diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
 
         TEST();
