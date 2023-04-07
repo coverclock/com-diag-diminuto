@@ -672,36 +672,36 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
             if (that->length == 0) {
-                DIMINUTO_LOG_INFORMATION("framer@%p: empty?\n", that);
+                DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: empty?\n", that);
                 diminuto_framer_reset(that);
             } else {
                 result = that->total;
-                DIMINUTO_LOG_DEBUG("framer@%p: complete. [%zd]\n", that, result);
+                DIMINUTO_LOG_DEBUG("diminuto_framer@%p: complete. [%zd]\n", that, result);
             }
             break;
 
         case DIMINUTO_FRAMER_STATE_FINAL:
             result = EOF;
-            DIMINUTO_LOG_INFORMATION("framer@%p: final!\n", that);
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: final!\n", that);
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
-            DIMINUTO_LOG_NOTICE("framer@%p: abort!\n", that);
+            DIMINUTO_LOG_NOTICE("diminuto_framer@%p: abort!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
-            DIMINUTO_LOG_INFORMATION("framer@%p: failed!\n", that);
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: failed!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            DIMINUTO_LOG_ERROR("framer@%p: overflow!\n", that);
+            DIMINUTO_LOG_ERROR("diminuto_framer@%p: overflow!\n", that);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_INVALID:
-            DIMINUTO_LOG_INFORMATION("framer@%p: invalid!\n", that);
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: invalid!\n", that);
             diminuto_framer_reset(that);
             break;
 
