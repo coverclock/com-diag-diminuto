@@ -378,6 +378,7 @@ Similarly, environmental variables have qualified names like
 * endianess - display the little or big endianess of the target.
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
+* framertool - test the Framer feature across, for example, a serial connection.
 * frequency - display Diminuto base tick frequency in hertz.
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexadecimal.
