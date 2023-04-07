@@ -33,16 +33,16 @@
  * LENGTH[4+]: is the four-octet field containing the length of the unescaped
  * payload in network byte order plus any necessary ESCAPE tokens;
  *
- * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets across the
- * unescaped LENGTH in network byte order, plus any necessary ESCAPE
- * tokens;
+ * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets, computed across
+ * the unescaped SEQUENCE and LENGTH fields in network byte order, plus any
+ * necessary ESCAPE tokens;
  *
  * PAYLOAD[LENGTH+]: is the  payload, of length of the unescaped LENGTH field
  * in host byte order, plus any necessary ESCAPE tokens;
  *
- * CRC[3]: is the Kermit-16 cyclic redundancy check octets across the unescaped
- * PAYLOAD (the Kermit-16 CRC octets will never fall within a range requiring
- * ESCAPE tokens - see the Kermit feature unit test).
+ * CRC[3]: is the Kermit-16 cyclic redundancy check octets, computed across
+ * the unescaped PAYLOAD (the Kermit-16 CRC octets will never fall within a
+ * range requiring ESCAPE tokens - see the Kermit feature unit test).
  *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses. *
