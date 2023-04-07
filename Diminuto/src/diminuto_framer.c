@@ -41,12 +41,27 @@ typedef enum Action {
  * HELPERS
  ******************************************************************************/
 
-void streamerror(FILE * stream, const char * label)
+static inline void streamerror(FILE * stream, const char * label)
 {
     if (ferror(stream)) {
         errno = EIO;
         diminuto_perror(label);
     }
+}
+
+/*******************************************************************************
+ * CTOR
+ ******************************************************************************/
+
+diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size) {
+    memset(that, 0, sizeof(*that));
+    that->buffer = buffer;
+    that->size = size;
+    that->sequence = diminuto_maximumof(uint16_t);
+    that->previous = that->sequence - 1;
+    that->outgoing = diminuto_maximumof(uint16_t);
+
+    return diminuto_framer_reset(that);
 }
 
 /*******************************************************************************
@@ -443,7 +458,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         that->total = 0;
         that->length = 0;
         /*
-         * Do not reset sequence, expected, or monotonic.
+         * Do not reset sequence, previous, or outgoing.
          */
         that->crc = 0;
         that->a = 0;
@@ -465,9 +480,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         that->a = that->b = 0;
         (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
         that->length = ntohl(that->length);
-        that->expected = that->sequence + 1; /* Okay to rollover. */
-        that->here = (uint8_t *)&(that->sequence);
-        that->limit = sizeof(that->sequence);
+        that->here = (uint8_t *)&(that->candidate);
+        that->limit = sizeof(that->candidate);
         break;
 
     case SEQUENCE:
@@ -477,8 +491,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * Must calculate checksum on network byte ordered field so all
          * architectures see the same value.
          */
-        (void)diminuto_fletcher_16(&(that->sequence), sizeof(that->sequence), &(that->a), &(that->b));
-        that->sequence = ntohs(that->sequence);
+        (void)diminuto_fletcher_16(&(that->candidate), sizeof(that->candidate), &(that->a), &(that->b));
+        that->candidate = ntohs(that->candidate);
         that->here = (uint8_t *)&(that->sum);
         that->limit = sizeof(that->sum);
         break;
@@ -488,18 +502,15 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-fprintf(stderr, "FLETCHER FAILED! 0x%2.2x%2.2x 0x%2.2x%2.2x\n", that->sum[0], that->sum[1], that->a, that->b);
+        } else if (that->length == 0) {
+            that->here = (uint8_t *)&(that->check);
+            that->limit = sizeof(that->check);
+            that->state = DIMINUTO_FRAMER_STATE_KERMIT;
+        } else if (that->length > that->size) {
+            that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
         } else {
-             if (that->length == 0) {
-                that->here = (uint8_t *)&(that->check);
-                that->limit = sizeof(that->check);
-                that->state = DIMINUTO_FRAMER_STATE_KERMIT;
-            } else if (that->length > that->size) {
-                that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
-            } else {
-                that->here = (uint8_t *)(that->buffer);
-                that->limit = that->length;
-            }
+            that->here = (uint8_t *)(that->buffer);
+            that->limit = that->length;
         }
         break;
 
@@ -517,7 +528,17 @@ fprintf(stderr, "FLETCHER FAILED! 0x%2.2x%2.2x 0x%2.2x%2.2x\n", that->sum[0], th
         crc = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
         if (crc != that->crc) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-fprintf(stderr, "KERMIT FAILED! 0x%4.4x 0x%4.4x\n", that->crc, crc);
+        } else {
+            /*
+             * We only report sequence numbers for successfully completed
+             * frames. Disgarded, invalid, failed, aborted, restarted, or
+             * otherwise uncompleted frames will be revealed to the applicaiton
+             * by a discrepancy in the previous and current sequence numbers.
+             * Exception: when the sequence field rolls over from 65535 to
+             * 0.
+             */
+            that->previous = that->sequence;
+            that->sequence = that->candidate;
         }
         break;
 
@@ -753,7 +774,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
          * SEQUENCE[2]
          */
 
-        sequence = htons(++that->monotonic);
+        sequence = htons(++that->outgoing);
         (void)diminuto_fletcher_16(&sequence, sizeof(sequence), &(fletcher[0]), &(fletcher[1]));
         emitted = diminuto_framer_emit(stream, &sequence, sizeof(sequence));
         if (emitted == EOF) {
@@ -775,12 +796,14 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
          * PAYLOAD[LENGTH]
          */
 
-        crc = diminuto_kermit_16(data, length, 0);
-        emitted = diminuto_framer_emit(stream, data, length);
-        if (emitted == EOF) {
-            break;
+        if (length > 0) {
+            crc = diminuto_kermit_16(data, length, 0);
+            emitted = diminuto_framer_emit(stream, data, length);
+            if (emitted == EOF) {
+                break;
+            }
+            total += emitted;
         }
-        total += emitted;
 
         /*
          * KERMIT[3]
@@ -886,9 +909,10 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: total=%zu\n", that, that->total);
     diminuto_log_emit("framer@%p: state='%c'\n", that, that->state);
     diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
+    diminuto_log_emit("framer@%p: candidate=%u\n", that, that->candidate);
     diminuto_log_emit("framer@%p: sequence=%u\n", that, that->sequence);
-    diminuto_log_emit("framer@%p: expected=%u\n", that, that->expected);
-    diminuto_log_emit("framer@%p: monotonic=%u\n", that, that->monotonic);
+    diminuto_log_emit("framer@%p: previous=%u\n", that, that->previous);
+    diminuto_log_emit("framer@%p: outgoing=%u\n", that, that->outgoing);
     diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
     diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);

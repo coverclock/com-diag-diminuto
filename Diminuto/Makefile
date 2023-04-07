@@ -1047,6 +1047,7 @@ sanity:	criticalsection
 	unittest-fd
 	unittest-fibonacci
 	unittest-fletcher
+	unittest-framer
 	unittest-frequency
 	unittest-fs
 	unittest-guards
@@ -1061,6 +1062,7 @@ sanity:	criticalsection
 	unittest-ipc-endpoint
 	unittest-ipcl
 	unittest-isaconstant
+	unittest-kermit
 	unittest-list
 	unittest-list2
 	unittest-lock

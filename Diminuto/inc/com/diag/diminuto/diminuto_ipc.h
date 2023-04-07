@@ -624,6 +624,7 @@ typedef struct DiminutoIpcEndpoint {
  * empty string is a valid endpoint, indicating an ephemeral port on the local
  * host. In the event that an FQDN resolves to both an IPv4 and an IPv6 address,
  * the preference indicates which one to which to set the type field.
+ * @param string points to the endpoint string.
  * @param endpoint points to the structure in which the results are stored.
  * @param preference specifies a preference to IPv4, IPv6, or no preference.
  * @return 0 if both syntactically and semantically successful, <0 otherwise.

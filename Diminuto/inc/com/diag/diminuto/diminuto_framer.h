@@ -26,7 +26,7 @@
  * FLAG[1]: is an FLAG token (the last FLAG token may be the first
  * at the beginning of the next frame);
  *
- * SEQUENCE[2}]: is a simple two-octet monotonically increasing sequence
+ * SEQUENCE[2+]: is a simple two-octet monotonically increasing sequence
  * number field (which has no effect on whether or not frames are accepted)
  * in network byte order plus any necessary ESCAPE tokens;
  *
@@ -109,8 +109,8 @@
  * COMPLETE state.
  */
 typedef enum DiminutoFramerState {
-    DIMINUTO_FRAMER_STATE_RESET             = '*',  /* Reset. */
-    DIMINUTO_FRAMER_STATE_FLAG              = '~',  /* One or more flags. */
+    DIMINUTO_FRAMER_STATE_RESET             = 'R',  /* Reset. */
+    DIMINUTO_FRAMER_STATE_FLAG              = 'S',  /* One or more flags. */
     DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
     DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
     DIMINUTO_FRAMER_STATE_SEQUENCE          = 'N',  /* Sequence[2]. */
@@ -120,13 +120,13 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
     DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload[...]. */
     DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
-    DIMINUTO_FRAMER_STATE_COMPLETE          = '+',  /* Frame complete. */
-    DIMINUTO_FRAMER_STATE_FINAL             = '.',  /* End of file. */
-    DIMINUTO_FRAMER_STATE_ABORT             = '!',  /* Abort received. */
-    DIMINUTO_FRAMER_STATE_FAILED            = '?',  /* CS or CRC failed. */
-    DIMINUTO_FRAMER_STATE_OVERFLOW          = '>',  /* Buffer overflow. */
-    DIMINUTO_FRAMER_STATE_INVALID           = '<',  /* Frame invalid. */
-    DIMINUTO_FRAMER_STATE_IDLE              = '-',  /* Idle. */
+    DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',  /* Frame complete. */
+    DIMINUTO_FRAMER_STATE_FINAL             = 'E',  /* End of file. */
+    DIMINUTO_FRAMER_STATE_ABORT             = 'A',  /* Abort received. */
+    DIMINUTO_FRAMER_STATE_FAILED            = 'X',  /* CS or CRC failed. */
+    DIMINUTO_FRAMER_STATE_OVERFLOW          = 'O',  /* Buffer overflow. */
+    DIMINUTO_FRAMER_STATE_INVALID           = 'V',  /* Frame invalid. */
+    DIMINUTO_FRAMER_STATE_IDLE              = 'I',  /* Idle. */
 } diminuto_framer_state_t;
 
 /**
@@ -140,9 +140,10 @@ typedef struct DiminutoFramer {
     size_t total;                       /* Total number of octets in frame. */
     diminuto_framer_state_t state;      /* FSM state. */
     uint32_t length;                    /* Received frame length. */
-    uint16_t sequence;                  /* Actual input sequence number. */
-    uint16_t expected;                  /* Expected input sequence number. */
-    uint16_t monotonic;                 /* Output sequence number. */
+    uint16_t candidate;                 /* Working incoming sequence number. */
+    uint16_t sequence;                  /* Complete incoming sequence number. */
+    uint16_t previous;                  /* Previous incoming sequence number. */
+    uint16_t outgoing;                  /* Previous outgoing sequence number. */
     uint16_t crc;                       /* Kermit cyclic redundancy check. */
     uint8_t a;                          /* Fletcher checksum A. */
     uint8_t b;                          /* Fletcher checksum B. */
@@ -157,9 +158,47 @@ typedef struct DiminutoFramer {
 
 /**
  * @def DIMINUTO_FRAMER_INIT
- * Generate code to statically initialize a Framer.
+ * Generate code to statically initialize a Framer in the IDLE state.
  */
-#define DIMINUTO_FRAMER_INIT { (void *)0, }
+#define DIMINUTO_FRAMER_INIT { \
+    (void *)0, \
+    (uint8_t *)0, \
+    0, 0, 0, \
+    DIMINUTO_FRAMER_STATE_IDLE, \
+    0, \
+    0, 65535, 65534, 65535, \
+    0, \
+    0, 0, \
+    { '\0', '\0', }, \
+    { ' ', ' ', ' ', }, \
+    false, \
+}
+
+/*******************************************************************************
+ * CTOR and DTOR
+ ******************************************************************************/
+
+/**
+ * Initialize a Framer object to be ready to process a frame.
+ * @param that points to the Framer object.
+ * @param buffer points to the buffer into which the frame is stored.
+ * @param size is the size of the buffer in octets.
+ * @return a pointer to the Framer object.
+ */
+extern diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size);
+
+/**
+ * Deinitialize a Framer object, releasing any dynamically allocated resources.
+ * (This current implementation of Framer has no dynamically allocated
+ * resources.) As a side effect, this places the Framer object in the IDLE
+ * state< which will cause the Framer to discard any input.
+ * @param that points to the Framer object.
+ * @return a NULL if successful, or the object pointer if error.
+ */
+static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that) {
+    that->state = DIMINUTO_FRAMER_STATE_IDLE;
+    return (diminuto_framer_t *)0;
+}
 
 /*******************************************************************************
  * DEBUG
@@ -263,6 +302,47 @@ static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
     return diminuto_framer_complete(that) ? that->buffer : (void *)0;
 }
 
+/**
+ * Return true if it is LIKELY that the far-end restarted by comparing the
+ * previous and current sequence numbers.
+ * @param that points to the Framer object.
+ * @return true if it is LIKELY that the far-end restarted, false otherwise.
+ */
+static inline bool diminuto_framer_restarted(const diminuto_framer_t * that) {
+    return (that->previous != 65535) && (that->sequence == 0);
+}
+
+/**
+ * Return true if it is LIKELY that the far-end rolled over by comparing the
+ * previous and current sequence numbers.
+ * @param that points to the Framer object.
+ * @return true if it is LIKELY that the far-end rolledover, false otherwise.
+ */
+static inline bool diminuto_framer_rolledover(const diminuto_framer_t * that) {
+    return (that->previous == 65535) && (that->sequence == 0);
+}
+
+/**
+ * Return the number of LIKELY missing frames by comparing the previous and
+ * current sequence numbers.
+ * @param that points to the Framer object.
+ * @return the number of LIKELY missing frames.
+ */
+static inline size_t diminuto_framer_missing(const diminuto_framer_t * that) {
+    return (that->sequence > (that->previous + 1)) ? (that->sequence - that->previous - 1) : 0;
+}
+
+/**
+ * Return the number of LIKELY duplicated frames by comparing the previous and
+ * current sequence numbers. If the current sequence number is zero, it is
+ * judged more likely that the far-end either rolled over or restarted.
+ * @param that points to the Framer object.
+ * @return the number of LIKELY duplicated frames.
+ */
+static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) {
+    return ((that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
+}
+
 /*******************************************************************************
  * LOW-LEVEL API
  ******************************************************************************/
@@ -318,12 +398,12 @@ extern ssize_t diminuto_framer_abort(FILE * stream);
 /**
  * Read an input stream and drive a Framer state machine by feeding it
  * successive input tokens. The Framer state machine is automatically
- * restarted when it reaches the ABORT, FAILED, or OVERFLOW states; this
+ * restarted when it reaches the ABORT, FAILED, or OVERFLOW states. This
  * causes corrupted, aborted, or too-large frames to be automatically
- * dropped while log messages are generated. The Framer state machine is
+ * discarded while log messages are generated. The Framer state machine is
  * also automatically restarted when it reaches the COMPLETE state and a
  * frame with a zero-length payload has been received, causing such frames
- * to be silently dropped. The reader() tries not to block, so that it can
+ * to be silently discarded. The reader() tries not to block, so that it can
  * be driven by a Mux or other multiplexing mechanism. In a single call it
  * processes data cached inside the input stream object, or if the
  * input stream is a TTY, in the TTY driver, until it runs out of data or
@@ -342,7 +422,9 @@ extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
  * Write a complete frame to the output stream, including a FLAG token, the
  * length, sequence, Fletcher checksum, payload, and Kermit cyclic redundancy
  * check. After the complete frame is emitted, the output stream is flushed.
- * The caller is blocked until the complete frame is emitted.
+ * The caller is blocked until the complete frame is emitted. Zero length
+ * payloads not an error, even though they will likely be disgarded on the
+ * receiving end by reader().
  * @param stream points to the output stream.
  * @param that points to the Framer object.
  * @param data points to the payload to be emitted.
@@ -359,9 +441,10 @@ extern ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, c
  * Read a complete correct frame from the input stream, stripping all of
  * the control tokens, checksum, and CRC, and store the payload octets
  * into the buffer provided by the caller. The caller is blocked until the
- * a complete correct frame no larger than the buffer is processed. Frames
- * that are invalid, aborted, empty, or too large, are discarded with a log
- * message generated.
+ * a complete correct frame no larger than the buffer is processed. This
+ * function uses reader() with its own local Framer object, so frames that
+ * are invalid, aborted, empty, or too large, are automatically discarded
+ * with a log message generated.
  * @param stream points to the input stream.
  * @param buffer is the buffer into which the payload is stored.
  * @param size is the size of the buffer in octets.
@@ -374,45 +457,13 @@ extern ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size);
  * length (in network byte order), sequence (in network byte order), Fletcher
  * checksum, payload, and Kermit cyclic redundancy check.
  * After the complete frame is emitted, the output stream is flushed.
- * The caller is blocked until the complete frame is emitted.
+ * The caller is blocked until the complete frame is emitted. This function
+ * uses writer() with its own local Framer object.
  * @param stream points to the output stream.
  * @param data points to the payload to be emitted.
  * @param length is the length of the payload in octets.
  * @return the number of PAYLOAD octets written, EOF if error.
  */
 extern ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length);
-
-/*******************************************************************************
- * CTOR and DTOR
- ******************************************************************************/
-
-/**
- * Initialize a Framer object to be ready to process a frame.
- * @param that points to the Framer object.
- * @param buffer points to the buffer into which the frame is stored.
- * @param size is the size of the buffer in octets.
- * @return a pointer to the Framer object.
- */
-static inline diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size) {
-    memset(that, 0, sizeof(*that));
-    that->buffer = buffer;
-    that->size = size;
-    --that->sequence;
-    --that->monotonic;
-    return diminuto_framer_reset(that);
-}
-
-/**
- * Deinitialize a Framer object, releasing any dynamically allocated resources.
- * (This current implementation of Framer has no dynamically allocated
- * resources.) As a side effect, this places the Framer object in the IDLE
- * state< which will cause the Framer to discard any input.
- * @param that points to the Framer object.
- * @return a NULL.
- */
-static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that) {
-    that->state = DIMINUTO_FRAMER_STATE_IDLE;
-    return (diminuto_framer_t *)0;
-}
 
 #endif

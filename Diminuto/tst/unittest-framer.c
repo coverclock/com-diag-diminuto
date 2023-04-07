@@ -20,12 +20,28 @@
 #include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "../src/diminuto_framer.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+static void sequences(const diminuto_framer_t * that, int line)
+{
+    size_t missing;
+    size_t duplicated;
+    bool rolledover;
+    bool restarted;
+
+    missing = diminuto_framer_missing(that);
+    duplicated = diminuto_framer_duplicated(that);
+    rolledover = diminuto_framer_rolledover(that);
+    restarted = diminuto_framer_restarted(that);
+
+    CHECKPOINT("sequences@%d: sequence=%u previous=%u missing=%zu duplicated=%zu rolledover=%d restarted=%d\n", line, that->sequence, that->previous, missing, duplicated, rolledover, restarted);
+}
 
 int main(int argc, char * argv[])
 {
@@ -119,6 +135,25 @@ int main(int argc, char * argv[])
     }
 
     {
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+
+        TEST();
+
+        diminuto_framer_dump(&framer);
+
+        ASSERT(framer.sequence == diminuto_maximumof(uint16_t));
+        ASSERT(framer.previous == (framer.sequence - 1));
+        ASSERT(framer.outgoing == diminuto_maximumof(uint16_t));
+
+        ASSERT(diminuto_framer_missing(&framer) == 0);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(!diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
+
+        STATUS();
+    }
+
+    {
         diminuto_framer_t framer = { (void*)0, };
         diminuto_framer_t * ff = (diminuto_framer_t *)0;
         char buffer[64];
@@ -131,6 +166,11 @@ int main(int argc, char * argv[])
         ASSERT(framer.buffer == buffer);
         ASSERT(framer.size == sizeof(buffer));
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_RESET);
+
+        ASSERT(diminuto_framer_missing(&framer) == 0);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(!diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
 
         framer.state = DIMINUTO_FRAMER_STATE_IDLE;
         ff = diminuto_framer_reset(&framer);
@@ -299,7 +339,7 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
 
-        ASSERT(ff->sequence == 0);
+        ASSERT(ff->candidate == 0);
 
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
@@ -314,6 +354,9 @@ int main(int argc, char * argv[])
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
+
+        ASSERT(ff->previous == 65535);
+        ASSERT(ff->candidate == 0);
 
         diminuto_framer_dump(ff);
         ff = diminuto_framer_fini(&framer);
@@ -480,6 +523,11 @@ int main(int argc, char * argv[])
         ASSERT(diminuto_framer_length(&framer) == -1);
         diminuto_framer_debug(that, debug);
 
+        ASSERT(diminuto_framer_missing(&framer) == 0);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(!diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
+
         sent = diminuto_framer_writer(sink, that, DATA, sizeof(DATA));
         CHECKPOINT("diminuto_framer_writer=%zd\n", sent);
         ASSERT(sent > sizeof(DATA));
@@ -496,6 +544,12 @@ int main(int argc, char * argv[])
         ASSERT(length == sizeof(DATA));
         diminuto_dump(stderr, diminuto_framer_buffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
+
+        sequences(that, __LINE__);
+        ASSERT(diminuto_framer_missing(&framer) == 0);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
@@ -562,6 +616,12 @@ int main(int argc, char * argv[])
         ASSERT(length == sizeof(DATA));
         diminuto_dump(stderr, diminuto_framer_buffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
+
+        sequences(that, __LINE__);
+        ASSERT(diminuto_framer_missing(&framer) == 0);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
@@ -674,6 +734,11 @@ int main(int argc, char * argv[])
                 diminuto_dump(stderr, diminuto_framer_buffer(that), length);
                 ASSERT(memcmp(DATA, buffer, length) == 0);
                 ++frames;
+                sequences(that, __LINE__);
+                ASSERT(diminuto_framer_missing(&framer) == ((frames == 2) ? 1 : 0));
+                ASSERT(diminuto_framer_duplicated(&framer) == 0);
+                ASSERT(!diminuto_framer_rolledover(&framer));
+                ASSERT(!diminuto_framer_restarted(&framer));
                 diminuto_framer_reset(that);
             }
         } while (received >= 0);
@@ -779,6 +844,12 @@ int main(int argc, char * argv[])
         diminuto_dump(stderr, diminuto_framer_buffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
 
+        sequences(that, __LINE__);
+        ASSERT(diminuto_framer_missing(&framer) == 1);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(!diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
+
         /*
          * As a side effect, fini() sets the state machine in the IDLE
          * state, which consumes all further tokens until EOF, which
@@ -797,7 +868,249 @@ int main(int argc, char * argv[])
         ASSERT(iterations > 1);
         ASSERT(received == EOF);
 
+        sequences(that, __LINE__);
+        ASSERT(diminuto_framer_missing(&framer) == 1);
+        ASSERT(diminuto_framer_duplicated(&framer) == 0);
+        ASSERT(!diminuto_framer_rolledover(&framer));
+        ASSERT(!diminuto_framer_restarted(&framer));
+
         rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t sent;
+        ssize_t received;
+        ssize_t length;
+        diminuto_framer_t writer;
+        diminuto_framer_t reader;
+        char buffer[sizeof(DATA)];
+
+        TEST();
+
+        CHECKPOINT("sizeof(DATA)=%zu\n", sizeof(DATA));
+        diminuto_dump(stderr, DATA, sizeof(DATA));
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        diminuto_framer_init(&writer, (void *)0, 0);
+        diminuto_framer_init(&reader, buffer, sizeof(buffer));
+
+        sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+        CHECKPOINT("diminuto_framer_writer(data)=%zd\n", sent);
+        ASSERT(sent > sizeof(DATA));
+
+        sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+        CHECKPOINT("diminuto_framer_writer(data)=%zd\n", sent);
+        ASSERT(sent > sizeof(DATA));
+
+        /*
+         * Restart the far-end.
+         */
+
+        diminuto_framer_init(&writer, (void *)0, 0);
+
+        sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+        CHECKPOINT("diminuto_framer_writer(data)=%zd\n", sent);
+        ASSERT(sent > sizeof(DATA));
+
+        sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+        CHECKPOINT("diminuto_framer_writer(data)=%zd\n", sent);
+        ASSERT(sent > sizeof(DATA));
+
+        diminuto_framer_fini(&writer);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        /*
+         * Consume the first frame.
+         */
+
+        do {
+            received = diminuto_framer_reader(source, &reader);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", received);
+        } while (received == 0);
+        ASSERT(received > sizeof(DATA));
+        length = diminuto_framer_length(&reader);
+        CHECKPOINT("diminuto_framer_length=%zd\n", length);
+        ASSERT(length == sizeof(DATA));
+        diminuto_dump(stderr, buffer, length);
+        ASSERT(memcmp(DATA, buffer, length) == 0);
+        diminuto_framer_reset(&reader);
+
+        sequences(&reader, __LINE__);
+        ASSERT(diminuto_framer_missing(&reader) == 0);
+        ASSERT(diminuto_framer_duplicated(&reader) == 0);
+        ASSERT(diminuto_framer_rolledover(&reader));
+        ASSERT(!diminuto_framer_restarted(&reader));
+
+        /*
+         * Consume the second frame.
+         */
+
+        do {
+            received = diminuto_framer_reader(source, &reader);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", received);
+        } while (received == 0);
+        ASSERT(received > sizeof(DATA));
+        length = diminuto_framer_length(&reader);
+        CHECKPOINT("diminuto_framer_length=%zd\n", length);
+        ASSERT(length == sizeof(DATA));
+        diminuto_dump(stderr, buffer, length);
+        ASSERT(memcmp(DATA, buffer, length) == 0);
+        diminuto_framer_reset(&reader);
+
+        sequences(&reader, __LINE__);
+        ASSERT(diminuto_framer_missing(&reader) == 0);
+        ASSERT(diminuto_framer_duplicated(&reader) == 0);
+        ASSERT(!diminuto_framer_rolledover(&reader));
+        ASSERT(!diminuto_framer_restarted(&reader));
+
+        /*
+         * Consume the third frame.
+         */
+
+        do {
+            received = diminuto_framer_reader(source, &reader);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", received);
+        } while (received == 0);
+        ASSERT(received > sizeof(DATA));
+        length = diminuto_framer_length(&reader);
+        CHECKPOINT("diminuto_framer_length=%zd\n", length);
+        ASSERT(length == sizeof(DATA));
+        diminuto_dump(stderr, buffer, length);
+        ASSERT(memcmp(DATA, buffer, length) == 0);
+        diminuto_framer_reset(&reader);
+
+        sequences(&reader, __LINE__);
+        ASSERT(diminuto_framer_missing(&reader) == 0);
+        ASSERT(diminuto_framer_duplicated(&reader) == 0);
+        ASSERT(!diminuto_framer_rolledover(&reader));
+        ASSERT(diminuto_framer_restarted(&reader));
+
+        /*
+         * Consume the fourth frame.
+         */
+
+        do {
+            received = diminuto_framer_reader(source, &reader);
+            CHECKPOINT("diminuto_framer_reader=%zd\n", received);
+        } while (received == 0);
+        ASSERT(received > sizeof(DATA));
+        length = diminuto_framer_length(&reader);
+        CHECKPOINT("diminuto_framer_length=%zd\n", length);
+        ASSERT(length == sizeof(DATA));
+        diminuto_dump(stderr, buffer, length);
+        ASSERT(memcmp(DATA, buffer, length) == 0);
+        diminuto_framer_reset(&reader);
+
+        sequences(&reader, __LINE__);
+        ASSERT(diminuto_framer_missing(&reader) == 0);
+        ASSERT(diminuto_framer_duplicated(&reader) == 0);
+        ASSERT(!diminuto_framer_rolledover(&reader));
+        ASSERT(!diminuto_framer_restarted(&reader));
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        diminuto_framer_fini(&reader);
+
+        STATUS();
+    }
+
+    {
+        uint8_t DATA[2];
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t sent;
+        ssize_t received;
+        char buffer[sizeof(DATA) * 3];
+        unsigned int ii;
+        unsigned int jj;
+        int iterations;
+        diminuto_framer_t writer;
+        diminuto_framer_t reader;
+
+        TEST();
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        diminuto_framer_init(&writer, (void *)0, 0);
+        diminuto_framer_init(&reader, buffer, sizeof(buffer));
+
+        iterations = 0;
+
+        for (ii = 0x00; ii <= 0xff; ++ii) {
+            for (jj = 0x00; jj <= 0xff; ++jj) {
+
+                DATA[0] = ii;
+                DATA[1] = jj;
+
+                sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+                COMMENT("diminuto_framer_writer=%zd\n", sent);
+                ASSERT(sent > sizeof(DATA));
+
+                do {
+                    received = diminuto_framer_reader(source, &reader);
+                } while (received == 0);
+                COMMENT("diminuto_framer_reader=%zd\n", received);
+                ASSERT(received > sizeof(DATA));
+
+                ASSERT(memcmp(DATA, buffer, reader.length) == 0);
+
+                diminuto_framer_reset(&reader);
+
+                ++iterations;
+
+            }
+        }
+
+        CHECKPOINT("iterations=%d\n", iterations);
+        ASSERT(iterations == (256 * 256));
+
+        CHECKPOINT("outoing=%u sequence=%u previous=%u\n", writer.outgoing, reader.sequence, reader.previous);
+
+        /*
+         * One more iteration and all of the sequence counters would have
+         * rolled over.
+         */
+
+        --iterations;
+        ASSERT(writer.outgoing == iterations);
+        ASSERT(reader.sequence == iterations);
+        ASSERT(reader.previous == (iterations - 1));
+
+        diminuto_framer_fini(&writer);
+        diminuto_framer_fini(&reader);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        rc = fclose(sink);    
         ASSERT(rc == 0);
 
         STATUS();
@@ -966,83 +1279,6 @@ int main(int argc, char * argv[])
 
         CHECKPOINT("iterations=%d\n", iterations);
         ASSERT(iterations == (256 * 256));
-
-        rc = fclose(source);    
-        ASSERT(rc == 0);
-
-        rc = fclose(sink);    
-        ASSERT(rc == 0);
-
-        STATUS();
-    }
-
-    {
-        uint8_t DATA[2];
-        int fd[2];
-        FILE * source;
-        FILE * sink;
-        int rc;
-        ssize_t sent;
-        ssize_t received;
-        char buffer[sizeof(DATA) * 3];
-        unsigned int ii;
-        unsigned int jj;
-        int iterations;
-        diminuto_framer_t writer;
-        diminuto_framer_t reader;
-
-        TEST();
-
-        rc = pipe(fd);
-        ASSERT(rc == 0);
-
-        source = fdopen(fd[0], "r");
-        ASSERT(source != (FILE *)0);
-
-        sink = fdopen(fd[1], "w");
-        ASSERT(source != (FILE *)0);
-
-        diminuto_framer_init(&writer, (void *)0, 0);
-        diminuto_framer_init(&reader, buffer, sizeof(buffer));
-
-        iterations = 0;
-
-        for (ii = 0x00; ii <= 0xff; ++ii) {
-            for (jj = 0x00; jj <= 0xff; ++jj) {
-
-                DATA[0] = ii;
-                DATA[1] = jj;
-
-                sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
-                COMMENT("diminuto_framer_writer=%zd\n", sent);
-                ASSERT(sent > sizeof(DATA));
-
-                do {
-                    received = diminuto_framer_reader(source, &reader);
-                } while (received == 0);
-                COMMENT("diminuto_framer_reader=%zd\n", received);
-                ASSERT(received > sizeof(DATA));
-
-                ASSERT(memcmp(DATA, buffer, reader.length) == 0);
-
-                diminuto_framer_reset(&reader);
-
-                ++iterations;
-
-            }
-        }
-
-        CHECKPOINT("iterations=%d\n", iterations);
-        ASSERT(iterations == (256 * 256));
-
-        CHECKPOINT("monotonic=%u sequence=%u expected=%u\n", writer.monotonic, reader.sequence, reader.expected);
-        --iterations;
-        ASSERT(writer.monotonic == iterations);
-        ASSERT(reader.sequence == iterations);
-        ASSERT(reader.expected == iterations);
-
-        diminuto_framer_fini(&writer);
-        diminuto_framer_fini(&reader);
 
         rc = fclose(source);    
         ASSERT(rc == 0);
