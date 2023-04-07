@@ -215,7 +215,7 @@ int main(int argc, char * argv[])
      * DEVICE
      */
 
-    DIMINUTO_LOG_INFORMATION("%s: device %s %d%c%d %s %s %s\n", program, device, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol ? "modemcontrol" : "local", xonxoff ? "xonxoff" : "", rtscts ? "rtscts" : "");
+    DIMINUTO_LOG_INFORMATION("%s: device %s %d %d%c%d %s %s %s\n", program, device, baudrate, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol ? "modemcontrol" : "local", xonxoff ? "xonxoff" : "", rtscts ? "rtscts" : "");
 
     if ((fd = open(device, O_RDWR)) < 0) {
         error = true;
