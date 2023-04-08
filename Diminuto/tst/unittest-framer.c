@@ -28,6 +28,9 @@
 #include <string.h>
 #include <unistd.h>
 
+static const int DC1 = '\x11'; /* a.k.a. XON */
+static const int DC3 = '\x13'; /* a.k.a. XOFF */
+
 static void sequences(const diminuto_framer_t * that, int line)
 {
     size_t missing;
@@ -71,6 +74,8 @@ int main(int argc, char * argv[])
         ASSERT(ESCAPE == '\x7d');
         ASSERT(XON == '\x11');
         ASSERT(XOFF == '\x13');
+        ASSERT(XON == DC1);
+        ASSERT(XOFF == DC3);
         ASSERT(MASK == ' ');
 
         STATUS();
@@ -146,8 +151,8 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_framer_t framer = { (void*)0, };
-        diminuto_framer_t * ff = (diminuto_framer_t *)0;
+        diminuto_framer_t framer;
+        diminuto_framer_t * ff;
         char buffer[64];
 
         TEST();
@@ -298,26 +303,56 @@ int main(int argc, char * argv[])
         ff = diminuto_framer_init(&framer, (void *)0, 0);
         diminuto_framer_dump(ff);
 
+        state = framer.state;
+        ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, '~');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
         state = diminuto_framer_machine(ff, '~');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
 
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '}');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '}');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
@@ -326,7 +361,15 @@ int main(int argc, char * argv[])
 
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
         state = diminuto_framer_machine(ff, '}');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
@@ -335,20 +378,40 @@ int main(int argc, char * argv[])
 
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
         state = diminuto_framer_machine(ff, '}');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
 
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
+        state = diminuto_framer_machine(ff, DC1);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
 
-        ASSERT(ff->previous == 65535);
-        ASSERT(ff->candidate == 0);
+        ASSERT(framer.previous == 65535);
+        ASSERT(framer.candidate == 0);
 
         diminuto_framer_dump(ff);
         ff = diminuto_framer_fini(&framer);

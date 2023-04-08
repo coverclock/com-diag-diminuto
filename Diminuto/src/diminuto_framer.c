@@ -71,8 +71,8 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 /*
  * USEFUL ASCII CHARACTERS TO KNOW
  *
- * 0x11     DC1     XON
- * 0x13     DC2     XOFF
+ * 0x11     '\x11'  XON  a.k.a. DC1
+ * 0x13     '\x13'  XOFF a.k.a. DC3
  * 0x20     ' '     Kermit Low
  * 0x2f     '/'     Kermit[0] High
  * 0x31     '1'     ESCAPEd XON
