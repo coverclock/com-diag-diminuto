@@ -29,7 +29,7 @@
  * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3.
  *
  * The specialness of XON and XOFF allows these characters to be used by the
- * underlying serial driver hardware or software in the usual manneer for
+ * underlying serial driver hardware or software in the usual manner for
  * flow control.
  *
  * A Framer frame looks like this:
