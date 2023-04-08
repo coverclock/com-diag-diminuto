@@ -60,7 +60,7 @@
  * range requiring ESCAPE tokens - see the Kermit feature unit test).
  *
  * The Framer can be approached at via the low-level API by just driving its
- * state machine by simulating it via whatever data source the application uses. *
+ * state machine by simulating it via whatever data source the application uses.
  * The mid-level API uses standard input/output streams but leaves the
  * management of the Framer object to the application.
  *
