@@ -17,7 +17,22 @@
  * High Level Data Link Control (HDLC) protocol, but it is in no way otherwise
  * compatible with HDLC.
  *
- * A Framer frame looks like this
+ * The Framer uses the following special tokens (which in no way prohibits
+ * their use by the application):
+ *
+ * FLAG a.k.a. '~', 0x7e;
+ *
+ * ESCAPE a.k.a. '}', 0x7d (this is not the usual ASCII escape character);
+ *
+ * XON a.k.a. '\x11', 0x11, DC1, Device Control 1;
+ *
+ * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3.
+ *
+ * The specialness of XON and XOFF allows these characters to be used by the
+ * underlying serial driver hardware or software in the usual manneer for
+ * flow control.
+ *
+ * A Framer frame looks like this:
  *
  * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] FLAG[1]
  *
