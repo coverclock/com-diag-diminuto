@@ -207,7 +207,7 @@ extern diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void *
  * Deinitialize a Framer object, releasing any dynamically allocated resources.
  * (This current implementation of Framer has no dynamically allocated
  * resources.) As a side effect, this places the Framer object in the IDLE
- * state< which will cause the Framer to discard any input.
+ * state, which will cause the Framer to discard any input.
  * @param that points to the Framer object.
  * @return a NULL if successful, or the object pointer if error.
  */
