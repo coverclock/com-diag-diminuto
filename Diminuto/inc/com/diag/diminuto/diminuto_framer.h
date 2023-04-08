@@ -43,16 +43,16 @@
  *
  * SEQUENCE[2+]: is a simple two-octet monotonically increasing sequence
  * number field (which has no effect on whether or not frames are accepted)
- * in network byte order plus any necessary ESCAPE tokens;
+ * in network byte order, plus any necessary ESCAPE tokens;
  *
  * LENGTH[4+]: is the four-octet field containing the length of the unescaped
- * payload in network byte order plus any necessary ESCAPE tokens;
+ * payload in network byte order, plus any necessary ESCAPE tokens;
  *
  * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets, computed across
  * the unescaped SEQUENCE and LENGTH fields in network byte order, plus any
  * necessary ESCAPE tokens;
  *
- * PAYLOAD[LENGTH+]: is the  payload, of length of the unescaped LENGTH field
+ * PAYLOAD[LENGTH+]: is the payload, of length of the unescaped LENGTH field
  * in host byte order, plus any necessary ESCAPE tokens;
  *
  * CRC[3]: is the Kermit-16 cyclic redundancy check octets, computed across
