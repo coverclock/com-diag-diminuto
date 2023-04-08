@@ -647,21 +647,21 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 {
     ssize_t result = 0;
     diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_IDLE;
-    int ch = EOF;
+    int token = EOF;
     int fd = -1;
 
     fd = fileno(stream);
 
     do {
 
-        ch = fgetc(stream);
-        if (ch == EOF) {
+        token = fgetc(stream);
+        if (token == EOF) {
             streamerror(stream, "fgetc");
         } else {
             ++that->total;
         }
 
-        state = diminuto_framer_machine(that, ch);
+        state = diminuto_framer_machine(that, token);
 
         /*
          * We have take care that a high speed by very noisy serial
@@ -860,16 +860,16 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
 ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
 {
     ssize_t result = EOF;
-    ssize_t readen = EOF; /* Because past tense "read" is a system call. */
+    ssize_t readten = EOF; /* Because past tense "read" is a system call. */
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
    
     (void)diminuto_framer_init(&framer, buffer, size); 
 
     do {
-        readen = diminuto_framer_reader(stream, &framer);
-    } while (readen == 0);
+        readten = diminuto_framer_reader(stream, &framer);
+    } while (readten == 0);
 
-    if (readen > 0) {
+    if (readten > 0) {
         result = framer.length;
     }
 

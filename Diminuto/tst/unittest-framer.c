@@ -431,7 +431,7 @@ int main(int argc, char * argv[])
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         uint8_t buffer[64];
-        int ch;
+        int token;
 
         TEST();
 
@@ -456,14 +456,14 @@ int main(int argc, char * argv[])
 
         received = 0;
         while (true) {
-            ch = fgetc(source);
-            if (ch == EOF) {
+            token = fgetc(source);
+            if (token == EOF) {
                 break;
             }
             if (received >= sizeof(buffer)) {
                 break;
             }
-            buffer[received++] = ch;
+            buffer[received++] = token;
         }
 
         CHECKPOINT("wire[%zd]:\n", received);
@@ -492,7 +492,7 @@ int main(int argc, char * argv[])
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         uint8_t buffer[sizeof(DATA) * 3];
-        int ch;
+        int token;
 
         TEST();
 
@@ -520,14 +520,14 @@ int main(int argc, char * argv[])
 
         received = 0;
         while (true) {
-            ch = fgetc(source);
-            if (ch == EOF) {
+            token = fgetc(source);
+            if (token == EOF) {
                 break;
             }
             if (received >= sizeof(buffer)) {
                 break;
             }
-            buffer[received++] = ch;
+            buffer[received++] = token;
         }
 
         CHECKPOINT("wire[%zd]:\n", received);
