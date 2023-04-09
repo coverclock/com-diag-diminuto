@@ -335,14 +335,15 @@ int main(int argc, char * argv[])
                 do {
                     token = fgetc(stdin);
                     if (token == EOF) {
-                        DIMINUTO_LOG_DEBUG("framertool: input EOF\n");
+                        DIMINUTO_LOG_NOTICE("framertool: input EOF\n");
                         break;
                     } else if (token == '\n') {
                         *(here++) = '\n';
                         ++total;
-                        DIMINUTO_LOG_DEBUG("framertool: input [%zu]\n", total);
+                        DIMINUTO_LOG_INFORMATION("framertool: input [%zu]\n", total);
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
+                            DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
                             done = true;
                             break;
                         }
@@ -362,14 +363,15 @@ int main(int argc, char * argv[])
                 if (received == 0) {
                     /* Do nothing. */
                 } else if (received < 0) {
+                    DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
                     done = true;
                     break;
                 } else {
                     length = diminuto_framer_length(&framer);
-                    DIMINUTO_LOG_DEBUG("framertool: output [%zu]\n", length);
+                    DIMINUTO_LOG_INFORMATION("framertool: output [%zu]\n", length);
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
-                        DIMINUTO_LOG_DEBUG("framertool: output EOF\n");
+                        DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
                         done = true;
                         break;
                     }
