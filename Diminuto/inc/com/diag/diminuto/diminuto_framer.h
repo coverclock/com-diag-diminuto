@@ -11,7 +11,7 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * The Framer feature implements a mechanism for framing outgoing and incoming
- * binary data in a serial stream. The Framer uses an HDLC-like mechanism, 
+ * binary packets in a serial stream. The Framer uses an HDLC-like mechanism, 
  * control-octet transparency (a.k.a. byte stuffing, or octet stuffing),
  * to do this. It uses the same control octet tokens or characters as the
  * High Level Data Link Control (HDLC) protocol, but it is in no way otherwise
@@ -45,8 +45,9 @@
  * number field (which has no effect on whether or not frames are accepted)
  * in network byte order, plus any necessary ESCAPE tokens;
  *
- * LENGTH[4+]: is the four-octet field containing the length of the unescaped
- * payload in network byte order, plus any necessary ESCAPE tokens;
+ * LENGTH[4+]: is the four-octet payload length field in network byte order,
+ * containing the length of the unescaped payload, plus any necessary ESCAPE
+ * tokens;
  *
  * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets, computed across
  * the unescaped SEQUENCE and LENGTH fields in network byte order, plus any
@@ -206,7 +207,7 @@ extern diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void *
  * Deinitialize a Framer object, releasing any dynamically allocated resources.
  * (This current implementation of Framer has no dynamically allocated
  * resources.) As a side effect, this places the Framer object in the IDLE
- * state< which will cause the Framer to discard any input.
+ * state, which will cause the Framer to discard any input.
  * @param that points to the Framer object.
  * @return a NULL if successful, or the object pointer if error.
  */
