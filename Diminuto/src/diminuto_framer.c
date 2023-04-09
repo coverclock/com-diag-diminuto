@@ -677,7 +677,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
                 DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: empty?\n", that);
                 diminuto_framer_reset(that);
             } else {
-                DIMINUTO_LOG_DEBUG("diminuto_framer@%p: complete. [%zd] [%zu]\n", that, that->total, that->length);
+                DIMINUTO_LOG_DEBUG("diminuto_framer@%p: complete. [%zd] [%u]\n", that, that->total, that->length);
                 result = that->total;
             }
             break;
