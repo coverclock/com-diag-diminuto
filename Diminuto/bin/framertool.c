@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_fs.h"
@@ -53,6 +54,10 @@ int main(int argc, char * argv[])
     int rtscts = 0;
     int xonxoff = 0;
     size_t bufsize = MAXDATAGRAM;
+    size_t length = 0;
+    size_t total = 0;
+    size_t limit = 0;
+    size_t count = 0;
     diminuto_ticks_t timeout = 1000000000;
     unsigned long milliseconds = 0;
     int rc = -1;
@@ -69,6 +74,7 @@ int main(int argc, char * argv[])
     char * frame = (char *)0;
     char * line = (char *)0;
     char * here = (char *)0;
+    int token = 0;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
     diminuto_framer_t * ff = (diminuto_framer_t *)0;
 
@@ -130,10 +136,6 @@ int main(int argc, char * argv[])
                 errno = EINVAL;
                 diminuto_perror(optarg);
                 error = true;
-            } else if (bufsize > MAXDATAGRAM) {
-                bufsize = MAXDATAGRAM;
-            } else {
-                /* Do nothing. */
             }
             break;
 
@@ -279,6 +281,10 @@ int main(int argc, char * argv[])
         exit(8);
     }
 
+    here = line;
+    total = 0;
+    limit = bufsize - 1; /* Leave room for newline. */
+
     /*
      * FRAMER
      */
@@ -326,19 +332,30 @@ int main(int argc, char * argv[])
 
             if (fd == std) {
 
-                here = fgets(line, bufsize, stdin);
-                if (here == (char *)0) {
-                    done = true;
-                    break;
-                } else {
-                    line[bufsize - 1] = '\0';
-                    received = strlen(line);
-                    sent = diminuto_framer_writer(stream, &framer, line, received);
-                    if (sent <= 0) {
-                        done = true;
+                do {
+                    token = fgetc(stdin);
+                    if (token == EOF) {
+                        /*
+                         * Continue processing incoming frames.
+                         */
                         break;
+                    } else if (token == '\n') {
+                        *(here++) = '\n';
+                        ++total;
+                        sent = diminuto_framer_writer(stream, &framer, line, total);
+                        if (sent <= 0) {
+                            done = true;
+                            break;
+                        }
+                        here = line;
+                        total = 0;
+                    } else if (total < limit) {
+                        *(here++) = (uint8_t)token;
+                        ++total;
+                    } else {
+                        /* Do nothing. */
                     }
-                }
+                } while (diminuto_file_ready(stdin) > 0);
 
             } else if (fd == dev) {
 
@@ -349,13 +366,19 @@ int main(int argc, char * argv[])
                     done = true;
                     break;
                 } else {
-                    diminuto_framer_reset(&framer);
-                    frame[bufsize - 1] = '\0';
-                    sent = fputs(frame, stdout);
-                    if (sent == EOF) {
+                    length = diminuto_framer_length(&framer);
+                    count = fwrite(frame, length, 1, stdout);
+                    if (count != 1) {
                         done = true;
                         break;
                     }
+                    rc = fflush(stdout);
+                    if (rc == EOF) {
+                        diminuto_perror("fflush");
+                        done = true;
+                        break;
+                    }
+                    diminuto_framer_reset(&framer);
                 }
 
             } else {

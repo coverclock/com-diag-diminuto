@@ -43,7 +43,7 @@ static void sequences(const diminuto_framer_t * that, int line)
     rolledover = diminuto_framer_rolledover(that);
     restarted = diminuto_framer_restarted(that);
 
-    CHECKPOINT("sequences@%d: sequence=%u previous=%u missing=%zu duplicated=%zu rolledover=%d restarted=%d\n", line, that->sequence, that->previous, missing, duplicated, rolledover, restarted);
+    CHECKPOINT("sequences[%d]: sequence=%u previous=%u missing=%zu duplicated=%zu rolledover=%d restarted=%d\n", line, that->sequence, that->previous, missing, duplicated, rolledover, restarted);
 }
 
 int main(int argc, char * argv[])

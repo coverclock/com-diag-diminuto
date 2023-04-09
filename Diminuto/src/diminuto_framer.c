@@ -53,7 +53,8 @@ static inline void streamerror(FILE * stream, const char * label)
  * CTOR
  ******************************************************************************/
 
-diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size) {
+diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size)
+{
     memset(that, 0, sizeof(*that));
     that->buffer = buffer;
     that->size = size;
