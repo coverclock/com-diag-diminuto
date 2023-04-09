@@ -335,13 +335,12 @@ int main(int argc, char * argv[])
                 do {
                     token = fgetc(stdin);
                     if (token == EOF) {
-                        /*
-                         * Continue processing incoming frames.
-                         */
+                        DIMINUTO_LOG_DEBUG("framertool: input EOF\n");
                         break;
                     } else if (token == '\n') {
                         *(here++) = '\n';
                         ++total;
+                        DIMINUTO_LOG_DEBUG("framertool: input [%zu]\n", total);
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
                             done = true;
@@ -367,8 +366,10 @@ int main(int argc, char * argv[])
                     break;
                 } else {
                     length = diminuto_framer_length(&framer);
+                    DIMINUTO_LOG_DEBUG("framertool: output [%zu]\n", length);
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
+                        DIMINUTO_LOG_DEBUG("framertool: output EOF\n");
                         done = true;
                         break;
                     }
