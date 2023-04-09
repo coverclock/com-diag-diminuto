@@ -17,6 +17,7 @@
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_framer.h"
@@ -53,13 +54,14 @@ int main(int argc, char * argv[])
     int modemcontrol = 0;
     int rtscts = 0;
     int xonxoff = 0;
+    bool debug = false;
+    diminuto_ticks_t timeout = 1000000000;
+    unsigned long milliseconds = 0;
     size_t bufsize = MAXDATAGRAM;
     size_t length = 0;
     size_t total = 0;
     size_t limit = 0;
     size_t count = 0;
-    diminuto_ticks_t timeout = 1000000000;
-    unsigned long milliseconds = 0;
     int rc = -1;
     int dev = -1;
     int std = -1;
@@ -139,6 +141,10 @@ int main(int argc, char * argv[])
             }
             break;
 
+        case 'd':
+            debug = true;
+            break;
+
         case 'e':
             paritybit = 2;
             break;
@@ -183,6 +189,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -B BAUDRATE          sets the DEVICE to BAUDRATE bits per second.\n");
             fprintf(stderr, "       -D DEVICE            is the serial device name.\n");
             fprintf(stderr, "       -b BYTES             sets the buffer sizes to BYTES bytes.\n");
+            fprintf(stderr, "       -d                   dumps frame and line input to stderr.\n");
             fprintf(stderr, "       -e                   sets DEVICE to even parity.\n");
             fprintf(stderr, "       -m                   enables modem control.\n");
             fprintf(stderr, "       -o                   sets the DEVICE to odd parity.\n");
@@ -341,6 +348,9 @@ int main(int argc, char * argv[])
                         *(here++) = '\n';
                         ++total;
                         DIMINUTO_LOG_INFORMATION("framertool: input [%zu]\n", total);
+                        if (debug) {
+                            diminuto_dump(stderr, line, total);
+                        }
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
                             DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
@@ -369,6 +379,9 @@ int main(int argc, char * argv[])
                 } else {
                     length = diminuto_framer_length(&framer);
                     DIMINUTO_LOG_INFORMATION("framertool: output [%zu]\n", length);
+                    if (debug) {
+                        diminuto_dump(stderr, frame, length);
+                    }
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
                         DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
