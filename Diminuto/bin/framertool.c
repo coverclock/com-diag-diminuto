@@ -29,9 +29,13 @@
  *
  * mkfifo namedpipe; framertool -D namedpipe
  *
- * (Using tools and data from the Hazer project)
+ * (Using tools and data from the Hazer project.)
  *
- * tail csvmeter < ./dat/tesoro/20210224/tracker.csv | framertool -D /dev/ttyACM0 -B 57600 -8 -n -d
+ * csvmeter < ./dat/tesoro/20210224/tracker.csv | framertool -D /dev/ttyACM0 -B 57600 -8 -n -d
+ *
+ * RELATED
+ *
+ * <https://github.com/coverclock/com-diag-hazer>
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
