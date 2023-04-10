@@ -28,6 +28,10 @@
  * framertool -D /dev/ttyACM0 -b 57600 -8 -n -1 -d
  *
  * mkfifo namedpipe; framertool -D namedpipe
+ *
+ * (Using tools and data from the Hazer project)
+ *
+ * tail csvmeter < ./dat/tesoro/20210224/tracker.csv | framertool -D /dev/ttyACM0 -B 57600 -8 -n -d
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
