@@ -7,10 +7,27 @@
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
  * This is a simple tool to test the Framer against an actual
- * serial port (in this case, the SparkFun LoRa serial kit).
- * framertool only deals with newline-terminated printable strings.
- * Important safety tip: the LoRa serial kit is REALLY slow and
- * disconnects periodically.
+ * serial port. framertool receives frames over the serial port
+ * and writes their payload (whatever it is, including binary data)
+ * to standard output, and reads newline-terminated strings (which
+ * typically will be printable) from standard input and sends them
+ * in payload in frames to the serial port. All I/O is multiplexed.
+ * Mostly I use this to test the Framer with the SparkFun LoRa serial
+ * kit, which uses two paired LoRa radios which are connected to hosts
+ * via USB and enumerate as serial ports. But the "device" can be some
+ * other I/O source and sink that has both read and write access, for
+ * example a FIFO (a.k.a. named pipe, in which case framertool basically
+ * talks to itself).
+ *
+ * N.B. the LoRa connection is REALLY slow and disconnects periodically.
+ *
+ * EXAMPLES
+ *
+ * framertool -D /dev/ttyACM0 -b 57600 -8 -n -1
+ *
+ * framertool -D /dev/ttyACM0 -b 57600 -8 -n -1 -d
+ *
+ * mkfifo namedpipe; framertool -D namedpipe
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -64,13 +81,15 @@ int main(int argc, char * argv[])
     size_t count = 0;
     int rc = -1;
     int dev = -1;
-    int std = -1;
+    int inp = -1;
     int fds = 0;
     int fd = -1;
     FILE * stream = (FILE *)0;
     diminuto_mux_t multiplexor = { 0 };
     bool error = false;
-    bool done = false;
+    bool deveof = false;
+    bool inpeof = false;
+    bool outeof = false;
     ssize_t sent = 0;
     ssize_t received = 0;
     char * frame = (char *)0;
@@ -124,7 +143,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'D':
-            if ((strcmp(optarg, "-") != 0) && (diminuto_fs_type(optarg) == DIMINUTO_FS_TYPE_NONE)) {
+            if (diminuto_fs_type(optarg) == DIMINUTO_FS_TYPE_NONE) {
                 errno = EINVAL;
                 diminuto_perror(optarg);
                 error = true;
@@ -187,7 +206,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -7                   sets DEVICE to seven data bits.\n");
             fprintf(stderr, "       -8                   sets DEVICE to eight data bits.\n");
             fprintf(stderr, "       -B BAUDRATE          sets the DEVICE to BAUDRATE bits per second.\n");
-            fprintf(stderr, "       -D DEVICE            is the serial device name.\n");
+            fprintf(stderr, "       -D DEVICE            is the data source and sink.\n");
             fprintf(stderr, "       -b BYTES             sets the buffer sizes to BYTES bytes.\n");
             fprintf(stderr, "       -d                   dumps frame and line input to stderr.\n");
             fprintf(stderr, "       -e                   sets DEVICE to even parity.\n");
@@ -246,7 +265,7 @@ int main(int argc, char * argv[])
     }
 
     dev = fileno(stream);
-    std = fileno(stdin);
+    inp = fileno(stdin);
 
     /*
      * MULTIPLEXER
@@ -259,7 +278,7 @@ int main(int argc, char * argv[])
         error = true;
     }
 
-    rc = diminuto_mux_register_read(&multiplexor, std);
+    rc = diminuto_mux_register_read(&multiplexor, inp);
     if (rc < 0) {
         error = true;
     }
@@ -337,12 +356,14 @@ int main(int argc, char * argv[])
 
             fd = diminuto_mux_ready_read(&multiplexor);
 
-            if (fd == std) {
+            if (fd == inp) {
 
                 do {
                     token = fgetc(stdin);
                     if (token == EOF) {
                         DIMINUTO_LOG_NOTICE("framertool: input EOF\n");
+                        (void)diminuto_mux_unregister_read(&multiplexor, inp);
+                        inpeof = true;
                         break;
                     } else if (token == '\n') {
                         *(here++) = '\n';
@@ -354,7 +375,8 @@ int main(int argc, char * argv[])
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
                             DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
-                            done = true;
+                            (void)diminuto_mux_unregister_read(&multiplexor, dev);
+                            deveof = true;
                             break;
                         }
                         here = line;
@@ -374,7 +396,8 @@ int main(int argc, char * argv[])
                     /* Do nothing. */
                 } else if (received < 0) {
                     DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
-                    done = true;
+                    (void)diminuto_mux_unregister_read(&multiplexor, dev);
+                    deveof = true;
                     break;
                 } else {
                     length = diminuto_framer_length(&framer);
@@ -385,13 +408,13 @@ int main(int argc, char * argv[])
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
                         DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
-                        done = true;
+                        outeof = true;
                         break;
                     }
                     rc = fflush(stdout);
                     if (rc == EOF) {
                         diminuto_perror("fflush");
-                        done = true;
+                        outeof = true;
                         break;
                     }
                     diminuto_framer_reset(&framer);
@@ -404,17 +427,13 @@ int main(int argc, char * argv[])
             }
         }
 
-    } while (!done);
+    } while ((!deveof) && (!inpeof) && (!outeof));
 
     /*
      * FINALIZATING
      */
 
-    (void)diminuto_mux_unregister_read(&multiplexor, dev);
-
-    (void)diminuto_mux_unregister_read(&multiplexor, std);
-
-    diminuto_mux_fini(&multiplexor);
+    (void)diminuto_mux_fini(&multiplexor);
 
     (void)fclose(stream);
 
