@@ -427,7 +427,7 @@ int main(int argc, char * argv[])
             }
         }
 
-    } while ((!deveof) && (!inpeof) && (!outeof));
+    } while ((!deveof) && ((!inpeof) || (!outeof)));
 
     /*
      * FINALIZATING
