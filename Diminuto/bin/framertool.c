@@ -379,6 +379,7 @@ int main(int argc, char * argv[])
                         DIMINUTO_LOG_INFORMATION("framertool: input [%zu]\n", total);
                         if (debug) {
                             diminuto_dump(stderr, line, total);
+                            fflush(stderr);
                         }
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
@@ -412,6 +413,7 @@ int main(int argc, char * argv[])
                     DIMINUTO_LOG_INFORMATION("framertool: output [%zu]\n", length);
                     if (debug) {
                         diminuto_dump(stderr, frame, length);
+                        fflush(stderr);
                     }
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
