@@ -142,8 +142,8 @@ int main(int argc, char * argv[])
             break;
 
         case 'B':
-            baudrate = strtoul(optarg, &endptr, 0);
-            if ((baudrate <= 0) || ((endptr != (char *)0) && (*endptr != '\0'))) {
+            bufsize = strtoul(optarg, &endptr, 0);
+            if ((bufsize <= 0) || ((endptr != (char *)0) && (*endptr != '\0'))) {
                 errno = EINVAL;
                 diminuto_perror(optarg);
                 error = true;
@@ -160,8 +160,8 @@ int main(int argc, char * argv[])
             break;
 
         case 'b':
-            bufsize = strtoul(optarg, &endptr, 0);
-            if ((bufsize <= 0) || ((endptr != (char *)0) && (*endptr != '\0'))) {
+            baudrate = strtoul(optarg, &endptr, 0);
+            if ((baudrate <= 0) || ((endptr != (char *)0) && (*endptr != '\0'))) {
                 errno = EINVAL;
                 diminuto_perror(optarg);
                 error = true;
@@ -213,9 +213,9 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -2                   sets DEVICE to two stop bits.\n");
             fprintf(stderr, "       -7                   sets DEVICE to seven data bits.\n");
             fprintf(stderr, "       -8                   sets DEVICE to eight data bits.\n");
-            fprintf(stderr, "       -B BAUDRATE          sets the DEVICE to BAUDRATE bits per second.\n");
+            fprintf(stderr, "       -B BYTES             sets the buffer sizes to BYTES bytes.\n");
             fprintf(stderr, "       -D DEVICE            is the data source and sink.\n");
-            fprintf(stderr, "       -b BYTES             sets the buffer sizes to BYTES bytes.\n");
+            fprintf(stderr, "       -b BAUDRATE          sets the DEVICE to BAUDRATE bits per second.\n");
             fprintf(stderr, "       -d                   dumps frame and line input to stderr.\n");
             fprintf(stderr, "       -e                   sets DEVICE to even parity.\n");
             fprintf(stderr, "       -m                   enables modem control.\n");
