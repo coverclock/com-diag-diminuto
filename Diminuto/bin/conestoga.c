@@ -9,7 +9,7 @@
  * THIS IS A WORK IN PROGRESS.
  * Conestoga is a project to pass packets containing arbitary binary data
  * in a UDP-like manner over an asynchronous serial connection. It will be
- * used in conjunciton with the Fothergill project, which uses USB-powered
+ * used in conjunction with the Fothergill project, which uses USB-powered
  * paired LoRa radios which enumerate as serial ports on the USB bus.
  * Conestoga uses the Diminuto Framer feature to do this. Framer implements
  * a packet framing mechanism using byte stuffing in a manner similar to
