@@ -98,6 +98,7 @@ int main(int argc, char * argv[])
     bool deveof = false;
     bool inpeof = false;
     bool outeof = false;
+    bool throttle = false;
     ssize_t sent = 0;
     ssize_t received = 0;
     char * frame = (char *)0;
@@ -428,6 +429,15 @@ int main(int argc, char * argv[])
                         break;
                     }
                     diminuto_framer_reset(&framer);
+                }
+                if (framer.throttle == throttle) {
+                    /* Do nothing. */
+                } else if (framer.throttle) {
+                    DIMINUTO_LOG_NOTICE("framertool: device XOFF\n");
+                    throttle = framer.throttle;
+                } else {
+                    DIMINUTO_LOG_NOTICE("framertool: device XON\n");
+                    throttle = framer.throttle;
                 }
 
             } else {
