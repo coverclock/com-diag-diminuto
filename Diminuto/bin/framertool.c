@@ -370,7 +370,7 @@ int main(int argc, char * argv[])
                 do {
                     token = fgetc(stdin);
                     if (token == EOF) {
-                        DIMINUTO_LOG_NOTICE("framertool: input EOF\n");
+                        DIMINUTO_LOG_INFORMATION("framertool: input EOF\n");
                         (void)diminuto_mux_unregister_read(&multiplexor, inp);
                         inpeof = true;
                         break;
@@ -384,7 +384,7 @@ int main(int argc, char * argv[])
                         }
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
-                            DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
+                            DIMINUTO_LOG_INFORMATION("framertool: device EOF\n");
                             (void)diminuto_mux_unregister_read(&multiplexor, dev);
                             deveof = true;
                             break;
@@ -405,7 +405,7 @@ int main(int argc, char * argv[])
                 if (received == 0) {
                     /* Do nothing. */
                 } else if (received < 0) {
-                    DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
+                    DIMINUTO_LOG_INFORMATION("framertool: device EOF\n");
                     (void)diminuto_mux_unregister_read(&multiplexor, dev);
                     deveof = true;
                     break;
@@ -418,7 +418,7 @@ int main(int argc, char * argv[])
                     }
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
-                        DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
+                        DIMINUTO_LOG_INFORMATION("framertool: output EOF\n");
                         outeof = true;
                         break;
                     }
@@ -433,10 +433,10 @@ int main(int argc, char * argv[])
                 if (framer.throttle == throttle) {
                     /* Do nothing. */
                 } else if (framer.throttle) {
-                    DIMINUTO_LOG_NOTICE("framertool: device XOFF\n");
+                    DIMINUTO_LOG_INFORMATION("framertool: device XOFF\n");
                     throttle = framer.throttle;
                 } else {
-                    DIMINUTO_LOG_NOTICE("framertool: device XON\n");
+                    DIMINUTO_LOG_INFORMATION("framertool: device XON\n");
                     throttle = framer.throttle;
                 }
 
