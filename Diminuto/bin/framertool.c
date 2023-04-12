@@ -11,7 +11,7 @@
  * and writes their payload (whatever it is, including binary data)
  * to standard output, and reads newline-terminated strings (which
  * typically will be printable) from standard input and sends them
- * in payload in frames to the serial port. All I/O is multiplexed.
+ * in payload in frames to the serial port. All input is multiplexed.
  * Mostly I use this to test the Framer with the SparkFun LoRa serial
  * kit, which uses two paired LoRa radios which are connected to hosts
  * via USB and enumerate as serial ports. But the "device" can be some

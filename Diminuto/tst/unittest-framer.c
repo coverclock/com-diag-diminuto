@@ -86,6 +86,8 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        CHECKPOINT("sizeof(framer)=%zu\n", sizeof(framer));
+
         ASSERT(sizeof(framer.length) == sizeof(uint32_t));
         ASSERT(sizeof(framer.sequence) == sizeof(uint16_t));
         ASSERT(sizeof(framer.a) == sizeof(uint8_t));
@@ -138,9 +140,30 @@ int main(int argc, char * argv[])
 
         diminuto_framer_dump(&framer);
 
+        ASSERT(framer.buffer == (void *)0);
+        ASSERT(framer.here == (uint8_t *)0);
+        ASSERT(framer.size == 0);
+        ASSERT(framer.limit == 0);
+        ASSERT(framer.total == 0);
+        ASSERT(framer.state == DIMINUTO_FRAMER_STATE_IDLE);
+        ASSERT(framer.length == 0);
+        ASSERT(framer.candidate == 0);
         ASSERT(framer.sequence == diminuto_maximumof(uint16_t));
         ASSERT(framer.previous == (framer.sequence - 1));
         ASSERT(framer.outgoing == diminuto_maximumof(uint16_t));
+        ASSERT(framer.crc == 0);
+        ASSERT(framer.a == 0);
+        ASSERT(framer.b == 0);
+        ASSERT(framer.sum[0] == 0);
+        ASSERT(framer.sum[1] == 0);
+        ASSERT(framer.check[0] == ' ');
+        ASSERT(framer.check[1] == ' ');
+        ASSERT(framer.check[2] == ' ');
+        ASSERT(!framer.throttle);
+        ASSERT(!framer.debug);
+
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+        ASSERT(diminuto_framer_length(&framer) == -1);
 
         ASSERT(diminuto_framer_missing(&framer) == 0);
         ASSERT(diminuto_framer_duplicated(&framer) == 0);
@@ -158,11 +181,35 @@ int main(int argc, char * argv[])
         TEST();
 
         ff = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+
+        diminuto_framer_dump(&framer);
+
         ASSERT(ff == &framer);
-        diminuto_framer_dump(ff);
-        ASSERT(framer.buffer == buffer);
+
+        ASSERT(framer.buffer == &(buffer[0]));
+        ASSERT(framer.here == (uint8_t *)0);
         ASSERT(framer.size == sizeof(buffer));
+        ASSERT(framer.limit == 0);
+        ASSERT(framer.total == 0);
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_RESET);
+        ASSERT(framer.length == 0);
+        ASSERT(framer.candidate == 0);
+        ASSERT(framer.sequence == diminuto_maximumof(uint16_t));
+        ASSERT(framer.previous == (framer.sequence - 1));
+        ASSERT(framer.outgoing == diminuto_maximumof(uint16_t));
+        ASSERT(framer.crc == 0);
+        ASSERT(framer.a == 0);
+        ASSERT(framer.b == 0);
+        ASSERT(framer.sum[0] == 0);
+        ASSERT(framer.sum[1] == 0);
+        ASSERT(framer.check[0] == ' ');
+        ASSERT(framer.check[1] == ' ');
+        ASSERT(framer.check[2] == ' ');
+        ASSERT(!framer.throttle);
+        ASSERT(!framer.debug);
+
+        ASSERT(diminuto_framer_buffer(&framer) == (void *)0);
+        ASSERT(diminuto_framer_length(&framer) == -1);
 
         ASSERT(diminuto_framer_missing(&framer) == 0);
         ASSERT(diminuto_framer_duplicated(&framer) == 0);
@@ -305,25 +352,32 @@ int main(int argc, char * argv[])
 
         state = framer.state;
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
+        ASSERT(!framer.throttle);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_RESET);
         state = diminuto_framer_machine(ff, '~');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
         state = diminuto_framer_machine(ff, '~');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
@@ -331,28 +385,36 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '}');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '}');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
@@ -362,14 +424,18 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE);
         state = diminuto_framer_machine(ff, '}');
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
@@ -379,14 +445,18 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER);
         state = diminuto_framer_machine(ff, '}');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
@@ -394,20 +464,26 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
         state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
         state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
 
         ASSERT(framer.previous == 65535);

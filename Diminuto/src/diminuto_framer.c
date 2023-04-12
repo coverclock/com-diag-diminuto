@@ -55,12 +55,12 @@ static inline void streamerror(FILE * stream, const char * label)
 
 diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size)
 {
-    memset(that, 0, sizeof(*that));
+    static const diminuto_framer_t FRAMER = DIMINUTO_FRAMER_INIT;
+
+    memcpy(that, &FRAMER, sizeof(*that));
+
     that->buffer = buffer;
     that->size = size;
-    that->sequence = diminuto_maximumof(uint16_t);
-    that->previous = that->sequence - 1;
-    that->outgoing = diminuto_maximumof(uint16_t);
 
     return diminuto_framer_reset(that);
 }
@@ -72,8 +72,8 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 /*
  * USEFUL ASCII CHARACTERS TO KNOW
  *
- * 0x11     '\x11'  XON  a.k.a. DC1
- * 0x13     '\x13'  XOFF a.k.a. DC3
+ * 0x11     '\x11'  XON  a.k.a. DC1, Device Control 1, Transmit On
+ * 0x13     '\x13'  XOFF a.k.a. DC3, Device Control 3, Transmit Off
  * 0x20     ' '     Kermit Low
  * 0x2f     '/'     Kermit[0] High
  * 0x31     '1'     ESCAPEd XON
@@ -94,8 +94,13 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     prior = that->state;
 
+    /*
+     * The standard I/O library uses (int)-1 as an End Of File (EOF)
+     * indicator. We have to make sure we don't confuse this value
+     * with the unsigned octet data value 0xff.
+     */
+
     if (token == EOF) {
-        DIMINUTO_LOG_DEBUG("diminuto_framer%p: EOF\n", that);
         that->state = DIMINUTO_FRAMER_STATE_FINAL;
     } else {
         ch = token;
@@ -109,9 +114,15 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
             break;
+        case XON:
+            that->throttle = false;
+            break;
+        case XOFF:
+            that->throttle = true;
+            break;
         default:
             /*
-             * Ignore everything but a FLAG.
+             * Ignore everything else.
              */
             break;
         }
@@ -130,10 +141,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             action = STORE;
@@ -152,10 +163,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             if (that->limit > 1) {
@@ -188,10 +199,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             ch ^= MASK;
@@ -216,10 +227,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             if (that->limit > 1) {
@@ -252,10 +263,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             ch ^= MASK;
@@ -280,10 +291,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             if (that->limit > 1) {
@@ -316,10 +327,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             ch ^= MASK;
@@ -344,10 +355,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             if (that->limit > 1) {
@@ -380,10 +391,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             ch ^= MASK;
@@ -414,10 +425,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             that->state = DIMINUTO_FRAMER_STATE_INVALID;
             break;
         case XON:
+            that->throttle = false;
+            break;
         case XOFF:
-            /*
-             * Ignore software flow control.
-             */
+            that->throttle = true;
             break;
         default:
             /*
@@ -447,7 +458,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case DIMINUTO_FRAMER_STATE_OVERFLOW:
     case DIMINUTO_FRAMER_STATE_INVALID:
     case DIMINUTO_FRAMER_STATE_IDLE:
-    default:
+        switch (ch) {
+        case XON:
+            that->throttle = false;
+            break;
+        case XOFF:
+            that->throttle = true;
+            break;
+        }
         break;
 
     }
@@ -545,7 +563,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case SKIP:
-    default:
         break;
 
     }
@@ -606,6 +623,10 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
             return EOF;
         }
         ++result;
+
+        /*
+         * emit() does not flush the standard I/O stream.
+         */
 
     }
 
@@ -919,5 +940,6 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);
     diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x] valid=[%d,%d,%d] crc=0x%4.4x\n", that, that->check[0], that->check[1], that->check[2], diminuto_kermit_firstisvalid(that->check[0]), diminuto_kermit_secondisvalid(that->check[1]), diminuto_kermit_thirdisvalid(that->check[2]), diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]));
+    diminuto_log_emit("framer@%p: throttle=%d\n", that, that->throttle);
     diminuto_log_emit("framer@%p: debug=%d\n", that, that->debug);
 }
