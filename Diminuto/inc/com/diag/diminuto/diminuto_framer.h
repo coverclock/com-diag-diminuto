@@ -24,13 +24,20 @@
  *
  * ESCAPE a.k.a. '}', 0x7d (this is not the usual ASCII escape character);
  *
- * XON a.k.a. '\x11', 0x11, DC1, Device Control 1;
+ * XON a.k.a. '\x11', 0x11, DC1, Device Control 1, Transmit On;
  *
- * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3.
+ * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3, Transmit Off.
  *
  * The specialness of XON and XOFF allows these characters to be used by the
  * underlying serial driver hardware or software in the usual manner for
- * flow control.
+ * flow control, without interfering with their use by the application as
+ * data values. Normally, the serial driver will intercept XON and XOFF and
+ * handle them appropriately. But in the event that software flow control
+ * is enabled on one end but not the other, their appearance in the data
+ * stream will not impact the application. If the Framer receives an XOFF,
+ * it will turn on the throttle flag in the object, and turn it off when
+ * XON is received; this allows the application to, for example, temporarily
+ * cease transmitting frames.
  *
  * A Framer frame looks like this:
  *
