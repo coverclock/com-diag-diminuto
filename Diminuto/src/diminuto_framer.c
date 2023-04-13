@@ -841,6 +841,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
         }
         total += sizeof(kermit);
 
+#if 0
         /*
          * HDLC requires a FLAG at the end of every frame, but this FLAG
          * can also be the start of the next frame. This functions puts
@@ -855,12 +856,15 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
             break;
         }
         total += 1;
+#endif
 
         rc = fflush(stream);
         if (rc == EOF) {
             diminuto_perror("fflush");
             break;
         }
+
+        DIMINUTO_LOG_DEBUG("diminuto_framer@%p: emitted. #%u [%zd] [%zu]\n", that, that->outgoing, total, length);
 
         result = total;
 
