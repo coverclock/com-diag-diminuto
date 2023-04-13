@@ -104,6 +104,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         that->state = DIMINUTO_FRAMER_STATE_FINAL;
     } else {
         ch = token;
+        ++that->total;
     }
 
     switch (that->state) {
@@ -475,7 +476,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case RESET:
         that->here = (uint8_t *)&(that->length);
         that->limit = sizeof(that->length);
-        that->total = 0;
+        that->total = 1; /* Because we already consumed the FLAG. */
         that->length = 0;
         /*
          * Do not reset sequence, previous, or outgoing.
@@ -679,8 +680,6 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
         token = fgetc(stream);
         if (token == EOF) {
             streamerror(stream, "fgetc");
-        } else {
-            ++that->total;
         }
 
         state = diminuto_framer_machine(that, token);
