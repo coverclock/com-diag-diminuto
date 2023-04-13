@@ -328,16 +328,6 @@ static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
 }
 
 /**
- * Return true if it is LIKELY that the far-end restarted by comparing the
- * previous and current sequence numbers.
- * @param that points to the Framer object.
- * @return true if it is LIKELY that the far-end restarted, false otherwise.
- */
-static inline bool diminuto_framer_restarted(const diminuto_framer_t * that) {
-    return (that->previous != 65535) && (that->sequence == 0);
-}
-
-/**
  * Return true if it is LIKELY that the far-end rolled over by comparing the
  * previous and current sequence numbers.
  * @param that points to the Framer object.
@@ -345,6 +335,26 @@ static inline bool diminuto_framer_restarted(const diminuto_framer_t * that) {
  */
 static inline bool diminuto_framer_rolledover(const diminuto_framer_t * that) {
     return (that->previous == 65535) && (that->sequence == 0);
+}
+
+/**
+ * Return true if it is LIKELY that the far-end restarted by comparing the
+ * previous and current sequence numbers.
+ * @param that points to the Framer object.
+ * @return true if it is LIKELY that the far-end restarted, false otherwise.
+ */
+static inline bool diminuto_framer_farend(const diminuto_framer_t * that) {
+    return (that->previous != 65535) && (that->sequence == 0);
+}
+
+/**
+ * Return true if it is LIKELY that the near-end restarted by comparing the
+ * previous and current sequence numbers.
+ * @param that points to the Framer object.
+ * @return true if it is LIKELY that the near-end restarted, false otherwise.
+ */
+static inline bool diminuto_framer_nearend(const diminuto_framer_t * that) {
+    return (that->previous == 65535) && (that->sequence != 0);
 }
 
 /**
@@ -360,12 +370,14 @@ static inline size_t diminuto_framer_missing(const diminuto_framer_t * that) {
 /**
  * Return the number of LIKELY duplicated frames by comparing the previous and
  * current sequence numbers. If the current sequence number is zero, it is
- * judged more likely that the far-end either rolled over or restarted.
+ * judged more likely that the far-end either rolled over or restarted. If
+ * the previous sequence number is the initial value, is is likely that the
+ * near-end restarted.
  * @param that points to the Framer object.
  * @return the number of LIKELY duplicated frames.
  */
 static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) {
-    return ((that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
+    return ((that->previous != 65535) && (that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
 }
 
 /*******************************************************************************

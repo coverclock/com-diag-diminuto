@@ -370,21 +370,21 @@ int main(int argc, char * argv[])
                 do {
                     token = fgetc(stdin);
                     if (token == EOF) {
-                        DIMINUTO_LOG_INFORMATION("framertool: input EOF\n");
+                        DIMINUTO_LOG_NOTICE("framertool: input EOF\n");
                         (void)diminuto_mux_unregister_read(&multiplexor, inp);
                         inpeof = true;
                         break;
                     } else if (token == '\n') {
                         *(here++) = '\n';
                         ++total;
-                        DIMINUTO_LOG_INFORMATION("framertool: input [%zu]\n", total);
+                        DIMINUTO_LOG_DEBUG("framertool: input [%zu]\n", total);
                         if (debug) {
                             diminuto_dump(stderr, line, total);
                             fflush(stderr);
                         }
                         sent = diminuto_framer_writer(stream, &framer, line, total);
                         if (sent <= 0) {
-                            DIMINUTO_LOG_INFORMATION("framertool: device EOF\n");
+                            DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
                             (void)diminuto_mux_unregister_read(&multiplexor, dev);
                             deveof = true;
                             break;
@@ -405,20 +405,20 @@ int main(int argc, char * argv[])
                 if (received == 0) {
                     /* Do nothing. */
                 } else if (received < 0) {
-                    DIMINUTO_LOG_INFORMATION("framertool: device EOF\n");
+                    DIMINUTO_LOG_NOTICE("framertool: device EOF\n");
                     (void)diminuto_mux_unregister_read(&multiplexor, dev);
                     deveof = true;
                     break;
                 } else {
                     length = diminuto_framer_length(&framer);
-                    DIMINUTO_LOG_INFORMATION("framertool: output [%zu]\n", length);
+                    DIMINUTO_LOG_DEBUG("framertool: output [%zu]\n", length);
                     if (debug) {
                         diminuto_dump(stderr, frame, length);
                         fflush(stderr);
                     }
                     count = fwrite(frame, length, 1, stdout);
                     if (count != 1) {
-                        DIMINUTO_LOG_INFORMATION("framertool: output EOF\n");
+                        DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
                         outeof = true;
                         break;
                     }
@@ -427,6 +427,19 @@ int main(int argc, char * argv[])
                         diminuto_perror("fflush");
                         outeof = true;
                         break;
+                    }
+                    if (diminuto_framer_rolledover(&framer)) {
+                        /* Do nothing. */
+                    } else if (diminuto_framer_nearend(&framer)) {
+                        /* Do nothing. */
+                    } else if (diminuto_framer_farend(&framer)) {
+                        DIMINUTO_LOG_INFORMATION("framertool: device restarted\n");
+                    } else if ((count = diminuto_framer_missing(&framer)) > 0) {
+                        DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", count);
+                    } else if ((count = diminuto_framer_duplicated(&framer)) > 0) {
+                        DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", count);
+                    } else {
+                        /* Do nothing. */
                     }
                     diminuto_framer_reset(&framer);
                 }
@@ -439,7 +452,6 @@ int main(int argc, char * argv[])
                     DIMINUTO_LOG_INFORMATION("framertool: device XON\n");
                     throttle = framer.throttle;
                 }
-
             } else {
 
                 diminuto_yield();

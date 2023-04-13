@@ -714,7 +714,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
-            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: failed!\n", that);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p: failed!\n", that);
             diminuto_framer_reset(that);
             break;
 
@@ -724,7 +724,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             break;
 
         case DIMINUTO_FRAMER_STATE_INVALID:
-            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: invalid!\n", that);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p: invalid!\n", that);
             diminuto_framer_reset(that);
             break;
 
