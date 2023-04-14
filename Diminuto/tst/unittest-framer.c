@@ -675,6 +675,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
 
         ASSERT(diminuto_framer_buffer(that) == &buffer);
         length = diminuto_framer_length(that);
@@ -748,6 +749,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > sizeof(DATA));
+        ASSERT(received == sent);
 
         ASSERT(diminuto_framer_buffer(that) == &buffer);
         length = diminuto_framer_length(that);
@@ -869,6 +871,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
             if (received > 0) {
                 ASSERT(received > lengthof);
+                ASSERT(received == sent);
                 ASSERT(diminuto_framer_buffer(that) == &buffer);
                 length = diminuto_framer_length(that);
                 CHECKPOINT("diminuto_framer_length=%zd\n", length);
@@ -982,6 +985,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
         ASSERT(diminuto_framer_buffer(that) == &buffer);
         length = diminuto_framer_length(that);
         CHECKPOINT("diminuto_framer_length=%zd\n", length);
@@ -1095,6 +1099,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
         length = diminuto_framer_length(&reader);
         CHECKPOINT("diminuto_framer_length=%zd\n", length);
         ASSERT(length == lengthof);
@@ -1118,6 +1123,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
         length = diminuto_framer_length(&reader);
         CHECKPOINT("diminuto_framer_length=%zd\n", length);
         ASSERT(length == lengthof);
@@ -1141,9 +1147,11 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
         length = diminuto_framer_length(&reader);
         CHECKPOINT("diminuto_framer_length=%zd\n", length);
         ASSERT(length == lengthof);
+        ASSERT(received == sent);
         diminuto_dump(stderr, buffer, length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
         diminuto_framer_reset(&reader);
@@ -1164,6 +1172,7 @@ int main(int argc, char * argv[])
             CHECKPOINT("diminuto_framer_reader=%zd\n", received);
         } while (received == 0);
         ASSERT(received > lengthof);
+        ASSERT(received == sent);
         length = diminuto_framer_length(&reader);
         CHECKPOINT("diminuto_framer_length=%zd\n", length);
         ASSERT(length == lengthof);
