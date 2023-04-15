@@ -68,7 +68,7 @@
  * the unescaped PAYLOAD (the Kermit-16 CRC octets will never fall within a
  * range requiring ESCAPE tokens - see the Kermit feature unit test);
  *
- * NEWLINE[1]: is the ASCII line feed character.
+ * NEWLINE[1]: is a NEWLINE token.
  *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses.
