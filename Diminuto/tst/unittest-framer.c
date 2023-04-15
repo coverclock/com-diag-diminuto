@@ -650,6 +650,7 @@ int main(int argc, char * argv[])
         length = diminuto_framer_length(that);
         CHECKPOINT("line[%zd]:\n", length);
         diminuto_dump(stderr, line, length);
+        ASSERT(length == sizeof(DATA));
         ASSERT(memcmp(DATA, line, length) == 0);
 
         diminuto_framer_dump(that);
