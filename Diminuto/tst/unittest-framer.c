@@ -536,7 +536,7 @@ int main(int argc, char * argv[])
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
 
-        that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        that = diminuto_framer_init(&framer, (void *)0, 0);
         diminuto_framer_dump(that);
 
         sent = diminuto_framer_writer(sink, that, (void *)0, 0);
@@ -583,10 +583,12 @@ int main(int argc, char * argv[])
         int rc;
         ssize_t sent;
         ssize_t received;
+        ssize_t length;
         size_t lengthof;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         char buffer[sizeof(DATA) * 3];
+        char line[sizeof(buffer)];
         char * result;
 
         TEST();
@@ -604,10 +606,10 @@ int main(int argc, char * argv[])
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
 
-        that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        that = diminuto_framer_init(&framer, line, sizeof(line));
         diminuto_framer_dump(that);
 
-        sent = diminuto_framer_writer(sink, that, DATA, lengthof);
+        sent = diminuto_framer_writer(sink, that, DATA, sizeof(DATA));
         CHECKPOINT("diminuto_framer_writer=%zd\n", sent);
         ASSERT(sent > lengthof);
 
@@ -633,6 +635,22 @@ int main(int argc, char * argv[])
         ASSERT(received == sent);
         ASSERT(buffer[0] == '~');
         ASSERT(buffer[received - 1] == '\n');
+
+        ASSERT(!diminuto_framer_terminal(that));
+        for (result = &(buffer[0]); result < &(buffer[received]); ++result) {
+            /*
+             * Don't confuse the character '\xff' with EOF due to sign
+             * extension.
+             */
+            diminuto_framer_machine(that, (*result) & 0xff);
+            if (diminuto_framer_terminal(that)) { break; }
+        }
+        ASSERT(!diminuto_framer_error(that));
+        ASSERT(diminuto_framer_complete(that));
+        length = diminuto_framer_length(that);
+        CHECKPOINT("line[%zd]:\n", length);
+        diminuto_dump(stderr, line, length);
+        ASSERT(memcmp(DATA, line, length) == 0);
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
