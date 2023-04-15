@@ -520,10 +520,12 @@ int main(int argc, char * argv[])
         int rc;
         ssize_t sent;
         ssize_t received;
+        ssize_t length;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         char buffer[64];
         char * result;
+        char line[sizeof(buffer) * 3];
 
         TEST();
 
@@ -565,6 +567,22 @@ int main(int argc, char * argv[])
         ASSERT(received == sent);
         ASSERT(buffer[0] == '~');
         ASSERT(buffer[received - 1] == '\n');
+
+        ASSERT(!diminuto_framer_terminal(that));
+        for (result = &(buffer[0]); result < &(buffer[received]); ++result) {
+            /*
+             * Don't confuse the character '\xff' with EOF due to sign
+             * extension.
+             */
+            diminuto_framer_machine(that, (*result) & 0xff);
+            if (diminuto_framer_terminal(that)) { break; }
+        }
+        ASSERT(!diminuto_framer_error(that));
+        ASSERT(diminuto_framer_complete(that));
+        length = diminuto_framer_length(that);
+        CHECKPOINT("line[%zd]:\n", length);
+        diminuto_dump(stderr, line, length);
+        ASSERT(length == 0);
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
