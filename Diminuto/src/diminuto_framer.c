@@ -32,7 +32,7 @@ typedef enum Action {
     LENGTH      = 'L',      /* Process length and Fletcher-16 checksum. */
     PAYLOAD     = 'P',      /* Compute Kermit-6 cyclic redundancy check. */
     RESET       = 'R',      /* Initialize Framer for next frame. */
-    SKIP        = 'X',      /* Skip this octet. */
+    CONSUME     = 'C',      /* Consume this octet without processing. */
     SEQUENCE    = 'N',      /* Process sequence and Fletcher-16 checksum. */
     STORE       = 'S',      /* Process this octet and Kermit-16 CRC. */
 } action_t;
@@ -72,9 +72,11 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 /*
  * USEFUL ASCII CHARACTERS TO KNOW
  *
- * 0x11     '\x11'  XON  a.k.a. DC1, Device Control 1, Transmit On
+ * 0x0a     '\n'    NEWLINE a.k.a NL, Line Feed
+ * 0x11     '\x11'  XON a.k.a. DC1, Device Control 1, Transmit On
  * 0x13     '\x13'  XOFF a.k.a. DC3, Device Control 3, Transmit Off
  * 0x20     ' '     Kermit Low
+ * 0x2a     '*'     ESCAPEd NEWLINE
  * 0x2f     '/'     Kermit[0] High
  * 0x31     '1'     ESCAPEd XON
  * 0x33     '3'     ESCAPEd XOFF
@@ -88,7 +90,7 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int token)
 {
     uint8_t ch = '\0';
-    action_t action = SKIP;
+    action_t action = CONSUME;
     uint16_t crc = 0;
     diminuto_framer_state_t prior = DIMINUTO_FRAMER_STATE_RESET;
 
@@ -131,6 +133,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_FLAG:
         switch (ch) {
+        case NEWLINE:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * Multiple FLAG octets must be acceptable, since HDLC frames
@@ -156,6 +161,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_LENGTH:
         switch (ch) {
+        case NEWLINE:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
@@ -182,6 +190,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED:
         switch (ch) {
+        case NEWLINE:
+            /*
+             * NEWLINE will never be valid here because XORing it with
+             * MASK yields 0x2a a.k.a. '*', and the asterisk should
+             * never have been ESCAPEd.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * FLAG will never be valid here because XORing it with
@@ -220,6 +236,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_SEQUENCE:
         switch (ch) {
+        case NEWLINE:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
@@ -246,6 +265,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED:
         switch (ch) {
+        case NEWLINE:
+            /*
+             * NEWLINE will never be valid here because XORing it with
+             * MASK yields 0x2a a.k.a. '*', and the asterisk should
+             * never have been ESCAPEd.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * FLAG will never be valid here because XORing it with
@@ -284,6 +311,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_FLETCHER:
         switch (ch) {
+        case NEWLINE:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
@@ -310,6 +340,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED:
         switch (ch) {
+        case NEWLINE:
+            /*
+             * NEWLINE will never be valid here because XORing it with
+             * MASK yields 0x2a a.k.a. '*', and the asterisk should
+             * never have been ESCAPEd.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * FLAG will never be valid here because XORing it with
@@ -348,6 +386,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_PAYLOAD:
         switch (ch) {
+        case NEWLINE:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             action = RESET;
             that->state = DIMINUTO_FRAMER_STATE_FLAG;
@@ -374,6 +415,14 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED:
         switch (ch) {
+        case NEWLINE:
+            /*
+             * NEWLINE will never be valid here because XORing it with
+             * MASK yields 0x2a a.k.a. '*', and the asterisk should
+             * never have been ESCAPEd.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * FLAG will never be valid here because XORing it with
@@ -412,6 +461,12 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 
     case DIMINUTO_FRAMER_STATE_KERMIT:
         switch (ch) {
+        case NEWLINE:
+            /*
+             * NEWLINE falls outside of the Kermit encoding ranges.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         case FLAG:
             /*
              * FLAG falls outside of the Kermit encoding ranges.
@@ -445,10 +500,37 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
                 action = STORE;
             } else if ((that->limit == 1) && diminuto_kermit_thirdisvalid(ch)) {
                 action = KERMIT;
-                that->state = DIMINUTO_FRAMER_STATE_COMPLETE;
+                that->state = DIMINUTO_FRAMER_STATE_NEWLINE;
             } else {
                 that->state = DIMINUTO_FRAMER_STATE_INVALID;
             }
+        }
+        break;
+
+    case DIMINUTO_FRAMER_STATE_NEWLINE:
+        switch (ch) {
+        case NEWLINE:
+            /*
+             * Requiring that the NEWLINE be the last character of the frame
+             * and that it be escaped everywhere else allows the application
+             * to easily accumulate a frame in a buffer without even using
+             * a Framer.
+             */
+            that->state = DIMINUTO_FRAMER_STATE_COMPLETE;
+            break;
+        case FLAG:
+            action = RESET;
+            that->state = DIMINUTO_FRAMER_STATE_FLAG;
+            break;
+        case XON:
+            that->throttle = false;
+            break;
+        case XOFF:
+            that->throttle = true;
+            break;
+        default:
+            that->state = DIMINUTO_FRAMER_STATE_INVALID;
+            break;
         }
         break;
 
@@ -563,13 +645,18 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         }
         break;
 
-    case SKIP:
+    case CONSUME:
+        /*
+         * Do nothing.
+         */
         break;
 
     }
 
     if (!that->debug) {
-        /* Do nothing. */
+        /*
+         * Do nothing.
+         */
     } else if (isprint(token)) {
         DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'[%u]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
     } else {
@@ -601,6 +688,7 @@ ssize_t diminuto_framer_emit(FILE * stream, const void * data, size_t length)
          */
 
         switch (ch) {
+        case NEWLINE:
         case FLAG:
         case ESCAPE:
         case XON:
@@ -840,22 +928,16 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
         }
         total += sizeof(kermit);
 
-#if 0
         /*
-         * HDLC requires a FLAG at the end of every frame, but this FLAG
-         * can also be the start of the next frame. This functions puts
-         * a FLAG and the start *and* at the end of every frame, and the
-         * state machine must ignore extra FLAGs at the beginning of the
-         * next frame.
+         * NEWLINE[1]
          */
 
-        rc = fputc(FLAG, stream);
+        rc = fputc(NEWLINE, stream);
         if (rc == EOF) {
             streamerror(stream, "fputc");
             break;
         }
         total += 1;
-#endif
 
         rc = fflush(stream);
         if (rc == EOF) {

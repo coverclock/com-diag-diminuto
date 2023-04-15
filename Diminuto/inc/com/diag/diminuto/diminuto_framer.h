@@ -20,13 +20,15 @@
  * The Framer uses the following special tokens (which in no way prohibits
  * their use by the application):
  *
- * FLAG a.k.a. '~', 0x7e;
+ * FLAG a.k.a. '~', 0x7e, tilde.
  *
- * ESCAPE a.k.a. '}', 0x7d (this is not the usual ASCII escape character);
+ * ESCAPE a.k.a. '}', 0x7d, right curley bracket (NOT ASCII ESCAPE);
  *
  * XON a.k.a. '\x11', 0x11, DC1, Device Control 1, Transmit On;
  *
  * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3, Transmit Off.
+ *
+ * NEWLINE a.k.a. '\n', 0x0a, NL, line feed.
  *
  * The specialness of XON and XOFF allows these characters to be used by the
  * underlying serial driver hardware or software in the usual manner for
@@ -41,12 +43,11 @@
  *
  * A Framer frame looks like this:
  *
- * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] FLAG[1]
+ * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] NEWLINE[1]
  *
  * where
  *
- * FLAG[1]: is an FLAG token (the last FLAG token may be the first
- * at the beginning of the next frame);
+ * FLAG[1]: is an FLAG token (there can be multiple FLAG tokens in a row);
  *
  * SEQUENCE[2+]: is a simple two-octet monotonically increasing sequence
  * number field (which has no effect on whether or not frames are accepted)
@@ -65,7 +66,9 @@
  *
  * CRC[3]: is the Kermit-16 cyclic redundancy check octets, computed across
  * the unescaped PAYLOAD (the Kermit-16 CRC octets will never fall within a
- * range requiring ESCAPE tokens - see the Kermit feature unit test).
+ * range requiring ESCAPE tokens - see the Kermit feature unit test);
+ *
+ * NEWLINE[1]: is the ASCII line feed character.
  *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses.
@@ -143,6 +146,7 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
     DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload[...]. */
     DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
+    DIMINUTO_FRAMER_STATE_NEWLINE           = 'W',  /* NEWLINE[1]. */
     DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',  /* Frame complete. */
     DIMINUTO_FRAMER_STATE_FINAL             = 'E',  /* End of file. */
     DIMINUTO_FRAMER_STATE_ABORT             = 'A',  /* Abort received. */

@@ -121,6 +121,7 @@ int main(int argc, char * argv[])
         case DIMINUTO_FRAMER_STATE_PAYLOAD:             break;
         case DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED:     break;
         case DIMINUTO_FRAMER_STATE_KERMIT:              break;
+        case DIMINUTO_FRAMER_STATE_NEWLINE:             break;
         case DIMINUTO_FRAMER_STATE_COMPLETE:            break;
         case DIMINUTO_FRAMER_STATE_FINAL:               break;
         case DIMINUTO_FRAMER_STATE_ABORT:               break;
@@ -297,6 +298,11 @@ int main(int argc, char * argv[])
         ASSERT(!diminuto_framer_error(&framer));
 
         framer.state = DIMINUTO_FRAMER_STATE_KERMIT;
+        ASSERT(!diminuto_framer_complete(&framer));
+        ASSERT(!diminuto_framer_terminal(&framer));
+        ASSERT(!diminuto_framer_error(&framer));
+
+        framer.state = DIMINUTO_FRAMER_STATE_NEWLINE;
         ASSERT(!diminuto_framer_complete(&framer));
         ASSERT(!diminuto_framer_terminal(&framer));
         ASSERT(!diminuto_framer_error(&framer));
@@ -480,6 +486,14 @@ int main(int argc, char * argv[])
         ASSERT(!framer.throttle);
         ASSERT(state == DIMINUTO_FRAMER_STATE_KERMIT);
         state = diminuto_framer_machine(ff, ' ');
+        ASSERT(state == DIMINUTO_FRAMER_STATE_NEWLINE);
+        state = diminuto_framer_machine(ff, DC3);
+        ASSERT(framer.throttle);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_NEWLINE);
+        state = diminuto_framer_machine(ff, DC1);
+        ASSERT(!framer.throttle);
+        ASSERT(state == DIMINUTO_FRAMER_STATE_NEWLINE);
+        state = diminuto_framer_machine(ff, '\n');
         ASSERT(state == DIMINUTO_FRAMER_STATE_COMPLETE);
         state = diminuto_framer_machine(ff, DC3);
         ASSERT(framer.throttle);
@@ -508,8 +522,8 @@ int main(int argc, char * argv[])
         ssize_t received;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
-        uint8_t buffer[64];
-        int token;
+        char buffer[64];
+        char * result;
 
         TEST();
 
@@ -532,23 +546,25 @@ int main(int argc, char * argv[])
         rc = fclose(sink);    
         ASSERT(rc == 0);
 
+        /*
+         * This is a gross misuse of fgets(3).
+         */
+        result = fgets(buffer, sizeof(buffer), source); 
+        ASSERT(result == buffer);
+
+        /*
+         * strlen(3) and strchr(3) cannot be used because the buffer
+         * may contain '\0's.
+         */
+        buffer[sizeof(buffer) - 1] = '\n';
         received = 0;
-        while (true) {
-            token = fgetc(source);
-            if (token == EOF) {
-                break;
-            }
-            if (received >= sizeof(buffer)) {
-                break;
-            }
-            buffer[received++] = token;
-        }
+        while (buffer[received++] != '\n') {}
 
         CHECKPOINT("wire[%zd]:\n", received);
         diminuto_dump(stderr, buffer, received);
         ASSERT(received == sent);
         ASSERT(buffer[0] == '~');
-        ADVISE(buffer[received - 1] == '~');
+        ASSERT(buffer[received - 1] == '\n');
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
@@ -560,7 +576,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
         int fd[2];
         FILE * source;
         FILE * sink;
@@ -570,8 +586,8 @@ int main(int argc, char * argv[])
         size_t lengthof;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
-        uint8_t buffer[sizeof(DATA) * 3];
-        int token;
+        char buffer[sizeof(DATA) * 3];
+        char * result;
 
         TEST();
 
@@ -598,23 +614,25 @@ int main(int argc, char * argv[])
         rc = fclose(sink);    
         ASSERT(rc == 0);
 
+        /*
+         * This is a gross misuse of fgets(3).
+         */
+        result = fgets(buffer, sizeof(buffer), source); 
+        ASSERT(result == buffer);
+
+        /*
+         * strlen(3) and strchr(3) cannot be used because the buffer
+         * may contain '\0's.
+         */
+        buffer[sizeof(buffer) - 1] = '\n';
         received = 0;
-        while (true) {
-            token = fgetc(source);
-            if (token == EOF) {
-                break;
-            }
-            if (received >= sizeof(buffer)) {
-                break;
-            }
-            buffer[received++] = token;
-        }
+        while (buffer[received++] != '\n') {}
 
         CHECKPOINT("wire[%zd]:\n", received);
         diminuto_dump(stderr, buffer, received);
         ASSERT(received == sent);
         ASSERT(buffer[0] == '~');
-        ADVISE(buffer[received - 1] == '~');
+        ASSERT(buffer[received - 1] == '\n');
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
@@ -626,7 +644,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
         int fd[2];
         FILE * source;
         FILE * sink;
@@ -778,7 +796,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
         static const char TOOBIG[sizeof(DATA) + 1] = { '\0', };
         int fd[2];
         FILE * source;
@@ -901,7 +919,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
         static const char TOOBIG[sizeof(DATA) + 1] = { '\0', };
         int fd[2];
         FILE * source;
@@ -1032,7 +1050,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
         int fd[2];
         FILE * source;
         FILE * sink;
@@ -1283,8 +1301,8 @@ int main(int argc, char * argv[])
      */
 
     {
-        static const char DATA1[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.";
-        static const char DATA2[] = "England {expects} that \x11~every\x13 man will do his ~duty.";
+        static const char DATA1[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
+        static const char DATA2[] = "England {expects} that \x11~every\x13 man will do his ~duty.\r";
         int fd[2];
         FILE * source;
         FILE * sink;

@@ -20,6 +20,7 @@
 enum DiminutoFramerToken {
     FLAG        = '~',              /* 0x7e == 0b01111110 */
     ESCAPE      = '}',              /* 0x7d */
+    NEWLINE     = '\n',             /* 0x0a */
     XON         = '\x11',           /* 0x11 */
     XOFF        = '\x13',           /* 0x13 */
 };
