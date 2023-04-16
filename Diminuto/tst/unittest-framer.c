@@ -383,10 +383,6 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-    /*
-     * LOW-LEVEL API
-     */
-
     {
         diminuto_framer_t framer;
         diminuto_framer_t * ff;
@@ -547,7 +543,7 @@ int main(int argc, char * argv[])
     }
 
     /*
-     * MID-LEVEL API
+     * LOW-LEVEL API EXAMPLES
      */
 
     {
@@ -640,6 +636,7 @@ int main(int argc, char * argv[])
         ssize_t received;
         ssize_t length;
         size_t lengthof;
+        size_t lengthof2;
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         char buffer[sizeof(DATA) * 3];
@@ -702,11 +699,15 @@ int main(int argc, char * argv[])
         }
         ASSERT(!diminuto_framer_error(that));
         ASSERT(diminuto_framer_complete(that));
+        result = diminuto_framer_buffer(that);
+        ASSERT(result == line);
         length = diminuto_framer_length(that);
         CHECKPOINT("line[%zd]:\n", length);
         diminuto_dump(stderr, line, length);
         ASSERT(length == sizeof(DATA));
         ASSERT(memcmp(DATA, line, length) == 0);
+        lengthof2 = strlen(line);
+        ASSERT(lengthof2 == lengthof);
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);
@@ -716,6 +717,10 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+
+    /*
+     * MID-LEVEL API EXAMPLES
+     */
 
     {
         static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
@@ -1371,7 +1376,7 @@ int main(int argc, char * argv[])
     }
 
     /*
-     * HIGH-LEVEL API
+     * HIGH-LEVEL API EXAMPLES
      */
 
     {

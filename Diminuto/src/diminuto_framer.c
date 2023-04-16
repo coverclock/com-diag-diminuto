@@ -110,7 +110,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             break;
         default:
             /*
-             * Ignore everything else.
+             * Ignore everything else while waiting to synchronize.
              */
             break;
         }
@@ -123,9 +123,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
             break;
         case FLAG:
             /*
-             * Multiple FLAG octets must be acceptable, since HDLC frames
-             * both begin and end with a FLAG, with successive frames only
-             * optionally having a single FLAG (not two) in between.
+             * Multiple FLAG octets are acceptable.
              */
             break;
         case ESCAPE:

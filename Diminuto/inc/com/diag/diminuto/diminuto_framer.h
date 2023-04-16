@@ -86,8 +86,8 @@
  *
  * Similarly, framing of output can be handled by the application, using the
  * Fletcher checksum and Kermit cyclic redundancy check features itself, along
- * with a function that simplifies inserting the necessary ESCAPE tokens. Or,
- * it can be done with increasing levels of automation.
+ * with the emit function that simplifies inserting the necessary ESCAPE tokens.
+ * Or, it can be done with increasing levels of automation.
  *
  * The uses of standard I/O streams by the mid- and high-level APIs allows
  * the appication to use a variety of stream-type data sources, like pipes,
@@ -99,7 +99,9 @@
  * Fothergill uses the LoRa (Long-Range) radio technology. Specifically, the
  * SparkFun LoRa Serial Kit provides two paired LoRa radios with interfaces
  * that enumerate over USB as serial ports. Framers have been successfully
- * used to pass data over this technology.
+ * used to pass data over this technology. Note that the SparkFun docs
+ * mention that the product may drop packets, and the Framer sequence numbers
+ * verify this.
  *
  * REFERENCES
  *
