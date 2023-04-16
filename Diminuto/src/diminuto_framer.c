@@ -544,7 +544,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         that->total = 1; /* Because we already consumed the FLAG. */
         that->length = 0;
         /*
-         * Do not reset sequence, previous, or outgoing.
+         * Do not reset sequence, previous, or generated.
          */
         that->crc = 0;
         that->a = 0;
@@ -565,7 +565,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          */
         that->a = that->b = 0;
         (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
-        that->length = ntohl(that->length);
+        that->length = ntohs(that->length);
         that->here = (uint8_t *)&(that->candidate);
         that->limit = sizeof(that->candidate);
         break;
@@ -818,8 +818,8 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const void * data, size_t length)
 {
     ssize_t result = EOF;
-    uint32_t header = 0;
-    uint16_t sequence = 0;
+    uint16_t header = 0;
+    uint16_t generated = 0;
     uint8_t fletcher[2] = { 0, 0, };
     unsigned char kermit[3] = { ' ', ' ', ' ' };
     uint16_t crc = 0;
@@ -830,7 +830,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
 
     do {
 
-        if (length > diminuto_maximumof(uint32_t)) {
+        if (length > diminuto_maximumof(uint16_t)) {
             errno = E2BIG;
             break;
         }
@@ -855,7 +855,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
          * LENGTH[4]
          */
 
-        header = htonl(length);
+        header = htons(length);
         (void)diminuto_fletcher_16(&header, sizeof(header), &(fletcher[0]), &(fletcher[1]));
         emitted = diminuto_framer_emit(stream, &header, sizeof(header));
         if (emitted == EOF) {
@@ -867,9 +867,9 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
          * SEQUENCE[2]
          */
 
-        sequence = htons(++that->outgoing);
-        (void)diminuto_fletcher_16(&sequence, sizeof(sequence), &(fletcher[0]), &(fletcher[1]));
-        emitted = diminuto_framer_emit(stream, &sequence, sizeof(sequence));
+        generated = htons(++that->generated);
+        (void)diminuto_fletcher_16(&generated, sizeof(generated), &(fletcher[0]), &(fletcher[1]));
+        emitted = diminuto_framer_emit(stream, &generated, sizeof(generated));
         if (emitted == EOF) {
             break;
         }
@@ -928,7 +928,7 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
             break;
         }
 
-        DIMINUTO_LOG_DEBUG("diminuto_framer@%p: emitted. #%u [%zd] [%zu]\n", that, that->outgoing, total, length);
+        DIMINUTO_LOG_DEBUG("diminuto_framer@%p: emitted. #%u [%zd] [%zu]\n", that, that->generated, total, length);
 
         result = total;
 
@@ -1003,7 +1003,7 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: candidate=%u\n", that, that->candidate);
     diminuto_log_emit("framer@%p: sequence=%u\n", that, that->sequence);
     diminuto_log_emit("framer@%p: previous=%u\n", that, that->previous);
-    diminuto_log_emit("framer@%p: outgoing=%u\n", that, that->outgoing);
+    diminuto_log_emit("framer@%p: generated=%u\n", that, that->generated);
     diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
     diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);

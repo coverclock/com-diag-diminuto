@@ -18,9 +18,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_framer.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_dump.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_typeof.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "../src/diminuto_framer.h"
 #include <ctype.h>
@@ -42,6 +44,9 @@ static void sequences(const diminuto_framer_t * that, int line)
     duplicated = diminuto_framer_duplicated(that);
     rolledover = diminuto_framer_rolledover(that);
     farend = diminuto_framer_farend(that);
+
+    ASSERT(diminuto_framer_incoming(that) == that->sequence);
+    ASSERT(diminuto_framer_outgoing(that) == that->generated);
 
     CHECKPOINT("sequences[%d]: sequence=%u previous=%u missing=%zu duplicated=%zu rolledover=%d farend=%d\n", line, that->sequence, that->previous, missing, duplicated, rolledover, farend);
 }
@@ -90,13 +95,22 @@ int main(int argc, char * argv[])
 
         CHECKPOINT("sizeof(framer)=%zu\n", sizeof(framer));
 
-        ASSERT(sizeof(framer.length) == sizeof(uint32_t));
+        ASSERT(sizeof(framer.length) == sizeof(uint16_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.length)));
         ASSERT(sizeof(framer.sequence) == sizeof(uint16_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.sequence)));
         ASSERT(sizeof(framer.a) == sizeof(uint8_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.a)));
         ASSERT(sizeof(framer.b) == sizeof(uint8_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.b)));
         ASSERT(sizeof(framer.crc) == sizeof(uint16_t));
-        ASSERT(sizeof(framer.sum) == 2);
-        ASSERT(sizeof(framer.check) == 3);
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.crc)));
+        ASSERT(diminuto_countof(framer.sum) == 2);
+        ASSERT(sizeof(framer.sum[0]) == sizeof(uint8_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.sum[0])));
+        ASSERT(diminuto_countof(framer.check) == 3);
+        ASSERT(sizeof(framer.check[0]) == sizeof(uint8_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.check[0])));
 
         STATUS();
     }
@@ -190,7 +204,7 @@ int main(int argc, char * argv[])
         ASSERT(framer.candidate == 0);
         ASSERT(framer.sequence == diminuto_maximumof(uint16_t));
         ASSERT(framer.previous == (framer.sequence - 1));
-        ASSERT(framer.outgoing == diminuto_maximumof(uint16_t));
+        ASSERT(framer.generated == diminuto_maximumof(uint16_t));
         ASSERT(framer.crc == 0);
         ASSERT(framer.a == 0);
         ASSERT(framer.b == 0);
@@ -237,7 +251,7 @@ int main(int argc, char * argv[])
         ASSERT(framer.candidate == 0);
         ASSERT(framer.sequence == diminuto_maximumof(uint16_t));
         ASSERT(framer.previous == (framer.sequence - 1));
-        ASSERT(framer.outgoing == diminuto_maximumof(uint16_t));
+        ASSERT(framer.generated == diminuto_maximumof(uint16_t));
         ASSERT(framer.crc == 0);
         ASSERT(framer.a == 0);
         ASSERT(framer.b == 0);
@@ -425,24 +439,6 @@ int main(int argc, char * argv[])
         state = diminuto_framer_machine(ff, '~');
         ASSERT(state == DIMINUTO_FRAMER_STATE_FLAG);
 
-        state = diminuto_framer_machine(ff, '\0');
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
-        state = diminuto_framer_machine(ff, DC3);
-        ASSERT(framer.throttle);
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
-        state = diminuto_framer_machine(ff, DC1);
-        ASSERT(!framer.throttle);
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
-        state = diminuto_framer_machine(ff, '}');
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
-        state = diminuto_framer_machine(ff, DC3);
-        ASSERT(framer.throttle);
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
-        state = diminuto_framer_machine(ff, DC1);
-        ASSERT(!framer.throttle);
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED);
-        state = diminuto_framer_machine(ff, ' ');
-        ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, '\0');
         ASSERT(state == DIMINUTO_FRAMER_STATE_LENGTH);
         state = diminuto_framer_machine(ff, DC3);
@@ -1353,7 +1349,7 @@ int main(int argc, char * argv[])
         CHECKPOINT("iterations=%d\n", iterations);
         ASSERT(iterations == (256 * 256));
 
-        CHECKPOINT("outoing=%u sequence=%u previous=%u\n", writer.outgoing, reader.sequence, reader.previous);
+        CHECKPOINT("outoing=%u sequence=%u previous=%u\n", writer.generated, reader.sequence, reader.previous);
 
         /*
          * One more iteration and all of the sequence counters would have
@@ -1361,7 +1357,7 @@ int main(int argc, char * argv[])
          */
 
         --iterations;
-        ASSERT(writer.outgoing == iterations);
+        ASSERT(writer.generated == iterations);
         ASSERT(reader.sequence == iterations);
         ASSERT(reader.previous == (iterations - 1));
 

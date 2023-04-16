@@ -42,22 +42,25 @@
  * number field (which has no effect on whether or not frames are accepted)
  * in network byte order, plus any necessary ESCAPE tokens;
  *
- * LENGTH[4+]: is the four-octet payload length field in network byte order,
- * containing the length of the unescaped payload, plus any necessary ESCAPE
- * tokens;
+ * LENGTH[4+]: is the two-octet payload length field in network byte order,
+ * containing the length of the unESCAPEd payload, plus any necessary ESCAPE
+ * tokens (yielding a maximum payload size of 65535 octets);
  *
  * FLETCHER[2+]: is the Fletcher-16 checksum A and B octets, computed across
- * the unescaped SEQUENCE and LENGTH fields in network byte order, plus any
+ * the unESCAPEd SEQUENCE and LENGTH fields in network byte order, plus any
  * necessary ESCAPE tokens;
  *
- * PAYLOAD[LENGTH+]: is the payload, of length of the unescaped LENGTH field
- * in host byte order, plus any necessary ESCAPE tokens;
+ * PAYLOAD[LENGTH+]: is the payload, of length of the unESCAPEd LENGTH field
+ * in host byte order, plus any necessary ESCAPE tokens (maximum unESCAPEd
+ * length of 65535 octets);
  *
  * CRC[3]: is the Kermit-16 cyclic redundancy check octets, computed across
- * the unescaped PAYLOAD (the Kermit-16 CRC octets will never fall within a
+ * the unESCAPEd PAYLOAD (the Kermit-16 CRC octets will never fall within a
  * range requiring ESCAPE tokens - see the Kermit feature unit test);
  *
- * NEWLINE[1]: is a NEWLINE token.
+ * NEWLINE[1]: is a NEWLINE token (since all other NEWLINE characters are
+ * ESCAPEd, this makes it easy to use tools like the standard I/O library
+ * to read frames without even using a Framer).
  *
  * The specialness of XON and XOFF allows these characters to be used by the
  * underlying serial driver hardware or software in the usual manner for
@@ -71,7 +74,9 @@
  * cease transmitting frames.
  *
  * The specialness of NEWLINE makes it simple for applications to collect
- * a frame in a buffer from any data source without even using a Framer.
+ * a frame in a buffer from any data source without even using a Framer,
+ * using, for example, fgets(3). There are examples of this in the unit test
+ * suite.
  *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses.
@@ -93,7 +98,8 @@
  * the appication to use a variety of stream-type data sources, like pipes,
  * named pipes (FIFOs), serial ports, TCP stream sockets, and the like.
  *
- * Examples of all of these approaches can be found in the Framer unit tests.
+ * Examples of all of these approaches can be found in the Framer unit test
+ * suite.
  *
 `* This feature was developed in direct support of the Fothergill sub-project.
  * Fothergill uses the LoRa (Long-Range) radio technology. Specifically, the
@@ -154,8 +160,8 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_IDLE              = 'I',  /* Idle. */
     DIMINUTO_FRAMER_STATE_INVALID           = 'V',  /* Frame invalid. */
     DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
-    DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
-    DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
+    DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[2]. */
+    DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[2]. */
     DIMINUTO_FRAMER_STATE_NEWLINE           = 'W',  /* NEWLINE[1]. */
     DIMINUTO_FRAMER_STATE_OVERFLOW          = 'O',  /* Buffer overflow. */
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
@@ -175,11 +181,11 @@ typedef struct DiminutoFramer {
     size_t limit;                       /* Remaining octets in current field. */
     size_t total;                       /* Total number of octets in frame. */
     diminuto_framer_state_t state;      /* FSM state. */
-    uint32_t length;                    /* Received frame length. */
+    uint16_t length;                    /* Received frame length. */
     uint16_t candidate;                 /* Working incoming sequence number. */
     uint16_t sequence;                  /* Complete incoming sequence number. */
     uint16_t previous;                  /* Previous incoming sequence number. */
-    uint16_t outgoing;                  /* Previous outgoing sequence number. */
+    uint16_t generated;                 /* Previous outgoing sequence number. */
     uint16_t crc;                       /* Kermit cyclic redundancy check. */
     uint8_t a;                          /* Fletcher checksum A. */
     uint8_t b;                          /* Fletcher checksum B. */
@@ -391,6 +397,25 @@ static inline size_t diminuto_framer_missing(const diminuto_framer_t * that) {
  */
 static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) {
     return ((that->previous != 65535) && (that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
+}
+
+/**
+ * Return the most recent incoming sequence number.
+ * @param that points to the Framer object.
+ * @return the most reecnt incoming sequence number.
+ */
+static inline uint16_t diminuto_framer_incoming(const diminuto_framer_t * that) {
+    return that->sequence;
+}
+
+
+/**
+ * Return the most recent outgoing sequence number.
+ * @param that points to the Framer object.
+ * @return the most reecnt outgoing sequence number.
+ */
+static inline uint16_t diminuto_framer_outgoing(const diminuto_framer_t * that) {
+    return that->generated;
 }
 
 /*******************************************************************************

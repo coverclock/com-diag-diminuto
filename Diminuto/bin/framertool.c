@@ -107,6 +107,7 @@ int main(int argc, char * argv[])
     int token = 0;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
     diminuto_framer_t * ff = (diminuto_framer_t *)0;
+    uint16_t sequence = 0;
 
     /*
      * SETUP
@@ -377,7 +378,8 @@ int main(int argc, char * argv[])
                     } else if (token == '\n') {
                         *(here++) = '\n';
                         ++total;
-                        DIMINUTO_LOG_DEBUG("framertool: input [%zu]\n", total);
+                        sequence = diminuto_framer_outgoing(&framer) + 1;
+                        DIMINUTO_LOG_INFORMATION("framertool: input #%u [%zu]\n", sequence, total);
                         if (debug) {
                             diminuto_dump(stderr, line, total);
                             fflush(stderr);
@@ -411,7 +413,8 @@ int main(int argc, char * argv[])
                     break;
                 } else {
                     length = diminuto_framer_length(&framer);
-                    DIMINUTO_LOG_DEBUG("framertool: output [%zu]\n", length);
+                    sequence = diminuto_framer_incoming(&framer);
+                    DIMINUTO_LOG_INFORMATION("framertool: output #%u [%zu]\n", sequence, length);
                     if (debug) {
                         diminuto_dump(stderr, frame, length);
                         fflush(stderr);
