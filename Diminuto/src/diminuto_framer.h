@@ -18,15 +18,30 @@
  ******************************************************************************/
 
 enum DiminutoFramerToken {
-    FLAG        = '~',              /* 0x7e == 0b01111110 */
-    ESCAPE      = '}',              /* 0x7d */
-    NEWLINE     = '\n',             /* 0x0a */
-    XON         = '\x11',           /* 0x11 */
-    XOFF        = '\x13',           /* 0x13 */
+    ESCAPE      = '}',      /* 0x7d */
+    FLAG        = '~',      /* 0x7e == 0b01111110 */
+    NEWLINE     = '\n',     /* 0x0a */
+    XOFF        = '\x13',   /* 0x13 */
+    XON         = '\x11',   /* 0x11 */
 };
 
 enum DiminutoFramerMask {
     MASK        = ' ',      /* 0x20 */
 };
+
+/*******************************************************************************
+ * TYPES
+ ******************************************************************************/
+
+typedef enum DiminutoFramerAction {
+    CONSUME     = 'C',      /* Consume this octet without processing. */
+    FLETCHER    = 'F',      /* Process Fletcher-16 checksum. */
+    KERMIT      = 'K',      /* Process Kermit-16 cyclic redundancy check. */
+    LENGTH      = 'L',      /* Process length and Fletcher-16 checksum. */
+    PAYLOAD     = 'P',      /* Compute Kermit-6 cyclic redundancy check. */
+    RESET       = 'R',      /* Initialize Framer for next frame. */
+    SEQUENCE    = 'N',      /* Process sequence and Fletcher-16 checksum. */
+    STORE       = 'S',      /* Process this octet and Kermit-16 CRC. */
+} action_t;
 
 #endif

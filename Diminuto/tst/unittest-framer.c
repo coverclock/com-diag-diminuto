@@ -106,29 +106,66 @@ int main(int argc, char * argv[])
 
         /*
          * If I botch the definition of the state enumeration, this
-         * should get an error or warning at compile time.
+         * should get an error or warning at compile time. Similarly
+         * for the subsequent tests.
          */
 
         switch (state) {
-        case DIMINUTO_FRAMER_STATE_RESET:               break;
+        case DIMINUTO_FRAMER_STATE_ABORT:               break;
+        case DIMINUTO_FRAMER_STATE_COMPLETE:            break;
+        case DIMINUTO_FRAMER_STATE_FAILED:              break;
+        case DIMINUTO_FRAMER_STATE_FINAL:               break;
         case DIMINUTO_FRAMER_STATE_FLAG:                break;
-        case DIMINUTO_FRAMER_STATE_LENGTH:              break;
-        case DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED:      break;
-        case DIMINUTO_FRAMER_STATE_SEQUENCE:            break;
-        case DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED:    break;
         case DIMINUTO_FRAMER_STATE_FLETCHER:            break;
         case DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED:    break;
+        case DIMINUTO_FRAMER_STATE_IDLE:                break;
+        case DIMINUTO_FRAMER_STATE_INVALID:             break;
+        case DIMINUTO_FRAMER_STATE_KERMIT:              break;
+        case DIMINUTO_FRAMER_STATE_LENGTH:              break;
+        case DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED:      break;
+        case DIMINUTO_FRAMER_STATE_NEWLINE:             break;
+        case DIMINUTO_FRAMER_STATE_OVERFLOW:            break;
         case DIMINUTO_FRAMER_STATE_PAYLOAD:             break;
         case DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED:     break;
-        case DIMINUTO_FRAMER_STATE_KERMIT:              break;
-        case DIMINUTO_FRAMER_STATE_NEWLINE:             break;
-        case DIMINUTO_FRAMER_STATE_COMPLETE:            break;
-        case DIMINUTO_FRAMER_STATE_FINAL:               break;
-        case DIMINUTO_FRAMER_STATE_ABORT:               break;
-        case DIMINUTO_FRAMER_STATE_FAILED:              break;
-        case DIMINUTO_FRAMER_STATE_OVERFLOW:            break;
-        case DIMINUTO_FRAMER_STATE_INVALID:             break;
-        case DIMINUTO_FRAMER_STATE_IDLE:                break;
+        case DIMINUTO_FRAMER_STATE_RESET:               break;
+        case DIMINUTO_FRAMER_STATE_SEQUENCE:            break;
+        case DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED:    break;
+        }
+
+        STATUS();
+    }
+
+    {
+        int token = CONSUME;
+
+        TEST();
+
+        switch (token) {
+        case ESCAPE:    break;
+        case FLAG:      break;
+        case NEWLINE:   break;
+        case XOFF:      break;
+        case XON:       break;
+        }
+
+        STATUS();
+            
+    }
+
+    {
+        action_t action = RESET;
+
+        TEST();
+
+        switch (action) {
+        case CONSUME:   break;
+        case FLETCHER:  break;
+        case KERMIT:    break;
+        case LENGTH:    break;
+        case PAYLOAD:   break;
+        case RESET:     break;
+        case SEQUENCE:  break;
+        case STORE:     break;
         }
 
         STATUS();

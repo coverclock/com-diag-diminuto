@@ -30,17 +30,6 @@
  *
  * NEWLINE a.k.a. '\n', 0x0a, NL, line feed.
  *
- * The specialness of XON and XOFF allows these characters to be used by the
- * underlying serial driver hardware or software in the usual manner for
- * flow control, without interfering with their use by the application as
- * data values. Normally, the serial driver will intercept XON and XOFF and
- * handle them appropriately. But in the event that software flow control
- * is enabled on one end but not the other, their appearance in the data
- * stream will not impact the application. If the Framer receives an XOFF,
- * it will turn on the throttle flag in the object, and turn it off when
- * XON is received; this allows the application to, for example, temporarily
- * cease transmitting frames.
- *
  * A Framer frame looks like this:
  *
  * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] NEWLINE[1]
@@ -70,8 +59,23 @@
  *
  * NEWLINE[1]: is a NEWLINE token.
  *
+ * The specialness of XON and XOFF allows these characters to be used by the
+ * underlying serial driver hardware or software in the usual manner for
+ * flow control, without interfering with their use by the application as
+ * data values. Normally, the serial driver will intercept XON and XOFF and
+ * handle them appropriately. But in the event that software flow control
+ * is enabled on one end but not the other, their appearance in the data
+ * stream will not impact the application. If the Framer receives an XOFF,
+ * it will turn on the throttle flag in the object, and turn it off when
+ * XON is received; this allows the application to, for example, temporarily
+ * cease transmitting frames.
+ *
+ * The specialness of NEWLINE makes it simple for applications to collect
+ * a frame in a buffer from any data source without even using a Framer.
+ *
  * The Framer can be approached at via the low-level API by just driving its
  * state machine by simulating it via whatever data source the application uses.
+ *
  * The mid-level API uses standard input/output streams but leaves the
  * management of the Framer object to the application.
  *
@@ -79,20 +83,23 @@
  * internally, as a local variable reinitialized upon every call, at the
  * expense of abstracting out all of the details of what is going on with
  * the input stream.
- * 
+ *
  * Similarly, framing of output can be handled by the application, using the
  * Fletcher checksum and Kermit cyclic redundancy check features itself, along
  * with a function that simplifies inserting the necessary ESCAPE tokens. Or,
  * it can be done with increasing levels of automation.
  *
-`* This feature was developed in direct support of the Conestoga and
- * Fothergill sub-projects. Fothergill uses the LoRa (Long-Range) radio
- * technology. Conestoga passes binary data packets like RTCM messages over
- * a serial channel. Specifically, the SparkFun LoRa Serial Kit provides
- * two paired LoRa radios with interfaces that enumerate over USB as serial
- * ports.
+ * The uses of standard I/O streams by the mid- and high-level APIs allows
+ * the appication to use a variety of stream-type data sources, like pipes,
+ * named pipes (FIFOs), serial ports, TCP stream sockets, and the like.
  *
- * Examples of all of these approaches can be found in its unit tests.
+ * Examples of all of these approaches can be found in the Framer unit tests.
+ *
+`* This feature was developed in direct support of the Fothergill sub-project.
+ * Fothergill uses the LoRa (Long-Range) radio technology. Specifically, the
+ * SparkFun LoRa Serial Kit provides two paired LoRa radios with interfaces
+ * that enumerate over USB as serial ports. Framers have been successfully
+ * used to pass data over this technology.
  *
  * REFERENCES
  *
@@ -135,25 +142,25 @@
  * COMPLETE state.
  */
 typedef enum DiminutoFramerState {
-    DIMINUTO_FRAMER_STATE_RESET             = 'R',  /* Reset. */
+    DIMINUTO_FRAMER_STATE_ABORT             = 'A',  /* Abort received. */
+    DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',  /* Frame complete. */
+    DIMINUTO_FRAMER_STATE_FAILED            = 'X',  /* CS or CRC failed. */
+    DIMINUTO_FRAMER_STATE_FINAL             = 'E',  /* End of file. */
     DIMINUTO_FRAMER_STATE_FLAG              = 'S',  /* One or more flags. */
-    DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
-    DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
-    DIMINUTO_FRAMER_STATE_SEQUENCE          = 'N',  /* Sequence[2]. */
-    DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED  = 'n',  /* Escaped Sequence[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED  = 'f',  /* Escaped checksum[2]. */
+    DIMINUTO_FRAMER_STATE_IDLE              = 'I',  /* Idle. */
+    DIMINUTO_FRAMER_STATE_INVALID           = 'V',  /* Frame invalid. */
+    DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
+    DIMINUTO_FRAMER_STATE_LENGTH            = 'L',  /* Length[4]. */
+    DIMINUTO_FRAMER_STATE_LENGTH_ESCAPED    = 'l',  /* Escaped Length[4]. */
+    DIMINUTO_FRAMER_STATE_NEWLINE           = 'W',  /* NEWLINE[1]. */
+    DIMINUTO_FRAMER_STATE_OVERFLOW          = 'O',  /* Buffer overflow. */
     DIMINUTO_FRAMER_STATE_PAYLOAD           = 'P',  /* Payload. */
     DIMINUTO_FRAMER_STATE_PAYLOAD_ESCAPED   = 'p',  /* Escaped payload[...]. */
-    DIMINUTO_FRAMER_STATE_KERMIT            = 'K',  /* CRC[3]. */
-    DIMINUTO_FRAMER_STATE_NEWLINE           = 'W',  /* NEWLINE[1]. */
-    DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',  /* Frame complete. */
-    DIMINUTO_FRAMER_STATE_FINAL             = 'E',  /* End of file. */
-    DIMINUTO_FRAMER_STATE_ABORT             = 'A',  /* Abort received. */
-    DIMINUTO_FRAMER_STATE_FAILED            = 'X',  /* CS or CRC failed. */
-    DIMINUTO_FRAMER_STATE_OVERFLOW          = 'O',  /* Buffer overflow. */
-    DIMINUTO_FRAMER_STATE_INVALID           = 'V',  /* Frame invalid. */
-    DIMINUTO_FRAMER_STATE_IDLE              = 'I',  /* Idle. */
+    DIMINUTO_FRAMER_STATE_RESET             = 'R',  /* Reset. */
+    DIMINUTO_FRAMER_STATE_SEQUENCE          = 'N',  /* Sequence[2]. */
+    DIMINUTO_FRAMER_STATE_SEQUENCE_ESCAPED  = 'n',  /* Escaped Sequence[2]. */
 } diminuto_framer_state_t;
 
 /**

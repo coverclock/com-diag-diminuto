@@ -23,21 +23,6 @@
 #include <arpa/inet.h>
 
 /*******************************************************************************
- * TYPES
- ******************************************************************************/
-
-typedef enum Action {
-    FLETCHER    = 'F',      /* Process Fletcher-16 checksum. */
-    KERMIT      = 'K',      /* Process Kermit-16 cyclic redundancy check. */
-    LENGTH      = 'L',      /* Process length and Fletcher-16 checksum. */
-    PAYLOAD     = 'P',      /* Compute Kermit-6 cyclic redundancy check. */
-    RESET       = 'R',      /* Initialize Framer for next frame. */
-    CONSUME     = 'C',      /* Consume this octet without processing. */
-    SEQUENCE    = 'N',      /* Process sequence and Fletcher-16 checksum. */
-    STORE       = 'S',      /* Process this octet and Kermit-16 CRC. */
-} action_t;
-
-/*******************************************************************************
  * HELPERS
  ******************************************************************************/
 
