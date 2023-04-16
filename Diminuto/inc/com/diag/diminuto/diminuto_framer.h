@@ -32,7 +32,7 @@
  *
  * A Framer frame looks like this:
  *
- * FLAG[1] LENGTH[4+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] NEWLINE[1]
+ * FLAG[1] LENGTH[2+] SEQUENCE[2+] FLETCHER[2+] PAYLOAD[LENGTH+] CRC[3] NEWLINE[1]
  *
  * where
  *
@@ -42,7 +42,7 @@
  * number field (which has no effect on whether or not frames are accepted)
  * in network byte order, plus any necessary ESCAPE tokens;
  *
- * LENGTH[4+]: is the two-octet payload length field in network byte order,
+ * LENGTH[2+]: is the two-octet payload length field in network byte order,
  * containing the length of the unESCAPEd payload, plus any necessary ESCAPE
  * tokens (yielding a maximum payload size of 65535 octets);
  *
