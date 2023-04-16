@@ -146,7 +146,7 @@ typedef enum DiminutoFramerState {
     DIMINUTO_FRAMER_STATE_COMPLETE          = 'C',  /* Frame complete. */
     DIMINUTO_FRAMER_STATE_FAILED            = 'X',  /* CS or CRC failed. */
     DIMINUTO_FRAMER_STATE_FINAL             = 'E',  /* End of file. */
-    DIMINUTO_FRAMER_STATE_FLAG              = 'S',  /* One or more flags. */
+    DIMINUTO_FRAMER_STATE_FLAG              = 'S',  /* One or more FLAGs. */
     DIMINUTO_FRAMER_STATE_FLETCHER          = 'F',  /* Checksum[2]. */
     DIMINUTO_FRAMER_STATE_FLETCHER_ESCAPED  = 'f',  /* Escaped checksum[2]. */
     DIMINUTO_FRAMER_STATE_IDLE              = 'I',  /* Idle. */
