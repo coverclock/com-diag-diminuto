@@ -36,7 +36,7 @@
  *
  * where
  *
- * FLAG[1]: is an FLAG token (there can be multiple FLAG tokens in a row);
+ * FLAG[1]: is a FLAG token (there can be multiple FLAG tokens in a row);
  *
  * SEQUENCE[2+]: is a simple two-octet monotonically increasing sequence
  * number field (which has no effect on whether or not frames are accepted)
