@@ -76,6 +76,8 @@ int main(int argc, char * argv[])
         ASSERT(XOFF == '\x13');
         ASSERT(XON == DC1);
         ASSERT(XOFF == DC3);
+        ASSERT(NEWLINE == '\n');
+        ASSERT(NEWLINE == '\x0a');
         ASSERT(MASK == ' ');
 
         STATUS();
