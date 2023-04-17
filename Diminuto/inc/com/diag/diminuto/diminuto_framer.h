@@ -181,8 +181,9 @@ typedef struct DiminutoFramer {
     size_t limit;                       /* Remaining octets in current field. */
     size_t total;                       /* Total number of octets in frame. */
     diminuto_framer_state_t state;      /* FSM state. */
+    uint16_t length0;                   /* Working payload length. */
     uint16_t length;                    /* Received payload length. */
-    uint16_t candidate;                 /* Working incoming sequence number. */
+    uint16_t sequence0;                 /* Working incoming sequence number. */
     uint16_t sequence;                  /* Complete incoming sequence number. */
     uint16_t previous;                  /* Previous incoming sequence number. */
     uint16_t generated;                 /* Previous outgoing sequence number. */
@@ -208,7 +209,7 @@ typedef struct DiminutoFramer {
     (uint8_t *)0, \
     0, 0, 0, \
     DIMINUTO_FRAMER_STATE_IDLE, \
-    0, \
+    0, 0, \
     0, 65535, 65534, 65535, \
     0, \
     0, 0, \

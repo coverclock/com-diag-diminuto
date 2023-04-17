@@ -541,10 +541,10 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     switch (action) {
 
     case RESET:
-        that->here = (uint8_t *)&(that->length);
-        that->limit = sizeof(that->length);
+        that->here = (uint8_t *)&(that->length0);
+        that->limit = sizeof(that->length0);
+        that->length0 = 0;
         that->total = 1; /* Because we already consumed the FLAG. */
-        that->length = 0;
         /*
          * Do not reset sequence, previous, or generated.
          */
@@ -566,10 +566,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * architectures see the same value.
          */
         that->a = that->b = 0;
-        (void)diminuto_fletcher_16(&(that->length), sizeof(that->length), &(that->a), &(that->b));
-        that->length = ntohs(that->length);
-        that->here = (uint8_t *)&(that->candidate);
-        that->limit = sizeof(that->candidate);
+        (void)diminuto_fletcher_16(&(that->length0), sizeof(that->length0), &(that->a), &(that->b));
+        that->here = (uint8_t *)&(that->sequence0);
+        that->limit = sizeof(that->sequence0);
         break;
 
     case SEQUENCE:
@@ -579,8 +578,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * Must calculate checksum on network byte ordered field so all
          * architectures see the same value.
          */
-        (void)diminuto_fletcher_16(&(that->candidate), sizeof(that->candidate), &(that->a), &(that->b));
-        that->candidate = ntohs(that->candidate);
+        (void)diminuto_fletcher_16(&(that->sequence0), sizeof(that->sequence0), &(that->a), &(that->b));
         that->here = (uint8_t *)&(that->sum);
         that->limit = sizeof(that->sum);
         break;
@@ -590,22 +588,30 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
-        } else if (that->length == 0) {
-            that->here = (uint8_t *)&(that->check);
-            that->limit = sizeof(that->check);
-            that->state = DIMINUTO_FRAMER_STATE_KERMIT;
-        } else if (that->length > that->size) {
-            that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
         } else {
-            that->here = (uint8_t *)(that->buffer);
-            that->limit = that->length;
+            /*
+             * Don't use LENGTH or SEQUENCE fields' values until the
+             * checksum has been validated.
+             */
+            that->length0 = ntohs(that->length0);
+            that->sequence0 = ntohs(that->sequence0);
+            if (that->length0 == 0) {
+                that->here = (uint8_t *)&(that->check);
+                that->limit = sizeof(that->check);
+                that->state = DIMINUTO_FRAMER_STATE_KERMIT;
+            } else if (that->length0 > that->size) {
+                that->state = DIMINUTO_FRAMER_STATE_OVERFLOW;
+            } else {
+                that->here = (uint8_t *)(that->buffer);
+                that->limit = that->length0;
+            }
         }
         break;
 
     case PAYLOAD:
         *(that->here++) = ch;
         --(that->limit);
-        that->crc = diminuto_kermit_16(that->buffer, that->length, 0);
+        that->crc = diminuto_kermit_16(that->buffer, that->length0, 0);
         that->here = (uint8_t *)&(that->check);
         that->limit = sizeof(that->check);
         break;
@@ -623,10 +629,12 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * otherwise uncompleted frames will be revealed to the applicaiton
              * by a discrepancy in the previous and current sequence numbers.
              * Exception: when the sequence field rolls over from 65535 to
-             * 0.
+             * 0. Similarly, we don't update the length field until the frame
+             * is completed.
              */
             that->previous = that->sequence;
-            that->sequence = that->candidate;
+            that->sequence = that->sequence0;
+            that->length = that->length0;
         }
         break;
 
@@ -638,8 +646,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * at the end of every frame, this is mostly a convenience feature,
          * and definitely not useful for binary data.
          */
-        if (that->length < that->size) {
-            ((uint8_t *)that->buffer)[that->length] = '\0';
+        if (that->length0 < that->size) {
+            ((uint8_t *)that->buffer)[that->length0] = '\0';
         }
         break;
 
@@ -656,9 +664,9 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
          * Do nothing.
          */
     } else if (isprint(token)) {
-        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'[%u]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'%c'=(%c)[%zu]\n", that, prior, token, that->state, that->limit);
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'\\x%x'[%u]=(%c)[%zu]\n", that, prior, token, that->length, that->state, that->limit);
+        DIMINUTO_LOG_DEBUG("diminuto_framer%p: state (%c)+'\\x%x'=(%c)[%zu]\n", that, prior, token, that->state, that->limit);
     }
 
     return that->state;
@@ -1014,8 +1022,9 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: limit=%zu\n", that, that->limit);
     diminuto_log_emit("framer@%p: total=%zu\n", that, that->total);
     diminuto_log_emit("framer@%p: state='%c'\n", that, that->state);
+    diminuto_log_emit("framer@%p: length0=%u\n", that, that->length0);
     diminuto_log_emit("framer@%p: length=%u\n", that, that->length);
-    diminuto_log_emit("framer@%p: candidate=%u\n", that, that->candidate);
+    diminuto_log_emit("framer@%p: sequence0=%u\n", that, that->sequence0);
     diminuto_log_emit("framer@%p: sequence=%u\n", that, that->sequence);
     diminuto_log_emit("framer@%p: previous=%u\n", that, that->previous);
     diminuto_log_emit("framer@%p: generated=%u\n", that, that->generated);
