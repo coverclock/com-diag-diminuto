@@ -182,6 +182,7 @@ int main(int argc, char * argv[])
         case RESET:     break;
         case SEQUENCE:  break;
         case STORE:     break;
+        case TERMINATE: break;
         }
 
         STATUS();
@@ -638,8 +639,13 @@ int main(int argc, char * argv[])
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         char buffer[sizeof(DATA) * 3];
-        char line[sizeof(buffer)];
+        char line[sizeof(DATA)]; /* Includes space for payload NUL. */
         char * result;
+
+        /*
+         * This version transmits the terminating NUL as part of the payload
+         * but does not have room for the appended NUL.
+         */
 
         TEST();
 
@@ -656,10 +662,12 @@ int main(int argc, char * argv[])
         sink = fdopen(fd[1], "w");
         ASSERT(source != (FILE *)0);
 
+        (void)memset(line, 0xff, sizeof(line));
+
         that = diminuto_framer_init(&framer, line, sizeof(line));
         diminuto_framer_dump(that);
 
-        sent = diminuto_framer_writer(sink, that, DATA, sizeof(DATA));
+        sent = diminuto_framer_writer(sink, that, DATA, sizeof(DATA)); /* Sends NUL. */
         CHECKPOINT("diminuto_framer_writer=%zd\n", sent);
         ASSERT(sent > lengthof);
 
@@ -706,6 +714,201 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(DATA, line, length) == 0);
         lengthof2 = strlen(line);
         ASSERT(lengthof2 == lengthof);
+
+        diminuto_framer_dump(that);
+        diminuto_framer_fini(that);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t sent;
+        ssize_t received;
+        ssize_t length;
+        size_t lengthof;
+        size_t lengthof2;
+        diminuto_framer_t framer;
+        diminuto_framer_t * that;
+        char buffer[sizeof(DATA) * 3];
+        char line[sizeof(DATA)]; /* Room for appended NUL, terminating NUL not sent. */
+        char * result;
+
+        /*
+         * This version does not include the payload NUL, but depends on
+         * the optional appended NUL.
+         */
+
+        TEST();
+
+        lengthof = strlen(DATA);
+        CHECKPOINT("sizeof(DATA)=%zu strlen(DATA)=%zu\n", sizeof(DATA), lengthof);
+        diminuto_dump(stderr, DATA, lengthof);
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        (void)memset(line, 0xff, sizeof(line));
+
+        that = diminuto_framer_init(&framer, line, sizeof(line));
+        diminuto_framer_dump(that);
+
+        sent = diminuto_framer_writer(sink, that, DATA, lengthof); /* NUL not transmitted. */
+        CHECKPOINT("diminuto_framer_writer=%zd\n", sent);
+        ASSERT(sent > lengthof);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        /*
+         * This is a gross misuse of fgets(3).
+         */
+        result = fgets(buffer, sizeof(buffer), source); 
+        ASSERT(result == buffer);
+
+        /*
+         * strlen(3) and strchr(3) cannot be used because the buffer
+         * may contain '\0's.
+         */
+        buffer[sizeof(buffer) - 1] = '\n';
+        received = 0;
+        while (buffer[received++] != '\n') {}
+
+        CHECKPOINT("wire[%zd]:\n", received);
+        diminuto_dump(stderr, buffer, received);
+        ASSERT(received == sent);
+        ASSERT(buffer[0] == '~');
+        ASSERT(buffer[received - 1] == '\n');
+
+        ASSERT(!diminuto_framer_terminal(that));
+        for (result = &(buffer[0]); result < &(buffer[received]); ++result) {
+            /*
+             * Don't confuse the character '\xff' with EOF due to sign
+             * extension.
+             */
+            diminuto_framer_machine(that, (*result) & 0xff);
+            if (diminuto_framer_terminal(that)) { break; }
+        }
+        ASSERT(!diminuto_framer_error(that));
+        ASSERT(diminuto_framer_complete(that));
+        result = diminuto_framer_buffer(that);
+        ASSERT(result == line);
+        length = diminuto_framer_length(that);
+        CHECKPOINT("line[%zd]:\n", length);
+        diminuto_dump(stderr, line, length);
+        ASSERT(length == lengthof);
+        ASSERT(memcmp(DATA, line, length) == 0);
+        lengthof2 = strlen(line);
+        ASSERT(lengthof2 == lengthof);
+
+        diminuto_framer_dump(that);
+        diminuto_framer_fini(that);
+
+        rc = fclose(source);    
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    {
+        static const char DATA[] = "Now is the {time} for all ~good men to come to the aid of \x11their\x13 country.\n";
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t sent;
+        ssize_t received;
+        ssize_t length;
+        size_t lengthof;
+        diminuto_framer_t framer;
+        diminuto_framer_t * that;
+        char buffer[sizeof(DATA) * 3];
+        char line[sizeof(DATA) - 1];
+        char * result;
+
+        /*
+         * This version neither sends the terminating NUL nor has room for
+         * the appended NUL.
+         */
+
+        TEST();
+
+        lengthof = strlen(DATA);
+        CHECKPOINT("sizeof(DATA)=%zu strlen(DATA)=%zu\n", sizeof(DATA), lengthof);
+        diminuto_dump(stderr, DATA, lengthof);
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        (void)memset(line, 0xff, sizeof(line));
+
+        that = diminuto_framer_init(&framer, line, sizeof(line));
+        diminuto_framer_dump(that);
+
+        sent = diminuto_framer_writer(sink, that, DATA, lengthof); /* NUL not transmitted. */
+        CHECKPOINT("diminuto_framer_writer=%zd\n", sent);
+        ASSERT(sent > lengthof);
+
+        rc = fclose(sink);    
+        ASSERT(rc == 0);
+
+        /*
+         * This is a gross misuse of fgets(3).
+         */
+        result = fgets(buffer, sizeof(buffer), source); 
+        ASSERT(result == buffer);
+
+        /*
+         * strlen(3) and strchr(3) cannot be used because the buffer
+         * may contain '\0's.
+         */
+        buffer[sizeof(buffer) - 1] = '\n';
+        received = 0;
+        while (buffer[received++] != '\n') {}
+
+        CHECKPOINT("wire[%zd]:\n", received);
+        diminuto_dump(stderr, buffer, received);
+        ASSERT(received == sent);
+        ASSERT(buffer[0] == '~');
+        ASSERT(buffer[received - 1] == '\n');
+
+        ASSERT(!diminuto_framer_terminal(that));
+        for (result = &(buffer[0]); result < &(buffer[received]); ++result) {
+            /*
+             * Don't confuse the character '\xff' with EOF due to sign
+             * extension.
+             */
+            diminuto_framer_machine(that, (*result) & 0xff);
+            if (diminuto_framer_terminal(that)) { break; }
+        }
+        ASSERT(!diminuto_framer_error(that));
+        ASSERT(diminuto_framer_complete(that));
+        result = diminuto_framer_buffer(that);
+        ASSERT(result == line);
+        length = diminuto_framer_length(that);
+        CHECKPOINT("line[%zd]:\n", length);
+        diminuto_dump(stderr, line, length);
+        ASSERT(length == lengthof);
+        ASSERT(memcmp(DATA, line, length) == 0);
 
         diminuto_framer_dump(that);
         diminuto_framer_fini(that);

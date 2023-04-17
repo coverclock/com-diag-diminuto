@@ -57,6 +57,7 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 /*
  * USEFUL ASCII CHARACTERS TO KNOW
  *
+ * 0x00     '\0'    NUL
  * 0x0a     '\n'    NEWLINE a.k.a NL, Line Feed
  * 0x11     '\x11'  XON a.k.a. DC1, Device Control 1, Transmit On
  * 0x13     '\x13'  XOFF a.k.a. DC3, Device Control 3, Transmit Off
@@ -499,6 +500,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * to easily accumulate a frame in a buffer without even using
              * a Framer.
              */
+            action = TERMINATE;
             that->state = DIMINUTO_FRAMER_STATE_COMPLETE;
             break;
         case FLAG:
@@ -625,6 +627,19 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              */
             that->previous = that->sequence;
             that->sequence = that->candidate;
+        }
+        break;
+
+    case TERMINATE:
+        /*
+         * If and only if the length of the received payload is less than
+         * the size of the application buffer, store a NUL ('\0') character
+         * past the end of the received payload. Like the NL ('\n') character
+         * at the end of every frame, this is mostly a convenience feature,
+         * and definitely not useful for binary data.
+         */
+        if (that->length < that->size) {
+            ((uint8_t *)that->buffer)[that->length] = '\0';
         }
         break;
 

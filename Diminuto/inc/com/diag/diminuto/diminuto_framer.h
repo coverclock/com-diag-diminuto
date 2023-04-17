@@ -181,7 +181,7 @@ typedef struct DiminutoFramer {
     size_t limit;                       /* Remaining octets in current field. */
     size_t total;                       /* Total number of octets in frame. */
     diminuto_framer_state_t state;      /* FSM state. */
-    uint16_t length;                    /* Received frame length. */
+    uint16_t length;                    /* Received payload length. */
     uint16_t candidate;                 /* Working incoming sequence number. */
     uint16_t sequence;                  /* Complete incoming sequence number. */
     uint16_t previous;                  /* Previous incoming sequence number. */
@@ -441,7 +441,11 @@ static inline diminuto_framer_t * diminuto_framer_reset(diminuto_framer_t * that
  * The caller is responsible for restarted the state machine when it
  * reaches a terminal state. Note that COMPLETE is a terminal state. Note
  * the the reader() function automatically restarts the state machine for
- * all terminal states except for COMPLETE of a non-zero length frame.
+ * all terminal states except for COMPLETE of a non-zero length frame. If
+ * there is room in the application buffer after the payload has been completely
+ * and correctly received, a NUL ('\0') character is appended to the end of the
+ * payload, although it is not counted in the length of the payload. This is
+ * purely a convenience feature, and is not useful for non-printable payloads.
  * @param that points to the Framer object.
  * @param token is the input token, which can accomodate the stdio EOF value.
  * @return the current state of the Framer object.
@@ -498,8 +502,12 @@ extern ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that);
  * length, sequence, Fletcher checksum, payload, and Kermit cyclic redundancy
  * check. After the complete frame is emitted, the output stream is flushed.
  * The caller is blocked until the complete frame is emitted. Zero length
- * payloads not an error, even though they will likely be disgarded on the
- * receiving end by reader().
+ * payloads not an error, even though they will be discarded on the receiving
+ * end by reader(). Any NL ('\n') character in the payload will ne ESCAPEd,
+ * and the emitted frame will have a NL at its end. This makes it possible
+ * to use fgets(3) to receive raw frames, although such frames probably will
+ * contain embedded NUL ('\0') characters, especially in the SEQUENCE and
+ * LENGTH fields.
  * @param stream points to the output stream.
  * @param that points to the Framer object.
  * @param data points to the payload to be emitted.

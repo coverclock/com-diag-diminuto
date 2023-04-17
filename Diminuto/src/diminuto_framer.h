@@ -42,6 +42,7 @@ typedef enum DiminutoFramerAction {
     RESET       = 'R',      /* Initialize Framer for next frame. */
     SEQUENCE    = 'N',      /* Process sequence and Fletcher-16 checksum. */
     STORE       = 'S',      /* Process this octet and Kermit-16 CRC. */
+    TERMINATE   = 'T',      /* If space available, terminate with a NUL. */
 } action_t;
 
 #endif
