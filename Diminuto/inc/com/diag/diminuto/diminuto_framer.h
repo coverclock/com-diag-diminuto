@@ -277,7 +277,7 @@ extern void diminuto_framer_dump(const diminuto_framer_t * that);
  * @param that points to the Framer object.
  * @return true if COMPLETE, false otherwise.
  */
-static inline bool diminuto_framer_complete(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_iscomplete(const diminuto_framer_t * that) {
     return (that->state == DIMINUTO_FRAMER_STATE_COMPLETE);
 }
 
@@ -289,7 +289,7 @@ static inline bool diminuto_framer_complete(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return true if terminal, false otherwise.
  */
-static inline bool diminuto_framer_terminal(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_isterminal(const diminuto_framer_t * that) {
     switch (that->state) {
     case DIMINUTO_FRAMER_STATE_COMPLETE:
     case DIMINUTO_FRAMER_STATE_FINAL:
@@ -313,7 +313,7 @@ static inline bool diminuto_framer_terminal(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return true if error, false otherwise.
  */
-static inline bool diminuto_framer_error(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_iserror(const diminuto_framer_t * that) {
     switch (that->state) {
     case DIMINUTO_FRAMER_STATE_FINAL:
     case DIMINUTO_FRAMER_STATE_ABORT:
@@ -332,8 +332,8 @@ static inline bool diminuto_framer_error(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return the frame length if COMPLETE, EOF otherwise.
  */
-static inline ssize_t diminuto_framer_length(const diminuto_framer_t * that) {
-    return diminuto_framer_complete(that) ? (ssize_t)(that->length) : (ssize_t)(EOF);
+static inline ssize_t diminuto_framer_getlength(const diminuto_framer_t * that) {
+    return diminuto_framer_iscomplete(that) ? (ssize_t)(that->length) : (ssize_t)(EOF);
 }
 
 /**
@@ -342,8 +342,8 @@ static inline ssize_t diminuto_framer_length(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return a pointer to the frame buffer if COMPLETE, NULL if not.
  */
-static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
-    return diminuto_framer_complete(that) ? that->buffer : (void *)0;
+static inline void * diminuto_framer_getbuffer(const diminuto_framer_t * that) {
+    return diminuto_framer_iscomplete(that) ? that->buffer : (void *)0;
 }
 
 /**
@@ -352,7 +352,7 @@ static inline void * diminuto_framer_buffer(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the far-end rolledover, false otherwise.
  */
-static inline bool diminuto_framer_rolledover(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_didrollover(const diminuto_framer_t * that) {
     return (that->previous == 65535) && (that->sequence == 0);
 }
 
@@ -362,7 +362,7 @@ static inline bool diminuto_framer_rolledover(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the far-end restarted, false otherwise.
  */
-static inline bool diminuto_framer_farend(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_didfarend(const diminuto_framer_t * that) {
     return (that->previous != 65535) && (that->sequence == 0);
 }
 
@@ -372,7 +372,7 @@ static inline bool diminuto_framer_farend(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the near-end restarted, false otherwise.
  */
-static inline bool diminuto_framer_nearend(const diminuto_framer_t * that) {
+static inline bool diminuto_framer_didnearend(const diminuto_framer_t * that) {
     return (that->previous == 65535) && (that->sequence != 0);
 }
 
@@ -382,7 +382,7 @@ static inline bool diminuto_framer_nearend(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return the number of LIKELY missing frames.
  */
-static inline size_t diminuto_framer_missing(const diminuto_framer_t * that) {
+static inline size_t diminuto_framer_getmissing(const diminuto_framer_t * that) {
     return (that->sequence > (that->previous + 1)) ? (that->sequence - that->previous - 1) : 0;
 }
 
@@ -395,7 +395,7 @@ static inline size_t diminuto_framer_missing(const diminuto_framer_t * that) {
  * @param that points to the Framer object.
  * @return the number of LIKELY duplicated frames.
  */
-static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) {
+static inline size_t diminuto_framer_getduplicated(const diminuto_framer_t * that) {
     return ((that->previous != 65535) && (that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
 }
 
@@ -404,7 +404,7 @@ static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) 
  * @param that points to the Framer object.
  * @return the most recent incoming sequence number.
  */
-static inline uint16_t diminuto_framer_incoming(const diminuto_framer_t * that) {
+static inline uint16_t diminuto_framer_getincoming(const diminuto_framer_t * that) {
     return that->sequence;
 }
 
@@ -414,7 +414,7 @@ static inline uint16_t diminuto_framer_incoming(const diminuto_framer_t * that) 
  * @param that points to the Framer object.
  * @return the most recent outgoing sequence number.
  */
-static inline uint16_t diminuto_framer_outgoing(const diminuto_framer_t * that) {
+static inline uint16_t diminuto_framer_getoutgoing(const diminuto_framer_t * that) {
     return that->generated;
 }
 

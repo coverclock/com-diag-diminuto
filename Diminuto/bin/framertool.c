@@ -378,7 +378,7 @@ int main(int argc, char * argv[])
                     } else if (token == '\n') {
                         *(here++) = '\n';
                         ++total;
-                        sequence = diminuto_framer_outgoing(&framer) + 1;
+                        sequence = diminuto_framer_getoutgoing(&framer) + 1;
                         DIMINUTO_LOG_INFORMATION("framertool: input #%u [%zu]\n", sequence, total);
                         if (debug) {
                             diminuto_dump(stderr, line, total);
@@ -412,8 +412,8 @@ int main(int argc, char * argv[])
                     deveof = true;
                     break;
                 } else {
-                    length = diminuto_framer_length(&framer);
-                    sequence = diminuto_framer_incoming(&framer);
+                    length = diminuto_framer_getlength(&framer);
+                    sequence = diminuto_framer_getincoming(&framer);
                     DIMINUTO_LOG_INFORMATION("framertool: output #%u [%zu]\n", sequence, length);
                     if (debug) {
                         diminuto_dump(stderr, frame, length);
@@ -431,15 +431,15 @@ int main(int argc, char * argv[])
                         outeof = true;
                         break;
                     }
-                    if (diminuto_framer_rolledover(&framer)) {
+                    if (diminuto_framer_didrollover(&framer)) {
                         /* Do nothing. */
-                    } else if (diminuto_framer_nearend(&framer)) {
+                    } else if (diminuto_framer_didnearend(&framer)) {
                         /* Do nothing. */
-                    } else if (diminuto_framer_farend(&framer)) {
+                    } else if (diminuto_framer_didfarend(&framer)) {
                         DIMINUTO_LOG_INFORMATION("framertool: device restarted\n");
-                    } else if ((count = diminuto_framer_missing(&framer)) > 0) {
+                    } else if ((count = diminuto_framer_getmissing(&framer)) > 0) {
                         DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", count);
-                    } else if ((count = diminuto_framer_duplicated(&framer)) > 0) {
+                    } else if ((count = diminuto_framer_getduplicated(&framer)) > 0) {
                         DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", count);
                     } else {
                         /* Do nothing. */
