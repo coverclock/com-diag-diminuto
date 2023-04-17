@@ -402,7 +402,7 @@ static inline size_t diminuto_framer_duplicated(const diminuto_framer_t * that) 
 /**
  * Return the most recent incoming sequence number.
  * @param that points to the Framer object.
- * @return the most reecnt incoming sequence number.
+ * @return the most recent incoming sequence number.
  */
 static inline uint16_t diminuto_framer_incoming(const diminuto_framer_t * that) {
     return that->sequence;
@@ -412,7 +412,7 @@ static inline uint16_t diminuto_framer_incoming(const diminuto_framer_t * that) 
 /**
  * Return the most recent outgoing sequence number.
  * @param that points to the Framer object.
- * @return the most reecnt outgoing sequence number.
+ * @return the most recent outgoing sequence number.
  */
 static inline uint16_t diminuto_framer_outgoing(const diminuto_framer_t * that) {
     return that->generated;
