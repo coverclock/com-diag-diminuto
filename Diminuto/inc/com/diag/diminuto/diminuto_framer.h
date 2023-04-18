@@ -383,9 +383,13 @@ static inline bool diminuto_framer_didnearend(const diminuto_framer_t * that) {
 
 /**
  * Return the number of POSSIBLE missing frames by comparing the previous and
- * current sequence numbers. This depends on unsigned modulo arithmetic.
- * @param that points to the Framer object. (The same result can be generated
- * for the same difference plus any multiple of 65536.)
+ * current sequence numbers. This depends on unsigned modulo arithmetic. This same
+ * result can be generated for the same difference plus any multiple of 65536.
+ * Note that missing and duplicated are two ways of looking at the same thing.
+ * Since the sequence number can roll over, it is possible that, for example, a
+ * small number of missing frames are actually a large number of duplicated frames.
+ * A useful strategy is to use the smaller of the two numbers.
+ * @param that points to the Framer object.
  * @return the number of POSSIBLE missing frames.
  */
 static inline size_t diminuto_framer_getmissing(const diminuto_framer_t * that) {
@@ -396,8 +400,12 @@ static inline size_t diminuto_framer_getmissing(const diminuto_framer_t * that) 
 
 /**
  * Return the number of POSSIBLE duplicated frames by comparing the previous and
- * current sequence numbers. This depends on unsigned modulo arithmetic. (The same
- * result can be generated for the same difference plus any multiple of 65536.)
+ * current sequence numbers. This depends on unsigned modulo arithmetic. The same
+ * result can be generated for the same difference plus any multiple of 65536.
+ * Note that missing and duplicated are two ways of looking at the same thing.
+ * Since the sequence number can roll over, it is possible that, for example, a
+ * small number of duplicated frames are actually a large number of missing frames.
+ * A useful strategy is to use the smaller of the two numbers.
  * @param that points to the Framer object.
  * @return the number of POSSIBLE duplicated frames.
  */

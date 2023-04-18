@@ -87,6 +87,8 @@ int main(int argc, char * argv[])
     size_t total = 0;
     size_t limit = 0;
     size_t count = 0;
+    size_t missing = 0;
+    size_t duplicated = 0;
     int rc = -1;
     int dev = -1;
     int inp = -1;
@@ -432,17 +434,27 @@ int main(int argc, char * argv[])
                         break;
                     }
                     if (diminuto_framer_didrollover(&framer)) {
-                        /* Do nothing. */
+                        DIMINUTO_LOG_INFORMATION("framertool: device rollover\n");
                     } else if (diminuto_framer_didnearend(&framer)) {
-                        /* Do nothing. */
+                        DIMINUTO_LOG_INFORMATION("framertool: device started\n");
                     } else if (diminuto_framer_didfarend(&framer)) {
                         DIMINUTO_LOG_INFORMATION("framertool: device restarted\n");
-                    } else if ((count = diminuto_framer_getmissing(&framer)) > 0) {
-                        DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", count);
-                    } else if ((count = diminuto_framer_getduplicated(&framer)) > 0) {
-                        DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", count);
                     } else {
-                        /* Do nothing. */
+                        /*
+                         * Missing and duplicated are just two ways of looking at
+                         * the same thing. If one is zero, the other will be zero.
+                         * But we check both anyway, just in case the computation
+                         * in the Framer library changes.
+                         */
+                        missing = diminuto_framer_getmissing(&framer);
+                        duplicated = diminuto_framer_getduplicated(&framer);
+                        if ((missing == 0) && (duplicated == 0)) {
+                            /* Do nothing. */
+                        } else if (missing <= duplicated) {
+                            DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", count);
+                        } else {
+                            DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", count);
+                        }
                     }
                     diminuto_framer_reset(&framer);
                 }

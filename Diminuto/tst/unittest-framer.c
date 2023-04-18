@@ -217,109 +217,6 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
-        size_t miss;
-        size_t duplicate;
-
-        TEST();
-
-        framer.previous = 65533;
-        framer.sequence = 65534;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 0);
-        ASSERT(duplicate == 0);
-        ASSERT(!diminuto_framer_didrollover(&framer));
-
-        framer.previous += 1;
-        framer.sequence += 1;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 0);
-        ASSERT(duplicate == 0);
-        ASSERT(!diminuto_framer_didrollover(&framer));
-
-        framer.previous += 1;
-        framer.sequence += 1;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 0);
-        ASSERT(duplicate == 0);
-        ASSERT(diminuto_framer_didrollover(&framer));
-
-        framer.previous += 1;
-        framer.sequence += 1;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 0);
-        ASSERT(duplicate == 0);
-        ASSERT(!diminuto_framer_didrollover(&framer));
-
-        framer.previous += 1;
-        framer.sequence += 1;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 0);
-        ASSERT(duplicate == 0);
-        ASSERT(!diminuto_framer_didrollover(&framer));
-
-        STATUS();
-    }
-
-    {
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
-        size_t miss;
-        size_t duplicate;
-
-        TEST();
-
-        framer.previous = 2;
-        framer.sequence = 4;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 1);
-
-        framer.previous = 2;
-        framer.sequence = 4;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(miss == 1);
-
-        STATUS();
-    }
-
-    {
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
-        size_t miss;
-        size_t duplicate;
-
-        TEST();
-
-        framer.previous = 4;
-        framer.sequence = 2;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(duplicate == 3);
-
-        framer.previous = 0;
-        framer.sequence = 65535;
-        miss = diminuto_framer_getmissing(&framer);
-        duplicate = diminuto_framer_getduplicated(&framer);
-        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
-        ASSERT(duplicate == 2);
-
-        STATUS();
-    }
-
-    {
         diminuto_framer_t framer;
         diminuto_framer_t * ff;
         char buffer[64];
@@ -384,6 +281,125 @@ int main(int argc, char * argv[])
         ff = diminuto_framer_fini(&framer);
         ASSERT(ff == (diminuto_framer_t *)0);
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_IDLE);
+
+        STATUS();
+    }
+
+    {
+        static const size_t WINDOW = (size_t)diminuto_maximumof(uint16_t) + 1;
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        size_t miss;
+        size_t duplicate;
+
+        TEST();
+
+        CHECKPOINT("window=%zu\n", WINDOW);
+        ASSERT(WINDOW == 65536);
+
+        framer.previous = WINDOW - 3;
+        framer.sequence = WINDOW - 2;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous += 1;
+        framer.sequence = 0;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(!diminuto_framer_didnearend(&framer));
+        ASSERT(diminuto_framer_didfarend(&framer));
+
+        framer.previous = WINDOW - 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+        ASSERT(diminuto_framer_didnearend(&framer));
+        ASSERT(!diminuto_framer_didfarend(&framer));
+
+        framer.previous = 2;
+        framer.sequence = 4;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 1);
+        ASSERT(duplicate == (WINDOW - miss));
+
+        framer.previous = 2;
+        framer.sequence = 4;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 1);
+        ASSERT(duplicate == (WINDOW - miss));
+
+        framer.previous = 4;
+        framer.sequence = 2;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(duplicate == 3);
+        ASSERT(miss == (WINDOW - duplicate));
+
+        framer.previous = 0;
+        framer.sequence = WINDOW - 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(duplicate == 2);
+        ASSERT(miss == (WINDOW - duplicate));
 
         STATUS();
     }
