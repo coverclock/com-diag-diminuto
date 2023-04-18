@@ -334,7 +334,7 @@ static inline bool diminuto_framer_iserror(const diminuto_framer_t * that) {
  * @return the frame length if COMPLETE, EOF otherwise.
  */
 static inline ssize_t diminuto_framer_getlength(const diminuto_framer_t * that) {
-    return diminuto_framer_iscomplete(that) ? (ssize_t)(that->length) : (ssize_t)(EOF);
+    return diminuto_framer_iscomplete(that) ? (ssize_t)(that->length) : (ssize_t)EOF;
 }
 
 /**
@@ -349,7 +349,8 @@ static inline void * diminuto_framer_getbuffer(const diminuto_framer_t * that) {
 
 /**
  * Return true if it is LIKELY that the far-end rolled over by comparing the
- * previous and current sequence numbers.
+ * previous and current sequence numbers. The reasoning is that the previous
+ * sequence is the largest possible, and the current sequence is zero.
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the far-end rolledover, false otherwise.
  */
@@ -359,7 +360,8 @@ static inline bool diminuto_framer_didrollover(const diminuto_framer_t * that) {
 
 /**
  * Return true if it is LIKELY that the far-end restarted by comparing the
- * previous and current sequence numbers.
+ * previous and current sequence numbers. The reasoning is that the previous
+ * sequence is not the largest possible, yet the current sequence is zero.
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the far-end restarted, false otherwise.
  */
@@ -369,7 +371,9 @@ static inline bool diminuto_framer_didfarend(const diminuto_framer_t * that) {
 
 /**
  * Return true if it is LIKELY that the near-end restarted by comparing the
- * previous and current sequence numbers.
+ * previous and current sequence numbers. The reasoning is that the previous
+ * sequence is the largest possible, which is also the initial value, but
+ * the current sequence is not zero.
  * @param that points to the Framer object.
  * @return true if it is LIKELY that the near-end restarted, false otherwise.
  */
@@ -378,26 +382,29 @@ static inline bool diminuto_framer_didnearend(const diminuto_framer_t * that) {
 }
 
 /**
- * Return the number of LIKELY missing frames by comparing the previous and
- * current sequence numbers.
- * @param that points to the Framer object.
- * @return the number of LIKELY missing frames.
+ * Return the number of POSSIBLE missing frames by comparing the previous and
+ * current sequence numbers. This depends on unsigned modulo arithmetic.
+ * @param that points to the Framer object. (The same result can be generated
+ * for the same difference plus any multiple of 65536.)
+ * @return the number of POSSIBLE missing frames.
  */
 static inline size_t diminuto_framer_getmissing(const diminuto_framer_t * that) {
-    return (that->sequence > (that->previous + 1)) ? (that->sequence - that->previous - 1) : 0;
+    uint16_t difference;
+    difference = that->sequence - 1 - that->previous;
+    return  difference;
 }
 
 /**
- * Return the number of LIKELY duplicated frames by comparing the previous and
- * current sequence numbers. If the current sequence number is zero, it is
- * judged more likely that the far-end either rolled over or restarted. If
- * the previous sequence number is the initial value, is is likely that the
- * near-end restarted.
+ * Return the number of POSSIBLE duplicated frames by comparing the previous and
+ * current sequence numbers. This depends on unsigned modulo arithmetic. (The same
+ * result can be generated for the same difference plus any multiple of 65536.)
  * @param that points to the Framer object.
- * @return the number of LIKELY duplicated frames.
+ * @return the number of POSSIBLE duplicated frames.
  */
 static inline size_t diminuto_framer_getduplicated(const diminuto_framer_t * that) {
-    return ((that->previous != 65535) && (that->sequence != 0) && (that->sequence <= that->previous)) ? (that->previous - that->sequence + 1) : 0;
+    uint16_t difference;
+    difference = that->previous + 1 - that->sequence;
+    return difference;
 }
 
 /**

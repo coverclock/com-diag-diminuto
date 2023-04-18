@@ -33,24 +33,6 @@
 static const int DC1 = '\x11'; /* a.k.a. XON */
 static const int DC3 = '\x13'; /* a.k.a. XOFF */
 
-static void sequences(const diminuto_framer_t * that, int line)
-{
-    size_t missing;
-    size_t duplicated;
-    bool rolledover;
-    bool farend;
-
-    missing = diminuto_framer_getmissing(that);
-    duplicated = diminuto_framer_getduplicated(that);
-    rolledover = diminuto_framer_didrollover(that);
-    farend = diminuto_framer_didfarend(that);
-
-    ASSERT(diminuto_framer_getincoming(that) == that->sequence);
-    ASSERT(diminuto_framer_getoutgoing(that) == that->generated);
-
-    CHECKPOINT("sequences[%d]: sequence=%u previous=%u missing=%zu duplicated=%zu rolledover=%d farend=%d\n", line, that->sequence, that->previous, missing, duplicated, rolledover, farend);
-}
-
 int main(int argc, char * argv[])
 {
     bool debug = false;
@@ -223,13 +205,116 @@ int main(int argc, char * argv[])
         ASSERT(!framer.debug);
 
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
 
         ASSERT(diminuto_framer_getmissing(&framer) == 0);
         ASSERT(diminuto_framer_getduplicated(&framer) == 0);
         ASSERT(!diminuto_framer_didrollover(&framer));
         ASSERT(!diminuto_framer_didfarend(&framer));
         ASSERT(!diminuto_framer_didnearend(&framer));
+
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        size_t miss;
+        size_t duplicate;
+
+        TEST();
+
+        framer.previous = 65533;
+        framer.sequence = 65534;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(diminuto_framer_didrollover(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+
+        framer.previous += 1;
+        framer.sequence += 1;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 0);
+        ASSERT(duplicate == 0);
+        ASSERT(!diminuto_framer_didrollover(&framer));
+
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        size_t miss;
+        size_t duplicate;
+
+        TEST();
+
+        framer.previous = 2;
+        framer.sequence = 4;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 1);
+
+        framer.previous = 2;
+        framer.sequence = 4;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(miss == 1);
+
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        size_t miss;
+        size_t duplicate;
+
+        TEST();
+
+        framer.previous = 4;
+        framer.sequence = 2;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(duplicate == 3);
+
+        framer.previous = 0;
+        framer.sequence = 65535;
+        miss = diminuto_framer_getmissing(&framer);
+        duplicate = diminuto_framer_getduplicated(&framer);
+        CHECKPOINT("previous=%u sequence=%u missing=%zu duplicated=%zu\n", framer.previous, framer.sequence, miss, duplicate);
+        ASSERT(duplicate == 2);
 
         STATUS();
     }
@@ -271,7 +356,7 @@ int main(int argc, char * argv[])
         ASSERT(!framer.debug);
 
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
 
         ASSERT(diminuto_framer_getmissing(&framer) == 0);
         ASSERT(diminuto_framer_getduplicated(&framer) == 0);
@@ -291,7 +376,7 @@ int main(int argc, char * argv[])
         ASSERT(framer.length == 0);
         framer.length = sizeof(buffer) / 2;
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
         framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
         ASSERT(diminuto_framer_getbuffer(&framer) == buffer);
         ASSERT(diminuto_framer_getlength(&framer) == (sizeof(buffer) / 2));
@@ -965,7 +1050,7 @@ int main(int argc, char * argv[])
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
         diminuto_framer_debug(that, debug);
 
         ASSERT(diminuto_framer_getmissing(&framer) == 0);
@@ -992,7 +1077,6 @@ int main(int argc, char * argv[])
         diminuto_dump(stderr, diminuto_framer_getbuffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
 
-        sequences(that, __LINE__);
         ASSERT(diminuto_framer_getmissing(&framer) == 0);
         ASSERT(diminuto_framer_getduplicated(&framer) == 0);
         ASSERT(diminuto_framer_didrollover(&framer));
@@ -1045,7 +1129,7 @@ int main(int argc, char * argv[])
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
         diminuto_framer_debug(that, debug);
 
         sent = diminuto_framer_writer(sink, that, DATA, sizeof(DATA));
@@ -1066,7 +1150,6 @@ int main(int argc, char * argv[])
         diminuto_dump(stderr, diminuto_framer_getbuffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
 
-        sequences(that, __LINE__);
         ASSERT(diminuto_framer_getmissing(&framer) == 0);
         ASSERT(diminuto_framer_getduplicated(&framer) == 0);
         ASSERT(diminuto_framer_didrollover(&framer));
@@ -1136,7 +1219,7 @@ int main(int argc, char * argv[])
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
 
         /*
          * ABORT abandons the current frame.
@@ -1187,9 +1270,7 @@ int main(int argc, char * argv[])
                 diminuto_dump(stderr, diminuto_framer_getbuffer(that), length);
                 ASSERT(memcmp(DATA, buffer, length) == 0);
                 ++frames;
-                sequences(that, __LINE__);
                 ASSERT(diminuto_framer_getmissing(&framer) == ((frames == 2) ? 1 : 0));
-                ASSERT(diminuto_framer_getduplicated(&framer) == 0);
                 ASSERT(!diminuto_framer_didrollover(&framer));
                 ASSERT(!diminuto_framer_didfarend(&framer));
                 ASSERT(!diminuto_framer_didnearend(&framer));
@@ -1255,7 +1336,7 @@ int main(int argc, char * argv[])
         that = diminuto_framer_init(&framer, buffer, sizeof(buffer));
         diminuto_framer_dump(that);
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
-        ASSERT(diminuto_framer_getlength(&framer) == -1);
+        ASSERT(diminuto_framer_getlength(&framer) == EOF);
 
         sent = diminuto_framer_abort(sink);
         CHECKPOINT("diminuto_framer_abort=%zd\n", sent);
@@ -1301,9 +1382,7 @@ int main(int argc, char * argv[])
         diminuto_dump(stderr, diminuto_framer_getbuffer(that), length);
         ASSERT(memcmp(DATA, buffer, length) == 0);
 
-        sequences(that, __LINE__);
         ASSERT(diminuto_framer_getmissing(&framer) == 1);
-        ASSERT(diminuto_framer_getduplicated(&framer) == 0);
         ASSERT(!diminuto_framer_didrollover(&framer));
         ASSERT(!diminuto_framer_didfarend(&framer));
         ASSERT(!diminuto_framer_didnearend(&framer));
@@ -1326,9 +1405,7 @@ int main(int argc, char * argv[])
         ASSERT(iterations > 1);
         ASSERT(received == EOF);
 
-        sequences(that, __LINE__);
         ASSERT(diminuto_framer_getmissing(&framer) == 1);
-        ASSERT(diminuto_framer_getduplicated(&framer) == 0);
         ASSERT(!diminuto_framer_didrollover(&framer));
         ASSERT(!diminuto_framer_didfarend(&framer));
         ASSERT(!diminuto_framer_didnearend(&framer));
@@ -1415,9 +1492,6 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(DATA, buffer, length) == 0);
         diminuto_framer_reset(&reader);
 
-        sequences(&reader, __LINE__);
-        ASSERT(diminuto_framer_getmissing(&reader) == 0);
-        ASSERT(diminuto_framer_getduplicated(&reader) == 0);
         ASSERT(diminuto_framer_didrollover(&reader));
         ASSERT(!diminuto_framer_didfarend(&reader));
         ASSERT(!diminuto_framer_didnearend(&reader));
@@ -1439,9 +1513,6 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(DATA, buffer, length) == 0);
         diminuto_framer_reset(&reader);
 
-        sequences(&reader, __LINE__);
-        ASSERT(diminuto_framer_getmissing(&reader) == 0);
-        ASSERT(diminuto_framer_getduplicated(&reader) == 0);
         ASSERT(!diminuto_framer_didrollover(&reader));
         ASSERT(!diminuto_framer_didfarend(&reader));
         ASSERT(!diminuto_framer_didnearend(&reader));
@@ -1464,9 +1535,6 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(DATA, buffer, length) == 0);
         diminuto_framer_reset(&reader);
 
-        sequences(&reader, __LINE__);
-        ASSERT(diminuto_framer_getmissing(&reader) == 0);
-        ASSERT(diminuto_framer_getduplicated(&reader) == 0);
         ASSERT(!diminuto_framer_didrollover(&reader));
         ASSERT(diminuto_framer_didfarend(&reader));
         ASSERT(!diminuto_framer_didnearend(&reader));
@@ -1488,9 +1556,6 @@ int main(int argc, char * argv[])
         ASSERT(memcmp(DATA, buffer, length) == 0);
         diminuto_framer_reset(&reader);
 
-        sequences(&reader, __LINE__);
-        ASSERT(diminuto_framer_getmissing(&reader) == 0);
-        ASSERT(diminuto_framer_getduplicated(&reader) == 0);
         ASSERT(!diminuto_framer_didrollover(&reader));
         ASSERT(!diminuto_framer_didfarend(&reader));
         ASSERT(!diminuto_framer_didnearend(&reader));
