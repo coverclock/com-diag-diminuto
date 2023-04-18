@@ -101,6 +101,7 @@ int main(int argc, char * argv[])
     bool inpeof = false;
     bool outeof = false;
     bool throttle = false;
+    bool first = true;
     ssize_t sent = 0;
     ssize_t received = 0;
     char * frame = (char *)0;
@@ -433,7 +434,14 @@ int main(int argc, char * argv[])
                         outeof = true;
                         break;
                     }
-                    if (diminuto_framer_didrollover(&framer)) {
+                    if (first) {
+                        /*
+                         * There's no point in comparing previous and current
+                         * sequence numbers until we actually have previous and
+                         * current sequence numbers.
+                         */
+                        first = false;
+                    } else if (diminuto_framer_didrollover(&framer)) {
                         DIMINUTO_LOG_INFORMATION("framertool: device rollover\n");
                     } else if (diminuto_framer_didnearend(&framer)) {
                         DIMINUTO_LOG_INFORMATION("framertool: device started\n");
@@ -451,9 +459,9 @@ int main(int argc, char * argv[])
                         if ((missing == 0) && (duplicated == 0)) {
                             /* Do nothing. */
                         } else if (missing <= duplicated) {
-                            DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", count);
+                            DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", missing);
                         } else {
-                            DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", count);
+                            DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", duplicated);
                         }
                     }
                     diminuto_framer_reset(&framer);
