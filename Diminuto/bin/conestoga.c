@@ -88,8 +88,11 @@ int main(int argc, char * argv[])
     diminuto_port_t senderport = 0;
     bool error = false;
     bool done = false;
+    bool first = true;
     ssize_t sent = 0;
     ssize_t received = 0;
+    size_t missing = 0;
+    size_t duplicated = 0;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
     diminuto_framer_t * ff = (diminuto_framer_t *)0;
     uint8_t * frame = (uint8_t *)0;
@@ -502,6 +505,21 @@ int main(int argc, char * argv[])
                     done = true;
                     break;
                 } else {
+                    if (first) {
+                        first = false;
+                    } else if (diminuto_framer_didrollover(&framer)) {
+                        DIMINUTO_LOG_NOTICE("%s: rollover\n", program);
+                    } else if (diminuto_framer_didnearend(&framer)) {
+                        DIMINUTO_LOG_NOTICE("%s: nearend\n", program);
+                    } else if (diminuto_framer_didfarend(&framer)) {
+                        DIMINUTO_LOG_NOTICE("%s: farend\n", program);
+                    } else if (((missing = diminuto_framer_getmissing(&framer)) == 0) && ((duplicated = diminuto_framer_getduplicated(&framer)) == 0)) {
+                        /* Do nothing. */
+                    } else if (missing <= duplicated) {
+                        DIMINUTO_LOG_NOTICE("%s: missing [%zu]\n", program, missing);
+                    } else {
+                        DIMINUTO_LOG_NOTICE("%s: duplicated [%zu]\n", program, duplicated);
+                    }
                     diminuto_framer_reset(&framer);
                     switch (role) {
                     case CLIENT:
