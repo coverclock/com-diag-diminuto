@@ -442,11 +442,11 @@ int main(int argc, char * argv[])
                          */
                         first = false;
                     } else if (diminuto_framer_didrollover(&framer)) {
-                        DIMINUTO_LOG_INFORMATION("framertool: device rollover\n");
+                        DIMINUTO_LOG_NOTICE("framertool: device rollover\n");
                     } else if (diminuto_framer_didnearend(&framer)) {
-                        DIMINUTO_LOG_INFORMATION("framertool: device started\n");
+                        DIMINUTO_LOG_NOTICE("framertool: device started\n");
                     } else if (diminuto_framer_didfarend(&framer)) {
-                        DIMINUTO_LOG_INFORMATION("framertool: device restarted\n");
+                        DIMINUTO_LOG_NOTICE("framertool: device restarted\n");
                     } else {
                         /*
                          * Missing and duplicated are just two ways of looking at
@@ -469,10 +469,10 @@ int main(int argc, char * argv[])
                 if (framer.throttle == throttle) {
                     /* Do nothing. */
                 } else if (framer.throttle) {
-                    DIMINUTO_LOG_INFORMATION("framertool: device XOFF\n");
+                    DIMINUTO_LOG_NOTICE("framertool: device XOFF\n");
                     throttle = framer.throttle;
                 } else {
-                    DIMINUTO_LOG_INFORMATION("framertool: device XON\n");
+                    DIMINUTO_LOG_NOTICE("framertool: device XON\n");
                     throttle = framer.throttle;
                 }
             } else {
