@@ -847,18 +847,20 @@ header or .h files. Their source or .c files may have some documentation
 regarding any private API they might have.)
 
 These PDFs of
-[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf)
 and associated
-[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf)
 were built from Diminuto's embedded Doxygen comments on
-2022-09-18
+2023-04-19
 using tag
-```90.0.0```
+```96.0.2```
 . They will not reflect changes made to the library since then.
 
 The unit tests (```Diminuto/tst```),  functional tests
 (```Diminuto/fun```), and command line utilities (```Diminuto/bin```)
 have a wealth of non-trivial examples of how to use the public APIs.
+The private APIs mostly exist to expose internal details so that they can
+be unit tested.
 
 # Remarks
 
