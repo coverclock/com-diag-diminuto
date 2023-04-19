@@ -1160,6 +1160,8 @@ E. Davies, S. Krishnan, P. Sovola, "IPv6 Transition/Coexistence Security Conside
 
 J. Fletcher, "An Arithmetic Checksum for Serial Transmissions", IEEE Transactions on Communication, COM-30, No. 1, pp. 247-252, January 1982
 
+Free Software Foundation et al., Standard Template Library, include/bits/stl_tree.h
+
 J. Ganssle, "A Guide to Debouncing - Part 2, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing-pt2.htm>
 
 J. Ganssle, "A Guide to Debouncing, or How To Debounce a Contact in Two Easy Pages", 2008-06, <http://www.ganssle.com/debouncing.htm>
@@ -1178,7 +1180,11 @@ J. Heathcote, "C Pre-Processor Magic", 2020, <http://jhnet.co.uk/articles/cpp_ma
 
 C. Hoare, "Monitors: An Operating System Structuring Concept", CACM, 17.10, 1974-10
 
-ISO, "Data elements and interchange formats - Information interchange - Representation of dates and times", First edition, ISO8601:1988(E), 1988-06-15
+International Standards Organization, "Data elements and interchange formats - Information interchange -
+Representation of dates and times", First edition, ISO8601:1988(E), 1988-06-15
+
+International Standards Organization, "HIGH LEVEL DATA LINK CONTROL PROCEDURES - PART 1: FRAME STRUCTURE",
+ISO3309-1984, 1984
 
 V. Jacobson et al., “TCP Extensions for High Performance”, RFC1323, 1992
 
@@ -1224,11 +1230,14 @@ POSIX 1003.1g 5.4.1.1: "UIO_MAXIOV shall be at least 16"
 
 J. Postel, "Internet Control Message Protocol", RFC 792, September 1981
 
+R. Quattlebaum, "Framing Protocol", 2018-09-26,
+<https://chromium.googlesource.com/external/github.com/openthread/openthread/+/refs/tags/upstream/thread-reference-20180926/doc/spinel-protocol-src/spinel-framing.md>
+
 W. Sewell, "Ephemeral port exhaustion and how to avoid it", 2018-05-22, <https://making.pusher.com/ephemeral-port-exhaustion-and-how-to-avoid-it/>
 
-J. Sloan, "Parcels with TAGS", NCAR TECHNICAL NOTE, NCAR/TN-377+IA, National Center for Atmospheric Research, 1992-10, section 4, "Storage Management", p. 10, <http://www.diag.com/ftp/NCAR_Sloan_Parcels.pdf>
+W. Simpson, ed., "PPP in HDLC-Like Framing', RFC 1662, 1994-07
 
-Free Software Foundation et al., Standard Template Library, include/bits/stl_tree.h
+J. Sloan, "Parcels with TAGS", NCAR TECHNICAL NOTE, NCAR/TN-377+IA, National Center for Atmospheric Research, 1992-10, section 4, "Storage Management", p. 10, <http://www.diag.com/ftp/NCAR_Sloan_Parcels.pdf>
 
 C. Sridharan, "File Descriptor Transfer over Unix Domain Sockets", CopyConstruct, 2020-08
 
@@ -1258,6 +1267,8 @@ J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1146, IETF, Februa
 
 man page, cmsg(3)
 
+man page, pipe(7)
+
 man page, readv(2)
 
 man page, recvmsg(2)
@@ -1277,6 +1288,8 @@ Wikipedia, "Circular buffer", 2020-12-10
 Wikipedia, "Fibonacci Number", <http://en.wikipedia.org/wiki/Fibonacci_number>
 
 Wikipedia, "Fletcher's checksum", 2016-12-21, <https://en.wikipedia.org/wiki/Fletcher's_checksum>
+
+Wikipedia, "High-Level Data Link Control", 2022-09-22, <https://en.wikipedia.org/wiki/High-Level_Data_Link_Control>
 
 Wikipedia, "PID controller", 2018-06-27
 
