@@ -187,6 +187,18 @@ riscv64-linux-gnu-gcc-11
 riscv64-linux-gnu    
 little-endian    
 
+OrangePi 5
+aarch64 x8
+Ubuntu 22.04.2 LTS (Jammy Jellyfish)
+Linux 5.10.110-rockchip-rk3588
+gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0
+ldd (Ubuntu GLIBC 2.35-0ubuntu3.1) 2.35
+GNU ld (GNU Binutils for Ubuntu) 2.38
+GNU Make 4.3
+aarch64-linux-gnu-gcc-11
+aarch64-linux-gnu
+little-endian
+
 # Features
 
 Given a feature I call Foo (or foo),
