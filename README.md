@@ -1024,7 +1024,7 @@ intended purpose.)
 ### Endpoints
 
 I have had unittest-ipc-endpoint fail because I had misconfigured the
-DNS resolver on an Uubutu-based test system to search "diag.com", and
+DNS resolver on an Ubuntu-based test system to search "diag.com", and
 my web server configured to respond go "http.diag.com" in addition to
 "www.diag.com". This caused ```diminuto_ipc_endpoint()``` to resolve "http"
 (without the colon) to the IP address of my web server instead of the
