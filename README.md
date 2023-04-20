@@ -214,12 +214,13 @@ multiple implementation files, with minor variations on this name);
 minor variations on this name).
 
 The long qualified path name for the header file directory facilitates
-combining multiple Digital Aggregates projects into one application, e.g.
-```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and ```inc/com/diag/hazer```,
-with no danger of header file ambiguity even if the file name doesn't have a
-prefix unique to the project. (My C++ projects, like Grandote, don't follow that
-pattern, and they depend upon C++ namespaces to avoid symbol conflicts.) C/C++
-include statements will look like this
+combining multiple Digital Aggregates projects into one application,
+e.g.  ```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and
+```inc/com/diag/hazer```, with no danger of header file ambiguity even
+if the file name doesn't have a prefix unique to the project. (My C++
+projects, like Grandote, don't follow that pattern, and they depend upon
+C++ namespaces to avoid symbol conflicts.) C/C++ include statements will
+look like this
 
     #include "com/diag/diminuto/diminuto_foo.h"
     #include "com/diag/codex/codex_foo.h"
@@ -236,8 +237,9 @@ as in ```diminuto_foo.h```, along with the qualified path name,
 ```com/diag/diminuto/```, may seem redundant. But it facilitates the
 integration of the library into existing code bases in those cases where
 the developers choose instead to use the full Diminuto include path at
-the command-line level, e.g. ```-Iinc/com/diag/diminuto``` instead of
-```-Iinc```, for their own build system.
+the command-line level, ```-Iinc/com/diag/diminuto``` (for their
+own code), in addition to ```-Iinc``` (for Diminuto's own header files),
+in their own build system.
 
 Preprocessor symbols that are not strictly speaking part of the public API being
 defined may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
