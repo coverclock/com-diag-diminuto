@@ -231,6 +231,14 @@ include statements will look like this
 
 in the event that different projects have an unrelated feature named Foo.
 
+The prefix ```diminuto_``` on the name of each header file,
+as in ```diminuto_foo.h```, along with the qualified path name,
+```com/diag/diminuto/```, may seem redundant. But it facilitates the
+integration of the library into existing code bases in those cases where
+the developers choose instead to use the full Diminuto include path at
+the command-line level, e.g. ```-Iinc/com/diag/diminuto``` instead of
+```-Iinc```, for their own build system.
+
 Preprocessor symbols that are not strictly speaking part of the public API being
 defined may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
 to prevent symbol conflicts.
