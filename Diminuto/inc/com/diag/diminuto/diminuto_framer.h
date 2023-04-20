@@ -202,6 +202,14 @@ typedef struct DiminutoFramer {
  ******************************************************************************/
 
 /**
+ * @def DIMINUTO_FRAMER_WINDOW
+ * Generates the constant for the window size for Framer sequence numbers
+ * (this is one more than the maximum sequence number, since sequence numbers
+ * are zero-based).
+ */
+#define DIMINUTO_FRAMER_WINDOW (65536)
+
+/**
  * @def DIMINUTO_FRAMER_INIT
  * Generate code to statically initialize a Framer in the IDLE state.
  */
@@ -211,7 +219,7 @@ typedef struct DiminutoFramer {
     0, 0, 0, \
     DIMINUTO_FRAMER_STATE_IDLE, \
     0, 0, \
-    0, 65535, 65534, 65535, \
+    0, DIMINUTO_FRAMER_WINDOW - 1, DIMINUTO_FRAMER_WINDOW - 2, DIMINUTO_FRAMER_WINDOW - 1, \
     0, 0, \
     0, 0, \
     { '\0', '\0', }, \
@@ -356,7 +364,7 @@ static inline void * diminuto_framer_getbuffer(const diminuto_framer_t * that) {
  * @return true if it is LIKELY that the far-end rolledover, false otherwise.
  */
 static inline bool diminuto_framer_didrollover(const diminuto_framer_t * that) {
-    return (that->previous == 65535) && (that->sequence == 0);
+    return (that->previous == (DIMINUTO_FRAMER_WINDOW - 1)) && (that->sequence == 0);
 }
 
 /**
@@ -367,7 +375,7 @@ static inline bool diminuto_framer_didrollover(const diminuto_framer_t * that) {
  * @return true if it is LIKELY that the far-end restarted, false otherwise.
  */
 static inline bool diminuto_framer_didfarend(const diminuto_framer_t * that) {
-    return (that->previous != 65535) && (that->sequence == 0);
+    return (that->previous != (DIMINUTO_FRAMER_WINDOW - 1)) && (that->sequence == 0);
 }
 
 /**
@@ -379,7 +387,7 @@ static inline bool diminuto_framer_didfarend(const diminuto_framer_t * that) {
  * @return true if it is LIKELY that the near-end restarted, false otherwise.
  */
 static inline bool diminuto_framer_didnearend(const diminuto_framer_t * that) {
-    return (that->previous == 65535) && (that->sequence != 0);
+    return (that->previous == (DIMINUTO_FRAMER_WINDOW - 1)) && (that->sequence != 0);
 }
 
 /**

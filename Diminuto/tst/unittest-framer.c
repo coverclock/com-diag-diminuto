@@ -300,6 +300,7 @@ int main(int argc, char * argv[])
 
         CHECKPOINT("window=%zu\n", WINDOW);
         ASSERT(WINDOW == 65536);
+        ASSERT(WINDOW == DIMINUTO_FRAMER_WINDOW);
 
         framer.previous = WINDOW - 3;
         framer.sequence = WINDOW - 2;
