@@ -20,6 +20,7 @@
 #include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_typeof.h"
@@ -91,6 +92,8 @@ int main(int argc, char * argv[])
         ASSERT(!diminuto_issigned(diminuto_typeof(framer.b)));
         ASSERT(sizeof(framer.crc) == sizeof(uint16_t));
         ASSERT(!diminuto_issigned(diminuto_typeof(framer.crc)));
+        ASSERT(sizeof(framer.crc0) == sizeof(uint16_t));
+        ASSERT(!diminuto_issigned(diminuto_typeof(framer.crc0)));
         ASSERT(diminuto_countof(framer.sum) == 2);
         ASSERT(sizeof(framer.sum[0]) == sizeof(uint8_t));
         ASSERT(!diminuto_issigned(diminuto_typeof(framer.sum[0])));
@@ -194,6 +197,7 @@ int main(int argc, char * argv[])
         ASSERT(framer.previous == (framer.sequence - 1));
         ASSERT(framer.generated == diminuto_maximumof(uint16_t));
         ASSERT(framer.crc == 0);
+        ASSERT(framer.crc0 == 0);
         ASSERT(framer.a == 0);
         ASSERT(framer.b == 0);
         ASSERT(framer.sum[0] == 0);
@@ -242,6 +246,7 @@ int main(int argc, char * argv[])
         ASSERT(framer.previous == (framer.sequence - 1));
         ASSERT(framer.generated == diminuto_maximumof(uint16_t));
         ASSERT(framer.crc == 0);
+        ASSERT(framer.crc0 == 0);
         ASSERT(framer.a == 0);
         ASSERT(framer.b == 0);
         ASSERT(framer.sum[0] == 0);
@@ -1664,6 +1669,109 @@ int main(int argc, char * argv[])
         rc = fclose(sink);    
         ASSERT(rc == 0);
 
+        STATUS();
+    }
+
+    {
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        diminuto_log_mask_t mask;
+        int fd[2];
+        int rc;
+        FILE * source;
+        FILE * sink;
+        ssize_t result;
+
+        TEST();
+
+        mask = diminuto_log_mask;
+        diminuto_log_mask = 0xff;
+        NOTIFY("diminuto_log_mask was 0x%2.2x now 0x%2.2x\n", mask, diminuto_log_mask);
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        rc = fputc('\xaa', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
+        framer.sequence = 4;
+        framer.total = 2;
+        framer.length = 1;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == 3);
+
+        rc = fputc('\xbb', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
+        framer.length = 0;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == 0);
+
+        rc = fputc('\xcc', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_ABORT;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == 0);
+
+        rc = fputc('\xdd', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_FAILED;
+        framer.sum[0] = '\x11';
+        framer.sum[1] = '\x22';
+        framer.a = 0x33;
+        framer.b = 0x44;
+        framer.crc0 = 0x5566;
+        framer.crc = 0x7788;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == 0);
+
+        rc = fputc('\xee', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_OVERFLOW;
+        framer.length0 = 2;
+        framer.size = 1;
+
+        rc = fputc('\xff', sink);
+        ASSERT(rc != EOF);
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        framer.state = DIMINUTO_FRAMER_STATE_INVALID;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == 0);
+
+        rc = fclose(sink);
+        ASSERT(rc == 0);
+
+        framer.state = DIMINUTO_FRAMER_STATE_FINAL;
+        result = diminuto_framer_reader(source, &framer);
+        ASSERT(result == EOF);
+
+        rc = fclose(source);
+        ASSERT(rc == 0);
+
+        diminuto_log_mask = mask;
+        
         STATUS();
     }
 

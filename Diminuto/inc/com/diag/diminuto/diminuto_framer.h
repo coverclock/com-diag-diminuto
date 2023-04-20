@@ -187,11 +187,12 @@ typedef struct DiminutoFramer {
     uint16_t sequence;                  /* Complete incoming sequence number. */
     uint16_t previous;                  /* Previous incoming sequence number. */
     uint16_t generated;                 /* Previous outgoing sequence number. */
-    uint16_t crc;                       /* Kermit cyclic redundancy check. */
-    uint8_t a;                          /* Fletcher checksum A. */
-    uint8_t b;                          /* Fletcher checksum B. */
-    uint8_t sum[2];                     /* Received checksum. */
-    uint8_t check[3];                   /* Received cyclic redundancy check. */
+    uint16_t crc;                       /* Computed cyclic redundancy check. */
+    uint16_t crc0;                      /* Received cyclic redundancy check. */
+    uint8_t a;                          /* Computed checksum A. */
+    uint8_t b;                          /* Computed checksum B. */
+    uint8_t sum[2];                     /*`Received checksum A, B. */
+    uint8_t check[3];                   /* Received CRC A, B, C. */
     bool throttle;                      /* XOFF received, wait for XON. */
     bool debug;                         /* Debug on or off. */
 } diminuto_framer_t;
@@ -211,7 +212,7 @@ typedef struct DiminutoFramer {
     DIMINUTO_FRAMER_STATE_IDLE, \
     0, 0, \
     0, 65535, 65534, 65535, \
-    0, \
+    0, 0, \
     0, 0, \
     { '\0', '\0', }, \
     { ' ', ' ', ' ', }, \

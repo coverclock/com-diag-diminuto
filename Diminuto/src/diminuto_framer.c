@@ -77,7 +77,6 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
 {
     uint8_t ch = '\0';
     action_t action = CONSUME;
-    uint16_t crc = 0;
     diminuto_framer_state_t prior = DIMINUTO_FRAMER_STATE_RESET;
 
     prior = that->state;
@@ -619,8 +618,8 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
     case KERMIT:
         *(that->here++) = ch;
         --(that->limit);
-        crc = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
-        if (crc != that->crc) {
+        that->crc0 = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
+        if (that->crc0 != that->crc) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
         } else {
             /*
@@ -788,7 +787,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
             if (that->length == 0) {
-                DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: empty?\n", that);
+                DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: empty? [%u]\n", that, that->length);
                 diminuto_framer_reset(that);
             } else {
                 DIMINUTO_LOG_DEBUG("diminuto_framer@%p: complete. #%u [%zu] [%u]\n", that, that->sequence, that->total, that->length);
@@ -798,26 +797,26 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         case DIMINUTO_FRAMER_STATE_FINAL:
             result = EOF;
-            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: final!\n", that);
+            DIMINUTO_LOG_INFORMATION("diminuto_framer@%p: final! (%d)\n", that, token);
             break;
 
         case DIMINUTO_FRAMER_STATE_ABORT:
-            DIMINUTO_LOG_NOTICE("diminuto_framer@%p: abort!\n", that);
+            DIMINUTO_LOG_NOTICE("diminuto_framer@%p: abort! '\\x%2.2x'\n", that, token);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_FAILED:
-            DIMINUTO_LOG_WARNING("diminuto_framer@%p: failed!\n", that);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p: failed! (0x%2.2x%2.2x) (0x%2.2x%2.2x) (0x%4.4x) (0x%4.4x)\n", that, that->sum[0], that->sum[1], that->a, that->b, that->crc0, that->crc);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_OVERFLOW:
-            DIMINUTO_LOG_ERROR("diminuto_framer@%p: overflow!\n", that);
+            DIMINUTO_LOG_ERROR("diminuto_framer@%p: overflow! [%u] [%zu]\n", that, that->length0, that->size);
             diminuto_framer_reset(that);
             break;
 
         case DIMINUTO_FRAMER_STATE_INVALID:
-            DIMINUTO_LOG_WARNING("diminuto_framer@%p: invalid!\n", that);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p: invalid! '\\x%2.2x'\n", that, token);
             diminuto_framer_reset(that);
             break;
 
@@ -1029,6 +1028,7 @@ void diminuto_framer_dump(const diminuto_framer_t * that)
     diminuto_log_emit("framer@%p: previous=%u\n", that, that->previous);
     diminuto_log_emit("framer@%p: generated=%u\n", that, that->generated);
     diminuto_log_emit("framer@%p: crc=0x%4.4x\n", that, that->crc);
+    diminuto_log_emit("framer@%p: crc0=0x%4.4x\n", that, that->crc);
     diminuto_log_emit("framer@%p: a=0x%2.2x b=0x%2.2x\n", that, that->a, that->b);
     diminuto_log_emit("framer@%p: sum=[0x%2.2x,0x%2.2x]\n", that, that->sum[0], that->sum[1]);
     diminuto_log_emit("framer@%p: check=[0x%2.2x,0x%2.2x,0x%2.2x] valid=[%d,%d,%d] crc=0x%4.4x\n", that, that->check[0], that->check[1], that->check[2], diminuto_kermit_firstisvalid(that->check[0]), diminuto_kermit_secondisvalid(that->check[1]), diminuto_kermit_thirdisvalid(that->check[2]), diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]));
