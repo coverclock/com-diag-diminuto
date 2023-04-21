@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2019-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2019-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a horrifyingly brittle mechanism to compute bytes buffered in an input stream.
  * @author Chip Overclock <mailto:coverclock@diag.com>
