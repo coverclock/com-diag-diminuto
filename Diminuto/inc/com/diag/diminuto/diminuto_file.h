@@ -10,7 +10,6 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * The File feature calculates how many characters are available
  * in a standard I/O FILE object by violently breaking the object's
  * encapsulation. This is probably not a good idea. It is, however,
@@ -23,9 +22,9 @@
  *
  * Based on a similar hack in the Digital Aggregates Grandote C++ project.
  *
- * There is no unit test for this, but there is a functional test.
- *
  * Would really be helpful if the C library had a standard way to do this.
+ *
+ * USE AT YOUR OWN RISK!
  */
 
 #include <stdio.h>
@@ -33,6 +32,9 @@
 
 /**
  * Return the number of bytes a FILE object has ready to read in its buffer.
+ * I'm guessing that like the write buffer, the read buffer is allocated on
+ * its first use. But in this case, returning zero is the right answer
+ * anyway.
  * @param fp points to the FILE object.
  * @return the number of bytes ready or <0 if an error occurred.
  */
@@ -43,6 +45,9 @@ static inline ssize_t diminuto_file_ready(const FILE * fp)
 
 /**
  * Return the number of bytes a FILE object has empty for write in its buffer.
+ * The standard I/O library apparently only allocates the write buffer on its
+ * first use. Hence, before that, this function returns zero, and after that
+ * it returns the empty space in the newly allocated write buffer.
  * @param fp points to the FILE object.
  * @return the number of bytes empty or <0 if an error occurred.
  */

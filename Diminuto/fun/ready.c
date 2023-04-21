@@ -7,7 +7,6 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
  * This is part of the File functional test.
  * This may be useful to run with strace(1) to watch the actual I/Os.
  */
