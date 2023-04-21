@@ -140,7 +140,7 @@ int main(int argc, char * argv[])
 
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSESINK empty=%zd\n", empty);
-        ADVISE(empty == 0);
+        ADVISE(empty == 0); /* Apparently typical. */
 
         rc = fgetc(source);
         ASSERT(rc == EOF);
@@ -158,7 +158,7 @@ int main(int argc, char * argv[])
 
         ready = diminuto_file_ready(source);
         CHECKPOINT("CLOSESOURCE ready=%zd\n", ready);
-        ADVISE(ready < 0); /* Seems reasonable. */
+        ADVISE(ready < 0); /* Apparently unpredictable and non-deterministic. */
 
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSESOURCE empty=%zd\n", empty);

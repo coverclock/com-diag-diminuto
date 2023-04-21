@@ -34,7 +34,7 @@
  * Return the number of bytes a FILE object has ready to read in its buffer.
  * I'm guessing that like the write buffer, the read buffer is allocated on
  * its first use. But in this case, returning zero is the right answer
- * anyway.
+ * anyway. The result after the FILE object has been closed is unpredictable.
  * @param fp points to the FILE object.
  * @return the number of bytes ready or <0 if an error occurred.
  */
@@ -47,7 +47,8 @@ static inline ssize_t diminuto_file_ready(const FILE * fp)
  * Return the number of bytes a FILE object has empty for write in its buffer.
  * The standard I/O library apparently only allocates the write buffer on its
  * first use. Hence, before that, this function returns zero, and after that
- * it returns the empty space in the newly allocated write buffer.
+ * it returns the empty space in the newly allocated write buffer. The result
+ * after the FILE object has been closed is unpredictable.
  * @param fp points to the FILE object.
  * @return the number of bytes empty or <0 if an error occurred.
  */
