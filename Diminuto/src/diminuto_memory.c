@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Memory feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -23,10 +23,10 @@ static const char * SYS_LINE_SIZE[] = {
     "/sys/devices/system/cpu/cpu0/cache/coherency_line_size",
 };
 
-size_t diminuto_memory_pagesize(int * methodp)
+size_t diminuto_memory_pagesize(diminuto_memory_pagesize_method_t * methodp)
 {
     ssize_t pagesize = 0;
-    int method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
+    diminuto_memory_pagesize_method_t method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
 
     do {
 
@@ -58,17 +58,17 @@ size_t diminuto_memory_pagesize(int * methodp)
 
     } while (0);
 
-    if (methodp != (int *)0) {
+    if (methodp != (diminuto_memory_pagesize_method_t *)0) {
         *methodp = method;
     }
 
     return pagesize;
 }
 
-size_t diminuto_memory_linesize(int * methodp)
+size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp)
 {
     ssize_t linesize = 0;
-    int method = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
+    diminuto_memory_linesize_method_t method = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
     FILE * fp;
     unsigned int ii;
 
@@ -118,7 +118,7 @@ size_t diminuto_memory_linesize(int * methodp)
 
     } while (0);
 
-    if (methodp != (int *)0) {
+    if (methodp != (diminuto_memory_linesize_method_t *)0) {
         *methodp = method;
     }
 

@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
         CHECKPOINT("PUT1 empty=%zd\n", empty);
         EXPECT(empty > 0);
 
-        pagesize = diminuto_memory_pagesize((int *)0);
+        pagesize = diminuto_memory_pagesize((diminuto_memory_pagesize_method_t *)0);
         CHECKPOINT("VMPAGE size=%zu\n", pagesize);
 
         size = empty + 1;

@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2014 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements an interface to the virtual memory system.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -63,7 +63,7 @@ typedef enum DiminutoMemoryLinesizeMethod {
  * @param methodp points to a variable into which the method is saved, or NULL.
  * @return the size of virtual memory pages in bytes or <0 if error.
  */
-extern size_t diminuto_memory_pagesize(int * methodp);
+extern size_t diminuto_memory_pagesize(diminuto_memory_pagesize_method_t * methodp);
 
 /**
  * Return the size of level 1 cache lines of the underlying platform.
@@ -71,7 +71,7 @@ extern size_t diminuto_memory_pagesize(int * methodp);
  * @param methodp points to a variable into which the method is saved, or NULL.
  * @return the size of cache lines in bytes or <0 of error.
  */
-extern size_t diminuto_memory_linesize(int * methodp);
+extern size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp);
 
 /**
  * Compute the smallest power of two that is greater than or equal to the

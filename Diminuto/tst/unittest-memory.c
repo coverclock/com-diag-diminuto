@@ -26,7 +26,8 @@ int main(void)
     size_t alignment;
     size_t power;
     size_t allocated;
-    int method;
+    diminuto_memory_pagesize_method_t pagesizemethod;
+    diminuto_memory_linesize_method_t linesizemethod;
     void * pointer;
 
     SETLOGMASK();
@@ -67,11 +68,11 @@ int main(void)
     {
         TEST();
 
-        method = -1;
-        pagesize = diminuto_memory_pagesize(&method);
-        pagesize2 = diminuto_memory_pagesize((int *)0);
-        CHECKPOINT("pagesize=0x%zx=%zd method=%c\n", pagesize, pagesize, method);
-        ASSERT(method >= 0);
+        pagesizemethod = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
+        pagesize = diminuto_memory_pagesize(&pagesizemethod);
+        pagesize2 = diminuto_memory_pagesize((diminuto_memory_pagesize_method_t *)0);
+        CHECKPOINT("pagesize=0x%zx=%zd method=%c\n", pagesize, pagesize, pagesizemethod);
+        ASSERT(pagesizemethod != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
         ASSERT(pagesize > 0);
         ASSERT(pagesize == pagesize2);
         ASSERT(diminuto_memory_is_power(pagesize));
@@ -82,11 +83,11 @@ int main(void)
     {
         TEST();
 
-        method = -1;
-        linesize = diminuto_memory_linesize(&method);
-        linesize2 = diminuto_memory_linesize((int *)0);
-        CHECKPOINT("linesize=0x%zx=%zd method=%c\n", linesize, linesize, method);
-        ASSERT(method >= 0);
+        linesizemethod = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
+        linesize = diminuto_memory_linesize(&linesizemethod);
+        linesize2 = diminuto_memory_linesize((diminuto_memory_linesize_method_t *)0);
+        CHECKPOINT("linesize=0x%zx=%zd method=%c\n", linesize, linesize, linesizemethod);
+        ASSERT(linesizemethod != DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN);
         ASSERT(linesize > 0);
         ASSERT(linesize == linesize2);
         ASSERT(diminuto_memory_is_power(linesize));

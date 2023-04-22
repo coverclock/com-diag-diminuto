@@ -764,9 +764,6 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
     ssize_t result = 0;
     diminuto_framer_state_t state = DIMINUTO_FRAMER_STATE_IDLE;
     int token = EOF;
-    int fd = -1;
-
-    fd = fileno(stream);
 
     do {
 
