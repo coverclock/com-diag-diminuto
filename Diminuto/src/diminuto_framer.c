@@ -826,7 +826,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         }
 
-    } while ((result == 0) && ((diminuto_file_ready(stream) > 0) || (diminuto_serial_valid(fd) && (diminuto_serial_available(fd) > 0))));
+    } while ((result == 0) && (diminuto_file_ready(stream) > 0));
 
     /*
      * (result <  0) : EOF or other terminal serial error.
