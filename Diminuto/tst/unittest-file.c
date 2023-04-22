@@ -12,9 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 int main(int argc, char * argv[])
