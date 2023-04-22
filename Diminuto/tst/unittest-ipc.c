@@ -30,6 +30,35 @@ int main(int argc, char * argv[])
     SETLOGMASK();
 
     {
+        diminuto_ipc_type_t type = DIMINUTO_IPC_TYPE_UNSPECIFIED;
+
+        TEST();
+
+        switch (type) {
+        case DIMINUTO_IPC_TYPE_UNSPECIFIED: break;
+        case DIMINUTO_IPC_TYPE_IPV4:        break;
+        case DIMINUTO_IPC_TYPE_IPV6:        break;
+        case DIMINUTO_IPC_TYPE_LOCAL:       break;
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_ipc_preference_t preference = DIMINUTO_IPC_PREFERENCE_NONE;
+
+        TEST();
+
+        switch (preference) {
+        case DIMINUTO_IPC_PREFERENCE_IPV4:  break;
+        case DIMINUTO_IPC_PREFERENCE_IPV6:  break;
+        case DIMINUTO_IPC_PREFERENCE_NONE:  break;
+        }
+
+        STATUS();
+    }
+
+    {
         int sock;
         int rc;
 
