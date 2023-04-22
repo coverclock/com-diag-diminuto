@@ -26,7 +26,7 @@ static const char * SYS_LINE_SIZE[] = {
 size_t diminuto_memory_pagesize(int * methodp)
 {
     ssize_t pagesize = 0;
-    int method = -1;
+    int method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
 
     do {
 
@@ -68,7 +68,7 @@ size_t diminuto_memory_pagesize(int * methodp)
 size_t diminuto_memory_linesize(int * methodp)
 {
     ssize_t linesize = 0;
-    int method = -1;
+    int method = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
     FILE * fp;
     unsigned int ii;
 

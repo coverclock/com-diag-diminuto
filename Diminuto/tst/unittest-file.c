@@ -11,6 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_file.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -27,6 +28,7 @@ int main(int argc, char * argv[])
         ssize_t ready;
         ssize_t empty;
         ssize_t size;
+        size_t pagesize;
 
         TEST();
 
@@ -60,8 +62,12 @@ int main(int argc, char * argv[])
         CHECKPOINT("PUT1 empty=%zd\n", empty);
         EXPECT(empty > 0);
 
+        pagesize = diminuto_memory_pagesize((int *)0);
+        CHECKPOINT("VMPAGE size=%zu\n", pagesize);
+
         size = empty + 1;
         CHECKPOINT("BUFFER size=%zd\n", size);
+        ADVISE(size == pagesize);
 
         rc = fputc('\x34', sink);
         ASSERT(rc != EOF);

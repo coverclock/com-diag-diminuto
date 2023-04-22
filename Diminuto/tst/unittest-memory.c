@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Memory feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -32,12 +32,45 @@ int main(void)
     SETLOGMASK();
 
     {
+        diminuto_memory_pagesize_method_t method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
+
+        TEST();
+
+        switch (method) {
+        case DIMINUTO_MEMORY_PAGESIZE_METHOD_IMPLICIT:          break;
+        case DIMINUTO_MEMORY_PAGESIZE_METHOD_EXPLICIT:          break;
+        case DIMINUTO_MEMORY_PAGESIZE_METHOD_SYSCONF_PAGESIZE:  break;
+        case DIMINUTO_MEMORY_PAGESIZE_METHOD_GETPAGESIZE:       break;
+        case DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN:           break;
+        }
+
+        STATUS();
+    }
+
+    {
+        diminuto_memory_linesize_method_t method = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
+
+        TEST();
+
+        switch (method) {
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_IMPLICIT:                          break;
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_EXPLICIT:                          break;
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_SYSCONF_LEVEL1_DCACHE_LINESIZE:    break;
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_INDEX0_COHERENCY_LINE_SIZE:    break;
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_COHERENCY_LINE_SIZE:           break;
+        case DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN:                           break;
+        }
+
+        STATUS();
+    }
+
+    {
         TEST();
 
         method = -1;
         pagesize = diminuto_memory_pagesize(&method);
         pagesize2 = diminuto_memory_pagesize((int *)0);
-        CHECKPOINT("pagesize=0x%zx=%zd method=%d\n", pagesize, pagesize, method);
+        CHECKPOINT("pagesize=0x%zx=%zd method=%c\n", pagesize, pagesize, method);
         ASSERT(method >= 0);
         ASSERT(pagesize > 0);
         ASSERT(pagesize == pagesize2);
@@ -52,7 +85,7 @@ int main(void)
         method = -1;
         linesize = diminuto_memory_linesize(&method);
         linesize2 = diminuto_memory_linesize((int *)0);
-        CHECKPOINT("linesize=0x%zx=%zd method=%d\n", linesize, linesize, method);
+        CHECKPOINT("linesize=0x%zx=%zd method=%c\n", linesize, linesize, method);
         ASSERT(method >= 0);
         ASSERT(linesize > 0);
         ASSERT(linesize == linesize2);
