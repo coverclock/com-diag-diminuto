@@ -8,6 +8,13 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is a unit test of the File feature.
+ *
+ * The GLibC standard I/O buffer capacity is 4KB or 1 virtual
+ * memory page of 4KB. This is probably documented somewhere, but I
+ * haven't found it.
+ *
+ * The Linux pipe capacity is an astonishing 64KB or 16 virtual
+ * memory pages of 4KB each. This is documented in pipe(7).
  */
 
 #include "com/diag/diminuto/diminuto_file.h"
