@@ -235,7 +235,7 @@ TARGETNOTESTS		:=	$(TARGETBINARIES) $(TARGETALIASES) $(TARGETFUNCTIONALS) $(TARG
 
 ########## Main Entry Points
 
-.PHONY:	all most plus dist tidy clean pristine clobber scratch notests onlytests
+.PHONY:	all most plus dist tidy clean pristine clobber scratch notests onlytests refresh
 
 all:	$(TARGETMOST)
 
@@ -260,6 +260,12 @@ pristine:	clean
 
 # This is not the same as simply listing the targets as dependencies.
 scratch:
+	make pristine
+	make depend
+	make all
+
+refresh:
+	git pull
 	make pristine
 	make depend
 	make all
