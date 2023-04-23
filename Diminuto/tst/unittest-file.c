@@ -194,6 +194,7 @@ int main(int argc, char * argv[])
         FILE * sink;
         ssize_t ready;
         ssize_t empty;
+        ssize_t size;
 
         TEST();
 
@@ -206,8 +207,24 @@ int main(int argc, char * argv[])
         source = fdopen(input, "r");
         ASSERT(source != (FILE *)0);
 
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("SOURCE readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("SOURCE writesize=%zd\n", size);
+        EXPECT(size == 0);
+    
         sink = fdopen(output, "w");
         ASSERT(sink != (FILE *)0);
+
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("SINK readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("SINK writesize=%zd\n", size);
+        EXPECT(size == 0);
 
         ready = diminuto_file_ready(source);
         CHECKPOINT("INITIAL ready=%zd\n", ready);
@@ -220,12 +237,28 @@ int main(int argc, char * argv[])
         rc = fgetc(source);
         ASSERT(rc == 0);
 
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("GET readsize=%zd\n", size);
+        EXPECT(size == pagesize);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("GET writesize=%zd\n", size);
+        EXPECT(size == 0);
+
         ready = diminuto_file_ready(source);
         CHECKPOINT("GET ready=%zd\n", ready);
         EXPECT(ready == (pagesize - 1));
 
         rc = ungetc(rc, source);
         ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("UNGET readsize=%zd\n", size);
+        EXPECT(size == pagesize);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("UNGET writesize=%zd\n", size);
+        EXPECT(size == 0);
 
         ready = diminuto_file_ready(source);
         CHECKPOINT("UNGET ready=%zd\n", ready);
@@ -234,12 +267,28 @@ int main(int argc, char * argv[])
         rc = fputc(rc, sink);
         ASSERT(rc == 0);
 
+        size = diminuto_file_readsize(sink);
+        CHECKPOINT("PUT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(sink);
+        CHECKPOINT("PUT writesize=%zd\n", size);
+        EXPECT(size == pagesize);
+
         empty = diminuto_file_empty(sink);
         CHECKPOINT("PUT empty=%zd\n", empty);
         EXPECT(empty == (pagesize - 1));
 
         rc = fflush(sink);
         ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(sink);
+        CHECKPOINT("FLUSH readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(sink);
+        CHECKPOINT("FLUSH writesize=%zd\n", size);
+        EXPECT(size == pagesize);
 
         empty = diminuto_file_empty(sink);
         CHECKPOINT("FLUSH empty=%zd\n", empty);
