@@ -266,9 +266,7 @@ scratch:
 
 refresh:
 	git pull
-	make pristine
-	make depend
-	make all
+	make scratch
 
 clobber:	pristine
 	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po

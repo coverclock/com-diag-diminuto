@@ -15,10 +15,29 @@
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 int main(int argc, char * argv[])
 {
+    size_t pagesize;
+
     SETLOGMASK();
+
+    {
+        diminuto_memory_pagesize_method_t method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
+
+        TEST();
+
+        pagesize = diminuto_memory_pagesize(&method);
+        ASSERT(pagesize > 0);
+        ASSERT(method != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
+        CHECKPOINT("VMPAGE size=%zu\n", pagesize);
+        CHECKPOINT("VMPAGE method=%c\n", method);
+
+        STATUS();
+    }
 
     {
         int fd[2];
@@ -28,7 +47,6 @@ int main(int argc, char * argv[])
         ssize_t ready;
         ssize_t empty;
         ssize_t size;
-        size_t pagesize;
 
         TEST();
 
@@ -61,9 +79,6 @@ int main(int argc, char * argv[])
         empty = diminuto_file_empty(sink);
         CHECKPOINT("PUT1 empty=%zd\n", empty);
         EXPECT(empty > 0);
-
-        pagesize = diminuto_memory_pagesize((diminuto_memory_pagesize_method_t *)0);
-        CHECKPOINT("VMPAGE size=%zu\n", pagesize);
 
         size = empty + 1;
         CHECKPOINT("BUFFER size=%zd\n", size);
@@ -171,6 +186,73 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    {
+        int rc;
+        int input;
+        int output;
+        FILE * source;
+        FILE * sink;
+        ssize_t ready;
+        ssize_t empty;
+
+        TEST();
+
+        input = open("/dev/zero", O_RDONLY);
+        ASSERT(input >= 0);
+
+        output = open("/dev/null", O_WRONLY);
+        ASSERT(output >= 0);
+
+        source = fdopen(input, "r");
+        ASSERT(source != (FILE *)0);
+
+        sink = fdopen(output, "w");
+        ASSERT(sink != (FILE *)0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("INITIAL ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("INITIAL empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fgetc(source);
+        ASSERT(rc == 0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("GET ready=%zd\n", ready);
+        EXPECT(ready == (pagesize - 1));
+
+        rc = ungetc(rc, source);
+        ASSERT(rc == 0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("UNGET ready=%zd\n", ready);
+        EXPECT(ready == pagesize);
+
+        rc = fputc(rc, sink);
+        ASSERT(rc == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("PUT empty=%zd\n", empty);
+        EXPECT(empty == (pagesize - 1));
+
+        rc = fflush(sink);
+        ASSERT(rc == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("FLUSH empty=%zd\n", empty);
+        EXPECT(empty == pagesize);
+
+        rc = fclose(sink);
+        ASSERT(rc == 0);
+
+        rc = fclose(source);
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
     EXIT();
 }
-
