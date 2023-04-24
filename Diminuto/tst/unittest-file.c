@@ -28,23 +28,39 @@
 
 int main(int argc, char * argv[])
 {
-    size_t pagesize;
+    size_t buffersize;
 
     SETLOGMASK();
 
     {
         diminuto_memory_pagesize_method_t method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
+        size_t pagesize;
 
         TEST();
 
         pagesize = diminuto_memory_pagesize(&method);
-        ASSERT(pagesize > 0);
-        ASSERT(method != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
         CHECKPOINT("VMPAGE size=%zu\n", pagesize);
+        ASSERT(pagesize > 0);
+        ADVISE(pagesize == 4096);
         CHECKPOINT("VMPAGE method=%c\n", method);
+        ASSERT(method != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
+
+        /*
+         * BUFSIZ is the default standard I/O buffer size.
+         * The virtual page size is used instead.
+         */
+
+        CHECKPOINT("STDIO size=%d\n", BUFSIZ);
+        ADVISE(pagesize == BUFSIZ);
+
+        buffersize = pagesize;
 
         STATUS();
     }
+
+    /*
+     * Test small amounts of data through a FIFO.
+     */
 
     {
         int fd[2];
@@ -89,7 +105,7 @@ int main(int argc, char * argv[])
 
         size = empty + 1;
         CHECKPOINT("BUFFER size=%zd\n", size);
-        ADVISE(size == pagesize);
+        ADVISE(size == buffersize);
 
         rc = fputc('\x34', sink);
         ASSERT(rc != EOF);
@@ -193,6 +209,203 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
+    /*
+     * Same test as above but with buffering disabled.
+     */
+
+    {
+        int fd[2];
+        FILE * source;
+        FILE * sink;
+        int rc;
+        ssize_t ready;
+        ssize_t empty;
+        ssize_t size;
+
+        TEST();
+
+        rc = pipe(fd);
+        ASSERT(rc == 0);
+        CHECKPOINT("PIPE fd[0]=%d\n", fd[0]);
+        CHECKPOINT("PIPE fd[1]=%d\n", fd[1]);
+
+        source = fdopen(fd[0], "r");
+        ASSERT(source != (FILE *)0);
+
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("BEFORE readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("BEFORE writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = setvbuf(source, (char *)0, _IONBF, 0);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(source);
+        CHECKPOINT("AFTER readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(source);
+        CHECKPOINT("AFTER writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        sink = fdopen(fd[1], "w");
+        ASSERT(source != (FILE *)0);
+
+        size = diminuto_file_readsize(sink);
+        CHECKPOINT("BEFORE readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(sink);
+        CHECKPOINT("BEFORE writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = setvbuf(sink, (char *)0, _IONBF, 0);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(sink);
+        CHECKPOINT("AFTER readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(sink);
+        CHECKPOINT("AFTER writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("INITIAL ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("INITIAL empty=%zd\n", empty);
+        ADVISE(empty == 0); /* Apparently allocated on first use. */
+
+        rc = fputc('\x12', sink);
+        ASSERT(rc != EOF);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("PUT1 ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("PUT1 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        size = empty + 1;
+        CHECKPOINT("BUFFER size=%zd\n", size);
+        ADVISE(size == buffersize);
+
+        rc = fputc('\x34', sink);
+        ASSERT(rc != EOF);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("PUT2 ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("PUT2 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fflush(sink);
+        ASSERT(rc != EOF);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("FLUSH ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("FLUSH empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fgetc(source);
+        ASSERT(rc == '\x12');
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("GET1 ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("GET1 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        /*
+         * The push back buffer used by the unget is seperate.
+         */
+
+        rc = ungetc(rc, source);
+        ASSERT(rc == '\x12');
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("UNGET1 ready=%zd\n", ready);
+        EXPECT(ready == 1);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("UNGET1 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fgetc(source);
+        ASSERT(rc == '\x12');
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("GET2 ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("GET2 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fgetc(source);
+        ASSERT(rc == '\x34');
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("GET3 ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("GET3 empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fclose(sink);
+        ASSERT(rc == 0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("CLOSESINK ready=%zd\n", ready);
+        ADVISE(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("CLOSESINK empty=%zd\n", empty);
+        ADVISE(empty == 0); /* Apparently typical. */
+
+        rc = fgetc(source);
+        ASSERT(rc == EOF);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("EOF ready=%zd\n", ready);
+        EXPECT(ready == 0);
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("EOF empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fclose(source);
+        ASSERT(rc == 0);
+
+        ready = diminuto_file_ready(source);
+        CHECKPOINT("CLOSESOURCE ready=%zd\n", ready);
+        ADVISE(ready < 0); /* Apparently unpredictable and non-deterministic. */
+
+        empty = diminuto_file_empty(sink);
+        CHECKPOINT("CLOSESOURCE empty=%zd\n", empty);
+        ADVISE(empty == 0);
+
+        STATUS();
+    }
+
+    /*
+     * Test filling up the read buffer.
+     */
+
     {
         int rc;
         int fd;
@@ -230,7 +443,7 @@ int main(int argc, char * argv[])
 
         size = diminuto_file_readsize(stream);
         CHECKPOINT("GET readsize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("GET writesize=%zd\n", size);
@@ -238,14 +451,14 @@ int main(int argc, char * argv[])
 
         ready = diminuto_file_ready(stream);
         CHECKPOINT("GET ready=%zd\n", ready);
-        EXPECT(ready == (pagesize - 1));
+        EXPECT(ready == (buffersize - 1));
 
         rc = ungetc(rc, stream);
         ASSERT(rc == 0);
 
         size = diminuto_file_readsize(stream);
         CHECKPOINT("UNGET readsize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("UNGET writesize=%zd\n", size);
@@ -253,7 +466,7 @@ int main(int argc, char * argv[])
 
         ready = diminuto_file_ready(stream);
         CHECKPOINT("UNGET ready=%zd\n", ready);
-        EXPECT(ready == pagesize);
+        EXPECT(ready == buffersize);
 
         for (ii = 0; ii < ready; ++ii) {
             rc = fgetc(stream);
@@ -266,7 +479,7 @@ int main(int argc, char * argv[])
 
         size = diminuto_file_readsize(stream);
         CHECKPOINT("GETS readsize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("GETS writesize=%zd\n", size);
@@ -281,6 +494,10 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+
+    /*
+     * Test filling up the write buffer.
+     */
 
     {
         int rc;
@@ -323,11 +540,11 @@ int main(int argc, char * argv[])
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("PUT writesize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         empty = diminuto_file_empty(stream);
         CHECKPOINT("PUT empty=%zd\n", empty);
-        EXPECT(empty == (pagesize - 1));
+        EXPECT(empty == (buffersize - 1));
 
         for (ii = 0; ii < empty; ++ii) {
             rc = fputc('\0', stream);
@@ -344,7 +561,7 @@ int main(int argc, char * argv[])
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("PUTS writesize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         empty = diminuto_file_empty(stream);
         CHECKPOINT("PUTS empty=%zd\n", empty);
@@ -363,11 +580,11 @@ int main(int argc, char * argv[])
 
         size = diminuto_file_writesize(stream);
         CHECKPOINT("FLUSH writesize=%zd\n", size);
-        EXPECT(size == pagesize);
+        EXPECT(size == buffersize);
 
         empty = diminuto_file_empty(stream);
         CHECKPOINT("FLUSH empty=%zd\n", empty);
-        EXPECT(empty == pagesize);
+        EXPECT(empty == buffersize);
 
         rc = fclose(stream);
         ASSERT(rc == 0);
