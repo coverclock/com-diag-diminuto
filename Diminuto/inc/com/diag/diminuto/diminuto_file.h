@@ -28,21 +28,11 @@
  *
  * SEE ALSO
  *
- * __fbufsize(3)
+ * stdio(3)
  *
- * __flbf(3)
+ * stdio_ext(3)
  *
- * __fpending(3)
- *
- * __freadable(3)
- *
- * __freading(3)
- *
- * __fwritable(3)
- *
- * __fwriting(3)
- *
- * _flushlbf(3)
+ * pipe(7)
  *
  * /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:struct _IO_FILE
  */
