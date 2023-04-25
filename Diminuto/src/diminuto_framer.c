@@ -774,12 +774,6 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
 
         state = diminuto_framer_machine(that, token);
 
-        /*
-         * We have take care that a high speed by very noisy serial
-         * connection doesn't flood the log. So most of the logging
-         * is done at DEBUG or INFORMATION log levels.
-         */
-
         switch (state) {
 
         case DIMINUTO_FRAMER_STATE_COMPLETE:
@@ -813,7 +807,7 @@ ssize_t diminuto_framer_reader(FILE * stream, diminuto_framer_t * that)
             break;
 
         case DIMINUTO_FRAMER_STATE_INVALID:
-            DIMINUTO_LOG_WARNING("diminuto_framer@%p: invalid! '\\x%2.2x'\n", that, token);
+            DIMINUTO_LOG_WARNING("diminuto_framer@%p: invalid! '\\x%2.2x' [%zu]\n", that, token, that->total);
             diminuto_framer_reset(that);
             break;
 

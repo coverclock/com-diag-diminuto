@@ -102,6 +102,7 @@ int main(int argc, char * argv[])
     bool outeof = false;
     bool throttle = false;
     bool first = true;
+    bool serial = true;
     ssize_t sent = 0;
     ssize_t received = 0;
     char * frame = (char *)0;
@@ -256,21 +257,21 @@ int main(int argc, char * argv[])
      * DEVICE
      */
 
-    DIMINUTO_LOG_INFORMATION("%s: device %s %d %d%c%d%s%s%s [%zu]\n", program, device, baudrate, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol ? " modemcontrol" : "", xonxoff ? " xonxoff" : "", rtscts ? " rtscts" : "", bufsize);
-
     if ((fd = open(device, O_RDWR)) < 0) {
         error = true;
     } else if ((stream = fdopen(fd, "a+")) == (FILE *)0) {
         error = true;
     } else if (!diminuto_serial_valid(fd)) {
-        /* Do nothing. */
+        serial = false;
     } else if (diminuto_serial_set(fd, baudrate, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts) < 0) {
         error = true;
     } else if (diminuto_serial_raw(fd) < 0) {
         error = true;
     } else {
-        /* Do nothing. */
+        serial = true;
     }
+
+    DIMINUTO_LOG_INFORMATION("%s: device %s %d %d%c%d%s%s%s [%zu] %s\n", program, device, baudrate, databits, (paritybit == 0) ? 'n' : ((paritybit % 2) == 0) ? 'e' : 'o', stopbits, modemcontrol ? " modemcontrol" : "", xonxoff ? " xonxoff" : "", rtscts ? " rtscts" : "", bufsize, serial ? "tty" : "notty");
 
     if (error) {
         diminuto_perror(device);
