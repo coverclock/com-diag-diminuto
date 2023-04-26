@@ -19,8 +19,6 @@
  * example a FIFO (a.k.a. named pipe, in which case framertool basically
  * talks to itself).
  *
- * N.B. the LoRa connection is REALLY slow and disconnects periodically.
- *
  * EXAMPLES
  *
  * framertool -D /dev/ttyACM0 -b 57600 -8 -n -1
