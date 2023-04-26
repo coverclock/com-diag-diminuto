@@ -34,6 +34,15 @@
  * RELATED
  *
  * <https://github.com/coverclock/com-diag-hazer>
+ *
+ * NOTES
+ *
+ * The underlying Framer feature has a pretty good unit test. framertool
+ * has been tested with two FTDI USB-to-serial adaptors back to back with
+ * a null modem in between, and with a SparkFun LoRaSerial radio pair, using
+ * a Total Phase Beagle USB 12 analyzer to examine the communication on
+ * the wire as it goes onto to (the source end) and comes off of (the sink
+ * end) air interface.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
