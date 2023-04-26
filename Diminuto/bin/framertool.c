@@ -41,7 +41,7 @@
  * has been tested with two FTDI USB-to-serial adaptors back to back with
  * a null modem in between, and with a SparkFun LoRaSerial radio pair, using
  * a Total Phase Beagle USB 12 analyzer to examine the communication on
- * the wire as it goes onto to (the source end) and comes off of (the sink
+ * the wire as it goes on to (the source end) and comes off of (the sink
  * end) air interface.
  */
 
