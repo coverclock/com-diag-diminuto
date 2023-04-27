@@ -426,8 +426,7 @@ int main(int argc, char * argv[])
                     /*
                      * Missing and duplicated are just two ways of looking at
                      * the same thing. If one is zero, the other will be zero.
-                     * But we check both anyway, just in case the computation
-                     * in the Framer library changes.
+                     * (But we check both anyway.)
                      */
                     if (first) {
                         /*
@@ -442,8 +441,10 @@ int main(int argc, char * argv[])
                         DIMINUTO_LOG_NOTICE("framertool: device started\n");
                     } else if (diminuto_framer_didfarend(&framer)) {
                         DIMINUTO_LOG_NOTICE("framertool: device restarted\n");
-                    } else if (((missing = diminuto_framer_getmissing(&framer)) == 0) && ((duplicated = diminuto_framer_getduplicated(&framer)) == 0)) {
-                            /* Do nothing. */
+                    } else if ((missing = diminuto_framer_getmissing(&framer)) == 0) {
+                        /* Do nothing. */
+                    } else if ((duplicated = diminuto_framer_getduplicated(&framer)) == 0) {
+                        /* Do nothing. */
                     } else if (missing <= duplicated) {
                         DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", missing);
                     } else {
