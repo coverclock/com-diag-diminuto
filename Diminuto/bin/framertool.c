@@ -423,25 +423,12 @@ int main(int argc, char * argv[])
                     deveof = true;
                     break;
                 } else {
-                    length = diminuto_framer_getlength(&framer);
-                    sequence = diminuto_framer_getincoming(&framer);
-                    DIMINUTO_LOG_INFORMATION("framertool: output #%u [%zu]\n", sequence, length);
-                    if (debug) {
-                        diminuto_dump(stderr, frame, length);
-                        fflush(stderr);
-                    }
-                    count = fwrite(frame, length, 1, stdout);
-                    if (count != 1) {
-                        DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
-                        outeof = true;
-                        break;
-                    }
-                    rc = fflush(stdout);
-                    if (rc == EOF) {
-                        diminuto_perror("fflush");
-                        outeof = true;
-                        break;
-                    }
+                    /*
+                     * Missing and duplicated are just two ways of looking at
+                     * the same thing. If one is zero, the other will be zero.
+                     * But we check both anyway, just in case the computation
+                     * in the Framer library changes.
+                     */
                     if (first) {
                         /*
                          * There's no point in comparing previous and current
@@ -455,22 +442,32 @@ int main(int argc, char * argv[])
                         DIMINUTO_LOG_NOTICE("framertool: device started\n");
                     } else if (diminuto_framer_didfarend(&framer)) {
                         DIMINUTO_LOG_NOTICE("framertool: device restarted\n");
-                    } else {
-                        /*
-                         * Missing and duplicated are just two ways of looking at
-                         * the same thing. If one is zero, the other will be zero.
-                         * But we check both anyway, just in case the computation
-                         * in the Framer library changes.
-                         */
-                        missing = diminuto_framer_getmissing(&framer);
-                        duplicated = diminuto_framer_getduplicated(&framer);
-                        if ((missing == 0) && (duplicated == 0)) {
+                    } else if (((missing = diminuto_framer_getmissing(&framer)) == 0) && ((duplicated = diminuto_framer_getduplicated(&framer)) == 0)) {
                             /* Do nothing. */
-                        } else if (missing <= duplicated) {
-                            DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", missing);
-                        } else {
-                            DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", duplicated);
-                        }
+                    } else if (missing <= duplicated) {
+                        DIMINUTO_LOG_NOTICE("framertool: device missing [%zu]\n", missing);
+                    } else {
+                        DIMINUTO_LOG_NOTICE("framertool: device duplicated [%zu]\n", duplicated);
+                    }
+                    length = diminuto_framer_getlength(&framer);
+                    sequence = diminuto_framer_getincoming(&framer);
+                    DIMINUTO_LOG_INFORMATION("framertool: output #%u [%zu]\n", sequence, length);
+                    if (debug) {
+                        FILE * fp = diminuto_log_stream();
+                        diminuto_dump(fp, frame, length);
+                        fflush(fp);
+                    }
+                    count = fwrite(frame, length, 1, stdout);
+                    if (count != 1) {
+                        DIMINUTO_LOG_NOTICE("framertool: output EOF\n");
+                        outeof = true;
+                        break;
+                    }
+                    rc = fflush(stdout);
+                    if (rc == EOF) {
+                        diminuto_perror("fflush");
+                        outeof = true;
+                        break;
                     }
                     diminuto_framer_reset(&framer);
                 }
