@@ -506,7 +506,8 @@ int main(int argc, char * argv[])
         FILE * stream;
         ssize_t empty;
         ssize_t size;
-        int ii;
+        ssize_t ii;
+        ssize_t limit;
 
         TEST();
 
@@ -551,9 +552,12 @@ int main(int argc, char * argv[])
         CHECKPOINT("BUFFER size=%zd\n", size);
         EXPECT(size == buffersize);
 
-        for (ii = 0; ii < empty; ++ii) {
+        limit = empty;
+        for (ii = 0; ii < limit; ++ii) {
             rc = fputc('\0', stream);
             ASSERT(rc == 0);
+            empty = diminuto_file_empty(stream);
+            EXPECT(empty == (buffersize - ii - 2));
         }
 
         /*
@@ -571,6 +575,130 @@ int main(int argc, char * argv[])
         empty = diminuto_file_empty(stream);
         CHECKPOINT("PUTS empty=%zd\n", empty);
         EXPECT(empty == 0);
+
+        rc = fflush(stream);
+        ASSERT(rc == 0);
+
+        /*
+         * Write buffer is empty after manual flush.
+         */
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("FLUSH readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("FLUSH writesize=%zd\n", size);
+        EXPECT(size == buffersize);
+
+        empty = diminuto_file_empty(stream);
+        CHECKPOINT("FLUSH empty=%zd\n", empty);
+        EXPECT(empty == buffersize);
+
+        rc = fclose(stream);
+        ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    /*
+     * Same test as above except uses autoamtic flush.
+     */
+
+    {
+        int rc;
+        int fd;
+        FILE * stream;
+        ssize_t empty;
+        ssize_t size;
+        ssize_t ii;
+        ssize_t limit;
+
+        TEST();
+
+        fd = open("/dev/null", O_WRONLY);
+        ASSERT(fd >= 0);
+    
+        stream = fdopen(fd, "w");
+        ASSERT(stream != (FILE *)0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("INITIAL readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("INITIAL writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        empty = diminuto_file_empty(stream);
+        CHECKPOINT("INITIAL empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == 0);
+
+        /*
+         * First put allocates write buffer.
+         */
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUT writesize=%zd\n", size);
+        EXPECT(size == buffersize);
+
+        empty = diminuto_file_empty(stream);
+        CHECKPOINT("PUT empty=%zd\n", empty);
+        EXPECT(empty == (buffersize - 1));
+
+        size = empty + 1;
+        CHECKPOINT("BUFFER size=%zd\n", size);
+        EXPECT(size == buffersize);
+
+        limit = empty;
+        for (ii = 0; ii < limit; ++ii) {
+            rc = fputc('\0', stream);
+            ASSERT(rc == 0);
+            empty = diminuto_file_empty(stream);
+            EXPECT(empty == (buffersize - ii - 2));
+        }
+
+        /*
+         * Write buffer is full but has not yet automatically flushed.
+         */
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUTS readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUTS writesize=%zd\n", size);
+        EXPECT(size == buffersize);
+
+        empty = diminuto_file_empty(stream);
+        CHECKPOINT("PUTS empty=%zd\n", empty);
+        EXPECT(empty == 0);
+
+        /*
+         * One more put forces automatic flush and leaves one octet.
+         */
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("AUTO readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("AUTO writesize=%zd\n", size);
+        EXPECT(size == buffersize);
+
+        empty = diminuto_file_empty(stream);
+        CHECKPOINT("AUTO empty=%zd\n", empty);
+        EXPECT(empty == (buffersize - 1));
 
         rc = fflush(stream);
         ASSERT(rc == 0);
