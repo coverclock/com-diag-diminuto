@@ -134,7 +134,7 @@ int main(int argc, char * argv[])
      * PARSING
      */
 
-    while ((opt = getopt(argc, argv, "1278B:D:b:dehmnort:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, "1278B:D:b:dehmnost:?")) >= 0) {
 
         switch (opt) {
 
@@ -189,6 +189,10 @@ int main(int argc, char * argv[])
             paritybit = 2;
             break;
 
+        case 'h':
+            rtscts = !0;
+            break;
+
         case 'm':
             modemcontrol = !0;
             break;
@@ -201,8 +205,8 @@ int main(int argc, char * argv[])
             paritybit = 1;
             break;
 
-        case 'r':
-            rtscts = !0;
+        case 's':
+            xonxoff = !0;
             break;
 
         case 't':
@@ -216,10 +220,6 @@ int main(int argc, char * argv[])
             }
             break;
 
-        case 'x':
-            xonxoff = !0;
-            break;
-
         case '?':
             fprintf(stderr, "       -?                   prints this help menu and exits.\n");
             fprintf(stderr, "       -1                   sets DEVICE to one stop bits.\n");
@@ -231,11 +231,11 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -b BAUDRATE          sets the DEVICE to BAUDRATE bits per second.\n");
             fprintf(stderr, "       -d                   dumps frame and line input to stderr.\n");
             fprintf(stderr, "       -e                   sets DEVICE to even parity.\n");
+            fprintf(stderr, "       -h                   enables RTS/CTS hardware flow control.\n");
             fprintf(stderr, "       -m                   enables modem control.\n");
             fprintf(stderr, "       -o                   sets the DEVICE to odd parity.\n");
-            fprintf(stderr, "       -r                   enables RTS/CTS.\n");
+            fprintf(stderr, "       -s                   enables XON/XOFF software flow control.\n");
             fprintf(stderr, "       -t MILLISECONDS      sets the multiplexor timeout to MILLISECONDS.\n");
-            fprintf(stderr, "       -x                   enables XON/XOFF.\n");
             exit(1);
             break;
 

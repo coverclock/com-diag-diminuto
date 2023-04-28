@@ -275,6 +275,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -o          Odd parity.\n");
             fprintf(stderr, "       -n          No parity.\n");
             fprintf(stderr, "       -h          Hardware flow control (RTS/CTS).\n");
+            fprintf(stderr, "       -i          No input mode.\n");
             fprintf(stderr, "       -l          Local (no modem control).\n");
             fprintf(stderr, "       -m          Modem control.\n");
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
