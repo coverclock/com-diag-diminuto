@@ -223,19 +223,20 @@ int main(int argc, char * argv[])
     {
         diminuto_framer_t framer;
         diminuto_framer_t * ff;
-        char buffer[64];
+        char buffer1[64];
+        char buffer2[64];
 
         TEST();
 
-        ff = diminuto_framer_init(&framer, buffer, sizeof(buffer));
+        ff = diminuto_framer_init(&framer, buffer1, sizeof(buffer1));
 
         diminuto_framer_dump(&framer);
 
         ASSERT(ff == &framer);
 
-        ASSERT(framer.buffer == &(buffer[0]));
+        ASSERT(framer.buffer == &(buffer1[0]));
         ASSERT(framer.here == (uint8_t *)0);
-        ASSERT(framer.size == sizeof(buffer));
+        ASSERT(framer.size == sizeof(buffer1));
         ASSERT(framer.limit == 0);
         ASSERT(framer.total == 0);
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_RESET);
@@ -270,18 +271,26 @@ int main(int argc, char * argv[])
         ff = diminuto_framer_reset(&framer);
         ASSERT(ff == &framer);
         diminuto_framer_dump(ff);
-        ASSERT(framer.buffer == buffer);
-        ASSERT(framer.size == sizeof(buffer));
+        ASSERT(framer.buffer == &(buffer1[0]));
+        ASSERT(framer.size == sizeof(buffer1));
         ASSERT(framer.state == DIMINUTO_FRAMER_STATE_RESET);
 
         ASSERT(framer.length0 == 0);
         ASSERT(framer.length == 0);
-        framer.length = sizeof(buffer) / 2;
+        framer.length = sizeof(buffer1) / 2;
         ASSERT(diminuto_framer_getbuffer(&framer) == (void *)0);
         ASSERT(diminuto_framer_getlength(&framer) == EOF);
         framer.state = DIMINUTO_FRAMER_STATE_COMPLETE;
-        ASSERT(diminuto_framer_getbuffer(&framer) == buffer);
-        ASSERT(diminuto_framer_getlength(&framer) == (sizeof(buffer) / 2));
+        ASSERT(diminuto_framer_getbuffer(&framer) == &(buffer1[0]));
+        ASSERT(diminuto_framer_getlength(&framer) == (sizeof(buffer1) / 2));
+
+        framer.state = DIMINUTO_FRAMER_STATE_IDLE;
+        ff = diminuto_framer_set(&framer, buffer2, sizeof(buffer2));
+        ASSERT(ff == &framer);
+        diminuto_framer_dump(ff);
+        ASSERT(framer.buffer == &(buffer2[0]));
+        ASSERT(framer.size == sizeof(buffer2));
+        ASSERT(framer.state == DIMINUTO_FRAMER_STATE_RESET);
 
         ff = diminuto_framer_fini(&framer);
         ASSERT(ff == (diminuto_framer_t *)0);

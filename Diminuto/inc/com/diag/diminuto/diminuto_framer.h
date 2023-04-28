@@ -255,28 +255,34 @@ static inline diminuto_framer_t * diminuto_framer_fini(diminuto_framer_t * that)
 }
 
 /*******************************************************************************
- * DEBUG
+ * SETTORS
  ******************************************************************************/
 
 /**
- * Set debug mode on or off and return the prior mode. When debug mode
- * is enabled, the Framer state machine logs all state transitions at
- * the DEBUG level.
+ * Reinitialize a Framer object so that it is ready to process another frame
+ * with the buffer it already has. This settor only alters the Framer state.
  * @param that points to the Framer object.
- * @param debug is true to enable debug mode, false to disable it.
- * @return the prior debug mode.
+ * @return a pointer to the Framer object.
  */
-bool diminuto_framer_debug(diminuto_framer_t * that, bool debug) {
-    bool prior = that->debug;
-    that->debug = debug;
-    return prior;
+static inline diminuto_framer_t * diminuto_framer_reset(diminuto_framer_t * that) {
+    that->state = DIMINUTO_FRAMER_STATE_RESET;
+    return that;
 }
 
 /**
- * Logs the contents of a Framer object.
+ * Reinitialize a Framer object so that it is ready to process another frame
+ * with the specified buffer. This settor only alters the buffer pointer and
+ * its size and calls reset().
  * @param that points to the Framer object.
+ * @param buffer points to the buffer into which the frame is stored.
+ * @param size is the size of the buffer in octets.
+ * @return a pointer to the Framer object.
  */
-extern void diminuto_framer_dump(const diminuto_framer_t * that);
+static inline diminuto_framer_t * diminuto_framer_set(diminuto_framer_t * that, void * buffer, size_t size) {
+    that->buffer = buffer;
+    that->size = size;
+    return diminuto_framer_reset(that);
+}
 
 /*******************************************************************************
  * GETTORS
@@ -433,7 +439,6 @@ static inline uint16_t diminuto_framer_getincoming(const diminuto_framer_t * tha
     return that->sequence;
 }
 
-
 /**
  * Return the most recent outgoing sequence number.
  * @param that points to the Framer object.
@@ -446,19 +451,6 @@ static inline uint16_t diminuto_framer_getoutgoing(const diminuto_framer_t * tha
 /*******************************************************************************
  * LOW-LEVEL API
  ******************************************************************************/
-
-/**
- * Reinitialize a Framer object so that it is ready to process another frame
- * using the same buffer with which it was initialized. Depending on the
- * application, either reset() or init() may be used to prepare to process
- * subsequent frames after the first one.
- * @param that points to the Framer object.
- * @return a pointer to the Framer object.
- */
-static inline diminuto_framer_t * diminuto_framer_reset(diminuto_framer_t * that) {
-    that->state = DIMINUTO_FRAMER_STATE_RESET;
-    return that;
-}
 
 /**
  * Implements the Framer state machine tha processes input from an input
@@ -573,5 +565,29 @@ extern ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size);
  * @return the number of PAYLOAD octets written, EOF if error.
  */
 extern ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length);
+
+/*******************************************************************************
+ * DEBUGGORS
+ ******************************************************************************/
+
+/**
+ * Set debug mode on or off and return the prior mode. When debug mode
+ * is enabled, the Framer state machine logs all state transitions at
+ * the DEBUG level.
+ * @param that points to the Framer object.
+ * @param debug is true to enable debug mode, false to disable it.
+ * @return the prior debug mode.
+ */
+bool diminuto_framer_debug(diminuto_framer_t * that, bool debug) {
+    bool prior = that->debug;
+    that->debug = debug;
+    return prior;
+}
+
+/**
+ * Logs the contents of a Framer object.
+ * @param that points to the Framer object.
+ */
+extern void diminuto_framer_dump(const diminuto_framer_t * that);
 
 #endif

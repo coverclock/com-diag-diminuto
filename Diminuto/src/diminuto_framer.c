@@ -42,13 +42,8 @@ static inline void streamerror(FILE * stream, const char * label)
 diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size)
 {
     static const diminuto_framer_t FRAMER = DIMINUTO_FRAMER_INIT;
-
     memcpy(that, &FRAMER, sizeof(*that));
-
-    that->buffer = buffer;
-    that->size = size;
-
-    return diminuto_framer_reset(that);
+    return diminuto_framer_set(that, buffer, size);
 }
 
 /*******************************************************************************
