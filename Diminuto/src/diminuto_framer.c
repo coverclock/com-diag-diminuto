@@ -967,20 +967,18 @@ ssize_t diminuto_framer_writer(FILE * stream, diminuto_framer_t * that, const vo
 ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
 {
     ssize_t result = EOF;
-    ssize_t readten = EOF; /* Because past tense "read" is a system call. */
+    ssize_t octets = EOF;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
    
-    (void)diminuto_framer_init(&framer, buffer, size); 
+    (void)diminuto_framer_set(&framer, buffer, size); 
 
     do {
-        readten = diminuto_framer_reader(stream, &framer);
-    } while (readten == 0);
+        octets = diminuto_framer_reader(stream, &framer);
+    } while (octets == 0);
 
-    if (readten > 0) {
+    if (octets > 0) {
         result = framer.length;
     }
-
-    (void)diminuto_framer_fini(&framer);
 
     return result;
 }
@@ -988,18 +986,14 @@ ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
 ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length)
 {
     ssize_t result = EOF;
-    ssize_t written = EOF;
+    ssize_t octets = EOF;
     diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
    
-    (void)diminuto_framer_init(&framer, (void *)0, 0); 
+    octets = diminuto_framer_writer(stream, &framer, data, length);
 
-    written = diminuto_framer_writer(stream, &framer, data, length);
-
-    if (written > 0) {
+    if (octets > 0) {
         result = length;
     }
-
-    (void)diminuto_framer_fini(&framer);
 
     return result;
 }
