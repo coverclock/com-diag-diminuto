@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a consistent interface for dealing with time;
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -150,18 +150,20 @@ static const uint64_t DIMINUTO_TIME_LOGICAL_MAXIMUM = COM_DIAG_DIMINUTO_TIME_LOG
 /**
  * Return the logical clock, which is a simple incrementing sixty-four bit
  * unsigned counter value that is guaranteed to be unique for any thread in
- * the same process, until the counter returns its maximum possible value of
- * DIMINUTO_TIME_LOGICAL_MAXIMUM, at which errno is set to zero, and after
- * which errno is subsequently set to a non-zero value. errno is only set,
- * either to zero or to an error number, if the maximum possible value is
- * returned. Note that the logical clock is unique to each process.
- * @return a unique logical clock value, or with errno set if an error occurred.
+ * the same process. Under normal circumstances, the function returns with
+ * errno set to zero. When the counter wraps around back to zero, the function
+ * will continue to return successive values but with errno set to EOVERFLOW
+ * until the error state is acknowledged by a logical clock reset. (If the
+ * application does so inside its own critical section, this can allow it to
+ * count the number of logical clock wraps.)
+ * @return a unique logical clock value, with errno explicitly set.
  */
 extern uint64_t diminuto_time_logical(void);
 
 /**
- * Reset the logical clock such that the next value it returns will be zero
- * with any error state cleared.
+ * Reset the logical clock error state. The value of errno after a logical
+ * clock request will return to being zero until the logical clock wraps
+ * around again.
  */
 extern void diminuto_time_logical_reset(void);
 

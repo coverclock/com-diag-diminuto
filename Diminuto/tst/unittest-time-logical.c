@@ -54,49 +54,83 @@ int main(int argc, char ** argv)
 
     {
         uint64_t logical;
-        uint64_t logicalprime;
+        uint64_t logical0;
+        int error;
 
         TEST();
 
         errno = 0xdeadbeef;
         logical = diminuto_time_logical();
+        error = errno;
         ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(errno = 0xdeadbeef);
+        ASSERT(error == 0);
 
         errno = 0xc0edbabe;
-        logicalprime = diminuto_time_logical();
-        ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(logicalprime > logical);
-        ASSERT(errno = 0xc0edbabe);
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(logical > logical0);
+        ASSERT(error == 0);
 
         diminuto_time_logical_set(DIMINUTO_TIME_LOGICAL_MAXIMUM - 1);
 
         errno = 0xdeadbeef;
+        logical0 = logical;
         logical = diminuto_time_logical();
-        ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(errno = 0xdeadbeef);
+        error = errno;
+        ASSERT(logical == (DIMINUTO_TIME_LOGICAL_MAXIMUM - 1));
+        ASSERT(logical > logical0);
+        ASSERT(error == 0);
 
-        logicalprime = diminuto_time_logical();
-        ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(errno == 0);
-        ASSERT(logicalprime > logical);
+        errno = 0xdeadbeef;
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical == DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        ASSERT(logical > logical0);
+        ASSERT(error == 0);
 
-        logicalprime = diminuto_time_logical();
-        ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(errno == EOVERFLOW);
+        errno = 0xdeadbeef;
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical == 0);
+        ASSERT(error == EOVERFLOW);
 
-        logicalprime = diminuto_time_logical();
-        ASSERT(logicalprime == DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(errno == EOVERFLOW);
+        errno = 0xdeadbeef;
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical == 1);
+        ASSERT(logical > logical0);
+        ASSERT(error == EOVERFLOW);
+
+        errno = 0xdeadbeef;
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical == 2);
+        ASSERT(logical > logical0);
+        ASSERT(error == EOVERFLOW);
 
         diminuto_time_logical_reset();
 
+        errno = 0xdeadbeef;
+        logical0 = logical;
         logical = diminuto_time_logical();
-        ASSERT(logical < DIMINUTO_TIME_LOGICAL_MAXIMUM);
+        error = errno;
+        ASSERT(logical == 3);
+        ASSERT(logical > logical0);
+        ASSERT(error == 0);
 
-        logicalprime = diminuto_time_logical();
-        ASSERT(logicalprime < DIMINUTO_TIME_LOGICAL_MAXIMUM);
-        ASSERT(logicalprime > logical);
+        errno = 0xdeadbeef;
+        logical0 = logical;
+        logical = diminuto_time_logical();
+        error = errno;
+        ASSERT(logical == 4);
+        ASSERT(logical > logical0);
+        ASSERT(error == 0);
 
         STATUS();
     }
