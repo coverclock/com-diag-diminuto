@@ -219,7 +219,8 @@ typedef struct DiminutoFramer {
     0, 0, 0, \
     DIMINUTO_FRAMER_STATE_IDLE, \
     0, 0, \
-    0, DIMINUTO_FRAMER_WINDOW - 1, DIMINUTO_FRAMER_WINDOW - 2, DIMINUTO_FRAMER_WINDOW - 1, \
+    0, DIMINUTO_FRAMER_WINDOW - 1, DIMINUTO_FRAMER_WINDOW - 2, \
+    DIMINUTO_FRAMER_WINDOW - 1, \
     0, 0, \
     0, 0, \
     { '\0', '\0', }, \

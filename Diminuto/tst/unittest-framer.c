@@ -1334,7 +1334,7 @@ int main(int argc, char * argv[])
         diminuto_framer_t framer;
         diminuto_framer_t * that;
         char buffer[sizeof(DATA)];
-        int iterations = 0;
+        unsigned int iterations = 0;
 
         TEST();
 
@@ -1607,12 +1607,15 @@ int main(int argc, char * argv[])
         int rc;
         ssize_t sent;
         ssize_t received;
+        size_t length;
         char buffer[sizeof(DATA) * 3];
         unsigned int ii;
         unsigned int jj;
-        int iterations;
+        unsigned int iterations;
         diminuto_framer_t writer;
         diminuto_framer_t reader;
+        uint16_t sequence;
+        uint16_t expected;
 
         TEST();
 
@@ -1629,6 +1632,7 @@ int main(int argc, char * argv[])
         diminuto_framer_init(&reader, buffer, sizeof(buffer));
 
         iterations = 0;
+        expected = 0;
 
         for (ii = 0x00; ii <= 0xff; ++ii) {
             for (jj = 0x00; jj <= 0xff; ++jj) {
@@ -1637,20 +1641,27 @@ int main(int argc, char * argv[])
                 DATA[1] = jj;
 
                 sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
-                COMMENT("diminuto_framer_writer=%zd\n", sent);
+                sequence = diminuto_framer_getoutgoing(&writer);
+                COMMENT("diminuto_framer_writer=%zd #%u\n", sent, sequence);
                 ASSERT(sent > sizeof(DATA));
+                ASSERT(sequence == expected);
 
                 do {
                     received = diminuto_framer_reader(source, &reader);
                 } while (received == 0);
-                COMMENT("diminuto_framer_reader=%zd\n", received);
+                length = diminuto_framer_getlength(&reader);
+                sequence = diminuto_framer_getincoming(&reader);
+                COMMENT("diminuto_framer_reader=%zd [%zu] #%u\n", received, length, sequence);
                 ASSERT(received > sizeof(DATA));
+                ASSERT(length == sizeof(DATA));
+                ASSERT(sequence == expected);
 
-                ASSERT(memcmp(DATA, buffer, reader.length) == 0);
+                ASSERT(memcmp(DATA, buffer, length) == 0);
 
                 diminuto_framer_reset(&reader);
 
                 ++iterations;
+                ++expected;
 
             }
         }
@@ -1908,7 +1919,7 @@ int main(int argc, char * argv[])
         char buffer[sizeof(DATA) * 3];
         unsigned int ii;
         unsigned int jj;
-        int iterations;
+        unsigned int iterations;
 
         TEST();
 
