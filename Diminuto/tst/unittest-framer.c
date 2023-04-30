@@ -1676,10 +1676,50 @@ int main(int argc, char * argv[])
          * rolled over.
          */
 
-        --iterations;
-        ASSERT(writer.generated == iterations);
-        ASSERT(reader.sequence == iterations);
-        ASSERT(reader.previous == (iterations - 1));
+        ASSERT(writer.generated == (iterations - 1));
+        ASSERT(reader.sequence == (iterations - 1));
+        ASSERT(reader.previous == (iterations - 2));
+
+        /*
+         * Do it all again, to prove we can.
+         */
+
+        for (ii = 0x00; ii <= 0xff; ++ii) {
+            for (jj = 0x00; jj <= 0xff; ++jj) {
+
+                DATA[0] = ii;
+                DATA[1] = jj;
+
+                sent = diminuto_framer_writer(sink, &writer, DATA, sizeof(DATA));
+                sequence = diminuto_framer_getoutgoing(&writer);
+                COMMENT("diminuto_framer_writer=%zd #%u\n", sent, sequence);
+                ASSERT(sent > sizeof(DATA));
+                ASSERT(sequence == expected);
+
+                do {
+                    received = diminuto_framer_reader(source, &reader);
+                } while (received == 0);
+                length = diminuto_framer_getlength(&reader);
+                sequence = diminuto_framer_getincoming(&reader);
+                COMMENT("diminuto_framer_reader=%zd [%zu] #%u\n", received, length, sequence);
+                ASSERT(received > sizeof(DATA));
+                ASSERT(length == sizeof(DATA));
+                ASSERT(sequence == expected);
+
+                ASSERT(memcmp(DATA, buffer, length) == 0);
+
+                diminuto_framer_reset(&reader);
+
+                ++iterations;
+                ++expected;
+
+            }
+        }
+
+        CHECKPOINT("iterations=%d\n", iterations);
+        ASSERT(iterations == (2 * (256 * 256)));
+
+        CHECKPOINT("outoing=%u sequence=%u previous=%u\n", writer.generated, reader.sequence, reader.previous);
 
         diminuto_framer_fini(&writer);
         diminuto_framer_fini(&reader);
