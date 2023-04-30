@@ -475,14 +475,17 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
              * FLAG ('~') or ESCAPE ('}'). The Kermit unit test suite verifies
              * this.
              */
-            if ((that->limit == 3) && diminuto_kermit_firstisvalid(ch)) {
+            if (that->limit == 3) {
                 action = STORE;
-            } else if ((that->limit == 2) && diminuto_kermit_secondisvalid(ch)) {
+            } else if (that->limit == 2) {
                 action = STORE;
-            } else if ((that->limit == 1) && diminuto_kermit_thirdisvalid(ch)) {
+            } else if (that->limit == 1) {
                 action = KERMIT;
                 that->state = DIMINUTO_FRAMER_STATE_NEWLINE;
             } else {
+                /*
+                 * Should never happen.
+                 */
                 that->state = DIMINUTO_FRAMER_STATE_INVALID;
             }
         }
@@ -622,22 +625,16 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         diminuto_assert(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
-        that->crc0 = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2]);
-        if (that->crc0 != that->crc) {
+        if (!diminuto_kermit_firstisvalid(that->check[0])) {
+            that->state = DIMINUTO_FRAMER_STATE_FAILED;
+        } else if (!diminuto_kermit_secondisvalid(that->check[1])) {
+            that->state = DIMINUTO_FRAMER_STATE_FAILED;
+        } else if (!diminuto_kermit_thirdisvalid(that->check[2])) {
+            that->state = DIMINUTO_FRAMER_STATE_FAILED;
+        } else if ((that->crc0 = diminuto_kermit_chars2crc(that->check[0], that->check[1], that->check[2])) != that->crc) {
             that->state = DIMINUTO_FRAMER_STATE_FAILED;
         } else {
-            /*
-             * We only report sequence numbers for successfully completed
-             * frames. Disgarded, invalid, failed, aborted, restarted, or
-             * otherwise uncompleted frames will be revealed to the applicaiton
-             * by a discrepancy in the previous and current sequence numbers.
-             * Exception: when the sequence field rolls over from 65535 to
-             * 0. Similarly, we don't update the length field until the frame
-             * is completed.
-             */
-            that->previous = that->sequence;
-            that->sequence = that->sequence0;
-            that->length = that->length0;
+            /* Do nothing. */
         }
         break;
 
@@ -652,6 +649,17 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         if (that->length0 < that->size) {
             ((uint8_t *)that->buffer)[that->length0] = '\0';
         }
+        /*
+         * We only report sequence numbers for successfully completed
+         * frames. Disgarded, invalid, failed, aborted, restarted, or
+         * otherwise uncompleted frames will be revealed to the applicaiton
+         * by a discrepancy in the previous and current sequence numbers.
+         * Similarly, we don't update the length field until the frame
+         * is completed.
+         */
+        that->previous = that->sequence;
+        that->sequence = that->sequence0;
+        that->length = that->length0;
         break;
 
     case CONSUME:
