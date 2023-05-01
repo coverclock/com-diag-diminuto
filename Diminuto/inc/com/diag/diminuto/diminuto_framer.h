@@ -103,11 +103,13 @@
  *
 `* This feature was developed in direct support of the Fothergill sub-project.
  * Fothergill uses the LoRa (Long-Range) radio technology. Specifically, the
- * SparkFun LoRa Serial Kit provides two paired LoRa radios with interfaces
+ * SparkFun LoRaSerial Kit provides two paired LoRa radios with interfaces
  * that enumerate over USB as serial ports. Framers have been successfully
  * used to pass data over this technology. Note that the SparkFun docs
  * mention that the product may drop packets, and the Framer sequence numbers
- * verify this.
+ * verify this. Using Framer with the LoRaSerial devices was tested using a
+ * Total Phase Beagle 12 USB analyzer to examine frames on the wire at
+ * each end of the connection.
  *
  * REFERENCES
  *
