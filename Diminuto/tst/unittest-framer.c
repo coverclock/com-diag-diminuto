@@ -1721,6 +1721,10 @@ int main(int argc, char * argv[])
 
         CHECKPOINT("outoing=%u sequence=%u previous=%u\n", writer.generated, reader.sequence, reader.previous);
 
+        ASSERT(writer.generated == ((iterations / 2) - 1));
+        ASSERT(reader.sequence == ((iterations / 2) - 1));
+        ASSERT(reader.previous == ((iterations / 2) - 2));
+
         diminuto_framer_fini(&writer);
         diminuto_framer_fini(&reader);
 
