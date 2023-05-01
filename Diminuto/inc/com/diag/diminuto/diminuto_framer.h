@@ -449,6 +449,16 @@ static inline uint16_t diminuto_framer_getoutgoing(const diminuto_framer_t * tha
     return that->generated;
 }
 
+/**
+ * Return true if the serial stream is throttled (received an XOFF) or false
+ * it is not (did not receive an XOFF or received a subsequent XON).
+ * @param that points to the Framer object.
+ * @return true if throttled, false if not.
+ */
+static inline bool diminuto_framer_isthrottled(const diminuto_framer_t * that) {
+    return that->throttle;
+}
+
 /*******************************************************************************
  * LOW-LEVEL API
  ******************************************************************************/

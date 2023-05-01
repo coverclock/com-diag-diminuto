@@ -55,10 +55,10 @@ diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer
 /*
  * USEFUL ASCII CHARACTERS TO KNOW
  *
- * 0x00     '\0'    NUL
- * 0x0a     '\n'    NEWLINE a.k.a NL, Line Feed
- * 0x11     '\x11'  XON a.k.a. DC1, Device Control 1, Transmit On
- * 0x13     '\x13'  XOFF a.k.a. DC3, Device Control 3, Transmit Off
+ * 0x00     '\0'    NUL, control-@
+ * 0x0a     '\n'    NEWLINE a.k.a NL, Line Feed, control-J
+ * 0x11     '\x11'  XON a.k.a. DC1, Device Control 1, Transmit On, control-Q
+ * 0x13     '\x13'  XOFF a.k.a. DC3, Device Control 3, Transmit Off, control-S
  * 0x20     ' '     Kermit Low
  * 0x2a     '*'     ESCAPEd NEWLINE
  * 0x2f     '/'     Kermit[0] High
