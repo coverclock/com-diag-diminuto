@@ -1402,7 +1402,8 @@ Chip Overclock, "Layers II", 2022-11,
 
 # Acknowledgements
 
-I owe a debt of gratitude to my mentors, particularly at Bell Labs and its
-various spin-offs, who were so generous with their time and expertise over
-the years, and to my various clients, who both inspired and sometimes even
-shipped this software.
+I owe a debt of gratitude to my mentors, particularly at Wright State
+University (Dayton Ohio), at the National Center for Atmospheric Research
+(Boulder Colorado), and at Bell Labs and its various spin-offs, who were
+so generous with their time and expertise over the years, and to my various
+clients, who both inspired and sometimes even shipped this software.
