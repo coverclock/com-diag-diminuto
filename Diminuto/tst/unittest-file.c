@@ -21,6 +21,7 @@
 #include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -94,7 +95,7 @@ int main(int argc, char * argv[])
         ADVISE(empty == 0); /* Apparently allocated on first use. */
 
         rc = fputc('\x12', sink);
-        ASSERT(rc != EOF);
+        ASSERT(rc == '\x12');
 
         ready = diminuto_file_ready(source);
         CHECKPOINT("PUT1 source ready=%zd\n", ready);
@@ -109,7 +110,7 @@ int main(int argc, char * argv[])
         ADVISE(size == buffersize);
 
         rc = fputc('\x34', sink);
-        ASSERT(rc != EOF);
+        ASSERT(rc == '\x34');
 
         ready = diminuto_file_ready(source);
         CHECKPOINT("PUT2 source ready=%zd\n", ready);
@@ -721,6 +722,122 @@ int main(int argc, char * argv[])
 
         rc = fclose(stream);
         ASSERT(rc == 0);
+
+        STATUS();
+    }
+
+    /*
+     * Set buffer explicitly.
+     */
+
+    {
+        FILE * stream;
+        ssize_t size;
+        char * buffer;
+        size_t total;
+        int rc;
+
+        TEST();
+
+        total = buffersize + BUFSIZ;
+        ASSERT(total != buffersize);
+        ASSERT(total != BUFSIZ);
+        CHECKPOINT("TOTAL size=%zu\n", total);
+
+        buffer = malloc(total);
+        ASSERT(buffer != (char *)0);
+
+        stream = fopen("/dev/zero", "a+");
+        ASSERT(stream != (FILE *)0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("DEFAULT readsize=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("DEFAULT writesize=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("DEFAULT ready=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("DEFAULT empty=%zd\n", size);
+        ASSERT(size == 0);
+
+        rc = setvbuf(stream, buffer, _IOFBF, total);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("SETVBUF readsize=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("SETVBUF writesize=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("SETVBUF ready=%zd\n", size);
+        ASSERT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("SETVBUF empty=%zd\n", size);
+        ASSERT(size == 0);
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == 0);
+
+        rc = fgetc(stream);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUTGET readsize=%zd\n", size);
+        ASSERT(size == total);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUTGET writesize=%zd\n", size);
+        ASSERT(size == 0); /* UNEXPECTED! */
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("PUTGET ready=%zd\n", size);
+        ASSERT(size == (total - 1));
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("PUTGET empty=%zd\n", size);
+        ASSERT(size == 0); /* UNEXPECTED! */
+
+        rc = fclose(stream);
+        ASSERT(rc == 0);
+
+        free(buffer);
+
+        STATUS();
+    }
+
+    /*
+     * Predefined FILEs: stdin, stdout, and stderr.
+     * stdin and stdout have yet to be used, so will not have allocated
+     * their buffers. stderr is not buffered.
+     */
+
+    {
+        TEST();
+
+        CHECKPOINT("STDIN readsize=%zd\n",  diminuto_file_readsize(stdin));
+        CHECKPOINT("STDIN writesize=%zd\n", diminuto_file_writesize(stdin));
+        CHECKPOINT("STDIN ready=%zd\n",     diminuto_file_ready(stdin));
+        CHECKPOINT("STDIN empty=%zd\n",     diminuto_file_empty(stdin));
+
+        CHECKPOINT("STDOUT readsize=%zd\n",  diminuto_file_readsize(stdout));
+        CHECKPOINT("STDOUT writesize=%zd\n", diminuto_file_writesize(stdout));
+        CHECKPOINT("STDOUT ready=%zd\n",     diminuto_file_ready(stdout));
+        CHECKPOINT("STDOUT empty=%zd\n",     diminuto_file_empty(stdout));
+
+        CHECKPOINT("STDERR readsize=%zd\n",  diminuto_file_readsize(stderr));
+        CHECKPOINT("STDERR writesize=%zd\n", diminuto_file_writesize(stderr));
+        CHECKPOINT("STDERR ready=%zd\n",     diminuto_file_ready(stderr));
+        CHECKPOINT("STDERR empty=%zd\n",     diminuto_file_empty(stderr));
 
         STATUS();
     }
