@@ -727,7 +727,180 @@ int main(int argc, char * argv[])
     }
 
     /*
-     * Set buffer explicitly.
+     * Set buffer explicitly for an input stream.
+     */
+
+    {
+        FILE * stream;
+        ssize_t size;
+        char * buffer;
+        size_t total;
+        int rc;
+
+        TEST();
+
+        total = buffersize + BUFSIZ;
+        ASSERT(total != buffersize);
+        ASSERT(total != BUFSIZ);
+        CHECKPOINT("TOTAL size=%zu\n", total);
+
+        buffer = malloc(total);
+        ASSERT(buffer != (char *)0);
+
+        stream = fopen("/dev/zero", "r");
+        ASSERT(stream != (FILE *)0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("DEFAULT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("DEFAULT writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("DEFAULT ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("DEFAULT empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = setvbuf(stream, buffer, _IOFBF, total);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("SETVBUF readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("SETVBUF writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("SETVBUF ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("SETVBUF empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = fgetc(stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("GET readsize=%zd\n", size);
+        EXPECT(size == total);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("GET writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("GET ready=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("GET empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = fclose(stream);
+        ASSERT(rc == 0);
+
+        free(buffer);
+
+        STATUS();
+    }
+
+    /*
+     * Set buffer explicitly for an output stream.
+     */
+
+    {
+        FILE * stream;
+        ssize_t size;
+        char * buffer;
+        size_t total;
+        int rc;
+
+        TEST();
+
+        total = buffersize + BUFSIZ;
+        ASSERT(total != buffersize);
+        ASSERT(total != BUFSIZ);
+        CHECKPOINT("TOTAL size=%zu\n", total);
+
+        buffer = malloc(total);
+        ASSERT(buffer != (char *)0);
+
+        stream = fopen("/dev/null", "a");
+        ASSERT(stream != (FILE *)0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("DEFAULT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("DEFAULT writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("DEFAULT ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("DEFAULT empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = setvbuf(stream, buffer, _IOFBF, total);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("SETVBUF readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("SETVBUF writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("SETVBUF ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("SETVBUF empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUT writesize=%zd\n", size);
+        EXPECT(size == total);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("PUT ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("PUT empty=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        rc = fclose(stream);
+        ASSERT(rc == 0);
+
+        free(buffer);
+
+        STATUS();
+    }
+
+
+    /*
+     * Set buffer explicitly for a read/write stream.
      * Some of the behavior here was unexpected, and
      * (as far as I can tell so far) undocumented.
      * But perhaps I should have expected it.
@@ -811,7 +984,7 @@ int main(int argc, char * argv[])
         EXPECT(size == (total - 1));
 
         /*
-         * The fgetc() forces a flush on the output side.
+         * The fgetc() presumably forces a flush on the output side.
          */
 
         rc = fgetc(stream);
@@ -835,6 +1008,9 @@ int main(int argc, char * argv[])
 
         /*
          * What happens to the buffered input when we do the fputc()?
+         * It's apparently discarded, perhaps under the assumption
+         * that since we're modifying the file, it may no longer
+         * be correct.
          */
 
         rc = fputc('\0', stream);
