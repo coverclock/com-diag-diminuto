@@ -1060,6 +1060,160 @@ int main(int argc, char * argv[])
     }
 
     /*
+     * Same test as above except the fopen(3) mode is different.
+     */
+
+    {
+        FILE * stream;
+        ssize_t size;
+        char * buffer;
+        size_t total;
+        int rc;
+
+        TEST();
+
+        total = buffersize + BUFSIZ;
+        ASSERT(total != buffersize);
+        ASSERT(total != BUFSIZ);
+        CHECKPOINT("TOTAL size=%zu\n", total);
+
+        buffer = malloc(total);
+        ASSERT(buffer != (char *)0);
+
+        stream = fopen("/dev/zero", "w+");
+        ASSERT(stream != (FILE *)0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("DEFAULT readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("DEFAULT writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("DEFAULT ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("DEFAULT empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = setvbuf(stream, buffer, _IOFBF, total);
+        ASSERT(rc == 0);
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("SETVBUF readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("SETVBUF writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("SETVBUF ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("SETVBUF empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUT1 readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUT1 writesize=%zd\n", size);
+        EXPECT(size == total);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("PUT1 ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("PUT1 empty=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        /*
+         * The fgetc() presumably forces a flush on the output side.
+         */
+
+        rc = fgetc(stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("GET1 readsize=%zd\n", size);
+        EXPECT(size == total);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("GET1 writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("GET1 ready=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("GET1 empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        /*
+         * What happens to the buffered input when we do the fputc()?
+         * It's apparently discarded, perhaps under the assumption
+         * that since we're modifying the file, it may no longer
+         * be correct.
+         */
+
+        rc = fputc('\0', stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("PUT2 readsize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("PUT2 writesize=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("PUT2 ready=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("PUT2 empty=%zd\n", size);
+        EXPECT(size == (total - 2));
+
+        rc = fgetc(stream);
+        ASSERT(rc == '\0');
+
+        size = diminuto_file_readsize(stream);
+        CHECKPOINT("GET2 readsize=%zd\n", size);
+        EXPECT(size == total);
+
+        size = diminuto_file_writesize(stream);
+        CHECKPOINT("GET2 writesize=%zd\n", size);
+        EXPECT(size == 0);
+
+        size = diminuto_file_ready(stream);
+        CHECKPOINT("GET2 ready=%zd\n", size);
+        EXPECT(size == (total - 1));
+
+        size = diminuto_file_empty(stream);
+        CHECKPOINT("GET2 empty=%zd\n", size);
+        EXPECT(size == 0);
+
+        rc = fclose(stream);
+        ASSERT(rc == 0);
+
+        free(buffer);
+
+        STATUS();
+    }
+
+    /*
      * Predefined FILEs: stdin, stdout, and stderr.
      * stdin and stdout have yet to be used, so will not have allocated
      * their buffers. stderr is not buffered.
