@@ -900,13 +900,13 @@ int main(int argc, char * argv[])
 
 
     /*
-     * Set buffer explicitly for a read/write stream.
-     * Some of the behavior here was unexpected, and
-     * (as far as I can tell so far) undocumented.
-     * But perhaps I should have expected it.
-     * We are only providing a single buffer, and
-     * the buffer is shared for both the input and
-     * the output side of the same stream.
+     * Set buffer explicitly for a read/write stream. Some of the behavior
+     * here was unexpected, and (as far as I can tell so far) undocumented.
+     * But perhaps I should have expected it. We are only providing a single
+     * buffer, and the buffer is shared for both the input and the output
+     * side of the same stream. If you look at the glibc source code, you can
+     * oretty quickly find the code where the buffer management switches
+     * between output mode to input mode, or vice versa.
      */
 
     {
