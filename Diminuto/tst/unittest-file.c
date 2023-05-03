@@ -7,14 +7,18 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the File feature. It is not just a unit test for
- * the File feature, but verifies that the behavior of the standard I/O
- * library in GLibC has not changed when I install and test Diminuto
- * ("make sanity") on a new computer or Linux version.
+ * This is a unit test of the File feature. It also serves as a way
+ * to verify that the behavior of the standard I/O library in GLibC
+ * has not changed when I install and test Diminuto * ("make sanity")
+ * on a new computer or Linux version. Use of this feature in other
+ * Digital Aggregates projects (e.g. Framer, and gpstool in Hazer)
+ * depends on this legacy behavior.
  *
  * The GLibC standard I/O buffer capacity is 4KB or 1 virtual
- * memory page of 4KB. This is probably documented somewhere, but I
- * haven't found it.
+ * memory page. This is probably documented somewhere, but I
+ * haven't found it. The man pages might lead you to believe that
+ * the buffer capacity is BUFSIZ, which is 8KB, but this is not
+ * the case.
  *
  * The Linux pipe capacity is an astonishing 64KB or 16 virtual
  * memory pages of 4KB each. This is documented in pipe(7).
@@ -42,20 +46,37 @@ int main(int argc, char * argv[])
 
         TEST();
 
+        /*
+         * Get the virtual page size from the OS. The underlying
+         * Diminuto function can use several different methods to
+         * determine this.
+         */
+
         pagesize = diminuto_memory_pagesize(&method);
         CHECKPOINT("VMPAGE size=%zu\n", pagesize);
         ASSERT(pagesize > 0);
-        ADVISE(pagesize == 4096);
         CHECKPOINT("VMPAGE method=%c\n", method);
         ASSERT(method != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
+        ADVISE(pagesize == 4096);
 
         /*
          * BUFSIZ is the default standard I/O buffer size.
-         * The virtual page size is used instead.
          */
 
-        CHECKPOINT("STDIO size=%d\n", BUFSIZ);
-        ADVISE(BUFSIZ == pagesize);
+        CHECKPOINT("BUFSIZ size=%d\n", BUFSIZ);
+        ASSERT(BUFSIZ > 0);
+        ADVISE(BUFSIZ == 8192);
+
+        /*
+         * Linux appears to use the virtual page size instead
+         * of the standard I/O BUFSIZ to size its buffers,
+         * because, at least on the systems I play with, they
+         * are not the same. Remarkably, if you use the stdio
+         * setbuf(3) function, it assumes your buffer is
+         * BUFSIZ.
+         */
+
+        ADVISE(pagesize != BUFSIZ);
 
         buffersize = pagesize;
         CHECKPOINT("BUFFER size=%zu\n", buffersize);
