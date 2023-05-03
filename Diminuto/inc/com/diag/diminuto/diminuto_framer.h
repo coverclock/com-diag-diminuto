@@ -18,15 +18,16 @@
  * compatible with HDLC.
  *
  * The Framer uses the following special tokens (which in no way prohibits
- * their use by the application):
+ * their use by the application). N.B. the double backslashes are to make
+ * the Doxygen tool happy.
  *
  * FLAG a.k.a. '~', 0x7e, tilde.
  *
  * ESCAPE a.k.a. '}', 0x7d, right curley bracket (NOT ASCII ESCAPE);
  *
- * XON a.k.a. '\x11', 0x11, DC1, Device Control 1, Transmit On;
+ * XON a.k.a. '\\x11', 0x11, DC1, Device Control 1, Transmit On;
  *
- * XOFF a.k.a. '\x13', 0x13, DC3,. Device Control 3, Transmit Off.
+ * XOFF a.k.a. '\\x13', 0x13, DC3,. Device Control 3, Transmit Off.
  *
  * NEWLINE a.k.a. '\n', 0x0a, NL, line feed.
  *
