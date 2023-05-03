@@ -9,7 +9,7 @@
  * @details
  * This is a unit test of the File feature. It also serves as a way
  * to verify that the behavior of the standard I/O library in GLibC
- * has not changed when I install and test Diminuto * ("make sanity")
+ * has not changed when I install and test Diminuto ("make sanity")
  * on a new computer or Linux version. Use of this feature in other
  * Digital Aggregates projects (e.g. Framer, and gpstool in Hazer)
  * depends on this legacy behavior.
