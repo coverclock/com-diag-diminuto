@@ -16,17 +16,12 @@
  * remarkably useful.
  *
  * May fail to compile with other C libraries like UlibC or Bionic.
- *
  * May compile but yield the wrong result if even a minor change is made to
  * GLIBC.
- *
  * Based on a similar hack in the Digital Aggregates Grandote C++ project.
- *
  * Would really be helpful if the C library had a standard way to do this.
  *
- * USE AT YOUR OWN RISK!
- *
- * SEE ALSO
+ * REFERENCES
  *
  * stdio(3)
  *
@@ -34,7 +29,13 @@
  *
  * pipe(7)
  *
- * /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:struct _IO_FILE
+ * /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h
+ *
+ * https://sourceware.org/git/glibc.git:libio/getc.c
+ *
+ * https://sourceware.org/git/glibc.git:libio/libio.h
+ *
+ * https://sourceware.org/git/glibc.git:libio/genops.c
  */
 
 #include <stdio.h>

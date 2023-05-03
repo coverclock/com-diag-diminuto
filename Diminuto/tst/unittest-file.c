@@ -7,7 +7,10 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the File feature.
+ * This is a unit test of the File feature. It is not just a unit test for
+ * the File feature, but verifies that the behavior of the standard I/O
+ * library in GLibC has not changed when I install and test Diminuto
+ * ("make sanity") on a new computer or Linux version.
  *
  * The GLibC standard I/O buffer capacity is 4KB or 1 virtual
  * memory page of 4KB. This is probably documented somewhere, but I
