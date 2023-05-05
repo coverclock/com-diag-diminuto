@@ -28,16 +28,18 @@
 static int my_lock(const char * file) {
     static const char SUFFIX[] = "-lock-XXXXXX";
     pid_t pid = getpid();
+    ASSERT(pid > 0);
     char * path = (char *) malloc(strlen(file) + sizeof(SUFFIX));
-    strcpy(path, file);
-    strcat(path, SUFFIX);
+    (void)strcpy(path, file);
+    (void)strcat(path, SUFFIX);
     int fd = mkstemp(path);
     FILE * fp = fdopen(fd, "w");
-    fprintf(fp, "%d\n", pid);
-    fclose(fp);
+    ASSERT(fp != (FILE *)0);
+    (void)fprintf(fp, "%d\n", pid);
+    ASSERT(fclose(fp) == 0);
     int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_NOREPLACE);
     if (rc < 0) {
-        unlink(path);
+        ASSERT(unlink(path) == 0);
     }
     free(path);
     return rc;
@@ -48,22 +50,25 @@ static int my_prelock(const char * file) {
     if (fd < 0) {
         return -1;
     }
-    close(fd);
+    ASSERT(close(fd) == 0);
     return 0;
 }
 
 static int my_postlock(const char * file) {
     static const char SUFFIX[] = "-post-XXXXXX";
     pid_t pid = getpid();
+    ASSERT(pid > 0);
     char * path = (char *) malloc(strlen(file) + sizeof(SUFFIX));
-    strcpy(path, file);
-    strcat(path, SUFFIX);
+    (void)strcpy(path, file);
+    (void)strcat(path, SUFFIX);
     int fd = mkstemp(path);
+    ASSERT(fd >= 0);
     FILE * fp = fdopen(fd, "w");
-    fprintf(fp, "%d\n", pid);
-    fclose(fp);
+    ASSERT(fp != (FILE *)0);
+    (void)fprintf(fp, "%d\n", pid);
+    ASSERT(fclose(fp) == 0);
     int rc = renameat2(AT_FDCWD, path, AT_FDCWD, file, RENAME_EXCHANGE);
-    unlink(path);
+    ASSERT(unlink(path) == 0);
     free(path);
     return rc;
 }
@@ -78,8 +83,8 @@ static pid_t my_locked(const char * file) {
         return -1;
     }
     pid_t pid = 0;
-    fscanf(fp, "%d\n", &pid);
-    fclose(fp);
+    (void)fscanf(fp, "%d\n", &pid); /* EOF, 0, or !=1 are all valid. */
+    ASSERT(fclose(fp) == 0);
     return pid;
 }
 
