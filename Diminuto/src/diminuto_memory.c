@@ -69,8 +69,9 @@ size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp)
 {
     ssize_t linesize = 0;
     diminuto_memory_linesize_method_t method = DIMINUTO_MEMORY_LINESIZE_METHOD_UNKNOWN;
-    FILE * fp;
-    unsigned int ii;
+    FILE * fp = (FILE *)0;
+    unsigned int ii = 0;
+    int rc = -1;
 
     do {
 
@@ -98,9 +99,13 @@ size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp)
                 continue;
             }
 
-            fscanf(fp, "%zd", &linesize);
+            if ((rc = fscanf(fp, "%zd", &linesize)) != 1) {
+                continue;
+            }
 
-            fclose(fp);
+            if ((rc = fclose(fp)) != 0) {
+                continue;
+            }
 
             if (linesize > 0) {
                 method = DIMINUTO_MEMORY_LINESIZE_METHOD_SYS_INDEX0_COHERENCY_LINE_SIZE + ii;
@@ -153,7 +158,7 @@ int diminuto_memory_is_power(size_t value)
 void * diminuto_memory_aligned(size_t alignment, size_t size)
 {
     void * pointer = (void *)0;
-    int rc;
+    int rc = -1;
 
     /*
      * POSIX requires that size be a multiple of alignment, and that alignment
