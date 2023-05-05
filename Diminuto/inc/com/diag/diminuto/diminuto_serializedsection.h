@@ -10,12 +10,10 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
+ * EXPERIMENTAL
  * The Serialized Section feature uses the GNU test-and-set built-in with
  * bracketing macros to implement a code section serialized between multiple
  * processors.
- *
- * EXPERIMENTAL
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h" /* For diminuto_spinlock_t. */

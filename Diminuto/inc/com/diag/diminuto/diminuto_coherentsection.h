@@ -4,18 +4,16 @@
 
 /**
  * @file
- * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements macros to acquire and release coherent memory sections.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- *
+ * EXPERIMENTAL
  * The Coherent Section feature uses the Barrier feature to
  * provide consistent memory acquire/release semantics using
  * bracketing macros.
- *
- * EXPERIMENTAL
  */
 
 #include "com/diag/diminuto/diminuto_barrier.h"
@@ -27,7 +25,7 @@
  */
 #define DIMINUTO_COHERENT_SECTION_BEGIN \
     do { \
-        diminuto_acquire(); \
+        diminuto_barrier_acquire(); \
         do { \
             ((void)0)
 
@@ -38,7 +36,7 @@
  */
 #define DIMINUTO_COHERENT_SECTION_END \
         } while (0); \
-        diminuto_release(); \
+        diminuto_barrier_release(); \
     } while (0)
 
 #endif

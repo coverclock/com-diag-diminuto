@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the memory Barrier feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -41,14 +41,14 @@ void do_sync_synchronize()
 
 void do_sync_lock_test_and_set()
 {
-#if defined(COM_DIAG_DIMINUTO_ACQUIRE)
+#if defined(COM_DIAG_DIMINUTO_BARRIER_ACQUIRE)
     __sync_lock_test_and_set(&lock, value);
 #endif
 }
 
 void do_sync_lock_release()
 {
-#if defined(COM_DIAG_DIMINUTO_RELEASE)
+#if defined(COM_DIAG_DIMINUTO_BARRIER_RELEASE)
     __sync_lock_release(&lock);
 #endif
 }
@@ -56,8 +56,8 @@ void do_sync_lock_release()
 void do_functions()
 {
     diminuto_barrier();
-    diminuto_acquire();
-    diminuto_release();
+    diminuto_barrier_acquire();
+    diminuto_barrier_release();
 }
 
 void do_value()
@@ -76,11 +76,11 @@ int main(void)
         FAILURE();
 #endif
 
-#if !defined(COM_DIAG_DIMINUTO_ACQUIRE)
+#if !defined(COM_DIAG_DIMINUTO_BARRIER_ACQUIRE)
         FAILURE();
 #endif
 
-#if !defined(COM_DIAG_DIMINUTO_RELEASE)
+#if !defined(COM_DIAG_DIMINUTO_BARRIER_RELEASE)
         FAILURE();
 #endif
 
@@ -138,10 +138,10 @@ int main(void)
 
     {
         TEST();
-        diminuto_acquire();
+        diminuto_barrier_acquire();
         reg = 1;
         ASSERT(reg == 1);
-        diminuto_release();
+        diminuto_barrier_release();
         STATUS();
     }
 
@@ -161,10 +161,10 @@ int main(void)
 
     {
         TEST();
-        diminuto_acquire_f();
+        diminuto_barrier_acquire_f();
         reg = 1;
         ASSERT(reg == 1);
-        diminuto_release_f();
+        diminuto_barrier_release_f();
         STATUS();
     }
 

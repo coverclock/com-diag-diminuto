@@ -16,6 +16,7 @@
 
 int main(void)
 {
+    SETLOGMASK();
     {
         TEST();
         EXPECT(widthof(long long) >= widthof(long));
