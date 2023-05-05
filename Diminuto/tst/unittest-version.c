@@ -3,15 +3,15 @@
  * @file
  * @copyright Copyright 2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief This is a unit test of the release info.
+ * @brief This is a unit test of the version info.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of the release info.
+ * This is a unit test of the version info.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto.h"
+#include "com/diag/diminuto/diminuto_version.h"
 
 int main(void)
 {
