@@ -260,6 +260,7 @@ Similarly, environmental variables have qualified names like
 * types - common library types.
 * typeof - macro to infer the type of a variable in a typedef manner.
 * unittest - simple unit test framework.
+* version - provides printable strings for Diminuto version, revision, vintage.
 * widthof - macro to return width in bits of a type.
 
 ## Data Structures
