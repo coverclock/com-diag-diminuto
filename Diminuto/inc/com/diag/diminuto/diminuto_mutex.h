@@ -49,7 +49,7 @@ typedef struct DiminutoMutex {
 } diminuto_mutex_t;
 
 #if !defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
-#   warning PTHREAD_RECURSIVE_MUTEX_INITIALZER_NP not defined on this platform!
+#   warning PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP not defined on this platform!
 #   define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP PTHREAD_MUTEX_INITIALIZER
 #endif
 
