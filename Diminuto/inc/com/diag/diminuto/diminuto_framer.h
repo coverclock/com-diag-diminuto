@@ -213,10 +213,10 @@ typedef struct DiminutoFramer {
 #define DIMINUTO_FRAMER_WINDOW (65536)
 
 /**
- * @def DIMINUTO_FRAMER_INIT
+ * @def DIMINUTO_FRAMER_INITIALIZER
  * Generate code to statically initialize a Framer in the IDLE state.
  */
-#define DIMINUTO_FRAMER_INIT { \
+#define DIMINUTO_FRAMER_INITIALIZER { \
     (void *)0, \
     (uint8_t *)0, \
     0, 0, 0, \

@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
     char * line = (char *)0;
     char * here = (char *)0;
     int token = 0;
-    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
     diminuto_framer_t * ff = (diminuto_framer_t *)0;
     uint16_t sequence = 0;
 

@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
     ssize_t received = 0;
     size_t missing = 0;
     size_t duplicated = 0;
-    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
     diminuto_framer_t * ff = (diminuto_framer_t *)0;
     uint8_t * frame = (uint8_t *)0;
     uint8_t * datagram = (uint8_t *)0;

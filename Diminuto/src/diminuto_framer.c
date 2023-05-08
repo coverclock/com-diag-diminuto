@@ -41,7 +41,7 @@ static inline void streamerror(FILE * stream, const char * label)
 
 diminuto_framer_t * diminuto_framer_init(diminuto_framer_t * that, void * buffer, size_t size)
 {
-    static const diminuto_framer_t FRAMER = DIMINUTO_FRAMER_INIT;
+    static const diminuto_framer_t FRAMER = DIMINUTO_FRAMER_INITIALIZER;
 
     *that = FRAMER;
 
@@ -978,7 +978,7 @@ ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size)
 {
     ssize_t result = EOF;
     ssize_t octets = EOF;
-    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
    
     (void)diminuto_framer_set(&framer, buffer, size); 
 
@@ -997,7 +997,7 @@ ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length)
 {
     ssize_t result = EOF;
     ssize_t octets = EOF;
-    diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+    diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
    
     octets = diminuto_framer_writer(stream, &framer, data, length);
 

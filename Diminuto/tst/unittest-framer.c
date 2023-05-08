@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
 
         TEST();
 
@@ -301,7 +301,7 @@ int main(int argc, char * argv[])
 
     {
         static const size_t WINDOW = (size_t)diminuto_maximumof(uint16_t) + 1;
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
         size_t miss;
         size_t duplicate;
 
@@ -1738,7 +1738,7 @@ int main(int argc, char * argv[])
     }
 
     {
-        diminuto_framer_t framer = DIMINUTO_FRAMER_INIT;
+        diminuto_framer_t framer = DIMINUTO_FRAMER_INITIALIZER;
         diminuto_log_mask_t mask;
         int fd[2];
         int rc;
