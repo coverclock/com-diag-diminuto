@@ -250,7 +250,7 @@ Similarly, environmental variables have qualified names like
 
 ## Basics
 
-* assert - similar to assert(3) but with more output.
+* assert - similar to assert(3), plus expect, contract, and panic.
 * containerof - macro to compute address of structure from address of a field.
 * cxxcapi - helpers to allow C code to call C++ functions with type safety.
 * macros - insane macros to implement conditional and recursive code generation.
