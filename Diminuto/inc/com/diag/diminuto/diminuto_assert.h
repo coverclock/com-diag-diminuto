@@ -55,8 +55,10 @@ extern void diminuto_assert_f(int condition, const char * string, const char * f
 
 /**
  * @def diminuto_contract
- * If @a _CONDITION_ is false then call diminuto_assert_f to abort. Note that
- * asserts can be suppressed by a compile-time option, but contracts cannot.
+ * If @a _CONDITION_ is false then cause a fatal error and try to dump core.
+ * Note that asserts can be suppressed by a compile-time option, but contracts
+ * cannot. (Yes, this was inspired by the old Design By Contract methodology;
+ * it's an oldie but a goodie.)
  */
 #define diminuto_contract(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, !0) : ((void)0))
 
