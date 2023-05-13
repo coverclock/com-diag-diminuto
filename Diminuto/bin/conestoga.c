@@ -356,7 +356,7 @@ int main(int argc, char * argv[])
             service6 = endpoint.ipv6;
             break;
         default:
-            diminuto_assert(false);
+            diminuto_panic();
         }
         serviceport = endpoint.udp;
         break;
@@ -369,7 +369,7 @@ int main(int argc, char * argv[])
             sock = diminuto_ipc6_datagram_peer(endpoint.udp);
             break;
         default:
-            diminuto_assert(false);
+            diminuto_panic();
             break;
         }
         break;
@@ -481,7 +481,7 @@ int main(int argc, char * argv[])
                     received = diminuto_ipc6_datagram_receive_generic(sock, datagram, bufsize, &sender6, &senderport, 0);
                     break;
                 default:
-                    diminuto_assert(false);
+                    diminuto_panic();
                     break;
                 }
                 if (received <= 0) {
@@ -531,7 +531,7 @@ int main(int argc, char * argv[])
                             sent = diminuto_ipc6_datagram_send(sock, frame, received, service6, serviceport);
                             break;
                         default:
-                            diminuto_assert(false);
+                            diminuto_panic();
                         }
                     case SERVER:
                         switch (endpoint.type) {
@@ -542,11 +542,11 @@ int main(int argc, char * argv[])
                             sent = diminuto_ipc6_datagram_send(sock, frame, received, sender6, senderport);
                             break;
                         default:
-                            diminuto_assert(false);
+                            diminuto_panic();
                         }
                         break;
                     default:
-                        diminuto_assert(false);
+                        diminuto_panic();
                         break;
                     }
                     if (sent <= 0) {

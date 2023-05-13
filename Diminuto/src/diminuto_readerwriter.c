@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -14,7 +14,7 @@
  * functions. As long as the implementation does the right thing, these are
  * benign. Should the invariants be violated, the default behavior is for the
  * asserts to abort the application and produce a core dump. This behavior
- * can be overridden by compile time options - see the diminuto_assert.h
+ * can be overridden by compile time options - see the diminuto_contract.h
  * header file for more details. But the asserts failing indicates a very
  * serious bug in my code, implying the reader-writer synchronization is
  * unreliable.
@@ -35,7 +35,6 @@
  * signal for a bulk activation (this made a big difference for readers).
  */
 
-#include "com/diag/diminuto/diminuto_readerwriter.h"
 #include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_log.h"
@@ -434,7 +433,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
      * Audit the list.
      */
 
-    diminuto_assert(diminuto_list_audit(&(rwp->list)) == (diminuto_list_t *)0);
+    diminuto_contract(diminuto_list_audit(&(rwp->list)) == (diminuto_list_t *)0);
 
     /*
      * Audit the object.
@@ -531,29 +530,29 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
      * them again here.
      */
 
-    diminuto_assert(rwp->reading >= 0);
-    diminuto_assert(rwp->writing >= 0);
-    diminuto_assert(rwp->waiting >= 0);
-    diminuto_assert(rwp->maximum >= 0);
+    diminuto_contract(rwp->reading >= 0);
+    diminuto_contract(rwp->writing >= 0);
+    diminuto_contract(rwp->waiting >= 0);
+    diminuto_contract(rwp->maximum >= 0);
 
-    diminuto_assert(rwp->waiting <= rwp->maximum);
+    diminuto_contract(rwp->waiting <= rwp->maximum);
 
-    diminuto_assert(queued  >= 0);
-    diminuto_assert(readers >= 0);
-    diminuto_assert(writers >= 0);
-    diminuto_assert(failed  >= 0);
+    diminuto_contract(queued  >= 0);
+    diminuto_contract(readers >= 0);
+    diminuto_contract(writers >= 0);
+    diminuto_contract(failed  >= 0);
 
-    diminuto_assert(queued == rwp->waiting);
+    diminuto_contract(queued == rwp->waiting);
 
     /*
      * None of these states should have been on the wait list.
      */
 
-    diminuto_assert(readable == 0);
-    diminuto_assert(writable == 0);
-    diminuto_assert(started  == 0);
-    diminuto_assert(running  == 0);
-    diminuto_assert(unknown  == 0);
+    diminuto_contract(readable == 0);
+    diminuto_contract(writable == 0);
+    diminuto_contract(started  == 0);
+    diminuto_contract(running  == 0);
+    diminuto_contract(unknown  == 0);
 
     errno = save;
 }
@@ -923,7 +922,7 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
             audit(rwp, "Reader BEGIN");
         }
 
-        diminuto_assert(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || (result < 0));
+        diminuto_contract(((result == 0) && (rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || (result < 0));
 
     END_CRITICAL_SECTION;
 
@@ -939,7 +938,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
-        diminuto_assert((rwp->reading > 0) && (rwp->writing == 0));
+        diminuto_contract((rwp->reading > 0) && (rwp->writing == 0));
 
         /*
          * Decrement.
@@ -1008,7 +1007,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
             audit(rwp, "Reader END");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
+        diminuto_contract(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
 
     END_CRITICAL_SECTION;
 
@@ -1090,7 +1089,7 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
             audit(rwp, "Writer BEGIN");
         }
 
-        diminuto_assert(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || (result < 0));
+        diminuto_contract(((result == 0) && (rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || (result < 0));
 
     END_CRITICAL_SECTION;
 
@@ -1106,7 +1105,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
         DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
-        diminuto_assert((rwp->reading == 0) && (rwp->writing == 1));
+        diminuto_contract((rwp->reading == 0) && (rwp->writing == 1));
 
         /*
          * Decrement.
@@ -1164,7 +1163,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
             audit(rwp, "Writer END");
         }
 
-        diminuto_assert(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
+        diminuto_contract(((rwp->reading > 0) && (rwp->writing == 0) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 1) && (rwp->waiting >= 0)) || ((rwp->reading == 0) && (rwp->writing == 0) && (rwp->waiting == 0)));
 
     END_CRITICAL_SECTION;
 

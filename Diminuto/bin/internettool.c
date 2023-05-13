@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2016-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2016-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Tests internet connectivity.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -98,9 +98,9 @@ static void stamp(FILE *fp)
     diminuto_ticks_t microseconds = 0;
 
     now = diminuto_time_clock();
-    diminuto_assert(now != -1);
+    diminuto_contract(now != -1);
     rc = diminuto_time_zulu(now, &year, &month, &day, &hour, &minute, &second, &ticks);
-    diminuto_assert(rc >= 0);
+    diminuto_contract(rc >= 0);
     microseconds = ticks;
     microseconds *= 1000000;
     microseconds /= diminuto_time_frequency();
@@ -293,7 +293,7 @@ int main(int argc, char * argv[])
         const char * type = (const char *)0;
 
         ifvp = diminuto_ipc_interfaces();
-        diminuto_assert(ifvp != (char **)0);
+        diminuto_contract(ifvp != (char **)0);
 
         /*
          * We have a array of zero or more network interfaces, each
@@ -306,7 +306,7 @@ int main(int argc, char * argv[])
             type = (const char *)0;
 
             v4vp = diminuto_ipc4_interface(*ifp);
-            diminuto_assert(v4vp != (diminuto_ipv4_t *)0);
+            diminuto_contract(v4vp != (diminuto_ipv4_t *)0);
             for (v4p = v4vp; !diminuto_ipc4_is_unspecified(v4p); ++v4p) {
                 type = diminuto_ipc4_address2type(*v4p);
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s binding4=%s type4=%s\n", *ifp, diminuto_ipc4_address2string(*v4p, v4pbuffer, sizeof(v4pbuffer)), type);
@@ -314,7 +314,7 @@ int main(int argc, char * argv[])
             free(v4vp);
 
             v6vp = diminuto_ipc6_interface(*ifp);
-            diminuto_assert(v6vp != (diminuto_ipv6_t *)0);
+            diminuto_contract(v6vp != (diminuto_ipv6_t *)0);
             for (v6p = v6vp; !diminuto_ipc6_is_unspecified(v6p); ++v6p) {
                 type = diminuto_ipc6_address2type(*v6p);
                 DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "interface=%s binding6=%s type6=%s\n", *ifp, diminuto_ipc6_address2string(*v6p, v6pbuffer, sizeof(v6pbuffer)), type);
@@ -338,7 +338,7 @@ int main(int argc, char * argv[])
     if (Nearendpoint == (const char *)0) {
         /* Do nothing. */
     } else if (diminuto_ipc_endpoint(Nearendpoint, &nearendpoint) < 0) {
-        diminuto_assert(0);
+        diminuto_panic();
     } else if (diminuto_ipc4_is_unspecified(&nearendpoint.ipv4) && diminuto_ipc6_is_unspecified(&nearendpoint.ipv6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "NearEndpoint46=\"%s\"\n", Nearendpoint);
         if ((!diminuto_ipc_is_ephemeral(nearendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(nearendpoint.udp))) {
@@ -404,7 +404,7 @@ int main(int argc, char * argv[])
     if (Farendpoint == (const char *)0) {
         /* Do nothing. */
     } else if (diminuto_ipc_endpoint(Farendpoint, &farendpoint) < 0) {
-        diminuto_assert(0);
+        diminuto_panic();
     } else if (diminuto_ipc4_is_unspecified(&farendpoint.ipv4) && diminuto_ipc6_is_unspecified(&farendpoint.ipv6)) {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "FarEndpoint46=\"%s\"\n", Farendpoint);
         if ((!diminuto_ipc_is_ephemeral(farendpoint.tcp)) && (!diminuto_ipc_is_ephemeral(farendpoint.udp))) {
@@ -472,7 +472,7 @@ int main(int argc, char * argv[])
     } else if (Layer2 == '6') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer2=IPv6\n");
     } else {
-        diminuto_assert(0);
+        diminuto_panic();
     }
 
     if (Layer3 == 't') {
@@ -482,7 +482,7 @@ int main(int argc, char * argv[])
     } else if (Layer3 == 'g') {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Layer3=ICMP Echo Request\n");
     } else {
-        diminuto_assert(0);
+        diminuto_panic();
     }
 
     if (Address == (const char *)0) {
@@ -494,7 +494,7 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Address6=\"%s\"\n", Address);
         address6 = diminuto_ipc6_address(Address);
     } else {
-        diminuto_assert(0);
+        diminuto_panic();
     }
 
     if (!diminuto_ipc4_is_unspecified(&address4)) {
@@ -533,7 +533,7 @@ int main(int argc, char * argv[])
         server4 = DIMINUTO_IPC4_UNSPECIFIED;
         server6 = diminuto_ipc6_address(Server);
     } else {
-        diminuto_assert(0);
+        diminuto_panic();
     }
 
     if (!diminuto_ipc4_is_unspecified(&server4)) {
@@ -560,28 +560,28 @@ int main(int argc, char * argv[])
     } else {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Interface=\"%s\"\n", Interface);
         interfaci = diminuto_ipc_interfaces();
-        diminuto_assert(interfaci != (char **)0);
+        diminuto_contract(interfaci != (char **)0);
         for (interfaces = interfaci; *interfaces != (char *)0; ++interfaces) {
             if (strcmp(Interface, *interfaces) == 0) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "interface=%s\n", *interfaces);
                 interface = *interfaces;
             }
         }
-        diminuto_assert(interface != (char *)0);
+        diminuto_contract(interface != (char *)0);
         if (Layer2 == '4') {
             addresses4 = diminuto_ipc4_interface(interface);
-            diminuto_assert(addresses4 != (diminuto_ipv4_t *)0);
+            diminuto_contract(addresses4 != (diminuto_ipv4_t *)0);
             for (; !diminuto_ipc4_is_unspecified(addresses4); ++addresses4) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "binding4=%s\n", diminuto_ipc4_address2string(*addresses4, addresses4buffer, sizeof(addresses4buffer)));
             }
         } else if (Layer2 == '6') {
             addresses6 = diminuto_ipc6_interface(interface);
-            diminuto_assert(addresses6 != (diminuto_ipv6_t *)0);
+            diminuto_contract(addresses6 != (diminuto_ipv6_t *)0);
             for (; !diminuto_ipc6_is_unspecified(addresses6); ++addresses6) {
                 DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "binding6=%s\n", diminuto_ipc6_address2string(*addresses6, addresses6buffer, sizeof(addresses6buffer)));
             }
         } else {
-            diminuto_assert(0);
+            diminuto_panic();
         }
         free(interfaci);
     }
@@ -589,7 +589,7 @@ int main(int argc, char * argv[])
     if (Blocksize == (const char *)0) {
         /* Do nothing. */
     } else if (*diminuto_number_unsigned(Blocksize, &value) != '\0') {
-        diminuto_assert(0);
+        diminuto_panic();
     } else {
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "Blocksize=\"%s\"\n", Blocksize);
         blocksize = value;
@@ -614,7 +614,7 @@ int main(int argc, char * argv[])
     }
 
     buffer = (char *)malloc(blocksize);
-    diminuto_assert(buffer != (char *)0);
+    diminuto_contract(buffer != (char *)0);
 
 /*******************************************************************************
  * SERVICE PROVIDER - IPv4 - TCP
@@ -623,9 +623,9 @@ int main(int argc, char * argv[])
     if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 't')) {
 
          sock = diminuto_ipc4_stream_provider_generic(address4, port46, Interface, -1);
-         diminuto_assert(sock >= 0);
+         diminuto_contract(sock >= 0);
          rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-         diminuto_assert(rc >= 0);
+         diminuto_contract(rc >= 0);
          DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -637,9 +637,9 @@ int main(int argc, char * argv[])
     else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '4') && (Layer3 == 'u')) {
 
          sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
-         diminuto_assert(sock >= 0);
+         diminuto_contract(sock >= 0);
          rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-         diminuto_assert(rc >= 0);
+         diminuto_contract(rc >= 0);
          DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -651,9 +651,9 @@ int main(int argc, char * argv[])
     else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 't')) {
 
          sock = diminuto_ipc6_stream_provider_generic(address6, port46, Interface, -1);
-         diminuto_assert(sock >= 0);
+         diminuto_contract(sock >= 0);
          rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-         diminuto_assert(rc >= 0);
+         diminuto_contract(rc >= 0);
          DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -665,9 +665,9 @@ int main(int argc, char * argv[])
     else if (diminuto_ipc_is_ephemeral(rendezvous46) && (Layer2 == '6') && (Layer3 == 'u')) {
 
          sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
-         diminuto_assert(sock >= 0);
+         diminuto_contract(sock >= 0);
          rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-         diminuto_assert(rc >= 0);
+         diminuto_contract(rc >= 0);
          DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=provider end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -679,12 +679,12 @@ int main(int argc, char * argv[])
     else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 't')) {
 
         sock = diminuto_ipc4_stream_consumer_generic(server4, rendezvous46, address4, port46, Interface);
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
         rc = diminuto_ipc4_farend(sock, &datum4, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -696,9 +696,9 @@ int main(int argc, char * argv[])
     else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '4') && (Layer3 == 'u')) {
 
         sock = diminuto_ipc4_datagram_peer_generic(address4, port46, Interface);
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum4=%s datum46=%s\n", sock, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -710,12 +710,12 @@ int main(int argc, char * argv[])
     else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 't')) {
 
         sock = diminuto_ipc6_stream_consumer_generic(server6, rendezvous46, address6, port46, Interface);
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=stream sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
         rc = diminuto_ipc6_farend(sock, &datum6, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=far type=stream sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -727,9 +727,9 @@ int main(int argc, char * argv[])
     else if ((!diminuto_ipc_is_ephemeral(rendezvous46)) && (Layer2 == '6') && (Layer3 == 'u')) {
 
         sock = diminuto_ipc6_datagram_peer_generic(address6, port46, Interface);
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=consumer end=near type=datagram sock=%d datum6=%s datum46=%s\n", sock, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -741,13 +741,13 @@ int main(int argc, char * argv[])
     else if ((Layer2 == '4') && (Layer3 == 'g')) {
 
         sock = diminuto_ping4_datagram_peer();
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc4_source(sock, address4, port46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_set_interface(sock, interface);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc4_nearend(sock, &datum4, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d interface=%s datum4=%s datum46=%s\n", sock, interface, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -759,13 +759,13 @@ int main(int argc, char * argv[])
     else if ((Layer2 == '6') && (Layer3 == 'g')) {
 
         sock = diminuto_ping6_datagram_peer();
-        diminuto_assert(sock >= 0);
+        diminuto_contract(sock >= 0);
         rc = diminuto_ipc6_source(sock, address6, port46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_set_interface(sock, interface);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc6_nearend(sock, &datum6, &datum46);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "role=ping end=near type=datagram sock=%d interface=%s datum6=%s datum46=%s\n", sock, interface, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
 
     }
@@ -776,7 +776,7 @@ int main(int argc, char * argv[])
 
     else {
 
-        diminuto_assert(0);
+        diminuto_panic();
 
     }
 
@@ -788,10 +788,10 @@ int main(int argc, char * argv[])
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         while (!0) {
             fds = diminuto_mux_wait(&mux, -1);
-            diminuto_assert(fds > 0);
+            diminuto_contract(fds > 0);
             while (!0) {
                 ready = diminuto_mux_ready_accept(&mux);
                 if (ready < 0) {
@@ -803,12 +803,12 @@ int main(int argc, char * argv[])
                 if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
                     break;
                 }
-                diminuto_assert(fd >= 0);
-                diminuto_assert(!diminuto_ipc4_is_unspecified(&datum4));
-                diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
+                diminuto_contract(fd >= 0);
+                diminuto_contract(!diminuto_ipc4_is_unspecified(&datum4));
+                diminuto_contract(!diminuto_ipc_is_ephemeral(datum46));
                 DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum4=%s datum46=%s\n", fd, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                 rc = diminuto_mux_register_read(&mux, fd);
-                diminuto_assert(rc >= 0);
+                diminuto_contract(rc >= 0);
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
@@ -816,27 +816,27 @@ int main(int argc, char * argv[])
                     break;
                 }
                 input = diminuto_fd_read(fd, buffer, blocksize);
-                diminuto_assert(input >= 0);
+                diminuto_contract(input >= 0);
                 if (input == 0) {
                     rc = diminuto_ipc_close(fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                     DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
-                    diminuto_assert(output == input);
+                    diminuto_contract(output == input);
                     if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 }
             }
         }
         /* Can never reach here but if we did this is what we would do. */
-        diminuto_assert(fds == 0);
+        diminuto_contract(fds == 0);
         rc = diminuto_mux_unregister_accept(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         diminuto_mux_fini(&mux);
 
     }
@@ -849,10 +849,10 @@ int main(int argc, char * argv[])
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_accept(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         while (!0) {
             fds = diminuto_mux_wait(&mux, -1);
-            diminuto_assert(fds > 0);
+            diminuto_contract(fds > 0);
             while (!0) {
                 ready = diminuto_mux_ready_accept(&mux);
                 if (ready < 0) {
@@ -864,12 +864,12 @@ int main(int argc, char * argv[])
                 if ((fd < 0) && ((errno == EWOULDBLOCK) || (errno == EAGAIN))) {
                     break;
                 }
-                diminuto_assert(fd >= 0);
-                diminuto_assert(!diminuto_ipc6_is_unspecified(&datum6));
-                diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
+                diminuto_contract(fd >= 0);
+                diminuto_contract(!diminuto_ipc6_is_unspecified(&datum6));
+                diminuto_contract(!diminuto_ipc_is_ephemeral(datum46));
                 DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d datum6=%s datum46=%s\n", fd, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), diminuto_ipc_port2string(datum46, datum46buffer, sizeof(datum46buffer)));
                 rc = diminuto_mux_register_read(&mux, fd);
-                diminuto_assert(rc >= 0);
+                diminuto_contract(rc >= 0);
             }
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
@@ -877,27 +877,27 @@ int main(int argc, char * argv[])
                     break;
                 }
                 input = diminuto_fd_read(fd, buffer, blocksize);
-                diminuto_assert(input >= 0);
+                diminuto_contract(input >= 0);
                 if (input == 0) {
                     rc = diminuto_ipc_close(fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                     rc = diminuto_mux_unregister_read(&mux, fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                     DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=provider end=far type=stream sock=%d input=%zd\n", fd, input);
                 } else {
                     output = diminuto_fd_write(fd, buffer, input);
-                    diminuto_assert(output == input);
+                    diminuto_contract(output == input);
                     if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 }
             }
         }
         /* Can never reach here but if we did this is what we would do. */
-        diminuto_assert(fds == 0);
+        diminuto_contract(fds == 0);
         rc = diminuto_mux_unregister_accept(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         diminuto_mux_fini(&mux);
 
     }
@@ -912,17 +912,17 @@ int main(int argc, char * argv[])
             datum4 = DIMINUTO_IPC4_UNSPECIFIED;
             datum46 = DIMINUTO_IPC_EPHEMERAL;
             input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
-            diminuto_assert(input > 0);
-            diminuto_assert(!diminuto_ipc4_is_unspecified(&datum4));
-            diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
+            diminuto_contract(input > 0);
+            diminuto_contract(!diminuto_ipc4_is_unspecified(&datum4));
+            diminuto_contract(!diminuto_ipc_is_ephemeral(datum46));
             output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, datum4, datum46, 0);
-            diminuto_assert(output == input);
+            diminuto_contract(output == input);
             if (Verbose) { stamp(tee); fprintf(tee, "%s:%d \"", diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
             if (Debug) { diminuto_dump(tee, buffer, input); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
 
     }
 
@@ -936,17 +936,17 @@ int main(int argc, char * argv[])
             datum6 = DIMINUTO_IPC6_UNSPECIFIED;
             datum46 = DIMINUTO_IPC_EPHEMERAL;
             input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
-            diminuto_assert(input > 0);
-            diminuto_assert(!diminuto_ipc6_is_unspecified(&datum6));
-            diminuto_assert(!diminuto_ipc_is_ephemeral(datum46));
+            diminuto_contract(input > 0);
+            diminuto_contract(!diminuto_ipc6_is_unspecified(&datum6));
+            diminuto_contract(!diminuto_ipc_is_ephemeral(datum46));
             output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, datum6, datum46, 0);
-            diminuto_assert(output == input);
+            diminuto_contract(output == input);
             if (Verbose) { stamp(tee); fprintf(tee, "[%s]:%d \"", diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
             if (Debug) { diminuto_dump(tee, buffer, input); }
         }
         /* Can never reach here but if we did this is what we would do. */
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
 
     }
 
@@ -958,12 +958,12 @@ int main(int argc, char * argv[])
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_mux_register_read(&mux, source);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
-            diminuto_assert(fds > 0);
+            diminuto_contract(fds > 0);
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
                 if (fd < 0) {
@@ -971,32 +971,32 @@ int main(int argc, char * argv[])
                 }
                 if (fd == sock) {
                     input = diminuto_fd_read(sock, buffer, blocksize);
-                    diminuto_assert(input > 0);
+                    diminuto_contract(input > 0);
                     output = diminuto_fd_write(sink, buffer, input);
-                    diminuto_assert(output == input);
+                    diminuto_contract(output == input);
                     total -= output;
                     if (Verbose) { stamp(tee); fprintf(tee, "%d \"", fd); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
-                    diminuto_assert(input >= 0);
+                    diminuto_contract(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=stream sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
-                        diminuto_assert(rc >= 0);
+                        diminuto_contract(rc >= 0);
                         eof = !0;
                     } else {
                         output = diminuto_fd_write(sock, buffer, input);
-                        diminuto_assert(output == input);
+                        diminuto_contract(output == input);
                         total += output;
                     }
                 } else {
-                    diminuto_assert(0);
+                    diminuto_panic();
                 }
             }
         }
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         diminuto_mux_fini(&mux);
     }
 
@@ -1008,12 +1008,12 @@ int main(int argc, char * argv[])
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_mux_register_read(&mux, source);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
-            diminuto_assert(fds > 0);
+            diminuto_contract(fds > 0);
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
                 if (fd < 0) {
@@ -1023,38 +1023,38 @@ int main(int argc, char * argv[])
                     datum4 = DIMINUTO_IPC4_UNSPECIFIED;
                     datum46 = DIMINUTO_IPC_EPHEMERAL;
                     input = diminuto_ipc4_datagram_receive_generic(sock, buffer, blocksize, &datum4, &datum46, 0);
-                    diminuto_assert(input > 0);
+                    diminuto_contract(input > 0);
 #if 0
-                    diminuto_assert(diminuto_ipc4_compare(&datum4, &server4) == 0);
+                    diminuto_contract(diminuto_ipc4_compare(&datum4, &server4) == 0);
 #endif
-                    diminuto_assert(datum46 == rendezvous46);
+                    diminuto_contract(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
-                    diminuto_assert(output == input);
+                    diminuto_contract(output == input);
                     total -= output;
                     if (Verbose) { stamp(tee); fprintf(tee, "%s:%d \"", diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
-                    diminuto_assert(input >= 0);
+                    diminuto_contract(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
-                        diminuto_assert(rc >= 0);
+                        diminuto_contract(rc >= 0);
                         eof = !0;
                     } else {
                         output = diminuto_ipc4_datagram_send_generic(sock, buffer, input, server4, rendezvous46, 0);
-                        diminuto_assert(output == input);
+                        diminuto_contract(output == input);
                         total += output;
                     }
                 } else {
-                    diminuto_assert(0);
+                    diminuto_panic();
                 }
             }
         }
         rc = diminuto_mux_unregister_read(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         diminuto_mux_fini(&mux);
 
     }
@@ -1067,12 +1067,12 @@ int main(int argc, char * argv[])
 
         diminuto_mux_init(&mux);
         rc = diminuto_mux_register_read(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_mux_register_read(&mux, source);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         while ((!eof) || (total > 0)) {
             fds = diminuto_mux_wait(&mux, -1);
-            diminuto_assert(fds > 0);
+            diminuto_contract(fds > 0);
             while (!0) {
                 fd = diminuto_mux_ready_read(&mux);
                 if (fd < 0) {
@@ -1082,38 +1082,38 @@ int main(int argc, char * argv[])
                     datum6 = DIMINUTO_IPC6_UNSPECIFIED;
                     datum46 = DIMINUTO_IPC_EPHEMERAL;
                     input = diminuto_ipc6_datagram_receive_generic(sock, buffer, blocksize, &datum6, &datum46, 0);
-                    diminuto_assert(input > 0);
+                    diminuto_contract(input > 0);
 #if 0
-                    diminuto_assert(diminuto_ipc6_compare(&datum6, &server6) == 0);
+                    diminuto_contract(diminuto_ipc6_compare(&datum6, &server6) == 0);
 #endif
-                    diminuto_assert(datum46 == rendezvous46);
+                    diminuto_contract(datum46 == rendezvous46);
                     output = diminuto_fd_write(sink, buffer, input);
-                    diminuto_assert(output == input);
+                    diminuto_contract(output == input);
                     total -= output;
                     if (Verbose) { stamp(tee); fprintf(tee, "[%s]:%d \"", diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)), datum46); emit(tee, buffer, input); fputs("\"\n", tee); }
                     if (Debug) { diminuto_dump(tee, buffer, input); }
                 } else if (fd == source) {
                     input = diminuto_fd_read(source, buffer, blocksize);
-                    diminuto_assert(input >= 0);
+                    diminuto_contract(input >= 0);
                     if (input == 0) {
                         DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=consumer type=datagram sock=%d input=%zd\n", fd, input);
                         rc = diminuto_mux_unregister_read(&mux, source);
-                        diminuto_assert(rc >= 0);
+                        diminuto_contract(rc >= 0);
                         eof = !0;
                     } else {
                         output = diminuto_ipc6_datagram_send_generic(sock, buffer, input, server6, rendezvous46, 0);
-                        diminuto_assert(output == input);
+                        diminuto_contract(output == input);
                         total += output;
                     }
                 } else {
-                    diminuto_assert(0);
+                    diminuto_panic();
                 }
             }
         }
         rc = diminuto_mux_unregister_read(&mux, sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_ipc_close(sock);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         diminuto_mux_fini(&mux);
 
     }
@@ -1130,18 +1130,18 @@ int main(int argc, char * argv[])
         ss = 0;
         while (!0) {
             output = diminuto_ping4_datagram_send(sock, server4, ii, ss);
-            diminuto_assert(output > 0);
+            diminuto_contract(output > 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc4_address2string(server4, server4buffer, sizeof(server4buffer)));
             do {
                 input = diminuto_ping4_datagram_receive(sock, &datum4, &type, &code, &id, &sn, &ttl, &elapsed);
-                diminuto_assert(input >= 0);
+                diminuto_contract(input >= 0);
             } while (input == 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u ttl=%u elapsed=%lfs from=%s\n", id, sn, ttl, (double)elapsed / delay, diminuto_ipc4_address2string(datum4, datum4buffer, sizeof(datum4buffer)));
 #if 0
-            diminuto_assert(diminuto_ipc4_compare(&datum4, &server4) == 0);
+            diminuto_contract(diminuto_ipc4_compare(&datum4, &server4) == 0);
 #endif
-            diminuto_assert(id == ii);
-            diminuto_assert(sn == ss);
+            diminuto_contract(id == ii);
+            diminuto_contract(sn == ss);
             ss += 1;
             diminuto_delay(delay, 0);
         }
@@ -1160,18 +1160,18 @@ int main(int argc, char * argv[])
         ss = 0;
         while (!0) {
             output = diminuto_ping6_datagram_send(sock, server6, ii, ss);
-            diminuto_assert(output > 0);
+            diminuto_contract(output > 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=request id=0x%4.4x sn=%u to=%s\n", ii, ss, diminuto_ipc6_address2string(server6, server6buffer, sizeof(server6buffer)));
             do {
                 input = diminuto_ping6_datagram_receive(sock, &datum6, &type, &code, &id, &sn, &elapsed);
-                diminuto_assert(input >= 0);
+                diminuto_contract(input >= 0);
             } while (input == 0);
             DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "role=ping action=reply id=0x%4.4x sn=%u elapsed=%lfs from=%s\n", id, sn, (double)elapsed / delay, diminuto_ipc6_address2string(datum6, datum6buffer, sizeof(datum6buffer)));
 #if 0
-            diminuto_assert(diminuto_ipc6_compare(&datum6, &server6) == 0);
+            diminuto_contract(diminuto_ipc6_compare(&datum6, &server6) == 0);
 #endif
-            diminuto_assert(id == ii);
-            diminuto_assert(sn == ss);
+            diminuto_contract(id == ii);
+            diminuto_contract(sn == ss);
             ss += 1;
             diminuto_delay(delay, 0);
         }
@@ -1184,7 +1184,7 @@ int main(int argc, char * argv[])
 
     else {
 
-        diminuto_assert(0);
+        diminuto_panic();
 
     }
 

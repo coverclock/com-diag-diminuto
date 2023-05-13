@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements assert and expect that use the Diminuto log mechanism.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -45,6 +45,20 @@
  * @param fatal if true, causes an abort.
  */
 extern void diminuto_assert_f(int condition, const char * string, const char * file, int line, int error, int fatal);
+
+/**
+ * @def diminuto_panic
+ * Unconditionally cause a fatal error and try to dump core. Note that asserts
+ * can be suppressed by a compile-time option, but panics cannot.
+ */
+#define diminuto_panic() (diminuto_assert_f(0, "PANIC", __FILE__, __LINE__, errno, !0))
+
+/**
+ * @def diminuto_contract
+ * If @a _CONDITION_ is false then call diminuto_assert_f to abort. Note that
+ * asserts can be suppressed by a compile-time option, but contracts cannot.
+ */
+#define diminuto_contract(_CONDITION_) ((!(_CONDITION_)) ? diminuto_assert_f(0, #_CONDITION_, __FILE__, __LINE__, errno, !0) : ((void)0))
 
 /*
  * End of idempotent section.

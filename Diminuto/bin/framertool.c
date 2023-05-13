@@ -45,7 +45,6 @@
  * end) air interface.
  */
 
-#include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"

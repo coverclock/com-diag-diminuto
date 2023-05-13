@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Manipulate serial-ish ports.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -294,12 +294,12 @@ int main(int argc, char * argv[])
     hertz = diminuto_frequency();
 
     action.sa_handler = handler;
-    diminuto_assert(sigaction(SIGPIPE, &action, (struct sigaction *)0) >= 0);
-    diminuto_assert(sigaction(SIGINT, &action, (struct sigaction *)0) >= 0);
-    diminuto_assert(sigaction(SIGQUIT, &action, (struct sigaction *)0) >= 0);
-    diminuto_assert(sigaction(SIGTERM, &action, (struct sigaction *)0) >= 0);
-    diminuto_assert(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
-    diminuto_assert(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGPIPE, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGINT, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGQUIT, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGTERM, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
+    diminuto_contract(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
         forward ? "implement-loopback" : backward ? "test-loopback" : "interactive",
@@ -316,30 +316,30 @@ int main(int argc, char * argv[])
         modulo);
 
     fd = open(device, (O_RDWR | O_NOCTTY | (nonblocking ? O_NONBLOCK : 0)));
-    diminuto_assert(fd >= 0);
-    diminuto_assert(fd != STDIN_FILENO);
-    diminuto_assert(fd != STDOUT_FILENO);
+    diminuto_contract(fd >= 0);
+    diminuto_contract(fd != STDIN_FILENO);
+    diminuto_contract(fd != STDOUT_FILENO);
 
     rc = ioctl(fd, TIOCEXCL);
-    diminuto_assert(rc == 0);
+    diminuto_contract(rc == 0);
 
     rc = fcntl(fd, F_SETFL, (O_RDONLY | (nonblocking ? O_NONBLOCK : 0))); /* Because screen(1) does it. */
-    diminuto_assert(rc == 0);
+    diminuto_contract(rc == 0);
 
     rc = ioctl(fd, TCFLSH, TCIOFLUSH);
-    diminuto_assert(rc == 0);
+    diminuto_contract(rc == 0);
 
     rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
-    diminuto_assert(rc == 0);
+    diminuto_contract(rc == 0);
 
     rc = diminuto_serial_raw(fd);
-    diminuto_assert(rc == 0);
+    diminuto_contract(rc == 0);
 
     if (rawterminal) {
         rc = diminuto_serial_raw(STDIN_FILENO);
-        diminuto_assert(rc == 0);
+        diminuto_contract(rc == 0);
         rc = diminuto_serial_raw(STDOUT_FILENO);
-        diminuto_assert(rc == 0);
+        diminuto_contract(rc == 0);
     }
 
     bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
@@ -358,10 +358,10 @@ int main(int argc, char * argv[])
          */
 
         fp = fdopen(fd, "r+");
-        diminuto_assert(fp != (FILE *)0);
+        diminuto_contract(fp != (FILE *)0);
 
         rc = diminuto_serial_unbuffered(fp);
-        diminuto_assert(rc == 0);
+        diminuto_contract(rc == 0);
 
         while (!done) {
             input = fgetc(fp);
@@ -413,10 +413,10 @@ int main(int argc, char * argv[])
          */
 
         fp = fdopen(fd, "r+");
-        diminuto_assert(fp != (FILE *)0);
+        diminuto_contract(fp != (FILE *)0);
 
         rc = diminuto_serial_unbuffered(fp);
-        diminuto_assert(rc == 0);
+        diminuto_contract(rc == 0);
 
         while (!done) {
             fputc(output, fp);
@@ -492,28 +492,28 @@ int main(int argc, char * argv[])
          * data received from device is written to standard output.
          */
 
-        diminuto_assert(maximum > 0);
+        diminuto_contract(maximum > 0);
         buffer = malloc(maximum);
-        diminuto_assert(buffer != (void *)0);
+        diminuto_contract(buffer != (void *)0);
         diminuto_mux_init(&mux);
-        diminuto_assert(fd != STDIN_FILENO);
-        diminuto_assert(fd != STDOUT_FILENO);
+        diminuto_contract(fd != STDIN_FILENO);
+        diminuto_contract(fd != STDOUT_FILENO);
         rc = diminuto_mux_register_read(&mux, fd);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         if (!noinput) {
             rc = diminuto_mux_register_read(&mux, STDIN_FILENO);
-            diminuto_assert(rc >= 0);
+            diminuto_contract(rc >= 0);
         }
         while (!done) {
             if (carrierdetect) {
                 while (!0) {
                     rc = diminuto_serial_status(fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                     if (rc) {
                         break;
                     }
                     rc = diminuto_serial_wait(fd);
-                    diminuto_assert(rc >= 0);
+                    diminuto_contract(rc >= 0);
                 }
             }
             fds = diminuto_mux_wait(&mux, -1);
@@ -527,8 +527,8 @@ int main(int argc, char * argv[])
                 } else if (ready == fd) {
                     reads = diminuto_fd_read(fd, buffer, maximum);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", fd, reads);
-                    diminuto_assert(reads >= 0);
-                    diminuto_assert(reads <= maximum);
+                    diminuto_contract(reads >= 0);
+                    diminuto_contract(reads <= maximum);
                     if (reads == 0) {
                         done = !0;
                         break;
@@ -542,12 +542,12 @@ int main(int argc, char * argv[])
                     }
                     writes = diminuto_fd_write(STDOUT_FILENO, buffer, reads);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", STDOUT_FILENO, writes);
-                    diminuto_assert(writes == reads);
+                    diminuto_contract(writes == reads);
                 } else if (ready == STDIN_FILENO) {
                     reads = diminuto_fd_read(STDIN_FILENO, buffer, maximum);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", STDIN_FILENO, reads);
-                    diminuto_assert(reads >= 0);
-                    diminuto_assert(reads <= maximum);
+                    diminuto_contract(reads >= 0);
+                    diminuto_contract(reads <= maximum);
                     if (reads == 0) {
                         done = !0;
                         break;
@@ -560,17 +560,17 @@ int main(int argc, char * argv[])
                         fputs("\n", stderr);
                     }
                     writes = diminuto_fd_write(fd, buffer, reads);
-                    diminuto_assert(writes == reads);
+                    diminuto_contract(writes == reads);
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "wrote(%d)=%zu\n", fd, writes);
                 } else {
-                    diminuto_assert(0);
+                    diminuto_panic();
                 }
             }
         }
         rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
         rc = diminuto_mux_unregister_read(&mux, fd);
-        diminuto_assert(rc >= 0);
+        diminuto_contract(rc >= 0);
 
     }
 

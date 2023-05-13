@@ -10,10 +10,10 @@
  * This implements the Framer feature.
  */
 
-#include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_fletcher.h"
+#include "com/diag/diminuto/diminuto_framer.h"
 #include "com/diag/diminuto/diminuto_kermit.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
@@ -554,13 +554,13 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case STORE:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         break;
 
     case LENGTH:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         /*
@@ -574,7 +574,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case SEQUENCE:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         /*
@@ -587,7 +587,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case FLETCHER:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         if ((that->sum[0] != that->a) || (that->sum[1] != that->b)) {
@@ -613,7 +613,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case PAYLOAD:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         that->crc = diminuto_kermit_16(that->buffer, that->length0, 0);
@@ -622,7 +622,7 @@ diminuto_framer_state_t diminuto_framer_machine(diminuto_framer_t * that, int to
         break;
 
     case KERMIT:
-        diminuto_assert(that->limit > 0);
+        diminuto_contract(that->limit > 0);
         *(that->here++) = ch;
         --(that->limit);
         if (!diminuto_kermit_firstisvalid(that->check[0])) {

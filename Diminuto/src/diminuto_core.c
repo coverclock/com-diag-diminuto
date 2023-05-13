@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2010 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Core feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -76,7 +76,7 @@ void diminuto_core_fatal(void)
     diminuto_perror("diminuto_core_fatal: *NULL");
 
     _exit(255);
-    diminuto_perror("diminuto_core_fatal: _exit(1)");
+    diminuto_perror("diminuto_core_fatal: _exit(255)");
 
     /*
      * THOU SHALT NOT PASS!
