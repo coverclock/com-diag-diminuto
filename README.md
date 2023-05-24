@@ -857,15 +857,15 @@ then look it up in the generated HTML, man, or PDF documentation.
 header or .h files. Their source or .c files may have some documentation
 regarding any private API they might have.)
 
-These PDFs of
-[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf)
+These PDFs of the
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
 and associated
-[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf)
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
 were built from Diminuto's embedded Doxygen comments on
-2023-04-19
+2023-05-24
 using tag
-```96.0.2```
-. They will not reflect changes made to the library since then.
+```100.1.0```
+. They will not reflect changes made since then.
 
 The unit tests (```Diminuto/tst```),  functional tests
 (```Diminuto/fun```), and command line utilities (```Diminuto/bin```)
