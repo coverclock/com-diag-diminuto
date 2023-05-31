@@ -302,6 +302,7 @@ Similarly, environmental variables have qualified names like
 * escape - collapse and expand escape sequences in strings.
 * fletcher - implement the Fletcher-16 checksum.
 * hamming - implement the Hamming(8,4) code.
+* kermit - implement the Kermit-16 a.k.a. CRC-CCITT cyclic redundancy check.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
 * number - alternative interfaces to strtol(3) and strtoul(3).
 * phex - emit printable and unprintable characters in a printable form.
