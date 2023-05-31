@@ -230,7 +230,7 @@ look like this
     #include "com/diag/grandote/Foo.h"
     #include "com/diag/lariat/Foo.h"
 
-in the event that different projects have an unrelated feature named Foo.
+in the event that different projects each have a feature named Foo.
 
 The prefix ```diminuto_``` on the name of each header file,
 as in ```diminuto_foo.h```, along with the qualified path name,
@@ -543,14 +543,14 @@ The command ```modprobe ipv6``` also worked albeit non-persistently.
     sudo su
     echo "ipv6" >> /etc/modules
 
-On the StarFive VisionFive 2 SBC, IPv6 isn't even built as a module.
+On the StarFive VisionFive 2 SBC, IPv6 isn't even built as a module;
 I had to build a new kernel.
 
 ## SCTP
 
 Stream Control Transmission Protocol (SCTP) is a bit of an outlier in the
 pantheon of internet protocols build on top of IP. While I would expect
-all internet routers to support TCP and UDP, I wouldn't expect hardly
+all internet routers to support TCP and UDP, I wouldn't expect
 any to support SCTP, a protocol built for Signaling System 7 (SS7), a
 protocol stack used in the Public Switched Telephone Network (PSTN).
 SCTP combines the fixed boundry size of UDP with the guaranteed delivery
@@ -560,7 +560,7 @@ While SCTP can't be relied upon in the public internet, I find it useful
 when used with Unix domain (Local) sockets, and its use is supported by
 Diminuto. The protocol is enabled in the Linux kernel by default on the
 Raspberry Pi. But when I rebuilt the Vision 2 kernel to enable IPv6,
-I had to also enable SCTP, which, like IPv6, was not enabled by default.
+I also had to enable SCTP, which, like IPv6, was not enabled by default.
 
 If it was built as a module, these commands might work.
 
@@ -858,15 +858,15 @@ then look it up in the generated HTML, man, or PDF documentation.
 header or .h files. Their source or .c files may have some documentation
 regarding any private API they might have.)
 
-These PDFs of
-[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf)
+These PDFs of the
+[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
 and associated
-[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf)
+[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
 were built from Diminuto's embedded Doxygen comments on
-2023-04-19
+2023-05-24
 using tag
-```96.0.2```
-. They will not reflect changes made to the library since then.
+```100.1.0```
+. They will not reflect changes made since then.
 
 The unit tests (```Diminuto/tst```),  functional tests
 (```Diminuto/fun```), and command line utilities (```Diminuto/bin```)
