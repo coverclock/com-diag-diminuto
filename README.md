@@ -877,7 +877,7 @@ be unit tested.
 # Remarks
 
 Diminuto started out many years ago as a project to build a minimal
-Linux-based embedded system for an ARMv4 processor that seems laughbly
+Linux-based embedded system for an ARMv4 processor that seems laughably
 small now. It consisted of a stripped down 2.4 (later, 2.6) Linux
 kernel with just the stuff I needed, uClibc, Busybox, and an application.
 The application was built around a small C-based library I developed that
