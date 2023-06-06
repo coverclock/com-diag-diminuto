@@ -199,6 +199,18 @@ aarch64-linux-gnu-gcc-11
 aarch64-linux-gnu    
 little-endian    
 
+Raspberry Pi Zero W Rev 1.1 ARMv6-compatible processor rev 7 (v6l) BCM2835 9000c1    
+armv6l x1    
+Raspbian GNU/Linux 11 (bullseye)    
+Linux 6.1.21+    
+gcc (Raspbian 10.2.1-6+rpi1) 10.2.1 20210110    
+ldd (Debian GLIBC 2.31-13+rpt2+rpi1+deb11u5) 2.31    
+GNU ld (GNU Binutils for Raspbian) 2.35.2    
+GNU Make 4.3    
+arm-linux-gnueabihf-gcc-10    
+arm-linux-gnueabihf    
+little-endian    
+
 # Features
 
 Given a feature I call Foo (or foo),

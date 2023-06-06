@@ -36,16 +36,18 @@ static void * body(void * arg)
         DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock);
 
             if (shared >= LIMIT) {
-                COMMENT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                CHECKPOINT("%s saw  %d\n", (intptr_t)arg ? "odd " : "even", shared);
                 done = !0;
             } else if ((shared % 2) == (intptr_t)arg) {
-                COMMENT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
+                CHECKPOINT("%s sees %d\n", (intptr_t)arg ? "odd " : "even", shared);
                 ++shared;
             } else {
-                diminuto_yield();
+                COMMENT("%s\n", (intptr_t)arg ? "odd " : "even");
             }
 
         DIMINUTO_SERIALIZED_SECTION_END;
+
+        diminuto_yield();
 
     }
 
@@ -53,6 +55,8 @@ static void * body(void * arg)
 }
 int main(void)
 {
+    SETLOGMASK();
+
     {
         TEST();
 #if !defined(COM_DIAG_DIMINUTO_SERIALIZED_SECTION)
