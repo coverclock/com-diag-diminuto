@@ -80,15 +80,58 @@ of the library that are especially useful in shell scripts.
 
 See the Features section below for a more complete list.
 
+# Pro Tip
+
+When you link against the library or use any of the binaries or scripts
+that are artifacts of the build process, the linker and the shell have
+to know where to find those artifacts. Furthermore, some of the binaries
+or scripts may depend upon values in your environment to work correctly.
+
+You need to set the ```LANG``` (Language) environmental variable to
+set your locale to use the U.S. version of UTF-8. This allows applications
+to correctly display Unicode symbols like the degree symbol and the
+plus/minus symbol. If you use the ```bash``` shell (as I do), you can put
+the following line in your ```.profile``` in your home directory so that
+it is set everytime you log in (as I do). Or you can just set it when you
+need to.
+
+    export LANG=en_US.UTF-8
+
+If you don't install libraries, binaries, and scripts in one of the usual
+system locations like ```/usr/local/lib``` and ```/usr/local/bin```
+(I typically don't), you can temporarily modify your environment
+so that the linker and your shell can find them. This bash include
+script is an artifact of the build process and sets the ```PATH``` and
+```LD_LIBRARY_PATH``` environmental variables and exports them.
+
+    . ~/src/com-diag-diminuto/Diminuto/out/host/bin/setup
+
+The libraries, binaries, and scripts make use of the Diminuto logging
+system. The importance of log messages is classified into eight severity
+levels, ranging from DEBUG (log mask 0x01, which may emit a firehose of
+information) to EMERGENCY (log mask 0x80, in which case your system is
+probably in deep trouble). You can control which level of messages are
+emitted, either to standard error (if your application has a controlling
+terminal), or to the system log (if your application, like a daemon,
+does not). One way to control this is to set the log mask in your environment.
+
+    export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
+
+The log mask value is an eight-bit number in decimal, hexadecimal, or
+even octal. In addition, the string ```~0``` can be used to enable all
+log levels, equivalent to ```255```, ```0xff```, or ```0377```. (Generally
+I find ```0xfe``` to be a good starting point.)
+
 # Details
 
-Diminuto isn't intended to be portable. It is specifically designed to
-support the kind of systems programming efforts in the Linux/GNU environment
-that I am routinely called upon to do. It depends on specific features of
-the Linux kernel, the GNU libraries, and even the GNU compiler. In addition,
-it assumes a ```char``` is one octet so that ```sizeof()``` returns a ```size_t``` in octets,
-and that integer operations are performed using two's complement arithmetic;
-none of these is a given in C.
+Diminuto isn't intended to be portable. It is specifically designed
+to support the kind of systems programming efforts in the Linux/GNU
+environment that I am routinely called upon to do. It depends on
+specific features of the Linux kernel, the GNU libraries, and even
+the GNU compiler. In addition, it assumes a ```char``` is one octet so
+that ```sizeof()``` returns a ```size_t``` in octets, and that integer
+operations are performed using two's complement arithmetic; none of
+these is a given in C.
 
 For some projects over the years, I have ported Diminuto (as it existed
 at that time) to uClibc (a stripped down C library used by Buildroot),
