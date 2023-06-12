@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Print Hex (PHex) feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -67,6 +67,9 @@ void diminuto_phex_emit(FILE * fp, unsigned char ch, size_t length, int nl, int 
         diminuto_phex_limit(fp, length, 2, currentp, endp);
         fputc('\\', fp);
         fputc(ch, fp);
+    } else if ((' ' <= ch) && (ch <= '~') && hex) {
+        diminuto_phex_limit(fp, length, 4, currentp, endp);
+        fprintf(fp, "\\x%2.2x", ch);
     } else if ((' ' <= ch) && (ch <= '~')) {
         diminuto_phex_limit(fp, length, 1, currentp, endp);
         fputc(ch, fp);
