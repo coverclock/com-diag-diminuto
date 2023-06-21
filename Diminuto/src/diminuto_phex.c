@@ -67,9 +67,11 @@ void diminuto_phex_emit(FILE * fp, unsigned char ch, size_t length, int nl, int 
         diminuto_phex_limit(fp, length, 2, currentp, endp);
         fputc('\\', fp);
         fputc(ch, fp);
+#if 0
     } else if ((' ' <= ch) && (ch <= '~') && hex) {
         diminuto_phex_limit(fp, length, 4, currentp, endp);
         fprintf(fp, "\\x%2.2x", ch);
+#endif
     } else if ((' ' <= ch) && (ch <= '~')) {
         diminuto_phex_limit(fp, length, 1, currentp, endp);
         fputc(ch, fp);
