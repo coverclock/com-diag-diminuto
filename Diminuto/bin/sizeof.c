@@ -81,6 +81,8 @@ typedef struct BitfieldIntChar { int bit1 : 1; char bit2 : 1; } bitfield_intchar
 typedef struct BitfieldCharInt { char bit1 : 1; int bit2 : 1; } bitfield_charint_t;
 typedef struct BitfieldIntInt { int bit1 : 1; int bit2 : 1; } bitfield_intint_t;
 
+typedef uint8_t (array_punchcard_t)[80];
+
 #if PROBLEMATIC
 typedef void (function_t)(void);
 
@@ -182,6 +184,7 @@ int main(void)
     printissigned(diminuto_lld_t);
     printisunsigned(diminuto_llu_t);
     printissigned(diminuto_fd_t);
+    printsizeofnoninteger(array_punchcard_t);
 #if PROBLEMATIC
     printsizeofnoninteger(struct_zero_t);
     printsizeofnoninteger(array_zero_t);
