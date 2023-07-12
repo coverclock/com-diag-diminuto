@@ -269,7 +269,7 @@ enum DiminutoLogConstants {
     /**
      * This defines the maximum size of the log buffer.
      */
-    DIMINUTO_LOG_BUFFER_MAXIMUM = 1024,
+    DIMINUTO_LOG_BUFFER_MAXIMUM = 8192,
     /**
      * This defines the maximum size of a host name.
      * RFC1035 and RFC2181 restrict a fully qualified domain name
