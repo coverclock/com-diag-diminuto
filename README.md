@@ -131,7 +131,9 @@ specific features of the Linux kernel, the GNU libraries, and even
 the GNU compiler. In addition, it assumes a ```char``` is one octet so
 that ```sizeof()``` returns a ```size_t``` in octets, and that integer
 operations are performed using two's complement arithmetic; none of
-these is a given in C.
+these is a given in C. It also assumes that character encoding is
+ASCII (applications may use other encodings, such as Unicode, as long
+as they keep it to themselves).
 
 For some projects over the years, I have ported Diminuto (as it existed
 at that time) to uClibc (a stripped down C library used by Buildroot),
