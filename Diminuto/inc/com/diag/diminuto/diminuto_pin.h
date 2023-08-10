@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides an interface to handle GPIO pins via the /sys file system.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -255,7 +255,6 @@ static inline int diminuto_pin_unexport_ignore(int pin)
 
 /**
  * Ask that the specified GPIO pin be configured to be active low or high.
- * This is only useful if the pin is wired to produce an interrupt.
  * @param pin identifies the pin by number from the data sheet.
  * @param high if !0 configures the pin for active high, else active low.
  * @return >=0 for success, <0 for error with errno set.
