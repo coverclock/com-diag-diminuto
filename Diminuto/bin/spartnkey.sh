@@ -5,7 +5,7 @@
 # https://github.com/coverclock/com-diag-diminuto
 # Converts the start and duration numbers from a Thingstream
 # PointPerfect SPARTNKEY to GPS Week Number (WNO) and Time Of Week
-# (TOW).
+# (TOW) that can be used for a UBX-RXM-SPARTNKEY message.
 
 PROGRAM=$(basename $0)
 YY=${1}
@@ -15,13 +15,14 @@ HH=${4}
 NN=${5}
 SS="00"
 
-DURSECONDS=2419200
-GPSSECONDS=$(epochseconds 1980 01 06 00 00 00)
-EXPSECONDS=$(epochseconds ${YY} ${MM} ${DD} ${HH} ${NN} ${SS})
-BGNSECONDS=$((${EXPSECONDS} + 1 - ${DURSECONDS}))
-WNOSECONDS=$((${BGNSECONDS} - ${GPSSECONDS}))
+DURSECONDS=$((60 * 60 * 24 * 28))
 WEKSECONDS=$((60 * 60 * 24 * 7))
+GPSSECONDS=$(epochseconds 1980 01 06)
+EXPSECONDS=$(epochseconds ${YY} ${MM} ${DD} ${HH} ${NN} ${SS})
+BGNSECONDS=$((${EXPSECONDS} - ${DURSECONDS} + 1))
+WNOSECONDS=$((${BGNSECONDS} - ${GPSSECONDS}))
+
 WNO=$((${WNOSECONDS} / ${WEKSECONDS}))
 TOW=$((${WNOSECONDS} % ${WEKSECONDS}))
 
-echo WNO ${WNO} TOW ${TOW}
+echo ${PROGRAM}:  WNO ${WNO} TOW ${TOW}
