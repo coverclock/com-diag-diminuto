@@ -20,21 +20,21 @@
 #
 # USAGE
 #
-# posixseconds [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND.[FRACTION] [ -TIME:ZONE ] ] ] ] ] ] ]
+# posixtime [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND.[FRACTION] [ -TIME:ZONE ] ] ] ] ] ] ]
 #
 # EXAMPLES
 #
-# posixseconds
+# posixtime
 #
-# posixseconds 1970
+# posixtime 1970
 #
-# posixseconds 1980 01 06
+# posixtime 1980 01 06
 #
-# posixseconds 2023 08 10 11 16 00.999 -07:00
+# posixtime 2023 08 10 11 16 00.999 -07:00
 #
 
 if [[ $# == 0 ]]; then
-    set -- $(date +"%Y %m %d %H %M %S.%N %:z")
+    set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
 fi
 
 # It's impossible for all of the positional parameters to be unset

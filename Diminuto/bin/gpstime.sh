@@ -29,7 +29,7 @@ LEPLST="
 PGMNAM=$(basename $0)
 
 if [[ $# == 0 ]]; then
-    set -- $(date +"%Y %m %d %H %M %S %:z")
+    set -- $(date -u +"%Y %m %d %H %M %S %:z")
 fi
 
 # It's impossible for all of the positional parameters to be unset
@@ -43,13 +43,16 @@ NN=${5:-"00"}
 SS=${6:-"00"}
 TZ=${7:-"-00:00"}
 
-GPSEPO=$(posixseconds 1980 01 06)
+# GPS Time epoch is 1980-01-06 00:00:00 +00:00 which is the first Sunday
+# at the start of the first GPS week.
+
+GPSEPO=$(posixtime 1980 01 06)
 if (( $? != 0 )); then
     echo "${PGMNAM}: 1980 01 06 failed!" 1>&2
     exit 1
 fi
 
-POSSEC=$(posixseconds ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ})
+POSSEC=$(posixtime ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ})
 if (( $? != 0 )); then
     echo "${PGMNAM}: ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ} failed!" 1>&2
     exit 1
@@ -62,13 +65,16 @@ fi
 
 GPSSEC=$((${POSSEC} - ${GPSEPO}))
 
+# GPS Time does not include the leap seconds that have occurred since
+# its epoch (but it does include the ones that occurred before its epoch).
+
 for LEPDAT in ${LEPLST}; do
     set -- $(echo ${LEPDAT} | tr ':' ' ')
     YEAR=${1}
     MONTH=${2}
     DAY=${3}
     DELTA=${4}
-    LEPSEC=$(posixseconds ${YEAR} ${MONTH} ${DAY})
+    LEPSEC=$(posixtime ${YEAR} ${MONTH} ${DAY})
     if (( $? != 0 )); then
         echo "${PGMNAM}: ${YEAR} ${MONTH} ${DAY} failed!" 1>&2
         exit 1
@@ -78,7 +84,13 @@ for LEPDAT in ${LEPLST}; do
     fi
 done
 
+# GPS Time is kept as a week number (WNO) since its epoch, and the number
+# of seconds that have elapsed since the start of current week, which is the
+# time of week (TOW).
+
 GPSWNO=$((${GPSSEC} / 604800))
 GPSTOW=$((${GPSSEC} % 604800))
 
-echo sec ${GPSSEC} wno ${GPSWNO} tow ${GPSTOW}
+echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${TZ} ${GPSSEC}sec ${GPSWNO}wno ${GPSTOW}tow $(dhhmmss ${GPSTOW}) 1>&2
+
+echo ${GPSSEC} ${GPSWNO} ${GPSTOW}
