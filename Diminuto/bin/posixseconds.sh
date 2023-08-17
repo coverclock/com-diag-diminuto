@@ -6,7 +6,8 @@
 #
 # ABSTRACT
 #
-# Converts the date and time into the number of seconds since the UNIX epoch.
+# Converts the date and time into the number of seconds since the POSIX
+# (UNIX) epoch.
 #
 # NOTE
 #
@@ -19,17 +20,17 @@
 #
 # USAGE
 #
-# epochseconds [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND.[FRACTION] [ -TIME:ZONE ] ] ] ] ] ] ]
+# posixseconds [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND.[FRACTION] [ -TIME:ZONE ] ] ] ] ] ] ]
 #
 # EXAMPLES
 #
-# epochseconds
+# posixseconds
 #
-# epochseconds 1970
+# posixseconds 1970
 #
-# epochseconds 1980 01 06
+# posixseconds 1980 01 06
 #
-# epochseconds 2023 08 10 11 16 00.999 -07:00
+# posixseconds 2023 08 10 11 16 00.999 -07:00
 #
 
 if [[ $# == 0 ]]; then
@@ -37,7 +38,7 @@ if [[ $# == 0 ]]; then
 fi
 
 # It's impossible for all of the positional parameters to be unset
-# (see above), but this reminds me what the UNIX epoch is.
+# (see above), but this reminds me what the POSIX epoch is.
 
 YY=${1:-"1970"}
 MM=${2:-"01"}
