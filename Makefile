@@ -9,7 +9,7 @@
 .PHONY:	all bootstrap release
 
 all:
-	make -C Diminuto all
+	$(MAKE) -C Diminuto all
 
 bootstrap:
 

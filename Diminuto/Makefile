@@ -191,7 +191,7 @@ REVISION			:=	$(shell git rev-parse HEAD)
 MODIFIED			:=	$(shell date -u -d @$(shell git log -1 --format="%at") +%Y-%m-%dT%H:%M:%S.%N%z)
 ROOT				:=	$(shell git rev-parse --show-toplevel)
 VINTAGE				:=	$(shell date -u +%Y-%m-%dT%H:%M:%S.%N%z)
-MAKEVERSION			:=	$(shell make --version < /dev/null 2>&1 | head -1)
+MAKEVERSION			:=	$(shell $(MAKE) --version < /dev/null 2>&1 | head -1)
 CCVERSION			:=	$(shell $(CC) --version < /dev/null 2>&1 | head -1)
 LIBCVERSION			:=	$(shell $(LDD) --version < /dev/null 2>&1 | head -1)
 BINUTILSVERSION		:=	$(shell $(LD) --version < /dev/null 2>&1 | head -1)
@@ -260,13 +260,13 @@ pristine:	clean
 
 # This is not the same as simply listing the targets as dependencies.
 scratch:
-	make pristine
-	make depend
-	make all
+	$(MAKE) pristine
+	$(MAKE) depend
+	$(MAKE) all
 
 refresh:
 	git pull
-	make scratch
+	$(MAKE) scratch
 
 clobber:	pristine
 	rm -f .cscope.lst .cscope.out .cscope.out.in .cscope.out.po
@@ -302,7 +302,7 @@ distribution distro $(DISTRIBUTION).tgz:
 	tar -C $$T --exclude-vcs -cvzf - ./$$B > $(DISTRIBUTION).tgz; \
 	rm -rf $$T/$$B; \
 	tar -C $$T -xvzf - < $(DISTRIBUTION).tgz; \
-	( cd $$T/$$B/$(TITLE); make all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
+	( cd $$T/$$B/$(TITLE); $(MAKE) all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
 	rm -rf $$T
 
 # Useful for copying a tarball of the current development source base to a
@@ -411,7 +411,7 @@ $(OUT)/$(BIN_DIR)/hex $(OUT)/$(BIN_DIR)/oct $(OUT)/$(BIN_DIR)/ntohs $(OUT)/$(BIN
 $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBC_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
+
 $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBX_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
@@ -425,7 +425,7 @@ $(OUT)/$(TST_DIR)/%:	$(OUT)/$(OBX_DIR)/$(TST_DIR)/%.o $(TARGETLIBRARIESXX) $(TAR
 $(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBC_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
-	
+
 $(OUT)/$(FUN_DIR)/%:	$(OUT)/$(OBX_DIR)/$(FUN_DIR)/%.o $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDXXFLAGS)
@@ -821,7 +821,7 @@ distroversion:
 
 implicit:
 	@$(CC) $(CFLAGS) -dM -E - < /dev/null
-	
+
 defines:
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -dM -E - < /dev/null
 
