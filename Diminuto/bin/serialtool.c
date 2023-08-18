@@ -275,7 +275,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -o          Odd parity.\n");
             fprintf(stderr, "       -n          No parity.\n");
             fprintf(stderr, "       -h          Hardware flow control (RTS/CTS).\n");
-            fprintf(stderr, "       -i          No input mode.\n");
+            fprintf(stderr, "       -i          Don't use stdin.\n");
             fprintf(stderr, "       -l          Local (no modem control).\n");
             fprintf(stderr, "       -m          Modem control.\n");
             fprintf(stderr, "       -p          Printable only ('!' to '~').\n");
@@ -283,7 +283,6 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -s          Software flow control (XON/XOFF).\n");
             fprintf(stderr, "       -t SECONDS  Timeout in SECONDS.\n");
             fprintf(stderr, "       -v          Print characters on standard error.\n");
-            fprintf(stderr, "       -i          In interactive mode don't use stdin.\n");
             return 1;
             break;
 

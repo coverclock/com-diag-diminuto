@@ -457,6 +457,7 @@ Similarly, environmental variables have qualified names like
 * elapsedsleep - sleep for monotonic duration to specified resolution.
 * elapsedtime - display monotonic elapsed time to specified resolution.
 * endianess - display the little or big endianess of the target.
+* epochseconds - display seconds since POSIX epoch for provided data and time.
 * epochtime - display POSIX epoch to higher resolution than just seconds.
 * endpoint - convert an endpoint name into an IP address and port number.
 * framertool - test the Framer feature across, for example, a serial connection.
