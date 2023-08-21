@@ -47,7 +47,7 @@ LEPLST="
 PGMNAM=$(basename $0)
 
 if [[ $# == 0 ]]; then
-    set -- $(date -u +"%Y %m %d %H %M %S %:z")
+    set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
 fi
 
 # It's impossible for all of the positional parameters to be unset
