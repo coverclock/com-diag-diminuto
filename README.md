@@ -462,6 +462,7 @@ Similarly, environmental variables have qualified names like
 * endpoint - convert an endpoint name into an IP address and port number.
 * framertool - test the Framer feature across, for example, a serial connection.
 * frequency - display Diminuto base tick frequency in hertz.
+* gpstime - converts a timestamp into a GPS week number (WNO) and time of week (TOW).
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexadecimal.
 * internettool - test internet connectivity using the Diminuto IPC features.
@@ -479,6 +480,7 @@ Similarly, environmental variables have qualified names like
 * pinchange - execute a command when a GPIO pin changes state.
 * pintool - manipulate GPIO pins.
 * platform - generate the platform description used in the README.
+* posixtime - converts a timestamp into seconds since the POSIX epoch.
 * pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin.
 * renametool - atomically rename or swap files in the same file system.
 * serialtool - manipulate serial ports.

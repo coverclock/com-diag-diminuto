@@ -124,6 +124,6 @@ GPSSEC=$((${EFFSEC} - ${GPSEPO}))
 GPSWNO=$((${GPSSEC} / 604800))
 GPSTOW=$((${GPSSEC} % 604800))
 
-echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${FS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}${FS}gps $(iso8601 ${EFFSEC}) ${GPSWNO}wno ${GPSTOW}${FS}tow $(dhhmmss ${GPSTOW})${FS} 1>&2
+echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${FS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}${FS}gps $(iso8601 ${EFFSEC})${FS} ${GPSWNO}wno ${GPSTOW}${FS}tow $(dhhmmss ${GPSTOW})${FS} 1>&2
 
 echo ${GPSSEC}${FS} ${GPSWNO} ${GPSTOW}${FS}
