@@ -166,7 +166,7 @@ diminuto_log_mask_t diminuto_log_setmask(void)
 diminuto_log_mask_t diminuto_log_importmask(const char * path)
 {
     diminuto_path_t filename = { '\0', };
-    char buffer[83] = { '\0', }; /* "0377\n", "255\n", "0xff\n", "~0\n" */
+    char buffer[81] = { '\0', }; /* "0377\n", "255\n", "0xff\n", "~0\n" */
     FILE * fp = (FILE *)0;
     long value = -1;
     char * end = (char *)0;
@@ -174,9 +174,10 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
     if (path == (const char *)0) {
         const char * home = (const char *)0;
         if ((home = getenv("HOME")) == (const char *)0) {
-            home = ""; /* Not an error (but unlikely). */
+            home = "."; /* Not an error (but unlikely). */
         }
         (void)snprintf(filename, sizeof(filename), "%s/%s", home, diminuto_log_mask_path);
+        filename[sizeof(filename) - 1] = '\0';
         path = filename;
     }
 
@@ -188,7 +189,7 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
         /* Do nothing: not an error. */
     } else if ((fp = fopen(path, "r")) == (FILE *)0) {
         diminuto_perror(path);
-    } else if (fgets(buffer, sizeof(buffer) - 1, fp) == (char *)0) {
+    } else if (fgets(buffer, sizeof(buffer), fp) == (char *)0) {
         diminuto_perror(path);
     } else if (strncmp(buffer, ALL, sizeof(ALL) - 1) == 0) {
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);

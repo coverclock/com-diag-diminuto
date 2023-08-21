@@ -14,6 +14,10 @@
 #
 # REFERENCES
 #
+# <https://en.wikipedia.org/wiki/Leap_second>
+#
+# <https://www.ietf.org/timezones/data/leap-seconds.list>
+#
 # <https://geodesy.noaa.gov/CORS/resources/gpscals.shtml>
 #
 # <http://leapsecond.com/java/gpsclock.htm>
@@ -81,6 +85,7 @@ fi
 # its epoch (but it does include the ones that occurred before its epoch).
 # This is a little counterintuitive, at least for me. It means GPS counts
 # positive (added) leap seconds as regular seconds, putting GPS ahead of UTC.
+# E.g. where UTC at the leap second would be 00:00:60, GPS is 00:01:00.
 
 OFFSEC=0
 
