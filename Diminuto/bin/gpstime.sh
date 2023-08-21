@@ -61,6 +61,14 @@ NN=${5:-"00"}
 SS=${6:-"00"}
 TZ=${7:-"-00:00"}
 
+FS=${SS#*.}
+if [[ "${FS}" == "${SS}" ]]; then
+    FS=""
+else
+    FS=".${FS}"
+    SS=${SS%%.*}
+fi
+
 POSSEC=$(posixtime ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ})
 if (( $? != 0 )); then
     echo "${PGMNAM}: ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ} failed!" 1>&2
@@ -116,6 +124,6 @@ GPSSEC=$((${EFFSEC} - ${GPSEPO}))
 GPSWNO=$((${GPSSEC} / 604800))
 GPSTOW=$((${GPSSEC} % 604800))
 
-echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}gps $(iso8601 ${EFFSEC}) ${GPSWNO}wno ${GPSTOW}tow $(dhhmmss ${GPSTOW}) 1>&2
+echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${FS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}${FS}gps $(iso8601 ${EFFSEC}) ${GPSWNO}wno ${GPSTOW}${FS}tow $(dhhmmss ${GPSTOW}) 1>&2
 
-echo ${GPSSEC} ${GPSWNO} ${GPSTOW}
+echo ${GPSSEC}${FS} ${GPSWNO} ${GPSTOW}${FS}
