@@ -33,6 +33,8 @@
 # posixtime 2023 08 10 11 16 00.999 -07:00
 #
 
+PGMNAM=$(basename $0)
+
 if [[ $# == 0 ]]; then
     set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
 fi
@@ -54,4 +56,8 @@ else
     FORMAT="%s.%N"
 fi
 
-exec date -d "${YY}-${MM}-${DD} ${HH}:${NN}:${SS} ${TZ}" +"${FORMAT}"
+POSSEC=$(date -d "${YY}-${MM}-${DD} ${HH}:${NN}:${SS} ${TZ}" +"${FORMAT}")
+
+echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${TZ} ${POSSEC}sec $(iso8601 ${POSSEC}) 1>&2
+
+echo ${POSSEC}

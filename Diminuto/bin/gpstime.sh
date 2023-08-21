@@ -3,27 +3,41 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-# WORK IN PROGRESS
+#
+# EXAMPLES
+#
+# gpstime
+#
+# gpstime 1980 01 06
+#
+# gpstime 2023 08 21 10 02 00 +06:00
+#
+# REFERENCES
+#
+# <https://geodesy.noaa.gov/CORS/resources/gpscals.shtml>
+#
+# <http://leapsecond.com/java/gpsclock.htm>
+#
 
 LEPLST="
-1981:06:30:-1
-1982:06:30:-1
-1983:06:30:-1
-1985:06:30:-1
-1987:12:30:-1
-1989:12:30:-1
-1990:12:30:-1
-1992:06:30:-1
-1993:06:30:-1
-1994:06:30:-1
-1995:12:30:-1
-1997:06:30:-1
-1998:12:30:-1
-2005:12:30:-1
-2008:12:30:-1
-2012:06:30:-1
-2015:06:30:-1
-2016:12:30:-1
+1981:06:30:+1
+1982:06:30:+1
+1983:06:30:+1
+1985:06:30:+1
+1987:12:30:+1
+1989:12:30:+1
+1990:12:30:+1
+1992:06:30:+1
+1993:06:30:+1
+1994:06:30:+1
+1995:12:30:+1
+1997:06:30:+1
+1998:12:30:+1
+2005:12:30:+1
+2008:12:30:+1
+2012:06:30:+1
+2015:06:30:+1
+2016:12:30:+1
 "
 
 PGMNAM=$(basename $0)
@@ -43,6 +57,12 @@ NN=${5:-"00"}
 SS=${6:-"00"}
 TZ=${7:-"-00:00"}
 
+POSSEC=$(posixtime ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ})
+if (( $? != 0 )); then
+    echo "${PGMNAM}: ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ} failed!" 1>&2
+    exit 1
+fi
+
 # GPS Time epoch is 1980-01-06 00:00:00 +00:00 which is the first Sunday
 # at the start of the first GPS week.
 
@@ -52,21 +72,17 @@ if (( $? != 0 )); then
     exit 1
 fi
 
-POSSEC=$(posixtime ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ})
-if (( $? != 0 )); then
-    echo "${PGMNAM}: ${YY} ${MM} ${DD} ${HH} ${NN} ${SS} ${TZ} failed!" 1>&2
-    exit 1
-fi
-
 if (( ${POSSEC} < ${GPSEPO} )); then
     echo "${PGMNAM}: (${POSSEC} >= ${GPSEPO}) failed!" 1>&2
     exit 1
 fi
 
-GPSSEC=$((${POSSEC} - ${GPSEPO}))
-
 # GPS Time does not include the leap seconds that have occurred since
 # its epoch (but it does include the ones that occurred before its epoch).
+# This is a little counterintuitive, at least for me. It means GPS counts
+# positive (added) leap seconds as regular seconds, putting GPS ahead of UTC.
+
+OFFSEC=0
 
 for LEPDAT in ${LEPLST}; do
     set -- $(echo ${LEPDAT} | tr ':' ' ')
@@ -79,10 +95,14 @@ for LEPDAT in ${LEPLST}; do
         echo "${PGMNAM}: ${YEAR} ${MONTH} ${DAY} failed!" 1>&2
         exit 1
     fi
-    if (( ${POSSEC} >= ${LEPSEC} )); then
-        GPSSEC=$((${GPSSEC} ${DELTA}))
+    if (( ${POSSEC} < ${LEPSEC} )); then
+	break
     fi
+    OFFSEC=$((${OFFSEC} + ${DELTA}))
 done
+
+EFFSEC=$((${POSSEC} + ${OFFSEC}))
+GPSSEC=$((${EFFSEC} - ${GPSEPO}))
 
 # GPS Time is kept as a week number (WNO) since its epoch, and the number
 # of seconds that have elapsed since the start of current week, which is the
@@ -91,6 +111,6 @@ done
 GPSWNO=$((${GPSSEC} / 604800))
 GPSTOW=$((${GPSSEC} % 604800))
 
-echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${TZ} ${GPSSEC}sec ${GPSWNO}wno ${GPSTOW}tow $(dhhmmss ${GPSTOW}) 1>&2
+echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}gps $(iso8601 ${EFFSEC}) ${GPSWNO}wno ${GPSTOW}tow $(dhhmmss ${GPSTOW}) 1>&2
 
 echo ${GPSSEC} ${GPSWNO} ${GPSTOW}

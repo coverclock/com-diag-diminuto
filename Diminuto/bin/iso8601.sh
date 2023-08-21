@@ -30,4 +30,12 @@
 # $ iso8601 1587742431
 # 2020-04-24T15:33:51.000000000+00:00
 
-exec date -d "@${1:-$(date '+%s.%N')}" -u '+%Y-%m-%dT%H:%M:%S.%N+00:00'
+SS=${1:-$(date '+%s.%N')}
+
+if [[ "${SS%%\.*}" == "${SS}" ]]; then
+    FORMAT="%S"
+else
+    FORMAT="%S.%N"
+fi
+
+exec date -d "@${SS}" -u "+%Y-%m-%dT%H:%M:${FORMAT}+00:00"
