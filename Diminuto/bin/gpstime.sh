@@ -41,28 +41,10 @@
 # The list of leap seconds is hard coded and must be updated when a new leap
 # second is added.
 
-LEPLST="
-1981:06:30:+1
-1982:06:30:+1
-1983:06:30:+1
-1985:06:30:+1
-1987:12:30:+1
-1989:12:30:+1
-1990:12:30:+1
-1992:06:30:+1
-1993:06:30:+1
-1994:06:30:+1
-1995:12:30:+1
-1997:06:30:+1
-1998:12:30:+1
-2005:12:30:+1
-2008:12:30:+1
-2012:06:30:+1
-2015:06:30:+1
-2016:12:30:+1
-"
-
 PGMNAM=$(basename $0)
+LEPFIL="$(readlink -e $(dirname ${0}))/../bin/${PGMNAM%.sh}-list.sh"
+
+. ${LEPFIL}
 
 if [[ $# == 0 ]]; then
     set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
