@@ -1091,6 +1091,7 @@ sanity:	criticalsection
 	unittest-pin
 	unittest-pipe | sleep 5
 	unittest-pool
+	unittest-posixtime && unittest-gpstime
 	unittest-proxy
 	unittest-reaper
 	unittest-renameat2
