@@ -121,9 +121,9 @@ for LEPDAT in ${LEPLST}; do
     MONTH=${2}
     DAY=${3}
     DELTA=${4}
-    LEPSEC=$(posixtime ${YEAR} ${MONTH} ${DAY})
+    LEPSEC=$(posixtime ${YEAR} ${MONTH} ${DAY} 23 59 59)
     if (( $? != 0 )); then
-        echo "${PGMNAM}: ${YEAR} ${MONTH} ${DAY} failed!" 1>&2
+        echo "${PGMNAM}: ${YEAR} ${MONTH} ${DAY} 23 59 59 failed!" 1>&2
         exit 1
     fi
     if (( ${POSSEC} < ${LEPSEC} )); then
