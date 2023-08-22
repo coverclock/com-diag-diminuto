@@ -4,6 +4,20 @@
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
 #
+# ABSTRACT
+#
+# Given a time stamp in [ YYYY [ MM [ DD [ HH [ NN [ SS.SS [ TZ ] ] ] ] ] ] ]
+# format, emits to standard output [1] the number of seconds since the GPS
+# epoch 1980-01-06, [2] the GPS Week Number (WNO), and [3] the GPS Time Of
+# Week (TOW) which is the number of seconds since the start of the current
+# GPS week (which begins on Sunday).  Additional information is emitted to
+# standard error. If no argument is given, it uses the current date, time
+# and time zone.
+#
+# USAGE
+#
+# gpstime [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND.[FRACTION] [ -TIME:ZONE ] ] ] ] ] ] ]
+#
 # EXAMPLES
 #
 # gpstime
@@ -22,6 +36,10 @@
 #
 # <http://leapsecond.com/java/gpsclock.htm>
 #
+# NOTE
+#
+# The list of leap seconds is hard coded and must be updated when a new leap
+# second is added.
 
 LEPLST="
 1981:06:30:+1

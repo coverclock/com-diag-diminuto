@@ -6,17 +6,12 @@
 #
 # ABSTRACT
 #
-# Converts the date and time into the number of seconds since the POSIX
-# (UNIX) epoch.
-#
-# NOTE
-#
-# Does not handle DST. This can be adjusted for by the user by adjusting the
-# time zone offset.
-#
-# SEE ALSO
-#
-# iso8601
+# Given a time stamp in [ YYYY [ MM [ DD [ HH [ NN [ SS.SS [ TZ ] ] ] ] ] ] ]
+# format, emits to standard output the number of seconds since the POSIX
+# (UNIX) epoch 1970-01-01. Additional information is emitted to standard error.
+# Does not account for DST. This can be adjusted for by the user by adjusting
+# the time zone offset. If no argument is given, it uses the current date, time
+# and time zone.
 #
 # USAGE
 #
@@ -26,7 +21,7 @@
 #
 # posixtime
 #
-# posixtime 1970
+# posixtime 1970 01 01
 #
 # posixtime 1980 01 06
 #
