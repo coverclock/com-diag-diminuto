@@ -42,9 +42,16 @@
 # second is added.
 
 PGMNAM=$(basename $0)
-LEPFIL="$(readlink -e $(dirname ${0}))/../bin/${PGMNAM%.sh}-list.sh"
+LEPFIL="$(readlink -e $(dirname ${0}))/../bin/${PGMNAM%.sh}-list"
 
-. ${LEPFIL}
+if [ -r ${LEPFIL} ]; then
+    . ${LEPFIL}
+elif [ -r ${LEPFIL}.sh ]; then
+    . ${LEPFIL}.sh
+else
+    echo "${PGMNAM}: ${LEPFIL} failed!" 1>&2
+    exit 1
+fi
 
 if [[ $# == 0 ]]; then
     set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
@@ -108,7 +115,7 @@ for LEPDAT in ${LEPLST}; do
         echo "${PGMNAM}: ${YEAR} ${MONTH} ${DAY} 23 59 59 failed!" 1>&2
         exit 1
     fi
-    if (( ${POSSEC} < ${LEPSEC} )); then
+    if (( ${POSSEC} <= ${LEPSEC} )); then
 	break
     fi
     OFFSEC=$((${OFFSEC} + ${DELTA}))

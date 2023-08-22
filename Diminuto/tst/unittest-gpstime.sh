@@ -5,6 +5,17 @@
 # https://github.com/coverclock/com-diag-diminuto
 # Test gpstime.
 
+LEPFIL="$(readlink -e $(dirname ${0}))/../bin/gpstime-list"
+
+if [ -r ${LEPFIL} ]; then
+    . ${LEPFIL}
+elif [ -r ${LEPFIL}.sh ]; then
+    . ${LEPFIL}.sh
+else
+    echo "${PGMNAM}: ${LEPFIL} failed!" 1>&2
+    exit 1
+fi
+
 EXPECTED="0 0 0"
 ACTUAL=$(gpstime 1980 01 06 00 00 00 +00:00)
 if (( $? != 0 )); then
@@ -59,6 +70,49 @@ ACTUAL=$(gpstime 1979 01 05 23 59 59.999999999 +00:00)
 if (( $? == 0 )); then
     exit 1
 fi
+
+for LEPDAT in ${LEPLST}; do
+    set -- $(echo ${LEPDAT} | tr ':' ' ')
+    Y0=${1}
+    M0=${2}
+    D0=${3}
+    L0=${4}
+    Y1=${5}
+    M1=${6}
+    D1=${7}
+    L1=${8}
+    GA=$(gpstime ${Y0} ${M0} ${D0} 23 59 58)
+    if (( $? != 0 )); then
+        echo "${Y0} ${M0} ${D0} 23 59 58 failed!" 1>&2
+        exit 1
+    fi
+    set -- ${GA}
+    SA=${1}
+    GB=$(gpstime ${Y0} ${M0} ${D0} 23 59 59)
+    if (( $? != 0 )); then
+        echo "${Y1} ${M1} ${D1} 23 59 59 failed!" 1>&2
+        exit 1
+    fi
+    set -- ${GB}
+    SB=${1}
+    GC=$(gpstime ${Y1} ${M1} ${D1} 00 00 00)
+    if (( $? != 0 )); then
+        echo "${Y1} ${M1} ${D1} 23 59 59 failed!" 1>&2
+        exit 1
+    fi
+    set -- ${GC}
+    SC=${1}
+    AB=$((${SB} - ${SA}))
+    if (( ${AB} != 1 )); then
+        echo "23:59:58..23:59:59 failed!" 1>&2
+	exit 2
+    fi
+    BC=$((${SC} - ${SB}))
+    if (( ${BC} != 2 )); then
+        echo "23:59:59..00:00:00 failed!" 1>&2
+	exit 2
+    fi
+done
 
 echo "$(basename $0): PASSED." 1>&2
 exit 0
