@@ -8,11 +8,11 @@
 #
 # Given a time stamp in [ YYYY [ MM [ DD [ HH [ NN [ SS.SS [ TZ ] ] ] ] ] ] ]
 # format, emits to standard output [1] the number of seconds since the GPS
-# epoch 1980-01-06, [2] the GPS Week Number (WNO), and [3] the GPS Time Of
+# epoch 1980-01-06, [2] the GPS Week Number (WNO), [3] the GPS Time Of
 # Week (TOW) which is the number of seconds since the start of the current
-# GPS week (which begins on Sunday).  Additional information is emitted to
-# standard error. If no argument is given, it uses the current date, time
-# and time zone.
+# GPS week (which begins on Sunday), and [4] the number of seconds offset
+# from UTC.  Additional information is emitted to standard error. If no
+# argument is given, it uses the current date, time and time zone.
 #
 # USAGE
 #
@@ -133,4 +133,4 @@ GPSTOW=$((${GPSSEC} % 604800))
 
 echo ${PGMNAM}: ${YY}-${MM}-${DD}T${HH}:${NN}:${SS}${FS}${TZ} ${GPSEPO}epo ${OFFSEC}off ${GPSSEC}${FS}gps $(iso8601 ${EFFSEC}${FS}) ${GPSWNO}wno ${GPSTOW}${FS}tow $(dhhmmss ${GPSTOW})${FS} 1>&2
 
-echo ${GPSSEC}${FS} ${GPSWNO} ${GPSTOW}${FS}
+echo ${GPSSEC}${FS} ${GPSWNO} ${GPSTOW}${FS} ${OFFSEC}

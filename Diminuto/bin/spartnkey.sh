@@ -27,8 +27,8 @@ if (( $? != 0 )); then
     exit 1
 fi
 
-OFFSEC=$((4 * 7 * 24 * 60 * 60))
-EXPSEC=$((${POSIXTIME} + 1 - ${OFFSEC}))
+OFFSEC=$(( 4 * 7 * 24 * 60 * 60 ))
+EXPSEC=$(( ${POSIXTIME} + 1 - ${OFFSEC} ))
 
 EXPDAT=$(date -d "@${EXPSEC}" -u "+%Y %m %d %H %M %S")
 if (( $? != 0 )); then
@@ -54,7 +54,10 @@ set -- ${GPSTIME}
 SEC=${1}
 WNO=${2}
 TOW=${3}
+OFF=${4}
 
-echo "${PROGRAM}: ${Y0}-${M0}-${D0}T${H0}:${N0}:${S0} ${Y1}-${M1}-${D1}T${H1}:${N1}:${S1} ${SEC}sec ${WNO}wno ${TOW}tow" 1>&2
+EFF=$(( ${TOW} - ${OFF} ))
 
-echo ${WNO} ${TOW}
+echo "${PROGRAM}: ${Y0}-${M0}-${D0}T${H0}:${N0}:${S0} ${Y1}-${M1}-${D1}T${H1}:${N1}:${S1} ${SEC}sec ${WNO}wno ${TOW}tow ${OFF}off ${EFF}eff" 1>&2
+
+echo ${WNO} ${EFF}
