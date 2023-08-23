@@ -462,7 +462,7 @@ Similarly, environmental variables have qualified names like
 * endpoint - convert an endpoint name into an IP address and port number.
 * framertool - test the Framer feature across, for example, a serial connection.
 * frequency - display Diminuto base tick frequency in hertz.
-* gpstime - converts a timestamp into a GPS week number (WNO) and time of week (TOW).
+* gpstime - converts a timestamp into GPS WNO, GPS TOW, and UTC offset.
 * headsup - sends a SIGHUP (hangup signal) to a running observe script.
 * hex - display an argument number in hexadecimal.
 * internettool - test internet connectivity using the Diminuto IPC features.
@@ -486,6 +486,7 @@ Similarly, environmental variables have qualified names like
 * serialtool - manipulate serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
+* spartnkey - converts a timestamp into a SPARTNKEY WNO and TOW.
 * timesink - consume concise timestamp stream.
 * timesource - produce concise timestamp stream.
 * usecsleep - sleep for a specified number of microseconds.
