@@ -10,6 +10,10 @@
 
 PROGRAM=$(basename $0)
 
+if (( $# == 0 )); then
+    set -- $(date -u +"%Y %m %d %H %M %S")
+fi
+
 Y0=${1}
 M0=${2}
 D0=${3}
