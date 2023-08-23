@@ -3,10 +3,27 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
+#
+# ABSTRACT
+#
 # Converts the start and duration numbers from a Thingstream
 # PointPerfect SPARTNKEY to GPS Week Number (WNO) and Time Of Week
 # (TOW) that can be used for a UBX-RXM-SPARTNKEY message.
-# WORK IN PROGRESS
+#
+# USAGE
+#
+# spartnkey [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND ] ] ] ] ] ]
+#
+# EXAMPLES
+#
+# spartnkey
+#
+# spartnkey 2023 08 12
+#
+# spartnkey 2023 08 12 23 59
+#
+# spartnkey 2023 08 12 23 59 59
+#
 
 PROGRAM=$(basename $0)
 
