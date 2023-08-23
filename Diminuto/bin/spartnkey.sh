@@ -51,4 +51,6 @@ SEC=${1}
 WNO=${2}
 TOW=${3}
 
+echo "${PROGRAM}: ${Y0}-${M0}-${D0}T${H0}:${N0}:${S0} ${Y1}-${M1}-${D1}T${H1}:${N1}:${S1} ${SEC}sec ${WNO}wno ${TOW}tow" 1>&2
+
 echo ${WNO} ${TOW}
