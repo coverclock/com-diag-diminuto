@@ -53,7 +53,7 @@ else
     exit 1
 fi
 
-if [[ $# == 0 ]]; then
+if (( $# == 0 )); then
     set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
 fi
 

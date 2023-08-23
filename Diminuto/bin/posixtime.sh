@@ -30,7 +30,7 @@
 
 PGMNAM=$(basename $0)
 
-if [[ $# == 0 ]]; then
+if (( $# == 0 )); then
     set -- $(date -u +"%Y %m %d %H %M %S.%N %:z")
 fi
 
