@@ -468,6 +468,7 @@ Similarly, environmental variables have qualified names like
 * internettool - test internet connectivity using the Diminuto IPC features.
 * ipcalc - calculate IPv4 addresses and masks.
 * iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
+* juliantime - converts a timestamp into a year, julian day, and seconds.
 * juliet - display the local time in ISO 8601 format.
 * log - log from command line and/or stdin using Diminuto log functions.
 * logging - display the configuration and state of the log feature.
