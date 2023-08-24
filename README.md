@@ -486,7 +486,7 @@ Similarly, environmental variables have qualified names like
 * serialtool - manipulate serial ports.
 * shaper - shape traffic in a pipeline.
 * sizeof - display sizeof of different data types.
-* spartnkey - converts a timestamp into a SPARTNKEY WNO and TOW.
+* spartntime - converts a timestamp into a SPARTNKEY WNO and TOW.
 * timesink - consume concise timestamp stream.
 * timesource - produce concise timestamp stream.
 * usecsleep - sleep for a specified number of microseconds.
