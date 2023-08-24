@@ -6,13 +6,15 @@
 #
 # ABSTRACT
 #
-# Converts the start and duration numbers from a Thingstream
+# Converts the start and duration numbers from a Thingstream (U-blox)
 # PointPerfect SPARTNKEY to GPS Week Number (WNO) and Time Of Week
-# (TOW) that can be used for a UBX-RXM-SPARTNKEY message.
+# (TOW) that can be used for a UBX-RXM-SPARTNKEY message. SPARTN
+# (Safe Position Augmentation for Real-Time Navigation) provides
+# DGNSS-like corrections over L-band via Inmarsat satellites.
 #
 # USAGE
 #
-# spartnkey [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND ] ] ] ] ] ]
+# spartntime [ YEAR [ MONTH [ DAY [ HOUR [ MINUTE [ SECOND [ TIME:ZONE ] ] ] ] ] ] ]
 #
 # EXAMPLES
 #
@@ -24,11 +26,13 @@
 #
 # spartnkey 2023 08 12 23 59 59
 #
+# spartnkey 2023 08 12 23 59 59 -00:00
+#
 
 PROGRAM=$(basename $0)
 
 if (( $# == 0 )); then
-    set -- $(date -u +"%Y %m %d %H %M %S")
+    set -- $(date -u +"%Y %m %d %H %M %S %:z")
 fi
 
 Y0=${1}
@@ -37,10 +41,13 @@ D0=${3}
 H0=${4:-"23"}
 N0=${5:-"59"}
 S0=${6:-"59"}
+Z0=${7:-"-00:00"}
 
-POSIXTIME=$(posixtime ${Y0} ${M0} ${D0} ${H0} ${N0} ${S0})
+S0=${S0%%.*}
+
+POSIXTIME=$(posixtime ${Y0} ${M0} ${D0} ${H0} ${N0} ${S0} ${Z0})
 if (( $? != 0 )); then
-    echo "${PROGRAM}: ${Y0} ${M0} ${D0} ${H0} ${N0} ${S0} failed!" 1>&2
+    echo "${PROGRAM}: ${Y0} ${M0} ${D0} ${H0} ${N0} ${S0} ${Z0} failed!" 1>&2
     exit 1
 fi
 
