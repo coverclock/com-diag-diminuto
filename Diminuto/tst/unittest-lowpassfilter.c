@@ -16,7 +16,7 @@
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_lowpassfilter.h"
 
-int main(void)
+int main(int argc, char ** argv)
 {
     SETLOGMASK();
 
@@ -27,10 +27,13 @@ int main(void)
         long long total = 0;
         long minimum = 0;
         long maximum = 0;
+        long long sum = 0;
+        long highest = 0;
+        long lowest = 0;
         size_t count = 0;
         diminuto_sticks_t ticks = 0;
         int ii;
-        static const long MAXIMUM = diminuto_maximumof(int32_t);
+        static const long MAXIMUM = diminuto_maximumof(long);
         static const int LIMIT = 1000000;
 
         TEST();
@@ -39,6 +42,7 @@ int main(void)
         ASSERT(ticks >= 0);
         srandom(ticks);
         minimum = MAXIMUM;
+        lowest = MAXIMUM;
 
         for (ii = 0; ii < LIMIT; ++ii) {
             sample = random();
@@ -47,11 +51,38 @@ int main(void)
             if (sample < minimum) { minimum = sample; }
             total += sample;
             value = DIMINUTO_LOWPASSFILTER(sample, accumulator, count);
+            if (argc > 1) {
+                printf("%zu, %ld, %ld\n", count, sample, value);
+            }
+            sum += value;
+            if (value > highest) { highest = value; }
+            if (value < lowest) { lowest = value; }
         }
+
         ASSERT(count == LIMIT);
 
-        printf("total=%lld\ncount=%zu\nvalue=%ld\nmean=%lld\nminimum=%ld\nmaximum=%ld\n",
-            total, count, value, (total / count), minimum, maximum);        
+        fprintf(stderr,
+            "total=%lld\n"
+            "count=%zu\n"
+            "value=%ld\n"
+            "minimum=%ld\n"
+            "maximum=%ld\n"
+            "mean=%lld\n"
+            "median=%lld\n"
+            "lowest=%ld\n"
+            "highest=%ld\n"
+            "average=%lld\n",
+            total,
+            count,
+            value,
+            minimum,
+            maximum,
+            (total / count),
+            (((long long)maximum + (long long)minimum) / 2),
+            lowest,
+            highest,
+            (sum / count)
+        );
 
         STATUS();
     }
