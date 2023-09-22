@@ -15,7 +15,7 @@
 
 /**
  * @def DIMINUTO_LOWPASSFILTER
- * Apply a low pass filter to a data sample. The sample @a _SAMPLE_
+ * Apply a simple low pass filter to a data sample. The sample @a _SAMPLE_
  * is averaged with the prior @a _ACCUMULATOR_ and the result is
  * stored back into the new @a _ACCUMULATOR_ and also returned as a
  * value. The total number of samples is maintained in @a _COUNT_.

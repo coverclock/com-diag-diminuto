@@ -1074,6 +1074,7 @@ sanity:	criticalsection
 	unittest-list2
 	unittest-lock
 	unittest-log
+	unittest-lowpassfilter
 	unittest-macros
 	unittest-memory
 	unittest-memberof
