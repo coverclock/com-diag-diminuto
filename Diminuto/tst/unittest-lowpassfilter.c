@@ -9,6 +9,7 @@
  * @details
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
@@ -19,9 +20,37 @@
 
 int main(int argc, char ** argv)
 {
+    unsigned long mask = 0;
+    static const long MAXIMUM = diminuto_maximumof(long);
+    static const int LIMIT = 100;
+    static const long RANGE = diminuto_maximumof(int32_t); /* random(3) */
+
     SETLOGMASK();
 
     {
+        diminuto_sticks_t ticks = 0;
+        char * end = (char *)0;
+
+        TEST();
+
+        ticks = diminuto_time_clock();
+        ASSERT(ticks >= 0);
+        srandom(ticks);
+
+        if (argc < 2) {
+            /* Do nothing. */
+        } else if (argv[1] == (char *)0) {
+            /* Do nothing. */
+        } else {
+            mask = strtoul(argv[1], &end, 0);
+            ASSERT((end != (char *)0) && (*end == '\0'));
+        }
+
+        STATUS();
+    }
+
+    {
+        bool verbose = false;
         long sample = 0;
         long long accumulator = 0;
         long value = 0;
@@ -32,20 +61,16 @@ int main(int argc, char ** argv)
         long highest = 0;
         long lowest = 0;
         size_t count = 0;
-        diminuto_sticks_t ticks = 0;
         int ii;
-        static const long MAXIMUM = diminuto_maximumof(long);
-        static const int LIMIT = 200000;
 
         TEST();
 
-        ticks = diminuto_time_clock();
-        ASSERT(ticks >= 0);
-        srandom(ticks);
+        verbose = ((mask & (1 << 0)) != 0);
+
         minimum = MAXIMUM;
         lowest = MAXIMUM;
 
-        if (argc > 1) {
+        if (verbose) {
             printf("%s, %s, %s\n", "COUNT", "RANDOM", "FILTERED");
         }
 
@@ -56,7 +81,7 @@ int main(int argc, char ** argv)
             if (sample < minimum) { minimum = sample; }
             total += sample;
             value = DIMINUTO_LOWPASSFILTER(sample, accumulator, count);
-            if (argc > 1) {
+            if (verbose) {
                 printf("%zu, %ld, %ld\n", count, sample, value);
             }
             sum += value;
@@ -95,6 +120,7 @@ int main(int argc, char ** argv)
     }
 
     {
+        bool verbose = false;
         long sample = 0;
         long long accumulator = 0;
         long value = 0;
@@ -108,27 +134,31 @@ int main(int argc, char ** argv)
         int ii;
         double x;
         double y;
-        static const long MAXIMUM = diminuto_maximumof(long);
-        static const int LIMIT = 200000;
 
         TEST();
+
+        verbose = ((mask & (1 << 1)) != 0);
 
         minimum = MAXIMUM;
         lowest = MAXIMUM;
 
-        if (argc > 1) {
+        if (verbose) {
             printf("%s, %s, %s\n", "COUNT", "SINE", "FILTERED");
         }
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            x = M_PI * 2.0 * 10.0 * ii / LIMIT;
+            x = M_PI;
+            x *= 2.0;
+            x *= 10.0;
+            x /= LIMIT;
             y = sin(x);
-            sample = y * 10000.0;
+            y *= 100.0;
+            sample = y;
             if (sample > maximum) { maximum = sample; }
             if (sample < minimum) { minimum = sample; }
             total += sample;
             value = DIMINUTO_LOWPASSFILTER(sample, accumulator, count);
-            if (argc > 1) {
+            if (verbose) {
                 printf("%zu, %ld, %ld\n", count, sample, value);
             }
             sum += value;
@@ -167,6 +197,9 @@ int main(int argc, char ** argv)
     }
 
     {
+        bool verbose = false;
+        long signal = 0;
+        long noise = 0;
         long sample = 0;
         long long accumulator = 0;
         long value = 0;
@@ -177,37 +210,43 @@ int main(int argc, char ** argv)
         long highest = 0;
         long lowest = 0;
         size_t count = 0;
-        diminuto_sticks_t ticks = 0;
         int ii;
         double x;
         double y;
-        double noise = 0;
-        static const long MAXIMUM = diminuto_maximumof(long);
-        static const int LIMIT = 200000;
+        double z;
 
         TEST();
 
-        ticks = diminuto_time_clock();
-        ASSERT(ticks >= 0);
-        srandom(ticks);
+        verbose = ((mask & (1 << 2)) != 0);
+
         minimum = MAXIMUM;
         lowest = MAXIMUM;
 
-        if (argc > 1) {
-            printf("%s, %s, %s\n", "COUNT", "NOISY", "FILTERED");
+        if (verbose) {
+            printf("%s, %s, %s, %s, %s\n", "COUNT", "SIGNAL", "NOISE", "SAMPLE", "FILTERED");
         }
 
         for (ii = 0; ii < LIMIT; ++ii) {
-            noise = 1000.0 * (random() - (MAXIMUM / 2)) / MAXIMUM;
-            x = M_PI * 2.0 * 10.0 * ii / LIMIT;
+            x = M_PI;
+            x *= 2.0;
+            x *= 10.0;
+            x *= ii;
+            x /= LIMIT;
             y = sin(x);
-            sample = (y * 10000.0) + noise;
+            y *= 100.0;
+            signal = y;
+            z = random();
+            z /= RANGE;
+            z -= 0.5;
+            z *= 10.0;
+            noise = z;
+            sample = signal + noise;
             if (sample > maximum) { maximum = sample; }
             if (sample < minimum) { minimum = sample; }
             total += sample;
             value = DIMINUTO_LOWPASSFILTER(sample, accumulator, count);
-            if (argc > 1) {
-                printf("%zu, %ld, %ld\n", count, sample, value);
+            if (verbose) {
+                printf("%zu, %ld, %ld, %ld, %ld\n", count, signal, noise, sample, value);
             }
             sum += value;
             if (value > highest) { highest = value; }
