@@ -7,6 +7,7 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * usage: unittest-lowtestfilter [ MASK ]
  */
 
 #include <stdbool.h>
