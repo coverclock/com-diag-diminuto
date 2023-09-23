@@ -283,5 +283,92 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+    {
+        bool verbose = false;
+        double signal = 0;
+        double noise = 0;
+        double sample = 0;
+        double accumulator = 0;
+        double value = 0;
+        double total = 0;
+        double minimum = 0;
+        double maximum = 0;
+        double sum = 0;
+        double highest = 0;
+        double lowest = 0;
+        size_t count = 0;
+        int ii;
+        double x;
+        double y;
+        double z;
+
+        TEST();
+
+        verbose = ((mask & (1 << 3)) != 0);
+
+        minimum = MAXIMUM;
+        lowest = MAXIMUM;
+
+        if (verbose) {
+            printf("%s, %s, %s, %s, %s\n", "COUNT", "SIGNAL", "NOISE", "SAMPLE", "FILTERED");
+        }
+
+        for (ii = 0; ii < LIMIT; ++ii) {
+            x = M_PI;
+            x *= 2.0;
+            x *= 10.0;
+            x *= ii;
+            x /= LIMIT;
+            y = sin(x);
+            y *= 100.0;
+            signal = y;
+            z = random();
+            z /= RANGE;
+            z -= 0.5;
+            z *= 10.0;
+            noise = z;
+            sample = signal + noise;
+            if (sample > maximum) { maximum = sample; }
+            if (sample < minimum) { minimum = sample; }
+            total += sample;
+            value = DIMINUTO_LOWPASSFILTER(sample, accumulator, count);
+            if (verbose) {
+                printf("%zu, %lf, %lf, %lf, %lf\n", count, signal, noise, sample, value);
+            }
+            sum += value;
+            if (value > highest) { highest = value; }
+            if (value < lowest) { lowest = value; }
+        }
+
+        ASSERT(count == LIMIT);
+
+        fprintf(stderr,
+            "total=%lf\n"
+            "count=%zu\n"
+            "value=%lf\n"
+            "minimum=%lf\n"
+            "maximum=%lf\n"
+            "mean=%lf\n"
+            "median=%lf\n"
+            "lowest=%lf\n"
+            "highest=%lf\n"
+            "average=%lf\n"
+            "middle=%lf\n",
+            total,
+            count,
+            value,
+            minimum,
+            maximum,
+            (total / count),
+            ((maximum + minimum) / 2.0),
+            lowest,
+            highest,
+            (sum / count),
+            ((lowest + highest) / 2.0)
+        );
+
+        STATUS();
+    }
+
     EXIT();
 }
