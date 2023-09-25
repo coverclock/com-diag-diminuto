@@ -51,6 +51,50 @@ int main(int argc, char ** argv)
     }
 
     {
+        int sample = 0;
+        int accumulator = 0;
+        int value = 0;
+        int count = 0;
+
+        TEST();
+
+        ASSERT(sample == 0);
+        ASSERT(accumulator == 0);
+        ASSERT(value == 0);
+        ASSERT(count == 0);
+
+        value = DIMINUTO_LOWPASSFILTER(sample = 0, accumulator, count);
+
+        ASSERT(sample == 0);
+        ASSERT(accumulator == 0);
+        ASSERT(value == 0);
+        ASSERT(count == 1);
+
+        value = DIMINUTO_LOWPASSFILTER(sample = 1, accumulator, count);
+
+        ASSERT(sample == 1);
+        ASSERT(accumulator == 0);
+        ASSERT(value == 0);
+        ASSERT(count == 2);
+
+        value = DIMINUTO_LOWPASSFILTER(sample = 2, accumulator, count);
+
+        ASSERT(sample == 2);
+        ASSERT(accumulator == 1);
+        ASSERT(value == 1);
+        ASSERT(count == 3);
+
+        value = DIMINUTO_LOWPASSFILTER(sample = 3, accumulator, count);
+
+        ASSERT(sample == 3);
+        ASSERT(accumulator == 2);
+        ASSERT(value == 2);
+        ASSERT(count == 4);
+
+        STATUS();
+    }
+
+    {
         bool verbose = false;
         long sample = 0;
         long long accumulator = 0;

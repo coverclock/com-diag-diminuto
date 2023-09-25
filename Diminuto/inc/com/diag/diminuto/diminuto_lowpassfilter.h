@@ -26,9 +26,10 @@
  * long long for _ACCUMULATOR_, and size_t for _COUNT_.
  */
 #define DIMINUTO_LOWPASSFILTER(_SAMPLE_, _ACCUMULATOR_, _COUNT_) \
-    ((_ACCUMULATOR_) = ((((_COUNT_)++) == 0) \
-        ? (_SAMPLE_) \
-        : (((_ACCUMULATOR_) + (_SAMPLE_)) / 2) \
-    ))
+    ((_ACCUMULATOR_) = \
+        ((((_COUNT_)++) == 0) \
+            ? (_SAMPLE_) \
+            : (((_ACCUMULATOR_) + (_SAMPLE_)) / 2)) \
+    )
 
 #endif
