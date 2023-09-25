@@ -183,4 +183,18 @@ static inline diminuto_sticks_t diminuto_frequency_rounddown(diminuto_sticks_t t
     return (remainder == 0) ? ticks : (ticks - remainder);
 }
 
+/**
+ * Return the value of the system configuration parameter _SC_CLK_TCK that
+ * is the value of the kernel constant USER_HZ.
+ * @return USER_HZ or <0 if an error occurred.
+ */
+extern diminuto_sticks_t diminuto_frequency_user(void);
+
+/**
+ * Return the value of the kernel configuration parameter HZ that
+ * is the value of the kernel constant jiffy.
+ * @return HZ or <0 if an error occurred.
+ */
+extern diminuto_sticks_t diminuto_frequency_system(void);
+
 #endif
