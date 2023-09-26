@@ -23,7 +23,10 @@
  * values for _SAMPLE_, _ACCUMULATOR_, and _COUNT_ may be accessed more
  * than once and should be lvalues. Some thought should be taken as to
  * the data types for the three variables, for example long for _SAMPLE_,
- * long long for _ACCUMULATOR_, and size_t for _COUNT_.
+ * long long for _ACCUMULATOR_, and size_t for _COUNT_. The low pass filter
+ * truncates the sum of the _ACCUMULATOR_ and the _SAMPLE_ when it divides;
+ * to effect rouding, added one to the _ACCUMULATOR_ BEFORE calling the
+ * macro (do NOT add one in an argument to the macro).
  */
 #define DIMINUTO_LOWPASSFILTER(_SAMPLE_, _ACCUMULATOR_, _COUNT_) \
     ((_ACCUMULATOR_) = \
