@@ -10,7 +10,8 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * THIS IS A WORK IN PROGRESS.
+ * Provides a macro to implement a simple low pass filter. I've used this
+ * basic algorithm in embedded systems in the past. Your mileage may vary.
  */
 
 /**
@@ -25,8 +26,8 @@
  * the data types for the three variables, for example long for _SAMPLE_,
  * long long for _ACCUMULATOR_, and size_t for _COUNT_. The low pass filter
  * truncates the sum of the _ACCUMULATOR_ and the _SAMPLE_ when it divides;
- * to effect rouding, added one to the _ACCUMULATOR_ BEFORE calling the
- * macro (do NOT add one in an argument to the macro).
+ * to effect rounding, add one to the _ACCUMULATOR_ BEFORE calling the
+ * macro (do NOT add one in an argument of the macro).
  */
 #define DIMINUTO_LOWPASSFILTER(_SAMPLE_, _ACCUMULATOR_, _COUNT_) \
     ((_ACCUMULATOR_) = \

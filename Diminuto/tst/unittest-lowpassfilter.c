@@ -28,6 +28,10 @@ int main(int argc, char ** argv)
 
     SETLOGMASK();
 
+    /*
+     * Initialization.
+     */
+
     {
         diminuto_sticks_t ticks = 0;
         char * end = (char *)0;
@@ -49,6 +53,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Truncation.
+     */
 
     {
         int sample = 0;
@@ -93,6 +101,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Rounding.
+     */
 
     {
         int sample = 0;
@@ -141,6 +153,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Random.
+     */
 
     {
         bool verbose = false;
@@ -211,6 +227,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Sine wave.
+     */
 
     {
         bool verbose = false;
@@ -288,6 +308,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Sine wave with noise.
+     */
 
     {
         bool verbose = false;
@@ -375,6 +399,10 @@ int main(int argc, char ** argv)
 
         STATUS();
     }
+
+    /*
+     * Sine wave with noise, using floating point.
+     */
 
     {
         bool verbose = false;
