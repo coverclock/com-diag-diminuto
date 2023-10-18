@@ -11,29 +11,29 @@
  */
 
 #include "com/diag/diminuto/diminuto_fd.h"
-#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_environment.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_platform.h"
-#include <sys/resource.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/select.h>
-#if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
-#   include <asm/socket.h> /* FIONREAD */
-#   include <sys/ioctl.h> /* TIOCINQ */
-#else
-#   include <sys/ioctl.h> /* FIONREAD, TIOCINQ */
-#endif
+#include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_DARWIN)
 #   include <malloc.h>
 #endif
-#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <unistd.h>
+#include <sys/ioctl.h> /* FIONREAD, TIOCINQ */
+#include <sys/resource.h>
+#include <sys/select.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#if defined(COM_DIAG_DIMINUTO_PLATFORM_CYGWIN)
+#   include <asm/socket.h> /* FIONREAD */
+#else
+#endif
 
 #if !defined(TIOCINQ)
 #   warning TIOCINQ not defined on this platform!
@@ -198,7 +198,9 @@ ssize_t diminuto_fd_maximum(void)
 {
     ssize_t result = -1;
 
-    result = sysconf(_SC_OPEN_MAX);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        result = sysconf(_SC_OPEN_MAX);
+    DIMINUTO_CRITICAL_SECTION_END;
     if (result < 0) {
         diminuto_perror("diminuto_fd_maximum: sysconf");
     }

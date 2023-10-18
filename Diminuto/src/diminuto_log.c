@@ -338,7 +338,9 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 {
     diminuto_log_open((const char *)0);
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-    vsyslog(priority, format, ap);
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        vsyslog(priority, format, ap);
+    DIMINUTO_CRITICAL_SECTION_END;
 #else
     __android_log_vprint(priority, diminuto_log_ident, format, ap);
 #endif

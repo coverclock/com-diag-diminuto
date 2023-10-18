@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_memory.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_environment.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -31,21 +32,20 @@ size_t diminuto_memory_pagesize(diminuto_memory_pagesize_method_t * methodp)
     do {
 
 #if defined(COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES)
-
         if ((pagesize = COM_DIAG_DIMINUTO_MEMORY_PAGESIZE_BYTES) > 0) {
             method = DIMINUTO_MEMORY_PAGESIZE_METHOD_EXPLICIT;
             break;
         }
-
 #endif
 
 #if defined(_SC_PAGESIZE)
-
-        if ((pagesize = sysconf(_SC_PAGESIZE)) > 0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            pagesize = sysconf(_SC_PAGESIZE);
+        DIMINUTO_CRITICAL_SECTION_END;
+        if (pagesize > 0) {
             method = DIMINUTO_MEMORY_PAGESIZE_METHOD_SYSCONF_PAGESIZE;
             break;
         }
-
 #endif
 
         if ((pagesize = getpagesize()) > 0) {
@@ -76,21 +76,20 @@ size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp)
     do {
 
 #if defined(COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES)
-
         if ((linesize = COM_DIAG_DIMINUTO_MEMORY_LINESIZE_BYTES) > 0) {
             method = DIMINUTO_MEMORY_LINESIZE_METHOD_EXPLICIT;
             break;
         }
-
 #endif
 
 #if defined(_SC_LEVEL1_DCACHE_LINESIZE)
-
-        if ((linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE)) > 0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+        DIMINUTO_CRITICAL_SECTION_END;
+        if (linesize > 0) {
             method = DIMINUTO_MEMORY_LINESIZE_METHOD_SYSCONF_LEVEL1_DCACHE_LINESIZE;
             break;
         }
-
 #endif
 
         for (ii = 0; ii < countof(SYS_LINE_SIZE); ++ii) {

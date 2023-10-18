@@ -361,6 +361,7 @@ Similarly, environmental variables have qualified names like
 * hamming - implement the Hamming(8,4) code.
 * kermit - implement the Kermit-16 a.k.a. CRC-CCITT cyclic redundancy check.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
+* lowpassfilter - implements a trivial low pass filter macro.
 * number - alternative interfaces to strtol(3) and strtoul(3).
 * phex - emit printable and unprintable characters in a printable form.
 * proxy - macros to implement a proxy feature like heap.

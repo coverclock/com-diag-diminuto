@@ -154,7 +154,9 @@ diminuto_sticks_t diminuto_time_timezone()
      * we'll call it every time. Note that tzset() has no error return.
      */
 
-    tzset();
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        tzset();
+    DIMINUTO_CRITICAL_SECTION_END;
 
     /*
      * POSIX specifies the number of seconds WEST of UTC, while this function
@@ -185,7 +187,9 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
      * we'll call it every time. Note that tzset() has no error return.
      */
 
-    tzset();
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        tzset();
+    DIMINUTO_CRITICAL_SECTION_END;
 
     if (daylight) {
         juliet = diminuto_frequency_ticks2wholeseconds(ticks);
@@ -233,7 +237,9 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
          */
 
         errno = 0;
-        seconds = timegm(&datetime);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            seconds = timegm(&datetime);
+        DIMINUTO_CRITICAL_SECTION_END;
         if (seconds != (time_t)-1) {
             /* Do nothing. */
         } else if (errno == 0) {
