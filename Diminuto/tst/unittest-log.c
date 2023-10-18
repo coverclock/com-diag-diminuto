@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Log feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -24,10 +24,11 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_error.h"
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
 #include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +36,21 @@
 #include <errno.h>
 #include <assert.h>
 #include "unittest-log.h"
+
+static int mysetenv(const char *name, const char *value, int overwrite)
+{
+    int rc = -1;
+
+    /*
+     * Not really necessary since not multi-threaded, but a good
+     * example.
+     */
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        rc = setenv(name, value, overwrite);
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return rc;
+}
 
 int main(int argc, char ** argv)
 {
@@ -405,23 +421,23 @@ int main(int argc, char ** argv)
 
         diminuto_log_mask = 0xa5;
 
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
+        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0);
 
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "255", !0) == 0);
+        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "255", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 255);
 
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0377", !0) == 0);
+        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0377", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0377);
 
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0xff);
 
-        assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
+        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
 
@@ -432,17 +448,17 @@ int main(int argc, char ** argv)
             for (mask = 0; mask < 256; ++mask) {
 
                 (void)snprintf(buffer, sizeof(buffer), "%u", mask);
-                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
 
                 (void)snprintf(buffer, sizeof(buffer), "0x%x", mask);
-                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
 
                 (void)snprintf(buffer, sizeof(buffer), "0%o", mask);
-                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
             }
@@ -489,7 +505,7 @@ int main(int argc, char ** argv)
                 priority = PRIORITY[ii];
                 mask = diminuto_log_priority2mask(priority);
                 (void)snprintf(buffer, sizeof(buffer), "%u", mask);
-                assert(setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
                 assert(diminuto_log_mask_isenabled(mask));

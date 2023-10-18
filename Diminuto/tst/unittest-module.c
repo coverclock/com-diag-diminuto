@@ -18,15 +18,16 @@
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_core.h"
-#include "com/diag/diminuto/diminuto_path.h"
 #include "com/diag/diminuto/diminuto_module.h"
-#include "com/diag/diminuto/diminuto_time.h"
+#include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_path.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include "com/diag/diminuto/diminuto_time.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 
 const char KEYWORD[] = "LD_MODULE_PATH";
 const char NAME[] = "unittest-module-example.so";
@@ -48,7 +49,13 @@ int main(int argc, char ** argv)
 
     diminuto_core_enable();
 
-    paths = getenv(KEYWORD);
+    /*
+     * Not really necessary since not multi-threaded, but a good
+     * example.
+     */
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        paths = getenv(KEYWORD);
+    DIMINUTO_CRITICAL_SECTION_END;
     file = diminuto_path_find(KEYWORD, NAME);
     alternative = diminuto_path_find(KEYWORD, ALTERNATIVE);
     CHECKPOINT("NAME=\"%s\" ALTERNATIVE=\"%s\" KEYWORD=\"%s\" paths=\"%s\" file=\"%s\" alternative=\"%s\"\n", NAME, ALTERNATIVE, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "", (alternative != (const char *)0) ? alternative : "");

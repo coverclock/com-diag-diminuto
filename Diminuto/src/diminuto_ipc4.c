@@ -13,6 +13,7 @@
 #include "com/diag/diminuto/diminuto_ipc4.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_environment.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <unistd.h>
@@ -67,6 +68,23 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
  * RESOLVERS
  ******************************************************************************/
 
+/**
+ * Identical API to gethostbyname(3) but does the operaiton inside a
+ * critical section using the global environment mutex.
+ * @param name is the host name string.
+ * return a pointer to the host entry.
+ */
+static struct hostent * diminuto_ipc4_gethostbyname(const char * name)
+{
+    struct hostent * hostp = (struct hostent *)0;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        hostp = gethostbyname(name);
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return hostp;
+}
+
 diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
 {
     diminuto_ipv4_t * addresses = (diminuto_ipv4_t *)0;
@@ -79,7 +97,7 @@ diminuto_ipv4_t * diminuto_ipc4_addresses(const char * hostname)
         addresses = (diminuto_ipv4_t *)malloc(sizeof(diminuto_ipv4_t) * 2);
         addresses[0] = ntohl(inaddr.s_addr);
         addresses[1] = 0;
-    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
+    } else if ((hostp = diminuto_ipc4_gethostbyname(hostname)) == (struct hostent *)0) {
         /* Do nothing: no host entry. */
     } else if (hostp->h_addrtype != AF_INET) {
         /* Do nothing: not in the IP address family. */
@@ -109,7 +127,7 @@ diminuto_ipv4_t diminuto_ipc4_address(const char * hostname)
 
     if (inet_aton(hostname, &inaddr)) {
         address = ntohl(inaddr.s_addr);
-    } else if ((hostp = gethostbyname(hostname)) == (struct hostent *)0) {
+    } else if ((hostp = diminuto_ipc4_gethostbyname(hostname)) == (struct hostent *)0) {
         /* Do nothing: no host entry. */
     } else if (hostp->h_addrtype != AF_INET) {
         /* Do nothing: not in the IP address family. */
