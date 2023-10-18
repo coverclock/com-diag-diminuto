@@ -397,6 +397,7 @@ Similarly, environmental variables have qualified names like
 
 * condition - error checking wrapper around pthread condition.
 * criticalsection - macros to implement scoped pthread mutex serialization.
+* environment - global mutex to serialize access to the shell environment.
 * mutex - error checking wrapper around pthread mutex.
 * readerwriter - a FIFO lock that starves neither readers nor writers.
 * thread - error checking wrapper around pthread thread.
@@ -1270,6 +1271,9 @@ The Kernel Development Community, "Linux Timers Documentation",
 <http://blog.foool.net/wp-content/uploads/linuxdocs/timers.pdf>
 
 G. Klyne, C. Newman, "Date and Time on the Internet: Timestamps", RFC3339, IETF, 2002-07
+
+R. Kroll, "getaddrinfo() on glibc calls getenv(), oh boy",
+<https://rachelbythebay.com/w/2023/10/16/env/>, 2023-10-16
 
 K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation", 2019-08-19, <https://tech.flipkart.com/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a>
 

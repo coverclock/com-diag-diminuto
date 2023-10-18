@@ -10,9 +10,10 @@
  * This is the implementation of the Log feature.
  */
 
-#include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_types.h"
@@ -142,7 +143,10 @@ diminuto_log_mask_t diminuto_log_setmask(void)
     char * end = (char *)0;
     long value = -1;
 
-    if ((string = getenv(diminuto_log_mask_name)) == (const char *)0) {
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        string = getenv(diminuto_log_mask_name);
+    DIMINUTO_CRITICAL_SECTION_END;
+    if (string == (const char *)0) {
         /* Do nothing: not an error. */
     } else if (strncmp(string, ALL, sizeof(ALL)) == 0) {
         DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
@@ -173,7 +177,10 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
 
     if (path == (const char *)0) {
         const char * home = (const char *)0;
-        if ((home = getenv("HOME")) == (const char *)0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            home = getenv("HOME");
+        DIMINUTO_CRITICAL_SECTION_END;
+        if (home == (const char *)0) {
             home = "."; /* Not an error (but unlikely). */
         }
         (void)snprintf(filename, sizeof(filename), "%s/%s", home, diminuto_log_mask_path);

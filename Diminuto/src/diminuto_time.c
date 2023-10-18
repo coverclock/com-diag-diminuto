@@ -11,16 +11,17 @@
  */
 
 #include "com/diag/diminuto/diminuto_time.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_platform.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_absolute.h"
+#include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_platform.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <errno.h>
 #include <sys/time.h>
 #include "../src/diminuto_time.h"
 
@@ -173,6 +174,7 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
     diminuto_sticks_t result = 0;
     diminuto_sticks_t dst = 0;
     struct tm datetime = { 0, };
+    struct tm * tmp = (struct tm *)0;
     time_t juliet = 0;
     extern long timezone;
     extern int daylight;
@@ -187,7 +189,10 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
 
     if (daylight) {
         juliet = diminuto_frequency_ticks2wholeseconds(ticks);
-        if (localtime_r(&juliet, &datetime) == (struct tm *)0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            tmp = localtime_r(&juliet, &datetime);
+        DIMINUTO_CRITICAL_SECTION_END;
+        if (tmp == (struct tm *)0) {
             diminuto_perror("diminuto_time_daylightsaving: localtime_r");
             result = DIMINUTO_TIME_ERROR;
         } else {
@@ -252,7 +257,9 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
          */
 
         errno = 0;
-        seconds = mktime(&datetime);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            seconds = mktime(&datetime);
+        DIMINUTO_CRITICAL_SECTION_END;
         if (seconds != (time_t)-1) {
             /* Do nothing. */
         } else if (errno == 0) {
@@ -428,7 +435,10 @@ static int diminuto_time_zulu_generic(diminuto_sticks_t ticks, int * yearp, int 
     diminuto_ticks_t fraction = 0;
 
     zulu = diminuto_time_separate(ticks, &fraction);
-    if ((datetimep = gmtime_r(&zulu, &datetime)) != (struct tm *)0) {
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        datetimep = gmtime_r(&zulu, &datetime);
+    DIMINUTO_CRITICAL_SECTION_END;
+    if (datetimep != (struct tm *)0) {
         diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
         rc = 0;
     } else if (logging) {
@@ -459,7 +469,10 @@ int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int
     diminuto_ticks_t fraction = 0;
 
     juliet = diminuto_time_separate(ticks, &fraction);
-    if ((datetimep = localtime_r(&juliet, &datetime)) == (struct tm *)0) {
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        datetimep = localtime_r(&juliet, &datetime);
+    DIMINUTO_CRITICAL_SECTION_END;
+    if (datetimep == (struct tm *)0) {
         diminuto_perror("diminuto_time_timestamp: localtime_r");
         rc = -1;
     } else {

@@ -11,23 +11,24 @@
  */
 
 #include "com/diag/diminuto/diminuto_ipc6.h"
-#include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_countof.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_dump.h"
-#include <unistd.h>
+#include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_fd.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include <errno.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <netdb.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <unistd.h>
 #include <arpa/inet.h>
-#include <ifaddrs.h>
 #include <linux/limits.h>
-#include <net/if.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include "../src/diminuto_ipc6.h"
 
 /*******************************************************************************
@@ -136,26 +137,28 @@ static struct addrinfo * resolve(const char * hostname)
 
     hints.ai_family = AF_INET6;
     infop = (struct addrinfo *)0;
-    if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
-        if (infop != (struct addrinfo *)0) {
-            freeaddrinfo(infop);
-            infop = (struct addrinfo *)0;
-        }
-        hints.ai_family = AF_INET;
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
         if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
             if (infop != (struct addrinfo *)0) {
                 freeaddrinfo(infop);
                 infop = (struct addrinfo *)0;
             }
-            hints.ai_family = AF_UNSPEC;
+            hints.ai_family = AF_INET;
             if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
                 if (infop != (struct addrinfo *)0) {
                     freeaddrinfo(infop);
                     infop = (struct addrinfo *)0;
                 }
+                hints.ai_family = AF_UNSPEC;
+                if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
+                    if (infop != (struct addrinfo *)0) {
+                        freeaddrinfo(infop);
+                        infop = (struct addrinfo *)0;
+                    }
+                }
             }
         }
-    }
+    DIMINUTO_CRITICAL_SECTION_END;
 
     return infop;
 }

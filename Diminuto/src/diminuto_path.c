@@ -11,6 +11,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_path.h"
+#include "com/diag/diminuto/diminuto_environment.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +79,9 @@ char * diminuto_path_find(const char * keyword, const char * file)
             break;
         }
 
-        value = getenv(keyword);
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+            value = getenv(keyword);
+        DIMINUTO_CRITICAL_SECTION_END;
 
         path = diminuto_path_scan(value, file);
 
