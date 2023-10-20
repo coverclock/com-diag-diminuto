@@ -33,6 +33,10 @@
 # being run as root doing kill -9 commands doesn't concern you, you aren't
 # thinking clearly.)
 #
+# The REGEXPs in the greps are kinda stupid because the periods in the IPv4
+# addresses will be interpreted as "any character" instead of the literal
+# period. I should escape them. TODO
+#
 # EXAMPLES
 #
 # internettooltests
