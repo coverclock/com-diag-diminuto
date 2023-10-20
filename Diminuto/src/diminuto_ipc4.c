@@ -69,7 +69,7 @@ int diminuto_ipc4_identify(struct sockaddr * sap, diminuto_ipv4_t * addressp, di
  ******************************************************************************/
 
 /**
- * Identical API to gethostbyname(3) but does the operaiton inside a
+ * Wrapper around gethostbyname(3) but does the operaiton inside a
  * critical section using the global environment mutex.
  * @param name is the host name string.
  * return a pointer to the host entry.

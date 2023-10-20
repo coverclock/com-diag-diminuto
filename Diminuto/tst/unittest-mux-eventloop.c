@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Mux feature using an Event Loop.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -67,7 +67,7 @@ static void provider_connect(pid_t pid, diminuto_mux_t * muxp, diminuto_list_t *
     diminuto_mux_register_urgent(muxp, fd);
     diminuto_list_dataset(queuep, (void *)((uintptr_t)!0));
     diminuto_ipc6_farend(fd, &address, &port);
-    CHECKPOINT("PROVIDER %d connected %d %s;%u.\n", pid, fd, diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
+    CHECKPOINT("PROVIDER %d connected %d [%s]:%u.\n", pid, fd, diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
 }
 
 static void provider_disconnect(pid_t pid, diminuto_mux_t * muxp, diminuto_list_t * queuep, int fd)
@@ -86,7 +86,7 @@ static void provider_disconnect(pid_t pid, diminuto_mux_t * muxp, diminuto_list_
         diminuto_list_dataset(queuep, (void *)0);
         diminuto_ipc6_farend(fd, &address, &port);
         diminuto_mux_close(muxp, fd);
-        CHECKPOINT("PROVIDER %d disconnected %d %s;%u.\n", pid, fd, diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
+        CHECKPOINT("PROVIDER %d disconnected %d [%s]:%u.\n", pid, fd, diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
     }
 }
 
@@ -333,7 +333,7 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
         connection[ii] = ((ii % 2) == 0) ? diminuto_ipc4_stream_consumer(address4, port4) : diminuto_ipc6_stream_consumer(address6, port6);
         if (connection[ii] >= 0) {
             diminuto_ipc6_nearend(connection[ii], &address, &port);
-            CHECKPOINT("CONSUMER %d connected [%zu] %d %s;%u.\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
+            CHECKPOINT("CONSUMER %d connected [%zu] %d [%s]:%u.\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
         } else {
             xc = 1;
             goto exiting;
@@ -346,20 +346,20 @@ static pid_t consumer(diminuto_ipv4_t address4, diminuto_port_t port4, diminuto_
             output = diminuto_fd_write(connection[ii], &now, sizeof(now));
             if (output != sizeof(now)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                COMMENT("CONSUMER %d write [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, output, sizeof(now));
+                COMMENT("CONSUMER %d write [%zu] %d [%s]:%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, output, sizeof(now));
                 xc = 2;
                 goto exiting;
             }
             input = diminuto_fd_read_generic(connection[ii], &then, sizeof(then), sizeof(then));
             if (input != sizeof(then)) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                COMMENT("CONSUMER %d read [%zu] %d %s;%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, input, sizeof(then));
+                COMMENT("CONSUMER %d read [%zu] %d [%s]:%u (%zd!=%zu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, input, sizeof(then));
                 xc = 3;
                 goto exiting;
             }
             if (now != then) {
                 diminuto_ipc6_nearend(connection[ii], &address, &port);
-                COMMENT("CONSUMER %d compare [%zu] %d %s;%u (%llu!=%llu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, (long long unsigned int)now, (long long unsigned int)then);
+                COMMENT("CONSUMER %d compare [%zu] %d [%s]:%u (%llu!=%llu)!\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port, (long long unsigned int)now, (long long unsigned int)then);
                 xc = 4;
                 goto exiting;
             }
@@ -371,7 +371,7 @@ exiting:
     for (ii = 0; ii < connections; ++ii) {
         diminuto_ipc6_nearend(connection[ii], &address, &port);
         diminuto_ipc6_close(connection[ii]);
-        CHECKPOINT("CONSUMER %d disconnected [%zu] %d %s;%u.\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
+        CHECKPOINT("CONSUMER %d disconnected [%zu] %d [%s]:%u.\n", pid, ii, connection[ii], diminuto_ipc6_address2string(address, printable, sizeof(printable)), port);
     }
 
     diminuto_heap_free(connection);

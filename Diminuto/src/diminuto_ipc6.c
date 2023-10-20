@@ -124,6 +124,26 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
  * RESOLVERS
  ******************************************************************************/
 
+/**
+ * Wrapper around getaddrinfo(3) that calls the funciton inside the environment
+ * critical section.
+ * @param node points to the nod name.
+ * @param service points to the service name.
+ * @param hints points to the addrinfo structure.
+ * @pram res points to the arrayinfo value-result pointer.
+ ( @return the getaddrinfo(3) result.
+ */
+static int diminuto_ipc6_getaddrinfo(const char * node, const char * service, const struct addrinfo * hints, struct addrinfo ** res)
+{
+    int rc = -1;
+
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        rc = getaddrinfo(node, service, hints, res);
+    DIMINUTO_CRITICAL_SECTION_END;
+
+    return rc;
+}
+
 /*
  * This ipc6 feature prefers IPv6 addresses if they are available. So we
  * try for those first, then we settle for IPv4, then as a last ditch
@@ -137,28 +157,26 @@ static struct addrinfo * resolve(const char * hostname)
 
     hints.ai_family = AF_INET6;
     infop = (struct addrinfo *)0;
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-        if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
+    if ((diminuto_ipc6_getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
+        if (infop != (struct addrinfo *)0) {
+            freeaddrinfo(infop);
+            infop = (struct addrinfo *)0;
+        }
+        hints.ai_family = AF_INET;
+        if ((diminuto_ipc6_getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
             if (infop != (struct addrinfo *)0) {
                 freeaddrinfo(infop);
                 infop = (struct addrinfo *)0;
             }
-            hints.ai_family = AF_INET;
-            if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
+            hints.ai_family = AF_UNSPEC;
+            if ((diminuto_ipc6_getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
                 if (infop != (struct addrinfo *)0) {
                     freeaddrinfo(infop);
                     infop = (struct addrinfo *)0;
                 }
-                hints.ai_family = AF_UNSPEC;
-                if ((getaddrinfo(hostname, (const char *)0, &hints, &infop)) != 0) {
-                    if (infop != (struct addrinfo *)0) {
-                        freeaddrinfo(infop);
-                        infop = (struct addrinfo *)0;
-                    }
-                }
             }
         }
-    DIMINUTO_CRITICAL_SECTION_END;
+    }
 
     return infop;
 }
