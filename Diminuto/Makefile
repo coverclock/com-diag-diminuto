@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	100# API changes that may require that applications be modified.
 MINOR				:=	5# Only functionality or features added with no legacy API changes.
-BUILD				:=	2# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1001,31 +1001,31 @@ install-include:
 	tar -C $(OUT)/$(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
 	tar -C $(INC_DIR) -cvf - . | tar -C $(INSTALL_INC) -xvf -
 
-########## Suites
-
-.PHONY: brackets criticalsection criticalsections cxxcapi extended geologic gnuish logger logging longer multiplexors multiplexors4 multiplexors6 multiplexorsl privileged privileged4 privileged6 reassuring renameat2 sanity signals sockets sockets0 socketsl sockets4 sockets6 sourcing tagging threads timers unittest vintage
+########## Tests
 
 vintage:	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(BIN_DIR)/platform $(OUT)/$(BIN_DIR)/sizeof
 	vintage
 	platform
 	sizeof
 
-sourcing:	vintage
+.PHONY:	brackets-test criticalsections-test criticalsection-test cxxcapi-test extended-test geologic-test gnuish-test logger-test logging-test log-test longer-test multiplexors4-test multiplexors6-test multiplexorsl-test multiplexors-test newdelete-test privileged4-test privileged6-test privileged-test readerwriter-test realtime-test reassuring4-test reassuring-test renameat2-test sanity-test signals-test sockets0-test sockets4-test sockets6-test socketsl-test sockets-test sourcing-test tagging-test threads-test timers-test unittest-test unittest-testify valgrind-test
+
+sourcing-test:	vintage
 	unittest-sourcing
 
-logger:	sourcing
+logger-test:	sourcing-test
 	unittest-log
 
-unittest:	logger
+unittest-test:	logger-test
 	unittest-unittest
 
-criticalsection:	unittest
+criticalsection-test:	unittest-test
 	unittest-criticalsection
 
 # Remarkably, unittest-ipc-endpoint works without the kernel's ipv6 module
 # even though it it tests IPv6 addresses; those tests apparently only depend
 # on the C library.
-sanity:	criticalsection
+sanity-test:	criticalsection-test
 	unittest-absolute
 	unittest-arraytype
 	unittest-assert && false || true
@@ -1119,10 +1119,10 @@ sanity:	criticalsection
 	unittest-well
 	unittest-widthof
 
-longer:	sanity
+longer-test:	sanity-test
 	unittest-readerwriter
 
-extended:	longer
+extended-test:	longer-test
 	unittest-alarm
 	unittest-buffer-perf
 	unittest-controller
@@ -1141,20 +1141,20 @@ extended:	longer
 	unittest-time
 	unittest-time-cost
 
-geologic:	extended
+geologic-test:	extended-test
 	unittest-epoch geologic
 
-privileged4:
+privileged4-test:
 	unittest-ping4
 
-privileged6:
+privileged6-test:
 	unittest-ping6# Requires native IPv6 routing.
 
-privileged:	privileged4 privileged6
+privileged-test:	privileged4-test privileged6-test
 	# unittest-map 78.0.0 worked on x86_64 but not on arm64.
-	internettooltests && echo "SUCCESS." || echo "FAILED!"
+	internettooltests
 
-signals:
+signals-test:
 	unittest-uninterruptiblesection
 	unittest-alarm
 	unittest-hangup-1
@@ -1166,7 +1166,7 @@ signals:
 	unittest-reaper
 	unittest-terminator
 
-threads:
+threads-test:
 	unittest-mutex
 	unittest-condition
 	unittest-thread
@@ -1176,7 +1176,7 @@ threads:
 	unittest-readerwriter -d -f
 	unittest-serializedsection
 
-gnuish:
+gnuish-test:
 	unittest-lock
 	unittest-module
 	unittest-mutex
@@ -1185,7 +1185,7 @@ gnuish:
 	unittest-renameat2
 	unittest-thread
 
-logging:	$(OUT)/$(SYM_DIR)/logging
+logging-test:	$(OUT)/$(SYM_DIR)/logging
 	logging
 	echo "logging: default" 1>&2
 	unittest-log
@@ -1244,7 +1244,7 @@ logging:	$(OUT)/$(SYM_DIR)/logging
 	echo "Testing emergency."   | log -N EMER -E -B 256
 	echo "Testing debug."       | log -N DBUG -d -U
 
-timers:
+timers-test:
 	unittest-frequency
 	unittest-timer
 	unittest-oneshot1
@@ -1259,30 +1259,30 @@ timers:
 	unittest-uninterruptiblesection
 	unittest-modulator
 
-multiplexorsl:
+multiplexorsl-test:
 	unittest-muxl
 	unittest-polll
 
-multiplexors4:
+multiplexors4-test:
 	unittest-mux4
 	unittest-poll4
 
-multiplexors6:
+multiplexors6-test:
 	unittest-mux6
 	unittest-poll6
 
-multiplexors:	multiplexorsl multiplexors4 multiplexors6
+multiplexors-test:	multiplexorsl-test multiplexors4-test multiplexors6-test
 
-sockets0:
+sockets0-test:
 	unittest-fd
 	unittest-ipc
 
-socketsl:
+socketsl-test:
 	unittest-ipcl
 	unittest-muxl
 	unittest-polll
 
-sockets4:
+sockets4-test:
 	unittest-ipc4
 	unittest-ipc-ancillary
 	unittest-ipc-scattergather
@@ -1290,7 +1290,7 @@ sockets4:
 	unittest-poll4
 	unittest-scattergather4
 
-sockets6:
+sockets6-test:
 	unittest-ipc6
 	unittest-mux6
 	unittest-mux-eventloop
@@ -1298,23 +1298,23 @@ sockets6:
 	unittest-poll-eventloop
 	unittest-scattergather6
 
-sockets:	sockets0 socketsl sockets4 sockets6
-	internettooltests && echo "SUCCESS." || echo "FAILED!"
+sockets-test:	sockets0-test socketsl-test sockets4-test sockets6-test
+	internettooltests
 
-realtime:
+realtime-test:
 	unittest-throttle
 	unittest-shaper
 	unittest-meter
 
-renameat2:
+renameat2-test:
 	unittest-renameat2
 	unittest-lock
-	renametooltest && echo "SUCCESS." || echo "FAILED!"
+	renametooltest
 
-cxxcapi:
+cxxcapi-test:
 	make -C cxx
 
-criticalsections:	criticalsection
+criticalsections-test:	criticalsection-test
 	unittest-alarm
 	unittest-buffer
 	unittest-hangup-1
@@ -1332,7 +1332,7 @@ criticalsections:	criticalsection
 	unittest-time
 	unittest-timer
 
-brackets:
+brackets-test:
 	unittest-barrier
 	unittest-coherentsection
 	unittest-criticalsection
@@ -1340,30 +1340,28 @@ brackets:
 	unittest-uninterruptiblesection
 
 # Some unit tests get run more than once, perhaps with different options.
-reassuring:	sanity sockets threads signals gnuish logging timers renameat2 cxxcapi extended
+reassuring-test:	sanity-test sockets-test threads-test signals-test gnuish-test logging-test timers-test renameat2-test cxxcapi-test extended-test
 
 # Same as reassuring but without tests that depend on the ipv6 kernel module.
-reassuring4:	sanity sockets4 threads signals gnuish logging timers renameat2 cxxcapi extended
+reassuring4-test:	sanity-test sockets4-test threads-test signals-test gnuish-test logging-test timers-test renameat2-test cxxcapi-test extended-test
 
-tagging:	reassuring geologic
+tagging-test:	reassuring-test geologic-test
 
 ########## Valgrind (not available on all platforms)
-
-.PHONY:	log readerwriter newdelete valgrind valground
 
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all $(PROGRAM)
 
-readerwriter:
+readerwriter-test:
 	make valgrind PROGRAM='unittest-readerwriter -d -f'
 
-log:
+log-test:
 	make valgrind PROGRAM=unittest-log
 
-newdelete:
+newdelete-test:
 	make valgrind PROGRAM=unittest-new
 
-valground:	readerwriter log newdelete
+valgrind-test:	readerwriter-test log-test newdelete-test
 
 ##########  Repeat
 
