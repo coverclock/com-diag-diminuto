@@ -1003,6 +1003,8 @@ install-include:
 
 ########## Tests
 
+.PHONY:	vintage
+
 vintage:	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(BIN_DIR)/platform $(OUT)/$(BIN_DIR)/sizeof
 	vintage
 	platform
