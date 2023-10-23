@@ -719,7 +719,7 @@ still make what I consider to be minor changes in the master branch.
 
 # Versioning
 
-After a lot of testing (typically having run the '''tagging-test''' unit test
+After a lot of testing (typically having run the tagging-test unit test
 suite), I tag major releases with a three-number tuple that is defined
 in the build Makefile for each project. Release numbers, e.g. 22.2.1,
 consist of a major number (22), a minor number (2), and a build number
