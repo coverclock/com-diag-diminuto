@@ -531,9 +531,11 @@ a bug.
 * logging-test - these unit tests exercise the logging feature.
 * longer-test - these unit tests take a coffee break to run.
 * privileged-test - these unit tests require "sudo make privileged" to run.
+* reassuring-test - a long test suite to reassure me that things mostly work.
 * sanity-test - these unit tests take just a few minutes to run.
 * signals-test - these unit tests exercise the signal handlers.
 * sockets-test - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
+* tagging-test - a very long test suite done before tagging a new release.
 * threads-test - these unit tests exercise the POSIX thread-based features.
 * timers-test - these unit tests exercise the timer features.
 
