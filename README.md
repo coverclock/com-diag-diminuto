@@ -519,6 +519,24 @@ or as a user - e.g. pi - that is in the gpio group.)
 
 # Unit Test Make Targets
 
+There are many make targets to run different combinations of unit
+tests. Here are the ones I use the most. Because some individual unit
+tests appear in multiple make targets, as part of different unit test
+suites, some unit tests may be run more than once. This is a feature, not
+a bug.
+
+* extended-test - these unit tests take a lunch break or more to run.
+* geologic-test - these unit test take the better part of a day or more to run.
+* gnuish-test - these unit tests are for features that require GNU extensions.
+* logging-test - these unit tests exercise the logging feature.
+* longer-test - these unit tests take a coffee break to run.
+* privileged-test - these unit tests require "sudo make privileged" to run.
+* sanity-test - these unit tests take just a few minutes to run.
+* signals-test - these unit tests exercise the signal handlers.
+* sockets-test - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
+* threads-test - these unit tests exercise the POSIX thread-based features.
+* timers-test - these unit tests exercise the timer features.
+
 Important safety tip: on some (most?) platforms, if you run a unit test
 in the background, perhaps using the nohup command, having redirected
 its stdout and stderr to files for examination later, and then logoff,
@@ -529,20 +547,6 @@ the unit test and find your output file(s) strangely truncated. This
 is a feature, not a bug. Also note, on systemd platforms like Fedora,
 the system log is saved in a database format, not in a flat text file;
 see ```man journalctl``` on how to access it.
-
-* sanity - these unit tests take just a few moments to run.
-* longer - these unit tests take a coffee break to run.
-* extended - these unit tests take a lunch break or more to run.
-* geologic - these unit test take the better part of a day or more to run.
-* gnuish - these unit tests are for features that require GNU.
-* logging - these unit tests exercise the logging feature.
-* mostest - these unit tests require "make most; make mostest" to run.
-* nohup - these unit tests require "nohup make nohup" to run.
-* privileged - these unit tests require "sudo make privileged" to run.
-* signals - these unit tests exercise the kill signal handlers.
-* sockets - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
-* threads - these unit tests exercise the POSIX thread-based features.
-* timers - these unit tests exercise the timer feature.
 
 # Directories
  
