@@ -814,15 +814,15 @@ useful stuff like the machine code and offsets.
 
 Run the basic sanity tests that complete in just a few minutes.
 
-    make sanity
+    make sanity-test
 
 Run more extended tests that may take a lunch break to complete.
 
-    make extended
+    make extended-test
 
 Run long term tests that may take overnight to complete.
 
-    make geologic
+    make geologic-test
 
 ## Installing
 
