@@ -125,13 +125,7 @@ ALIASES				:=	hex oct ntohs htons ntohl htonl
 NEW					:=	dummy
 OLD					:=	dummy
 
-PACKAGE				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(TARGET)
-
 MANIFEST			:=	$(ARC_DIR) $(BIN_DIR) $(DRV_DIR) $(INC_DIR) $(LIB_DIR) $(MOD_DIR) $(TST_DIR) $(FUN_DIR)
-
-DISTRIBUTION		:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR).$(MINOR).$(BUILD)
-
-TARBALL				:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)
 
 SO					:=	so
 
@@ -279,30 +273,34 @@ clobber:	pristine
 
 .PHONY:	package
 
-package $(PACKAGE).tgz:
-	D=`dirname $(PACKAGE)`; mkdir -p $$D; \
+PATHPACKAGE	:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR)-$(MINOR)-$(BUILD)-$(TARGET)-package
+
+package:
+	D=`dirname $(PATHPACKAGE)`; mkdir -p $$D; \
 	for M in $(MANIFEST); do mkdir -p $(OUT)/$$M; done; \
 	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-	B=`basename $(PACKAGE)`; mkdir -p $$T/$$B; \
+	B=`basename $(PATHPACKAGE)`; mkdir -p $$T/$$B; \
 	tar -C $(OUT) --exclude-vcs -cvf - $(MANIFEST) | tar -C $$T/$$B -xvf -; \
 	tar --exclude-vcs -cvf - $(INC_DIR) | tar -C $$T/$$B -xvf -; \
-	tar -C $$T --exclude-vcs -cvzf - $$B > $(PACKAGE).tgz; \
+	tar -C $$T --exclude-vcs -cvzf - $$B > $(PATHPACKAGE).tgz; \
 	rm -rf $$T
 
 # Useful for given someone a tarball of the actual source distribution that
 # is guaranteed to at least build.
 
-.PHONY:	distribution distro
+.PHONY:	distro
 
-distribution distro $(DISTRIBUTION).tgz:
-	D=`dirname $(DISTRIBUTION)`; mkdir -p $$D; \
+PATHDISTRO	:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR)-$(MINOR)-$(BUILD)-$(TARGET)-distro
+
+distro:
+	D=`dirname $(PATHDISTRO)`; mkdir -p $$D; \
 	T=`mktemp -d "$(TEMP_DIR)/$(PROJECT).XXXXXXXXXX"`; \
-	B=`basename $(DISTRIBUTION)`; \
+	B=`basename $(PATHDISTRO)`; \
 	( cd $$T; git clone $(GITURL) $$B ); \
-	tar -C $$T --exclude-vcs -cvzf - ./$$B > $(DISTRIBUTION).tgz; \
+	tar -C $$T --exclude-vcs -cvzf - ./$$B > $(PATHDISTRO).tgz; \
 	rm -rf $$T/$$B; \
-	tar -C $$T -xvzf - < $(DISTRIBUTION).tgz; \
-	( cd $$T/$$B/$(TITLE); $(MAKE) all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
+	tar -C $$T -xvzf - < ../$(PATHDISTRO).tgz; \
+	( cd ../$$T/$$B/$(TITLE); $(MAKE) all TARGET=host OUT=out/host && $(OUT)/bin/generate > ./setup && . ./setup && vintage ); \
 	rm -rf $$T
 
 # Useful for copying a tarball of the current development source base to a
@@ -310,11 +308,13 @@ distribution distro $(DISTRIBUTION).tgz:
 
 .PHONY:	tarball
 
-tarball $(TARBALL).tgz:
-	D=`dirname $(TARBALL)`; mkdir -p $$D; \
+PATHTARBALL	:=	$(OUT)/$(TGZ_DIR)/$(PROJECT)-$(MAJOR)-$(MINOR)-$(BUILD)-$(TARGET)-tarball
+
+tarball:
+	D=`dirname $(PATHTARBALL)`; mkdir -p $$D; \
 	T=`pwd`; \
 	B=`basename $$T`; \
-	( tar -C .. --exclude-vcs --exclude=$(OUT_DIR) --exclude=.??* -cvzf - $$B ) > $(TARBALL).tgz; \
+	tar -C .. --exclude-vcs --exclude=$(OUT_DIR) --exclude=.??* -cvzf - $$B > $(PATHTARBALL).tgz; \
 
 # Useful for backing a complete backup before doing something that may turn
 # out to be profoundly stupid, like running a transformative script across all
@@ -323,8 +323,20 @@ tarball $(TARBALL).tgz:
 
 .PHONY:	backup
 
+PATHBACKUP	:=	$(HOME)/$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z)
+
 backup:
-	tar --exclude=$(OUT_DIR) -cvzf - . > $(HOME)/$(PROJECT)-$(shell date -u +%Y%m%d%H%M%S%N%Z).tgz
+	tar --exclude=$(OUT_DIR) -cvzf - . > $(PATHBACKUP).tgz
+
+# Useful for moving build artifacts to another platform. I use it to move
+# them to a desktop running Ghidra for analysis and reverse engineering.
+
+.PHONY: artifacts
+
+PATHARTIFACTS	:=	../$(PROJECT)-$(MAJOR)-$(MINOR)-$(BUILD)-$(TARGET)-artifacts
+
+artifacts:
+	tar --exclude-vcs --exclude=$(OUT)/$(TGZ_DIR) -cvzf - $(OUT_DIR) > $(PATHARTIFACTS).tgz
 
 ########## Target C Libraries
 
