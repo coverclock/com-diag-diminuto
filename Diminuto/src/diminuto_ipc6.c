@@ -137,9 +137,9 @@ static int diminuto_ipc6_getaddrinfo(const char * node, const char * service, co
 {
     int rc = -1;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         rc = getaddrinfo(node, service, hints, res);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
 
     return rc;
 }

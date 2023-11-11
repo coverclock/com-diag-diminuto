@@ -381,11 +381,11 @@ extern void diminuto_writer_cleanup(void * vp);
 
 /**
  * This function enables (or disables) additional diagnostic information to be
- * emitted to the log at DEBUG level for the specified Reader Writer object.
+ * emitted to standard error the specified Reader Writer object.
  * The generation and emission of the debug information is done within the
  * critical section of the object's mutex during execution of the API. This
  * also audits the object; failure of the audit can cause an assertion
- * exception.
+ * exception. (The Log feature cannot be used because of a circular dependency.)
  * @param rwp points to the Reader Writer object.
  * @param debugging is true to enable debugging, false otherwise.
  * @return the prior value of the debugging flag.

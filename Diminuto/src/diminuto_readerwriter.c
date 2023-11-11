@@ -33,16 +33,22 @@
  * to activate and do it themselves. It also replaced the condition variable
  * broadcast signal done by every activating thread by a single broadcast
  * signal for a bulk activation (this made a big difference for readers).
+ *
+ * The Reader Writer feature cannot make use of the Log feature without
+ * causing a circular dependency that results in a deadlock: the underlying
+ * GNU libc syslog(3) and vsyslog(3) functions access the process
+ * environment (probably for the locale) and we protect the environment
+ * using a Reader Writer lock. THis is a PITA.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
-#include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_readerwriter.h"
+#include <stdio.h>
 #include <stdlib.h>
-#include "diminuto_readerwriter.h"
+#include "../src/diminuto_readerwriter.h"
 
 /*******************************************************************************
  * TYPES
@@ -78,6 +84,14 @@ static pthread_key_t key;
  ******************************************************************************/
 
 /**
+ * @def DPRINTF
+ * If debugging is enabled in the @a _RWP_ object, print the argument
+ * list to standard error.
+ */
+#define DPRINTF(_RWP_, ...) \
+    (((_RWP_)->debugging) ? fprintf(stderr, __VA_ARGS__) : 0)
+
+/**
  * @def BEGIN_CRITICAL_SECTION
  * This is the opening bracket of a critical section using the mutex
  * in the Reader Writer object pointed to by @a _RWP_.
@@ -89,7 +103,7 @@ static pthread_key_t key;
         diminuto_readerwriter_rwp = (_RWP_); \
         if ((diminuto_readerwriter_rc = pthread_mutex_lock(&(diminuto_readerwriter_rwp->mutex))) != 0) { \
             errno = diminuto_readerwriter_rc; \
-            diminuto_perror("diminuto_readerwriter: BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
+            perror("diminuto_readerwriter: BEGIN_CRITICAL_SECTION: pthread_mutex_lock"); \
         } else { \
             pthread_cleanup_push(mutex_cleanup, diminuto_readerwriter_rwp); \
             do { \
@@ -193,7 +207,7 @@ static diminuto_list_t * head(diminuto_readerwriter_t * rwp)
 
     while (((np = diminuto_list_head(&(rwp->list))) != (diminuto_list_t *)0) && ((role_t)diminuto_list_data(np) == FAILED)) {
         dequeue(rwp, np);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Failed %p REMOVED %dreading %dwriting %dwaiting", rwp, np, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Failed %p REMOVED %dreading %dwriting %dwaiting\n", rwp, np, rwp->reading, rwp->writing, rwp->waiting);
     }
 
     return np;
@@ -214,7 +228,7 @@ static void mutex_cleanup(void * vp)
 
     if ((rc = pthread_mutex_unlock(&(rwp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter: mutex_cleanup: pthread_mutex_unlock");
+        perror("diminuto_readerwriter: mutex_cleanup: pthread_mutex_unlock");
     }
 }
 
@@ -231,7 +245,6 @@ static void exit_cleanup()
 
     if ((vp = pthread_getspecific(key)) != (void *)0) {
         free(vp);
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %p RELEASED", vp);
     }
 }
 
@@ -276,7 +289,6 @@ static void key_cleanup(void * vp)
 {
     wait_cleanup(vp);
     free(vp);
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Thread %p RELEASED", vp);
 }
 
 /*******************************************************************************
@@ -298,11 +310,10 @@ static int initialize()
             /* Do nothing. */
         } else if ((rc = pthread_key_create(&key, &key_cleanup)) != 0) {
             errno = rc;
-            diminuto_perror("diminuto_readerwriter: initialize: pthread_key_create");
+            perror("diminuto_readerwriter: initialize: pthread_key_create");
         } else if ((rc = atexit(&exit_cleanup)) != 0) {
-            diminuto_perror("diminuto_readerwriter: initialize: atexit");
+            perror("diminuto_readerwriter: initialize: atexit");
         } else {
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Process %u INITIALIZED", key);
             initialized = !0;
         }
 
@@ -327,14 +338,14 @@ static diminuto_list_t * acquire()
     } else if ((vp = pthread_getspecific(key)) != (void *)0) {
         np = (diminuto_list_t *)vp;
     } else if ((np = (diminuto_list_t *)malloc(sizeof(diminuto_list_t))) == (diminuto_list_t *)0) {
-        diminuto_perror("diminuto_readerwriter: acquire: malloc");
+        perror("diminuto_readerwriter: acquire: malloc");
     } else if ((rc = pthread_setspecific(key, diminuto_list_datainit(np, (void *)STARTED))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter: acquire: pthread_key_setspecific");
+        perror("diminuto_readerwriter: acquire: pthread_key_setspecific");
         free(np);
         np = (diminuto_list_t *)0;
     } else {
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter: Thread %p ACQUIRED", np);
+        /* Do nothing. */
     }
 
     return np;
@@ -351,13 +362,13 @@ diminuto_readerwriter_t * diminuto_readerwriter_init(diminuto_readerwriter_t * r
 
     if ((rc = pthread_mutex_init(&(rwp->mutex), (pthread_mutexattr_t *)0)) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter_init: pthread_mutex_init");
+        perror("diminuto_readerwriter_init: pthread_mutex_init");
     } else if ((rc = pthread_cond_init(&(rwp->reader), (pthread_condattr_t *)0)) != 0) {
         errno = rc;
-        diminuto_perror("diminution_readerwriter_init: pthread_cond_init: reader");
+        perror("diminution_readerwriter_init: pthread_cond_init: reader");
     } else if ((rc = pthread_cond_init(&(rwp->writer), (pthread_condattr_t *)0)) != 0) {
         errno = rc;
-        diminuto_perror("diminution_readerwriter_init: pthread_cond_init: writer");
+        perror("diminution_readerwriter_init: pthread_cond_init: writer");
     } else {
         diminuto_list_datainit(&(rwp->list), (void *)rwp);
         rwp->debugging = 0;
@@ -379,19 +390,19 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 
     if (rwp->waiting > 0) {
         errno = DIMINUTO_READERWRITER_BUSY;
-        diminuto_perror("diminuto_readerwriter_fini");
+        perror("diminuto_readerwriter_fini");
     } else if (diminuto_list_fini(&(rwp->list)) != (diminuto_list_t *)0) {
         errno = DIMINUTO_READERWRITER_UNEXPECTED;
-        diminuto_perror("diminuto_readerwriter_fini: diminuto_list_fini");
+        perror("diminuto_readerwriter_fini: diminuto_list_fini");
     } else if ((rc = pthread_cond_destroy(&(rwp->writer))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter_fini: pthread_cond_destroy: writer");
+        perror("diminuto_readerwriter_fini: pthread_cond_destroy: writer");
     } else if ((rc = pthread_cond_destroy(&(rwp->reader))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter_fini: pthread_cond_destroy: reader");
+        perror("diminuto_readerwriter_fini: pthread_cond_destroy: reader");
     } else if ((rc = pthread_mutex_destroy(&(rwp->mutex))) != 0) {
         errno = rc;
-        diminuto_perror("diminuto_readerwriter_fini: pthread_mutex_destroy");
+        perror("diminuto_readerwriter_fini: pthread_mutex_destroy");
     } else {
         result = (diminuto_readerwriter_t *)0;
     }
@@ -405,7 +416,9 @@ diminuto_readerwriter_t * diminuto_readerwriter_fini(diminuto_readerwriter_t * r
 
 /**
  * Display information about the internal state of the Reader Writer object
- * to the log. As a side effect, audit the object and enforce its invariants.
+ * to standard error. As a side effect, audit the object and enforce its
+ * invariants. We emit the audit information to standard error in a single
+ * function call.
  * @param rwp points to the Reader Writer object.
  * @param label is a string displayed to identify who is calling the function.
  */
@@ -414,7 +427,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
     int save = errno;
     diminuto_list_t * np = (diminuto_list_t *)0;
     diminuto_list_t * rp = (diminuto_list_t *)0;
-    char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM] = { '\0', };
+    char buffer[1024] = { '\0', };
     char * bp = (char *)0;
     size_t size = 0;
     int length = 0;
@@ -522,7 +535,7 @@ static void audit(diminuto_readerwriter_t * rwp, const char * label)
 
     *(bp) = '\0';
 
-    DIMINUTO_LOG_DEBUG("%s\n", buffer); /* Warning otherwise. */
+    DPRINTF(rwp, "%s\n", buffer);
 
     /*
      * The reading and writing invariants are enforced every time RW
@@ -590,7 +603,7 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
             do {
                 if ((rc = pthread_cond_wait(conditionp, &(rwp->mutex))) != 0) {
                     errno = rc;
-                    diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_wait");
+                    perror("diminuto_readerwriter: satisfy: pthread_cond_wait");
                     break;
                 }
             } while (!ready(np, pending));
@@ -626,7 +639,7 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
                     /* Do nothing. */
                 } else if (rc != ETIMEDOUT) {
                     errno = rc;
-                    diminuto_perror("diminuto_readerwriter: satisfy: pthread_cond_timedwait");
+                    perror("diminuto_readerwriter: satisfy: pthread_cond_timedwait");
                     break;
                 } else {
                     errno = rc;
@@ -652,7 +665,7 @@ static int satisfy(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t p
  * list is passed back when the thread awakens purely for purposes of
  * debugging.
  * @param rwp points to the Reader Writer object.
- * @param label is a string used for logging.
+ * @param label is a string used for debugging output.
  * @param np points to the thread local list node for the calling thread.
  * @param waiting is the waiting role to be used: READER or WRITER.
  * @param pending is the pending role to be used: READABLE or WRITABLE.
@@ -674,7 +687,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
     diminuto_list_dataset(np, (void *)waiting);
     enqueue(rwp, np, priority);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: %s WAITING %s %s %dreading %dwriting %dwaiting", rwp, label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
+    DPRINTF(rwp, "diminuto_readerwriter@%p: %s WAITING %s %s %dreading %dwriting %dwaiting\n", rwp, label, (timeout == DIMINUTO_READERWRITER_INFINITY) ? "Inf" : (timeout == 0) ? "Pol" : "Tim", priority ? "Hi" : "Lo", rwp->reading, rwp->writing, rwp->waiting);
 
     /*
      * Wait until this thread is signaled and activated. Note that POSIX
@@ -697,10 +710,10 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
     if (rc != 0) {
         role = (role_t)diminuto_list_data(np);
         if (role == READABLE) {
-            DIMINUTO_LOG_WARNING("diminuto_readerwriter: Reader ready AND timedout!");
+            DPRINTF(rwp, "diminuto_readerwriter: Reader ready AND timedout!\n");
             rc = 0;
         } else if (role == WRITABLE) {
-            DIMINUTO_LOG_WARNING("diminuto_readerwriter: Writer ready AND timedout!");
+            DPRINTF(rwp, "diminuto_readerwriter: Writer ready AND timedout!\n");
             rc = 0;
         } else {
             dequeue(rwp, np);
@@ -709,7 +722,7 @@ static int schedule(diminuto_readerwriter_t * rwp, const char * label, diminuto_
 
     diminuto_list_dataset(np, (void *)RUNNING);
 
-    DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: %s %s %dreading %dwriting %dwaiting", rwp, label, (rc == 0) ? "ACTIVATED" : "TIMEDOUT", rwp->reading, rwp->writing, rwp->waiting);
+    DPRINTF(rwp, "diminuto_readerwriter@%p: %s %s %dreading %dwriting %dwaiting\n", rwp, label, (rc == 0) ? "ACTIVATED" : "TIMEDOUT", rwp->reading, rwp->writing, rwp->waiting);
 
     return rc;
 }
@@ -746,7 +759,7 @@ static int suspend(diminuto_readerwriter_t * rwp, diminuto_list_t * np, role_t r
          */
 
         errno = rc;
-        diminuto_perror("diminuto_readerwriter: suspend: role");
+        perror("diminuto_readerwriter: suspend: role");
 
     }
 
@@ -795,7 +808,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             cp = &(rwp->reader);
             result = role;
             required = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader ACTIVATED %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+            DPRINTF(rwp, "diminuto_readerwriter@%p: Reader ACTIVATED %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
             continue;
 
         } else if ((role == WRITER) && ((required == WRITER) || (required == ANY))) {
@@ -810,7 +823,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
             rwp->writing += 1; /* WRITING COUNTER INCREMENT */
             cp = &(rwp->writer);
             result = role;
-            DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer ACTIVATED %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+            DPRINTF(rwp, "diminuto_readerwriter@%p: Writer ACTIVATED %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
             break;
 
         } else {
@@ -836,7 +849,7 @@ static role_t resume(diminuto_readerwriter_t * rwp, role_t required)
         /* Do nothing. */
     } else {
         errno = rc;
-        diminuto_perror("broadcast: pthread_cond_broadcast");
+        perror("broadcast: pthread_cond_broadcast");
         result = NONE;
     }
 
@@ -859,7 +872,7 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader BEGIN enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Reader BEGIN enter %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
@@ -916,7 +929,7 @@ int diminuto_reader_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader BEGIN exit %dreading %dwriting %dwaiting %d", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Reader BEGIN exit %dreading %dwriting %dwaiting %d\n", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->debugging) {
             audit(rwp, "Reader BEGIN");
@@ -936,7 +949,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Reader END enter %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_contract((rwp->reading > 0) && (rwp->writing == 0));
 
@@ -990,7 +1003,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
         } else {
 
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("diminuto_reader_end: role");
+            perror("diminuto_reader_end: role");
 
         }
 
@@ -1001,7 +1014,7 @@ int diminuto_reader_end(diminuto_readerwriter_t * rwp)
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Reader END exit %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Reader END exit %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->debugging) {
             audit(rwp, "Reader END");
@@ -1026,7 +1039,7 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer BEGIN enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Writer BEGIN enter %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_list_datasetif(diminuto_list_initif(&(rwp->list)), (void *)rwp);
 
@@ -1083,7 +1096,7 @@ int diminuto_writer_begin_f(diminuto_readerwriter_t * rwp, diminuto_ticks_t time
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer BEGIN exit %dreading %dwriting %dwaiting %d", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Writer BEGIN exit %dreading %dwriting %dwaiting %d\n", rwp, rwp->reading, rwp->writing, rwp->waiting, result);
 
         if (rwp->debugging) {
             audit(rwp, "Writer BEGIN");
@@ -1103,7 +1116,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
 
     BEGIN_CRITICAL_SECTION(rwp);
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer END enter %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Writer END enter %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         diminuto_contract((rwp->reading == 0) && (rwp->writing == 1));
 
@@ -1146,7 +1159,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
         } else {
 
             errno = DIMINUTO_READERWRITER_UNEXPECTED;
-            diminuto_perror("diminuto_writer_end: role");
+            perror("diminuto_writer_end: role");
 
         }
 
@@ -1157,7 +1170,7 @@ int diminuto_writer_end(diminuto_readerwriter_t * rwp)
          * the critical section.
          */
 
-        DIMINUTO_LOG_DEBUG("diminuto_readerwriter@%p: Writer END exit %dreading %dwriting %dwaiting", rwp, rwp->reading, rwp->writing, rwp->waiting);
+        DPRINTF(rwp, "diminuto_readerwriter@%p: Writer END exit %dreading %dwriting %dwaiting\n", rwp, rwp->reading, rwp->writing, rwp->waiting);
 
         if (rwp->debugging) {
             audit(rwp, "Writer END");

@@ -29,9 +29,9 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 
 TITLE				:=	Diminuto
 
-MAJOR				:=	100# API changes that may require that applications be modified.
-MINOR				:=	5# Only functionality or features added with no legacy API changes.
-BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
+MAJOR				:=	101# API changes that may require that applications be modified.
+MINOR				:=	0# Only functionality or features added with no legacy API changes.
+BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1061,6 +1061,7 @@ sanity-test:	criticalsection-test
 	unittest-datum
 	unittest-dump
 	unittest-endianess
+	unittest-environment
 	unittest-epoch sanity
 	unittest-escape
 	unittest-fatal && false || true

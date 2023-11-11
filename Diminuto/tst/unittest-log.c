@@ -37,24 +37,10 @@
 #include <assert.h>
 #include "unittest-log.h"
 
-static int mysetenv(const char *name, const char *value, int overwrite)
-{
-    int rc = -1;
-
-    /*
-     * Not really necessary since not multi-threaded, but a good
-     * example.
-     */
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-        rc = setenv(name, value, overwrite);
-    DIMINUTO_CRITICAL_SECTION_END;
-
-    return rc;
-}
-
 int main(int argc, char ** argv)
 {
     {
+        fputs("TEST 0\n", stderr); fflush(stderr);
         assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_EMERGENCY)   == DIMINUTO_LOG_MASK_EMERGENCY);
         assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_ALERT)       == DIMINUTO_LOG_MASK_ALERT);
         assert(diminuto_log_priority2mask(DIMINUTO_LOG_PRIORITY_CRITICAL)    == DIMINUTO_LOG_MASK_CRITICAL);
@@ -68,6 +54,7 @@ int main(int argc, char ** argv)
 
     {
         diminuto_log_mask = DIMINUTO_LOG_MASK_NONE;
+        fputs("TEST 1\n", stderr); fflush(stderr);
         assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_EMERGENCY));
         assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_ALERT));
         assert(!diminuto_log_mask_isenabled(DIMINUTO_LOG_MASK_CRITICAL));
@@ -190,6 +177,7 @@ int main(int argc, char ** argv)
 
     {
         diminuto_log_mask = DIMINUTO_LOG_MASK_NONE;
+        fputs("TEST 2\n", stderr); fflush(stderr);
         assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_EMERGENCY));
         assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_ALERT));
         assert(!diminuto_log_priority_isenabled(DIMINUTO_LOG_PRIORITY_CRITICAL));
@@ -291,6 +279,8 @@ int main(int argc, char ** argv)
     }
 
     {
+        fputs("TEST 3\n", stderr); fflush(stderr);
+
         diminuto_log_subsystem[0] = DIMINUTO_LOG_MASK_NONE;
         assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_EMERGENCY));
         assert(!DIMINUTO_LOG_ENABLED(DIMINUTO_LOG_MASK_ALERT));
@@ -397,6 +387,8 @@ int main(int argc, char ** argv)
     {
         diminuto_log_mask_t prior;
 
+        fputs("TEST 4\n", stderr); fflush(stderr);
+
         diminuto_log_mask = 0xa5;
 
         prior = diminuto_log_initmask(0);
@@ -418,26 +410,27 @@ int main(int argc, char ** argv)
 
 
     {
+        fputs("TEST 5\n", stderr); fflush(stderr);
 
         diminuto_log_mask = 0xa5;
 
-        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
+        assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0);
 
-        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "255", !0) == 0);
+        assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "255", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 255);
 
-        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0377", !0) == 0);
+        assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0377", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0377);
 
-        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
+        assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "0xff", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == 0xff);
 
-        assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
+        assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, "~0", !0) == 0);
         diminuto_log_setmask();
         assert(diminuto_log_mask == DIMINUTO_LOG_MASK_ALL);
 
@@ -445,20 +438,24 @@ int main(int argc, char ** argv)
             diminuto_log_mask_t mask;
             char buffer[5];
 
+            fputs("TEST 5.1\n", stderr);
+
             for (mask = 0; mask < 256; ++mask) {
 
+                fprintf(stderr, "TEST 5.1.%d\n", mask);
+
                 (void)snprintf(buffer, sizeof(buffer), "%u", mask);
-                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
 
                 (void)snprintf(buffer, sizeof(buffer), "0x%x", mask);
-                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
 
                 (void)snprintf(buffer, sizeof(buffer), "0%o", mask);
-                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
             }
@@ -467,6 +464,8 @@ int main(int argc, char ** argv)
         {
             static const char NO_SUCH_FILE[] = "no_such_file";
             diminuto_log_mask_t mask;
+
+            fputs("TEST 5.2\n", stderr);
 
             assert(diminuto_fs_type(diminuto_log_mask_path) == DIMINUTO_FS_TYPE_FILE);
             diminuto_log_mask = 0xa5;
@@ -501,11 +500,14 @@ int main(int argc, char ** argv)
             diminuto_log_mask_t mask;
             int ii;
 
+            fputs("TEST 5.3\n", stderr);
+
             for (ii = 0; ii < countof(PRIORITY); ++ii) {
+                fprintf(stderr, "TEST 5.3.%d\n", ii);
                 priority = PRIORITY[ii];
                 mask = diminuto_log_priority2mask(priority);
                 (void)snprintf(buffer, sizeof(buffer), "%u", mask);
-                assert(mysetenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
+                assert(diminuto_setenv(DIMINUTO_LOG_MASK_NAME_DEFAULT, buffer, !0) == 0);
                 diminuto_log_setmask();
                 assert(diminuto_log_mask == mask);
                 assert(diminuto_log_mask_isenabled(mask));
@@ -521,6 +523,8 @@ int main(int argc, char ** argv)
         char buffer[DIMINUTO_LOG_BUFFER_MAXIMUM];
         int ii;
 
+        fputs("TEST 6\n", stderr); fflush(stderr);
+
         assert(diminuto_log_priority == DIMINUTO_LOG_PRIORITY_DEFAULT);
 
         diminuto_log_log(diminuto_log_priority, DIMINUTO_LOG_HERE "HERE");
@@ -535,6 +539,8 @@ int main(int argc, char ** argv)
     {
         FILE * fp;
         int fd;
+
+        fputs("TEST 7\n", stderr); fflush(stderr);
 
         assert(diminuto_log_descriptor == STDERR_FILENO);
         assert(diminuto_log_file == (FILE *)0);
@@ -618,6 +624,8 @@ int main(int argc, char ** argv)
 
     }
 
+    fputs("TEST 8\n", stderr); fflush(stderr);
+
     if (argc < 2) {
         /* Do nothing. */
     } else if (strcmp(argv[1], "daemon") == 0) {
@@ -647,6 +655,7 @@ int main(int argc, char ** argv)
     }
 
     {
+        fputs("TEST 9\n", stderr); fflush(stderr);
 
         diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
         fprintf(stderr, DIMINUTO_LOG_HERE "BEGIN\n");
@@ -775,6 +784,8 @@ int main(int argc, char ** argv)
         char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
         int ii;
 
+        fputs("TEST 10\n", stderr); fflush(stderr);
+
         fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR default\n");
 
         for (ii = 0; ii < countof(ERRNO); ++ii) {
@@ -797,6 +808,8 @@ int main(int argc, char ** argv)
         const static int ERRNO[] = { E2BIG, EACCES, EADDRINUSE, EAGAIN, EBADF, EBUSY, ECHILD, ECONNREFUSED, EEXIST, EINVAL, };
         char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
         int ii;
+
+        fputs("TEST 11\n", stderr); fflush(stderr);
 
         diminuto_log_error_suppress = true;
 
@@ -823,6 +836,8 @@ int main(int argc, char ** argv)
         char buffer[sizeof("ERRNO[XXXXXXXXXX] (xxxxxxxxxxxxxxxx)")];
         int ii;
 
+        fputs("TEST 12\n", stderr); fflush(stderr);
+
         diminuto_log_error_suppress = false;
 
         fprintf(stderr, DIMINUTO_LOG_HERE "ERRNO PERROR enabled\n");
@@ -846,9 +861,13 @@ int main(int argc, char ** argv)
     {
         char hostname[DIMINUTO_LOG_HOSTNAME_MAXIMUM];
 
+        fputs("TEST 13\n", stderr); fflush(stderr);
+
         assert(sizeof(hostname) >= sizeof("localhost"));
 
     }
+
+    fputs("TEST 14\n", stderr); fflush(stderr);
 
     assert(diminuto_log_lost == 0);
 

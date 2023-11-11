@@ -39,9 +39,9 @@ size_t diminuto_memory_pagesize(diminuto_memory_pagesize_method_t * methodp)
 #endif
 
 #if defined(_SC_PAGESIZE)
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        DIMINUTO_ENVIRONMENT_READER_BEGIN;
             pagesize = sysconf(_SC_PAGESIZE);
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_ENVIRONMENT_READER_END;
         if (pagesize > 0) {
             method = DIMINUTO_MEMORY_PAGESIZE_METHOD_SYSCONF_PAGESIZE;
             break;
@@ -83,9 +83,9 @@ size_t diminuto_memory_linesize(diminuto_memory_linesize_method_t * methodp)
 #endif
 
 #if defined(_SC_LEVEL1_DCACHE_LINESIZE)
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        DIMINUTO_ENVIRONMENT_READER_BEGIN;
             linesize = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_ENVIRONMENT_READER_END;
         if (linesize > 0) {
             method = DIMINUTO_MEMORY_LINESIZE_METHOD_SYSCONF_LEVEL1_DCACHE_LINESIZE;
             break;

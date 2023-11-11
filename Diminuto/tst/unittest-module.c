@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2021 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Module feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -53,9 +53,7 @@ int main(int argc, char ** argv)
      * Not really necessary since not multi-threaded, but a good
      * example.
      */
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-        paths = getenv(KEYWORD);
-    DIMINUTO_CRITICAL_SECTION_END;
+    paths = diminuto_getenv(KEYWORD);
     file = diminuto_path_find(KEYWORD, NAME);
     alternative = diminuto_path_find(KEYWORD, ALTERNATIVE);
     CHECKPOINT("NAME=\"%s\" ALTERNATIVE=\"%s\" KEYWORD=\"%s\" paths=\"%s\" file=\"%s\" alternative=\"%s\"\n", NAME, ALTERNATIVE, KEYWORD, (paths != (const char *)0) ? paths : "", (file != (const char *)0) ? file : "", (alternative != (const char *)0) ? alternative : "");

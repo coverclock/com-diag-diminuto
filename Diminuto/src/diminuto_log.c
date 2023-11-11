@@ -11,7 +11,6 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_environment.h"
 #include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_serial.h"
@@ -129,10 +128,10 @@ diminuto_log_mask_t diminuto_log_priority2mask(diminuto_log_priority_t priority)
 diminuto_log_mask_t diminuto_log_initmask(diminuto_log_mask_t after) {
     diminuto_log_mask_t before = 0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+    DIMINUTO_LOG_SECTION_BEGIN;
         before = DIMINUTO_LOG_MASK;
         DIMINUTO_LOG_MASK = after;
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
     return before;
 }
@@ -143,25 +142,23 @@ diminuto_log_mask_t diminuto_log_setmask(void)
     char * end = (char *)0;
     long value = -1;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-        string = getenv(diminuto_log_mask_name);
-    DIMINUTO_CRITICAL_SECTION_END;
+    string = diminuto_getenv(diminuto_log_mask_name);
     if (string == (const char *)0) {
         /* Do nothing: not an error. */
     } else if (strncmp(string, ALL, sizeof(ALL)) == 0) {
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        DIMINUTO_LOG_SECTION_BEGIN;
             DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_LOG_SECTION_END;
     } else if ((value = strtol(string, &end, 0)) < 0) {
         errno = ERANGE;
-        diminuto_perror(string);
+        perror(string);
     } else if ((end == (char *)0) || (*end != '\0')) {
         errno = EINVAL;
-        diminuto_perror(string);
+        perror(string);
     } else {
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        DIMINUTO_LOG_SECTION_BEGIN;
             DIMINUTO_LOG_MASK = value;
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_LOG_SECTION_END;
     }
 
     return DIMINUTO_LOG_MASK;
@@ -177,9 +174,7 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
 
     if (path == (const char *)0) {
         const char * home = (const char *)0;
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-            home = getenv("HOME");
-        DIMINUTO_CRITICAL_SECTION_END;
+        home = diminuto_getenv("HOME");
         if (home == (const char *)0) {
             home = "."; /* Not an error (but unlikely). */
         }
@@ -195,23 +190,23 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
     if (diminuto_fs_type(path) == DIMINUTO_FS_TYPE_NONE) {
         /* Do nothing: not an error. */
     } else if ((fp = fopen(path, "r")) == (FILE *)0) {
-        diminuto_perror(path);
+        perror(path);
     } else if (fgets(buffer, sizeof(buffer), fp) == (char *)0) {
-        diminuto_perror(path);
+        perror(path);
     } else if (strncmp(buffer, ALL, sizeof(ALL) - 1) == 0) {
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        DIMINUTO_LOG_SECTION_BEGIN;
             DIMINUTO_LOG_MASK = DIMINUTO_LOG_MASK_ALL;
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_LOG_SECTION_END;
     } else if ((value = strtol(buffer, &end, 0)) < 0) {
         errno = ERANGE;
-        diminuto_perror(buffer);
+        perror(buffer);
     } else if ((end == (char *)0) || ((*end != '\0') && (*end != '\n') && (*end != ' ') && (*end != '\t') && (*end != '#'))) {
         errno = EINVAL;
-        diminuto_perror(buffer);
+        perror(buffer);
     } else {
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+        DIMINUTO_LOG_SECTION_BEGIN;
             DIMINUTO_LOG_MASK = value;
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_LOG_SECTION_END;
     }
 
     if (fp != (FILE *)0) {
@@ -223,8 +218,7 @@ diminuto_log_mask_t diminuto_log_importmask(const char * path)
 
 void diminuto_log_open_syslog(const char * name, int option, int facility)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
-
+    DIMINUTO_LOG_SECTION_BEGIN;
         if (name != (const char *)0) {
             diminuto_log_ident = name;
         }
@@ -245,8 +239,7 @@ void diminuto_log_open_syslog(const char * name, int option, int facility)
         } else {
             /* Do nothing. */
         }
-
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 }
 
 void diminuto_log_open(const char * name)
@@ -258,21 +251,19 @@ void diminuto_log_close(void)
 {
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
-
+    DIMINUTO_LOG_SECTION_BEGIN;
         if (initialized) {
             closelog();
             initialized = 0;
         }
-
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
 #endif
 }
 
 FILE * diminuto_log_stream(void)
 {
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+    DIMINUTO_LOG_SECTION_BEGIN;
 
         /*
          * If the file number of the log FILE object does not match
@@ -298,10 +289,10 @@ FILE * diminuto_log_stream(void)
             diminuto_log_file = (FILE *)0;
         } else if (fclose(diminuto_log_file) == EOF) {
             /*
-             * diminuto_perror() does not depend on diminuto_log_stream()
+             * perror() does not depend on diminuto_log_stream()
              * nor the value of diminuto_log_file.
              */
-            diminuto_perror("diminuto_log_stream: fclose");
+            perror("diminuto_log_stream: fclose");
             diminuto_log_file = (FILE *)0;
         } else {
             diminuto_log_file = (FILE *)0;
@@ -321,15 +312,14 @@ FILE * diminuto_log_stream(void)
             diminuto_log_file = stdout;
         } else if ((diminuto_log_file = fdopen(diminuto_log_descriptor, "a")) == (FILE *)0) {
             /*
-             * diminuto_perror() does not depend on diminuto_log_stream()
+             * perror() does not depend on diminuto_log_stream()
              * nor the value of diminuto_log_file.
              */
-            diminuto_perror("diminuto_log_stream: fdopen");
+            perror("diminuto_log_stream: fdopen");
         } else {
             /* Do nothing. */
         }
-
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
     return diminuto_log_file;
 }
@@ -338,9 +328,9 @@ void diminuto_log_vsyslog(int priority, const char * format, va_list ap)
 {
     diminuto_log_open((const char *)0);
 #if !defined(COM_DIAG_DIMINUTO_PLATFORM_BIONIC)
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         vsyslog(priority, format, ap);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
 #else
     __android_log_vprint(priority, diminuto_log_ident, format, ap);
 #endif
@@ -379,7 +369,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * without the system being rebooted anyway).
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+    DIMINUTO_LOG_SECTION_BEGIN;
 
         if (hostname[0] != '\0') {
             /* Do nothing. */
@@ -389,7 +379,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
             hostname[sizeof(hostname) - 1] = '\0';
         }
 
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
     /*
      * Prepending an ISO8601 timestamp allows us to sort-merge logs from
@@ -447,7 +437,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
      * at least a counter is incremented.
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+    DIMINUTO_LOG_SECTION_BEGIN;
 
         for (pointer = buffer; total > 0; total -= rc, pointer += rc) {
             rc = write(fd, pointer, total);
@@ -479,7 +469,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
             }
         }
 
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
 }
 
@@ -491,7 +481,7 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
     int tolog = 0; /* <0==SUPPRESS, 0==STDERR, >0==SYSLOG */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex);
+    DIMINUTO_LOG_SECTION_BEGIN;
 
         /*
          * Here is where we decide whether to route the log message
@@ -535,7 +525,7 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = 0;
         }
 
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_LOG_SECTION_END;
 
     if (tolog < 0) {
         /* Do nothing. */

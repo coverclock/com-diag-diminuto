@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Time feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -154,9 +154,9 @@ diminuto_sticks_t diminuto_time_timezone()
      * we'll call it every time. Note that tzset() has no error return.
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         tzset();
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
 
     /*
      * POSIX specifies the number of seconds WEST of UTC, while this function
@@ -187,15 +187,15 @@ diminuto_sticks_t diminuto_time_daylightsaving(diminuto_sticks_t ticks)
      * we'll call it every time. Note that tzset() has no error return.
      */
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         tzset();
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
 
     if (daylight) {
         juliet = diminuto_frequency_ticks2wholeseconds(ticks);
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        DIMINUTO_ENVIRONMENT_READER_BEGIN;
             tmp = localtime_r(&juliet, &datetime);
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_ENVIRONMENT_READER_END;
         if (tmp == (struct tm *)0) {
             diminuto_perror("diminuto_time_daylightsaving: localtime_r");
             result = DIMINUTO_TIME_ERROR;
@@ -237,9 +237,9 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
          */
 
         errno = 0;
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        DIMINUTO_ENVIRONMENT_READER_BEGIN;
             seconds = timegm(&datetime);
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_ENVIRONMENT_READER_END;
         if (seconds != (time_t)-1) {
             /* Do nothing. */
         } else if (errno == 0) {
@@ -263,9 +263,9 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
          */
 
         errno = 0;
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+        DIMINUTO_ENVIRONMENT_READER_BEGIN;
             seconds = mktime(&datetime);
-        DIMINUTO_CRITICAL_SECTION_END;
+        DIMINUTO_ENVIRONMENT_READER_END;
         if (seconds != (time_t)-1) {
             /* Do nothing. */
         } else if (errno == 0) {
@@ -441,9 +441,9 @@ static int diminuto_time_zulu_generic(diminuto_sticks_t ticks, int * yearp, int 
     diminuto_ticks_t fraction = 0;
 
     zulu = diminuto_time_separate(ticks, &fraction);
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         datetimep = gmtime_r(&zulu, &datetime);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
     if (datetimep != (struct tm *)0) {
         diminuto_time_extract(datetimep, fraction, yearp, monthp, dayp, hourp, minutep, secondp, tickp);
         rc = 0;
@@ -475,9 +475,9 @@ int diminuto_time_juliet(diminuto_sticks_t ticks, int * yearp, int * monthp, int
     diminuto_ticks_t fraction = 0;
 
     juliet = diminuto_time_separate(ticks, &fraction);
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         datetimep = localtime_r(&juliet, &datetime);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
     if (datetimep == (struct tm *)0) {
         diminuto_perror("diminuto_time_timestamp: localtime_r");
         rc = -1;

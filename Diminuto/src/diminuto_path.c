@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Path feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -79,10 +79,7 @@ char * diminuto_path_find(const char * keyword, const char * file)
             break;
         }
 
-        DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
-            value = getenv(keyword);
-        DIMINUTO_CRITICAL_SECTION_END;
-
+        value = diminuto_getenv(keyword);
         path = diminuto_path_scan(value, file);
 
     } while (0);

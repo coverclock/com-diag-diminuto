@@ -78,9 +78,9 @@ static struct hostent * diminuto_ipc4_gethostbyname(const char * name)
 {
     struct hostent * hostp = (struct hostent *)0;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         hostp = gethostbyname(name);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
 
     return hostp;
 }

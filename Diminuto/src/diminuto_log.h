@@ -15,6 +15,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include <stdio.h>
 #include <pthread.h>
 
@@ -123,5 +124,23 @@ extern bool diminuto_log_error_suppress;
  * have been lost.
  */
 extern size_t diminuto_log_lost;
+
+/*******************************************************************************
+ * GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def DIMINUTO_LOG_SECTION_BEGIN
+ * Begin a critical section using the Log mutex.
+ */
+#define DIMINUTO_LOG_SECTION_BEGIN \
+    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_log_mutex)
+
+/**
+ * @def DIMINUTO_LOG_SECTION_END
+ * End a critical section using the Log mutex.
+ */
+#define DIMINUTO_LOG_SECTION_END \
+    DIMINUTO_CRITICAL_SECTION_END
 
 #endif

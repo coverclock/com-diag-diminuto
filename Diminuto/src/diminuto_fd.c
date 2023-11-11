@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the File Descriptor (FD) feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -198,9 +198,9 @@ ssize_t diminuto_fd_maximum(void)
 {
     ssize_t result = -1;
 
-    DIMINUTO_CRITICAL_SECTION_BEGIN(&diminuto_environment_mutex);
+    DIMINUTO_ENVIRONMENT_READER_BEGIN;
         result = sysconf(_SC_OPEN_MAX);
-    DIMINUTO_CRITICAL_SECTION_END;
+    DIMINUTO_ENVIRONMENT_READER_END;
     if (result < 0) {
         diminuto_perror("diminuto_fd_maximum: sysconf");
     }
