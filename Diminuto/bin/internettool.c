@@ -598,17 +598,41 @@ int main(int argc, char * argv[])
     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "blocksize=%zu\n", blocksize);
 
     if (Exit) {
+	    const char * strings4 = (const char *)0;
+	    const char * strings6 = (const char *)0;
+	    const char * stringr46 = (const char *)0;
+	    const char * stringa4   = (const char *)0;
+	    const char * stringa6  = (const char *)0;
+	    const char * stringp46 = (const char *)0;
+            strings4 = diminuto_ipc4_address2string(server4, server4buffer, sizeof(server4buffer));
+            strings6 = diminuto_ipc6_address2string(server6, server6buffer, sizeof(server6buffer));
+            stringr46 = diminuto_ipc_port2string(rendezvous46, rendezvous46buffer, sizeof(rendezvous46buffer));
+            stringa4 = diminuto_ipc4_address2string(address4, address4buffer, sizeof(address4buffer));
+            stringa6 = diminuto_ipc6_address2string(address6, address6buffer, sizeof(address6buffer));
+            stringp46 = diminuto_ipc_port2string(port46, port46buffer, sizeof(port46buffer));
+        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "Exit=\"%s L2 %c L3 %c FE %s %s %s NE %s %s %s\"\n",
+            Program,
+            Layer2,
+            Layer3,
+	    strings4,
+	    strings6,
+	    stringr46,
+	    stringa4,
+	    stringa6,
+	    stringp46
+	    );
         fflush(stderr);
         printf("%s L2 %c L3 %c FE %s %s %s NE %s %s %s\n",
             Program,
             Layer2,
             Layer3,
-            diminuto_ipc4_address2string(server4, server4buffer, sizeof(server4buffer)),
-            diminuto_ipc6_address2string(server6, server6buffer, sizeof(server6buffer)),
-            diminuto_ipc_port2string(rendezvous46, rendezvous46buffer, sizeof(rendezvous46buffer)),
-            diminuto_ipc4_address2string(address4, address4buffer, sizeof(address4buffer)),
-            diminuto_ipc6_address2string(address6, address6buffer, sizeof(address6buffer)),
-            diminuto_ipc_port2string(port46, port46buffer, sizeof(port46buffer)));
+	    strings4,
+	    strings6,
+	    stringr46,
+	    stringa4,
+	    stringa6,
+	    stringp46
+	    );
         fflush(stdout);
         exit(0);
     }
