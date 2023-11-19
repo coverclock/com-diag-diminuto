@@ -202,31 +202,31 @@ internettool -x -E 206.178.189.131:time | egrep -q '^internettool L2 4 L3 t FE 2
 internettool -x -E 206.178.189.131:time -t | egrep -q '^internettool L2 4 L3 t FE 206\.178\.189\.131 :: 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -E 206.178.189.131:time -u | egrep -q '^internettool L2 4 L3 u FE 206\.178\.189\.131 :: 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[2607:f8b0:400f:805::200e]' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 0 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[2607:f8b0:400f:805::200e]:80' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 80 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:8888' -t | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:8888' -u | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:8888' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:80' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888' -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888' -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:8888' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[2607:f8b0:400f:805::200e]:http' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 80 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:tftp' | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 69 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:time' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:time' -t | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[2607:f8b0:400f:805::200e]:time' -u | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:http' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:tftp' | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 69 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:time' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:time' -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[2607:f8b0:400f:805::200e]:time' -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 2607:f8b0:400f:805::200e 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[::ffff:209.17.116.163]' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 0 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[::ffff:209.17.116.163]:80' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 80 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:8888' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:8888' -t | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:8888' -u | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:80' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:8888' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:8888' -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:8888' -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E '^[::ffff:209.17.116.163]:http' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 80 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:tftp' | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 69 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:time' | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:time' -t | egrep -q 'internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0' || exit 2
-internettool -x -E '^[::ffff:209.17.116.163]:time' -u | egrep -q 'internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:http' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:tftp' | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 69 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:time' | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:time' -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E '[::ffff:209.17.116.163]:time' -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
 internettool -x -E diag.com | egrep -q '^internettool L2 4 L3 t FE .* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -E diag.com -4 | egrep -q '^internettool L2 4 L3 t FE .* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
