@@ -95,15 +95,15 @@ internettool -x -e localhost:time | egrep -q '^internettool L2 4 L3 t FE 127\.0\
 internettool -x -e localhost:time -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE 127\.0\.0\.1 (::ffff:127\.0\.0\.1|::1) 37$' || exit 2
 internettool -x -e localhost:time -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE 127\.0\.0\.1 (::ffff:127\.0\.0\.1|::1) 37$' || exit 2
 
-internettool -x -e google.com:80 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80$' || exit 2
-internettool -x -e google.com:8888 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888$' || exit 2
-internettool -x -e google.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888$' || exit 2
-internettool -x -e google.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888$' || exit 2
-internettool -x -e google.com:http | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80$' || exit 2
-internettool -x -e google.com:tftp | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 69$' || exit 2
-internettool -x -e google.com:time | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37$' || exit 2
-internettool -x -e google.com:time -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37$' || exit 2
-internettool -x -e google.com:time -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37$' || exit 2
+internettool -x -e google.com:80 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80$' || exit 2
+internettool -x -e google.com:8888 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
+internettool -x -e google.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
+internettool -x -e google.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
+internettool -x -e google.com:http | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80$' || exit 2
+internettool -x -e google.com:tftp | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 69$' || exit 2
+internettool -x -e google.com:time | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
+internettool -x -e google.com:time -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
+internettool -x -e google.com:time -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
 
 internettool -x -p 80 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 :: 80$' || exit 2
 internettool -x -p 8888 | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 :: 8888$' || exit 2
@@ -177,17 +177,17 @@ internettool -x -a google.com -4 -p time | egrep -q '^internettool L2 4 L3 t FE 
 internettool -x -a google.com -4 -p time -t | egrep -q '^internettool L2 4 L3 t FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* \:: 37$' || exit 2
 internettool -x -a google.com -4 -p time -u | egrep -q '^internettool L2 4 L3 u FE 127\.0\.0\.1 ::1 0 NE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* \:: 37$' || exit 2
 
-internettool -x -a google.com -6 -p 80 | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 80$' || exit 2
-internettool -x -a google.com -6 -p 8888 | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 8888$' || exit 2
-internettool -x -a google.com -6 -p 8888 -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 8888$' || exit 2
-internettool -x -a google.com -6 -p 8888 -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 8888$' || exit 2
+internettool -x -a google.com -6 -p 80 | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80$' || exit 2
+internettool -x -a google.com -6 -p 8888 | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
+internettool -x -a google.com -6 -p 8888 -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
+internettool -x -a google.com -6 -p 8888 -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888$' || exit 2
 
-internettool -x -a google.com -6 -p http | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 80$' || exit 2
-internettool -x -a google.com -6 -p http -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 80$' || exit 2
-internettool -x -a google.com -6 -p tftp -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 69$' || exit 2
-internettool -x -a google.com -6 -p time | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 37$' || exit 2
-internettool -x -a google.com -6 -p time -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 37$' || exit 2
-internettool -x -a google.com -6 -p time -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 .* 37$' || exit 2
+internettool -x -a google.com -6 -p http | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80$' || exit 2
+internettool -x -a google.com -6 -p http -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80$' || exit 2
+internettool -x -a google.com -6 -p tftp -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 69$' || exit 2
+internettool -x -a google.com -6 -p time | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
+internettool -x -a google.com -6 -p time -t | egrep -q '^internettool L2 6 L3 t FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
+internettool -x -a google.com -6 -p time -u | egrep -q '^internettool L2 6 L3 u FE 127\.0\.0\.1 ::1 0 NE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37$' || exit 2
 
 internettool -x -E 206.178.189.131 | egrep -q '^internettool L2 4 L3 t FE 206\.178\.189\.131 :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
@@ -228,50 +228,50 @@ internettool -x -E '[::ffff:209.17.116.163]:time' | egrep -q '^internettool L2 6
 internettool -x -E '[::ffff:209.17.116.163]:time' -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -E '[::ffff:209.17.116.163]:time' -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ::ffff:209\.17\.116\.163 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E diag.com | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E diag.com:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E diag.com:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 69 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E diag.com:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 69 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E diag.com:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E google.com | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E google.com:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E google.com:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 69 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E google.com:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 69 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E google.com:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E prairiethorn.org | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org -6 | egrep -q '^internettool L2 6 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E prairiethorn.org:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:8888 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:8888 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
-internettool -x -E prairiethorn.org:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 69 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -E prairiethorn.org:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:tftp | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 69 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:time | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:time -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -E prairiethorn.org:time -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
 internettool -x -A 206.178.189.131 | egrep -q '^internettool L2 4 L3 t FE 206\.178\.189\.131 :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
@@ -346,7 +346,7 @@ internettool -x -A diag.com -P time -u | egrep -q '^internettool L2 4 L3 u FE [1
 
 internettool -x -A google.com | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 
 internettool -x -A google.com -P 80 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 80 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P 8888 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
@@ -356,10 +356,10 @@ internettool -x -A google.com -P 80 -4 | egrep -q '^internettool L2 4 L3 t FE [1
 internettool -x -A google.com -P 8888 -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P 8888 -4 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P 8888 -4 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P 80 -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P 8888 -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P 8888 -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P 8888 -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 .* 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P 80 -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P 8888 -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P 8888 -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P 8888 -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 8888 NE 0\.0\.0\.0 :: 0$' || exit 2
 
 internettool -x -A google.com -P http | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 80 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P http -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 80 NE 0\.0\.0\.0 :: 0$' || exit 2
@@ -373,12 +373,12 @@ internettool -x -A google.com -P tftp -4 -u | egrep -q '^internettool L2 4 L3 u 
 internettool -x -A google.com -P time -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P time -4 -t | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A google.com -P time -4 -u | egrep -q '^internettool L2 4 L3 u FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P http -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P http -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 80 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P tftp -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 .* 0 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P time -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P time -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
-internettool -x -A google.com -P time -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 .* 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P http -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P http -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 80 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P tftp -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 0 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P time -6 | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P time -6 -t | egrep -q '^internettool L2 6 L3 t FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
+internettool -x -A google.com -P time -6 -u | egrep -q '^internettool L2 6 L3 u FE 0\.0\.0\.0 ([0-9a-f][0-9a-f]*:[0-9a-f:]*:[0-9a-f][0-9a-f]*|::ffff:[1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]*) 37 NE 0\.0\.0\.0 :: 0$' || exit 2
 
 internettool -x -A prairiethorn.org | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
 internettool -x -A prairiethorn.org -4 | egrep -q '^internettool L2 4 L3 t FE [1-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[1-9][0-9]* :: 0 NE 0\.0\.0\.0 :: 0$' || exit 2
