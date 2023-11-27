@@ -33,9 +33,10 @@
 # being run as root doing kill -9 commands doesn't concern you, you aren't
 # thinking clearly.)
 #
-# Whether "localhost" resolves to an IPv6 address of ::ffff:127.0.0.1 or ::1
-# apparently depends on... well, I'm not presently sure what it depends on,
-# but remarkably it does NOT depend on how you have have configued /etc/hosts.
+# Whether "localhost" resolves to what you have configured in /etc/hosts
+# depends on whether your DNS resolver, which is tried first, resolves
+# it. I find that some internet resolvers do, and some don't. (IMO, those
+# that do are erronous.)
 #
 # EXAMPLES
 #
