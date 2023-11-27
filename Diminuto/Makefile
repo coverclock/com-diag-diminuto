@@ -1080,6 +1080,7 @@ sanity-test:	criticalsection-test
 	unittest-hangup-4
 	unittest-heap
 	unittest-interrupter
+	unittest-ipaddresses
 	unittest-ipc
 	unittest-ipc-endpoint
 	unittest-ipcl
