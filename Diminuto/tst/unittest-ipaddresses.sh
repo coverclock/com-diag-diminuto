@@ -3,7 +3,8 @@
 # Licensed under the terms in LICENSE.txt
 # Chip Overclock <coverclock@diag.com>
 # https://github.com/coverclock/com-diag-diminuto
-# Test IPv4 and IPv6 filtering regexes.
+# Test IPv4 and IPv6 filtering regexes. These regexes are used in, for
+# example, the internettooltests functional test script.
 
 PGM=$(basename $0)
 TMP=${TMPDIR:="/tmp"}

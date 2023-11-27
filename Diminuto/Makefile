@@ -1038,7 +1038,14 @@ criticalsection-test:	unittest-test
 
 # Remarkably, unittest-ipc-endpoint works without the kernel's ipv6 module
 # even though it it tests IPv6 addresses; those tests apparently only depend
-# on the C library.
+# on the C library. Equally unexpected, the IPv4 or IPv6 address to which
+# "localhost" resolves depends not only on how you have configured the host
+# name in /etc/hosts, but how your chosen Domain Name Service (DNS) works.
+# For example, Google DNS servers do not resolve localhost, causing your
+# local bind resolver to fall back to /etc/hosts, whilc ComCast DNS servers
+# do resolve localhost (unfortunately), causing /etc/hosts to be ignored
+# (because strace indicates that bind checks DNS first and if it resolves
+# /etc/hosts is not read).
 sanity-test:	criticalsection-test
 	unittest-absolute
 	unittest-arraytype
@@ -1315,6 +1322,7 @@ sockets6-test:
 	unittest-scattergather6
 
 sockets-test:	sockets0-test socketsl-test sockets4-test sockets6-test
+	unittest-ipaddresses
 	internettooltests
 
 realtime-test:
