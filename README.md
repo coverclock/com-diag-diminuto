@@ -135,6 +135,11 @@ these is a given in C. It also assumes that character encoding is
 ASCII (applications may use other encodings, such as Unicode, as long
 as they keep it to themselves).
 
+The more complex Diminuto features, like those involving POSIX threads,
+implement a specific model or approach to using the underlying C library.
+The model expresses a design I have found useful in my own applications.
+It is not intended to be a one size fits all implementation.
+
 For some projects over the years, I have ported Diminuto (as it existed
 at that time) to uClibc (a stripped down C library used by Buildroot),
 Bionic (a C library and run-time used by Google's Android), Cygwin (a
