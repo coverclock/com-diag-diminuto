@@ -122,7 +122,7 @@ even octal. In addition, the string ```~0``` can be used to enable all
 log levels, equivalent to ```255```, ```0xff```, or ```0377```. (Generally
 I find ```0xfe``` to be a good starting point.)
 
-# Details
+# Disclaimer
 
 Diminuto isn't intended to be portable. It is specifically designed
 to support the kind of systems programming efforts in the Linux/GNU
