@@ -61,11 +61,11 @@ Diminuto provides, in no particular order:
 * daemonizing applications (```diminuto_daemon```);
 * helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
 * using General Purpose Input/Output (GPIO) pins via the standard /sys interface (```diminuto_pins```) and debouncing digital inputs (```diminuto_cue```);
-* consistent implementation of time keeping (```diminuto_time```) and delays (```diminuto_delay```);
+* Time keeping (```diminuto_time```) and delays (```diminuto_delay```) with a consistent unit of tick;
 * A fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```);
-* Proportional, Integral, Derivative (PID) controller (```diminuto_controller```);
-* Pulse Width Modulation (PWM) (```diminuto_modulator```);
-* programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```);
+* Proportional, Integral, Derivative (PID) controller (```diminuto_controller```) in user space;
+* Pulse Width Modulation (PWM) (```diminuto_modulator```) in user space.
+* programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```) when run as root;
 * vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
 * serial stream framing using HDLC-like byte stuffing (```diminuto_framer```);
 * macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
