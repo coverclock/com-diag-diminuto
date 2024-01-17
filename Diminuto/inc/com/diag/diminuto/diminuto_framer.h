@@ -123,7 +123,7 @@
  *
  * <https://en.wikipedia.org/wiki/High-Level_Data_Link_Control>
  * 
- * <<https://github.com/coverclock/com-diag-hazer>
+ * <https://github.com/coverclock/com-diag-hazer>
  */
 
 #include <stdbool.h>
