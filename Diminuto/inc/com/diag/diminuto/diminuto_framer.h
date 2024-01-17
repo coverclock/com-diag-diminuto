@@ -581,7 +581,7 @@ extern ssize_t diminuto_framer_read(FILE * stream, void * buffer, size_t size);
 extern ssize_t diminuto_framer_write(FILE * stream, const void * data, size_t length);
 
 /*******************************************************************************
- * DEBUGGORS
+ * DEBUGGERS
  ******************************************************************************/
 
 /**
