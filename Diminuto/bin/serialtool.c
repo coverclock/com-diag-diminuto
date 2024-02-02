@@ -133,13 +133,14 @@ int main(int argc, char * argv[])
     int rawterminal = 0;
     int nonblocking = 0;
     int isaterminal = 0;
+    int onlyaterminal = 0;
     size_t modulo = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:Ob:cdehilmnoprst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:OTb:cdehilmnoprst:v")) >= 0) {
 
         switch (opt) {
 
@@ -196,6 +197,10 @@ int main(int argc, char * argv[])
 
         case 'O':
             nonblocking = !0;
+            break;
+
+        case 'T':
+            onlyaterminal = !0;
             break;
 
         case 'b':
@@ -274,6 +279,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
             fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i; implies -O).\n");
             fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).\n");
+            fprintf(stderr, "       -T          Only permit device that is a TTY.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
             fprintf(stderr, "       -d          Emit characters on standard error using phex.\n");
@@ -306,9 +312,10 @@ int main(int argc, char * argv[])
     diminuto_contract(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     diminuto_contract(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
+    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
         forward ? "implement-loopback" : backward ? "test-loopback" : "interactive",
         device, bitspersecond, databits, "NOE"[paritybit], stopbits,
+        onlyaterminal ? "ttyonly" : "anydevice",
         nonblocking ? "nonblocking" : "blocking",
         noinput ? "noinput" : "input",
         modemcontrol ? "modem" : "local",
@@ -329,7 +336,6 @@ int main(int argc, char * argv[])
     diminuto_contract(rc == 0);
 
     isaterminal = diminuto_serial_valid(fd);
-
     if (isaterminal) {
 
         rc = ioctl(fd, TIOCEXCL);
@@ -344,13 +350,6 @@ int main(int argc, char * argv[])
         rc = diminuto_serial_raw(fd);
         diminuto_contract(rc == 0);
 
-        if (rawterminal) {
-            rc = diminuto_serial_raw(STDIN_FILENO);
-            diminuto_contract(rc == 0);
-            rc = diminuto_serial_raw(STDOUT_FILENO);
-            diminuto_contract(rc == 0);
-        }
-
         bitspercharacter = 1 /* start bit */ + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
     } else {
@@ -361,8 +360,17 @@ int main(int argc, char * argv[])
 
         bitspercharacter = 8;
 
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s !isatty!\n", device);
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s !isatty\n", device);
 
+    }
+
+    diminuto_contract(isaterminal || (!onlyaterminal));
+
+    if (rawterminal) {
+        rc = diminuto_serial_raw(STDIN_FILENO);
+        diminuto_contract(rc == 0);
+        rc = diminuto_serial_raw(STDOUT_FILENO);
+        diminuto_contract(rc == 0);
     }
 
     output = printable ? '!' : 0x00;
