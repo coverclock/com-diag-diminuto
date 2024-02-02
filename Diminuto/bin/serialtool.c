@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Manipulate serial-ish ports.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -21,6 +21,11 @@
  * it to standard output. It can configure the serial port baud rate,
  * data bits, stop bits, parity, modem control, and flow control.
  *
+ * As an added bonus, serialtool can be used on other devices that are
+ * not serial ports but which have serial input and output. serialtool detects
+ * that the device is not a "tty" and bypasses the serial port configuration.
+ * It otherwise acts as described above.
+ *
  * EXAMPLES
  *
  * terminator:  serialtool -D /dev/ttyUSB0 -b 115200 -8 -1 -n -l -F -d<BR>
@@ -30,8 +35,8 @@
  *
  * NOTES
  *
- * You will likely need to either be root or be in the dialout group to
- * access serial ports.
+ * You may need to either be root or be in the dialout group to access
+ * serial ports.
  */
 
 #include "com/diag/diminuto/diminuto_assert.h"
@@ -127,6 +132,7 @@ int main(int argc, char * argv[])
     int noinput = 0;
     int rawterminal = 0;
     int nonblocking = 0;
+    int isaterminal = 0;
     size_t modulo = 0;
 
     diminuto_log_setmask();
@@ -319,29 +325,45 @@ int main(int argc, char * argv[])
     diminuto_contract(fd != STDIN_FILENO);
     diminuto_contract(fd != STDOUT_FILENO);
 
-    rc = ioctl(fd, TIOCEXCL);
-    diminuto_contract(rc == 0);
-
     rc = fcntl(fd, F_SETFL, (O_RDONLY | (nonblocking ? O_NONBLOCK : 0))); /* Because screen(1) does it. */
     diminuto_contract(rc == 0);
 
-    rc = ioctl(fd, TCFLSH, TCIOFLUSH);
-    diminuto_contract(rc == 0);
+    isaterminal = diminuto_serial_valid(fd);
 
-    rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
-    diminuto_contract(rc == 0);
+    if (isaterminal) {
 
-    rc = diminuto_serial_raw(fd);
-    diminuto_contract(rc == 0);
-
-    if (rawterminal) {
-        rc = diminuto_serial_raw(STDIN_FILENO);
+        rc = ioctl(fd, TIOCEXCL);
         diminuto_contract(rc == 0);
-        rc = diminuto_serial_raw(STDOUT_FILENO);
+
+        rc = ioctl(fd, TCFLSH, TCIOFLUSH);
         diminuto_contract(rc == 0);
+
+        rc = diminuto_serial_set(fd, bitspersecond, databits, paritybit, stopbits, modemcontrol, xonxoff, rtscts);
+        diminuto_contract(rc == 0);
+
+        rc = diminuto_serial_raw(fd);
+        diminuto_contract(rc == 0);
+
+        if (rawterminal) {
+            rc = diminuto_serial_raw(STDIN_FILENO);
+            diminuto_contract(rc == 0);
+            rc = diminuto_serial_raw(STDOUT_FILENO);
+            diminuto_contract(rc == 0);
+        }
+
+        bitspercharacter = 1 /* start bit */ + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
+
+    } else {
+
+        databits = 8;
+        paritybit = 0;
+        stopbits = 0;
+
+        bitspercharacter = 8;
+
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s !isatty!\n", device);
+
     }
-
-    bitspercharacter = 1 + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
     output = printable ? '!' : 0x00;
 
@@ -436,7 +458,7 @@ int main(int argc, char * argv[])
                         break;
                     }
                     if (!printable) {
-                          output = (output + 1) % (1 << (sizeof(char) * 8));
+                        output = (output + 1) % (1 << (sizeof(char) * 8));
                     } else if ((++output) > '~') {
                         output = '!';
                     } else {
