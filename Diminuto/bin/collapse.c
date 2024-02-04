@@ -62,7 +62,6 @@ int main(int argc, char * argv[])
             errno = EIO;
             diminuto_perror("fwrite");
             xc = 1;
-fprintf(stderr, "\"%s\" %ld %ld\n", buffer, size, written);
             break;
         } else {
             /* Do nothing. */
