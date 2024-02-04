@@ -265,7 +265,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -O ] [ -I BYTES ] [ -D DEVICE ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -O ] [ -I BYTES ] [ -D DEVICE ] [ -T ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
