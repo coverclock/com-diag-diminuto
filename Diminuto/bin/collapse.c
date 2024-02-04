@@ -18,7 +18,7 @@
  *
  * EXAMPLE
  *
- * collapse 'AB\103\x44\r\n'
+ * collapse '\aAB\103\x44\r\n'
  */
 
 #include <stdio.h>
