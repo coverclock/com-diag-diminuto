@@ -455,6 +455,7 @@ Similarly, environmental variables have qualified names like
 * bakepi - monitors Raspberry Pi core temperature which throttles at 82C.
 * bucketbrigade - read from a serial port and forward to another serial port.
 * clocks - logs the current values of UTC time, atomic time, and elapsed time.
+* collapse - collapse escapes in arguments and write results to standard output.
 * coreable - enable core dumps.
 * datesink - consume verbose timestamp stream.
 * datesource - produce verbose timestamp stream.
