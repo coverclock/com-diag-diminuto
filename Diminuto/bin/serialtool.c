@@ -336,6 +336,8 @@ int main(int argc, char * argv[])
     diminuto_contract(rc == 0);
 
     isaterminal = diminuto_serial_valid(fd);
+    diminuto_contract(isaterminal || (!onlyaterminal));
+
     if (isaterminal) {
 
         rc = ioctl(fd, TIOCEXCL);
@@ -352,6 +354,8 @@ int main(int argc, char * argv[])
 
         bitspercharacter = 1 /* start bit */ + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
+        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s isatty\n", device);
+
     } else {
 
         databits = 8;
@@ -363,8 +367,6 @@ int main(int argc, char * argv[])
         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s !isatty\n", device);
 
     }
-
-    diminuto_contract(isaterminal || (!onlyaterminal));
 
     if (rawterminal) {
         rc = diminuto_serial_raw(STDIN_FILENO);
