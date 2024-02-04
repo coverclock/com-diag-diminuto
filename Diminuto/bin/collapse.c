@@ -18,7 +18,7 @@
  *
  * EXAMPLE
  *
- * collapse '\aAB\103\x44\r\n'
+ * collapse '\aAB\103\0\x44\r\n' | phex
  */
 
 #include <stdio.h>
