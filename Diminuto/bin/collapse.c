@@ -10,15 +10,20 @@
  *
  * ABSTRACT
  *
- * Collapses the escape sequences in an argument and emits it to stdout.
+ * Collapses the C-style escape sequences in each argument and emits the
+ * result to to standard output.
  *
  * USAGE
  * 
- * collapse [ ESCAPEDSEQUENCE ... ]
+ * collapse [ STRING [ ... ] ]
  *
  * EXAMPLE
  *
  * collapse '\aAB\103\0\x44\r\n' | phex
+ *
+ * SEE ALSO
+ *
+ * diminuto_escape
  */
 
 #include <stdio.h>
