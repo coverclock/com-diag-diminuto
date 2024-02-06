@@ -134,13 +134,15 @@ int main(int argc, char * argv[])
     int nonblocking = 0;
     int isaterminal = 0;
     int onlyaterminal = 0;
+    int proceed = 0;
     size_t modulo = 0;
+    int eof = 0;
 
     diminuto_log_setmask();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:OTb:cdehilmnoprst:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "125678?BD:FI:NM:OPTb:cdehilmnoprst:v")) >= 0) {
 
         switch (opt) {
 
@@ -197,6 +199,10 @@ int main(int argc, char * argv[])
 
         case 'O':
             nonblocking = !0;
+            break;
+
+        case 'P':
+            proceed = !0;
             break;
 
         case 'T':
@@ -265,7 +271,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -O ] [ -I BYTES ] [ -D DEVICE ] [ -T ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
+            fprintf(stderr, "usage: %s [ -1 | -2 ] [ -5 | -6 | -7 | -8 ] [ -B | -F | -N ] [ -O ] [ -I BYTES ] [ -D DEVICE ] [ -T ] [ -P ] [ -b BPS ] [ -c ] [ -d ] [ -e | -o | -n ] [ -h ] [ -s ] [ -l | -m ] [ -p ] [ -t SECONDS ] [ -i | -r ] [ -v ] [ -M MODULO ]\n", program);
             fprintf(stderr, "       -1          One stop bit.\n");
             fprintf(stderr, "       -2          Two stop bits.\n");
             fprintf(stderr, "       -5          Five data bits.\n");
@@ -279,6 +285,7 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -M MODULO   Report every MODULO characters.\n");
             fprintf(stderr, "       -N          Interactive mode (disables -B, -F, -i; implies -O).\n");
             fprintf(stderr, "       -O          Open in non-blocking mode (O_NONBLOCK).\n");
+            fprintf(stderr, "       -P          Proceed after EOF on standard input.\n");
             fprintf(stderr, "       -T          Only permit device that is a TTY.\n");
             fprintf(stderr, "       -b BPS      Bits per second.\n");
             fprintf(stderr, "       -c          Block until DCD is asserted (implies -m, forbids -B, -F).\n");
@@ -312,7 +319,7 @@ int main(int argc, char * argv[])
     diminuto_contract(sigaction(SIGHUP, &action, (struct sigaction *)0) >= 0);
     diminuto_contract(sigaction(SIGALRM, &action, (struct sigaction *)0) >= 0);
 
-    DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
+    DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "%s %s %dbps %d%c%d %s %s %s %s %s %s %s %s %s %useconds %zubytes %zumodulo\n",
         forward ? "implement-loopback" : backward ? "test-loopback" : "interactive",
         device, bitspersecond, databits, "NOE"[paritybit], stopbits,
         onlyaterminal ? "ttyonly" : "anydevice",
@@ -323,6 +330,7 @@ int main(int argc, char * argv[])
         xonxoff ? "xonxoff" : "noswflow",
         rtscts ? "rtscts" : "nohwflow",
         printable ? "printable" : "all",
+        proceed ? "proceed" : "terminate",
         seconds,
         maximum,
         modulo);
@@ -354,7 +362,7 @@ int main(int argc, char * argv[])
 
         bitspercharacter = 1 /* start bit */ + databits + ((paritybit != 0) ? 1 : 0) + stopbits;
 
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s isatty\n", device);
+        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "%s isatty\n", device);
 
     } else {
 
@@ -364,7 +372,7 @@ int main(int argc, char * argv[])
 
         bitspercharacter = 8;
 
-        DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "%s !isatty\n", device);
+        DIMINUTO_LOG_INFORMATION(DIMINUTO_LOG_HERE "%s !isatty\n", device);
 
     }
 
@@ -398,8 +406,8 @@ int main(int argc, char * argv[])
             input = fgetc(fp);
             if (input != EOF) {
                  if (!running) {
-                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
-                    running = !0;
+                     DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "running\n");
+                     running = !0;
                 }
                 output = input;
                 fputc(output, fp);
@@ -459,7 +467,7 @@ int main(int argc, char * argv[])
                 if (verbose) { fputc(input, stderr); }
                 if (input != EOF) {
                      if (!running) {
-                         DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "running\n");
+                         DIMINUTO_LOG_NOTICE(DIMINUTO_LOG_HERE "running\n");
                          running = !0;
                      }
                     if (input != output) {
@@ -579,7 +587,14 @@ int main(int argc, char * argv[])
                     DIMINUTO_LOG_DEBUG(DIMINUTO_LOG_HERE "read(%d)=%zu\n", STDIN_FILENO, reads);
                     diminuto_contract(reads >= 0);
                     diminuto_contract(reads <= maximum);
-                    if (reads == 0) {
+                    if (reads > 0) {
+                        /* Do nothng. */
+                    } else if (proceed) {
+                        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+                        diminuto_contract(rc >= 0);
+                        eof = !0;
+                        continue;
+                    } else {
                         done = !0;
                         break;
                     }
@@ -598,8 +613,11 @@ int main(int argc, char * argv[])
                 }
             }
         }
-        rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
-        diminuto_contract(rc >= 0);
+
+        if (!eof) {
+            rc = diminuto_mux_unregister_read(&mux, STDIN_FILENO);
+            diminuto_contract(rc >= 0);
+        }
         rc = diminuto_mux_unregister_read(&mux, fd);
         diminuto_contract(rc >= 0);
 
