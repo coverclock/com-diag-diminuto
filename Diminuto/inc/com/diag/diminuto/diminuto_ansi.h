@@ -8,7 +8,7 @@
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Code generators for ANSI escape sequences I like to use.
  * @author Chip Overclock <mailto:coverclock@diag.com>
- * @see Hazer <https://github.com/coverclock/com-diag-hazer>
+ * @see Hazer <https://github.com/coverclock/com-diag-diminuto>
  * @details
  */
 
