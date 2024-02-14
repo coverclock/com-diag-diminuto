@@ -16,18 +16,18 @@
  * @def DIMINUTO_ANSI_LOCATE_CURSOR
  * Position cursor.
  */
-#define DIMINUTO_ANSI_POSITION_CURSOR(_ROW_, _COLUMN_) "\033[" #_ROW_ ";" #_COLUMN_ "H";
+#define DIMINUTO_ANSI_POSITION_CURSOR(_ROW_, _COLUMN_) "\033[" #_ROW_ ";" #_COLUMN_ "H"
 
 /**
  * @def DIMINUTO_ANSI_ERASE_TO_EOS
  * Erase to end of screen.
  */
-#define DIMINUTO_ANSI_ERASE_TO_EOS "\033[0J"
+#define DIMINUTO_ANSI_ERASE_SCREEN "\033[0J"
 
 /**
  * @def DIMINUTO_ANSI_ERASE_TO_EOL
  * Erase to end of line.
  */
-#define DIMINUTO_ANSI_ERASE_TO_EOL "\033[0K"
+#define DIMINUTO_ANSI_ERASE_LINE "\033[0K"
 
 #endif
