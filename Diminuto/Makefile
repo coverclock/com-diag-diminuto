@@ -1048,6 +1048,7 @@ criticalsection-test:	unittest-test
 # /etc/hosts is not read).
 sanity-test:	criticalsection-test
 	unittest-absolute
+	unittest-ansi
 	unittest-arraytype
 	unittest-assert && false || true
 	unittest-barrier
@@ -1137,6 +1138,7 @@ sanity-test:	criticalsection-test
 	unittest-time-zone
 	unittest-tree
 	unittest-types
+	unittest-unicode
 	unittest-uninterruptiblesection
 	unittest-version
 	unittest-well

@@ -19,13 +19,13 @@
 #define DIMINUTO_ANSI_POSITION_CURSOR(_ROW_, _COLUMN_) "\033[" #_ROW_ ";" #_COLUMN_ "H"
 
 /**
- * @def DIMINUTO_ANSI_ERASE_TO_EOS
+ * @def DIMINUTO_ANSI_ERASE_SCREEN
  * Erase to end of screen.
  */
 #define DIMINUTO_ANSI_ERASE_SCREEN "\033[0J"
 
 /**
- * @def DIMINUTO_ANSI_ERASE_TO_EOL
+ * @def DIMINUTO_ANSI_ERASE_LINE
  * Erase to end of line.
  */
 #define DIMINUTO_ANSI_ERASE_LINE "\033[0K"
