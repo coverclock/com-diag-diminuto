@@ -912,9 +912,9 @@ For every log output line, the Diminuto Log features determines whether
 the issuing process is being run interactively or not, or is a daemon,
 and directs the output appropriately to either standard error or to the
 system log. The system log on various verisons of Linux may be stored
-in a file in the directory ```/var/log``` (Debian) or may be accessed
-using the ```journalctl -f``` system command (Fedora or later versions
-of Ubuntu).
+in the file ```/var/log/syslog``` (earlier versions of Debian) or it may
+be accessed using the ```journalctl -f``` system command (Fedora or later
+versions of Debian that use ```systemd```).
 
 # Documentation
 
