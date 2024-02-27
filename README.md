@@ -913,7 +913,8 @@ the issuing process is being run interactively or not, or is a daemon,
 and directs the output appropriately to either standard error or to the
 system log. The system log on various verisons of Linux may be stored
 in a file in the directory ```/var/log``` (Debian) or may be accessed
-using the ```journalctl``` system utility (Fedora).
+using the ```journalctl -f``` system command (Fedora or later versions
+of Ubuntu).
 
 # Documentation
 
