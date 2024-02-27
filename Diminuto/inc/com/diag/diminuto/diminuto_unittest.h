@@ -45,7 +45,7 @@
  *
  * CHECKPOINT logs at the INFORMATION level.
  *
- * TEST, ADVISE, STATUS, and EXIT log at the NOTICE level.
+ * NOTIFY, TEST, ADVISE, STATUS, and EXIT log at the NOTICE level.
  *
  * FAILURE and EXPECT log at the WARNING level.
  *

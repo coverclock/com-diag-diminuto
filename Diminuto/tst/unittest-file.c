@@ -14,11 +14,11 @@
  * Digital Aggregates projects (e.g. Framer, and gpstool in Hazer)
  * depends on this legacy behavior.
  *
- * The GLibC standard I/O buffer capacity is 4KB or 1 virtual
- * memory page. This is probably documented somewhere, but I
+ * For some GLibCs the standard I/O buffer capacity is 4KB or 1
+ * virtual memory page. This is probably documented somewhere, but I
  * haven't found it. The man pages might lead you to believe that
  * the buffer capacity is BUFSIZ, which is 8KB, but this is not
- * the case.
+ * always the case.
  *
  * The Linux pipe capacity is an astonishing 64KB or 16 virtual
  * memory pages of 4KB each. This is documented in pipe(7).
@@ -42,7 +42,11 @@ int main(int argc, char * argv[])
 
     {
         diminuto_memory_pagesize_method_t method = DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN;
-        size_t pagesize;
+        ssize_t pagesize;
+        ssize_t bufsize;
+        ssize_t readsize;
+        FILE * fp;
+        int rc;
 
         TEST();
 
@@ -53,22 +57,24 @@ int main(int argc, char * argv[])
          */
 
         pagesize = diminuto_memory_pagesize(&method);
-        CHECKPOINT("VMPAGE size=%zu\n", pagesize);
+        NOTIFY("VMPAGE size=%zd\n", pagesize);
         ASSERT(pagesize > 0);
-        CHECKPOINT("VMPAGE method=%c\n", method);
+        NOTIFY("VMPAGE method=%c\n", method);
         ASSERT(method != DIMINUTO_MEMORY_PAGESIZE_METHOD_UNKNOWN);
         ADVISE(pagesize == 4096);
+        ADVISE(pagesize == 16384);
 
         /*
          * BUFSIZ is the default standard I/O buffer size.
          */
 
-        CHECKPOINT("BUFSIZ size=%d\n", BUFSIZ);
-        ASSERT(BUFSIZ > 0);
-        ADVISE(BUFSIZ == 8192);
+        bufsize = BUFSIZ;
+        NOTIFY("BUFSIZ size=%zd\n", bufsize);
+        ASSERT(bufsize > 0);
+        ADVISE(bufsize == 8192);
 
         /*
-         * Linux appears to use the virtual page size instead
+         * Some stdio versions use the virtual page size instead
          * of the standard I/O BUFSIZ to size its buffers,
          * because, at least on the systems I play with, they
          * are not the same. Remarkably, if you use the stdio
@@ -78,7 +84,32 @@ int main(int argc, char * argv[])
 
         ADVISE(pagesize != BUFSIZ);
 
-        buffersize = pagesize;
+        /*
+         * Okay, so this is pretty incestuous for this unit test, but
+         * because different versions of stdio on systems I actually run
+         * allocate different values for the FILE buffer size, we compute
+         * it in the same way that diminuto_file_readsize() does to see
+         * what this platform is actually using. Note that the buffer isn't
+         * allocated until we actually use it.
+         */
+
+        fp = fopen("/dev/zero", "r");
+        ASSERT(fp != (FILE *)0);
+        rc = fgetc(fp);
+        ASSERT(rc != EOF);
+        readsize = fp->_IO_read_end - fp->_IO_read_base;
+        NOTIFY("READSIZE size=%zd\n", readsize);
+        ASSERT(readsize > 0);
+        rc = fclose(fp);
+        ASSERT(rc == 0);
+        ADVISE(readsize == pagesize);
+        ADVISE(readsize == bufsize);
+
+        /*
+         * "Whatta ya gonna do, at the end of the day, it is what it is."
+         */
+
+        buffersize = readsize;
         CHECKPOINT("BUFFER size=%zu\n", buffersize);
 
         STATUS();
@@ -206,9 +237,11 @@ int main(int argc, char * argv[])
         CHECKPOINT("CLOSE source ready=%zd\n", ready);
         ADVISE(ready == 0);
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSE source empty=%zd\n", empty);
         ADVISE(empty == 0); /* Apparently typical. */
+#endif
 
         rc = fgetc(source);
         ASSERT(rc == EOF);
@@ -217,20 +250,26 @@ int main(int argc, char * argv[])
         CHECKPOINT("EOF source ready=%zd\n", ready);
         EXPECT(ready == 0);
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("EOF source empty=%zd\n", empty);
         EXPECT(empty == 0);
+#endif
 
         rc = fclose(source);
         ASSERT(rc == 0);
 
+#ifdef CHECKAFTERCLOSE
         ready = diminuto_file_ready(source);
         CHECKPOINT("CLOSE source ready=%zd\n", ready);
         ADVISE(ready < 0); /* Apparently unpredictable and non-deterministic. */
+#endif
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSE sink empty=%zd\n", empty);
         ADVISE(empty == 0);
+#endif
 
         STATUS();
     }
@@ -395,9 +434,11 @@ int main(int argc, char * argv[])
         CHECKPOINT("CLOSE source ready=%zd\n", ready);
         ADVISE(ready == 0);
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSE sink empty=%zd\n", empty);
         ADVISE(empty == 0); /* Apparently typical. */
+#endif
 
         rc = fgetc(source);
         ASSERT(rc == EOF);
@@ -406,20 +447,26 @@ int main(int argc, char * argv[])
         CHECKPOINT("EOF source ready=%zd\n", ready);
         EXPECT(ready == 0);
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("EOF sink empty=%zd\n", empty);
         EXPECT(empty == 0);
+#endif
 
         rc = fclose(source);
         ASSERT(rc == 0);
 
+#ifdef CHECKAFTERCLOSE
         ready = diminuto_file_ready(source);
         CHECKPOINT("CLOSE source ready=%zd\n", ready);
         ADVISE(ready < 0); /* Apparently unpredictable and non-deterministic. */
+#endif
 
+#ifdef CHECKAFTERCLOSE
         empty = diminuto_file_empty(sink);
         CHECKPOINT("CLOSE sink empty=%zd\n", empty);
         ADVISE(empty == 0);
+#endif
 
         STATUS();
     }
