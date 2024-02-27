@@ -261,6 +261,18 @@ arm-linux-gnueabihf-gcc-10
 arm-linux-gnueabihf    
 little-endian    
 
+Raspberry Pi 5 Model B Rev 1.0 d04170    
+aarch64 x4    
+Debian GNU/Linux 12 (bookworm)    
+Linux 6.1.0-rpi8-rpi-2712    
+gcc (Debian 12.2.0-14) 12.2.0    
+ldd (Debian GLIBC 2.36-9+rpt2+deb12u4) 2.36    
+GNU ld (GNU Binutils for Debian) 2.40    
+GNU Make 4.3    
+aarch64-linux-gnu-gcc-12    
+aarch64-linux-gnu    
+little-endian    
+
 # Features
 
 Given a feature I call Foo (or foo),
