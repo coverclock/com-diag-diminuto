@@ -442,7 +442,7 @@ Similarly, environmental variables have qualified names like
 * cue - logic level debouncer and edge detector.
 * framer - HDLC-like framing of binary serial streams using byte stuffing.
 * i2c - simplified thread-safe API around Linux I2C API.
-* pin - get and set GPIO pins using the sysfs interface.
+* pin - get and set GPIO pins using the sysfs interface (DEPRECATED).
 * modulator - software pulse width modulation (PWM) generator.
 * serial - get and set parameters for a serial port.
 
