@@ -11,18 +11,51 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
+ * REFERENCES
+ *
+ * <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/driver-api/gpio>
+ *
+ * <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/gpio>
  */
 
-#include <stdio.h>
+#include <linux/gpio.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /*******************************************************************************
- * DEBUG
+ * BASE
  ******************************************************************************/
 
-extern FILE * diminuto_line_debug(FILE * fp);
+extern int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags);
+
+extern int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp);
+
+extern int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits);
+
+extern int diminuto_line_close(int fd);
 
 /*******************************************************************************
- * CORE API
+ * DERIVED
  ******************************************************************************/
+
+extern int diminuto_line_open(const char * path, unsigned int line, uint64_t flags);
+
+extern int diminuto_line_get(int fd, unsigned int line);
+
+extern int diminuto_line_put(int fd, unsigned int line, int bit);
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
+
+static inline int diminuto_line_set(int fd, unsigned int line)
+{
+    return diminuto_line_put(fd, line, !0);
+}
+
+static inline int diminuto_line_clear(int fd, unsigned int line)
+{
+    return diminuto_line_put(fd, line, 0);
+}
 
 #endif
