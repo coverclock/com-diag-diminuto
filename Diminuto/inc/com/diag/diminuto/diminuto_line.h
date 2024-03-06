@@ -11,6 +11,8 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  *
+ * WORK IN PROGRESS
+ *
  * REFERENCES
  *
  * <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/driver-api/gpio>

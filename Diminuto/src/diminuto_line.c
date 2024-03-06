@@ -8,6 +8,7 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * This is the implementation of the Line feature.
+ * WORK IN PROGRESS
  */
 
 #include "com/diag/diminuto/diminuto_line.h"
